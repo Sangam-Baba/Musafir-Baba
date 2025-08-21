@@ -118,7 +118,7 @@ const getPackages = async (req, res) => {
         { description: { $regex: search, $options: "i" } },
       ];
     }
-
+    console.log(query);
     // ✅ Query execution
     const packages = await Package.find(query)
       .populate("category", "name slug") // populate category details
@@ -140,4 +140,4 @@ const getPackages = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-export { createPackage , deletePackage, editPackage, getPackageBySlug}
+export { createPackage , deletePackage, editPackage, getPackageBySlug, getPackages}
