@@ -56,14 +56,15 @@ const bookingSchema=new mongoose.Schema({
     },
     paymentMethod:{
         type:String,
-        enum:["Paypal", "Razerpay", ],
+        enum:[ "Razorpay" ],
         required:true,
     },
-    PaymentStatus:{
-        type:String,
-        enum:["Pending", "Paid", "Failed", "Refunded"],
-        default:"Pending",
-    },
+    paymentInfo: {
+     orderId: String,
+     paymentId: String,
+     signature: String,
+     status: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" }
+     },
     bookingStatus:{
         type:String,
         enum: ["Pending", "Confirmed", "Cancelled"],

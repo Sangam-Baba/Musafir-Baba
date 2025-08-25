@@ -8,9 +8,9 @@ const packageSchema = new mongoose.Schema(
     slug: { type: String, unique: true, index: true },
 
     destination: {
-      country: { type: String, required: true },
-      state: { type: String, required: true },
-      city: { type: String, required: true },
+       type:mongoose.Schema.Types.ObjectId,
+       ref:'Destination',
+       required:true,
     },
 
     coverImage: { type: String, required: true },

@@ -54,6 +54,7 @@ const editPackage= async(req, res)=>{
 const getPackageBySlug = async (req, res) => {
   try {
     const pkg = await Package.findOne({ slug: req.params.slug, status: "published" })
+      .populate("destination", "name country state city slug coverImage")
       .populate("category", "name slug")
       .lean();
 
@@ -75,9 +76,7 @@ const getPackages = async (req, res) => {
       category,
       minPrice,
       maxPrice,
-      city,
-      state,
-      country,
+      destination,
       minDays,
       maxDays,
       search,
@@ -106,10 +105,7 @@ const getPackages = async (req, res) => {
       if (maxDays) query["duration.days"].$lte = Number(maxDays);
     }
 
-    // ✅ Location filter
-    if (city) query["destination.city"] = new RegExp(city, "i");
-    if (state) query["destination.state"] = new RegExp(state, "i");
-    if (country) query["destination.country"] = new RegExp(country, "i");
+    if(destination) query.destination=destination;
 
     // ✅ Search filter (title or description)
     if (search) {
@@ -121,7 +117,8 @@ const getPackages = async (req, res) => {
     console.log(query);
     // ✅ Query execution
     const packages = await Package.find(query)
-      .populate("category", "name slug") // populate category details
+      .populate("category", "name slug")
+      .populate("destination", "name country state city slug coverImage") // populate category details
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
