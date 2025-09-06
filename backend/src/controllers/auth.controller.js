@@ -7,14 +7,9 @@ import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import crypto from "crypto";
 import {signAccessToken, signRefreshToken, verifyAccess, verifyRefresh } from "../utils/tokens.js";
 
-// const generateToken= (user)=>{
-//    return jwt.sign({id:user._id , role: user.role}, process.env.JWT_SECRET_KEY , {
-//     expiresIn:"7d",
-//    });
-// }
-function issueTokens(userId) {
-  const accessToken = signAccessToken({ sub: userId });
-  const refreshToken = signRefreshToken({ sub: userId });
+function issueTokens(userId, role) {
+  const accessToken = signAccessToken({ sub: userId , role });
+  const refreshToken = signRefreshToken({ sub: userId , role });
   return { accessToken, refreshToken };
 }
 const register=async(req, res)=>{
@@ -71,7 +66,7 @@ const login=async(req, res)=>{
         if(!isPasswordCorrect){
             return res.status(401).json({success: false, message:"User Unauthorized"});
         }
-         const { accessToken, refreshToken } = issueTokens(String(user._id));
+         const { accessToken, refreshToken } = issueTokens(user._id, user.role);
 
         const cookieOption = {
          httpOnly : true,
@@ -81,7 +76,7 @@ const login=async(req, res)=>{
 
 
         res.cookie("refreshToken", refreshToken, cookieOption);
-        return res.status(200).json({success:true, message:"User Login Successfully", accessToken });        
+        return res.status(200).json({success:true, message:"User Login Successfully", accessToken, role:user.role });        
         
     } catch (error) {
         console.log("Login failed ",  error.message);
@@ -187,14 +182,14 @@ const resetPassword=async (req, res)=>{
 
 const refresh=async (req, res)=>{
     try {
-        const token = req.cookies?.refresh_token;
+        const token = req.cookies?.refreshToken;
         if(!token){
             return res.status(401).json({success:false, message:"Unauthorized"});
         }
 
         const payload = verifyRefresh(token);
 
-        const { accessToken, refreshToken } = issueTokens(payload.sub);
+        const { accessToken, refreshToken } = issueTokens(payload.sub, payload.role);
         const cookieOptions = {
             httpOnly : true,
             secure : true,
@@ -203,10 +198,25 @@ const refresh=async (req, res)=>{
 
         res.cookie("refresh_token", refreshToken, cookieOptions);
 
-        return res.json({ accessToken });
+        return res.json({ accessToken , role:payload.role });
 
     } catch (error) {
         console.log("Refresh token error:", error.message);
+        return res.status(500).json({success:false, message:"Server error"});
+    }
+}
+
+const me= async(req, res)=>{
+    try {
+        const {token}= req.headers.authorization.split(" ")[1];
+        const verifyedToken=verifyAccess(token);
+        if(!verifyedToken){
+            return res.status(401).json({success:false, message:"Unauthorized"});
+        }
+        const user=await User.findById(verifyedToken.sub).select("-password");
+        return res.status(200).json({success:true, data:user});
+    } catch (error) {
+        console.log("Me error:", error.message);
         return res.status(500).json({success:false, message:"Server error"});
     }
 }
@@ -218,7 +228,7 @@ const logout =async(req, res)=>{
             secure : true,
             sameSite : true
         }
-        res.clearCookie("refresh_token", cookieOptions);
+        res.clearCookie("refreshToken", cookieOptions);
         return res.status(200).json({success:true, message:"Logout successful"});
     } catch (error) {
         console.log("Logout error:", error.message);
@@ -227,4 +237,4 @@ const logout =async(req, res)=>{
     
 }
 
-export {register, login, verifyOtp , forgotPassword , resetPassword , refresh , logout};
+export {register, login, verifyOtp , forgotPassword , resetPassword , refresh , me, logout};

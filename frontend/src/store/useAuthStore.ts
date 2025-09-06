@@ -1,17 +1,17 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware" // optional if you want user info persisted
 
-interface User {
-  id: string
-  name?: string
-  email?: string
-}
+// interface User {
+//   id: string
+//   name?: string
+//   email?: string
+// }
 
 interface AuthState {
   accessToken: string | null
-  // user: User | null
+  role: string | null
   isAuthenticated: boolean
-  setAuth: (token: string) => void
+  setAuth: (token: string, role: string) => void
   clearAuth: () => void
   logout:() => Promise<void>
   refreshAccessToken: () => Promise<void>
@@ -21,15 +21,15 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       accessToken: null,
-      // user: null,
+      role: null,
       isAuthenticated: false,
 
-      setAuth: (token) => {
-        set({ accessToken: token, isAuthenticated: true })
+      setAuth: (token, role) => {
+        set({ accessToken: token, role: role, isAuthenticated: true })
       },
 
       clearAuth: () => {
-        set({ accessToken: null, isAuthenticated: false })
+        set({ accessToken: null, role: null, isAuthenticated: false })
       },
       
       logout: async () => {
@@ -50,8 +50,7 @@ export const useAuthStore = create<AuthState>()(
           const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/refresh`, {
             method: "POST",
             credentials: "include",// ⬅️ very important, sends HttpOnly cookie
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token: get().accessToken }), 
+            headers: { "Content-Type": "application/json" }
           })
 
           if (!res.ok) throw new Error("Failed to refresh token")
@@ -60,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             accessToken: data.accessToken,
             isAuthenticated: true,
+            role: data.role
             // optionally also refresh user data here
           })
         } catch (err) {
@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-store", // persist user (not token)
-      partialize: (state) => ({accessToken: state.accessToken, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({accessToken: state.accessToken,  role: state.role, isAuthenticated: state.isAuthenticated }),
     }
   )
 )

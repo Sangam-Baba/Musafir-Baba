@@ -64,15 +64,15 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      console.log("Login successfully:", data)
-      toast.success("Login successful!");
+      console.log("Admin Login successfully:", data)
+      toast.success("Admin Login successful!");
       // 👉 Redirect or reset form here
       const accessToken = data.accessToken;
       console.log(accessToken);
       // const user=data.user;
-      setAuth(accessToken);
+      setAuth(accessToken, data.role);
       form.reset();
-      setTimeout(()=> {router.replace("/")}, 3000);
+      setTimeout(()=> {router.replace("/admin")}, 2000);
     },
     onError: (error) => {
       console.error("Registration failed:", error)
@@ -100,7 +100,7 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input type="email" placeholder="admin@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

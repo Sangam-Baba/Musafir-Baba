@@ -4,22 +4,22 @@
 // import { useAuthStore } from "@/store/useAuthStore";
 // import { useUIStore } from "@/store/useUIStore";
 // import { Button } from "@/components/ui/button";
-import Hero from "../components/custom/Hero";
-import SecondSection from "../components/custom/SecondSection";
-import CategoryGrid from "../components/custom/CategoryGrid";
-import img1 from "../../public/Hero1.jpg";
-import img2 from "../../public/Hero2.jpg";
-import img3 from "../../public/Hero3.jpg";
-import heroimg from '../../public/Heroimg.jpg';
-import SectionFour from "../components/custom/SectionFour";
-import SectionFive from "../components/custom/SectionFive";
-import {Testimonial} from "../components/custom/Testimonial";
-import {ImageGallery} from "../components/custom/ImageGallery";
-import {BusBooking} from "../components/custom/BusBooking";
-import {SevenSection} from "../components/custom/SevenSection";
-import {DestinationSection} from "../components/custom/DestinationSection";
-import {Faqs} from "../components/custom/Faqs";
-import {FeaturedTour} from "../components/custom/FeaturedTour";
+import Hero from "../../components/custom/Hero";
+import SecondSection from "../../components/custom/SecondSection";
+import CategoryGrid from "../../components/custom/CategoryGrid";
+import img1 from "../../../public/Hero1.jpg";
+import img2 from "../../../public/Hero2.jpg";
+import img3 from "../../../public/Hero3.jpg";
+import heroimg from '../../../public/Heroimg.jpg';
+import SectionFour from "../../components/custom/SectionFour";
+import SectionFive from "../../components/custom/SectionFive";
+import {Testimonial} from "../../components/custom/Testimonial";
+import {ImageGallery} from "../../components/custom/ImageGallery";
+import {BusBooking} from "../../components/custom/BusBooking";
+import {SevenSection} from "../../components/custom/SevenSection";
+import {DestinationSection} from "../../components/custom/DestinationSection";
+import {Faqs} from "../../components/custom/Faqs";
+import {FeaturedTour} from "../../components/custom/FeaturedTour";
 const dummyCategories = [
   {
     id: "1",

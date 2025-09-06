@@ -1,4 +1,4 @@
-import { register, login, verifyOtp, forgotPassword , resetPassword, refresh , logout} from "../controllers/auth.controller.js";
+import { register, login, verifyOtp, forgotPassword , resetPassword, me, refresh , logout} from "../controllers/auth.controller.js";
 import { Router } from "express";
 import upload from "../middleware/multer.middleware.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -11,6 +11,7 @@ authRouter.post('/login',login);
 authRouter.post('/verifyOtp',verifyOtp);
 authRouter.post('/forgotPassword', forgotPassword);
 authRouter.post('/refresh' ,refresh);
+authRouter.post('/me' ,me);
 authRouter.post('/logout', isAuthenticated, logout);
 authRouter.patch("/reset-pasword/:token", resetPassword);
 

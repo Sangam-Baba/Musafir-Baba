@@ -1,7 +1,7 @@
 "use client";
 import React from 'react'
 import  Hero  from '@/components/custom/Hero'
-import img1 from "../../../../public/Hero1.jpg";
+import img1 from "../../../../../public/Hero1.jpg";
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader } from '@/components/custom/loader';

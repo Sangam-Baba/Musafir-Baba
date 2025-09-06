@@ -1,14 +1,12 @@
 "use client";
 import React from 'react'
-import Hero from '../../../components/custom/Hero';
+import Hero from '@/components/custom/Hero';
 import { useParams } from 'next/navigation';
 import { useQuery } from "@tanstack/react-query";
 import { toast } from 'sonner';
 import { Loader } from "@/components/custom/loader";
-import PackageCard from "../../../components/custom/PackageCard";
+import PackageCard from "@/components/custom/PackageCard";
 import img1 from "../../../../public/Hero1.jpg";
-import img2 from "../../../../public/Hero2.jpg";
-import img3 from "../../../../public/Hero3.jpg";
 
 interface Package {
   _id: string;
