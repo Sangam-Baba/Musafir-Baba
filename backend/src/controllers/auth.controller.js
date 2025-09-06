@@ -3,32 +3,50 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
 import sendEmail from "../services/email.service.js";
 import generateCryptoToken from "../utils/generateCryptoToken.js"
+import { uploadToCloudinary } from "../services/fileUpload.service.js";
+import crypto from "crypto";
+import {signAccessToken, signRefreshToken, verifyAccess, verifyRefresh } from "../utils/tokens.js";
 
-const generateToken= (user)=>{
-   return jwt.sign({id:user._id , role: user.role}, process.env.JWT_SECRET_KEY , {
-    expiresIn:"7d",
-   });
+// const generateToken= (user)=>{
+//    return jwt.sign({id:user._id , role: user.role}, process.env.JWT_SECRET_KEY , {
+//     expiresIn:"7d",
+//    });
+// }
+function issueTokens(userId) {
+  const accessToken = signAccessToken({ sub: userId });
+  const refreshToken = signRefreshToken({ sub: userId });
+  return { accessToken, refreshToken };
 }
 const register=async(req, res)=>{
-    const {name, email, password, role}=req.body;
+    const {name, email, password}=req.body;
     try {
         const isExist=await User.findOne({email});
         if(isExist){
             return res.status(409).json({success:false, message:"User Already exist"})
         }
+        let avatar=null;
+        if(req.files?.avatar){
+            const result=await uploadToCloudinary(req.files.avatar[0].buffer, "avatars");
+            avatar=result.secure_url;
+        }
 
-        const hashedpassword=await bcrypt.hash(password, 10);
+       const hashedpassword=await bcrypt.hash(password, 10);
 
         const { token, hashedToken }=generateCryptoToken();
 
+        const user=new User({name, email, password:hashedpassword ,avatar, otp:hashedToken, otpExpire:Date.now() + 10*60*1000});
+        
+
         const subject="Verify your Musafir-Baba account";
-        const emailBody=`Hi! Your OTP is: ${token}`
-        await sendEmail(email, subject,emailBody);
+        const emailBody=`Hi! ${name}, Click this link to verify your account: ${process.env.FRONTEND_URL}/auth/verifyotp?email=${email}&otp=${token}. Your OTP is: ${token}`
+       const emailResponse= await sendEmail(email, subject,emailBody);
 
-        const user=new User({name, email, password:hashedpassword , role, otp:hashedToken, otpExpire:Date.now() + 10*60*1000});
+          if (!emailResponse || emailResponse.error!==null) {
+          console.error("Email sending failed:", emailResponse.error);
+           return res.status(500).json({ success: false, message: "Could not send verification email" });
+          }
+        
         await user.save();
-
-
         return res.status(201).json({success:true, message:"User Registerrd Successfully, Please verify email with OTP sent."});
     } catch (error) {
         console.log("Registration failed", error.message);
@@ -53,15 +71,17 @@ const login=async(req, res)=>{
         if(!isPasswordCorrect){
             return res.status(401).json({success: false, message:"User Unauthorized"});
         }
-        const token=generateToken(user);
-        return res.status(200).json({success:true, message:"User Login Successfully", token,   
-        user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-       });        
+         const { accessToken, refreshToken } = issueTokens(String(user._id));
+
+        const cookieOption = {
+         httpOnly : true,
+        secure : true,
+        sameSite : true
+        }
+
+
+        res.cookie("refreshToken", refreshToken, cookieOption);
+        return res.status(200).json({success:true, message:"User Login Successfully", accessToken });        
         
     } catch (error) {
         console.log("Login failed ",  error.message);
@@ -95,7 +115,7 @@ const verifyOtp= async(req, res)=>{
 
    } catch (error) {
     console.log("OTP verification failed ", error.message)
-    return res.status(500),json({ success:false, message:"Serer Error"})
+    return res.status(500).json({ success:false, message:"Serer Error"})
    }
 }
 
@@ -110,12 +130,17 @@ const forgotPassword=async(req, res)=>{
 
         const {token, hashedToken}= generateCryptoToken();
 
-        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
 
         const subject="MusafirBaba - Password Reset";
         const emailBody=`Click this link to reset your password: ${resetUrl}`
 
-        await sendEmail(email, subject, emailBody);
+        const emailResponse=await sendEmail(email, subject, emailBody);
+
+        if (!emailResponse || emailResponse.error!==null) {
+            console.error("Email sending failed:", emailResponse.error);
+            return res.status(500).json({ success: false, message: "Could not send verification email" });
+    }
 
         user.resetPasswordToken = hashedToken;
         user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; 
@@ -160,4 +185,46 @@ const resetPassword=async (req, res)=>{
     }
 }
 
-export {register, login, verifyOtp , forgotPassword , resetPassword}
+const refresh=async (req, res)=>{
+    try {
+        const token = req.cookies?.refresh_token;
+        if(!token){
+            return res.status(401).json({success:false, message:"Unauthorized"});
+        }
+
+        const payload = verifyRefresh(token);
+
+        const { accessToken, refreshToken } = issueTokens(payload.sub);
+        const cookieOptions = {
+            httpOnly : true,
+            secure : true,
+            sameSite : true
+        }
+
+        res.cookie("refresh_token", refreshToken, cookieOptions);
+
+        return res.json({ accessToken });
+
+    } catch (error) {
+        console.log("Refresh token error:", error.message);
+        return res.status(500).json({success:false, message:"Server error"});
+    }
+}
+
+const logout =async(req, res)=>{
+    try {
+        const cookieOptions = {
+            httpOnly : true,
+            secure : true,
+            sameSite : true
+        }
+        res.clearCookie("refresh_token", cookieOptions);
+        return res.status(200).json({success:true, message:"Logout successful"});
+    } catch (error) {
+        console.log("Logout error:", error.message);
+        return res.status(500).json({success:false, message:"Server error"});
+    } 
+    
+}
+
+export {register, login, verifyOtp , forgotPassword , resetPassword , refresh , logout};

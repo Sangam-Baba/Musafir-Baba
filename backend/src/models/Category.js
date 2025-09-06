@@ -18,6 +18,7 @@ const categorySchema=new mongoose.Schema({
         unique:true,
         index:true,
     },
+    packages:[{type:mongoose.Schema.Types.ObjectId, ref:"Package"}],
     image:{
         type:String,
         default:null,

@@ -3,10 +3,10 @@ import { Booking } from "../models/Booking.js";
 //import Package from "../models/Package.js"
 const createBooking = async (req, res) => {
     try {
-         const userId=req.user.id;
+         const userId=req.user.sub;
     if(!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
     const {
-package: packageId,
+packageId,
 firstName,
 lastName,
 address,
@@ -25,7 +25,7 @@ specialRequests,
 
 const booking = await Booking.create({
 user: userId,
-package: packageId,
+packageId,
 firstName,
 lastName,
 address,
@@ -39,7 +39,7 @@ specialRequests,
 
 const created = await Booking.findById(booking._id)
 .populate({ path: "user", select: "name email" })
-.populate({ path: "package", select: "title price" })
+.populate({ path: "packageId", select: "title price" })
 .lean()
 .exec();
 
@@ -118,8 +118,7 @@ const getBookingById=async(req, res)=>{
         if(!mongoose.Types.ObjectId.isValid(bookingId)) return res.status(400).json({success:false, message:"Invalid"});
 
         const booking=await Booking.findById(bookingId)
-        .populate({path:"user", select: "name email"})
-        .populate({ path : "package", select:" title price"})
+        .select("_id firstName totalPrice  ")
         .lean()
         .exec();
 
@@ -158,7 +157,7 @@ const cancelMyBooking=async(req, res)=>{
 
 const adminUpdateBookingStatus = async (req, res) => {
 const bookingId = req.params.id;
-const { bookingStatus, PaymentStatus } = req.body;
+const { bookingStatus, paymentInfo } = req.body;
 
 
 if (!mongoose.Types.ObjectId.isValid(bookingId)) return res.status(400).json({ success: false, error: "Invalid id" });
@@ -169,7 +168,7 @@ if (!booking) return res.status(404).json({ success: false, error: "Booking not 
 
 
 if (bookingStatus) booking.bookingStatus = bookingStatus;
-if (PaymentStatus) booking.PaymentStatus = PaymentStatus;
+if (paymentInfo) booking.paymentInfo = paymentInfo;
 
 
 await booking.save();

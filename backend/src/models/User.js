@@ -23,8 +23,12 @@ const UserSchema=new mongoose.Schema({
     type:Boolean,
     default:false,
   },
-  profilePic:{
+  avatar:{
     type:String,
+  },
+  refresh_token : {
+    type : String,
+    default : ""
   },
   otp:String,
   otpExpire:Date,

@@ -13,10 +13,10 @@ const sendEmail=async(email, subject, emailBody)=>{
      text: emailBody,
     });
     console.log("email send successfully", data)
-    // res.status(200).json(data);
+    return { success: true, id: data.id, error: data.error  };
   } catch(error) {
-    console.log("email sending fail")
-    // res.status(400).json(error);
+    console.log("email sending fail: ", error)
+    return { success: false, error };
   }
 };
 

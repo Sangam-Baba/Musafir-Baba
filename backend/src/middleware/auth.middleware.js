@@ -1,5 +1,4 @@
-import jwt from "jsonwebtoken";
-
+import { verifyAccess } from "../utils/tokens.js";
 const isAuthenticated=async(req, res, next)=>{
     const token =req.headers.authorization?.split(" ")[1];
 
@@ -8,8 +7,11 @@ const isAuthenticated=async(req, res, next)=>{
     }
 
     try {
-        const decoded=jwt.verify(token, process.env.JWT_SECRET_KEY);
+        console.log(token);
+        const decoded= await verifyAccess(token);
+        console.log(decoded);
         req.user=decoded;
+        console.log(" verifyed user  ",req.user);
         next();
     } catch (error) {
         console.log("authentication failed: ", error.message);

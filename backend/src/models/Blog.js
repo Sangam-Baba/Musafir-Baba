@@ -41,6 +41,17 @@ const blogSchema=new mongoose.Schema({
         type:String,
         maxlength:160,
     },
+    keywords: [
+      {
+        type: String,
+      },
+    ],
+    canonicalUrl: {
+      type: String,
+    },
+    schemaType: {
+      type: String,
+    },
     status:{
         type:String,
         enum:["draft", "published", "archived"],

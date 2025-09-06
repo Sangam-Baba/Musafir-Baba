@@ -1,6 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 import {Blog} from "../models/Blog.js";
-
+import { uploadToCloudinary } from "../services/fileUpload.service.js";
 const createBlog=async(req, res)=>{
     try {
         const {title, content}= req.body;
@@ -11,8 +11,12 @@ const createBlog=async(req, res)=>{
         if (req.body.category && !mongoose.Types.ObjectId.isValid(req.body.category)) {
         return res.status(400).json({ success: false, message: "Invalid category ID" });
         }
-
-        const blog=new Blog(req.body);
+        let coverImage=null;
+        if(req.files.coverImage){
+          const result=await uploadToCloudinary(req.files.coverImage[0].buffer , "blog/coverImage");
+          coverImage=result.sucure_url;
+        }
+        const blog=new Blog({...req.body, coverImage});
         await blog.save();
 
         res.status(201).json({success:true, data:blog} );
@@ -58,7 +62,10 @@ const getBlogBySlug=async(req,res)=>{
     try {
         const { slug } = req.params;
 
-        const blog = await Blog.findOne({slug});
+        const blog = await Blog.findOne({slug})
+        .populate("category", "name slug")
+        .populate("author", "name slug")
+        .lean();
 
         if(!blog) return res.status(404).json({success:false, message:"Invalid Slug"});
  
@@ -89,8 +96,8 @@ const getAllBlog=async(req, res)=>{
 
          const total =await Blog.countDocuments(filter);
         const blogs =await Blog.find(filter)
-        .populate("category", "name")
-        .populate("author", "name")
+        .select("title content coverImage slug")
+        .sort({createdAt:-1})        
         .limit(limit)
         .skip(skip)
         .lean();

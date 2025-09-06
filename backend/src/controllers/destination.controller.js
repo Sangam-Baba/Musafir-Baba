@@ -1,10 +1,23 @@
 import {Destination} from "../models/Destination.js";
 import { Package } from "../models/Package.js";
 import mongoose  from "mongoose";
+import { uploadToCloudinary } from "../services/fileUpload.service.js";
 const createDestination=async(req, res)=>{
 try {
-    const {name, country, coverImage}=req.body;
-    const destination=new Destination(req.body);
+    const {name, country}=req.body;
+    let coverImage=null;
+    let gallery=[];
+    if(req.files?.coverImage){
+      const result=await  uploadToCloudinary(req.files.coverImage[0].buffer , "destination/coverImage");
+      coverImage=result.secure_url;
+    }
+    if(req.files?.gallery){
+      for(let img =0; img<req.files.gallery.length;img++){
+      const result=await  uploadToCloudinary(req.files.gallery[img].buffer , "destination/gallery");
+      gallery.push(result.secure_url);
+      }
+    };
+    const destination=new Destination({...req.body, coverImage, gallery});
     await destination.save();
     res.status(201).json({success:true, message:"Destination created successful", data:destination});
 } catch (error) {

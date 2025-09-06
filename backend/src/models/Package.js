@@ -13,7 +13,7 @@ const packageSchema = new mongoose.Schema(
        required:true,
     },
 
-    coverImage: { type: String, required: true },
+    coverImage: { type: String },
     gallery: [String],
 
     price: {
@@ -22,11 +22,11 @@ const packageSchema = new mongoose.Schema(
       currency: { type: String, default: "INR" },
     },
 
-    category: {
+    category: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
-      required: true,
-    },
+      required: true,}
+    ],
 
     duration: {
       days: { type: Number, required: true },
@@ -38,7 +38,17 @@ const packageSchema = new mongoose.Schema(
       metaDescription: String,
       keywords: [String],
     },
-
+        keywords: [
+      {
+        type: String,
+      },
+    ],
+    canonicalUrl: {
+      type: String,
+    },
+    schemaType: {
+      type: String,
+    },
     startDates: [Date],
     endDates: [Date],
     maxPeople: Number,
@@ -46,6 +56,18 @@ const packageSchema = new mongoose.Schema(
     highlights: [String],
     inclusions: [String],
     exclusions: [String],
+    faqs: [
+      {
+        question: { type: String},
+        answer: { type: String },
+      },
+    ],
+    itinerary: [
+      {
+        title: { type: String},
+        description: { type: String },
+      },
+    ],
 
     isFeatured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "draft" },

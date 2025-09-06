@@ -1,7 +1,22 @@
 import { Package } from "../models/Package.js";
+import { uploadToCloudinary } from "../services/fileUpload.service.js";
+import { Category } from "../models/Category.js";
+import { Destination } from "../models/Destination.js";
 const createPackage=async(req, res)=>{
   try {
-    const pkg=new Package(req.body);
+        let coverImage=null;
+        let gallery=[];
+        if(req.files?.coverImage){
+          const result=await  uploadToCloudinary(req.files.coverImage[0].buffer , "packages/coverImage");
+          coverImage=result.secure_url;
+        }
+        if(req.files?.gallery){
+          for(let img =0; img<req.files.gallery.length;img++){
+          const result=await  uploadToCloudinary(req.files.gallery[img].buffer , "packages/gallery");
+          gallery.push(result.secure_url);
+          }
+        };
+    const pkg=new Package({...req.body , coverImage, gallery });
     await pkg.save();
     
     res.status(201).json({
@@ -89,7 +104,17 @@ const getPackages = async (req, res) => {
     if (status) query.status = status;
 
     // ✅ Category filter
-    if (category) query.category = category;
+    if (category) {
+      const cat = await Category.findOne({
+        $or: [{ _id: category }, { slug: category }, { name: category }],
+      }).select("_id");
+
+      if (!cat) {
+        return res.status(404).json({ success: false, message: "Category not found" });
+      }
+
+        query.category = cat._id;
+    }
 
     // ✅ Price filter (adult price)
     if (minPrice || maxPrice) {
@@ -105,7 +130,16 @@ const getPackages = async (req, res) => {
       if (maxDays) query["duration.days"].$lte = Number(maxDays);
     }
 
-    if(destination) query.destination=destination;
+    if (destination) {
+      // If you want to allow name/slug instead of ObjectId
+      const dest = await Destination.findOne({
+        $or: [ { country: destination }, { state: destination }, { city: destination }],
+      }).select("_id");
+      if (!dest) {
+        return res.status(404).json({ success: false, message: "Destination not found" });
+      }
+       query.destination = dest._id;
+    }
 
     // ✅ Search filter (title or description)
     if (search) {

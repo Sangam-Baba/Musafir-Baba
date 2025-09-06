@@ -8,22 +8,24 @@ import {
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import upload from "../middleware/multer.middleware.js";
 
 const categoryRoute = Router();
 
 categoryRoute.get('/:slug', getCategoryBySlug);
 
 categoryRoute.get(
-  '/', 
-  isAuthenticated, 
-  authorizedRoles(["admin, superadmin"]), 
+  '/',  
   getCategory
 );
 
 categoryRoute.post(
   '/', 
   isAuthenticated, 
-  authorizedRoles(["admin,superadmin"]), 
+  authorizedRoles(["admin","superadmin"]),
+  upload.fields([
+    {name:"Image", maxCount:1},
+  ]),
   createCategory
 );
 

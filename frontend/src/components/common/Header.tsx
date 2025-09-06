@@ -1,0 +1,63 @@
+// components/common/Header.tsx
+"use client";
+import React from "react";
+import { Navbar } from "./Navbar";
+import Sidebar from "../custom/Sidebar";
+import { useUIStore } from "@/store/useUIStore";
+import { AccountIcon } from "../custom/AccountIcon";
+import { Youtube, Facebook, LucideTwitter, Instagram, Linkedin, Menu } from "lucide-react";
+import logo from "../../../public/logo.svg";
+import Image from "next/image";
+
+export default function Header() {
+  const { sidebarOpen, toggleSidebar } = useUIStore();
+
+  return (
+    <header className="w-full">
+
+      <div className="hidden md:flex justify-between items-center w-full px-4 py-2 bg-[#FE5300] text-white">
+        <div className="flex gap-4 items-center">
+          <Youtube className="w-5 h-5" />
+          <Facebook className="w-5 h-5" />
+          <LucideTwitter className="w-5 h-5" />
+          <Instagram className="w-5 h-5" />
+          <Linkedin className="w-5 h-5" />
+        </div>
+        <div className="text-sm font-medium">+91-92896 02447</div>
+      </div>
+
+
+      <div className="flex items-center justify-between w-full px-4 py-4 bg-white">
+        {/* Left: Menu (mobile) or logo (desktop) */}
+        <div className="flex justify-around items-center gap-4 w-full">
+          {/* Mobile: Menu button for <md */}
+          <button
+            aria-label="Open menu"
+            onClick={toggleSidebar}
+            className="md:hidden p-2 rounded-md hover:bg-slate-100"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+
+          {/* Logo - center on mobile, left on md+ */}
+          <div className="flex items-center">
+            <Image src={logo} alt="logo" className="w-32 h-auto" />
+          </div>
+        
+
+        {/* Center / big screens: Navbar visible from md and up */}
+        <nav className="hidden md:flex md:flex-1 md:justify-center">
+          <Navbar />
+        </nav>
+
+        {/* Right: account icon */}
+        <div className="flex items-center">
+          <AccountIcon />
+        </div>
+        </div>
+      </div>
+
+      {sidebarOpen && <Sidebar />}
+    </header>
+  );
+}

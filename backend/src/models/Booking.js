@@ -6,7 +6,7 @@ const bookingSchema=new mongoose.Schema({
         ref:"User",
         required:true,
     },
-    package:{
+    packageId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Package",
         required:true,

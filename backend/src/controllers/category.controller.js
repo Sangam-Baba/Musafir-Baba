@@ -1,12 +1,18 @@
 import { Category } from "../models/Category.js";
-
+import { uploadToCloudinary } from "../services/fileUpload.service.js";
+import { Package } from "../models/Package.js";
 const createCategory=async(req, res)=>{
     try {
-        const {name, image, description}=req.body;
+        const {name,  description}=req.body;
         
         const isExist=await Category.findOne({name:name.trim()});
         if(isExist){
             return res.status(400).json({success:false, message:"Category with this name already exists"});
+        }
+        let image=null;
+        if(req.files.image){
+          const result = await uploadToCloudinary(req.files.image[0].buffer, "category/images");
+          image=result.sucure_url;
         }
         const category=new Category({name, description, image, createdBy:req.user.id});
         await category.save();
@@ -48,8 +54,18 @@ const getCategoryBySlug=async(req, res)=>{
          message: "Category not found",
           });
          }
-
-        res.status(200).json({ success: true, data: category });
+     const packages=await Package.find({category:category._id})
+     .populate('destination', "name slug country state ")
+     .select("title price duration coverImage slug isFeatured status")
+     .lean();
+ 
+     res.status(200).json({
+       success: true,
+       data: {
+         category,
+         packages,
+       },
+     });
 
     } catch (error) {
         console.log("Category getting failed ", error.message);
