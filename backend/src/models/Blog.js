@@ -22,8 +22,19 @@ const blogSchema=new mongoose.Schema({
         maxlength:300,
     },
     coverImage:{
-        type:String,
+        url:String,
+        alt:String,
+        public_id:String,
+        width:Number,
+        height:Number
     },
+    gallery:[{
+        url:String,
+        alt:String,
+        public_id:String,
+        width:Number,
+        height:Number
+    }],
     category:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Category",

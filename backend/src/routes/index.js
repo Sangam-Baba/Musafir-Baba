@@ -6,6 +6,7 @@ import bookingRoutes from "./booking.routes.js";
 import destinationRoutes from "./destination.routes.js"
 import paymentRoute from "./payment.routes.js";
 import blogRoutes from "./blog.routes.js";
+import uploadRoutes from "./upload.routes.js";
 const router =Router();
 
 router.use('/packages', pkgRoutes);
@@ -14,7 +15,7 @@ router.use('/category', categoryRoute);
 router.use('/booking',bookingRoutes);
 router.use('/destination', destinationRoutes);
 router.use('/payment', paymentRoute);
-router.use('/blog', blogRoutes);
-
+router.use('/blogs', blogRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;
