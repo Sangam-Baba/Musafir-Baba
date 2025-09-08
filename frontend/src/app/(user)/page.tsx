@@ -20,6 +20,7 @@ import {SevenSection} from "../../components/custom/SevenSection";
 import {DestinationSection} from "../../components/custom/DestinationSection";
 import {Faqs} from "../../components/custom/Faqs";
 import {FeaturedTour} from "../../components/custom/FeaturedTour";
+import Search from "@/components/custom/Search";
 const dummyCategories = [
   {
     id: "1",
@@ -88,14 +89,19 @@ export default function HomePage() {
 
   return (
     <main className="py-8">
-<Hero
-  image={heroimg.src}
-  title="Find Your Perfect Getaway"
-  description="Curated itineraries, flexible dates, and best-price guarantees."
-  align="center"
-  height="xl"
-  overlayOpacity={0}
-/>
+      <div className="relative">
+          <div className="absolute z-20 w-full flex justify-center bottom-4 px-4">
+           <Search />
+         </div>
+        <Hero
+         image={heroimg.src}
+         title="Dream. Explore. Discover. With Musafirbaba."
+         description="Looking for best travel agency in Delhi? Musafirbaba offers expertly crafted tour packages for unfoegetble tarvel experienc. Let's plan your tour"
+         align="left"
+         height="xl"
+         overlayOpacity={40}
+        />
+      </div>
       <SecondSection />
        <CategoryGrid 
         categories={dummyCategories} 

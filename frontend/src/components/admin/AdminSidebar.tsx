@@ -3,10 +3,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/store/useUIStore";
 import { cn } from "@/lib/utils";
-import { Home, Users, Box, Settings, X } from "lucide-react";
+import { Home, Users, Box, Settings, X , ScrollText } from "lucide-react";
 
 const NAV = [
+
 { label: "Dashboard", href: "/admin", icon: Home },
+{ label: "Blogs", href: "/admin/blogs", icon: ScrollText  },
 { label: "Packages", href: "/admin/packages", icon: Box },
 { label: "Destinations", href: "/admin/destinations", icon: Box },
 { label: "Users", href: "/admin/users", icon: Users },
@@ -41,7 +43,7 @@ key={item.href}
 href={item.href}
 className={cx(
 "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition",
-active ? "bg-gray-100 dark:bg-slate-800 font-medium" : ""
+active ? "bg-[#FE5300] dark:bg-slate-800 font-medium" : ""
 )}
 >
 <Icon />
@@ -61,7 +63,7 @@ console.log("open role management");
 </div>
 </nav>
 <div className="mt-auto text-xs text-gray-500">
-<div>© {new Date().getFullYear()} Your Company</div>
+<div>© {new Date().getFullYear()} Musafirbaba Pvt. Ltd</div>
 </div>
 
 </aside>
@@ -119,7 +121,7 @@ active ? "bg-gray-100 dark:bg-slate-800 font-medium" : ""
 </nav>
 
 
-<div className="mt-auto text-xs text-gray-500">© {new Date().getFullYear()} Your Company</div>
+<div className="mt-auto text-xs text-gray-500">© {new Date().getFullYear()} MusafirBaba Pvt. Ltd</div>
 </aside>
 </div>
 </>

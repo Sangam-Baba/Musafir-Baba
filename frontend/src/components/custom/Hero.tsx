@@ -48,7 +48,7 @@ export default function Hero({
   const overlay = Math.min(100, Math.max(0, overlayOpacity));
 
   return (
-    <section className={`relative w-full ${heightToClasses[height]} ${className}`}>
+    <section className={`relative w-full ${heightToClasses[height]}  ${className}`}>
       {/* Background image */}
       <div className="absolute inset-0">
         <Image
@@ -69,9 +69,17 @@ export default function Hero({
       </div>
 
       {/* Content */}
-      <div className={`relative z-10 h-full flex items-center justify-center`}
+      <div className={`relative z-10 h-full flex items-center ${
+    align === "left"
+      ? "justify-start text-left"
+      : align === "right"
+      ? "justify-end text-right"
+      : "justify-center text-center"
+  }`}
       >
-        <div className="w-full max-w-6xl px-4 md:px-8">
+        <div className={`px-4 md:px-8 ${
+      align === "center" ? "w-full max-w-6xl" : "max-w-2xl"
+    }`}>
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -86,7 +94,7 @@ export default function Hero({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base text-center "
+              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base font-bold text-center "
             >
               {description}
             </motion.p>
