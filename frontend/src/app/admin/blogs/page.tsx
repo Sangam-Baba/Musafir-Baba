@@ -5,16 +5,19 @@ import { useRouter } from "next/navigation";
 import ListTable from "@/components/admin/ListTable";
 import { toast } from "sonner"; // or any toast library
 import { Loader2 } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface Blog {
   _id: string;
   title: string;
   content: string;
+  metaDescription: string;
   coverImage: string;
   slug: string;
 }
 
 export default function BlogsPage() {
+  const token = useAuthStore((state) => state.accessToken);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -47,8 +50,8 @@ export default function BlogsPage() {
   }, []);
 
   // ✅ Edit
-  const handleEdit = (id: string) => {
-    router.push(`/admin/blogs/edit/${id}`);
+  const handleEdit = (slug: string) => {
+    router.push(`/admin/blogs/edit/${slug}`);
   };
 
   // ✅ Delete
@@ -62,7 +65,7 @@ export default function BlogsPage() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -99,9 +102,10 @@ export default function BlogsPage() {
       ) : (
         <ListTable
           blogs={blogs.map((b) => ({
+            slug: b.slug,
             id: b._id,
             title: b.title,
-            description: b.content,
+            description: b.metaDescription,
             url: `/blog/${b.slug}`, // or absolute link if needed
           }))}
           onEdit={handleEdit}

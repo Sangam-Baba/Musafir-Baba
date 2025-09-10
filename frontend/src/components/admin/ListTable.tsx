@@ -14,6 +14,7 @@ import { Edit, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 
 type Blog = {
+  slug: string;
   id: string;
   title: string;
   description: string;
@@ -22,7 +23,7 @@ type Blog = {
 
 interface BlogTableProps {
   blogs: Blog[];
-  onEdit: (id: string) => void;
+  onEdit: (slug: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -67,7 +68,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onEdit(blog.id)}
+                    onClick={() => onEdit(blog.slug)}
                   >
                     <Edit className="w-4 h-4 mr-1" /> Edit
                   </Button>
@@ -108,7 +109,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => onEdit(blog.id)}
+                  onClick={() => onEdit(blog.slug)}
                 >
                   <Edit className="w-4 h-4 mr-1" /> Edit
                 </Button>

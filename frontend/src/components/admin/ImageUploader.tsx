@@ -1,13 +1,18 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
+import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface UploadedImage {
   url: string;
   public_id: string;
+  width: number;
+  height: number;
 }
 
-export default function ImageUploader() {
+export default function ImageUploader({onUpload}:{onUpload: (img: UploadedImage) => void}) {
+  const token= useAuthStore((state) => state.accessToken);
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -22,7 +27,13 @@ export default function ImageUploader() {
 
     try {
       // 1. Get signature from backend
-      const data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/upload/signature`);
+      const data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/upload/signature`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const sigData = await data.json();
       const formUploads = Array.from(files).map(async (file) => {
         const formData = new FormData();
@@ -39,7 +50,14 @@ export default function ImageUploader() {
          }
         );
         const json = await res.json();
-        return { url: json.secure_url, public_id: json.public_id };
+        const uploaded= {
+          url: json.secure_url,
+          public_id: json.public_id,
+          width: json.width,
+          height: json.height,
+        }
+        onUpload(uploaded);
+        return uploaded;
       });
 
       const results = await Promise.all(formUploads);
@@ -67,7 +85,7 @@ export default function ImageUploader() {
       <div className="mt-4 grid grid-cols-2 gap-2">
         {uploadedImages.map((img) => (
           <div key={img.public_id}>
-            <Image src={img.url} alt="Uploaded" className="rounded-md" />
+            <Image src={img.url} alt="Uploaded" className="rounded-md" width={200} height={200} />
           </div>
         ))}
       </div>

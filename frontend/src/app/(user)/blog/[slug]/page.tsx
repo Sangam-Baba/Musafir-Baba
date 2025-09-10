@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-
+import { BlogContent } from "@/components/custom/BlogContent";
 // Fetch blog by slug
 async function getBlog(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blog/${slug}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
     next: { revalidate: 60 }, // ISR: revalidate every 1 min
   });
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   if (!blog) {
     return {
-      title: "Blog Not Found | YourApp",
+      title: "Blog Not Found | Musafir Baba",
       description: "The requested blog could not be found.",
     };
   }
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     openGraph: {
       title: blog.metaTitle || blog.title,
       description: blog.metaDescription,
-      images: [blog.coverImage],
+      images: [blog.coverImage.url],
     },
   };
 }
@@ -46,7 +46,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
       {/* Cover Image */}
       <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
         <Image
-          src={blog.coverImage}
+          src={blog.coverImage.url}
           alt={blog.title}
           fill
           className="object-cover"
@@ -79,7 +79,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
 
       {/* Blog Content */}
       <section className="prose prose-lg max-w-none mt-6">
-        <p>{blog.content}</p>
+        <BlogContent html={blog.content} />
       </section>
 
       {/* Comments Section */}

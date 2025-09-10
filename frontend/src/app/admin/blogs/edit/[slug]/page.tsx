@@ -1,17 +1,20 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useParams } from "next/navigation"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
-import { useAuthStore } from "@/store/useAuthStore"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { useEffect } from "react"
+import { useAuthStore } from "@/store/useAuthStore"
 import dynamic from "next/dynamic"
-const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), { ssr: false })
 import ImageUploader from "@/components/admin/ImageUploader"
-import React from "react"
+import { Button } from "@/components/ui/button"
+import { Loader } from "@/components/custom/loader"
 import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary"
+
+const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), { ssr: false })
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -20,8 +23,11 @@ const formSchema = z.object({
   author: z.string().min(2, { message: "Author is required." }),
   metaTitle: z.string().min(2, { message: "Meta title is required." }),
   metaDescription: z.string().min(2, { message: "Meta description is required." }),
-  keywords:  z.preprocess(
-    (val) => typeof val === "string" ? val.split(",").map((k) => k.trim()).filter(Boolean) : [],
+  keywords: z.preprocess(
+    (val) =>
+      typeof val === "string"
+        ? val.split(",").map((k) => k.trim()).filter(Boolean)
+        : [],
     z.array(z.string())
   ),
   canonicalUrl: z.string().optional(),
@@ -39,9 +45,12 @@ const formSchema = z.object({
   excerpt: z.string().min(2, { message: "Excerpt must be at least 2 characters." }),
 })
 
-const createBlog = async (values: z.infer<typeof formSchema>, token: string) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`, {
-    method: "POST",
+type FormValues = z.infer<typeof formSchema>
+
+
+const updateBlog = async (values: FormValues, token: string, id: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${id}`, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -49,34 +58,20 @@ const createBlog = async (values: z.infer<typeof formSchema>, token: string) => 
     credentials: "include",
     body: JSON.stringify(values),
   })
-  if (!res.ok) throw new Error("Failed to create blog")
+  if (!res.ok) throw new Error("Failed to update blog")
   return res.json()
 }
 
-export default function CreateBlog() {
+export default function EditBlog() {
+  const { slug } = useParams() as { slug: string }
   const token = useAuthStore((state) => state.accessToken) ?? ""
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-      category: "",
-      author: "",
-      metaTitle: "",
-      metaDescription: "",
-      keywords: [],
-      canonicalUrl: "",
-      schemaType: "",
-      tags: [],
-      coverImage: {
-       url: "",
-       public_id: "",
-       alt: "",
-      },
-      gallery: [],
-      status: "draft",
-      excerpt: "",
+  const { data: blog, isLoading } = useQuery({
+    queryKey: ["blog", slug],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`)
+      const data = await res.json()
+      return data?.data
     },
   })
 
@@ -91,68 +86,108 @@ export default function CreateBlog() {
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,{
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      const data = await res.json()
-      console.log(data)
-      return data;
+      return res.json()
     },
   })
 
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      category: "",
+      author: "",
+      metaTitle: "",
+      metaDescription: "",
+      keywords: [],
+      canonicalUrl: "",
+      schemaType: "",
+      tags: [],
+      coverImage: { url: "", public_id: "" , alt: ""},
+      gallery: [],
+      status: "draft",
+      excerpt: "",
+    },
+  })
+
+
+  useEffect(() => {
+    if (blog) {
+      form.reset({
+        title: blog.title,
+        content: blog.content,
+        category: blog.category?._id ?? "",
+        author: blog.author?._id ?? "",
+        metaTitle: blog.metaTitle,
+        metaDescription: blog.metaDescription,
+        keywords: blog.keywords,
+        canonicalUrl: blog.canonicalUrl,
+        schemaType: blog.schemaType,
+        tags: blog.tags,
+        coverImage: blog.coverImage,
+        gallery: blog.gallery,
+        status: blog.status ?? "draft",
+        excerpt: blog.excerpt,
+      })
+    }
+  }, [blog, form])
+
+  // ✅ mutation
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof formSchema>) => createBlog(values, token),
-    onSuccess: () => {
-      toast.success("Blog created successfully!")
-      form.reset()
+    mutationFn: (values: FormValues) => updateBlog(values, token, blog._id),
+    onSuccess: (data) => {
+      console.log(data)
+      toast.success("Blog updated successfully!")
     },
-    onError: (error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Update failed")
     },
   })
 
+  const onSubmit = (data: FormValues) => mutation.mutate(data)
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    mutation.mutate(values)
-  }
+  if (isLoading) return <Loader size="lg" message="Loading blog..." />
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Create Blog</h1>
+      <h1 className="text-2xl font-bold mb-6">Update Blog</h1>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <input {...form.register("title")} placeholder="Title" className="w-full border rounded p-2" />
-        {form.formState.errors.title && <p className="text-red-500 text-sm">{form.formState.errors.title.message}</p>}
 
         <div className="border rounded p-2">
           <BlogEditor
-           value={form.getValues("content")}
-           onChange={(val) => form.setValue("content", val)}
+            value={form.watch("content")}
+            onChange={(val) => form.setValue("content", val)}
           />
         </div>
 
         <select {...form.register("category")} className="w-full border rounded p-2">
           <option value="">Select Category</option>
           {categories?.data?.map((cat: any) => (
-            <option key={cat._id} value={cat._id}>{cat.name}</option>
+            <option key={cat._id} value={cat._id}>
+              {cat.name}
+            </option>
           ))}
         </select>
 
         <select {...form.register("author")} className="w-full border rounded p-2">
           <option value="">Select Author</option>
-            <option key={users?.data?._id} value={users?.data?._id}>{users?.data?.name}</option>
+          <option key={users?.data?._id} value={users?.data?._id}>
+            {users?.data?.name}
+          </option>
         </select>
 
         <input {...form.register("metaTitle")} placeholder="Meta Title" className="w-full border rounded p-2" />
         <textarea {...form.register("metaDescription")} placeholder="Meta Description" className="w-full border rounded p-2" />
         <textarea {...form.register("excerpt")} placeholder="Excerpt" className="w-full border rounded p-2" />
+
         <input {...form.register("canonicalUrl")} placeholder="Canonical URL" className="w-full border rounded p-2" />
         <input {...form.register("schemaType")} placeholder="Schema Type" className="w-full border rounded p-2" />
         <input {...form.register("keywords")} placeholder="Keywords (comma separated)" className="w-full border rounded p-2" />
-
 
 <div className="space-y-2">
   <ImageUploader
@@ -186,7 +221,7 @@ export default function CreateBlog() {
         </select>
 
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Creating..." : "Create Blog"}
+          {mutation.isPending ? "Updating..." : "Update Blog"}
         </Button>
       </form>
     </div>

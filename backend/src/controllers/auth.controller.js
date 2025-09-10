@@ -70,7 +70,7 @@ const login=async(req, res)=>{
 
         const cookieOption = {
          httpOnly : true,
-        secure : true,
+        secure : process.env.NODE_ENV === "production",
         sameSite : true
         }
 
@@ -183,8 +183,9 @@ const resetPassword=async (req, res)=>{
 const refresh=async (req, res)=>{
     try {
         const token = req.cookies?.refreshToken;
+        console.log(req.cookies)
         if(!token){
-            return res.status(401).json({success:false, message:"Unauthorized"});
+            return res.status(401).json({success:false, message:"Missing refresh token or Unauthorized"});
         }
 
         const payload = verifyRefresh(token);
@@ -192,11 +193,11 @@ const refresh=async (req, res)=>{
         const { accessToken, refreshToken } = issueTokens(payload.sub, payload.role);
         const cookieOptions = {
             httpOnly : true,
-            secure : true,
+            secure : process.env.NODE_ENV === "production",
             sameSite : true
         }
 
-        res.cookie("refresh_token", refreshToken, cookieOptions);
+        res.cookie("refreshToken", refreshToken, cookieOptions);
 
         return res.json({ accessToken , role:payload.role });
 
@@ -206,20 +207,37 @@ const refresh=async (req, res)=>{
     }
 }
 
-const me= async(req, res)=>{
-    try {
-        const {token}= req.headers.authorization.split(" ")[1];
-        const verifyedToken=verifyAccess(token);
-        if(!verifyedToken){
-            return res.status(401).json({success:false, message:"Unauthorized"});
-        }
-        const user=await User.findById(verifyedToken.sub).select("-password");
-        return res.status(200).json({success:true, data:user});
-    } catch (error) {
-        console.log("Me error:", error.message);
-        return res.status(500).json({success:false, message:"Server error"});
+const me = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-}
+
+    const token = authHeader.split(" ")[1];
+    const verifiedToken = verifyAccess(token);
+
+    if (!verifiedToken) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const user = await User.findById(verifiedToken.sub).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error("Me error:", error.message);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 
 const logout =async(req, res)=>{
     try {

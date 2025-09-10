@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from 'sonner';
 import { Loader } from "@/components/custom/loader";
 import PackageCard from "@/components/custom/PackageCard";
-import img1 from "../../../../public/Hero1.jpg";
+import img1 from "../../../../../public/Hero1.jpg";
 
 interface Package {
   _id: string;

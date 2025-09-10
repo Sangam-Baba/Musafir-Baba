@@ -20,7 +20,7 @@ function Search() {
       <select
         value={location}
         onChange={(e) => setLocation(e.target.value)}
-        className="w-1/2 border border-[#FE5300] rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#FE5300]"
+        className="w-3/2 border border-[#FE5300] rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#FE5300]"
       >
         <option value="">Select Location</option>
         <option value="delhi">Delhi</option>

@@ -21,6 +21,7 @@ import {DestinationSection} from "../../components/custom/DestinationSection";
 import {Faqs} from "../../components/custom/Faqs";
 import {FeaturedTour} from "../../components/custom/FeaturedTour";
 import Search from "@/components/custom/Search";
+import ThirdSection from "@/components/custom/ThirdSection";
 const dummyCategories = [
   {
     id: "1",
@@ -103,6 +104,7 @@ export default function HomePage() {
         />
       </div>
       <SecondSection />
+      <ThirdSection />
        <CategoryGrid 
         categories={dummyCategories} 
         limit={4} 

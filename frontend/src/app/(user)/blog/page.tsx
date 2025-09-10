@@ -1,18 +1,26 @@
 import BlogCard from "@/components/custom/BlogCard";
 import Hero from "@/components/custom/Hero";
-
+//import { BlogContent } from "@/components/custom/BlogContent";
+interface coverImage{
+  url: string,
+  public_id: string,
+  width: number,
+  height: number
+  alt: string
+}
 interface blog{
   _id: string;
   title: string;
-  coverImage: string;
+  coverImage: coverImage;
   content: string;
+  metaDescription: string;
   slug: string;
 }
 interface blogs{
   blogs: blog[]
 }
 async function getBlogs() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blog/`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`, {
     next: { revalidate: 60 }, // ISR: revalidate every 1 minute
   });
 
@@ -36,8 +44,8 @@ export default async function BlogPage() {
         <BlogCard
           key={blog._id}
           title={blog.title}
-          coverImage={blog.coverImage}
-          description={blog.content}
+          coverImage={blog.coverImage.url}
+          description={blog.metaDescription}
           slug={blog.slug}
         />
       ))}
