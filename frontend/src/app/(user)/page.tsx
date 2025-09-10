@@ -105,12 +105,12 @@ export default function HomePage() {
       </div>
       <SecondSection />
       <ThirdSection />
-       <CategoryGrid 
+       {/* <CategoryGrid 
         categories={dummyCategories} 
         limit={4} 
         title="Find Your Perfect Getaway with the Best Travel Agency in Delhi" 
         url="/packages"
-      />
+      /> */}
       <SectionFour />
       <SectionFive />
       <FeaturedTour />
