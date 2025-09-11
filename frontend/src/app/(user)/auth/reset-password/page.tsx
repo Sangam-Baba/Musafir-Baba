@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 const formSchema = z
@@ -29,10 +29,13 @@ const formSchema = z
     path: ["confirmPassword"],
   })
 
-export default function ResetPassword() {
+export default function ResetPasswordPage({
+  searchParams,
+}: {
+  searchParams: { token?: string }
+}) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token") 
+  const token = searchParams.token // ✅ safe, no Suspense error
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,7 +45,6 @@ export default function ResetPassword() {
     },
   })
 
-  // ✅ API call function with token included
   async function resetUser(values: z.infer<typeof formSchema>) {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password/${token}`,
@@ -61,7 +63,6 @@ export default function ResetPassword() {
     return res.json()
   }
 
-  // ✅ Use Mutation
   const mutation = useMutation({
     mutationFn: resetUser,
     onSuccess: () => {
@@ -87,7 +88,6 @@ export default function ResetPassword() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Password */}
             <FormField
               control={form.control}
               name="password"
@@ -102,7 +102,6 @@ export default function ResetPassword() {
               )}
             />
 
-            {/* Confirm Password */}
             <FormField
               control={form.control}
               name="confirmPassword"
