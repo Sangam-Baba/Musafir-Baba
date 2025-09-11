@@ -7,7 +7,7 @@ import h2 from "../../../public/2.webp"
 import h3 from "../../../public/3.webp"
 export default function SectionFour() {
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16">
+    <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-6 ">
   <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12">
     
     {/* Text Section */}
@@ -27,7 +27,7 @@ export default function SectionFour() {
       </p>
       <Link href="/india/delhi NCR">
             <Button className="w-fit bg-[#FE5300] hover:bg-[#e64a00]">
-              Explore more
+              Explore More
             </Button>
       </Link>
 

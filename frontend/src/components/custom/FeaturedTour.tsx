@@ -35,6 +35,7 @@ const data: Record<TabKey, Tour[]> = {
     { image: jaipur.src, title: "Jaipur", subtitle: "Jaipur Tour Package", location: "Jaipur", price: 20999, duration: "10D/9N", isTrending: true },
     { image: keral.src, title: "Kerala", subtitle: "Kerala Tour Package", location: "Kerala", price: 24999, duration: "7D/6N", isTrending: true },
     { image: himachal.src, title: "Himachal", subtitle: "Himachal Tour Package", location: "Himachal", price: 18999, duration: "8D/7N", isTrending: false },
+    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Tour Package", location: "Uttarakhand", price: 20999, duration: "10D/9N", isTrending: true },
   ],
   backpacking: [
     { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
@@ -43,6 +44,9 @@ const data: Record<TabKey, Tour[]> = {
   weekend: [
     { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
     { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
+    { image: himachal.src, title: "Himachal", subtitle: "Himachal Tour Package", location: "Himachal", price: 18999, duration: "8D/7N", isTrending: false },
+    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Tour Package", location: "Uttarakhand", price: 20999, duration: "10D/9N", isTrending: true },
+
   ],
   early: [
     { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
@@ -55,6 +59,8 @@ const data: Record<TabKey, Tour[]> = {
   international: [
     { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
     { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
+    { image: himachal.src, title: "Himachal", subtitle: "Himachal Tour Package", location: "Himachal", price: 18999, duration: "8D/7N", isTrending: false },
+    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Tour Package", location: "Uttarakhand", price: 20999, duration: "10D/9N", isTrending: true },
   ],
 }
 
@@ -76,7 +82,7 @@ export function FeaturedTour() {
         {/* Heading */}
         <div className="flex flex-col gap-5 items-center w-full">
           <h1 className="text-2xl md:text-3xl font-bold text-center">
-            Not Sure Where to Travel? Explore Top Destinations Across India & the World!
+            Featured Tour Packages
           </h1>
           <div className="w-20 h-1 bg-[#FE5300]"></div>
 
@@ -98,7 +104,7 @@ export function FeaturedTour() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10 w-full px-6 md:px-0">
           {data[active].map((obj) => (
             <Card
               key={obj.title}

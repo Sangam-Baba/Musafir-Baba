@@ -53,42 +53,42 @@ function ThirdSection() {
          <div className='w-20 h-1 bg-[#FE5300]'></div>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 px-4'>
-             <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4'>
+             <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[0].img} alt={data[0].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[0].title}</h1>
             <p className='text-sm text-center'>{data[0].description}</p>
            </Card>
-            <Card className='flex flex-col gap-4 bg-[#FFF5E4] items-center py-4 px-4'>
+            <Card className='flex flex-col gap-4 bg-[#FFF5E4] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[1].img} alt={data[1].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[1].title}</h1>
             <p className='text-sm text-center'>{data[1].description}</p>
            </Card>
-            <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4'>
+            <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[2].img} alt={data[2].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[2].title}</h1>
             <p className='text-sm text-center'>{data[2].description}</p>
            </Card>
-            <Card className='flex flex-col gap-4 bg-[#FFF5E4] items-center py-4 px-4'>
+            <Card className='flex flex-col gap-4 bg-[#FFF5E4] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[3].img} alt={data[3].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[3].title}</h1>
             <p className='text-sm text-center'>{data[3].description}</p>
            </Card>
-            <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4'>
+            <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[4].img} alt={data[4].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[4].title}</h1>
             <p className='text-sm text-center'>{data[4].description}</p>
            </Card>
-             <Card className='flex flex-col gap-4 bg-[#FFF6F6] items-center py-4 px-4'>
+             <Card className='flex flex-col gap-4 bg-[#FFF6F6] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[7].img} alt={data[7].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[7].title}</h1>
             <p className='text-sm text-center'>{data[7].description}</p>
            </Card>
-            <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4'>
+            <Card className='flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[5].img} alt={data[5].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[5].title}</h1>
             <p className='text-sm text-center'>{data[5].description}</p>
            </Card>
-            <Card className='flex flex-col gap-4 bg-[#FFF6F6] items-center py-4 px-4'>
+            <Card className='flex flex-col gap-4 bg-[#FFF6F6] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500'>
             <Image src={data[6].img} alt={data[6].title} width={50} height={50}/>
             <h1 className='text-xl font-semibold text-center'>{data[6].title}</h1>
             <p className='text-sm text-center'>{data[6].description}</p>

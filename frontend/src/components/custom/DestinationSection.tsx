@@ -59,8 +59,8 @@ export function DestinationSection() {
              <div className="w-full">
                  <Image src={badrinath} alt="Uttarakhand" className="rounded-2xl w-full h-56 object-cover" />
              </div>
-             <div className="md:flex  gap-4 w-full">
-                 <Image src={himachal} alt="Rajasthan" className="rounded-2xl md:w-1/2 h-56 object-cover" />
+             <div className="flex flex-col md:flex-row gap-4 w-full">
+                 <Image src={himachal} alt="himachal" className="rounded-2xl md:w-1/2 h-56 object-cover" />
                  <Image src={kashmir} alt="Kerala" className="rounded-2xl md:w-1/2 h-56 object-cover" />
              </div>
              
@@ -73,20 +73,20 @@ export function DestinationSection() {
           <div className="flex flex-col md:flex-row gap-4 mt-10 w-full">
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
-                 <Image src={badrinath} alt="Uttarakhand" className="rounded-2xl w-full h-56 object-cover" />
-                 <Image src={jaipur} alt="Rajasthan" className="rounded-2xl w-full h-56 object-cover" />
+                 <Image src='https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-28_jlecev.jpg' alt="Singapore" className="rounded-2xl w-full h-56 object-cover"  width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757333299/mft5sunkkkiy00clbs5b.jpg" alt="USA" className="rounded-2xl w-full h-56 object-cover" width={500} height={500}/>
               </div>
               <div className="md:w-1/2">
-                 <Image src={keral} alt="Kerala" className="rounded-2xl w-full md:h-118 object-cover" />
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-23_rcrewu.jpg" alt="VietNam" className="rounded-2xl w-full md:h-118 object-cover" width={500} height={500}/>
               </div>    
             </div>    
             <div className="flex flex-col gap-4 md:w-1/2">
              <div className="w-full">
-                 <Image src={badrinath} alt="Uttarakhand" className="rounded-2xl w-full h-56 object-cover" />
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-24_pseran.jpg" alt="Thailand" className="rounded-2xl w-full h-56 object-cover" width={500} height={500}/>
              </div>
-             <div className="md:flex  gap-4 w-full">
-                 <Image src={jaipur} alt="Rajasthan" className="rounded-2xl md:w-1/2 h-56 object-cover" />
-                 <Image src={keral} alt="Kerala" className="rounded-2xl md:w-1/2 h-56 object-cover" />
+             <div className="flex flex-col md:flex-row gap-4 w-full">
+                 <Image src={jaipur} alt="Rajasthan" className="rounded-2xl  md:w-1/2 h-56 object-cover" />
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589680/Foreign-25_1_lmw3lf.jpg" alt="Maldives" className="rounded-2xl md:w-1/2 h-56 object-cover" width={500} height={500}/>
              </div>
              
              

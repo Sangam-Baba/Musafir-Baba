@@ -51,7 +51,7 @@ export function SevenSection() {
                 <Image
                   src={summer}
                   alt="Summer in Spiti"
-                  className="rounded-2xl w-full h-ful "
+                  className="rounded-2xl w-full h-ful p-4 "
                 />
               </div>
               <div className="w-full md:w-1/2">
@@ -110,7 +110,7 @@ export function SevenSection() {
                 <Image
                   src={summer}
                   alt="Winter in Spiti"
-                  className="rounded-2xl w-full h-full"
+                  className="rounded-2xl w-full h-full p-4 "
                 />
               </div>
             </>

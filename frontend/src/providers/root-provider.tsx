@@ -6,10 +6,10 @@ import { ThemeProvider } from "./theme-provider";
 
 export function RootProvider({ children }: { children: React.ReactNode }) {
     return (
-        <ThemeProvider>
+        // <ThemeProvider>
             <QueryProvider>
                 {children}
             </QueryProvider>
-        </ThemeProvider>
+        // </ThemeProvider>
     );
 };
