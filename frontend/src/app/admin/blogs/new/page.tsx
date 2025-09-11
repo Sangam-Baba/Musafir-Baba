@@ -129,9 +129,13 @@ export default function CreateBlog() {
       toast.success("Blog created successfully!")
       form.reset()
     },
-    onError: (error) => {
+  onError: (error: unknown) => {
+    if (error instanceof Error) {
       toast.error(error.message)
-    },
+    } else {
+      toast.error("Something went wrong")
+    }
+  },
   })
 
 
@@ -142,7 +146,7 @@ export default function CreateBlog() {
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Create Blog</h1>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
         <input {...form.register("title")} placeholder="Title" className="w-full border rounded p-2" />
         {form.formState.errors.title && <p className="text-red-500 text-sm">{form.formState.errors.title.message}</p>}
 
