@@ -39,6 +39,25 @@ const formSchema = z.object({
   excerpt: z.string().min(2, { message: "Excerpt must be at least 2 characters." }),
 })
 
+export interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  slug: string;
+  __v: number;
+}
+
+export interface CategoryApiResponse {
+  success: boolean;
+  count: number;
+  data: Category[];
+}
+
 const createBlog = async (values: z.infer<typeof formSchema>, token: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`, {
     method: "POST",
@@ -136,7 +155,7 @@ export default function CreateBlog() {
 
         <select {...form.register("category")} className="w-full border rounded p-2">
           <option value="">Select Category</option>
-          {categories?.data?.map((cat: any) => (
+          {categories?.data?.map((cat: Category) => (
             <option key={cat._id} value={cat._id}>{cat.name}</option>
           ))}
         </select>

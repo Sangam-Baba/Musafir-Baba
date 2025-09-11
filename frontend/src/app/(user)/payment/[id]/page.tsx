@@ -8,6 +8,15 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Loader } from '@/components/custom/loader';
 import { Card } from '@/components/ui/card';
+declare global {
+  interface Window {
+    Razorpay: new (options: any) => {
+      open: () => void;
+      on: (event: string, callback: (response: any) => void) => void;
+    };
+  }
+}
+
 
 
 type RazorResponse = {
@@ -185,12 +194,13 @@ export default function CheckoutButton() {
       theme: { color: '#F37254' },
     };
 
-    const rzp = new (window as any).Razorpay(options);
+    const rzp = new window.Razorpay(options);
 
-    rzp.on('payment.failed', async function (resp: any) {
-      console.error('Payment failed callback', resp);
-      toast.error('Payment failed. ' + (resp?.error?.description ?? ''));
-    });
+rzp.on('payment.failed', async function (resp: { error?: { description?: string } }) {
+  console.error('Payment failed callback', resp);
+  toast.error('Payment failed. ' + (resp?.error?.description ?? ''));
+});
+
 
     rzp.open();
   };

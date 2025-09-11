@@ -3,9 +3,19 @@ import { useEffect } from "react"
 
 declare global {
   interface Window {
-    cloudinary: any
+    cloudinary: {
+      createMediaLibrary: (
+        options: Record<string, unknown>,
+        callbacks: {
+          insertHandler: (data: { assets: { secure_url: string; public_id: string }[] }) => void;
+        }
+      ) => {
+        show: () => void;
+      };
+    };
   }
 }
+
 
 type Props = {
   onSelect: (image: { url: string; public_id: string }) => void
@@ -30,13 +40,14 @@ export default function CloudinaryMediaLibrary({ onSelect }: Props) {
           multiple: false,
         },
         {
-          insertHandler: (data: any) => {
-            const asset = data.assets[0]
-            onSelect({
-              url: asset.secure_url,
-              public_id: asset.public_id,
-            })
-          },
+insertHandler: (data: { assets: { secure_url: string; public_id: string }[] }) => {
+  const asset = data.assets[0];
+  onSelect({
+    url: asset.secure_url,
+    public_id: asset.public_id,
+  });
+}
+
         }
       )
       mediaLibrary.show()

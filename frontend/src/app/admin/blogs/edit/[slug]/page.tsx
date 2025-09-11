@@ -45,6 +45,25 @@ const formSchema = z.object({
   excerpt: z.string().min(2, { message: "Excerpt must be at least 2 characters." }),
 })
 
+export interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  slug: string;
+  __v: number;
+}
+
+export interface CategoryApiResponse {
+  success: boolean;
+  count: number;
+  data: Category[];
+}
+
 type FormValues = z.infer<typeof formSchema>
 
 
@@ -94,7 +113,7 @@ export default function EditBlog() {
   })
 
 
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -143,19 +162,25 @@ export default function EditBlog() {
       console.log(data)
       toast.success("Blog updated successfully!")
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Update failed")
-    },
+  onError: (error: unknown) => {
+    if (error instanceof Error) {
+      toast.error(error.message)
+    } else {
+      toast.error("Something went wrong")
+    }
+  },
   })
 
-  const onSubmit = (data: FormValues) => mutation.mutate(data)
+   const onSubmit = (data: FormValues) => mutation.mutate(data)
+
+
 
   if (isLoading) return <Loader size="lg" message="Loading blog..." />
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Update Blog</h1>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <input {...form.register("title")} placeholder="Title" className="w-full border rounded p-2" />
 
         <div className="border rounded p-2">
@@ -167,7 +192,7 @@ export default function EditBlog() {
 
         <select {...form.register("category")} className="w-full border rounded p-2">
           <option value="">Select Category</option>
-          {categories?.data?.map((cat: any) => (
+          {categories?.data?.map((cat:Category) => (
             <option key={cat._id} value={cat._id}>
               {cat.name}
             </option>
