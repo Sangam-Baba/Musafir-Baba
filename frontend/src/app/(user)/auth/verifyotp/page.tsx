@@ -1,11 +1,11 @@
 "use client"
 
-import { useMutation } from "@tanstack/react-query"
-import { useRouter, useSearchParams } from "next/navigation"
-import { toast } from "sonner";
 import { useEffect } from "react"
+import { useMutation } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
-async function verifyOtp(values:{ email: string; otp: string }) {
+async function verifyOtp(values: { email: string; otp: string }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/verifyOtp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -20,25 +20,27 @@ async function verifyOtp(values:{ email: string; otp: string }) {
   return res.json()
 }
 
-export default function VerifyOtpPage() {
+export default function VerifyOtpPage({
+  searchParams,
+}: {
+  searchParams: { email?: string; otp?: string }
+}) {
   const router = useRouter()
-  const params = useSearchParams()
-  const email = params.get("email") || "" // ✅ prefills email
-  const otp = params.get("otp") || ""
-
+  const email = searchParams.email ?? ""
+  const otp = searchParams.otp ?? ""
 
   const mutation = useMutation({
     mutationFn: verifyOtp,
     onSuccess: () => {
-      toast.success("OTP verified successfully");
-      setTimeout(()=>{router.push("/auth/login")}, 3000); // redirect after success
+      toast.success("OTP verified successfully")
+      setTimeout(() => router.push("/auth/login"), 3000)
     },
     onError: (error) => {
-        toast.error(error.message);
+      toast.error(error.message)
     },
   })
 
-    useEffect(() => {
+  useEffect(() => {
     if (email && otp) {
       mutation.mutate({ email, otp })
     }
@@ -48,18 +50,12 @@ export default function VerifyOtpPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="rounded-xl bg-white p-8 shadow-md">
         <h1 className="text-xl font-bold text-center">Verifying your email...</h1>
-        {mutation.isPending && (
-          <p className="text-center text-gray-500">Please wait...</p>
-        )}
+        {mutation.isPending && <p className="text-center text-gray-500">Please wait...</p>}
         {mutation.isError && (
-          <p className="text-center text-red-500">
-             {mutation.error.message}
-          </p>
+          <p className="text-center text-red-500">{(mutation.error as Error).message}</p>
         )}
         {mutation.isSuccess && (
-          <p className="text-center text-green-500">
-             OTP verified successfully
-          </p>
+          <p className="text-center text-green-500">OTP verified successfully</p>
         )}
       </div>
     </div>
