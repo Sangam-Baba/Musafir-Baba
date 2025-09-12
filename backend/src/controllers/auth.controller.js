@@ -71,7 +71,7 @@ const login=async(req, res)=>{
         const cookieOption = {
          httpOnly : true,
         secure : process.env.NODE_ENV === "production",
-        sameSite : true
+        sameSite :process.env.NODE_ENV === "production" ? "none" : "lax",
         }
 
 
@@ -194,7 +194,7 @@ const refresh=async (req, res)=>{
         const cookieOptions = {
             httpOnly : true,
             secure : process.env.NODE_ENV === "production",
-            sameSite : true
+            sameSite : process.env.NODE_ENV === "production" ? "none" : "lax",
         }
 
         res.cookie("refreshToken", refreshToken, cookieOptions);
