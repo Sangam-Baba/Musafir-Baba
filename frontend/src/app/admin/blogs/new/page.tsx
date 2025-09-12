@@ -144,7 +144,7 @@ export default function CreateBlog() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
+    <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Create Blog</h1>
       <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
         <input {...form.register("title")} placeholder="Title" className="w-full border rounded p-2" />

@@ -89,7 +89,7 @@ const faqs = [
 export default function HomePage() {
 
   return (
-    <main className="py-8">
+    <main className="">
       <div className="relative">
           <div className="absolute z-20 w-full flex justify-center bottom-4 px-4">
            <Search />

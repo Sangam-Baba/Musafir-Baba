@@ -7,8 +7,22 @@ const destinationSchema= new mongoose.Schema({
    state:{ type:String},
    city:{ type:String},
     description: { type: String },
-    coverImage: { type: String, required: true },
-    gallery: [String],
+    coverImage: { 
+        alt: String,
+        url: String,
+        public_id: String,
+        hight: Number,
+        width: Number
+     },
+    gallery: [
+        {
+            alt: String,
+            url: String,
+            public_id: String,
+            hight: Number,
+            width: Number
+        }
+    ],
 
     bestTimeToVisit: String,
     popularAttractions: [String],
@@ -16,11 +30,13 @@ const destinationSchema= new mongoose.Schema({
 
     slug: { type: String, unique: true, index: true },
 
-    seo: {
+    
       metaTitle: String,
       metaDescription: String,
       keywords: [String], 
-    },
+      canonicalUrl: String,
+      schemaType: String,
+      status: { type: String, enum: ["draft", "published"], default: "draft" },
 }, { timestamps:true});
 
 destinationSchema.pre('save', function(next){
