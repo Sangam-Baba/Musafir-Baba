@@ -27,13 +27,11 @@ const formSchema = z.object({
     message: "City must be at least 2 characters.",
   }),
   coverImage: z.object({
-    url: z.string().url(),
+    url: z.string().url({ message: "Cover image is required" }),
     public_id: z.string(),
     width: z.number().optional(),
     height: z.number().optional(),
     alt: z.string().optional(),
-  }).refine((val) => !!val, {
-    message: "Cover image is required"
   }),
   gallery: z.array(z.object({
     url: z.string().url(),
