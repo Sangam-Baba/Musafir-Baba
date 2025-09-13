@@ -58,7 +58,7 @@ const formSchema = z.object({
   specialRequests: z.string().max(500).optional(),
   totalPrice: z.number().nonnegative(),
   travelDate: z.string().optional(),
-  paymentMethod: z.enum(["Razorpay", "Card", "UPI", "NetBanking"]),
+  paymentMethod: z.enum(["PayU", "Card", "UPI", "NetBanking"]),
   address: z
     .object({ city: z.string().min(2).max(50), state: z.string().min(2).max(50), zipcode: z.string().min(3).max(10) })
     .optional(),
@@ -126,7 +126,7 @@ export default function BookingClient({
       specialRequests: "",
       totalPrice: finalTotal,
       travelDate: date ?? "",
-      paymentMethod: "Razorpay",
+      paymentMethod: "PayU",
       address: undefined,
       travellers: { adult: adults ?? initialAdults, child: children ?? initialChildren },
     },

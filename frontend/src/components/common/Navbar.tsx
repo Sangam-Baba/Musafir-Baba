@@ -28,7 +28,7 @@ export function Navbar() {
            <Link href="/blog">Blogs</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Button className="bg-[#FE5300] hover:bg-[#FE5300]">Pay Now</Button>
+            <Button  className="bg-[#FE5300] hover:bg-[#FE5300]"><Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">Pay Now</Link></Button>
           </li>
           {/* <li className="font-bold ">
             <Button onClick={() => setTheme(theme === "light" ? "dark" : "light")}><SunMoon /></Button>
