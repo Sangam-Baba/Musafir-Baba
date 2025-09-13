@@ -22,6 +22,7 @@ import {Faqs} from "../../components/custom/Faqs";
 import {FeaturedTour} from "../../components/custom/FeaturedTour";
 import Search from "@/components/custom/Search";
 import ThirdSection from "@/components/custom/ThirdSection";
+import BlogsHome from "@/components/custom/BlogsHome";
 const dummyCategories = [
   {
     id: "1",
@@ -119,6 +120,7 @@ export default function HomePage() {
       <ImageGallery />
       <BusBooking />
       <Testimonial />
+      <BlogsHome />
       <Faqs faqs={faqs} />
     </main>
   );
