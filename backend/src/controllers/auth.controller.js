@@ -72,6 +72,7 @@ const login=async(req, res)=>{
          httpOnly : true,
         secure : process.env.NODE_ENV === "production",
         sameSite :process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/",
         }
 
 
@@ -195,6 +196,7 @@ const refresh=async (req, res)=>{
             httpOnly : true,
             secure : process.env.NODE_ENV === "production",
             sameSite : process.env.NODE_ENV === "production" ? "none" : "lax",
+            path: "/",
         }
 
         res.cookie("refreshToken", refreshToken, cookieOptions);
@@ -242,10 +244,11 @@ const me = async (req, res) => {
 const logout =async(req, res)=>{
     try {
         const cookieOptions = {
-            httpOnly : true,
-            secure : true,
-            sameSite : true
-        }
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/", 
+};
         res.clearCookie("refreshToken", cookieOptions);
         return res.status(200).json({success:true, message:"Logout successful"});
     } catch (error) {

@@ -1,126 +1,109 @@
-// controllers/paymentController.js
-import razorpayInstance from "../utils/razorpay.js";
 import crypto from "crypto";
 import { Booking } from "../models/Booking.js";
 
-/**
- * POST /api/payment/create-order
- * Body: { bookingId }
- * - Server looks up booking, validates ownership/state, creates razorpay order using server amount.
- */
-export const createOrder = async (req, res) => {
-  try {
-    const { bookingId } = req.body;
-    if (!bookingId) return res.status(400).json({ success: false, error: "Missing bookingId" });
+// ENV CONFIG
+const merchantKey = process.env.PAYU_KEY;
+const merchantSalt = process.env.PAYU_SALT;
+const payuBaseUrl =
+  process.env.PAYU_ENV === "prod"
+    ? "https://secure.payu.in"
+    : "https://test.payu.in";
 
-    // fetch booking from DB (add ownership check if needed)
-    const booking = await Booking.findById(bookingId);
-    if (!booking) return res.status(404).json({ success: false, error: "Booking not found" });
-    if (booking.paymentInfo?.status === "Paid") {
-      return res.json({
-        success: true,
-        alreadyPaid: true,
-        message: "Booking already paid",
-        bookingId,
-      });
-    }
+function generateHash({ txnid, amount, productinfo, firstname, email, udf1 = "", udf2 = "", udf3 = "", udf4 = "", udf5 = "" }) {
+  const hashString =
+    `${merchantKey}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${merchantSalt}`;
 
-    // decide amount units: assume booking.totalPrice is in rupees. If it's in paise already, remove *100.
-    const amountInPaise = Math.round((booking.totalPrice ?? booking.amount ?? 0) * 100); // rupees -> paise
+  return crypto.createHash("sha512").update(hashString).digest("hex");
+}
+// API to initiate payment
+export const createPayemnt= (req, res) => {
+  const { txnid, amount, productinfo, firstname, email, phone , udf1 } = req.body;
 
-    // If order already created, return it (idempotent)
-    if (booking.paymentInfo.orderId && booking.paymentInfo.orderId  !== "") {
-      return res.json({
-        success: true,
-        orderId: booking.paymentInfo.orderId ,
-        amount: amountInPaise,
-        currency: "INR",
-        key: process.env.RAZORPAY_KEY_ID,
-      });
-    }
-
-    const options = {
-      amount: amountInPaise,
-      currency: "INR",
-      receipt: `receipt_booking_${bookingId}`,
-      payment_capture: 1,
-    };
-
-    const order = await razorpayInstance.orders.create(options);
-
-    // Save razorpay order id on booking for later verification / idempotency
-    booking.razorpayOrderId = order.id;
-    await booking.save();
-
-    return res.json({
-      success: true,
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      key: process.env.RAZORPAY_KEY_ID,
-    });
-  } catch (error) {
-    console.error("Create Payment Order Failed ", error);
-    return res.status(500).json({ success: false, error: error.message });
+  if (!txnid || !amount || !productinfo || !firstname || !email || !udf1) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
+
+  const hash = generateHash({ txnid, amount, productinfo, firstname, email , udf1});
+
+  const paymentData = {
+    key: merchantKey,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    phone,
+    surl: `${process.env.BACKEND_URL}/api/payment/success`, // Success page
+    furl: `${process.env.BACKEND_URL}/api/payment/failure`, // Failure page
+    hash,
+    udf1,
+    service_provider: "payu_paisa",
+  };
+
+  res.json({ payuUrl: `${payuBaseUrl}/_payment`, paymentData });
 };
 
-/**
- * POST /api/payment/verify
- * Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId }
- * - Verifies HMAC signature, checks booking & order mapping, marks booking paid (idempotent).
- */
-export const verifyPayment = async (req, res) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = req.body;
+// PayU Callback (server-to-server)
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !bookingId) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
-    }
+function verifyHash({ 
+  status, txnid, amount, productinfo, firstname, email, 
+  udf1 = "", udf2 = "", udf3 = "", udf4 = "", udf5 = "" 
+}) {
+  const hashString =
+    `${merchantSalt}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
 
-    const booking = await Booking.findById(bookingId);
-    if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+  return crypto.createHash("sha512").update(hashString).digest("hex");
+}
+export const verifySuccessPayment = async (req, res) => {
+  const data = req.body;
+  const { status, txnid, amount, productinfo, firstname, email, hash , udf1 , mihpayid} = data;
 
-    // Optional: ensure order id matches the one created for this booking (stronger check)
-    if (booking.paymentInfo?.orderId && booking.paymentInfo.orderId !== razorpay_order_id) {
-      // suspicious - client returning mismatched order id
-      console.warn("Order ID mismatch for booking", bookingId, booking.paymentInfo.orderId , razorpay_order_id);
-      // Proceed to verify signature anyway or reject — better to reject:
-      return res.status(400).json({ success: false, message: "Order id does not match booking" });
-    }
+  const expectedHash = verifyHash({ status, txnid, amount, productinfo, firstname, email, udf1 });
 
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
-      .digest("hex");
-
-    if (expectedSignature !== razorpay_signature) {
-      // signature mismatch -> update status to failed (or keep pending)
-      await Booking.findByIdAndUpdate(bookingId, {
-        $set: {
-          "paymentInfo.status": "Failed", // or whatever field you use 
-        },
-      });
-      return res.status(400).json({ success: false, message: "Invalid signature" });
-    }
-
-    // signature match -> mark paid; idempotent: if already paid, return success
-    if (booking.paymentInfo?.status === "Paid") {
-      return res.json({ success: true, message: "Already marked as paid" });
-    }
-
-    booking.paymentInfo = {
-       paymentId:razorpay_payment_id,
-      orderId: razorpay_order_id,
-      status: "Paid",
-    };
-    booking.bookingStatus = "Confirmed"; // or whatever field you use
-    await booking.save();
-
-    return res.json({ success: true, message: "Payment verified successfully" });
-  } catch (error) {
-    console.error("payment verification failed", error);
-    return res.status(500).json({ success: false, error: error.message });
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
   }
+
+  // ✅ Update DB with payment status here
+  const booking=await Booking.findOneAndUpdate({_id:udf1},
+    {paymentInfo :{
+     orderId: txnid,
+     paymentId: mihpayid,
+     signature: hash,
+     status: "Paid"
+    },
+    bookingStatus:"Confirmed"
+  },{new: true}
+).exec();
+  console.log("Payment Verified:", data , booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
 };
+
+export const verifyFailurePayment = async (req, res) => {
+  const data = req.body;
+  const { status, txnid, amount, productinfo, firstname, email, hash , udf1 , mihpayid} = data;
+
+  const expectedHash = verifyHash({ status, txnid, amount, productinfo, firstname, email, udf1 });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+  const booking=await Booking.findOneAndUpdate({_id:udf1},
+    {paymentInfo :{
+     orderId: txnid,
+     paymentId: mihpayid,
+     signature: hash,
+     status: "Failed"
+    },
+  },{new: true}
+).exec();
+  console.log("Payment Failed:", data , booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+};
+

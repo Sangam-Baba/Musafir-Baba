@@ -56,7 +56,7 @@ const bookingSchema=new mongoose.Schema({
     },
     paymentMethod:{
         type:String,
-        enum:[ "Razorpay" ],
+        enum:[ "PayU" ],
         required:true,
     },
     paymentInfo: {
