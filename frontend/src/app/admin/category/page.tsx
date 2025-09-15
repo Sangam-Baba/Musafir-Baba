@@ -2,67 +2,67 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // or any toast library
+import { toast } from "sonner"; 
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import DestinationList from "@/components/admin/DestinationList";
+import CategoryList from "@/components/admin/CategoryList";
 
-interface Destination {
+interface Category {
   _id: string;
   name: string;
-  country: string;
-  state: string;
+  description: string;
   coverImage: string;
   slug: string;
+  isActive: boolean;
+  packages: string[];
 }
 
-export default function DestinationPage() {
+export default function CategoryPage() {
   const token = useAuthStore((state) => state.accessToken);
-  const [destination, setDestinations] = useState<Destination[]>([]);
+  const [category, setCategory] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   // ✅ Fetch blogs
-  const fetchDestinations = async () => {
+  const fetchCategory = async () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/destination`, // adjust API route
+        `${process.env.NEXT_PUBLIC_BASE_URL}/category`, 
         { cache: "no-store" }
       );
       const data = await res.json();
 
       if (data.success) {
-        setDestinations(data.data);
+        setCategory(data.data);
       } else {
-        toast.error(data.message || "Failed to fetch Destinations");
+        toast.error(data.message || "Failed to fetch Category");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong fetching Destinations");
+      toast.error("Something went wrong fetching Category");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDestinations();
+    fetchCategory();
   }, []);
 
   // ✅ Edit
   const handleEdit = (id: string) => {
-    router.push(`/admin/destination/edit/${id}`);
+    router.push(`/admin/category/edit/${id}`);
   };
 
   // ✅ Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this destination?")) return;
-
+    if (!confirm("Are you sure you want to delete this category ?")) return;
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/destination/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/category/${id}`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -72,23 +72,23 @@ export default function DestinationPage() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success("Destination deleted successfully");
-        fetchDestinations(); // refetch after delete
+        toast.success("Category deleted successfully");
+        fetchCategory(); // refetch after delete
       } else {
-        toast.error(data.message || "Failed to delete destination");
+        toast.error(data.message || "Failed to delete category");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong while deleting destination");
+      toast.error("Something went wrong while deleting category");
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Destinations</h1>
+        <h1 className="text-2xl font-bold">Category</h1>
         <button
-          onClick={() => router.push("/admin/destination/new")}
+          onClick={() => router.push("/admin/category/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
         >
           + Create
@@ -100,13 +100,12 @@ export default function DestinationPage() {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <DestinationList
-          destinations={destination.map((b) => ({
+        <CategoryList
+          categories={category.map((b) => ({
             id: b._id,
             name: b.name,
-            country: b.country,
-            state: b.state,
-            url: `/${b.country}/${b.state}/`, // or absolute link if needed
+            slug: b.slug,
+            url: `/packages/${b.slug}/`, 
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

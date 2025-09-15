@@ -3,7 +3,8 @@ import {
  getCategory, 
   updateCategory, 
   deleteCategory, 
-  createCategory 
+  createCategory ,
+  getCategoryById
 } from "../controllers/category.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -12,7 +13,10 @@ import upload from "../middleware/multer.middleware.js";
 
 const categoryRoute = Router();
 
+categoryRoute.get('/id/:id', getCategoryById);
 categoryRoute.get('/:slug', getCategoryBySlug);
+
+
 
 categoryRoute.get(
   '/',  
@@ -23,14 +27,11 @@ categoryRoute.post(
   '/', 
   isAuthenticated, 
   authorizedRoles(["admin","superadmin"]),
-  upload.fields([
-    {name:"Image", maxCount:1},
-  ]),
   createCategory
 );
 
 categoryRoute.put(
-  '/:id', 
+  '/:slug', 
   isAuthenticated, 
   authorizedRoles(["admin","superadmin"]), 
   updateCategory

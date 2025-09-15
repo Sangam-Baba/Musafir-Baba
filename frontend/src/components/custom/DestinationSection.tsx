@@ -43,7 +43,7 @@ export function DestinationSection() {
           </div>
         </div>
         <div className="flex  justify-between  items-center w-full p-2">
-          <div className="text-xl font-semibold">{active==="domestic"?"Domastic":"International"} Trips</div>
+          <div className="text-xl font-semibold">{active==="domestic"?"Domestic":"International"} Trips</div>
           <div>
               <Link href={`https://musafirbaba.com/${active==="domestic"?"india":"international"}`} className="text-[#FE5300] font-semibold" > View All</Link>
           </div>

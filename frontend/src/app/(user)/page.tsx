@@ -1,15 +1,7 @@
 "use client";
 
-// import { useQuery } from "@tanstack/react-query";
-// import { useAuthStore } from "@/store/useAuthStore";
-// import { useUIStore } from "@/store/useUIStore";
-// import { Button } from "@/components/ui/button";
 import Hero from "../../components/custom/Hero";
 import SecondSection from "../../components/custom/SecondSection";
-import CategoryGrid from "../../components/custom/CategoryGrid";
-import img1 from "../../../public/Hero1.jpg";
-import img2 from "../../../public/Hero2.jpg";
-import img3 from "../../../public/Hero3.jpg";
 import heroimg from '../../../public/Heroimg.jpg';
 import SectionFour from "../../components/custom/SectionFour";
 import SectionFive from "../../components/custom/SectionFive";
@@ -23,36 +15,7 @@ import {FeaturedTour} from "../../components/custom/FeaturedTour";
 import Search from "@/components/custom/Search";
 import ThirdSection from "@/components/custom/ThirdSection";
 import BlogsHome from "@/components/custom/BlogsHome";
-const dummyCategories = [
-  {
-    id: "1",
-    name: "Adventure",
-    slug: "adventure",
-    image: img1.src,
-    description: "Thrilling treks, safaris, and outdoor activities."
-  },
-  {
-    id: "2",
-    name: "Pilgrimage",
-    slug: "pilgrimage",
-    image: img2.src,
-    description: "Spiritual journeys to holy destinations."
-  },
-  {
-    id: "3",
-    name: "Luxury",
-    slug: "luxury",
-    image: img3.src,
-    description: "Premium experiences and 5-star stays."
-  },
-  {
-    id: "4",
-    name: "Beaches",
-    slug: "beaches",
-    image: img2.src,
-    description: "Relaxing getaways by the sea."
-  },
-]
+
 
 const faqs = [
   {
@@ -106,12 +69,6 @@ export default function HomePage() {
       </div>
       <SecondSection />
       <ThirdSection />
-       {/* <CategoryGrid 
-        categories={dummyCategories} 
-        limit={4} 
-        title="Find Your Perfect Getaway with the Best Travel Agency in Delhi" 
-        url="/packages"
-      /> */}
       <SectionFour />
       <SectionFive />
       <FeaturedTour />

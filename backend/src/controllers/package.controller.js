@@ -83,6 +83,23 @@ const getPackageBySlug = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+const getAllPackages = async (req, res) => {
+   try{
+    const packages= await Package.find({status:"published"}).select("_id title price duration coverImage slug isFeatured status").lean();
+
+    if(!packages) return res.status(404).json({success:false, message:"Sorry, Packages not found"});
+    res.status(200).json({
+      success: true,
+      data: {
+        packages,
+      },
+    });
+   } catch (error) {
+    console.log("Package getting failed ", error.message);
+    res.status(500).json({success:false, message:"Server Error"})
+   }
+}
 const getPackages = async (req, res) => {
   try {
     const {
@@ -171,4 +188,4 @@ const getPackages = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-export { createPackage , deletePackage, editPackage, getPackageBySlug, getPackages}
+export { createPackage , deletePackage, editPackage, getPackageBySlug, getPackages ,getAllPackages}

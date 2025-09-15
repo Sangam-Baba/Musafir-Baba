@@ -1,6 +1,8 @@
 import { Category } from "../models/Category.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import { Package } from "../models/Package.js";
+import mongoose, { model } from "mongoose";
+import { Destination } from "../models/Destination.js";
 const createCategory=async(req, res)=>{
     try {
         const {name,  description}=req.body;
@@ -9,12 +11,7 @@ const createCategory=async(req, res)=>{
         if(isExist){
             return res.status(400).json({success:false, message:"Category with this name already exists"});
         }
-        let image=null;
-        if(req.files.image){
-          const result = await uploadToCloudinary(req.files.image[0].buffer, "category/images");
-          image=result.sucure_url;
-        }
-        const category=new Category({name, description, image, createdBy:req.user.id});
+        const category=new Category({name, description,  ...req.body});
         await category.save();
 
        res.status(201).json({success:true, message:"Category created successfully", data:category});
@@ -36,16 +33,20 @@ const getCategory=async(req, res)=>{
       data: categories,
       });      
     } catch (error) {
-        console.log("Category getting failed ", error.message);
+        console.log("All Category  getting failed  ", error.message);
         res.status(500).json({success:false, message:"Server Error"})
     }
 }
 
-const getCategoryBySlug=async(req, res)=>{
-    try {
-        const {slug}=req.params;
-        const category=await Category.findOne({slug:slug, isActive:true})
-        .select("name slug description image")
+const getCategoryById=async(req, res)=>{
+      try {
+        const {id}=req.params;
+
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({success:false, message:"Invalid"});
+
+
+        const category=await Category.findById({_id:id})
+        .select("name slug description coverImage packages isActive")
         .lean();
         
         if (!category) {
@@ -54,30 +55,55 @@ const getCategoryBySlug=async(req, res)=>{
          message: "Category not found",
           });
          }
-     const packages=await Package.find({category:category._id})
-     .populate('destination', "name slug country state ")
-     .select("title price duration coverImage slug isFeatured status")
-     .lean();
- 
      res.status(200).json({
        success: true,
        data: {
          category,
-         packages,
        },
      });
 
     } catch (error) {
-        console.log("Category getting failed ", error.message);
+        console.log("Category By Id getting failed ", error.message);
+        res.status(500).json({success:false, message:"Server Error"})
+    }
+}
+
+const getCategoryBySlug=async(req, res)=>{
+    try {
+        const {slug}=req.params;
+        const category=await Category.findOne({slug:slug, isActive:true})
+        .populate({path:"packages", 
+          populate:{
+            path:"destination",
+            model:"Destination"
+          },
+        })
+        .lean();
+        
+        if (!category) {
+          return res.status(404).json({
+          success: false,
+         message: "Category not found",
+          });
+         }
+     res.status(200).json({
+       success: true,
+       data: {
+         category,
+       },
+     });
+
+    } catch (error) {
+        console.log("Category By Slug getting failed ", error.message);
         res.status(500).json({success:false, message:"Server Error"})
     }
 }
 
 const updateCategory = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
 
-    const category = await Category.findById(id);
+    const category = await Category.findOne({ slug });
     if (!category) {
       return res.status(404).json({
         success: false,
@@ -88,7 +114,7 @@ const updateCategory = async (req, res) => {
     // update fields only if provided
     category.name = req.body.name || category.name;
     category.description = req.body.description || category.description;
-    category.image = req.body.image || category.image;
+    category.coverImage = req.body.coverImage || category.coverImage;
     // category.isActive =
     //   req.body.isActive !== undefined ? req.body.isActive : category.isActive;
 
@@ -127,4 +153,4 @@ const deleteCategory = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-export {createCategory, getCategory, getCategoryBySlug , updateCategory , deleteCategory}
+export {createCategory, getCategory, getCategoryBySlug , updateCategory , deleteCategory , getCategoryById}

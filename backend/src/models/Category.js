@@ -19,20 +19,17 @@ const categorySchema=new mongoose.Schema({
         index:true,
     },
     packages:[{type:mongoose.Schema.Types.ObjectId, ref:"Package"}],
-    image:{
-        type:String,
-        default:null,
+    coverImage:{
+        url:String,
+        alt:String,
+        public_id:String,
+        width:Number,
+        height:Number
     },
     isActive:{
         type:Boolean,
         default:true,
     },
-    createdBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true,
-    },
-
 },{
     timestamps:true
 });

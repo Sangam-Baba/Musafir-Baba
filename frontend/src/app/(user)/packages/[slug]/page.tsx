@@ -39,12 +39,12 @@ interface Category {
   slug: string;
   image: string;
   description: string;
+  packages: Package[];
 }
 interface CategoryResponse {
   success: boolean;
   data: {
     category: Category;
-    packages: Package[];
   };
 }
 
@@ -78,7 +78,8 @@ if(isError){
   return <h1>{error.message}</h1>
 }
 
- const { category, packages } = data?.data ?? {};
+ const { category } = data?.data ?? {};
+ const packages = category?.packages ?? [];
   return (
  <section>
       <Hero
