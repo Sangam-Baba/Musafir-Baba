@@ -7,6 +7,7 @@ import destinationRoutes from "./destination.routes.js"
 import paymentRoute from "./payment.routes.js";
 import blogRoutes from "./blog.routes.js";
 import uploadRoutes from "./upload.routes.js";
+import authorRoutes from "./auth.routes.js";
 const router =Router();
 
 router.use('/packages', pkgRoutes);
@@ -17,5 +18,5 @@ router.use('/destination', destinationRoutes);
 router.use('/payment', paymentRoute);
 router.use('/blogs', blogRoutes);
 router.use('/upload', uploadRoutes);
-
+router.use('/authors', authorRoutes);
 export default router;

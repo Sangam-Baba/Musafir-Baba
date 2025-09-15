@@ -6,7 +6,7 @@ const blogSchema=new mongoose.Schema({
         type:String,
         required:true,
         trim:true,
-        maxlength:[150, "Title must be less then 150 characters"],
+        maxlength:[600, "Title must be less then 600 characters"],
     },
     slug:{
         type:String,
@@ -19,7 +19,7 @@ const blogSchema=new mongoose.Schema({
     },
     excerpt:{
         type:String,
-        maxlength:300,
+        maxlength:3000,
     },
     coverImage:{
         url:String,
@@ -46,11 +46,11 @@ const blogSchema=new mongoose.Schema({
     tags:[String],
     metaTitle:{
         type:String,
-        maxlength:60
+        maxlength:400
     },
     metaDescription:{
         type:String,
-        maxlength:160,
+        maxlength:600,
     },
     keywords: [
       {
