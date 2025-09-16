@@ -11,7 +11,7 @@ interface Blog {
   _id: string;
   title: string;
   content: string;
-  metaDescription: string;
+  excerpt: string;
   coverImage: {
     url: string;
     public_id: string;
@@ -78,7 +78,7 @@ function BlogsHome() {
 
      
       <div className="w-full flex flex-col md:flex-row gap-6 justify-between items-center">
-        {/* Left side - smaller blog list */}
+       
         <div className="md:w-1/2 flex flex-col gap-4">
           {rest.slice(0, 4).map((blog) => (
             <Card
@@ -107,7 +107,7 @@ function BlogsHome() {
                   })}{" "}
                   • 6 MIN READ
                 </p>
-                <p>{blog.metaDescription}</p>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{blog.excerpt}</p>
               </CardContent>
             </Card>
           ))}
@@ -120,7 +120,7 @@ function BlogsHome() {
               alt={featured.coverImage.alt || featured.title}
               width={480}
               height={200}
-              className="rounded-xl "
+              className="rounded-xl object-cover w-full h-full"
             />
             <CardContent className="">
               <Link
@@ -138,7 +138,7 @@ function BlogsHome() {
                 • 6 MIN READ
               </p>
               <p className="text-sm text-gray-600 mt-3 line-clamp-2">
-                {featured.metaDescription}
+                {featured.excerpt}
               </p>
             </CardContent>
           </Card>
