@@ -77,7 +77,7 @@ function BlogsHome() {
       </div>
 
      
-      <div className="flex flex-col md:flex-row gap-6 ">
+      <div className="w-full flex flex-col md:flex-row gap-6 justify-between items-center">
         {/* Left side - smaller blog list */}
         <div className="md:w-1/2 flex flex-col gap-4">
           {rest.slice(0, 4).map((blog) => (

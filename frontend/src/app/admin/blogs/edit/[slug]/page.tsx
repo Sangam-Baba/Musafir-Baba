@@ -18,6 +18,7 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), { ssr:
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  slug: z.string().min(2, { message: "Slug must be at least 2 characters." }),
   content: z.string().min(2, { message: "Content must be at least 2 characters." }),
   category: z.string().min(2, { message: "Category is required." }),
   author: z.string().min(2, { message: "Author is required." }),
@@ -64,6 +65,15 @@ export interface CategoryApiResponse {
   data: Category[];
 }
 
+interface Author{
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+}
 type FormValues = z.infer<typeof formSchema>
 
 
@@ -105,7 +115,7 @@ export default function EditBlog() {
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       return res.json()
@@ -117,6 +127,7 @@ export default function EditBlog() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
+      slug: "",
       content: "",
       category: "",
       author: "",
@@ -138,6 +149,7 @@ export default function EditBlog() {
     if (blog) {
       form.reset({
         title: blog.title,
+        slug: blog.slug,
         content: blog.content,
         category: blog.category?._id ?? "",
         author: blog.author?._id ?? "",
@@ -182,7 +194,9 @@ export default function EditBlog() {
       <h1 className="text-2xl font-bold mb-6">Update Blog</h1>
      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <input {...form.register("title")} placeholder="Title" className="w-full border rounded p-2" />
-
+        {form.formState.errors.title && <p className="text-red-500">{form.formState.errors.title.message}</p>}
+        <input {...form.register("slug")} placeholder="Parma Link" className="w-full border rounded p-2" /> 
+        {form.formState.errors.slug && <p className="text-red-500">{form.formState.errors.slug.message}</p>}
         <div className="border rounded p-2">
           <BlogEditor
             value={form.watch("content")}
@@ -201,9 +215,7 @@ export default function EditBlog() {
 
         <select {...form.register("author")} className="w-full border rounded p-2">
           <option value="">Select Author</option>
-          <option key={users?.data?._id} value={users?.data?._id}>
-            {users?.data?.name}
-          </option>
+            {users?.data.map((user:Author) => <option key={user?._id} value={user._id}>{user.name}</option>)}
         </select>
 
         <input {...form.register("metaTitle")} placeholder="Meta Title" className="w-full border rounded p-2" />
@@ -249,6 +261,8 @@ export default function EditBlog() {
           {mutation.isPending ? "Updating..." : "Update Blog"}
         </Button>
       </form>
+      {mutation.isError && <p className="text-red-500">Somethings went wrong</p>}
+      {mutation.isSuccess && <p className="text-green-500">Blog updated successfully</p>}
     </div>
   )
 }

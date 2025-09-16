@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BlogContent } from "@/components/custom/BlogContent";
+import Link from "next/link";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -58,11 +59,11 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
       <header className="mt-6 space-y-2">
         <h1 className="text-3xl md:text-4xl font-bold">{blog.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-          <span>👤 Author: {blog.author.name}</span>
+         <span>👤 Author:  <Link href={`/author/${blog.author?.slug}`}>{blog.author?.name}</Link></span>
           <span>Category: {blog.category.name}</span>
           <span>📅 {new Date(blog.createdAt).toLocaleDateString()}</span>
-          <span>👀 {blog.views} views</span>
-          <span>❤️ {blog.likes.length} likes</span>
+          <span>👀 100 views</span>
+          <span>❤️ 58 likes</span>
         </div>
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-2">

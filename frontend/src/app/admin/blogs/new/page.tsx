@@ -15,6 +15,7 @@ import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary"
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  slug: z.string().min(2, { message: "Slug must be at least 2 characters." }),
   content: z.string().min(2, { message: "Content must be at least 2 characters." }),
   category: z.string().min(2, { message: "Category is required." }),
   author: z.string().min(2, { message: "Author is required." }),
@@ -58,6 +59,15 @@ export interface CategoryApiResponse {
   data: Category[];
 }
 
+interface Author{
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+}
 const createBlog = async (values: z.infer<typeof formSchema>, token: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`, {
     method: "POST",
@@ -110,7 +120,7 @@ export default function CreateBlog() {
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,{
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`,{
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -118,7 +128,7 @@ export default function CreateBlog() {
         },
       })
       const data = await res.json()
-      console.log(data)
+      // console.log("users is: ", data.data)
       return data;
     },
   })
@@ -149,6 +159,8 @@ export default function CreateBlog() {
       <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
         <input {...form.register("title")} placeholder="Title" className="w-full border rounded p-2" />
         {form.formState.errors.title && <p className="text-red-500 text-sm">{form.formState.errors.title.message}</p>}
+         <input {...form.register("slug")} placeholder="ParmaLink" className="w-full border rounded p-2" />
+        {form.formState.errors.slug && <p className="text-red-500 text-sm">{form.formState.errors.slug.message}</p>}
 
         <div className="border rounded p-2">
           <BlogEditor
@@ -166,7 +178,7 @@ export default function CreateBlog() {
 
         <select {...form.register("author")} className="w-full border rounded p-2">
           <option value="">Select Author</option>
-            <option key={users?.data?._id} value={users?.data?._id}>{users?.data?.name}</option>
+            {users?.data.map((user:Author) => <option key={user?._id} value={user._id}>{user.name}</option>)}
         </select>
 
         <input {...form.register("metaTitle")} placeholder="Meta Title" className="w-full border rounded p-2" />
@@ -212,6 +224,8 @@ export default function CreateBlog() {
           {mutation.isPending ? "Creating..." : "Create Blog"}
         </Button>
       </form>
+      {mutation.isError && <p className="text-red-500 text-sm">Something went wrong</p>}
+      {mutation.isSuccess && <p className="text-green-500 text-sm">Blog created successfully!</p>}
     </div>
   )
 }

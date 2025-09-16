@@ -8,7 +8,10 @@ type Category = {
   id: string
   name: string
   slug: string
-  image: string
+  coverImage: {
+    url: string,
+    alt: string
+  }
   description?: string
 }
 
@@ -45,16 +48,16 @@ export default function CategoryGrid({ categories, limit, title, url }: Category
                   <Image
                      width={500}
                      height={500}
-                    src={cat.image}
+                    src={cat.coverImage.url}
                     alt={cat.name}
                     className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
                   />
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg">{cat.name}</h3>
+                  <h3 className="font-semibold text-lg">{cat.name.slice(0, 20)}</h3>
                   {cat.description && (
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {cat.description}
+                      {cat.description.slice(0, 20)}
                     </p>
                   )}
                 </CardContent>

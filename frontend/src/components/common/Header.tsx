@@ -8,6 +8,7 @@ import { AccountIcon } from "../custom/AccountIcon";
 import { Youtube, Facebook, LucideTwitter, Instagram, Linkedin, Menu ,Phone } from "lucide-react";
 import logo from "../../../public/logo.svg";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
@@ -41,7 +42,7 @@ export default function Header() {
 
           {/* Logo - center on mobile, left on md+ */}
           <div className="flex items-center">
-            <Image src={logo} alt="musafir Baba Logo" className="w-40 h-auto" />
+            <Link href="/"> <Image src={logo} alt="musafir Baba Logo" className="w-40 h-auto" /> </Link>
           </div>
         
 

@@ -18,10 +18,7 @@ interface Package{
     description:string,
     slug:string
 }
-// interface Packages{
-//     success:boolean
-//     packages:Package[]
-// }
+
 
 const formSchema = z.object({
   name: z.string().min(2, {

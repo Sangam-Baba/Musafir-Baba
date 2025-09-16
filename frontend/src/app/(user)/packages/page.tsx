@@ -12,7 +12,10 @@ interface Category {
     id: string;
     name: string;
     slug: string;
-    image: string;
+    coverImage: {
+        url: string;
+        alt: string
+    }
     description: string;
 }
 
