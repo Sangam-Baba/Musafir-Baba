@@ -1,4 +1,4 @@
-import { Author } from "../models/Authors";
+import { Author } from "../models/Authors.js";
 
 const createAuthor= async (req,res)=>{
     try {
@@ -25,6 +25,22 @@ const getAuthors= async (req, res)=>{
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
+const getAuthorById=async (req, res)=>{
+    try {
+        const {id}= req.params;
+        if(!id){
+            return res.status(400).json({success:false, message:"Invalid Id"});
+        }
+        const author=await Author.findById(id);
+        if(!author){
+            return res.status(404).json({success:false, message:"Author not found"});
+        }
+        res.status(200).json({success:true, message:"Author fetched successfully", data:author});
+    } catch (error) {
+        console.log("Author getting failed", error.message);
+        res.status(500).json({success: false, message: "Server Error"});
+    }
+}
 
 const updateAuthor= async(req, res)=>{
 try {
@@ -37,7 +53,11 @@ try {
         return res.status(404).json({success:false, message:"Author not found"});
     }
     const { name, email, about, avatar, role  } = req.body;
-    const newAuthor=await Author.findOneAndUpdate({email}, {name, about, avatar, role}, {new:true}).exec().lean();
+   const newAuthor = await Author.findByIdAndUpdate(
+  id,
+  { name, email, about, avatar, role },
+  { new: true, runValidators: true }
+).lean();
     if(!newAuthor){
 
         return res.status(404).json({success:false, message:"Author not found"});
@@ -69,4 +89,4 @@ const deleteAuthor= async(req, res)=>{
     }
 }
 
-export {createAuthor  , getAuthors , deleteAuthor , updateAuthor};
+export {createAuthor  , getAuthors , deleteAuthor , updateAuthor , getAuthorById};

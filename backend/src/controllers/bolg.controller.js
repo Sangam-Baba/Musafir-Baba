@@ -11,11 +11,6 @@ const createBlog=async(req, res)=>{
         if (req.body.category && !mongoose.Types.ObjectId.isValid(req.body.category)) {
         return res.status(400).json({ success: false, message: "Invalid category ID" });
         }
-        // let coverImage=null;
-        // if(req.files.coverImage){
-        //   const result=await uploadToCloudinary(req.files.coverImage[0].buffer , "blog/coverImage");
-        //   coverImage=result.sucure_url;
-        // }
         const blog=new Blog({...req.body});
         await blog.save();
 
