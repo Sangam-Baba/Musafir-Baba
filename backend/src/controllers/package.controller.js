@@ -2,6 +2,7 @@ import { Package } from "../models/Package.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import { Category } from "../models/Category.js";
 import { Destination } from "../models/Destination.js";
+import mongoose from "mongoose";
 const createPackage=async(req, res)=>{
   try {
         let coverImage=null;
@@ -69,8 +70,7 @@ const editPackage= async(req, res)=>{
 const getPackageBySlug = async (req, res) => {
   try {
     const pkg = await Package.findOne({ slug: req.params.slug, status: "published" })
-      .populate("destination", "name country state city slug coverImage")
-      .populate("category", "name slug")
+      .populate("destination", "_id name country state city slug coverImage")
       .lean();
 
     if (!pkg) {
@@ -80,6 +80,27 @@ const getPackageBySlug = async (req, res) => {
     res.json({ success: true, data: pkg });
   } catch (error) {
     console.log("Package getting failed")
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const getPackageById = async (req, res) => {
+  try {
+    const {id}= req.params;
+    if(!mongoose.Types.ObjectId.isValid(id)){
+      return res.status(400).json({ success: false, error: "Invalid ID" });
+    }
+    const pkg = await Package.findById({ _id: id, status: "published" })
+      .populate("destination", "_id name country state city slug coverImage")
+      .lean();
+
+    if (!pkg) {
+      return res.status(404).json({ success: false, message: "Package not found" });
+    }
+
+    res.json({ success: true, data: pkg });
+  } catch (error) {
+    console.log("Package getting by ID failed")
     res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -105,7 +126,6 @@ const getPackages = async (req, res) => {
     const {
       page = 1,
       limit = 10,
-      category,
       minPrice,
       maxPrice,
       destination,
@@ -119,19 +139,6 @@ const getPackages = async (req, res) => {
 
     // ✅ Status filter
     if (status) query.status = status;
-
-    // ✅ Category filter
-    if (category) {
-      const cat = await Category.findOne({
-        $or: [{ _id: category }, { slug: category }, { name: category }],
-      }).select("_id");
-
-      if (!cat) {
-        return res.status(404).json({ success: false, message: "Category not found" });
-      }
-
-        query.category = cat._id;
-    }
 
     // ✅ Price filter (adult price)
     if (minPrice || maxPrice) {
@@ -168,7 +175,6 @@ const getPackages = async (req, res) => {
     console.log(query);
     // ✅ Query execution
     const packages = await Package.find(query)
-      .populate("category", "name slug")
       .populate("destination", "name country state city slug coverImage") // populate category details
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -188,4 +194,4 @@ const getPackages = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-export { createPackage , deletePackage, editPackage, getPackageBySlug, getPackages ,getAllPackages}
+export { createPackage , deletePackage, editPackage, getPackageBySlug, getPackages ,getAllPackages , getPackageById}

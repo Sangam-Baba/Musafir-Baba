@@ -13,36 +13,35 @@ const packageSchema = new mongoose.Schema(
        required:true,
     },
 
-    coverImage: { type: String },
-    gallery: [String],
+    coverImage: { 
+        url: String,
+        alt: String,
+        public_id: String,
+        width: Number,
+        height: Number
+     },
+    gallery: [{
+        url: String,
+        alt: String,
+        public_id: String,
+        width: Number,
+        height: Number
+    }],
 
     price: {
       adult: { type: Number, required: true },
       child: { type: Number, required: true },
       currency: { type: String, default: "INR" },
     },
-
-    category: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,}
-    ],
-
     duration: {
       days: { type: Number, required: true },
       nights: { type: Number, required: true },
     },
 
-    seo: {
-      metaTitle: String,
-      metaDescription: String,
-      keywords: [String],
-    },
-        keywords: [
-      {
-        type: String,
-      },
-    ],
+  
+    metaTitle: String,
+    metaDescription: String,
+    keywords: [String],
     canonicalUrl: {
       type: String,
     },
