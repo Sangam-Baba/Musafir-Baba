@@ -113,6 +113,12 @@ export default function CreateDestination() {
     },
   })
   function onSubmit(values: z.infer<typeof formSchema>) {
+     values = {
+    ...values,
+    country: values.country.toLowerCase(),
+    state: values.state.toLowerCase(),
+    city: values.city.toLowerCase(),
+  };
     mutation.mutate(values)
     console.log(values)
   }
@@ -125,9 +131,9 @@ export default function CreateDestination() {
           {form.formState.errors.name && <p className="text-red-500 text-sm">{form.formState.errors.name.message}</p>}
           <textarea {...form.register("description")} placeholder="Description" className="w-full border rounded p-2" />
           {form.formState.errors.description && <p className="text-red-500 text-sm">{form.formState.errors.description.message}</p>}
-          <input {...form.register("country")} placeholder="Country (small case)" className="w-full border rounded p-2" />
+          <input {...form.register("country")}  placeholder="Country" className="w-full border rounded p-2" />
           {form.formState.errors.country && <p className="text-red-500 text-sm">{form.formState.errors.country.message}</p>}
-          <input {...form.register("state")} placeholder="State (small case)" className="w-full border rounded p-2" />
+          <input {...form.register("state")} placeholder="State" className="w-full border rounded p-2" />
           {form.formState.errors.state && <p className="text-red-500 text-sm">{form.formState.errors.state.message}</p>}
           <input {...form.register("city")} placeholder="City" className="w-full border rounded p-2" />
           {form.formState.errors.city && <p className="text-red-500 text-sm">{form.formState.errors.city.message}</p>}

@@ -117,9 +117,9 @@ export function DestinationSection() {
                  </div>
                 </div> 
                 <div className="relative"> 
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757333299/mft5sunkkkiy00clbs5b.jpg" alt="USA" className="rounded-2xl w-full h-56 object-cover" width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758087427/Untitled_design_4_yrnksb.jpg" alt="Dubai" className="rounded-2xl w-full h-56 object-cover" width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
-                   USA
+                   Dubai
                  </div>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export function DestinationSection() {
             <div className="flex flex-col gap-4 md:w-1/2">
              <div className="w-full">
                 <div className="relative">
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-24_pseran.jpg" alt="Thailand" className="rounded-2xl w-full h-56 object-cover" width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-24_pseran.jpg" alt="Thailand" className="rounded-2xl w-full h-56 " width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                    Thailand
                  </div>
@@ -143,14 +143,14 @@ export function DestinationSection() {
              </div>
              <div className="flex flex-col md:flex-row gap-4 w-full">
                 <div className="relative md:w-1/2">
-                 <Image src={jaipur} alt="Rajasthan" className="rounded-2xl  h-56 object-cover" />
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758087426/Untitled_design_3_g8ok0g.jpg" alt="Japan" className="rounded-2xl  h-56 " width={500} height={500} />
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
-                   Malaysia
+                   Japan
                  </div>
                  </div>
-                 <div className="relative md:w-1/2">
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589680/Foreign-25_1_lmw3lf.jpg" alt="Maldives" className="rounded-2xl h-56 object-cover" width={500} height={500}/>
-                 <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                 <div className="relative md:w-1/2 ">
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758087426/Untitled_design_2_rrfsvj.jpg" alt="Maldives" className="rounded-2xl h-56" width={500} height={500}/>
+                 <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold ">
                    Maldives
                  </div>
                  </div>
