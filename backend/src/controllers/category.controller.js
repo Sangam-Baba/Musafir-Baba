@@ -115,6 +115,7 @@ const updateCategory = async (req, res) => {
     category.name = req.body.name || category.name;
     category.description = req.body.description || category.description;
     category.coverImage = req.body.coverImage || category.coverImage;
+    category.packages = req.body.packages || category.packages;
     // category.isActive =
     //   req.body.isActive !== undefined ? req.body.isActive : category.isActive;
 

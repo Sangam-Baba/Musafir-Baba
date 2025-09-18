@@ -81,7 +81,7 @@ if(isError){
  const { category } = data?.data ?? {};
  const packages = category?.packages ?? [];
   return (
- <section>
+ <section className="w-full mb-12">
       <Hero
       image={img1.src}
       title="Find Your Perfect Getaway"
