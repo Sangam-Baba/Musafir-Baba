@@ -20,33 +20,33 @@ import BlogsHome from "@/components/custom/BlogsHome";
 const faqs = [
   {
     id: 1,
-    question: "Can I book with a credit card?",
-    answer: "Yes, you can book with a credit card. We accept major credit cards, including Visa, Mastercard, and American Express.",    
+    question: "What services does Musafirbaba offer?",
+    answer: "We provide end-to-end travel solutions including tourist visas (Singapore, Dubai, Schengen, USA), domestic & international tour packages, flight & hotel bookings, and personalized travel planning for individuals, families, and groups.",    
   },
   {
     id: 2,
-    question: "Is there a cancellation fee?",
-    answer: "No, there is no cancellation fee. You can cancel your booking at any time before your trip starts.",    
+    question: "What tour packages do you offer?",
+    answer: "We offer domestic tours like Rajasthan, Kerala, Himachal, Kashmir, Goa, and international tours including Dubai, Singapore, Thailand, Europe, and Maldives, with customized options for honeymoon, family, group, and corporate trips.",    
   },
   {
     id: 3,
-    question: "What is your refund policy?",    
-    answer: "We offer a 100% refund within 24 hours of cancellation. Please contact us for details.",    
+    question: "What makes Musafirbaba different from others?",    
+    answer: "With 10,000+ happy travelers, 4.8★ Google rating, expert visa consultants, best prices, 24/7 support, and total transparency, we offer both visa and tour services under one roof with guaranteed satisfaction.",    
   },    
   {
     id: 4,
-    question: "Can I book with a credit card?",
-    answer: "Yes, you can book with a credit card. We accept major credit cards, including Visa, Mastercard, and American Express.",    
+    question: "Is there a cancellation fee & refund policy?",
+    answer: "Yes, we have clear cancellation and refund policies; full details are available in our Terms & Conditions.",    
   },    
   {
     id: 5,
-    question: "Is there a cancellation fee?",
-    answer: "No, there is no cancellation fee. You can cancel your booking at any time before your trip starts.",    
+    question: "How can I check tour availability and prices?",
+    answer: "You can check availability and get instant pricing by visiting our website, contacting us via call or WhatsApp, or emailing our travel experts.",    
   },    
   {
     id: 6,
-    question: "What is your refund policy?",    
-    answer: "We offer a 100% refund within 24 hours of cancellation. Please contact us for details.",    
+    question: "Do you provide 24/7 customer support?",    
+    answer: "Yes, we provide 24/7 customer support throughout your journey via phone, WhatsApp, and email to ensure a hassle-free travel experience.You can reach us at +91 92896 02447",    
   },    
 ]
 
@@ -55,14 +55,14 @@ export default function HomePage() {
   return (
     <main className="">
       <div className="relative">
-          <div className="absolute z-20 w-full flex justify-center bottom-4 px-4">
+          <div className="absolute z-20 w-full flex justify-center bottom-35 px-4">
            <Search />
          </div>
         <Hero
          image={heroimg.src}
          title="Dream. Explore. Discover. With Musafirbaba."
          description="Looking for best travel agency in Delhi? Musafirbaba offers expertly crafted tour packages for unfoegetble tarvel experienc. Let's plan your tour"
-         align="left"
+         align="center"
          height="xl"
          overlayOpacity={40}
         />

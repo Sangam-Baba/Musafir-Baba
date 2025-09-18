@@ -70,7 +70,7 @@ export function DestinationSection() {
               </div>
               <div className="md:w-1/2">
                 <div className="relative">
-                 <Image src={keral} alt="Kerala" className="rounded-2xl w-full md:h-118 object-cover" />
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758108398/Untitled_design_5_nr6qyn.jpg" alt="Kerala" className="rounded-2xl w-full md:h-118 object-cover"  width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                    Kerala
                  </div>
@@ -80,9 +80,9 @@ export function DestinationSection() {
             <div className="flex flex-col gap-4 md:w-1/2">
              <div className="w-full">
                 <div className="relative">
-                 <Image src={badrinath} alt="Uttarakhand" className="rounded-2xl w-full h-56 object-cover" />
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758108398/Untitled_design_6_h6osmv.jpg" alt="meghalaya" className="rounded-2xl w-full h-56 object-cover"  width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
-                   Uttarakhand
+                   Meghalaya
                  </div>
                  </div>
              </div>
@@ -111,7 +111,7 @@ export function DestinationSection() {
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
                 <div className="relative"> 
-                 <Image src='https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-28_jlecev.jpg' alt="Singapore" className="rounded-2xl w-full h-56 object-cover"  width={500} height={500}/>
+                 <Image src='https://res.cloudinary.com/dmmsemrty/image/upload/v1758107532/Singapore_bdsaps.jpg' alt="Singapore" className="rounded-2xl w-full h-56 object-cover"  width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                    Singapore
                  </div>
@@ -125,9 +125,9 @@ export function DestinationSection() {
               </div>
               <div className="md:w-1/2">
                 <div className="relative">
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-23_rcrewu.jpg" alt="VietNam" className="rounded-2xl w-full md:h-118 object-cover" width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758107531/Bali_sc5oct.jpg" alt="Bali" className="rounded-2xl w-full md:h-118 object-cover" width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
-                   VietNam
+                   Bali
                  </div>
                 </div>
               </div>    
@@ -135,7 +135,7 @@ export function DestinationSection() {
             <div className="flex flex-col gap-4 md:w-1/2">
              <div className="w-full">
                 <div className="relative">
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1757589679/Foreign-24_pseran.jpg" alt="Thailand" className="rounded-2xl w-full h-56 " width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758107531/Thailand_btmxk6.jpg" alt="Thailand" className="rounded-2xl w-full h-56 " width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                    Thailand
                  </div>

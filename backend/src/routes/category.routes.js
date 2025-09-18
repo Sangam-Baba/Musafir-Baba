@@ -30,14 +30,14 @@ categoryRoute.post(
   createCategory
 );
 
-categoryRoute.put(
+categoryRoute.patch(
   '/:slug', 
   isAuthenticated, 
   authorizedRoles(["admin","superadmin"]), 
   updateCategory
 );
 
-categoryRoute.patch(
+categoryRoute.delete(
   '/:id', 
   isAuthenticated, 
   authorizedRoles(["admin", "superadmin"]), 

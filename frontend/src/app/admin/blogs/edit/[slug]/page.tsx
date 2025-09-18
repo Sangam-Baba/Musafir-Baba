@@ -79,7 +79,7 @@ type FormValues = z.infer<typeof formSchema>
 
 const updateBlog = async (values: FormValues, token: string, id: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

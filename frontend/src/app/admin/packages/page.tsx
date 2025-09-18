@@ -123,7 +123,7 @@ const accessToken = useAuthStore((state)=>state.accessToken) as string;
         </div>
       ) : (
         <PackagesList
-          packages={packages.map((b:Package) => ({
+          packages={packages?.map((b:Package) => ({
             id: b._id,
             name: b.title,
             location: b.destination?.state.toLocaleUpperCase(),

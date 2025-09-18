@@ -3,8 +3,8 @@ import slugify from "slugify";
 
 const packageSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, maxlength: 120, trim: true },
-    description: { type: String, required: true },
+    title: { type: String, required: true, maxlength: 300, trim: true },
+    description: { type: String },
     slug: { type: String, unique: true, index: true },
 
     destination: {

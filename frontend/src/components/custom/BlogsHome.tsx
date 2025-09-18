@@ -107,7 +107,7 @@ function BlogsHome() {
                   })}{" "}
                   • 6 MIN READ
                 </p>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{blog.excerpt}</p>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1">{blog.excerpt}</p>
               </CardContent>
             </Card>
           ))}

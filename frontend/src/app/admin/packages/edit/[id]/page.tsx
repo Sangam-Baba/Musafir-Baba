@@ -47,7 +47,7 @@ interface PackageFormValues {
   metaDescription: string
   keywords?: string[]
   maxPeople?: number
-  highlights: Highlight[]
+  highlights: string[]
   inclusions: string[]
   exclusions: string[]
   itinerary: Itinerary[]
@@ -149,6 +149,8 @@ export default function CreatePackagePage() {
     }
   },[pkg, form])
 
+
+  const coverImageArray = useFieldArray({ control: form.control, name: "gallery" })
   const highlightsArray = useFieldArray({ control: form.control, name: "highlights" })
   const inclusionsArray = useFieldArray({ control: form.control, name: "inclusions" })
   const exclusionsArray = useFieldArray({ control: form.control, name: "exclusions" })
@@ -316,7 +318,35 @@ export default function CreatePackagePage() {
                 </FormItem>
               )}
             />
-
+            {/* Gallery Dynamic */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Image Gallery</FormLabel>
+              {coverImageArray.fields.map((field, index) => (
+                <div key={field.id} className="flex gap-2 mb-2">
+                  <ImageUploader
+                    onUpload={(img) =>
+                      form.setValue(`gallery.${index}`, {
+                        url: img.url,
+                        public_id: img.public_id,
+                        alt: form.getValues("title") ?? "",
+                        width: img.width,
+                        height: img.height,
+                      })
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => coverImageArray.remove(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={() => coverImageArray.append("")}>
+                Add Image Gallery
+              </Button>
+            </div>
             {/* Highlights Dynamic */}
             <div>
               <FormLabel className="mb-2 text-lg">Highlights</FormLabel>

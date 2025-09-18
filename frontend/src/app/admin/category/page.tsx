@@ -62,7 +62,7 @@ export default function CategoryPage() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/category/${id}`,
         {
-          method: "PATCH",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

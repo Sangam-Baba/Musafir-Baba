@@ -9,7 +9,7 @@ const blogRoutes=Router();
 //     {name:"coverImage", maxCount:1},
 // ]),  createBlog);
 blogRoutes.post('/', isAuthenticated, authorizedRoles(["admin", "superadmin"]),  createBlog);
-blogRoutes.put('/:id', isAuthenticated, authorizedRoles(["admin", "superadmin"]), updateBlog);
+blogRoutes.patch('/:id', isAuthenticated, authorizedRoles(["admin", "superadmin"]), updateBlog);
 blogRoutes.delete('/:id',isAuthenticated, authorizedRoles(["admin", "superadmin"]), deleteBlog);
 
 blogRoutes.get('/:slug', getBlogBySlug);

@@ -142,7 +142,8 @@ const deleteCategory = async (req, res) => {
       });
     }
 
-    category.isActive = false;
+    // category.isActive = false;
+    const deletedCategory = await Category.findByIdAndDelete(id);
     await category.save();
 
     res.status(200).json({

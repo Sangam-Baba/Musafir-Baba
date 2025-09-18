@@ -35,23 +35,23 @@ interface Itinerary {
 
 interface PackageFormValues {
   title: string
-  description: string
+  description?: string
   price: { adult: number; child: number; currency: string }
   slug: string
   destination: string
-  coverImage: Image
+  coverImage?: Image
   gallery?: Image[]
   duration: { days: number; nights: number }
-  metaTitle: string
-  metaDescription: string
+  metaTitle?: string
+  metaDescription?: string
   keywords?: string[]
   maxPeople?: number
-  highlights: Highlight[]
-  inclusions: string[]
-  exclusions: string[]
-  itinerary: Itinerary[]
-  faqs: Faq[]
-  isFeatured: boolean
+  highlights?: string[]
+  inclusions?: string[]
+  exclusions?: string[]
+  itinerary?: Itinerary[]
+  faqs?: Faq[]
+  isFeatured?: boolean
   status: "draft" | "published"
 }
 
@@ -125,7 +125,7 @@ export default function CreatePackagePage() {
   })
   const form = useForm<PackageFormValues>({ defaultValues })
 
-
+  const coverImageArray = useFieldArray({ control: form.control, name: "gallery" })
   const highlightsArray = useFieldArray({ control: form.control, name: "highlights" })
   const inclusionsArray = useFieldArray({ control: form.control, name: "inclusions" })
   const exclusionsArray = useFieldArray({ control: form.control, name: "exclusions" })
@@ -292,6 +292,35 @@ export default function CreatePackagePage() {
                 </FormItem>
               )}
             />
+            {/* Gallery Dynamic */}
+            <div className="mb-4">
+              <FormLabel className="mb-2 text-lg">Image Gallery</FormLabel>
+              {coverImageArray.fields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-2 mb-2">
+                  <ImageUploader
+                    onUpload={(img) =>
+                      form.setValue(`gallery.${index}`, {
+                        url: img.url,
+                        public_id: img.public_id,
+                        alt: form.getValues("title") ?? "",
+                        width: img.width,
+                        height: img.height,
+                      })
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => coverImageArray.remove(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={() => coverImageArray.append("")}>
+                Add Image Gallery
+              </Button>
+            </div>
 
             {/* Highlights Dynamic */}
             <div>

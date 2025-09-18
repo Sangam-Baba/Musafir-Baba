@@ -5,19 +5,9 @@ import { Destination } from "../models/Destination.js";
 import mongoose from "mongoose";
 const createPackage=async(req, res)=>{
   try {
-        let coverImage=null;
-        let gallery=[];
-        if(req.files?.coverImage){
-          const result=await  uploadToCloudinary(req.files.coverImage[0].buffer , "packages/coverImage");
-          coverImage=result.secure_url;
-        }
-        if(req.files?.gallery){
-          for(let img =0; img<req.files.gallery.length;img++){
-          const result=await  uploadToCloudinary(req.files.gallery[img].buffer , "packages/gallery");
-          gallery.push(result.secure_url);
-          }
-        };
-    const pkg=new Package({...req.body , coverImage, gallery });
+    const {title, destination, duration, price}=req.body;
+    if(!title || !destination || !duration || !price) return res.status(400).json({success:false, message:"All fields are required"});
+    const pkg=new Package({...req.body });
     await pkg.save();
     
     res.status(201).json({
