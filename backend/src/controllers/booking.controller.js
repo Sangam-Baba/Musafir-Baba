@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { Booking } from "../models/Booking.js";
-//import Package from "../models/Package.js"
+import {Package} from "../models/Package.js"
 const createBooking = async (req, res) => {
     try {
          const userId=req.user.sub;
@@ -108,7 +108,9 @@ const getBookingById=async(req, res)=>{
         if(!mongoose.Types.ObjectId.isValid(bookingId)) return res.status(400).json({success:false, message:"Invalid"});
 
         const booking=await Booking.findById(bookingId)
-        .select("_id firstName totalPrice  ")
+        .select("_id totalPrice travellers travelDate")
+        .populate({ path: "packageId", select: "title" })
+        .populate({ path: "user", select: "name email" })
         .lean()
         .exec();
 

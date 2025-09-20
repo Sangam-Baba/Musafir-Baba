@@ -6,7 +6,7 @@ import generateCryptoToken from "../utils/generateCryptoToken.js"
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import crypto from "crypto";
 import {signAccessToken, signRefreshToken, verifyAccess, verifyRefresh } from "../utils/tokens.js";
-
+import mongoose from "mongoose";
 function issueTokens(userId, role) {
   const accessToken = signAccessToken({ sub: userId , role });
   const refreshToken = signRefreshToken({ sub: userId , role });
@@ -258,4 +258,64 @@ const logout =async(req, res)=>{
     
 }
 
-export {register, login, verifyOtp , forgotPassword , resetPassword , refresh , me, logout};
+const getAllUsers=async (req, res)=>{
+    try {
+        const { email}=req.query;
+        if(email){
+            const user=await User.find({email});
+            if(!user){
+                return res.status(400).json({success:false, message:"User not found"});
+            }
+            return res.status(200).json({success:true, data:user});
+        }
+        const users=await User.find();
+        if(!users){
+            return res.status(400).json({success:false, message:"Users not found"});
+        }
+        return res.status(200).json({success:true, data:users});
+    } catch (error) {
+        console.log("Get all users error:", error.message);
+        res.status(500).json({success:false, message:"Server error"})
+    }  
+}
+
+const changeRole= async (req, res)=>{
+    try {
+        const { id }= req.params;
+        const { role }= req.body;
+        if(!id){
+            return res.status(400).json({success:false, message:"User id not found"});
+        }
+        const user=await User.findById(id);
+        if(!user){
+            return res.status(400).json({success:false, message:"User not found"});
+        }
+        user.role=role || "user";
+        await user.save();
+        return res.status(200).json({success:true, message:"Role changed successfully"});
+    } catch (error) {
+        console.log("Change role error:", error.message);
+        return res.status(500).json({success:false, message:"Server error"})
+    }
+}
+
+const blockUser=async (req, res)=>{
+    try {
+        const { id }= req.params;
+        if(!id){
+            return res.status(400).json({success:false, message:"User id not found"});
+        }
+        const user=await User.findById(id);
+        if(!user){
+            return res.status(400).json({success:false, message:"User not found"});
+        }
+        user.isActive=!user.isActive;
+        await user.save();
+        return res.status(200).json({success:true, message:"User blocked successfully"});
+    } catch (error) {
+        console.log("Block user error:", error.message);
+        return res.status(500).json({success:false, message:"Server error"})
+    }
+}
+
+export {register, login, verifyOtp , forgotPassword , resetPassword , refresh , me, logout , getAllUsers , changeRole , blockUser};

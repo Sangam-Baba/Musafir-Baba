@@ -1,7 +1,8 @@
-import { register, login, verifyOtp, forgotPassword , resetPassword, me, refresh , logout} from "../controllers/auth.controller.js";
+import { register, login, verifyOtp, forgotPassword , resetPassword, me, refresh , logout , getAllUsers, changeRole , blockUser} from "../controllers/auth.controller.js";
 import { Router } from "express";
 import upload from "../middleware/multer.middleware.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
+import authorizedRoles from "../middleware/roleCheck.middleware.js";
 const authRouter=Router();
 
 authRouter.post('/register',upload.fields([
@@ -14,5 +15,8 @@ authRouter.post('/refresh' ,refresh);
 authRouter.get('/me' ,me);
 authRouter.post('/logout', isAuthenticated, logout);
 authRouter.patch("/reset-pasword/:token", resetPassword);
+authRouter.get('/getAllUsers', isAuthenticated, authorizedRoles(["admin", "superadmin"]), getAllUsers);
+authRouter.patch('/changeRole/:id', isAuthenticated, authorizedRoles(["admin", "superadmin"]), changeRole);
+authRouter.patch('/blockUser/:id', isAuthenticated, authorizedRoles(["admin", "superadmin"]), blockUser);
 
 export default authRouter;
