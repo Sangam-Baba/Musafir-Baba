@@ -70,7 +70,7 @@ export function DestinationSection() {
               </div>
               <div className="md:w-1/2">
                 <div className="relative">
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758108398/Untitled_design_5_nr6qyn.jpg" alt="Kerala" className="rounded-2xl w-full md:h-118 object-cover"  width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758340822/Untitled_design_5_hgguwf.jpg" alt="Kerala" className="rounded-2xl w-full md:h-118 object-cover"  width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                    Kerala
                  </div>
@@ -80,7 +80,7 @@ export function DestinationSection() {
             <div className="flex flex-col gap-4 md:w-1/2">
              <div className="w-full">
                 <div className="relative">
-                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758108398/Untitled_design_6_h6osmv.jpg" alt="meghalaya" className="rounded-2xl w-full h-56 object-cover"  width={500} height={500}/>
+                 <Image src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758340821/Untitled_design_6_mggpgh.jpg" alt="meghalaya" className="rounded-2xl w-full h-56 object-cover"  width={500} height={500}/>
                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                    Meghalaya
                  </div>
