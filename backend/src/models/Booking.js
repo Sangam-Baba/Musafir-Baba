@@ -13,12 +13,8 @@ const bookingSchema=new mongoose.Schema({
     },
     firstName:{
         type:String,
-        required:true,
+       
         trim:true,
-    },
-    lastName:{
-        type:String,
-        required:true,
     },
     address:{
       city:{
@@ -32,10 +28,14 @@ const bookingSchema=new mongoose.Schema({
       },
     },
     travellers:{
-        adult:{
+        quad:{
             type:Number,
-            required:true,
-            default:1,
+        },
+        triple:{
+            type:Number,
+        },
+        double:{
+            type:Number,
         },
         child:{
             type:Number,
@@ -57,7 +57,7 @@ const bookingSchema=new mongoose.Schema({
     paymentMethod:{
         type:String,
         enum:[ "PayU" ],
-        required:true,
+        default:"PayU",
     },
     paymentInfo: {
      orderId: String,

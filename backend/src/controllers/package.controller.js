@@ -5,8 +5,8 @@ import { Destination } from "../models/Destination.js";
 import mongoose from "mongoose";
 const createPackage=async(req, res)=>{
   try {
-    const {title, destination, duration, price}=req.body;
-    if(!title || !destination || !duration || !price) return res.status(400).json({success:false, message:"All fields are required"});
+    const {title, destination, duration, batch}=req.body;
+    if(!title || !destination || !duration || !batch) return res.status(400).json({success:false, message:"All fields are required"});
     const pkg=new Package({...req.body });
     await pkg.save();
     
@@ -97,7 +97,7 @@ const getPackageById = async (req, res) => {
 
 const getAllPackages = async (req, res) => {
    try{
-    const packages= await Package.find({status:"published"}).select("_id title price duration coverImage slug isFeatured status").lean();
+    const packages= await Package.find({status:"published"}).select("_id title batch duration coverImage slug isFeatured status").lean();
 
     if(!packages) return res.status(404).json({success:false, message:"Sorry, Packages not found"});
     res.status(200).json({
@@ -116,8 +116,6 @@ const getPackages = async (req, res) => {
     const {
       page = 1,
       limit = 10,
-      minPrice,
-      maxPrice,
       destination,
       minDays,
       maxDays,
@@ -130,12 +128,12 @@ const getPackages = async (req, res) => {
     // ✅ Status filter
     if (status) query.status = status;
 
-    // ✅ Price filter (adult price)
-    if (minPrice || maxPrice) {
-      query["price.adult"] = {};
-      if (minPrice) query["price.adult"].$gte = Number(minPrice);
-      if (maxPrice) query["price.adult"].$lte = Number(maxPrice);
-    }
+    // // ✅ Price filter (adult price)
+    // if (minPrice || maxPrice) {
+    //   query["batch.adult"] = {};
+    //   if (minPrice) query["price.adult"].$gte = Number(minPrice);
+    //   if (maxPrice) query["price.adult"].$lte = Number(maxPrice);
+    // }
 
     // ✅ Duration filter
     if (minDays || maxDays) {

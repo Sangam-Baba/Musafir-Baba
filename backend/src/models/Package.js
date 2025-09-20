@@ -27,18 +27,24 @@ const packageSchema = new mongoose.Schema(
         width: Number,
         height: Number
     }],
-
-    price: {
-      adult: { type: Number, required: true },
-      child: { type: Number, required: true },
-      currency: { type: String, default: "INR" },
-    },
     duration: {
       days: { type: Number, required: true },
       nights: { type: Number, required: true },
     },
-
-  
+    batch:[
+        {
+            startDate: { type: Date, required: true },
+            endDate: { type: Date, required: true },
+            quad: { type: Number, required: true },
+            quadDiscount: { type: Number },
+            triple: { type: Number, required: true },
+            tripleDiscount: { type: Number },
+            double: { type: Number, required: true },
+            doubleDiscount: { type: Number },
+            child: { type: Number, required: true },
+            childDiscount: { type: Number },
+        },
+    ],
     metaTitle: String,
     metaDescription: String,
     keywords: [String],
@@ -48,8 +54,6 @@ const packageSchema = new mongoose.Schema(
     schemaType: {
       type: String,
     },
-    startDates: [Date],
-    endDates: [Date],
     maxPeople: Number,
 
     highlights: [String],

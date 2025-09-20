@@ -7,18 +7,13 @@ const createBooking = async (req, res) => {
     if(!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
     const {
 packageId,
-firstName,
-lastName,
-address,
 travellers,
 travelDate,
 totalPrice,
-paymentMethod,
-specialRequests,
 } = req.body;
 
 
-    if (!packageId || !firstName || !lastName || !travelDate || !totalPrice || !paymentMethod) {
+    if (!packageId || !travelDate || !totalPrice || !travellers) {
     return res.status(400).json({ success: false, error: "Missing required fields" });
     }
 
@@ -26,14 +21,9 @@ specialRequests,
 const booking = await Booking.create({
 user: userId,
 packageId,
-firstName,
-lastName,
-address,
 travellers,
 travelDate,
 totalPrice,
-paymentMethod,
-specialRequests,
 });
 
 
