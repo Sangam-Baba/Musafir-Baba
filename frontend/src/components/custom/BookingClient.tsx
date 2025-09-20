@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo,useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation , useQuery} from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -71,7 +71,7 @@ async function bookPkgApi(values: BookingFormValues, accessToken: string) {
 
 function groupBatchesByMonth(batches: Batch[]) {
   const now = new Date();
-  const upcoming = batches.filter(b => isAfter(parseISO(b.startDate), now));
+  const upcoming = batches.filter(b => isAfter(parseISO(b.startDate), now)  || format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd"));
   return upcoming.reduce((acc: Record<string, Batch[]>, batch) => {
     const key = format(parseISO(batch.startDate), "MMM ''yy");
     if (!acc[key]) acc[key] = [];
@@ -89,6 +89,7 @@ const getUser= async (accessToken:string)=>{
 }
 
 export default function BookingClient({ pkg }: { pkg: Package }) {
+  console.log("Getting package: ",pkg);
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
@@ -123,14 +124,17 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
       travellers.triple * selectedBatch.triple +
       travellers.double * selectedBatch.double +
       travellers.child * selectedBatch.child
-      form.setValue("user", myUser?._id || "");
       setPrice(price);
     return price;
-  }, [travellers, selectedBatch, myUser]);
+  }, [travellers, selectedBatch]);
   const totalPriceWithTax=Math.ceil(totalPrice*1.05)
   
   const batchesByMonth = useMemo(() => groupBatchesByMonth(pkg.batch? pkg.batch : []), [pkg.batch]);
-
+useEffect(() => {
+  if (myUser?._id) {
+    form.setValue("user", myUser._id);
+  }
+}, [myUser, form]);
   const confirmSelection = () => {
     if (!selectedBatch) return;
     form.setValue("travellers", travellers);

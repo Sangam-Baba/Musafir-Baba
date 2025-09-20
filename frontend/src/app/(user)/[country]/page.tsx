@@ -17,7 +17,13 @@ interface Destination{
             state: string,
             city?: string,
             description: string,
-            coverImage: string,
+            coverImage?: {
+              url: string;
+              public_id: string;
+              width?: number;
+              height?: number;
+              alt: string ;
+            },
             gallery?: [],
             popularAttractions?: [],
             thingsToDo?: [],
@@ -26,12 +32,12 @@ interface Destination{
 interface QueryResponse{
     success: boolean;
     data: Destination[],
-        total: number,
+    total: number,
     page: number,
     totalPages: number
 }
 const getIndiaDestinations = async (country: string): Promise<QueryResponse> => {
-  const res =await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination/?country=${country}`,{
+  const res =await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination/?country=${country.toLowerCase()}`,{
     method:"GET",
     headers:{"Content-Type":"appliction/json"},
     credentials:"include"
@@ -44,7 +50,7 @@ const getIndiaDestinations = async (country: string): Promise<QueryResponse> => 
 function IndiaDestination() {
     const {country} = useParams<{ country: string }>();
     const CountryName= country;
-const { data, isLoading, isError, error } = useQuery<QueryResponse>({
+const { data : destinationResponse, isLoading, isError, error } = useQuery<QueryResponse>({
   queryKey: ["india-destinations"],
   queryFn: ()=>getIndiaDestinations(CountryName),
   retry: 2,
@@ -59,7 +65,7 @@ if(isError){
   return <h1>{error.message}</h1>
 }
 
-const  destinations   = data?.data ?? [];
+const  destinations   = destinationResponse?.data ?? [];
   return (
     <section>
         <Hero 
@@ -77,7 +83,7 @@ const  destinations   = data?.data ?? [];
                     id: destination._id,
                     name: destination.name,
                     slug: destination.slug,
-                    image: destination.coverImage 
+                    coverImage: destination.coverImage? destination.coverImage : {url:"", alt:""}, 
                   }))
                 } 
                 limit={10} 

@@ -9,7 +9,7 @@ export default async function Page({ params }: Params) {
   // fetch package server-side (SSR)
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${encodeURIComponent(decodedCountry)}&slug=${encodeURIComponent(slug)}`,
-    { next: { revalidate: 60 } } // cache for 60s; adjust if needed
+    { next: { revalidate: 60 } } 
   );
 
   if (!res.ok) {
@@ -30,6 +30,7 @@ export default async function Page({ params }: Params) {
       </div>
     );
   }
+  console.log(pkg);
 
   return (
     <BookingClient pkg={pkg} />

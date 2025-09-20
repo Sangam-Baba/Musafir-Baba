@@ -8,16 +8,25 @@ import { Loader } from "@/components/custom/loader";
 import PackageCard from "@/components/custom/PackageCard";
 import img1 from "../../../../../public/Hero1.jpg";
 
+interface Batch {
+  _id: string;
+  startDate: string;
+  endDate: string;
+  quad: number;
+  triple: number;
+  double: number;
+  child: number;
+  quadDiscount: number;
+  tripleDiscount: number;
+  doubleDiscount: number;
+  childDiscount: number;
+}
 interface Package {
   _id: string;
   title: string;
   slug: string;
   coverImage: string;
-  price: {
-    adult: number;
-    child: number;
-    currency: string;
-  };
+  batch: Batch[];
   duration: {
     days: number;
     nights: number;
@@ -61,6 +70,7 @@ const getCategoryBySlug =async (slug: string): Promise<CategoryResponse>=>{
     return res.json();
 }
 
+
 function SingleCategoryPage() {
     const {slug} = useParams();
 
@@ -80,6 +90,8 @@ if(isError){
 
  const { category } = data?.data ?? {};
  const packages = category?.packages ?? [];
+
+
   return (
  <section className="w-full mb-12">
       <Hero
@@ -99,16 +111,17 @@ if(isError){
 
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (
-        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
           {packages.map((pkg) => (
           <PackageCard key={pkg._id} pkg={{
             id: pkg._id,
             name: pkg.title,
             slug: pkg.slug,
             image: pkg.coverImage,
-            price: pkg.price.adult,
+            price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
             duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
             destination: pkg.destination?.name ?? "",
+            batch: pkg?.batch? pkg?.batch: []
           }} url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`} />
            ))}
         </div>

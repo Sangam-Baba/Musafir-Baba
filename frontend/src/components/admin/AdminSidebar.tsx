@@ -13,7 +13,7 @@ const NAV = [
 { label: "Destinations", href: "/admin/destination", icon: MapPin },
 { label: "Category", href: "/admin/category", icon: Tags },
 { label: "Authors", href: "/admin/authors", icon: Users },
-{ label: "Settings", href: "/admin/settings", icon: Settings },
+{ label: "Role Management", href: "/admin/role", icon: Settings },
 ];
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -53,14 +53,6 @@ active ? "bg-[#FE5300] dark:bg-slate-800 font-medium" : ""
 );
 })}
 <div className="mt-4 border-t pt-3">
-<button
-className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800"
-onClick={() => {
-console.log("open role management");
-}}
->
-<Settings /> <span>Role Management</span>
-</button>
 </div>
 </nav>
 <div className="mt-auto text-xs text-gray-500">

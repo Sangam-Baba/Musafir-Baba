@@ -1,6 +1,13 @@
 import Hero from "@/components/custom/Hero"
-
-
+import { Metadata } from "next"
+export const metadata: Metadata = {
+  title: "Terms and Conditions |Fair Travel Policies",
+  description:
+    "Our clear travel terms and conditions protect your trip.",
+  alternates: {
+    canonical: "https://www.musafirbaba.com/terms-&-condition",
+  },
+}
 function TermsAndCondition() {
   return (
     <section>

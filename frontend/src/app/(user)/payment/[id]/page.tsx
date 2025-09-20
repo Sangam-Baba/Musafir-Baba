@@ -7,14 +7,28 @@ import { toast } from 'sonner';
 import { useParams } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Loader } from '@/components/custom/loader';
-import { Card } from '@/components/ui/card';
+import { Card , CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 type BookingApiResponse = {
   data: {
     _id: string;
     totalPrice: number;
-    firstName?: string;
-    razorpayOrderId?: string;
+    travelDate: string;
+    travellers: {
+      quad: number;
+      triple: number;
+      double: number;
+      child: number;
+    };
+    packageId:{
+      _id:string;
+      title:string;
+    }
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
   };
 };
 
@@ -88,9 +102,9 @@ export default function CheckoutButton() {
           body: JSON.stringify({
             txnid,
             amount: price.toFixed(2),
-            productinfo: 'Travel Package',
-            firstname: booking?.firstName ?? 'Guest',
-            email: 'abhi@example.com',
+            productinfo: booking?.packageId?.title ?? 'Travel Package',
+            firstname: booking?.user?.name ?? 'Guest',
+            email: booking?.user?.email ?? 'abhi@example.com',
             phone: '9876543210',
             udf1: booking?._id
           }),
@@ -111,24 +125,48 @@ export default function CheckoutButton() {
   };
 
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16">
-      <Card className="p-4">
-        <p className="mb-2">
-          Pay this Amount: ₹{(amountInPaise / 100).toFixed(2)} to complete your
-          booking
-        </p>
+    <section className="max-w-5xl mx-auto px-4 md:px-8 lg:px-20 py-16">
+      <Card className="p-4 shadow-lg">
+        <CardHeader>
+          <CardTitle className='text-center text-2xl'>Preview Booking</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-2 font-bold text-lg">
+            Name: <span className="font-normal">{booking?.user?.name ?? 'Guest'}</span>
+          </p>
+          <p className="mb-2 font-bold text-lg">
+            Email: <span className="font-normal">{booking?.user?.email ?? 'abhi@example.com'}</span>
+          </p>
+          <p className="mb-2 font-bold text-lg">
+            Package Name: <span className="font-normal">{booking?.packageId?.title ?? 'Travel Package'}</span>
+          </p>
+          <p className="mb-2 font-bold text-lg">
+            Travellers: <span className="font-normal">{booking?.travellers?.quad} Quad + {booking?.travellers?.triple} Triple + {booking?.travellers?.double} Double + {booking?.travellers?.child} Child</span>
+          </p>
+          <p className="mb-2 font-bold text-lg">
+            Travel Date: <span className="font-normal">{booking?.travelDate.split('T')[0] ?? 'Unknown'}</span>
+          </p>
+        
+        
+           <p className="mb-2 font-bold text-lg">
+            Total Amount: <span className="font-normal">₹{(amountInPaise / 100).toFixed(2)} to complete your
+            booking
+          </span> 
+          </p>
+        </CardContent>
         <Button
           className="bg-[#FE5300]"
           onClick={handlePayment}
           disabled={loading}
+          hidden={toggle}
         >
           {loading
             ? 'Processing...'
-            : `Pay ₹${(amountInPaise / 100).toFixed(2)}`}
+            : `Confirm Booking for ₹${(amountInPaise / 100).toFixed(2)}`}
         </Button>
-        <div className="mt-4 bg-green-100 p-4">
+        <div className="mt-4 p-4 ">
           {toggle &&  
-          <form action="https://secure.payu.in/_payment" method="post">
+          <form action="https://secure.payu.in/_payment" method="post" className='flex flex-col'>
               <input type="hidden" name="key" value={paymentData.key} />
               <input type="hidden" name="txnid" value={paymentData.txnid}/>
               <input type="hidden" name="productinfo" value={paymentData.productinfo} />
@@ -141,7 +179,7 @@ export default function CheckoutButton() {
               <input type="hidden" name="phone" value={paymentData.phone} />
               <input type="hidden" name="hash" value={paymentData.hash} />
               <input type="hidden" name="udf1" value={paymentData.udf1} />
-              <input type="submit" value="Submit" className="bg-[#FE5300] text-white py-2 px-4 rounded-md" />
+              <input type="submit" value="Pay" className="bg-green-500 text-white py-2 px-4 rounded-md" />
          </form>
           }
           </div>

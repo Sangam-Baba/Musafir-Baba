@@ -1,74 +1,15 @@
-"use client";
-import React from 'react'
-import Hero from '../../../components/custom/Hero';
-import CategoryGrid from '../../../components/custom/CategoryGrid';
-import { useQuery } from "@tanstack/react-query";
-import { toast } from 'sonner';
-import { Loader } from "@/components/custom/loader";
-import img1 from "../../../../public/Hero1.jpg";
+import PackagesClient from "./PackagesClient"
+import { Metadata } from "next"
 
-
-interface Category {
-    id: string;
-    name: string;
-    slug: string;
-    coverImage: {
-        url: string;
-        alt: string
-    }
-    description: string;
+export const metadata: Metadata = {
+  title: "Affordable Holiday Tour Packages - Domestic & International | Book Now",
+  description:
+    "Explore incredible tour package without breaking the bank. Our affordable tour packages cover domestic and international trips. Easy booking and 24/7 support included.",
+  alternates: {
+    canonical: "https://www.musafirbaba.com/packages",
+  },
 }
 
-interface CategoryResponse{
-    data: Category[]
+export default function PackagesPage() {
+  return <PackagesClient />
 }
-const getCategory = async():Promise<CategoryResponse>=>{
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`
-        ,{
-            method: 'GET',
-            headers:{
-                "Content-Type": "application/json"
-            },
-            credentials: "include",
-        });
-    if (!res.ok) throw new Error("Failed to fetch posts");
-    return res.json()
-}
-
-function Packages() {
-    const {data , isLoading, isError, error} = useQuery<CategoryResponse>({queryKey:["categories"], queryFn:getCategory,
-        staleTime: 1000 * 60 * 5,
-        retry: 2,
-    });
-   
-    if(isLoading) {
-        return <Loader size="lg" message="Loading categories..." />;
-    }
-    if(isError) {
-        toast.error(error.message);
-        return <h1>{error.message}</h1>
-    }
-    const categories = data?.data ?? [];
-  return (
-    <section>
-<Hero
-  image={img1.src}
-  title="Find Your Perfect Getaway"
-  description="Curated itineraries, flexible dates, and best-price guarantees."
-  align="center"
-  height="lg"
-  overlayOpacity={55}
-/>
-      <div>
-               <CategoryGrid 
-                categories={categories} 
-                limit={10} 
-                title="Find Your Perfect Getaway with the Best Travel Agency in Delhi" 
-                url="/packages"
-              />
-      </div>
-    </section>
-  )
-}
-
-export default Packages

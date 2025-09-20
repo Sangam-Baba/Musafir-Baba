@@ -1,5 +1,14 @@
 import Hero from "@/components/custom/Hero"
 
+import { Metadata } from "next"
+export const metadata: Metadata = {
+  title: "Refund & Cancellation Policy | Travel Booking Terms",
+  description:
+    "Our refund and cancellation policy explained simply. Clear terms for travel booking changes and refunds.",
+  alternates: {
+    canonical: "https://www.musafirbaba.com/refund-&-cancellation",
+  },
+}
 
 function RefundPage() {
   return (

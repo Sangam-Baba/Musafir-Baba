@@ -4,7 +4,21 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Calendar } from "lucide-react";
 import Link from "next/link";
-
+import { format, parseISO, isAfter } from "date-fns";
+import { useMemo } from 'react';
+interface Batch {
+  _id: string;
+  startDate: string;
+  endDate: string;
+  quad: number;
+  triple: number;
+  double: number;
+  child: number;
+  quadDiscount: number;
+  tripleDiscount: number;
+  doubleDiscount: number;
+  childDiscount: number;
+}
 interface Package {
   id: string;
   name: string;
@@ -13,10 +27,23 @@ interface Package {
   slug: string;
   duration: string; // e.g. "6N/7D"
   destination?: string; // e.g. "Leh - Leh"
+  batch?: Batch[];
   url?: string;
 }
 
+function groupBatchesByMonth(batches: Batch[]) {
+  const now = new Date();
+  const upcoming = batches.filter(b => isAfter(parseISO(b.startDate), now)  || format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd"));
+  return upcoming.reduce((acc: Record<string, Batch[]>, batch) => {
+    const key = format(parseISO(batch.startDate), "MMM ''yy");
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(batch);
+    return acc;
+  }, {});
+}
 export default function PackageCard({ pkg , url }: { pkg: Package; url: string } ) {
+   const batchesByMonth = useMemo(() => groupBatchesByMonth(pkg.batch? pkg.batch : []), [pkg.batch]);
+   console.log(batchesByMonth);
   return (
     <Link href={url}>
     <Card className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
@@ -51,8 +78,8 @@ export default function PackageCard({ pkg , url }: { pkg: Package; url: string }
         </div>
 
         {/* Flexible date */}
-        <p className="text-xs text-gray-600 mt-2">
-          Any date of your choice
+        <p className="text-xs text-gray-600 mt-2 line-clamp-1">
+          {batchesByMonth ? Object.keys(batchesByMonth).join(", ") : "Any Date of your choice"}
         </p>
       </CardContent>
     </Card>

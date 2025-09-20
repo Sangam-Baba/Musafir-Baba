@@ -1,5 +1,13 @@
 import Hero from "@/components/custom/Hero"
-
+import { Metadata } from "next"
+export const metadata: Metadata = {
+  title: "Privacy Policy | Your Data, Our Responsibility",
+  description:
+    "Our privacy policy explains travel data protection practices.",
+  alternates: {
+    canonical: "https://www.musafirbaba.com/privacy-policy",
+  },
+}
 
 function PrivacyPolicy() {
   return (

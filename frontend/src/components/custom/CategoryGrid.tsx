@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { motion } from "framer-motion"
 import Image from "next/image"
+
 type Category = {
   id: string
   name: string
@@ -29,7 +30,7 @@ export default function CategoryGrid({ categories, limit, title, url }: Category
     <section className="w-full px-4 md:px-8 lg:px-20 py-12">
       {title && (
         <div className="flex flex-col gap-2 items-center mb-8">
-        <h2 className="text-2xl font-bold text-center">{title}</h2>
+        <h2 className="text-2xl font-bold text-center">{title.toUpperCase()}</h2>
         <div className="w-20 h-1 bg-[#FE5300]"></div>
        </div> 
       )}
@@ -43,8 +44,8 @@ export default function CategoryGrid({ categories, limit, title, url }: Category
             transition={{ delay: i * 0.1 }}
           >
             <Link href={`${url}/${cat.slug}`}>
-              <Card className="group cursor-pointer overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition">
-                <div className="relative h-40 w-full overflow-hidden">
+              <Card className="group cursor-pointer overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition py-0">
+                <div className="relative h-40 w-full overflow-hidden  ">
                   <Image
                      width={500}
                      height={500}
@@ -54,10 +55,10 @@ export default function CategoryGrid({ categories, limit, title, url }: Category
                   />
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg">{cat.name.slice(0, 20)}</h3>
+                  <h3 className="font-semibold text-lg line-clamp-1">{cat.name}</h3>
                   {cat.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {cat.description.slice(0, 20)}
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {cat.description}
                     </p>
                   )}
                 </CardContent>
