@@ -13,7 +13,6 @@ export default async function Page({ params }: Params) {
   );
 
   if (!res.ok) {
-    // Return a simple server-side message. You can render a nicer UI here.
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-600">Package not found.</p>
@@ -32,8 +31,7 @@ export default async function Page({ params }: Params) {
     );
   }
 
-  // Pass the package down to the client component. Keep props serializable.
   return (
-    <BookingClient pkg={pkg} initialAdults={1} initialChildren={0} initialPrice={pkg.price?.adult ?? 0} />
+    <BookingClient pkg={pkg} />
   );
 }

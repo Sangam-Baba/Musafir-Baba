@@ -16,10 +16,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@radix-ui/react-accordion";
-import { Calendar } from "lucide-react";
-import { Card , CardContent, CardFooter, CardHeader, CardTitle, CardDescription, CardAction, } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card , CardHeader, CardTitle, } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import QueryForm from "@/components/custom/QueryForm";
 
 type TabKey = "description" | "highlights" | "itineraries" | "includeexclude" | "faqs";
 
@@ -33,20 +32,17 @@ interface Destination {
   coverImage: string;
   slug: string;
 }
-interface Price {
-  adult: number;
+interface Batch {
+  startDate: string;
+  endDate: string;
+  quad: number;
+  triple: number;
+  double: number;
   child: number;
-  currency: string;
-}
-export interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-}
-export interface SEO {
-  metaTitle?: string;
-  metaDescription?: string;
-  keywords?: string[];
+  quadDiscount:number;
+  doubleDiscount:number;
+  tripleDiscount:number;
+  childDiscount:number
 }
 export interface Duration {
   days: number;
@@ -67,13 +63,11 @@ interface Package {
   destination: Destination;
   coverImage: string;
   gallery: string[];
-  price: Price;
-  category: Category[];
+  batch: Batch[];
   duration: Duration;
-  seo: SEO;
-  keywords: string[];
-  startDates: string[];
-  endDates: string[];
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string[];
   maxPeople?: number;
   highlights: string[];
   inclusions: string[];
@@ -118,15 +112,8 @@ function PackageDetails() {
   const router=useRouter();
   const store= useBookingStore((state) => state);
   console.log(store);
-  const adults= useBookingStore((state) => state.adults);
-  const children = useBookingStore((state) => state.children);
-  const price= useBookingStore((state) => state.price);
-  const date=useBookingStore((state) => state.date);
-  const setDate=useBookingStore((state) => state.setDate);
-  const setPrice = useBookingStore((state) => state.setPrice);
-  const setAdults = useBookingStore((state) => state.setAdults);
-  const setChildren = useBookingStore((state) => state.setChildren);
- 
+
+
 
 
   const [active, setActive] = useState<TabKey>("description");
@@ -157,24 +144,24 @@ function PackageDetails() {
   if (!pkg) {
     return <p>No package found.</p>;
   }
-    const recalcPrice = (newAdults: number, newChildren: number) => {
-    setPrice(newAdults * pkg.price.adult + newChildren * pkg.price.child);
-  };
+   const price =pkg.batch?.length? pkg?.batch[0].quad: 3999;
+   const dicountedPrice =pkg.batch?.length? pkg?.batch[0].quadDiscount: 5999;
+
 
   return (
     <section>
       <Hero
         image={pkg.coverImage ?? ""}
         title={pkg.title}
-        description={pkg.seo?.metaDescription ?? ""}
+        description={pkg.metaDescription ?? ""}
         align="center"
         height="lg"
         overlayOpacity={55}
       />
 
       <ImageGallery />
-      <div className="w-full px-4 md:px-8 lg:px-20 py-8 md:flex">
-      <section className="w-full md:w-1/2 px-4 md:px-8 lg:px-20 py-16">
+      <div className="w-full max-w-7xl mx-auto px-4  py-8 md:flex">
+        <section className="w-full md:w-2/3 px-4  py-16">
         <div className="flex flex-col gap-2 items-center max-w-7xl mx-auto">
           {/* Tabs */}
           <div className="flex flex-wrap justify-center w-full gap-2 mt-4 ">
@@ -243,37 +230,21 @@ function PackageDetails() {
             )}
           </div>
         </div>
-      </section>
-      <div className="w-full md:w-1/2 px-4 md:px-8 lg:px-20 py-16">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-2xl font-semibold tracking-tight">From: ₹{price} </CardTitle>
+        </section>
+        <div className="w-full md:w-1/3 px-4 py-16 ">
+         <Card className="mb-4 shadow-lg">
+          <CardHeader className="flex flex-col justify-between  ">
+            <p>Starting from <span className="text-sm text-muted-foreground line-through">INR {dicountedPrice}</span></p>
+            <CardTitle className="text-4xl font-semibold tracking-tight text-[#FE5300]">INR {price} </CardTitle>
+             <span className="text-sm text-muted-foreground">per person</span>
           </CardHeader>
-          <CardContent className="p-4 rounded-2xl shadow-lg space-y-2 m-4">
-            <div className="flex justify-around items-center">
-              <p>Date:</p>
-              <Calendar className="w-4 h-4 text-blue-600" />
-              <Input type="date" value={date} onChange={(e) => {setDate(e.target.value); setPrice(adults * pkg.price.adult  + children * pkg.price.child)}} />
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-semibold text-lg">Adults:</p>
-              <Button onClick={()=> {if(adults>0) {setAdults(adults-1); recalcPrice(adults - 1, children);}}} size="sm">-</Button>
-              <span className="mx-2">{adults}</span>
-              <Button  onClick={()=> {setAdults(adults+1); recalcPrice(adults + 1, children);}} size="sm">+</Button>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="font-semibold text-lg">Child:</p>
-              <Button  onClick={()=>  { if(children>0 ){setChildren(children-1); recalcPrice(adults, children - 1);}}} size="sm">-</Button>
-              <span className="mx-2">{children}</span>
-              <Button  onClick={()=>{ setChildren(children+1); recalcPrice(adults, children + 1);}} size="sm">+</Button>
-            </div>
-            
-          </CardContent>
           <Button onClick={() => {
             if(!auth.isAuthenticated){router.push("/auth/login")}
-             else {router.push(`/booking/${state}/${pkg.slug}`)}}} size={"lg"} className="m-4 ">Book Now</Button>
-        </Card>
-      </div>
+             else {router.push(`/booking/${state}/${pkg.slug}`)}}} size={"lg"} className="m-4 bg-[#FE5300] hover:bg-[#FE5300] font-bold text-xl">Book Now</Button>
+          </Card>
+          <QueryForm />
+        </div>
+      
       </div>
     </section>
   );

@@ -102,7 +102,7 @@ export default function QueryForm() {
               onCheckedChange={(checked) => setFormData({ ...formData, whatsapp: !!checked })}
             />
             <Label htmlFor="whatsapp" className="text-sm">
-              Send me updates for this booking on{" "}
+              Send me updates on{" "}
               <span className="text-green-600 font-semibold">WhatsApp</span>
             </Label>
           </div>

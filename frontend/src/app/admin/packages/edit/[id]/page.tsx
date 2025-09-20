@@ -34,10 +34,22 @@ interface Itinerary {
   description: string
 }
 
+interface Batch {
+  startDate: string
+  endDate: string
+  quad: number
+  triple: number
+  double: number
+  child: number
+  quadDiscount: number
+  tripleDiscount: number
+  doubleDiscount: number
+  childDiscount: number
+}
 interface PackageFormValues {
   title: string
   description: string
-  price: { adult: number; child: number; currency: string }
+  batch: Batch[]
   slug: string
   destination: string
   coverImage: Image
@@ -120,7 +132,18 @@ export default function CreatePackagePage() {
     keywords: [],
     coverImage: { url: "", alt: "", public_id: "" },
     gallery: [],
-    price: { adult: 0, child: 0, currency: "INR" },
+    batch : [{
+        startDate: "",
+        endDate: "",
+        quad: 0,
+        triple: 0,
+        double: 0,
+        child: 0,
+        quadDiscount:0,
+        tripleDiscount:0,
+        doubleDiscount:0,
+        childDiscount:0
+    }],
     destination: "",
     duration: { days: 0, nights: 0 },
     maxPeople: 0,
@@ -143,13 +166,20 @@ export default function CreatePackagePage() {
   })
   const form = useForm<PackageFormValues>({ defaultValues })
 
-  useEffect(()=>{
-    if(pkg){
-        form.reset(pkg)
-    }
-  },[pkg, form])
+useEffect(() => {
+  if (pkg) {
+    form.reset({
+      ...pkg,
+      batch: pkg.batch.map((b: Batch) => ({
+        ...b,
+        startDate: b.startDate ? b.startDate.split("T")[0] : "",
+        endDate: b.endDate ? b.endDate.split("T")[0] : "",
+      })),
+    });
+  }
+}, [pkg, form]);
 
-
+  const batchArray = useFieldArray({ control: form.control, name: "batch" })
   const coverImageArray = useFieldArray({ control: form.control, name: "gallery" })
   const highlightsArray = useFieldArray({ control: form.control, name: "highlights" })
   const inclusionsArray = useFieldArray({ control: form.control, name: "inclusions" })
@@ -177,7 +207,7 @@ export default function CreatePackagePage() {
   if(isErrorPackage) return <h1>{errorPackage.message}</h1>
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-md">
+      <div className="w-full max-w-5xl rounded-2xl bg-white p-6 shadow-md">
         <h1 className="mb-6 text-center text-2xl font-bold">Edit Package</h1>
 
         <Form {...form}>
@@ -211,36 +241,34 @@ export default function CreatePackagePage() {
                 </FormItem>
               )}
             />
-
-            {/* Price */}
-            <div className="flex justify-between gap-4">
-            <FormField
-              control={form.control}
-              name="price.adult"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Adult Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter Adult Price" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="price.child"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Child Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter Adult Price" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            </div>
+            {/* Batch Dynamic */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Batch</FormLabel>
+              {batchArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  <Input type="date" {...form.register(`batch.${index}.startDate`)} placeholder="Start Date" />
+                  <Input type="date" {...form.register(`batch.${index}.endDate`)} placeholder="End Date" />
+                  <Input type="number" {...form.register(`batch.${index}.quad`)} placeholder="Quad Price" />
+                  <Input type="number" {...form.register(`batch.${index}.quadDiscount`)} placeholder="Quad Discount" />
+                  <Input type="number" {...form.register(`batch.${index}.triple`)} placeholder="Triple Price" />
+                   <Input type="number" {...form.register(`batch.${index}.tripleDiscount`)} placeholder="Triple Discount" />
+                  <Input type="number" {...form.register(`batch.${index}.double`)} placeholder="Double Price" />
+                   <Input type="number" {...form.register(`batch.${index}.doubleDiscount`)} placeholder="Double Discount" />
+                  <Input type="number" {...form.register(`batch.${index}.child`)} placeholder="Child Price" />
+                   <Input type="number" {...form.register(`batch.${index}.childDiscount`)} placeholder="Child Discount" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => batchArray.remove(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={() => batchArray.append({ startDate: "", endDate: "", quad: 0, triple: 0, double:0, child: 0, quadDiscount:0, tripleDiscount:0, doubleDiscount:0, childDiscount:0 })}>
+                Add Batch
+              </Button>
+            </div>            
  
             {/* Duration */}
            <div className="flex justify-between gap-4">

@@ -7,15 +7,23 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import PackagesList from '@/components/admin/PackagesList';
 import { useAuthStore } from '@/store/useAuthStore';
+interface Batch{
+  startDate:string,
+  endDate:string,
+  quad:number,
+  triple:number,
+  double:number,
+  child:number
+  quadDiscount:number,
+  tripleDiscount:number,
+  doubleDiscount:number,
+  childDiscount:number
+}
 interface Package{
     _id:string,
     title:string,
     description:string,
-    price:{
-        adult:number,
-        child:number,
-        currency:string
-    },
+    batch:Batch[],
     slug:string,
     coverImage:{
         url:string,
@@ -53,8 +61,6 @@ interface Package{
     metaTitle:string,
     metaDescription:string,
     keywords:string[],
-    startDates:string[],
-    endDates:string[],
     maxPeople?:number,
     highlights:string[],
     inclusions:string[],
@@ -123,12 +129,12 @@ const accessToken = useAuthStore((state)=>state.accessToken) as string;
         </div>
       ) : (
         <PackagesList
-          packages={packages?.map((b:Package) => ({
+          packages={packages.map((b:Package) => ({
             id: b._id,
             name: b.title,
             location: b.destination?.state.toLocaleUpperCase(),
             slug: b.slug,
-            price: b.price.adult,
+            price: b.batch?.length ? b.batch[0].quad : 0,
             url: `/${b.destination?.country}/${b.destination?.state}/${b.slug}`, 
           }))}
           onEdit={handleEdit}

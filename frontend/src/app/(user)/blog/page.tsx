@@ -1,6 +1,14 @@
 import BlogCard from "@/components/custom/BlogCard";
 import Hero from "@/components/custom/Hero";
-//import { BlogContent } from "@/components/custom/BlogContent";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Travel Blog - Guides, Tips & Travel Inspiration",
+  description: "Travel Blog - Guides, Tips & Travel Inspiration!Discover travel secrets on our blog! Get complete guides, visa assistance, amazing tours, money-saving tips, and inspiration for incredible adventures.",
+  alternates: {
+    canonical: "https://www.musafirbaba.com/blog",
+  },
+};
 interface coverImage{
   url: string,
   public_id: string,
