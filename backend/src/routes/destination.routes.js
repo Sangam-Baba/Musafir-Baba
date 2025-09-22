@@ -12,7 +12,7 @@ destinationRoutes.post('/', isAuthenticated, authorizedRoles(["admin", "superadm
 ]), createDestination);
 destinationRoutes.get('/', getAllDestination);
 destinationRoutes.get('/:id', getDestinationById);
-destinationRoutes.put('/:id', isAuthenticated, authorizedRoles(["admin" , "superadmin"]), updateDestination);
+destinationRoutes.patch('/:id', isAuthenticated, authorizedRoles(["admin" , "superadmin"]), updateDestination);
 destinationRoutes.delete('/:id', isAuthenticated, authorizedRoles(["admin", "superadmin"]), deleteDestination);
 
 export default destinationRoutes;

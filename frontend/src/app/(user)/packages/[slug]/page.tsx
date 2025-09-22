@@ -21,11 +21,18 @@ interface Batch {
   doubleDiscount: number;
   childDiscount: number;
 }
+interface CoverImage{
+    url: string;
+    public_id: string;
+    width: number;
+    height: number;
+    alt: string;
+}
 interface Package {
   _id: string;
   title: string;
   slug: string;
-  coverImage: string;
+  coverImage: CoverImage;
   batch: Batch[];
   duration: {
     days: number;
@@ -117,7 +124,7 @@ if(isError){
             id: pkg._id,
             name: pkg.title,
             slug: pkg.slug,
-            image: pkg.coverImage,
+            image: pkg.coverImage?.url ?? "",
             price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
             duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
             destination: pkg.destination?.name ?? "",

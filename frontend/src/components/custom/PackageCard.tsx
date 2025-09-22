@@ -63,7 +63,7 @@ export default function PackageCard({ pkg , url }: { pkg: Package; url: string }
 
       <CardContent className="p-4 space-y-3">
         {/* Title */}
-        <h3 className="font-semibold text-lg line-clamp-2">{pkg.name}</h3>
+        <h3 className="font-semibold text-lg line-clamp-1">{pkg.name}</h3>
 
         {/* Duration & Location */}
         <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
@@ -79,7 +79,7 @@ export default function PackageCard({ pkg , url }: { pkg: Package; url: string }
 
         {/* Flexible date */}
         <p className="text-xs text-gray-600 mt-2 line-clamp-1">
-          {batchesByMonth ? Object.keys(batchesByMonth).join(", ") : "Any Date of your choice"}
+          {batchesByMonth.length ? Object.keys(batchesByMonth).join(", ") : "Any Date of your choice"}
         </p>
       </CardContent>
     </Card>

@@ -3,78 +3,118 @@
 import React, { useState } from "react"
 import { Button } from "../ui/button"
 import Image from "next/image"
-import jaipur from "../../../public/jaipur.jpg"
-import badrinath from "../../../public/badrinath.jpg"
-import keral from "../../../public/keral.jpg"
-import kashmir from "../../../public/kashmir.jpg"
-import himachal from "../../../public/Himachal.jpg"
 import { Card, CardContent } from "../ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
 import Link from "next/link"
+import { Loader } from "@/components/custom/loader"
+import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 
-type Tour = {
-  image: string
+interface Batch {
+  _id: string
+  startDate: string
+  endDate: string
+  quad: number
+  triple: number
+  double: number
+  child: number
+  quadDiscount: number
+  tripleDiscount: number
+  doubleDiscount: number
+  childDiscount: number
+}
+interface CoverImage {
+  url: string
+  public_id: string
+  width: number
+  height: number
+  alt: string
+}
+interface Package {
+  _id: string
   title: string
-  subtitle: string
-  location: string
-  price: number
-  duration: string
-  isTrending: boolean
+  slug: string
+  coverImage: CoverImage
+  batch: Batch[]
+  duration: {
+    days: number
+    nights: number
+  }
+  destination: Destination
+  isFeatured: boolean
+  status: "draft" | "published"
+}
+interface Destination {
+  _id: string
+  country: string
+  state: string
+  name: string
+  slug: string
+}
+interface Category {
+  _id: string
+  name: string
+  slug: string
+  image: string
+  description: string
+  packages: Package[]
+}
+interface CategoryResponse {
+  success: boolean
+  data: {
+    category: Category
+  }
 }
 
-type TabKey =
-  | "Customized"
-  | "Backpacking"
-  | "Weekend"
-  | "Early"
-  | "Honeymoon"
-  | "International"
-
-const data: Record<TabKey, Tour[]> = {
-  Customized: [
-    { image: jaipur.src, title: "Jaipur", subtitle: "Jaipur Tour Package", location: "Jaipur", price: 20999, duration: "10D/9N", isTrending: true },
-    { image: keral.src, title: "Kerala", subtitle: "Kerala Tour Package", location: "Kerala", price: 24999, duration: "7D/6N", isTrending: true },
-    { image: himachal.src, title: "Himachal", subtitle: "Himachal Tour Package", location: "Himachal", price: 18999, duration: "8D/7N", isTrending: false },
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Tour Package", location: "Uttarakhand", price: 20999, duration: "10D/9N", isTrending: true },
-  ],
-  Backpacking: [
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
-    { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
-  ],
-  Weekend: [
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
-    { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
-    { image: himachal.src, title: "Himachal", subtitle: "Himachal Tour Package", location: "Himachal", price: 18999, duration: "8D/7N", isTrending: false },
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Tour Package", location: "Uttarakhand", price: 20999, duration: "10D/9N", isTrending: true },
-
-  ],
-  Early: [
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
-    { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
-  ],
-  Honeymoon: [
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
-    { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
-  ],
-  International: [
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Backpacking", location: "Uttarakhand", price: 15999, duration: "5D/4N", isTrending: true },
-    { image: kashmir.src, title: "Kashmir", subtitle: "Kashmir Backpacking", location: "Kashmir", price: 17999, duration: "6D/5N", isTrending: false },
-    { image: himachal.src, title: "Himachal", subtitle: "Himachal Tour Package", location: "Himachal", price: 18999, duration: "8D/7N", isTrending: false },
-    { image: badrinath.src, title: "Badrinath", subtitle: "Badrinath Tour Package", location: "Uttarakhand", price: 20999, duration: "10D/9N", isTrending: true },
-  ],
+const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`, {
+    method: "GET",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    cache: "no-cache",
+  })
+  if (!res.ok) {
+    throw new Error("Failed to fetch category")
+  }
+  return res.json()
 }
+
+type TabSlug =
+  | "customized-tour-packages"
+  | "backpacking-tour-packages"
+  | "weekend-tour-packages"
+  | "honeymoon-tour-packages"
+  | "early-bird-tour-packages"
+  | "international-tour-packages"
 
 export function FeaturedTour() {
-  const [active, setActive] = useState<TabKey>("Customized")
+  const [slug, setSlug] = useState<TabSlug>("customized-tour-packages")
 
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: "Customized", label: "Customized Trips" },
-    { key: "Backpacking", label: "Backpacking Trips" },
-    { key: "Weekend", label: "Weekend Trips" },
-    { key: "Honeymoon", label: "Honeymoon Trips" },
-    { key: "Early", label: "Early Bird 2025" },
-    { key: "International", label: "International Trips" },
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["category", slug],
+    queryFn: () => getCategoryBySlug(slug),
+    retry: 2,
+  })
+
+  if (isLoading) {
+    return <Loader size="lg" message="Loading category..." />
+  }
+  if (isError) {
+    toast.error((error as Error).message)
+    return <h1>{(error as Error).message}</h1>
+  }
+
+  const { category } = data?.data ?? {}
+  const packages = category?.packages ?? []
+
+  const tabs: { key: TabSlug; label: string; slug: TabSlug }[] = [
+    { key: "customized-tour-packages", label: "Customized Trips", slug: "customized-tour-packages" },
+    { key: "backpacking-tour-packages", label: "Backpacking Trips", slug: "backpacking-tour-packages" },
+    { key: "weekend-tour-packages", label: "Weekend Trips", slug: "weekend-tour-packages" },
+    { key: "honeymoon-tour-packages", label: "Honeymoon Trips", slug: "honeymoon-tour-packages" },
+    { key: "early-bird-tour-packages", label: "Early Bird 2025", slug: "early-bird-tour-packages" },
+    { key: "international-tour-packages", label: "International Trips", slug: "international-tour-packages" },
   ]
 
   return (
@@ -91,12 +131,10 @@ export function FeaturedTour() {
           <div className="flex flex-wrap justify-center w-full gap-2 mt-4 ">
             {tabs.map((tab) => (
               <Button
-                key={tab.key}
+                key={tab.slug}
                 size="lg"
-                onClick={() => setActive(tab.key)}
-                className={`mt-4 ${
-                  active === tab.key ? "bg-[#FE5300]" : "bg-gray-400"
-                }`}
+                onClick={() => setSlug(tab.slug)}
+                className={`mt-4 ${slug === tab.slug ? "bg-[#FE5300]" : "bg-gray-400"}`}
               >
                 {tab.label}
               </Button>
@@ -105,63 +143,69 @@ export function FeaturedTour() {
         </div>
 
         <div className="flex  justify-between  items-center w-full p-4">
-          <div className="text-xl font-semibold">{active} Trips</div>
+          <div className="text-xl font-semibold">{category?.name} Trips</div>
           <div>
-              <Link href={`https://musafirbaba.com/packages/${active.toLowerCase()}`} className="text-[#FE5300] font-semibold" > View All</Link>
+            <Link
+              href={`/packages/${slug}`}
+              className="text-[#FE5300] font-semibold"
+            >
+              View All
+            </Link>
           </div>
         </div>
+
         {/* Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10 w-full px-6 md:px-0">
-          {data[active].map((obj) => (
-            <Card
-              key={obj.title}
-              className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition"
-            >
-              <div className="relative">
-                <Image
-                  src={obj.image}
-                  alt={obj.title}
-                  width={400}
-                  height={250}
-                  className="object-cover w-full h-48"
-                />
+          {packages.slice(0, 4).map((obj: Package) => {
+            const price = obj.batch?  obj.batch?.[0]?.quad : 3999;
+            return (
+              <Card
+                key={obj._id}
+                className="py-0 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition"
+              >
+                <Link href={`/${obj.destination.country}/${obj.destination.state}/${obj.slug}`} className="block">
+                <div className="relative">
+                  <Image
+                    src={obj.coverImage?.url}
+                    alt={obj.title}
+                    width={400}
+                    height={250}
+                    className="object-cover w-full h-48"
+                  />
 
-                {/* Trending Badge */}
-                {obj.isTrending && (
                   <Badge className="absolute top-2 left-2 bg-red-600 text-white">
                     Trending
                   </Badge>
-                )}
 
-                {/* Title Overlay */}
-                <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
-                  {obj.title}
-                </div>
-              </div>
-
-              <CardContent className="p-4 space-y-2">
-                {/* Location */}
-                <div className="flex items-center text-gray-600 text-sm">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {obj.location}
+                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                    {obj.title}
+                  </div>
                 </div>
 
-                {/* Subtitle */}
-                <h3 className="font-semibold text-lg">{obj.subtitle}</h3>
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {obj.destination?.name}
+                  </div>
 
-                {/* Price & Duration */}
-                <div className="flex justify-between items-center pt-2 border-t text-sm">
-                  <span>
-                    From{" "}
-                    <span className="text-[#FE5300] font-bold">
-                      ₹{obj.price.toLocaleString("en-IN")}
+                  <h3 className="font-semibold text-lg">{obj.title}</h3>
+
+                  <div className="flex justify-between items-center pt-2 border-t text-sm">
+                    <span>
+                      From{" "}
+                      <span className="text-[#FE5300] font-bold">
+                        ₹{price.toLocaleString("en-IN")}
+                      </span>
                     </span>
-                  </span>
-                  <span className="text-gray-500">{obj.duration}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    <span className="text-gray-500">
+                      {obj.duration.days}D/{obj.duration.nights}N
+                    </span>
+                  </div>
+                </CardContent>
+                </Link>
+              </Card>
+            )
+          })}
         </div>
       </div>
     </section>

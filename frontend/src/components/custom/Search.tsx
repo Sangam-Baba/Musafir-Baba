@@ -24,10 +24,12 @@ function Search() {
       >
         <option value="">Select Location</option>
         <option value="delhi">Delhi</option>
-        <option value="mumbai">Mumbai</option>
-        <option value="kolkata">Kolkata</option>
-        <option value="chennai">Chennai</option>
-        <option value="bangalore">Bangalore</option>
+        <option value="uttrakhand">Uttrakhand</option>
+        <option value="kerla">Kerla</option>
+        <option value="himachal pradesh">Himachal Pradesh</option>
+        <option value="uttar-pradesh">Uttar Pradesh</option>
+        <option value="rajasthan">Rajasthan</option>
+        <option value="meghalaya">Meghalaya</option>
       </select>
       <Button
         onClick={handleSearch}

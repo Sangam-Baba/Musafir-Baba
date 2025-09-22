@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader } from '@/components/custom/loader';
 import { useParams } from 'next/navigation';
+import  NotFoundPage  from '@/components/common/Not-Found';
 interface Destination{
             seo?: {
                 keywords: string[]
@@ -67,7 +68,10 @@ if(isError){
 
 const  destinations   = destinationResponse?.data ?? [];
   return (
-    <section>
+   destinations.length === 0 ? ( 
+    <NotFoundPage />
+    ) :(
+      <section>
         <Hero 
             image={img1.src}
             title="Explore Best Destinations"
@@ -76,7 +80,7 @@ const  destinations   = destinationResponse?.data ?? [];
             align="center"
             />
       {destinations.length > 0 ? (
-        <div>
+        <div className="px-4 md:px-8 lg:px-20 py-16">
           <CategoryGrid 
                 categories={
                   destinations.map((destination) => ({
@@ -98,6 +102,7 @@ const  destinations   = destinationResponse?.data ?? [];
         </p>
       )}
     </section>
+     )
   )
 }
 

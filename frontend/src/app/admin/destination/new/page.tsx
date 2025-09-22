@@ -125,7 +125,7 @@ export default function CreateDestination() {
   
     return (
       <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold mb-6">Create Blog</h1>
+        <h1 className="text-2xl font-bold mb-6">Create Destination</h1>
         <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-6">
           <input {...form.register("name")} placeholder="Name" className="w-full border rounded p-2" />
           {form.formState.errors.name && <p className="text-red-500 text-sm">{form.formState.errors.name.message}</p>}

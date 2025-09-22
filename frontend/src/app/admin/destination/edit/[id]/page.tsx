@@ -92,7 +92,7 @@ const formSchema = z.object({
 
 const update = async (values: z.infer<typeof formSchema>, token: string, id: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
