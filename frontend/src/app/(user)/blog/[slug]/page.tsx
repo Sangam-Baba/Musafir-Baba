@@ -1,7 +1,14 @@
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import { BlogContent } from "@/components/custom/BlogContent";
 import Link from "next/link";
+import NotFoundPage from "@/components/common/Not-Found";
+import QueryForm from "@/components/custom/QueryForm";
+import CategorySidebar from "@/components/custom/CategorySidebar";
+import LatestBlogSidebar from "@/components/custom/LatestBlogSidebar";
+import BlogViewTracker from "@/components/custom/BlogViewTracker";
+import TrandingBlogSidebar from "@/components/custom/TrandingBlogSidebar";
+import BlogLikes from "@/components/custom/BlogLikes";
+import {BlogComments} from "@/components/custom/BuildCommentTree";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -13,9 +20,9 @@ async function getBlog(slug: string) {
   return data?.data;
 }
 
-// ✅ SEO Metadata
+// SEO Metadata
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const blog = await getBlog(params.slug);
+  const { blog } = await getBlog(params.slug);
 
   if (!blog) {
     return {
@@ -36,15 +43,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-// ✅ Blog Detail Page
+// Blog Detail Page
 export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
-  const blog = await getBlog(params.slug);
+  const {blog , comments }= await getBlog(params.slug);
 
-  if (!blog) return notFound();
+  if (!blog) return <NotFoundPage />;
 
   return (
-    <article className="container mx-auto max-w-4xl py-10 px-8">
+    <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-10 px-12">
+     <article className="lg:w-5/7  ">
       {/* Cover Image */}
+      <BlogViewTracker id={blog._id} />
       <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
         <Image
           src={blog.coverImage.url}
@@ -62,8 +71,8 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
          <span>👤 Author:  <Link href={`/author/${blog.author?.slug}`}>{blog.author?.name}</Link></span>
           <span>Category: {blog.category.name}</span>
           <span>📅 {new Date(blog.createdAt).toLocaleDateString()}</span>
-          <span>👀 100 views</span>
-          <span>❤️ 58 likes</span>
+          <span>👀 {blog.views +1000} views</span>
+          <span><BlogLikes id={blog._id} initialLikes={blog.likes} /></span>
         </div>
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-2">
@@ -85,24 +94,16 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
 
       {/* Comments Section */}
       <section className="mt-10">
-        <h2 className="text-xl font-semibold mb-4">Comments ({blog.comments.length})</h2>
-        {blog.comments.length === 0 ? (
-          <p className="text-gray-500">No comments yet. Be the first to comment!</p>
-        ) : (
-          <p>Comments will go here</p>
-          // <ul className="space-y-4">
-          //   {blog.comments.map((comment: string, idx: number) => (
-          //     <li key={idx} className="p-3 border rounded-lg">
-          //       <p className="text-sm text-gray-800">{comment.text}</p>
-          //       <span className="text-xs text-gray-500">
-          //         by {comment.user} on{" "}
-          //         {new Date(comment.createdAt).toLocaleDateString()}
-          //       </span>
-          //     </li>
-          //   ))}
-          // </ul>
-        )}
+          <BlogComments blogId={blog._id} initialComments={comments} />
       </section>
-    </article>
+     </article>
+     <div className="lg:w-2/7">
+      <QueryForm />
+      <CategorySidebar />
+      <LatestBlogSidebar />
+      <TrandingBlogSidebar />
+      
+     </div>
+    </div>
   );
 }

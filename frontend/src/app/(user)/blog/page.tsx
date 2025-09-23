@@ -34,7 +34,7 @@ async function getBlogs() {
 
   if (!res.ok) throw new Error("Failed to fetch blogs");
   const data=await res.json();
-  console.log(data);
+  // console.log(data);
   return data.data;
 }
 

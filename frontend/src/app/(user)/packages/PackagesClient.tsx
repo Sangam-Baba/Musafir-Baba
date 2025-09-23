@@ -2,12 +2,14 @@
 
 import React from "react"
 import Hero from "@/components/custom/Hero"
-import CategoryGrid from "@/components/custom/CategoryGrid"
+//import CategoryGrid from "@/components/custom/CategoryGrid"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Loader } from "@/components/custom/loader"
 import img1 from "../../../../public/Hero1.jpg"
-
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import Image from "next/image"
 interface Category {
   id: string
   name: string
@@ -69,13 +71,18 @@ export default function PackagesClient() {
         height="lg"
         overlayOpacity={55}
       />
-      <div>
-        <CategoryGrid
-          categories={categories}
-          limit={10}
-          title="Find Your Perfect Getaway with the Best Travel Agency in Delhi"
-          url="/packages"
-        />
+      <div className='max-w-7xl mx-auto py-10 px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8'>
+           {categories.map((category, idx) =>
+           <Card key={idx} className={`flex flex-col gap-4 ${idx % 2 === 0 ? "bg-[#FFF5E4]" : "bg-[#EBFFF2]"} items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500 h-50 `}>
+              <Link href={`/packages/${category.slug}`} className='flex flex-col gap-4 items-center '>
+              <Image src={category.coverImage.url} alt={category.name} width={50} height={50}/>
+              <h1 className='text-xl font-semibold text-center'>{category.name}</h1>
+              <p className='text-sm text-center line-clamp-3 px-2'>{category.description}</p>
+            </Link>
+           </Card>
+           )}
+        
+          
       </div>
     </section>
   )
