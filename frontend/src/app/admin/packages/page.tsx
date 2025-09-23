@@ -81,16 +81,16 @@ const getAllPackages = async() => {
     })
     if(!res.ok) throw new Error("Failed to fetch packages");
     const data=await res.json();
-    console.log("All packages is: ",data.data);
+   // console.log("All packages is: ",data.data);
     return data?.data;
 }
 function PackagePage() {
 const router=useRouter();
 const accessToken = useAuthStore((state)=>state.accessToken) as string;
-    const { data : packages, isLoading, isError, error } = useQuery({queryKey:["packages"], queryFn:getAllPackages});
+    const { data , isLoading, isError, error } = useQuery({queryKey:["packages"], queryFn:getAllPackages});
     if(isLoading) return <Loader size='lg' message='Loading packages...' />;
     if(isError) return <h1>{error.message}</h1>;
-
+    const packages= data ?? [];
     const handleEdit= (id:string)=>{
         router.push(`/admin/packages/edit/${id}`);
     }
@@ -129,14 +129,14 @@ const accessToken = useAuthStore((state)=>state.accessToken) as string;
         </div>
       ) : (
         <PackagesList
-          packages={packages.map((b:Package) => ({
-            id: b._id,
-            name: b.title,
-            location: b.destination?.state.toLocaleUpperCase(),
-            slug: b.slug,
+          packages={Array.isArray(packages) ? packages.map((b:Package) => ({
+            id: b._id as string,
+            name: b.title as string,
+            location: b.destination?.state.toLocaleUpperCase() as string,
+            slug: b.slug as string,
             price: b.batch?.length ? b.batch[0].quad : 0,
             url: `/${b.destination?.country}/${b.destination?.state}/${b.slug}`, 
-          }))}
+          })) : []}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />

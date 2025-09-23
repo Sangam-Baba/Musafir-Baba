@@ -19,7 +19,6 @@ export function AccountIcon() {
         <Button variant="outline"><CircleUserRound /></Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuGroup>
           { !isAuthenticated &&
           <DropdownMenuItem>

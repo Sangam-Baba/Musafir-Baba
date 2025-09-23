@@ -9,6 +9,7 @@ import BlogViewTracker from "@/components/custom/BlogViewTracker";
 import TrandingBlogSidebar from "@/components/custom/TrandingBlogSidebar";
 import BlogLikes from "@/components/custom/BlogLikes";
 import {BlogComments} from "@/components/custom/BuildCommentTree";
+import SocialShare from "@/components/custom/SocialSharing";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -31,17 +32,40 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
   }
 
+  const title = blog.metaTitle || blog.title;
+  const description =
+    blog.metaDescription || blog.excerpt || blog.content?.slice(0, 160) || "Read this travel blog on Musafir Baba.";
+  const image = blog.coverImage?.url || "https://musafirbaba.com/default-og.jpg";
+  const url = `https://musafirbaba.com/blog/${blog.slug}`;
+
   return {
-    title: blog.metaTitle || blog.title,
-    description: blog.metaDescription || blog.content?.slice(0, 160),
-    keywords: blog.keywords?.length ? blog.keywords.join(", ") : blog.tags.join(", "),
+    title,
+    description,
+    keywords: blog.keywords?.length ? blog.keywords.join(", ") : blog.tags?.join(", "),
     openGraph: {
-      title: blog.metaTitle || blog.title,
-      description: blog.metaDescription,
-      images: [blog.coverImage.url],
+      title,
+      description,
+      url,
+      siteName: "Musafir Baba",
+      type: "article",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
     },
   };
 }
+
 
 // Blog Detail Page
 export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
@@ -74,6 +98,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
           <span>📅 {new Date(blog.createdAt).toLocaleDateString()}</span>
           <span>👀 {blog.views +1000} views</span>
           <span><BlogLikes id={blog._id} initialLikes={blog.likes} /></span>
+          <span><SocialShare url={`https://musafirbaba.com/blog/${blog.slug}`} title={blog.title} /></span>
         </div>
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-2">

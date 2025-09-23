@@ -25,7 +25,7 @@ export default function Header() {
           <Link href="https://in.linkedin.com/company/musafirbaba"><Linkedin fill="white" className="w-5 h-5" /> </Link>
           {/* <Link href="https://in.linkedin.com/company/musafirbaba"><Pinterest fill="white" className="w-5 h-5" /> </Link> */}
         </div>
-        <div className="flex gap-2 items-center text-sm font-medium"><Phone fill="white" className="w-5 h-5" /> +91-92896 02447</div>
+        <div className="flex gap-2 items-center text-sm font-medium"><Phone fill="white" className="w-5 h-5" /> Tour - +91 92896 02447 | Visa - +91 93556 63591</div>
       </div>
 
 

@@ -157,7 +157,7 @@ export default function CreatePackagePage() {
   }
 
   const { data: pkg, isLoading: isLoadingPackage, isError: isErrorPackage, error: errorPackage } = useQuery({
-    queryKey: ["packages"],
+    queryKey: ["packages" , id],
     queryFn: ()=> getPackage(id),
   })
   const { data: destination , isLoading, isError, error } = useQuery({
@@ -170,7 +170,7 @@ useEffect(() => {
   if (pkg) {
     form.reset({
       ...pkg,
-      batch: pkg.batch.map((b: Batch) => ({
+      batch: pkg.batch && pkg.batch.map((b: Batch) => ({
         ...b,
         startDate: b.startDate ? b.startDate.split("T")[0] : "",
         endDate: b.endDate ? b.endDate.split("T")[0] : "",
@@ -202,7 +202,7 @@ useEffect(() => {
     mutation.mutate(values)
   }
 
-  if(isLoading || isLoadingPackage) return <Loader size="lg" message="Loading destinations..." />
+  if(isLoading && isLoadingPackage) return <Loader size="lg" message="Loading destinations..." />
   if(isError) return <h1>{error.message}</h1>
   if(isErrorPackage) return <h1>{errorPackage.message}</h1>
   return (
