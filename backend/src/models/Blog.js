@@ -72,17 +72,14 @@ const blogSchema=new mongoose.Schema({
         type:Number,
         default:0,
     },
-    likes:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"User",
-        },
-    ],
+    likes:{
+       type:Number,
+       default:0
+    },
     comments:[
         {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        text: { type: String, required: true, trim: true },
-        createdAt: { type: Date, default: Date.now },   
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Comment",
         }
     ]
 },

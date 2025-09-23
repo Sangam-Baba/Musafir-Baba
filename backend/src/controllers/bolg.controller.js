@@ -1,5 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 import {Blog} from "../models/Blog.js";
+import { Comment } from "../models/Comment.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 const createBlog=async(req, res)=>{
     try {
@@ -62,9 +63,10 @@ const getBlogBySlug=async(req,res)=>{
         .populate("author", "name slug")
         .lean();
 
-        if(!blog) return res.status(404).json({success:false, message:"Invalid Slug"});
- 
-        res.status(200).json({success:true,message: "Blog fetched successfully", data:blog} );
+         if(!blog) return res.status(404).json({success:false, message:"Invalid Slug"});
+        const comments = await Comment.find({ blogId: blog._id }).sort({ createdAt: -1 }).lean();
+
+        res.status(200).json({success:true,message: "Blog fetched successfully", data:{ blog, comments}} );
     } catch (error) {
         console.log("Blog getting failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
@@ -92,10 +94,13 @@ const getAllBlog=async(req, res)=>{
          const total =await Blog.countDocuments(filter);
         const blogs =await Blog.find(filter)
         .select("title content coverImage slug excerpt updatedAt")
+        .populate("comments" )
         .sort({createdAt:-1})        
         .limit(limit)
         .skip(skip)
         .lean();
+
+        
 
         res.status(200).json({success: true, message:"Blogs fetch successfully", data:blogs, total, page, pages:Math.ceil(total / limit), });
     } catch (error) {
@@ -103,4 +108,62 @@ const getAllBlog=async(req, res)=>{
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
-export {createBlog, updateBlog, deleteBlog , getBlogBySlug, getAllBlog};
+
+const blogComment=async(req, res)=>{
+    try {
+        const { id }= req.params;
+        if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
+        const {name, email, text, rating}= req.body;
+        if(!name || !email || !text) return res.status(400).json({success:false, message:"Required things missing"});
+        const blog=await Blog.findById(id);
+        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
+        if(!rating) rating=0;
+        blog.comments.push({name, email, text, rating});
+        await blog.save();
+ 
+        res.status(200).json({success:true,message: "Blog Comment successful", data:blog} );
+    } catch (error) {
+        console.log("Blog creation failed", error.message);
+        res.status(500).json({success: false, message: "Server Error"});
+    }
+}
+
+const blogView= async(req, res)=>{
+    try {
+        const {id}= req.params;
+        if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
+        const blog=await Blog.findById(id);
+        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
+        const newBlog= await Blog.findByIdAndUpdate(id, { $inc: {views:1} }, { new: true });
+ 
+        res.status(200).json({success:true,message: "Blog View successful" } );
+    } catch (error) {
+        console.log("Blog View failed", error.message);
+        res.status(500).json({success: false, message: "Server Error"});
+    }
+}
+const blogLike= async (req, res)=>{
+    try {
+        const { id }= req.params;
+        if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
+        const blog=await Blog.findById(id);
+        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
+        const newBlog= await Blog.findByIdAndUpdate(id, { $inc: {likes:1} }, { new: true });
+ 
+        res.status(200).json({success:true,message: "Blog Like successful", data:newBlog} );
+    } catch (error) {
+        console.log("Blog likes failed", error.message);
+        res.status(500).json({success: false, message: "Server Error"});
+    }
+}
+
+const trandingBlogs =async(req, res)=>{
+    try {
+        const bolgs= await Blog.find().sort({views:-1}).limit(5).lean();
+        res.status(200).json({success: true, message:"Blogs fetch successfully", data:bolgs});
+    } catch (error) {
+        console.log("Tranding Blog getting failed", error.message);
+        res.status(500).json({success: false, message: "Server Error"});
+    }
+}
+export {createBlog, updateBlog, deleteBlog , getBlogBySlug, getAllBlog , blogComment , blogView , trandingBlogs , blogLike};
