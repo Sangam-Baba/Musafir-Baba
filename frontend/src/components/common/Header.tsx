@@ -18,7 +18,7 @@ export default function Header() {
 
       <div className="hidden md:flex justify-between items-center w-full px-8 py-4 bg-[#FE5300] text-white">
         <div className="flex gap-6 items-center">
-         <Link href="https://chat.google.com/dm/wXQ5BCAAAAE/1T02B2wlQhA/1T02B2wlQhA?cls=10"> <Youtube  className="w-5 h-5"/> </Link>
+         <Link href="https://www.youtube.com/@hello_musafirbaba"> <Youtube  className="w-5 h-5"/> </Link>
           <Link href="http://facebook.com/hellomusafirbaba"> <Facebook fill="white" className="w-5 h-5" />      </Link>
          <Link href="https://x.com/Musafircare"> <LucideTwitter fill="white" className="w-5 h-5" /> </Link>
           <Link href="https://www.instagram.com/hello_musafirbaba"><Instagram  className="w-5 h-5" /> </Link>

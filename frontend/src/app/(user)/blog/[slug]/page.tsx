@@ -46,7 +46,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 // Blog Detail Page
 export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
   const {blog , comments }= await getBlog(params.slug);
-
+  console.log("My blog is : ",blog);
+  console.log("My comments is : ",comments);
   if (!blog) return <NotFoundPage />;
 
   return (
