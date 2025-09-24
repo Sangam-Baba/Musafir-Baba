@@ -1,0 +1,126 @@
+import Image from "next/image";
+import { BlogContent } from "@/components/custom/BlogContent";
+import Link from "next/link";
+import NotFoundPage from "@/components/common/Not-Found";
+import QueryForm from "@/components/custom/QueryForm";
+import BlogViewTracker from "@/components/custom/BlogViewTracker";
+import BlogLikes from "@/components/custom/BlogLikes";
+import {BlogComments} from "@/components/custom/BuildCommentTree";
+import SocialShare from "@/components/custom/SocialSharing";
+// Fetch blog by slug
+async function getNews(slug: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
+    next: { revalidate: 60 }, // ISR: revalidate every 1 min
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.data;
+}
+
+// SEO Metadata
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const { news } = await getNews(params.slug);
+
+  if (!news) {
+    return {
+      title: "News Not Found | Musafir Baba",
+      description: "The requested news could not be found.",
+    };
+  }
+
+  const title = news.metaTitle || news.title;
+  const description =
+    news.metaDescription || news.excerpt || news.content?.slice(0, 160) || "Read this travel blog on Musafir Baba.";
+  const image = news.coverImage?.url || "https://musafirbaba.com/default-og.jpg";
+  const url = `https://musafirbaba.com/news/${news.slug}`;
+
+  return {
+    title,
+    description,
+    keywords: news.keywords?.length ? news.keywords.join(", ") : news.tags?.join(", "),
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Musafir Baba",
+      type: "article",
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+
+// Blog Detail Page
+export default async function NewsDetailPage({ params }: { params: { slug: string } }) {
+  const {news , comments }= await getNews(params.slug);
+  if (!news) return <NotFoundPage />;
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-10 px-12">
+     <article className="lg:w-5/7  ">
+      {/* Cover Image */}
+      <BlogViewTracker id={news._id} />
+      <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+        <Image
+          src={news.coverImage.url}
+          alt={news.title}
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+
+      {/* Title & Meta */}
+      <header className="mt-6 space-y-2">
+        <h1 className="text-3xl md:text-4xl font-bold">{news.title}</h1>
+        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+         <span>👤 Author:  <Link href={`/author/${news.author?.slug}`}>{news.author?.name}</Link></span>
+          <span>📅 {new Date(news.createdAt).toLocaleDateString()}</span>
+          <span>👀 {news.views +1000} views</span>
+          <span><BlogLikes id={news._id} initialLikes={news.likes} /></span>
+          <span><SocialShare url={`https://musafirbaba.com/blog/${news.slug}`} title={news.title} /></span>
+        </div>
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {news.tags.map((tag: string) => (
+            <span
+              key={tag}
+              className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      </header>
+
+      {/* Blog Content */}
+      <section className="prose prose-lg max-w-none mt-6">
+        <BlogContent html={news.content} />
+      </section>
+
+      {/* Comments Section */}
+      <section className="mt-10">
+          <BlogComments blogId={news._id} initialComments={comments} />
+      </section>
+     </article>
+     <div className="lg:w-2/7">
+      <QueryForm />
+      
+     </div>
+    </div>
+  );
+}

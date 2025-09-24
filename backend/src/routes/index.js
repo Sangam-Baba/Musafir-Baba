@@ -10,6 +10,7 @@ import uploadRoutes from "./upload.routes.js";
 import authorRoutes from "./author.routes.js";
 import contactRoute from './contact.routes.js';
 import commentRoutes from "./comment.routes.js";
+import newsRoutes from "./news.routes.js";
 const router =Router();
 
 router.use('/packages', pkgRoutes);
@@ -23,4 +24,5 @@ router.use('/upload', uploadRoutes);
 router.use('/authors', authorRoutes);
 router.use('/contact', contactRoute);
 router.use('/comments', commentRoutes);
+router.use('/news', newsRoutes);
 export default router;

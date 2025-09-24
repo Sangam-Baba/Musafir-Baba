@@ -3,15 +3,16 @@ import Link from "next/link";
 //import { BlogContent } from "./BlogContent";
 
 interface BlogCardProps {
+  type: string;
   title: string;
   coverImage: string;
   description: string;
   slug: string;
 }
 
-export default function BlogCard({ title, coverImage, description, slug }: BlogCardProps) {
+export default function BlogCard({ title, coverImage, description, slug , type}: BlogCardProps) {
   return (
-    <Link href={`/blog/${slug}`}>
+    <Link href={`/${type}/${slug}`}>
       <div className="rounded-2xl overflow-hidden shadow hover:shadow-lg transition bg-white">
         <Image
           src={coverImage}

@@ -7,7 +7,7 @@ import { toast } from "sonner"; // or any toast library
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 
-interface Blog {
+interface News {
   _id: string;
   title: string;
   content: string;
@@ -17,51 +17,51 @@ interface Blog {
   excerpt: string;
 }
 
-export default function BlogsPage() {
+export default function NewsPage() {
   const token = useAuthStore((state) => state.accessToken);
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   // ✅ Fetch blogs
-  const fetchBlogs = async () => {
+  const fetchNews = async () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/news`, // adjust API route
         { cache: "no-store" }
       );
       const data = await res.json();
 
       if (data.success) {
-        setBlogs(data.data);
+        setNews(data.data);
       } else {
-        toast.error(data.message || "Failed to fetch blogs");
+        toast.error(data.message || "Failed to fetch News");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong fetching blogs");
+      toast.error("Something went wrong fetching news");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBlogs();
+    fetchNews();
   }, []);
 
   // ✅ Edit
   const handleEdit = (slug: string) => {
-    router.push(`/admin/blogs/edit/${slug}`);
+    router.push(`/admin/news/edit/${slug}`);
   };
 
   // ✅ Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this blog?")) return;
+    if (!confirm("Are you sure you want to delete this news?")) return;
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/news/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -73,26 +73,26 @@ export default function BlogsPage() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success("Blog deleted successfully");
-        fetchBlogs(); // refetch after delete
+        toast.success("News deleted successfully");
+        fetchNews(); // refetch after delete
       } else {
-        toast.error(data.message || "Failed to delete blog");
+        toast.error(data.message || "Failed to delete News");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong while deleting blog");
+      toast.error("Something went wrong while deleting News");
     }
   };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Blogs</h1>
+        <h1 className="text-2xl font-bold">News</h1>
         <button
-          onClick={() => router.push("/admin/blogs/new")}
+          onClick={() => router.push("/admin/news/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
         >
-          + Create Blog
+          + Create News
         </button>
       </div>
 
@@ -102,12 +102,12 @@ export default function BlogsPage() {
         </div>
       ) : (
         <ListTable
-          blogs={blogs.map((b) => ({
+          blogs={news.map((b) => ({
             slug: b.slug,
             id: b._id,
             title: b.title,
             description: b.excerpt,
-            url: `/blog/${b.slug}`, // or absolute link if needed
+            url: `/news/${b.slug}`, // or absolute link if needed
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

@@ -1,79 +1,79 @@
 import mongoose from "mongoose";
-import {Blog} from "../models/Blog.js";
-import { Comment } from "../models/Comment.js";
+import {News} from "../models/News.js";
+import { NewsComment } from "../models/NewsComment.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
-const createBlog=async(req, res)=>{
+const createNews=async(req, res)=>{
     try {
         const {title, content}= req.body;
         if(!title || !content ){
             return res.status(400).json({success:false, message: "Required things missing"});
         }
 
-        if (req.body.category && !mongoose.Types.ObjectId.isValid(req.body.category)) {
-        return res.status(400).json({ success: false, message: "Invalid category ID" });
-        }
-        const blog=new Blog({...req.body});
-        await blog.save();
+        const news=new News({...req.body});
+        await news.save();
 
-        res.status(201).json({success:true, data:blog} );
+        res.status(201).json({success:true, data:news} );
     } catch (error) {
-        console.log("Blog creation failed", error.message);
+        console.log("News creation failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
 
-const updateBlog=async(req, res)=>{
+const updateNews=async(req, res)=>{
     try {
         const { id }= req.params;
-        const blog=await Blog.findByIdAndUpdate(id, req.body,{
+        if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
+
+        const news=await News.findByIdAndUpdate(id, req.body,{
             new:true,
             runValidators:true,
         });
 
-        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
+        if(!news) return res.status(404).json({success:false, message:"Invalid Id"});
  
-        res.status(200).json({success:true,message: "Update successful", data:blog} );
+        res.status(200).json({success:true,message: "News Update successful", data:news} );
     } catch (error) {
-       console.log("Blog Update failed", error.message);
+       console.log("News Update failed", error.message);
         res.status(500).json({success: false, message: "Server Error"}); 
     }
 }
 
-const deleteBlog=async(req, res)=>{
+const deleteNews=async(req, res)=>{
     try {
         const { id }= req.params;
+        if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
 
-        const blog=await Blog.findByIdAndDelete(id);
+        const news=await News.findByIdAndDelete(id);
 
-        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
+        if(!news) return res.status(404).json({success:false, message:"Invalid Id"});
  
-        res.status(200).json({success:true,message: "Blog Delete successful", data:blog} );
+        res.status(200).json({success:true,message: "News Delete successful", data:news} );
     } catch (error) {
-        console.log("Blog delition failed", error.message);
+        console.log("News delition failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
 
-const getBlogBySlug=async(req,res)=>{
+const getNewsBySlug=async(req,res)=>{
     try {
         const { slug } = req.params;
+        if(!slug) return res.status(400).json({success:false, message:"Invalid Slug"});
 
-        const blog = await Blog.findOne({slug})
-        .populate("category", "name slug")
+        const news = await News.findOne({slug})
         .populate("author", "name slug")
         .lean();
 
-         if(!blog) return res.status(404).json({success:false, message:"Invalid Slug"});
-        const comments = await Comment.find({ blogId: blog._id }).sort({ createdAt: -1 }).lean();
+         if(!news) return res.status(404).json({success:false, message:"Invalid Slug"});
+         const comments = await NewsComment.find({ newsId: news._id }).sort({ createdAt: -1 }).lean();
 
-        res.status(200).json({success:true,message: "Blog fetched successfully", data:{ blog, comments}} );
+        res.status(200).json({success:true,message: "News fetched successfully", data:{ news, comments}} );
     } catch (error) {
-        console.log("Blog getting failed", error.message);
+        console.log("News getting by slug failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
 
-const getAllBlog=async(req, res)=>{
+const getAllNews=async(req, res)=>{
     try {
         const { title, search}=req.query;
         const page=Math.max(parseInt(req.query.page || '1') , 1);
@@ -91,8 +91,8 @@ const getAllBlog=async(req, res)=>{
           ];
         }
 
-         const total =await Blog.countDocuments(filter);
-        const blogs =await Blog.find(filter)
+         const total =await News.countDocuments(filter);
+        const news =await News.find(filter)
         .select("title content coverImage slug excerpt updatedAt")
         .populate("comments" )
         .sort({createdAt:-1})        
@@ -102,9 +102,9 @@ const getAllBlog=async(req, res)=>{
 
         
 
-        res.status(200).json({success: true, message:"Blogs fetch successfully", data:blogs, total, page, pages:Math.ceil(total / limit), });
+        res.status(200).json({success: true, message:"News fetch successfully", data:news, total, page, pages:Math.ceil(total / limit), });
     } catch (error) {
-        console.log("Blog getting failed", error.message);
+        console.log("News getting failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
@@ -128,42 +128,42 @@ const blogComment=async(req, res)=>{
     }
 }
 
-const blogView= async(req, res)=>{
+const NewsView= async(req, res)=>{
     try {
         const {id}= req.params;
         if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
-        const blog=await Blog.findById(id);
-        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
-        const newBlog= await Blog.findByIdAndUpdate(id, { $inc: {views:1} }, { new: true });
+        const news=await News.findById(id);
+        if(!news) return res.status(404).json({success:false, message:"Invalid Id"});
+        const newNews= await News.findByIdAndUpdate(id, { $inc: {views:1} }, { new: true });
  
-        res.status(200).json({success:true,message: "Blog View successful" } );
+        res.status(200).json({success:true,message: "News View successful" } );
     } catch (error) {
-        console.log("Blog View failed", error.message);
+        console.log("News View failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
-const blogLike= async (req, res)=>{
+const NewsLike= async (req, res)=>{
     try {
         const { id }= req.params;
         if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
-        const blog=await Blog.findById(id);
-        if(!blog) return res.status(404).json({success:false, message:"Invalid Id"});
-        const newBlog= await Blog.findByIdAndUpdate(id, { $inc: {likes:1} }, { new: true });
+        const news=await News.findById(id);
+        if(!news) return res.status(404).json({success:false, message:"Invalid Id"});
+        const newNews= await News.findByIdAndUpdate(id, { $inc: {likes:1} }, { new: true });
  
-        res.status(200).json({success:true,message: "Blog Like successful", data:newBlog} );
+        res.status(200).json({success:true,message: "News Like successful", data:newNews} );
     } catch (error) {
-        console.log("Blog likes failed", error.message);
+        console.log("News likes failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
 
-const trandingBlogs =async(req, res)=>{
+const trandingNews =async(req, res)=>{
     try {
-        const bolgs= await Blog.find().sort({views:-1}).limit(5).lean();
-        res.status(200).json({success: true, message:"Blogs fetch successfully", data:bolgs});
+        const news= await News.find().sort({views:-1}).limit(5).lean();
+        res.status(200).json({success: true, message:"News fetch successfully", data:news});
     } catch (error) {
-        console.log("Tranding Blog getting failed", error.message);
+        console.log("Tranding News getting failed", error.message);
         res.status(500).json({success: false, message: "Server Error"});
     }
 }
-export {createBlog, updateBlog, deleteBlog , getBlogBySlug, getAllBlog , blogComment , blogView , trandingBlogs , blogLike};
+export {createNews, updateNews, deleteNews , getNewsBySlug, getAllNews  , NewsView , trandingNews  , NewsLike};

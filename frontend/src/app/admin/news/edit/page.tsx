@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function BookingIndexPage() {
-  redirect("/admin/blogs"); 
+  redirect("/admin/news"); 
 }

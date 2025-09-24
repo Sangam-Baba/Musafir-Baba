@@ -3,12 +3,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/store/useUIStore";
 import { cn } from "@/lib/utils";
-import { Home, Users, Box, Settings, X , ScrollText, MapPin , Tags} from "lucide-react";
+import { Home, Users, Box, Settings, X , ScrollText, MapPin , Tags , Newspaper} from "lucide-react";
 
 const NAV = [
 
 { label: "Dashboard", href: "/admin", icon: Home },
 { label: "Blogs", href: "/admin/blogs", icon: ScrollText  },
+{ label: "News", href: "/admin/news", icon: Newspaper  },
 { label: "Packages", href: "/admin/packages", icon: Box },
 { label: "Destinations", href: "/admin/destination", icon: MapPin },
 { label: "Category", href: "/admin/category", icon: Tags },

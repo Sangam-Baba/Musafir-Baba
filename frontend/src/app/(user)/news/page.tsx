@@ -3,10 +3,10 @@ import Hero from "@/components/custom/Hero";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Travel Blog - Guides, Tips & Travel Inspiration",
+  title: "Travel News - Guides, Tips & Travel Inspiration",
   description: "Travel Blog - Guides, Tips & Travel Inspiration!Discover travel secrets on our blog! Get complete guides, visa assistance, amazing tours, money-saving tips, and inspiration for incredible adventures.",
   alternates: {
-    canonical: "https://www.musafirbaba.com/blog",
+    canonical: "https://www.musafirbaba.com/news",
   },
 };
 interface coverImage{
@@ -16,7 +16,7 @@ interface coverImage{
   height: number
   alt: string
 }
-interface blog{
+interface news{
   _id: string;
   title: string;
   coverImage: coverImage;
@@ -24,31 +24,31 @@ interface blog{
   metaDescription: string;
   slug: string;
 }
-async function getBlogs() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`, {
+async function getNews() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/`, {
     next: { revalidate: 60 }, // ISR: revalidate every 1 minute
   });
 
-  if (!res.ok) throw new Error("Failed to fetch blogs");
+  if (!res.ok) throw new Error("Failed to fetch News");
   const data=await res.json();
   // console.log(data);
   return data.data;
 }
 
-export default async function BlogPage() {
-  const blogs = await getBlogs();
+export default async function NewsPage() {
+  const news = await getNews();
 
   return (
     <section className="w-full ">
       <Hero
        image="/Heroimg.jpg" 
-       title="Blog" 
+       title="News" 
        />
     <div className="container max-w-7xl mx-auto py-10 px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {blogs.map((blog: blog) => (
+      {news.map((blog: news) => (
         <BlogCard
           key={blog._id}
-          type="blog"
+          type="news"
           title={blog.title}
           coverImage={blog.coverImage.url}
           description={blog.metaDescription}

@@ -36,7 +36,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
           <TableHeader>
             <TableRow className="bg-muted/40">
               <TableHead className="w-[20%]">Title</TableHead>
-              <TableHead className="w-[35%]">Description</TableHead>
+              <TableHead className="w-[35%]">Excerpt</TableHead>
               <TableHead className="w-[20%]">URL</TableHead>
               <TableHead className="w-[25%] text-right">Actions</TableHead>
             </TableRow>
