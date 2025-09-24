@@ -9,8 +9,8 @@ export default function GTMProvider() {
   useEffect(() => {
     if (!pathname) return;
 
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).dataLayer.push({
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
       event: "pageview",
       page: pathname,
     });
