@@ -12,6 +12,7 @@ import contactRoute from './contact.routes.js';
 import commentRoutes from "./comment.routes.js";
 import newsRoutes from "./news.routes.js";
 import newsCommentRoutes from "./newsComment.js";
+import footerRoutes from "./footer.routes.js";
 const router =Router();
 
 router.use('/packages', pkgRoutes);
@@ -27,4 +28,5 @@ router.use('/contact', contactRoute);
 router.use('/comments', commentRoutes);
 router.use('/news', newsRoutes);
 router.use('/newscomments', newsCommentRoutes);
+router.use('/footer', footerRoutes);
 export default router;

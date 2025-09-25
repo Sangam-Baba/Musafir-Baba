@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/store/useUIStore";
-import { cn } from "@/lib/utils";
-import { Home, Users, Box, Settings, X , ScrollText, MapPin , Tags , Newspaper} from "lucide-react";
+import { Home, Users, Box, Settings, X , ScrollText, MapPin , Tags , Newspaper , ListChecks} from "lucide-react";
 
 const NAV = [
 
@@ -15,6 +14,7 @@ const NAV = [
 { label: "Category", href: "/admin/category", icon: Tags },
 { label: "Authors", href: "/admin/authors", icon: Users },
 { label: "Role Management", href: "/admin/role", icon: Settings },
+{ label: "Footer Items", href: "/admin/footer", icon: ListChecks },
 ];
 
 function cx(...parts: Array<string | false | null | undefined>) {

@@ -5,72 +5,73 @@ import { useRouter } from 'next/navigation';
 import {Loader2} from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/useAuthStore';
-import  AuthorsList from '@/components/admin/AuthorsList'
-interface Author{
+import FooterList from '@/components/admin/FooterList';
+interface Footer{
     _id: string;
-    name: string;
-    email: string;
-    about: string;
-    role: string;
-    avatar: {
-      url: string;
-      public_id: string;
-      alt: string;
-    };
-    slug: string;
+    title: string;
+    content: Content[];
 }
-
+interface Content{
+    text: string;
+    url: string;
+}
 interface QueryResponse{
     success: boolean;
     message: string;
-    data: Author[];
+    data: Footer[];
 }
-const getAllAuthors= async()=>{
-    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`);
-    if(!res.ok) throw new Error("Failed to fetch authors");
+const getAllFooters= async(token : string)=>{
+    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+    });
+    if(!res.ok) throw new Error("Failed to fetch footers");
     const data=await res.json();
     return data;
 }
-function AuthorsPage() {
-    const accessToken = useAuthStore((state) => state.accessToken);
+function FooterPage() {
+    const token = useAuthStore((state) => state.accessToken) as string;
 const router=useRouter();
    const { data, isLoading, isError, error } = useQuery<QueryResponse>({
      queryKey: ["authors"],
-     queryFn: getAllAuthors,
+     queryFn: () => getAllFooters(token),
      retry: 2,
    })
    if(isError){
     toast.error(error.message);
     return <h1>{error.message}</h1>
    }
-const authors= data?.data ?? [];
+const footers= data?.data ?? [];
    const  handleEdit = (id: string) => {
-     router.push(`/admin/authors/edit/${id}`);
+     router.push(`/admin/footer/edit/${id}`);
    };
    const  handleDelete = async (id: string) => {
-    if(!confirm("Are you sure you want to delete this author?"))return
+    if(!confirm("Are you sure you want to delete this footer?"))return 
      try {
-        const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors/${id}`, {
+        const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${token}`,
           },
         })
-        if(!res.ok) throw new Error("Failed to delete author");
-        toast.success("Author: Deleted successfully");
+        if(!res.ok) throw new Error("Failed to delete footer");
+        toast.success("Fooetr: Deleted successfully");
         router.refresh();
      } catch (error) {
         console.log("error in deleting", error);
-        toast.error("Something went wrong while deleting author");
+        toast.error("Something went wrong while deleting footer");
      }
    }
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">All Authors</h1>
+        <h1 className="text-2xl font-bold">All Footer Items</h1>
         <button
-          onClick={() => router.push("/admin/authors/new")}
+          onClick={() => router.push("/admin/footer/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
         >
           + Create
@@ -82,13 +83,11 @@ const authors= data?.data ?? [];
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <AuthorsList
-          authors={authors.map((b) => ({
+        <FooterList
+          footers={footers.map((b) => ({
             id: b._id,
-            name: b.name,
-            slug: b.slug,
-            role: b.role,
-            url: `/authors/${b.slug}`, 
+            title: b.title,
+            content: b.content, 
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}
@@ -98,4 +97,4 @@ const authors= data?.data ?? [];
   );
 }
 
-export default AuthorsPage
+export default FooterPage
