@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Best Travel Agency in Delhi | Tour Packages & Visas | Musafirbaba",
   description: "Looking for the best travel agency in Delhi? Unforgettable tour packages &amp; seamless visa services with Musafirbaba. Get a free quote today.",
   alternates: {
-    canonical: "https://www.musafirbaba.com/",
+    canonical: "https://musafirbaba.com/",
   },
   openGraph: {
     title: " BEST TRAVEL AGENCY / TOUR PACKAGE & VISA / MUSAFIR BABA",

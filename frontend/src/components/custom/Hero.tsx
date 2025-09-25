@@ -94,7 +94,7 @@ export default function Hero({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base font-bold text-center "
+              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base  text-center "
             >
               {description}
             </motion.p>
