@@ -7,6 +7,8 @@ import BlogViewTracker from "@/components/custom/BlogViewTracker";
 import BlogLikes from "@/components/custom/BlogLikes";
 import {BlogComments} from "@/components/custom/BuildCommentTree";
 import SocialShare from "@/components/custom/SocialSharing";
+import LatestNewsSidebar from "@/components/custom/LatestNewsSidebar";
+import TrandingNewsSidebar from "@/components/custom/TrandingNewsSidebar";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -92,7 +94,7 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
           <span>📅 {new Date(news.createdAt).toLocaleDateString()}</span>
           <span>👀 {news.views +1000} views</span>
           <span><BlogLikes id={news._id} initialLikes={news.likes} /></span>
-          <span><SocialShare url={`https://musafirbaba.com/blog/${news.slug}`} title={news.title} /></span>
+          <span><SocialShare url={`https://musafirbaba.com/news/${news.slug}`} title={news.title} /></span>
         </div>
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-2">
@@ -114,12 +116,13 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
 
       {/* Comments Section */}
       <section className="mt-10">
-          <BlogComments blogId={news._id} initialComments={comments} />
+          <BlogComments blogId={news._id} initialComments={comments} type="news" />
       </section>
      </article>
      <div className="lg:w-2/7">
       <QueryForm />
-      
+      <LatestNewsSidebar />
+      <TrandingNewsSidebar />
      </div>
     </div>
   );

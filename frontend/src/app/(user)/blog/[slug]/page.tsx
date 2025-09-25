@@ -118,7 +118,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
 
       {/* Comments Section */}
       <section className="mt-10">
-          <BlogComments blogId={blog._id} initialComments={comments} />
+          <BlogComments blogId={blog._id} initialComments={comments} type="blog" />
       </section>
      </article>
      <div className="lg:w-2/7">

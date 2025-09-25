@@ -11,6 +11,7 @@ import authorRoutes from "./author.routes.js";
 import contactRoute from './contact.routes.js';
 import commentRoutes from "./comment.routes.js";
 import newsRoutes from "./news.routes.js";
+import newsCommentRoutes from "./newsComment.js";
 const router =Router();
 
 router.use('/packages', pkgRoutes);
@@ -25,4 +26,5 @@ router.use('/authors', authorRoutes);
 router.use('/contact', contactRoute);
 router.use('/comments', commentRoutes);
 router.use('/news', newsRoutes);
+router.use('/newscomments', newsCommentRoutes);
 export default router;

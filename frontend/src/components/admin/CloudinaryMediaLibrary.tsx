@@ -1,6 +1,5 @@
 "use client"
 import { useEffect } from "react"
-
 declare global {
   interface Window {
     cloudinary: {
@@ -16,7 +15,6 @@ declare global {
   }
 }
 
-
 type Props = {
   onSelect: (image: { url: string; public_id: string }) => void
 }
@@ -29,7 +27,7 @@ export default function CloudinaryMediaLibrary({ onSelect }: Props) {
     document.body.appendChild(script)
   }, [])
 
-  const openWidget = () => {
+  const openWidget = async() => {
     if (window.cloudinary) {
       const mediaLibrary = window.cloudinary.createMediaLibrary(
         {

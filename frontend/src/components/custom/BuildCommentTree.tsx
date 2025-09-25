@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import CommentPage from "@/components/custom/Comment"
+import NewsCommentPage from "@/components/custom/NewsComment";
 
 interface Comment {
   _id: string
   blogId: string
+  newsId: string
   parentId?: string | null
   name: string
   email: string
@@ -35,7 +37,7 @@ function buildTree(comments: Comment[]): Comment[] {
   return roots
 }
 
-function CommentList({ comments, blogId }: { comments: Comment[]; blogId: string }) {
+function CommentList({ comments, blogId , type}: { comments: Comment[]; blogId: string ; type: string}) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
   return (
@@ -68,13 +70,14 @@ function CommentList({ comments, blogId }: { comments: Comment[]; blogId: string
 
           {replyingTo === c._id && (
             <div className="mt-3">
-              <CommentPage id={blogId} parentId={c._id} onSuccess={() => setReplyingTo(null)} />
+              {type ==="blog" && <CommentPage id={blogId} parentId={c._id} onSuccess={() => setReplyingTo(null)} />}
+               {type ==="news" && <NewsCommentPage id={blogId} parentId={c._id} onSuccess={() => setReplyingTo(null)} />}
             </div>
           )}
 
           {c.replies.length > 0 && (
             <div className="ml-6 mt-4">
-              <CommentList comments={c.replies} blogId={blogId} />
+              <CommentList comments={c.replies} blogId={blogId} type={type} />
             </div>
           )}
         </li>
@@ -83,17 +86,17 @@ function CommentList({ comments, blogId }: { comments: Comment[]; blogId: string
   )
 }
 
-export function BlogComments({ blogId, initialComments }: { blogId: string; initialComments: Comment[] }) {
+export function BlogComments({ blogId, initialComments , type }: { blogId: string; initialComments: Comment[] ; type: string}) {
   const tree = buildTree(initialComments)
 
   return (
     <section className="mt-10">
       <h2 className="text-xl font-semibold mb-4">Comments ({initialComments.length})</h2>
-
-      
-      <CommentPage id={blogId} onSuccess={() => {}} />
+       {type === "news" && <NewsCommentPage id={blogId} onSuccess={() => {}} />}
+       {type === "blog" && <CommentPage id={blogId} onSuccess={() => {}} />}
+     
         <div className="mt-4">
-          <CommentList comments={tree} blogId={blogId} />
+          <CommentList comments={tree} blogId={blogId} type={type} />
         </div>
     </section>
   )

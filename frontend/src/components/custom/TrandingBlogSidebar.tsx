@@ -14,8 +14,8 @@ function TrandingBlogSidebar() {
     const { data: blogs, isLoading, isError } = useQuery({queryKey:["trandingBlogs"], queryFn:getTrandingBlogs});
 
     if(isLoading) return <Loader size="lg" message="Loading tranding blogs..." />;
-    if(isError) return <h1>Failed to fetch tranding blogs</h1>;
-  return <ListBlogSidebar blogs={blogs} title="Tranding Blogs" />
+    if(isError) return <h1>Failed to fetch trending blogs</h1>;
+  return <ListBlogSidebar blogs={blogs} title="Trending Blogs" />
 }
 
 export default TrandingBlogSidebar
