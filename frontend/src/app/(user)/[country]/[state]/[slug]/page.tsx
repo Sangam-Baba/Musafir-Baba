@@ -56,13 +56,21 @@ export interface Itinerary {
   title: string;
   description: string;
 }
+
+interface Image {
+  url: string;
+  public_id: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
 interface Package {
   _id: string;
   title: string;
   description: string;
   destination: Destination;
-  coverImage: string;
-  gallery: string[];
+  coverImage: Image;
+  gallery: Image[];
   batch: Batch[];
   duration: Duration;
   metaTitle?: string;
@@ -151,7 +159,7 @@ function PackageDetails() {
   return (
     <section>
       <Hero
-        image={pkg.coverImage ?? ""}
+        image={pkg.coverImage.url ?? ""}
         title={pkg.title}
         description={pkg.metaDescription ?? ""}
         align="center"
@@ -199,7 +207,7 @@ function PackageDetails() {
                 {pkg.itinerary.map((item, i) => (
                   <AccordionItem value={`itinerary-${i}`} key={i} className="rounded-2xl shadow-lg p-4">
                     <AccordionTrigger>{item.title}</AccordionTrigger>
-                    <AccordionContent className="text-justify">{item.description}</AccordionContent>
+                    <AccordionContent className="text-justify whitespace-pre-line">{item.description}</AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>

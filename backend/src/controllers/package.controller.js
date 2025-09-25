@@ -120,6 +120,7 @@ const getPackages = async (req, res) => {
       minDays,
       maxDays,
       search,
+      slug,
       status = "published",
     } = req.query;
 
@@ -127,13 +128,7 @@ const getPackages = async (req, res) => {
 
     // ✅ Status filter
     if (status) query.status = status;
-
-    // // ✅ Price filter (adult price)
-    // if (minPrice || maxPrice) {
-    //   query["batch.adult"] = {};
-    //   if (minPrice) query["price.adult"].$gte = Number(minPrice);
-    //   if (maxPrice) query["price.adult"].$lte = Number(maxPrice);
-    // }
+    if(slug) query.slug=slug;
 
     // ✅ Duration filter
     if (minDays || maxDays) {
