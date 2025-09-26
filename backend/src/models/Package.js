@@ -71,7 +71,11 @@ const packageSchema = new mongoose.Schema(
         description: { type: String },
       },
     ],
-
+    itineraryDownload:{
+      url: String,
+      public_id: String,
+      alt: String
+    },
     isFeatured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },

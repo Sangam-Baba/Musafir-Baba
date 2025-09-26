@@ -61,7 +61,7 @@ export default function HomePage() {
         <Hero
          image={heroimg.src}
          title="Dream. Explore. Discover. With Musafirbaba."
-         description="Looking for best travel agency in Delhi? Musafirbaba offers expertly crafted tour packages for unforgetable tarvel experience. Let's plan your tour."
+         description="Looking for best travel agency in Delhi? Musafirbaba offers expertly crafted tour packages for unforgettable travel experience. Let's plan your tour."
          align="center"
          height="xl"
          overlayOpacity={40}

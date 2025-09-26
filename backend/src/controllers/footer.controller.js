@@ -19,7 +19,9 @@ const createFooter=async (req, res)=>{
 
 const getAllFooter = async( req, res)=>{
     try {
-        const footer= await Footer.find({});
+        const { filter = {}}= req.query;
+        if(req.query?.title) filter.title = req.query.title;
+        const footer= await Footer.find(filter);
         res.status(200).json({success:true, data:footer} );        
     } catch (error) {
         console.log("Footer getting failed", error.message);

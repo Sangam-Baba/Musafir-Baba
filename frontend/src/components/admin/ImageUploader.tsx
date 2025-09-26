@@ -1,20 +1,22 @@
 "use client";
 import Image from "next/image";
 import React, { useState } from "react";
-import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 
-interface UploadedImage {
+interface UploadedFile {
   url: string;
   public_id: string;
-  width: number;
-  height: number;
+  resource_type: string;
+  format: string;
+  width?: number;
+  height?: number;
+  pages?: number;
 }
 
-export default function ImageUploader({onUpload}:{onUpload: (img: UploadedImage) => void}) {
+export default function ImageUploader({onUpload}:{onUpload: (img: UploadedFile) => void}) {
   const token= useAuthStore((state) => state.accessToken);
   const [files, setFiles] = useState<FileList | null>(null);
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,8 +55,11 @@ export default function ImageUploader({onUpload}:{onUpload: (img: UploadedImage)
         const uploaded= {
           url: json.secure_url,
           public_id: json.public_id,
+          resource_type: json.resource_type,
+          format: json.format,
           width: json.width,
           height: json.height,
+          pages: json.pages,
         }
         onUpload(uploaded);
         return uploaded;
@@ -73,13 +78,13 @@ export default function ImageUploader({onUpload}:{onUpload: (img: UploadedImage)
 
   return (
     <div className="p-4 border rounded-xl w-full max-w-lg">
-      <input type="file" multiple accept="image/*" onChange={handleFileChange} />
+      <input type="file" multiple accept="image/*,application/pdf" onChange={handleFileChange} />
       <button
         onClick={uploadImages}
         disabled={uploading}
         className="mt-2 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
       >
-        {uploading ? "Uploading..." : "Upload Images"}
+        {uploading ? "Uploading..." : "Upload"}
       </button>
 
       <div className="mt-4 grid grid-cols-2 gap-2">

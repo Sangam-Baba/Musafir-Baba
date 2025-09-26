@@ -16,16 +16,19 @@ export function Navbar() {
             <Link href="/packages">Packages</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="#">Ticket Booking</Link>
+            <Link href="#">Bookings</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Link href="#">Visa</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="#">Become A Member</Link>
+            <Link href="#">Membership</Link>
           </li>
           <li className="font-semi-bold bg-[FE5300] text-[#FE5300]">
-           <Link href="/blog">Blogs</Link>
+           <Link href="/blog">Blog</Link>
+          </li>
+          <li className="font-semi-bold bg-[FE5300] text-[#FE5300]">
+           <Link href="/news">News</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Button  className="bg-[#FE5300] hover:bg-[#FE5300]"><Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">Pay Now</Link></Button>

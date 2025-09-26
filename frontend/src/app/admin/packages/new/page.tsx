@@ -16,6 +16,7 @@ import { toast } from "sonner"
 import ImageUploader from "@/components/admin/ImageUploader"
 import { useAuthStore } from "@/store/useAuthStore"
 import { Loader } from "@/components/custom/loader"
+import { Textarea } from "@/components/ui/textarea"
 
 interface Image {
   url: string
@@ -62,6 +63,7 @@ interface PackageFormValues {
   inclusions?: string[]
   exclusions?: string[]
   itinerary?: Itinerary[]
+  itineraryDownload?: Image
   faqs?: Faq[]
   isFeatured?: boolean
   status: "draft" | "published"
@@ -126,6 +128,7 @@ export default function CreatePackagePage() {
     inclusions: [],
     exclusions: [],
     itinerary: [],
+    itineraryDownload: { url: "", alt: "", public_id: "" },
     faqs: [],
     isFeatured: false,
     slug: "",
@@ -192,7 +195,7 @@ export default function CreatePackagePage() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Describe the package" {...field} />
+                    <Textarea placeholder="Describe the package" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -266,8 +269,9 @@ export default function CreatePackagePage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Destination</FormLabel>
-                  <FormControl>
-                    <select {...field} className="w-full rounded-md border border-gray-300 p-2">
+                  <FormControl>           
+                    <select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-md border border-gray-300 p-2" value={field.value || ""}>
+                      <option value="" disabled>Select a destination</option>
                       {destination?.map((dest: Destination) => (
                         <option key={dest._id} value={dest._id}>
                           {dest.state.toLocaleUpperCase()}
@@ -296,6 +300,28 @@ export default function CreatePackagePage() {
                           alt: form.getValues("title") ?? "",
                           width: img.width,
                           height: img.height,
+                        })
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Itinary Download */}
+            <FormField
+              control={form.control}
+              name="itineraryDownload"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Itinerary PDF Upload</FormLabel>
+                  <FormControl>
+                    <ImageUploader
+                      onUpload={(img) =>
+                        form.setValue("itineraryDownload", {
+                          url: img.url,
+                          public_id: img.public_id,
+                          alt: form.getValues("title") ?? "",
                         })
                       }
                     />
@@ -421,7 +447,7 @@ export default function CreatePackagePage() {
               {itineraryArray.fields.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-2 gap-2 mb-2 ">
                   <Input {...form.register(`itinerary.${index}.title`)} placeholder="Day Title" />
-                  <Input
+                  <Textarea
                     {...form.register(`itinerary.${index}.description`)}
                     placeholder="Day Description"
                   />

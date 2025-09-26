@@ -64,6 +64,7 @@ interface PackageFormValues {
   inclusions: string[]
   exclusions: string[]
   itinerary: Itinerary[]
+  itineraryDownload?: Image
   faqs: Faq[]
   isFeatured: boolean
   status: "draft" | "published"
@@ -152,6 +153,7 @@ export default function CreatePackagePage() {
     inclusions: [],
     exclusions: [],
     itinerary: [],
+    itineraryDownload: { url: "", alt: "", public_id: "" },
     faqs: [],
     isFeatured: false,
     slug: "",
@@ -237,7 +239,7 @@ useEffect(() => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Describe the package" {...field} />
+                    <Textarea placeholder="Describe the package" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -349,6 +351,28 @@ useEffect(() => {
                 </FormItem>
               )}
             />
+                        {/* Itinary Download */}
+                        <FormField
+                          control={form.control}
+                          name="itineraryDownload"
+                          render={() => (
+                            <FormItem>
+                              <FormLabel>Itinerary PDF Upload</FormLabel>
+                              <FormControl>
+                                <ImageUploader
+                                  onUpload={(img) =>
+                                    form.setValue("itineraryDownload", {
+                                      url: img.url,
+                                      public_id: img.public_id,
+                                      alt: form.getValues("title") ?? "",
+                                    })
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
             {/* Gallery Dynamic */}
             <div>
               <FormLabel className="mb-2 text-lg">Image Gallery</FormLabel>
