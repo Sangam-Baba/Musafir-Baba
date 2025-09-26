@@ -190,7 +190,7 @@ function PackageDetails() {
             {active === "description" && (
               <div>
                 <h2 className="font-bold text-lg mb-2">About This Tour</h2>
-                <p>{pkg.description}</p>
+                <p className="text-justify whitespace-pre-line">{pkg.description}</p>
               </div>
             )}
 

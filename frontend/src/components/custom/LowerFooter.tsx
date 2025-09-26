@@ -29,7 +29,7 @@ function LowerFooterItem() {
   });
 
   const lowerFooter = footerArray?.filter((item) =>
-    !["Service", "About Us", "Domestic Trips", "International Trips"].includes(  item.title   ));
+    !["Services", "About Us", "Domestic Trips", "International Trips"].includes(  item.title   ));
 
   return (
     <section className="w-full flex flex-col gap-6">
