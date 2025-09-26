@@ -2,7 +2,7 @@ import React from 'react'
 import Image from 'next/image';
 import logo from "../../../public/logo.svg"
 import Map from '../custom/Map';
-import { MapPin, Phone , Facebook , Twitter , Linkedin, Instagram , Youtube, LucideTwitter } from 'lucide-react';
+import { MapPin, Phone , Facebook , Linkedin, Instagram , Youtube, LucideTwitter } from 'lucide-react';
 import Newslatter from './Newslatter';
 import FooterItem from '../custom/FooterItem';
 import LowerFooterItem from '../custom/LowerFooter';
@@ -13,7 +13,7 @@ function Footer() {
         <Newslatter />
         <div className='flex flex-col md:flex-row gap-6 mb-8 py-15 px-4 md:px-10 lg:px-25  items-center md:items-start justify-between '>
             <div className="md:w-1/4 flex flex-col gap-2 ">
-               <FooterItem title="Service" />  
+               <FooterItem title="Services" />  
             </div>
             <div className="md:w-1/4 flex flex-col gap-2">
                <FooterItem title="Domestic Trips "  />  
