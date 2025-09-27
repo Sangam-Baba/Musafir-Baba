@@ -83,10 +83,19 @@ const packageSchema = new mongoose.Schema(
 );
 
 packageSchema.pre("save", function (next) {
-  if (this.isModified("title")) {
-    this.slug = slugify(this.title, { lower: true, strict: true });
+  if (this.isModified("slug")) {
+    this.slug = slugify(this.slug? this.slug : this.title, { lower: true, strict: true });
   }
   next();
 });
+
+packageSchema.pre("findOneAndUpdate", function(next){
+  const update = this.getUpdate()
+  if (update.slug) {
+    update.slug = slugify(update.slug || update.title, { lower: true, strict: true })
+    this.setUpdate(update)
+  }
+  next()
+})
 
 export const Package = mongoose.model("Package", packageSchema);
