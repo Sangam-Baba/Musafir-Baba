@@ -43,8 +43,9 @@ function groupBatchesByMonth(batches: Batch[]) {
 }
 export default function PackageCard({ pkg , url }: { pkg: Package; url: string } ) {
    const batchesByMonth = useMemo(() => groupBatchesByMonth(pkg.batch? pkg.batch : []), [pkg.batch]);
-   console.log("this is batchesByMonth",batchesByMonth);
-   console.log("this is batchesByMonth length",Object.keys(batchesByMonth).length);
+  //  console.log("this is batchesByMonth",batchesByMonth);
+  //  console.log("this is batchesByMonth length",Object.keys(batchesByMonth)[0]);
+   const allDates = Object.values(batchesByMonth).flat().map(b => format(parseISO(b.startDate), "dd MMM"));
   return (
     <Link href={url}>
     <Card className="overflow-hidden pt-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
@@ -78,9 +79,10 @@ export default function PackageCard({ pkg , url }: { pkg: Package; url: string }
           </div>
         </div>
 
-        {/* Flexible date */}
         <p className="text-xs text-gray-600 mt-2 line-clamp-1">
-          {Object.keys(batchesByMonth).length > 0 ? Object.keys(batchesByMonth).join(", ") : "Any Date of your choice"}
+          {allDates.length > 0
+           ? allDates.slice(0, 4).join(", ")  // first 4 dates
+            : "Any Date of your choice"}
         </p>
       </CardContent>
     </Card>

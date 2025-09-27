@@ -2,14 +2,11 @@
 
 import React, { useState } from "react"
 import { Button } from "../ui/button"
-import Image from "next/image"
-import { Card, CardContent } from "../ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MapPin } from "lucide-react"
 import Link from "next/link"
 import { Loader } from "@/components/custom/loader"
 import { toast } from "sonner"
 import { useQuery } from "@tanstack/react-query"
+import PackageCard from "./PackageCard"
 
 interface Batch {
   _id: string
@@ -156,56 +153,18 @@ export function FeaturedTour() {
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10 w-full px-6 md:px-0">
-          {packages.slice(0, 4).map((obj: Package) => {
-            const price = obj.batch?  obj.batch?.[0]?.quad : 3999;
-            return (
-              <Card
-                key={obj._id}
-                className="py-0 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition"
-              >
-                <Link href={`/${obj.destination.country}/${obj.destination.state}/${obj.slug}`} className="block">
-                <div className="relative">
-                  <Image
-                    src={obj.coverImage?.url}
-                    alt={obj.title}
-                    width={400}
-                    height={250}
-                    className="object-cover w-full h-48"
-                  />
-
-                  <Badge className="absolute top-2 left-2 bg-red-600 text-white">
-                    Trending
-                  </Badge>
-
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
-                    {obj.title}
-                  </div>
-                </div>
-
-                <CardContent className="p-4 space-y-2">
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {obj.destination?.name}
-                  </div>
-
-                  <h3 className="font-semibold text-lg">{obj.title}</h3>
-
-                  <div className="flex justify-between items-center pt-2 border-t text-sm">
-                    <span>
-                      From{" "}
-                      <span className="text-[#FE5300] font-bold">
-                        ₹{price.toLocaleString("en-IN")}
-                      </span>
-                    </span>
-                    <span className="text-gray-500">
-                      {obj.duration.days}D/{obj.duration.nights}N
-                    </span>
-                  </div>
-                </CardContent>
-                </Link>
-              </Card>
-            )
-          })}
+                {packages.slice(0, 4).map((pkg) => (
+                <PackageCard key={pkg._id} pkg={{
+                  id: pkg._id,
+                  name: pkg.title,
+                  slug: pkg.slug,
+                  image: pkg.coverImage? pkg.coverImage.url : "",
+                  price: pkg.batch? pkg.batch[0].quad : 9999,
+                  duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                  destination: pkg.destination.state.charAt(0).toUpperCase() + pkg.destination.state.slice(1),
+                  batch: pkg?.batch? pkg?.batch: []
+                }}  url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`} />
+                 ))}
         </div>
       </div>
     </section>

@@ -19,6 +19,7 @@ interface Destination{
             slug: string,
 }
 interface Batch{
+     _id: string;
      quad: number;
      triple: number;
      double: number;
@@ -133,7 +134,8 @@ const  packages   = data?.data ?? [];
                   image: pkg.coverImage? pkg.coverImage.url : "",
                   price: pkg.batch? pkg.batch[0].quad : 9999,
                   duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                  destination: pkg.destination.state.toUpperCase() ?? "",
+                  destination: pkg.destination.state.charAt(0).toUpperCase() + pkg.destination.state.slice(1),
+                  batch: pkg?.batch? pkg?.batch: []
                 }}  url={`/${country}/${state}/${pkg.slug}`} />
                  ))}
               </div>
