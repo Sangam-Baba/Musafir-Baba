@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
-import { useBookingStore } from "@/store/useBookingStore";
 import { Loader } from "@/components/custom/loader";
 import {
   Accordion,
@@ -19,7 +18,7 @@ import {
 import { Card , CardHeader, CardTitle, } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import QueryForm from "@/components/custom/QueryForm";
-
+import {ItineryDialog} from "@/components/custom/ItineryDialog";
 type TabKey = "description" | "highlights" | "itineraries" | "includeexclude" | "faqs";
 
 interface Destination {
@@ -81,6 +80,7 @@ interface Package {
   inclusions: string[];
   exclusions: string[];
   itinerary: Itinerary[];
+  itineraryDownload?: Image;
   faqs: Faqs[];
   isFeatured: boolean;
   status: "draft" | "published";
@@ -118,8 +118,6 @@ function PackageDetails() {
   const { slug, state } = useParams<{ state: string; slug: string }>();
   const StateName = state;
   const router=useRouter();
-  const store= useBookingStore((state) => state);
-  console.log(store);
 
 
 
@@ -158,6 +156,10 @@ function PackageDetails() {
 
   return (
     <section>
+      <div className="relative">
+                  <div className="absolute z-20 w-full flex justify-center bottom-35 px-4">
+                   <ItineryDialog  title={pkg.title} description={pkg.description} url={pkg.itineraryDownload?.url ?? ""} img={pkg.coverImage?.url} packageId={pkg._id}/>
+                 </div>
       <Hero
         image={pkg.coverImage.url ?? ""}
         title={pkg.title}
@@ -166,6 +168,8 @@ function PackageDetails() {
         height="lg"
         overlayOpacity={55}
       />
+      </div>
+
 
       <ImageGallery />
       <div className="w-full max-w-7xl mx-auto px-4  py-8 md:flex">

@@ -225,14 +225,14 @@ export default function CreatePackagePage() {
                 <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
                   <Input type="date" {...form.register(`batch.${index}.startDate`)} placeholder="Start Date" />
                   <Input type="date" {...form.register(`batch.${index}.endDate`)} placeholder="End Date" />
-                  <Input type="number" {...form.register(`batch.${index}.quad`)} placeholder="Quad Price" />
-                  <Input type="number" {...form.register(`batch.${index}.quadDiscount`)} placeholder="Quad Discount" />
-                  <Input type="number" {...form.register(`batch.${index}.triple`)} placeholder="Triple Price" />
-                  <Input type="number" {...form.register(`batch.${index}.tripleDiscount`)} placeholder="Triple Discount" />
-                  <Input type="number" {...form.register(`batch.${index}.double`)} placeholder="Double Price" />
-                  <Input type="number" {...form.register(`batch.${index}.doubleDiscount`)} placeholder="Double Discount" />
-                  <Input type="number" {...form.register(`batch.${index}.child`)} placeholder="Child Price" />
-                  <Input type="number" {...form.register(`batch.${index}.childDiscount`)} placeholder="Child Discount" />
+                  <Input type="number" {...form.register(`batch.${index}.quad`)} placeholder="Quad Original Price" />
+                  <Input type="number" {...form.register(`batch.${index}.quadDiscount`)} placeholder="Quad Fake Price" />
+                  <Input type="number" {...form.register(`batch.${index}.triple`)} placeholder="Triple Original Price" />
+                  <Input type="number" {...form.register(`batch.${index}.tripleDiscount`)} placeholder="Triple Fake Price" />
+                  <Input type="number" {...form.register(`batch.${index}.double`)} placeholder="Double Original Price" />
+                  <Input type="number" {...form.register(`batch.${index}.doubleDiscount`)} placeholder="Double Fake Price" />
+                  <Input type="number" {...form.register(`batch.${index}.child`)} placeholder="Child Original Price" />
+                  <Input type="number" {...form.register(`batch.${index}.childDiscount`)} placeholder="Child Fake Price" />
                   <Button
                     type="button"
                     variant="destructive"
