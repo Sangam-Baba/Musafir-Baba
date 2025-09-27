@@ -9,6 +9,7 @@ import {BlogComments} from "@/components/custom/BuildCommentTree";
 import SocialShare from "@/components/custom/SocialSharing";
 import LatestNewsSidebar from "@/components/custom/LatestNewsSidebar";
 import TrandingNewsSidebar from "@/components/custom/TrandingNewsSidebar";
+import Script from "next/script";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -71,6 +72,32 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
   const {news , comments }= await getNews(params.slug);
   if (!news) return <NotFoundPage />;
 
+      const schema = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: news.title,
+    description: news.metaDescription || news.excerpt,
+    image: news.coverImage?.url || "https://musafirbaba.com/logo.svg",
+    datePublished: news.createdAt,
+    dateModified: news.updatedAt || news.createdAt,
+    author: {
+      "@type": "Person",
+      name: news.author?.name || "Musafir Baba",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Musafir Baba",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://musafirbaba.com/logo.svg",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://musafirbaba.com/news/${news.slug}`,
+    },
+  };
+
   return (
     <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-10 px-12">
      <article className="lg:w-5/7  ">
@@ -124,6 +151,10 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
       <LatestNewsSidebar />
       <TrandingNewsSidebar />
      </div>
+       {/* ✅ JSON-LD Schema */}
+      <Script id="blog-schema" type="application/ld+json">
+        {JSON.stringify(schema)}
+      </Script>
     </div>
   );
 }

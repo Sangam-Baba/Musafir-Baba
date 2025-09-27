@@ -21,6 +21,7 @@ interface Blog {
   };
   slug: string;
   updatedAt: string;
+  createdAt: string;
 }
 
 function BlogsHome() {
@@ -100,7 +101,7 @@ function BlogsHome() {
                   {blog.title}
                 </Link>
                 <p className="text-xs text-gray-500 mt-1">
-                  {new Date(blog.updatedAt).toLocaleDateString("en-US", {
+                  {new Date(blog.createdAt).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -130,7 +131,7 @@ function BlogsHome() {
                 {featured.title}
               </Link>
               <p className="text-xs text-gray-500 mt-2">
-                {new Date(featured.updatedAt).toLocaleDateString("en-US", {
+                {new Date(featured.createdAt).toLocaleDateString("en-US", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",

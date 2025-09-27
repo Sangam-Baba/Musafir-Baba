@@ -2,7 +2,6 @@
 
 import React from "react"
 import Hero from "@/components/custom/Hero"
-//import CategoryGrid from "@/components/custom/CategoryGrid"
 import { useQuery } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Loader } from "@/components/custom/loader"

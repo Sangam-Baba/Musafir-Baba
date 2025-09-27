@@ -1,13 +1,10 @@
-"use client";
-import React from 'react'
-import Hero from '@/components/custom/Hero';
-import { useParams } from 'next/navigation';
-import { useQuery } from "@tanstack/react-query";
-import { toast } from 'sonner';
-import { Loader } from "@/components/custom/loader";
-import PackageCard from "@/components/custom/PackageCard";
-import img1 from "../../../../../public/Hero1.jpg";
+import { Metadata } from "next";
+import SingleCategoryPage from './PackageSlugClient'
+import Script from "next/script";
 
+interface Props {
+  params: { slug: string };
+}
 interface Batch {
   _id: string;
   startDate: string;
@@ -28,9 +25,16 @@ interface CoverImage{
     height: number;
     alt: string;
 }
+interface Itinerary {
+  day: number;
+  title: string;
+  description: string;
+}
 interface Package {
   _id: string;
+  description: string;
   title: string;
+  metaDescription: string;
   slug: string;
   coverImage: CoverImage;
   batch: Batch[];
@@ -38,6 +42,7 @@ interface Package {
     days: number;
     nights: number;
   };
+  itinerary: Itinerary[];
   destination: Destination;
   isFeatured: boolean;
   status: "draft" | "published";
@@ -48,93 +53,125 @@ interface Destination {
   state: string;
   name: string;
   slug: string;
+  city: string;
 }
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-  image: string;
-  description: string;
-  packages: Package[];
+async function getCategoryBySlug(slug: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`, {
+    method: "GET",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    cache: "no-cache",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch category");
+  }
+  return res.json();
 }
-interface CategoryResponse {
-  success: boolean;
-  data: {
-    category: Category;
-  };
-}
-
-const getCategoryBySlug =async (slug: string): Promise<CategoryResponse>=>{
-    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,{
-      method:"GET",
-      headers:{ "content-type": "application/json"},
-      credentials:"include",
-      cache:"no-cache",
-    });
-    if(!res.ok){
-        throw new Error("Failed to fetch category");
-    }
-    return res.json();
-}
-
-
-function SingleCategoryPage() {
-    const {slug} = useParams();
-
-const { data, isLoading, isError, error } = useQuery({
-  queryKey: ["category", slug],
-  queryFn: ()=> getCategoryBySlug(slug as string),
-  retry: 2,
-})
-
-if(isLoading){
-  return <Loader size="lg" message="Loading category..." />;
-}
-if(isError){
-  toast.error(error.message);
-  return <h1>{error.message}</h1>
-}
-
- const { category } = data?.data ?? {};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = params;
+  try {
+    const res = await getCategoryBySlug(slug);
+    const { category } = res?.data ?? {};
  const packages = category?.packages ?? [];
+ console.log("packages", packages);
+  console.log("Category", category);
 
+    if (!category) {
+      return {
+        title: "Category Not Found | Musafir Baba",
+        description: "This travel category does not exist.",
+      };
+    }
 
+    const title = `${category.name} | Musafir Baba`;
+    const description = category.description || "Explore the best travel packages.";
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `https://www.musafirbaba.com/packages/${slug}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `https://musafirbaba.com/packages/${slug}`,
+        images: [
+          {
+            url: category.coverImage.url || "https://musafirbaba.com/default-og.jpg",
+            width: 1200,
+            height: 630,
+            alt: category.name,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [category.coverImage.url || "https://musafirbaba.com/logo.svg"],
+      },
+    };
+  } catch {
+    return {
+      title: "Error | Musafir Baba",
+      description: "Failed to fetch category.",
+    };
+  }
+}
+export default async function Page({ params }: Props) {
+    const res = await getCategoryBySlug(params.slug);
+  const { category } = res?.data ?? {};
+  const packages = category?.packages ?? [];
+
+  // ✅ Build JSON-LD Schema
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${category?.name} Travel Packages`,
+    description: category?.description,
+    url: `https://musafirbaba.com/packages/${params.slug}`,
+    numberOfItems: packages.length,
+    itemListElement: packages.map((pkg:Package , index: number) => ({
+      "@type": "TouristTrip",
+      position: index + 1,
+      name: pkg.title,
+      description: pkg.description || pkg.metaDescription || "",
+      image: pkg.coverImage?.url,
+      url: `https://musafirbaba.com/${pkg.destination?.country}/${pkg.destination?.state}/${pkg.slug}`,
+      tourType: "GroupTour",
+      itinerary: pkg.itinerary?.map((day: Itinerary, i: number) => ({
+        "@type": "TouristAttraction",
+        position: i + 1,
+        name: day.title,
+        description: day.description,
+      })),
+      offers: {
+        "@type": "Offer",
+        price: pkg.batch?.[0]?.quad || 9999,
+        priceCurrency: "INR",
+        availability: "https://schema.org/InStock",
+        url: `https://musafirbaba.com/${pkg.destination?.country}/${pkg.destination?.state}/${pkg.slug}`,
+      },
+      location: {
+        "@type": "Place",
+        name: pkg.destination?.name,
+        address: {
+          "@type": "PostalAddress",
+          addressCountry: pkg.destination?.country,
+          addressRegion: pkg.destination?.state,
+          addressLocality: pkg.destination?.city,
+        },
+      },
+    })),
+  };
   return (
- <section className="w-full mb-12">
-      <Hero
-      image={img1.src}
-      title="Find Your Perfect Getaway"
-      description="Curated itineraries, flexible dates, and best-price guarantees."
-      align="center"
-      height="lg"
-      overlayOpacity={55}
-      />
-      
-      {/* Show category details */}
-      <div className="max-w-4xl mx-auto text-center my-12">
-        <h1 className="text-3xl font-bold">{category?.name}</h1>
-        <p className="mt-2 text-muted-foreground">{category?.description}</p>
-      </div>
+    <>
+        <SingleCategoryPage slug={params.slug}/>
+              <Script id="json-schema" type="application/ld+json">
+        {JSON.stringify(schema)}
+      </Script>
+    </>
 
-      {/* Show packages under this category */}
-      {packages && packages.length > 0 && (
-        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
-          {packages.map((pkg) => (
-          <PackageCard key={pkg._id} pkg={{
-            id: pkg._id,
-            name: pkg.title,
-            slug: pkg.slug,
-            image: pkg.coverImage?.url ?? "",
-            price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
-            duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-            destination: pkg.destination?.name ?? "",
-            batch: pkg?.batch? pkg?.batch: []
-          }} url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`} />
-           ))}
-        </div>
-      )}
-    </section>
   )
 }
-
-export default SingleCategoryPage

@@ -64,7 +64,7 @@ export function ItineryDialog({title, description, url, img , packageId}:{title:
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Download Itinerary</Button>
+        <Button size={"lg"}  className="bg-[#FE5300] hover:bg-[#e04a00] text-white hover:text-white">Download Itinerary</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>

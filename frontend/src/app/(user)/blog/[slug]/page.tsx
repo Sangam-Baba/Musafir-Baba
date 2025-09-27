@@ -10,6 +10,7 @@ import TrandingBlogSidebar from "@/components/custom/TrandingBlogSidebar";
 import BlogLikes from "@/components/custom/BlogLikes";
 import {BlogComments} from "@/components/custom/BuildCommentTree";
 import SocialShare from "@/components/custom/SocialSharing";
+import Script from "next/script";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -63,6 +64,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       images: [image],
     },
+    
   };
 }
 
@@ -71,6 +73,32 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function BlogDetailPage({ params }: { params: { slug: string } }) {
   const {blog , comments }= await getBlog(params.slug);
   if (!blog) return <NotFoundPage />;
+
+    const schema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: blog.title,
+    description: blog.metaDescription || blog.excerpt,
+    image: blog.coverImage?.url || "https://musafirbaba.com/logo.svg",
+    datePublished: blog.createdAt,
+    dateModified: blog.updatedAt || blog.createdAt,
+    author: {
+      "@type": "Person",
+      name: blog.author?.name || "Musafir Baba",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Musafir Baba",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://musafirbaba.com/logo.svg",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://musafirbaba.com/blog/${blog.slug}`,
+    },
+  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-10 px-12">
@@ -128,6 +156,10 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
       <TrandingBlogSidebar />
       
      </div>
+           {/* ✅ JSON-LD Schema */}
+      <Script id="blog-schema" type="application/ld+json">
+        {JSON.stringify(schema)}
+      </Script>
     </div>
   );
 }
