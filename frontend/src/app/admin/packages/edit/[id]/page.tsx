@@ -195,7 +195,7 @@ useEffect(() => {
     mutationFn: (values: PackageFormValues) => updatePackage(values, accessToken, id),
     onSuccess: (data) => {
       toast.success("Package Updated successfully")
-      form.reset(defaultValues)
+      // form.reset(defaultValues)
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Something went wrong")
@@ -222,7 +222,7 @@ useEffect(() => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Title *</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter Package Title" {...field} />
                   </FormControl>
@@ -230,6 +230,21 @@ useEffect(() => {
                 </FormItem>
               )}
             />
+            {/* Permalink */}
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Permalink *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter Permalink..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
 
             {/* Description */}
             <FormField

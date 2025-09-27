@@ -76,7 +76,7 @@ const getDestinationById=async(req, res)=>{
       return res.status(404).json({ success: false, error: "Destination not found" });
     }
      
-    const packages=await Package.find({destination:id})
+    const packages=await Package.find({destination:id , status:"published"})
     .populate('category', "name slug")
     .select("title price duration coverImage slug isFeatured status");
 

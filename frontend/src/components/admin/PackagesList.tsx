@@ -12,6 +12,7 @@ interface Package {
   url: string
   location: string
   price: number
+  status: string
 }
 interface PackageTableProps {
   packages: Package[];
@@ -28,10 +29,11 @@ export default function AuthorsList({ packages , onEdit, onDelete }: PackageTabl
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="w-[20%]">Name</TableHead>
-              <TableHead className="w-[20%]">Location</TableHead>
-              <TableHead className="w-[20%]">Price</TableHead>
-              <TableHead className="w-[20%]">URL</TableHead>
+              <TableHead className="w-[15%]">Name</TableHead>
+              <TableHead className="w-[15%]">Location</TableHead>
+              <TableHead className="w-[15%]">Price</TableHead>
+              <TableHead className="w-[15%]">URL</TableHead>
+              <TableHead className="w-[15%]">Status</TableHead>
               <TableHead className="w-[25%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -57,6 +59,7 @@ export default function AuthorsList({ packages , onEdit, onDelete }: PackageTabl
                     Visit
                   </a>
                 </TableCell>
+                <TableCell className="font-medium">{cat.status}</TableCell> 
                 <TableCell className="text-right space-x-2">
                   <Button
                     variant="outline"
@@ -96,6 +99,7 @@ export default function AuthorsList({ packages , onEdit, onDelete }: PackageTabl
                 <ExternalLink size={16} />
                 Visit
               </a>
+              <h3 className="font-semibold text-lg">{cat.status}</h3>  
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"

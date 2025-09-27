@@ -71,8 +71,8 @@ const getCategoryById=async(req, res)=>{
 const getCategoryBySlug=async(req, res)=>{
     try {
         const {slug}=req.params;
-        const category=await Category.findOne({slug:slug, isActive:true})
-        .populate({path:"packages", 
+        const category=await Category.findOne({slug:slug, isActive:true, })
+        .populate({path:"packages",  match: { status: "published" }, 
           populate:{
             path:"destination",
             model:"Destination"

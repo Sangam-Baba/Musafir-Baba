@@ -34,7 +34,9 @@ function Footer() {
                        <p className='flex justify-start w-[90%]'>Tour: +91 92896 02447 | Visa: +91 93556 63591</p>
                     </div>
                     <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" />
+                    
                     <div className='flex gap-4 item-center space-y-4'>
+                        <p className='text-md font-bold'>Follow Us:</p>
                          <Link href="https://www.youtube.com/@hello_musafirbaba"> <Youtube  color="#FE5300"  className="w-5 h-5 "/> </Link>
                           <Link href="http://facebook.com/hellomusafirbaba"> <Facebook  color="#FE5300"fill="white" className="w-5 h-5" />      </Link>
                          <Link href="https://x.com/Musafircare"> <LucideTwitter color="#FE5300" fill="white" className="w-5 h-5" /> </Link>

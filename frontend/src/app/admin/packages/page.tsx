@@ -74,7 +74,7 @@ interface Package{
     image:string
 }
 const getAllPackages = async() => {
-    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages`,{
+    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages/?status=`,{
         method:"GET",
         headers:{"Content-Type":"application/json"},
         credentials:"include",
@@ -132,10 +132,11 @@ const accessToken = useAuthStore((state)=>state.accessToken) as string;
           packages={Array.isArray(packages) ? packages.map((b:Package) => ({
             id: b._id as string,
             name: b.title as string,
-            location: b.destination?.state.toLocaleUpperCase() as string,
+            location: b.destination?.state.charAt(0).toUpperCase() as string + b.destination?.state.slice(1) ,
             slug: b.slug as string,
             price: b.batch?.length ? b.batch[0].quad : 0,
             url: `/${b.destination?.country}/${b.destination?.state}/${b.slug}`, 
+            status: b.status==="published" ? "Published" : "Draft"
           })) : []}
           onEdit={handleEdit}
           onDelete={handleDelete}

@@ -17,6 +17,7 @@ import ImageUploader from "@/components/admin/ImageUploader"
 import { useAuthStore } from "@/store/useAuthStore"
 import { Loader } from "@/components/custom/loader"
 import { Textarea } from "@/components/ui/textarea"
+import { useRouter } from "next/navigation"
 
 interface Image {
   url: string
@@ -110,7 +111,7 @@ const getDestination= async () => {
 }
 export default function CreatePackagePage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string
-
+  const router=useRouter();
   const defaultValues: PackageFormValues = {
     title: "",
     description: "",
@@ -153,6 +154,7 @@ export default function CreatePackagePage() {
     onSuccess: (data) => {
       toast.success("Package Created successfully")
       form.reset(defaultValues)
+      router.refresh();
     },
     onError: (error: unknown) => {
       toast.error(error instanceof Error ? error.message : "Something went wrong")
@@ -178,9 +180,23 @@ export default function CreatePackagePage() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Title *</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter Package Title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Parmalink */}
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Permalink *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter Permalink..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -204,7 +220,7 @@ export default function CreatePackagePage() {
 
             {/* Batch Dynamic */}
             <div>
-              <FormLabel className="mb-2 text-lg">Batch</FormLabel>
+              <FormLabel className="mb-2 text-lg">Batch *</FormLabel>
               {batchArray.fields.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
                   <Input type="date" {...form.register(`batch.${index}.startDate`)} placeholder="Start Date" />
@@ -238,7 +254,7 @@ export default function CreatePackagePage() {
               name="duration.days"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Days</FormLabel>
+                  <FormLabel>Days *</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="Enter Days Duration" {...field} />
                   </FormControl>
@@ -251,7 +267,7 @@ export default function CreatePackagePage() {
               name="duration.nights"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nights</FormLabel>
+                  <FormLabel>Nights *</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="Enter Nights Duration" {...field} />
                   </FormControl>
@@ -268,7 +284,7 @@ export default function CreatePackagePage() {
               name="destination"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Destination</FormLabel>
+                  <FormLabel>Destination *</FormLabel>
                   <FormControl>           
                     <select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-md border border-gray-300 p-2" value={field.value || ""}>
                       <option value="" disabled>Select a destination</option>
