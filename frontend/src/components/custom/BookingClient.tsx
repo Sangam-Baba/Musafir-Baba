@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo,useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation , useQuery} from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { set, z } from "zod";
+import {  z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, parseISO, isAfter } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
-import {Loader} from "@/components/custom/loader";
 
 
 interface Batch {
@@ -80,14 +79,6 @@ function groupBatchesByMonth(batches: Batch[]) {
   }, {});
 }
 
-const getUser= async (accessToken:string)=>{
-  const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,{
-    headers:{"Authorization":`Bearer ${accessToken}`},})
-    if(!res.ok) throw new Error("Failed to fetch user");
-    const data=await res.json();
-    return data?.data;
-}
-
 export default function BookingClient({ pkg }: { pkg: Package }) {
   console.log("Getting package: ",pkg);
   const router = useRouter();
@@ -96,11 +87,10 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   const [travellers, setTravellers] = useState({ quad: 0, triple: 0, double: 0, child: 0 });
   const [price, setPrice] = useState(0);
 
-  const {data:myUser, isLoading, isError, error} = useQuery({queryKey:["user"], queryFn: ()=>getUser(accessToken), staleTime: 1000 * 60 * 5,});
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      user: myUser?._id || "",
+      user:  "", // myUser?._id || "",
       packageId: pkg._id,
       travellers,
       totalPrice: 0,
@@ -130,11 +120,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   const totalPriceWithTax=Math.ceil(totalPrice*1.05)
   
   const batchesByMonth = useMemo(() => groupBatchesByMonth(pkg.batch? pkg.batch : []), [pkg.batch]);
-useEffect(() => {
-  if (myUser?._id) {
-    form.setValue("user", myUser._id);
-  }
-}, [myUser, form]);
+
   const confirmSelection = () => {
     if (!selectedBatch) return;
     form.setValue("travellers", travellers);
@@ -147,8 +133,6 @@ useEffect(() => {
     if (mutation.isPending) return;
     mutation.mutate(values);
   };
-  if(isLoading) return <Loader size={"lg"} message="Loading, please wait..." />;
-  if(isError) return <div>{error.message}</div>;
 
   return (
     <div className="max-w-3xl mx-auto p-6">
