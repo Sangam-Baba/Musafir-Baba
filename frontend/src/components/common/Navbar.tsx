@@ -19,7 +19,7 @@ export function Navbar() {
             <Link href="#">Bookings</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="#">Visa</Link>
+            <Link href="/visa">Visa</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Link href="#">Membership</Link>
