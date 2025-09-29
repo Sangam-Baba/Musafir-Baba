@@ -1,6 +1,5 @@
 import React from 'react'
 import Image from 'next/image';
-import van from '../../../public/van.webp';
 import QueryForm from './QueryForm';
 
 function SectionFive() {

@@ -27,6 +27,18 @@ const getAllVisa = async( req, res)=>{
         res.status(500).json({success: false, message: "Server Error"});  
     }
 }
+const  getVisaById = async( req, res)=>{
+    try {
+        const { id }= req.params;
+        if(!id) return res.status(400).json({success:false, message:"Invalid Id"});
+        const visa=await Visa.findById(id);
+        if(!visa) return res.status(404).json({success:false, message:"Invalid Id"});
+        res.status(200).json({success:true, message:"Visa fetched successfully", data:visa});
+    } catch (error) {
+        console.log("Visa getting by Id failed", error.message);
+        res.status(500).json({success: false, message: "Server Error"});
+    }
+}
 
 const updateVisa = async (req, res)=>{
     try{
@@ -58,4 +70,4 @@ const deleteVisa = async( req, res)=>{
     }
 }
 
-export {createVisa, getAllVisa, updateVisa, deleteVisa};
+export {createVisa, getAllVisa, updateVisa, deleteVisa , getVisaById};
