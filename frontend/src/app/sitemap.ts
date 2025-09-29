@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-
+export const dynamic = "force-dynamic";
 interface coverImage{
   url: string,
   public_id: string,
