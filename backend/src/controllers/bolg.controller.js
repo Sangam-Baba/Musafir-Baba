@@ -93,7 +93,7 @@ const getAllBlog=async(req, res)=>{
 
          const total =await Blog.countDocuments(filter);
         const blogs =await Blog.find(filter)
-        .select("title content coverImage slug excerpt updatedAt")
+        .select("title content coverImage slug excerpt updatedAt createdAt")
         .populate("comments" )
         .sort({createdAt:-1})        
         .limit(limit)
