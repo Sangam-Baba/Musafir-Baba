@@ -24,7 +24,7 @@ const visaSchema =new mongoose.Schema({
     },
     visaType:{
         type:String,
-        enum:["E-Visa", "DAC", "EVOA"],
+        enum:["E-Visa", "DAC", "EVOA", "Sticker", "ETA", "PAR" ],
     },
     visaProcessed:{
         type:Number

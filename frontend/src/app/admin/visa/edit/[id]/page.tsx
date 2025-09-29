@@ -223,6 +223,10 @@ export default function CreateVisaPage() {
                         <option value="" disabled>Select Visa Type</option>
                       <option value="DAC">DAC</option>
                       <option value="E-Visa">E-Visa</option>
+                      <option value="ETA">ETA</option>
+                      <option value="EVOA">EVOA</option>
+                      <option value="PAR">PAR</option>
+                      <option value="Sticker">Sticker</option>
                     </select>
                   </FormControl>
                   <FormMessage />

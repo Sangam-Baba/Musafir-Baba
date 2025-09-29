@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/custom/loader';
+import { VisaTypesDialog } from '@/components/custom/VisaTypesDialog';
 interface Visa{
     id:string;
     country:string;
@@ -78,17 +79,17 @@ function VisaPage() {
                 <CardHeader>
                     <div className="flex items-center justify-between gap-2">
                        <Image src={visa.coverImage?.url? visa.coverImage.url : ""} alt={visa.coverImage?.alt ? visa.coverImage.alt : ""} width={300} height={200} className='rounded-md object-cover w-20 h-15' />
-                       <span className='rounded bg-blue-100 px-2 '> <p className="font-bold bg-transparent bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">{visa.visaType}</p></span>
+                       <VisaTypesDialog type={visa.visaType} />
                     </div>
                     
                     <CardTitle className="flex items-center text-2xl  gap-2">{visa.country}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p>Get your visa in {visa.duration}</p>
-                    <p>₹{visa.cost} + Servics Fee</p>
-                    <p>{visa.visaProcessed}+ Visa Processed</p>
+                    <p className='text-gray-600 font-semibold'>Get your visa in {visa.duration}</p>
+                    <p className='text-gray-600 font-semibold'>{visa.visaProcessed}+ Visa Processed</p>
                 </CardContent>
-                <CardFooter className="flex items-center justify-end border-t  " >
+                <CardFooter className="flex items-center justify-between border-t  " >
+                    <p className="font-bold text-md">₹{visa.cost}+ Servics Fee</p>
                     <p className="font-bold text-blue-600"><Link href={`/visa/${visa.childUrl}`}>Apply Now <span className="font-bold">{`>`}</span></Link></p>
                 </CardFooter>
             </Card>
