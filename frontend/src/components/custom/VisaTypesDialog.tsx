@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
+import { Info } from "lucide-react"
 type VisaInfo = {
   title: string
   description: string
@@ -91,7 +91,7 @@ export function VisaTypesDialog({ type }: { type: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">{type}</Button>
+        <Button variant="outline">{type} <Info /></Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
