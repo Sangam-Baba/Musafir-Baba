@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Explore incredible tour package without breaking the bank. Our affordable tour packages cover domestic and international trips. Easy booking and 24/7 support included.",
   alternates: {
-    canonical: "https://www.musafirbaba.com/packages",
+    canonical: "https://www.musafirbaba.com/holidays",
   },
 }
 

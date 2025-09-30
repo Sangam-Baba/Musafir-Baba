@@ -73,7 +73,7 @@ export default function PackagesClient() {
       <div className='max-w-7xl mx-auto py-10 px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8'>
            {categories.map((category, idx) =>
            <Card key={idx} className={`flex flex-col gap-4 ${idx % 2 === 0 ? "bg-[#FFF5E4]" : "bg-[#EBFFF2]"} items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500 h-50 `}>
-              <Link href={`/packages/${category.slug}`} className='flex flex-col gap-4 items-center '>
+              <Link href={`/holidays/${category.slug}`} className='flex flex-col gap-4 items-center '>
               <Image src={category.coverImage.url} alt={category.name} width={50} height={50}/>
               <h1 className='text-xl font-semibold text-center'>{category.name}</h1>
               <p className='text-sm text-center line-clamp-3 px-2'>{category.description}</p>

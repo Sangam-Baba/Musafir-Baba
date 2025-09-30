@@ -172,7 +172,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: "https://musafirbaba.com/packages",
+      url: "https://musafirbaba.com/holidays",
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.8,
@@ -208,7 +208,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     ...categories.map((cat : blog) => ({
-      url: `https://musafirbaba.com/packages/${cat.slug}`,
+      url: `https://musafirbaba.com/holidays/${cat.slug}`,
       lastModified: new Date(cat.updatedAt),
       changeFrequency: "daily",
       priority: 0.8,

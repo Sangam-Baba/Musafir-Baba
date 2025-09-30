@@ -82,7 +82,7 @@ type TabSlug =
   | "backpacking-tour-packages"
   | "weekend-tour-packages"
   | "honeymoon-tour-packages"
-  | "early-bird-tour-packages"
+  | "early-bird-2026"
   | "international-tour-packages"
 
 export function FeaturedTour() {
@@ -110,7 +110,7 @@ export function FeaturedTour() {
     { key: "backpacking-tour-packages", label: "Backpacking Trips", slug: "backpacking-tour-packages" },
     { key: "weekend-tour-packages", label: "Weekend Trips", slug: "weekend-tour-packages" },
     { key: "honeymoon-tour-packages", label: "Honeymoon Trips", slug: "honeymoon-tour-packages" },
-    { key: "early-bird-tour-packages", label: "Early Bird 2025", slug: "early-bird-tour-packages" },
+    { key: "early-bird-2026", label: "Early Bird 2026", slug: "early-bird-2026" },
     { key: "international-tour-packages", label: "International Trips", slug: "international-tour-packages" },
   ]
 

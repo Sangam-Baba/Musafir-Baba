@@ -92,7 +92,7 @@ const accessToken = useAuthStore((state)=>state.accessToken) as string;
     if(isError) return <h1>{error.message}</h1>;
     const packages= data ?? [];
     const handleEdit= (id:string)=>{
-        router.push(`/admin/packages/edit/${id}`);
+        router.push(`/admin/holidays/edit/${id}`);
     }
 
     const handleDelete = async(id: string) => {
@@ -116,7 +116,7 @@ const accessToken = useAuthStore((state)=>state.accessToken) as string;
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">All Packages</h1>
         <button
-          onClick={() => router.push("/admin/packages/new")}
+          onClick={() => router.push("/admin/holidays/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
         >
           + Create

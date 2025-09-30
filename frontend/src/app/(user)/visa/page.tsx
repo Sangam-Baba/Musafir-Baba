@@ -78,7 +78,7 @@ function VisaPage() {
             {visa.map((visa:Visa) =>{return ( <Card key={visa.id} className=" shadow-lg h-full shadow-gray-500/50 hover:shadow-[#FF5300]/50 ">
                 <CardHeader>
                     <div className="flex items-center justify-between gap-2">
-                       <Image src={visa.coverImage?.url? visa.coverImage.url : ""} alt={visa.coverImage?.alt ? visa.coverImage.alt : ""} width={300} height={200} className='rounded-md object-cover w-20 h-15' />
+                       <Image  src={visa.coverImage?.url? visa.coverImage.url : ""} alt={visa.coverImage?.alt ? visa.coverImage.alt : ""} width={300} height={200} className='outline rounded-md object-cover w-20 h-15' />
                        <VisaTypesDialog type={visa.visaType} />
                     </div>
                     

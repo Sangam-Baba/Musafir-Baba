@@ -13,7 +13,7 @@ export function Navbar() {
       <nav className="flex lg:items-center">
         <ul className="flex flex-col md:flex-row lg:items-center gap-6 lg:gap-8">
           <li  className="font-semi-bold  text-[#FE5300]">
-            <Link href="/packages">Packages</Link>
+            <Link href="/holidays">Holidays</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Link href="#">Bookings</Link>
