@@ -15,6 +15,7 @@ import newsCommentRoutes from "./newsComment.js";
 import footerRoutes from "./footer.routes.js";
 import itineraryRoutes from "./itinerary.routes.js";
 import visaRoutes from "./visa.routes.js";
+import webPageRoute from "./webPage.routes.js";
 const router =Router();
 
 router.use('/packages', pkgRoutes);
@@ -33,4 +34,5 @@ router.use('/newscomments', newsCommentRoutes);
 router.use('/footer', footerRoutes);
 router.use('/itinerary', itineraryRoutes);
 router.use('/visa', visaRoutes);
+router.use('/webpage', webPageRoute);
 export default router;

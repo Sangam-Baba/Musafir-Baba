@@ -16,12 +16,15 @@ interface Blog {
   };
   slug: string;
   updatedAt: string;
+  createdAt: string;
+  views: number;
 }
 interface ListBlogSidebarProps {
   blogs: Blog[];
   title: string;
+  type: string
 }
-function ListBlogSidebar({  blogs, title }: ListBlogSidebarProps) {
+function ListBlogSidebar({  blogs, title , type}: ListBlogSidebarProps) {
   return (
     <Card className="mt-10 ">
       <div className="flex w-full justify-between gap-2 px-5">
@@ -49,14 +52,18 @@ function ListBlogSidebar({  blogs, title }: ListBlogSidebarProps) {
                 >
                   {blog.title}
                 </Link>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(blog.updatedAt).toLocaleDateString("en-US", {
+               {type === "latest" && <p className="text-xs text-gray-500 mt-1">
+                  {new Date(blog.createdAt).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
                   })}{" "}
                   • 6 MIN READ
-                </p>
+                </p>}
+                {type === "trending" && <p className="text-xs text-gray-500 mt-1">
+                 Views: {blog.views + 1000}{" "}
+                  • 6 MIN READ
+                </p>}
               </CardContent>
             </Card>
           ))}

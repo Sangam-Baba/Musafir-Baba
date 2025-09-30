@@ -48,7 +48,7 @@ export default function PackageCard({ pkg , url }: { pkg: Package; url: string }
    const allDates = Object.values(batchesByMonth).flat().map(b => format(parseISO(b.startDate), "dd MMM"));
   return (
     <Link href={url}>
-    <Card className="overflow-hidden pt-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
+    <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
       {/* Image + Price tag */}
       <div className="relative h-56 w-full">
         <Image
@@ -58,7 +58,7 @@ export default function PackageCard({ pkg , url }: { pkg: Package; url: string }
           height={500}
           className="h-full w-full object-cover"
         />
-        <div className="absolute top-3 right-3 bg-yellow-400 text-black px-3 py-1 rounded-full font-semibold text-sm shadow">
+        <div className="absolute top-3 right-3 bg-[#FE5300] text-white px-3 py-1 rounded-full font-semibold text-sm shadow">
           ₹{pkg.price.toLocaleString("en-IN")}/- onwards
         </div>
       </div>

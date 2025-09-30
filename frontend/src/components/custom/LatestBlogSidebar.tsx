@@ -18,6 +18,8 @@ interface Blog {
   };
   slug: string;
   updatedAt: string;
+  createdAt: string;
+  views: number;
 }
 
 function LatestBlogSidebar() {
@@ -55,7 +57,7 @@ function LatestBlogSidebar() {
   if (!blogs.length) return null;
   const title="Recent Blogs";
 
-  return  <ListBlogSidebar blogs={blogs} title={title} />
+  return  <ListBlogSidebar blogs={blogs} title={title} type="latest" />
 }
 
 export default LatestBlogSidebar;

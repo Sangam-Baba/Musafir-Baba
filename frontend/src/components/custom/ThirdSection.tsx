@@ -1,7 +1,6 @@
 import React from 'react'
 import { Card } from '../ui/card'
 import Image from 'next/image'
-import { url } from 'inspector'
 import Link from 'next/link'
 
 const data=[
@@ -9,49 +8,49 @@ const data=[
         title:"Weekend Getaways",
         description:"Experience thrilling adventures and unforgettable moments in the heart of Delhi.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757402014/j3jyqodvzgarftilb3dd.png",
-        url:"/packages/weekend-tour-packages"
+        url:"/holidays/weekend-tour-packages"
     },
     {
         title:"Honeymoon Packages",
         description:"Discover the beauty of Delhi on your own and create unforgettable memories.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757399660/mscievdho61vs6fhhlzj.png",
-        url:"/packages/honeymoon-tour-packages"
+        url:"/holidays/honeymoon-tour-packages"
     },
     {
         title:"Customized Tour Packages",
         description:"Your tip, your way. Create a customized tour package that perfectly fits your interests and preferences.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757400475/rmgdcyoxb9knlangdols.png",
-        url:"/packages/customized-tour-packages"
+        url:"/holidays/customized-tour-packages"
     },
     {
         title:"Group Tour Packages",
         description:"Travel together with our Group Tour Packages- seamless planning, grate deals, and unforgetable group adventures.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757400865/j6sun08brrmcaovhbqh1.png",
-        url:"/packages/group-tour-package"
+        url:"/holidays/group-tour-package"
     }, 
         {
         title:"Solo Tour Packages",
         description:"Explore freely with our Solo tripss- safe, well planned and perfect fro independent travellers.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757505917/service-1_2_xzguaq.svg",
-        url:"/packages/solo-tour-packages"
+        url:"/holidays/solo-tour-packages"
     },
     {
         title:"Family Tour Packages",
         description:"Make memories with our Family Tour fun filled, safe and perfect for all ages",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757505061/service-2_1_u6yuzr.png",
-        url:"/packages/family-tour-packages"
+        url:"/holidays/family-tour-packages"
     },
     {
         title:"Corporate Tour Packages",
         description:"Seamless Corporate Tour Packages fro teamretreate, business trips, and stress free travel planning.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757505061/service-8_pgcnpk.png",
-        url:"/packages/corporate-tour-package"
+        url:"/holidays/corporate-tour-package"
     },
     {
         title:"Backpacking Trips",
         description:"Adventure awaits! Our Backpacking Trips offer the perfect blend of adventure and relaxation.",
         img:"https://res.cloudinary.com/dmmsemrty/image/upload/v1757505061/service-9_ztf8ca.png",
-        url:"/packages/backpacking-tour-packages"
+        url:"/holidays/backpacking-tour-packages"
     }, 
 ]
 function ThirdSection() {

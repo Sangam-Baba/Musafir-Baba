@@ -7,7 +7,7 @@ function SectionFive() {
     <section className=" w-full  px-4 md:px-8 lg:px-20 py-16">
      <div className='md:max-w-7xl mx-auto flex md:flex-row flex-col gap-12 items-stretch'>
         <div className='md:w-1/2  flex'>
-            <Image className='object-cover w-full h-full lg:h-[410px] rounded-xl' src="https://res.cloudinary.com/dmmsemrty/image/upload/v1759132915/vector_for_web_w6dn46.jpg" width={500} height={510} alt="h1" />
+            <Image className='object-cover w-full h-full lg:h-[410px] rounded-xl' src="https://res.cloudinary.com/dmmsemrty/image/upload/v1759216769/vector_with_white_bg_cqwssa.jpg" width={500} height={510} alt="h1" />
         </div>
         <div className="md:w-1/2 flex">
           <div className="w-full flex flex-col justify-center">

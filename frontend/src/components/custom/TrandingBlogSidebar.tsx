@@ -15,7 +15,7 @@ function TrandingBlogSidebar() {
 
     if(isLoading) return <Loader size="lg" message="Loading tranding blogs..." />;
     if(isError) return <h1>Failed to fetch trending blogs</h1>;
-  return <ListBlogSidebar blogs={blogs} title="Trending Blogs" />
+  return <ListBlogSidebar blogs={blogs} title="Trending Blogs" type='trending'/>
 }
 
 export default TrandingBlogSidebar

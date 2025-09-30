@@ -91,7 +91,7 @@ export function VisaTypesDialog({ type }: { type: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">{type} <Info /></Button>
+        <Button variant="outline">{type} <Info color="#FE5300" /></Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>

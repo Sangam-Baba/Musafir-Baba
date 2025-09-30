@@ -2,14 +2,15 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/store/useUIStore";
-import { Home, Users, Box, Settings, X , ScrollText, MapPin , Tags , Newspaper , ListChecks, Rocket} from "lucide-react";
+import { Home, Users, Box, Settings, X , ScrollText, MapPin , Tags ,LayoutTemplate , Newspaper , ListChecks, Rocket} from "lucide-react";
 
 const NAV = [
 
 { label: "Dashboard", href: "/admin", icon: Home },
+{ label: "WebPages", href: "/admin/webpage", icon: LayoutTemplate  },
 { label: "Blogs", href: "/admin/blogs", icon: ScrollText  },
 { label: "News", href: "/admin/news", icon: Newspaper  },
-{ label: "Packages", href: "/admin/packages", icon: Box },
+{ label: "Packages", href: "/admin/holidays", icon: Box },
 { label: "Destinations", href: "/admin/destination", icon: MapPin },
 { label: "Category", href: "/admin/category", icon: Tags },
 { label: "Authors", href: "/admin/authors", icon: Users },

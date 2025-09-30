@@ -89,7 +89,7 @@ function VisaPage() {
                     <p className='text-gray-600 font-semibold'>{visa.visaProcessed}+ Visa Processed</p>
                 </CardContent>
                 <CardFooter className="flex items-center justify-between border-t  " >
-                    <p className="font-bold text-md">₹{visa.cost}+ Servics Fee</p>
+                    <p className="font-bold text-md "><span className='text-[#FF5300]'>₹{visa.cost}</span>+ Servics Fee</p>
                     <p className="font-bold text-blue-600"><Link href={`/visa/${visa.childUrl}`}>Apply Now <span className="font-bold">{`>`}</span></Link></p>
                 </CardFooter>
             </Card>
