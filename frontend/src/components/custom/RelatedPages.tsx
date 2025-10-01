@@ -18,7 +18,7 @@ function RelatedPages({ slug, parent }: { slug: string; parent: string }) {
   if (isLoading) return <Loader size="lg" message="Loading related pages..." />;
   if (isError) return <h1>Failed to fetch related pages</h1>;
   const pageArray = data?.data ?? [];
-  console.log(pageArray);
+  if (pageArray.length === 0) return null;
   return (
     <ListBlogSidebar
       blogs={pageArray}

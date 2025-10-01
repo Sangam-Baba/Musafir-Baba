@@ -24,7 +24,7 @@ const getWebPage = async (req, res) => {
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.parent) filter.parent = req.query.parent;
     if (req.query?.status) filter.status = req.query.status;
-    const webpage = await WebPage.find(filter).lean();
+    const webpage = await WebPage.find(filter).sort({ createdAt: -1 }).lean();
     res.status(200).json({ success: true, data: webpage });
   } catch (error) {
     console.log("WebPage getting failed", error.message);

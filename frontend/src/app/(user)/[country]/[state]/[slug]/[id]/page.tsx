@@ -1,15 +1,19 @@
-import BookingClient from '@/components/custom/BookingClient';
+import BookingClient from "@/components/custom/BookingClient";
 
-type Params = { params: { country: string; slug: string } }; 
+type Params = { params: { state: string; slug: string } };
 
 export default async function Page({ params }: Params) {
-  const { country, slug } = params;
-  const decodedCountry = decodeURIComponent(country || '');
+  const { state, slug } = params;
+  const decodedCountry = decodeURIComponent(state || "");
 
   // fetch package server-side (SSR)
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${encodeURIComponent(decodedCountry)}&slug=${encodeURIComponent(slug)}`,
-    { next: { revalidate: 60 } } 
+    `${
+      process.env.NEXT_PUBLIC_BASE_URL
+    }/packages/?destination=${encodeURIComponent(
+      decodedCountry
+    )}&slug=${encodeURIComponent(slug)}`,
+    { next: { revalidate: 60 } }
   );
 
   if (!res.ok) {
@@ -32,7 +36,5 @@ export default async function Page({ params }: Params) {
   }
   console.log(pkg);
 
-  return (
-    <BookingClient pkg={pkg} />
-  );
+  return <BookingClient pkg={pkg} />;
 }
