@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
@@ -29,10 +29,9 @@ function LatestBlogSidebar() {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs`,
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       if (data.success) {
@@ -55,9 +54,11 @@ function LatestBlogSidebar() {
   if (loading) return <Loader size="lg" />;
 
   if (!blogs.length) return null;
-  const title="Recent Blogs";
+  const title = "Recent Blogs";
 
-  return  <ListBlogSidebar blogs={blogs} title={title} type="latest" />
+  return (
+    <ListBlogSidebar blogs={blogs} title={title} type="latest" url="blog" />
+  );
 }
 
 export default LatestBlogSidebar;

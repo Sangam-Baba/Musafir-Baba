@@ -8,13 +8,13 @@ export const metadata: Metadata = {
     canonical: "https://musafirbaba.com/",
   },
   openGraph: {
-    title: " BEST TRAVEL AGENCY / TOUR PACKAGE & VISA / MUSAFIR BABA",
+    title: "BEST TRAVEL AGENCY / TOUR PACKAGE & VISA / MUSAFIR BABA",
     description: "Looking for the best travel agency in Delhi? Unforgettable tour packages & hassle free visa services with Musafirbaba. Get a free quote today.",
     url: "https://musafirbaba.com/",
     siteName: "MusafirBaba",
     images: [
       {
-        url: "https://musafirbaba.com/wp-content/uploads/2025/09/Untitled-design-3.png", // replace with your image
+        url: "https://musafirbaba.com/logo.svg", // replace with your image
         width: 1200,
         height: 630,
         alt: "MusafirBaba Travel",
