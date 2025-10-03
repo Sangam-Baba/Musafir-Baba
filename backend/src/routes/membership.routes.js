@@ -3,6 +3,7 @@ import {
   getAllMembership,
   updateMembership,
   deleteMembership,
+  getMembershipById,
 } from "../controllers/membership.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -21,6 +22,12 @@ membershipRoutes.get(
   isAuthenticated,
   authorizedRoles(["admin", "superadmin"]),
   getAllMembership
+);
+membershipRoutes.get(
+  "/:id",
+  isAuthenticated,
+  authorizedRoles(["admin", "superadmin"]),
+  getMembershipById
 );
 membershipRoutes.patch(
   "/:id",

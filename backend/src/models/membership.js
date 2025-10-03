@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import slugify from "slugify";
 const membershipSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -18,12 +18,12 @@ const membershipSchema = new mongoose.Schema({
   },
   include: [
     {
-      type: String,
+      item: String,
     },
   ],
   exclude: [
     {
-      type: String,
+      item: String,
     },
   ],
   slug: {
@@ -38,7 +38,7 @@ const membershipSchema = new mongoose.Schema({
 });
 
 membershipSchema.pre("save", function (next) {
-  if (this.isModified("slug")) {
+  if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
   next();

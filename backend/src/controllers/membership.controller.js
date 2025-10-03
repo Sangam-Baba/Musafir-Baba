@@ -19,7 +19,7 @@ const createMembership = async (req, res) => {
 
 const getAllMembership = async (req, res) => {
   try {
-    const membership = await Membership.find().lean();
+    const membership = await Membership.find().sort({ price: 1 }).lean();
     res.status(200).json({ success: true, data: membership });
   } catch (error) {
     console.log("Membership getting failed", error.message);
@@ -49,6 +49,24 @@ const updateMembership = async (req, res) => {
   }
 };
 
+const getMembershipById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id)
+      return res.status(400).json({ success: false, message: "Invalid Id" });
+    const membership = await Membership.findById(id);
+    if (!membership)
+      return res.status(404).json({ success: false, message: "Invalid Id" });
+    res.status(200).json({
+      success: true,
+      message: "Membership fetched successfully",
+      data: membership,
+    });
+  } catch (error) {
+    console.log("Membership getting by id failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 const deleteMembership = async (req, res) => {
   try {
     const { id } = req.params;
@@ -75,4 +93,5 @@ export {
   getAllMembership,
   updateMembership,
   deleteMembership,
+  getMembershipById,
 };
