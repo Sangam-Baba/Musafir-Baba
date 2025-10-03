@@ -17,12 +17,7 @@ membershipRoutes.post(
   authorizedRoles(["admin", "superadmin"]),
   createMembership
 );
-membershipRoutes.get(
-  "/",
-  isAuthenticated,
-  authorizedRoles(["admin", "superadmin"]),
-  getAllMembership
-);
+membershipRoutes.get("/", getAllMembership);
 membershipRoutes.get(
   "/:id",
   isAuthenticated,
