@@ -1,64 +1,68 @@
-"use client"
-import React from 'react'
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import {Loader2} from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuthStore } from '@/store/useAuthStore';
-import VisaList from '@/components/admin/VisaList';
-interface Visa{
-    _id: string;
-    country: string;
-    cost: number;
-    visaType: string;
-    childUrl: string;
+"use client";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
+import VisaList from "@/components/admin/VisaList";
+interface Visa {
+  _id: string;
+  country: string;
+  cost: number;
+  visaType: string;
+  childUrl: string;
+  slug: string;
 }
 
-interface QueryResponse{
-    success: boolean;
-    data: Visa[];
+interface QueryResponse {
+  success: boolean;
+  data: Visa[];
 }
-const getAllVisa= async()=>{
-    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`);
-    if(!res.ok) throw new Error("Failed to fetch Visa");
-    const data=await res.json();
-    return data;
-}
+const getAllVisa = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`);
+  if (!res.ok) throw new Error("Failed to fetch Visa");
+  const data = await res.json();
+  return data;
+};
 function VisaPage() {
-    const accessToken = useAuthStore((state) => state.accessToken);
-const router=useRouter();
-   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
-     queryKey: ["visa"],
-     queryFn: getAllVisa,
-     retry: 2,
-   })
-   if(isError){
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const router = useRouter();
+  const { data, isLoading, isError, error } = useQuery<QueryResponse>({
+    queryKey: ["visa"],
+    queryFn: getAllVisa,
+    retry: 2,
+  });
+  if (isError) {
     toast.error(error.message);
-    return <h1>{error.message}</h1>
-   }
-   const visa= data?.data ?? [];
+    return <h1>{error.message}</h1>;
+  }
+  const visa = data?.data ?? [];
 
-   const  handleEdit = (id: string) => {
-     router.push(`/admin/visa/edit/${id}`);
-   };
-   const  handleDelete = async (id: string) => {
-    if(!confirm("Are you sure you want to delete this visa?"))return
-     try {
-        const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
+  const handleEdit = (id: string) => {
+    router.push(`/admin/visa/edit/${id}`);
+  };
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this visa?")) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`,
+        {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-        })
-        if(!res.ok) throw new Error("Failed to delete visa");
-        toast.success("Visa: Deleted successfully");
-        router.refresh();
-     } catch (error) {
-        console.log("error in deleting", error);
-        toast.error("Something went wrong while deleting visa");
-     }
-   }
+        }
+      );
+      if (!res.ok) throw new Error("Failed to delete visa");
+      toast.success("Visa: Deleted successfully");
+      router.refresh();
+    } catch (error) {
+      console.log("error in deleting", error);
+      toast.error("Something went wrong while deleting visa");
+    }
+  };
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -82,7 +86,7 @@ const router=useRouter();
             country: b.country,
             cost: b.cost,
             visaType: b.visaType,
-            url: `${b.childUrl}`, 
+            url: `/visa/${b.slug}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}
@@ -92,4 +96,4 @@ const router=useRouter();
   );
 }
 
-export default VisaPage
+export default VisaPage;
