@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import Link from "next/link";
 import { CircleCheckBig, CircleX } from "lucide-react";
@@ -16,12 +15,11 @@ interface Membership {
   isActive: boolean;
   slug: string;
 }
-const getMembership = async (accessToken: string) => {
+const getMembership = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/membership`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
   });
   if (!res.ok) throw new Error("Failed to get membership");
@@ -29,11 +27,9 @@ const getMembership = async (accessToken: string) => {
   return data?.data;
 };
 function MembershipCard() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-
   const { data, isLoading, isError, error } = useQuery<Membership[]>({
     queryKey: ["membership"],
-    queryFn: () => getMembership(accessToken),
+    queryFn: getMembership,
   });
 
   if (isLoading) return <Loader size="lg" message="Loading membership..." />;

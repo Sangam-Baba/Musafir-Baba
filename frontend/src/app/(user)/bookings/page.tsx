@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import RelatedPages from "@/components/custom/RelatedPages";
-
+import { BusBooking } from "@/components/custom/BusBooking";
 interface Faq {
   question: string;
   answer: string;
@@ -37,13 +37,13 @@ function VisaWebPage() {
     queryKey: ["visa", slug],
     queryFn: getWebPageBySlug,
   });
-  if (isLoading) return <Loader size="lg" message="Loading visas..." />;
+  if (isLoading) return <Loader size="lg" message="Loading Bookings..." />;
   if (isError) return <h1>{(error as Error).message}</h1>;
   return (
     <section className="">
       <Hero image={visa.coverImage.url} title="Bookings" />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
-        <article className="w-full md:w-2/3">
+        <article className="w-full md:w-5/7">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
             {/* Tags */}
@@ -61,6 +61,7 @@ function VisaWebPage() {
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={visa.content} />
           </section>
+          <BusBooking />
           <section>
             <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>
             <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
@@ -80,7 +81,7 @@ function VisaWebPage() {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-1/3">
+        <aside className="w-full md:w-2/7">
           <QueryForm />
           <RelatedPages slug={slug} parent="bookings" />
         </aside>
