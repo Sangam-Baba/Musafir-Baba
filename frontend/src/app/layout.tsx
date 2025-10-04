@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Best Travel Agency in Delhi | Tour Packages & Visas | Musafirbaba",
-  description: "Looking for the best travel agency in Delhi? Unforgettable tour packages &amp; seamless visa services with Musafirbaba. Get a free quote today.",
+  title: "Musafirbaba - Best Travel Agency in Delhi |Holidays | Visa",
+  description:
+    "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services. Book your tour now in just 60 seconds.",
   alternates: {
     canonical: "https://musafirbaba.com/",
   },
   openGraph: {
     title: "BEST TRAVEL AGENCY / TOUR PACKAGE & VISA / MUSAFIR BABA",
-    description: "Looking for the best travel agency in Delhi? Unforgettable tour packages & hassle free visa services with Musafirbaba. Get a free quote today.",
+    description:
+      "Looking for the best travel agency in Delhi? Unforgettable tour packages & hassle free visa services with Musafirbaba. Get a free quote today.",
     url: "https://musafirbaba.com/",
     siteName: "MusafirBaba",
     images: [
@@ -22,12 +24,12 @@ export const metadata: Metadata = {
     ],
     type: "website",
   },
-    icons: {
-    icon: "/favicon.ico",       // default
-    shortcut: "/favicon.ico",   // for older browsers
+  icons: {
+    icon: "/favicon.ico", // default
+    shortcut: "/favicon.ico", // for older browsers
   },
-    verification: {
-    google: "8Ft_waDuE7XSNxKBK_Qeng07HW9LwdunSYzZeCclHHY", 
+  verification: {
+    google: "8Ft_waDuE7XSNxKBK_Qeng07HW9LwdunSYzZeCclHHY",
   },
 };
 

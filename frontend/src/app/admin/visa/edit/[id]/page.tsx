@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useForm, SubmitHandler } from "react-hook-form"
-import { useMutation , useQuery } from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
+import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -10,32 +10,54 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import ImageUploader from "@/components/admin/ImageUploader"
-import { useAuthStore } from "@/store/useAuthStore"
-import { useParams } from "next/navigation"
-import {Loader} from "@/components/custom/loader"
-import { useEffect } from "react"
-interface Visa{
-    country: string;
-    cost: number;
-    visaType: string;
-    childUrl?: string;
-    coverImage?:{
-        url:string;
-        alt:string;
-        width?:number;
-        height?:number;
-    };
-    duration: string;
-    visaProcessed: number
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import ImageUploader from "@/components/admin/ImageUploader";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useParams } from "next/navigation";
+import { Loader } from "@/components/custom/loader";
+import { useEffect } from "react";
+import BlogEditor from "@/components/admin/BlogEditor";
+import { X } from "lucide-react";
+interface Faq {
+  question: string;
+  answer: string;
 }
 
+interface Visa {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  schemaType: string;
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string[];
+  country: string;
+  cost: number;
+  visaType: string;
+  bannerImage?: {
+    url: string;
+    alt: string;
+    public_id?: string;
+    resource_type?: string;
+    format?: string;
+    width?: number;
+    height?: number;
+  };
+  coverImage?: {
+    url: string;
+    alt: string;
+    width?: number;
+    height?: number;
+  };
+  faqs?: Faq[];
+  duration: string;
+  visaProcessed: number;
+}
 
-
-async function updateVisa(values: Visa, accessToken: string , id: string) {
+async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
     method: "PATCH",
     headers: {
@@ -43,93 +65,98 @@ async function updateVisa(values: Visa, accessToken: string , id: string) {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(values),
-  })
+  });
 
   if (!res.ok) {
-    const errorData = await res.json()
-    throw new Error(errorData.message || "Updation failed")
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Updation failed");
   }
 
-  return res.json()
+  return res.json();
 }
 
-async function getVisa (id: string , accessToken: string) {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`,{
-        method:"GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-        }
-    });
-    if (!res.ok) throw new Error("Failed to fetch Visa");
-    const data = await res.json();
-    return data?.data;
+async function getVisa(id: string, accessToken: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch Visa");
+  const data = await res.json();
+  return data?.data;
 }
 export default function CreateVisaPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string
+  const accessToken = useAuthStore((state) => state.accessToken) as string;
   const { id } = useParams() as { id: string };
 
   const defaultValues: Visa = {
     country: "",
+    title: "",
+    slug: "",
+    content: "",
+    excerpt: "",
+    schemaType: "",
+    metaTitle: "",
+    metaDescription: "",
+    keywords: [],
     cost: 0,
     visaType: "DAC",
-    coverImage: {
-      url: "",
-      alt: "",
-      width: 50,
-      height: 50,
-    },
-    visaProcessed:0,
-    childUrl: "",
+    faqs: [
+      {
+        question: "",
+        answer: "",
+      },
+    ],
+    visaProcessed: 0,
     duration: "",
-  }
-   const form = useForm<Visa>({ defaultValues })
-  const { data, isLoading , isError , error } = useQuery<Visa>({
-    queryKey: ["visa" , id],
-    queryFn: () => getVisa(id , accessToken),
+  };
+  const form = useForm<Visa>({ defaultValues });
+  const { data, isLoading, isError, error } = useQuery<Visa>({
+    queryKey: ["visa", id],
+    queryFn: () => getVisa(id, accessToken),
     staleTime: 1000 * 60 * 5,
     retry: 2,
-  })
+  });
 
+  const faqsArray = useFieldArray({
+    control: form.control,
+    name: "faqs",
+  });
 
- 
-  useEffect(()=>{
-    if(data){
-        form.setValue("country" , data.country);
-        form.setValue("cost" , data.cost);
-        form.setValue("visaType" , data.visaType);
-        form.setValue("coverImage" , data.coverImage);
-        form.setValue("childUrl" , data.childUrl);
-        form.setValue("duration" , data.duration);
-        form.setValue("visaProcessed" , data.visaProcessed);
+  useEffect(() => {
+    if (data) {
+      form.reset(data);
     }
-  },[data, form])
+  }, [data, form]);
 
   // ✅ pass variables (values) into mutate
   const mutation = useMutation({
-    mutationFn: (values: Visa) => updateVisa(values, accessToken , id),
+    mutationFn: (values: Visa) => updateVisa(values, accessToken, id),
     onSuccess: (data) => {
-      console.log("Updated successfully:", data)
-      toast.success("Updated successful!")
-      form.reset(defaultValues)
+      console.log("Updated successfully:", data);
+      toast.success("Updated successful!");
+      form.reset(defaultValues);
     },
     onError: (error: unknown) => {
-      console.error("Updation failed:", error)
-      toast.error(error instanceof Error ? error.message : "Something went wrong")
+      console.error("Updation failed:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong"
+      );
     },
-  })
+  });
 
   const onSubmit: SubmitHandler<Visa> = (values) => {
-    mutation.mutate(values)
-  }
+    mutation.mutate(values);
+  };
 
-  if(isLoading) return <Loader size="lg" message="Loading Visa..." />;
-  if(isError) return <h1>{(error as Error).message}</h1>;
-
+  if (isLoading) return <Loader size="lg" message="Loading Visa..." />;
+  if (isError) return <h1>{(error as Error).message}</h1>;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-md">
+    <div className="w-full flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-7xl  rounded-2xl bg-white p-6 shadow-md">
         <h1 className="mb-6 text-center text-2xl font-bold">Edit Visa</h1>
 
         <Form {...form}>
@@ -137,70 +164,166 @@ export default function CreateVisaPage() {
             {/* Name */}
             <FormField
               control={form.control}
-              name="country"
+              name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Thailand" {...field} required />
+                    <Input placeholder="Thailand Visa" {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* SLug */}
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Permalink</FormLabel>
+                  <FormControl>
+                    <Input placeholder="thailand-visa" {...field} required />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Content */}
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <BlogEditor value={field.value} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex flex-col md:flex-row gap-4 justify-between">
+              {/* country */}
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Thailand" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Email */}
+              <FormField
+                control={form.control}
+                name="cost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fee</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="100"
+                        {...field}
+                        required
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* meta description */}
+              <FormField
+                control={form.control}
+                name="schemaType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Schema Type</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Article, Blog"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* About */}
+              <FormField
+                control={form.control}
+                name="visaProcessed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Total Visa Processed</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="100" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* About */}
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="2 to 7" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            {/* metaTitle */}
+            <FormField
+              control={form.control}
+              name="metaTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SEO MetaTitle</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Thailand" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Email */}
+            {/* meta description */}
             <FormField
               control={form.control}
-              name="cost"
+              name="metaDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Fee</FormLabel>
+                  <FormLabel>SEO MetaDescription</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="100" {...field} required />
+                    <Input type="text" placeholder="Thailand" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* About */}
+            {/* meta description */}
             <FormField
               control={form.control}
-              name="duration"
+              name="excerpt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Duration</FormLabel>
+                  <FormLabel>Excerpt</FormLabel>
                   <FormControl>
-                    <Input type="text" placeholder="2 to 7" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* About */}
-            <FormField
-              control={form.control}
-              name="childUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apply Now Link</FormLabel>
-                  <FormControl>
-                    <Input type="text" placeholder="https://musafirbaba.com/visa/thailand" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* About */}
-            <FormField
-              control={form.control}
-              name="visaProcessed"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Total Visa Processed</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="100" {...field} />
+                    <Input type="text" placeholder="Thailand" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -220,7 +343,9 @@ export default function CreateVisaPage() {
                       {...field}
                       required
                     >
-                        <option value="" disabled>Select Visa Type</option>
+                      <option value="" disabled>
+                        Select Visa Type
+                      </option>
                       <option value="DAC">DAC</option>
                       <option value="E-Visa">E-Visa</option>
                       <option value="ETA">ETA</option>
@@ -233,30 +358,137 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Avatar */}
+              <FormField
+                control={form.control}
+                name="coverImage"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Avatar</FormLabel>
+                    <FormControl>
+                      <ImageUploader
+                        initialImage={data?.coverImage}
+                        onUpload={(img) => {
+                          if (!img) return;
+                          form.setValue("coverImage", {
+                            url: img ? img.url : "",
+                            alt: form.getValues("country") ?? "",
+                          });
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Avatar */}
-            <FormField
-              control={form.control}
-              name="coverImage"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Avatar</FormLabel>
-                  <FormControl>
-                    <ImageUploader
-                      onUpload={(img) =>
-                        form.setValue("coverImage", {
-                          url: img.url,
-                          alt: form.getValues("country") ?? "",
-                        })
+              {/* Banner Image */}
+              <FormField
+                control={form.control}
+                name="bannerImage"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Banner Image</FormLabel>
+                    <FormControl>
+                      <ImageUploader
+                        initialImage={data?.bannerImage}
+                        onUpload={(img) => {
+                          if (!img) return;
+                          form.setValue("bannerImage", {
+                            url: img ? img.url : "",
+                            alt: form.getValues("country") ?? "",
+                          });
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <FormLabel className="block text-sm font-medium">
+                Keywords
+              </FormLabel>
+              <div className="flex flex-wrap gap-2 border rounded p-2">
+                {form.watch("keywords")?.map((kw, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+                  >
+                    {kw}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newKeywords = form
+                          .getValues("keywords")
+                          ?.filter((_, idx) => idx !== i);
+                        form.setValue("keywords", newKeywords);
+                      }}
+                      className="text-gray-600 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </span>
+                ))}
+
+                <input
+                  type=" text"
+                  className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+                  placeholder="Type keyword and press Enter"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      const value = e.currentTarget.value.trim();
+                      if (value) {
+                        const current = form.getValues("keywords") || [];
+                        if (!current.includes(value)) {
+                          form.setValue("keywords", [...current, value]);
+                        }
+                        e.currentTarget.value = "";
                       }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    }
+                  }}
+                />
+              </div>
+            </div>
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {/* FAQs Dynamic */}
+            <div>
+              <FormLabel className="mb-2 text-lg">FAQs</FormLabel>
+              {faqsArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  <Input
+                    {...form.register(`faqs.${index}.question`)}
+                    placeholder="Question"
+                  />
+                  <Input
+                    {...form.register(`faqs.${index}.answer`)}
+                    placeholder="Answer"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => faqsArray.remove(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() => faqsArray.append({ question: "", answer: "" })}
+              >
+                Add FAQ
+              </Button>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "Updating..." : "Update Visa"}
             </Button>
           </form>
@@ -268,9 +500,11 @@ export default function CreateVisaPage() {
           </p>
         )}
         {mutation.isSuccess && (
-          <p className="mt-3 text-center text-sm text-green-600">Visa Updated successful!</p>
+          <p className="mt-3 text-center text-sm text-green-600">
+            Visa Updated successful!
+          </p>
         )}
       </div>
     </div>
-  )
+  );
 }

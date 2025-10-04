@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import { useEditor, EditorContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import Link from "@tiptap/extension-link"
-import Image from "@tiptap/extension-image"
-import TextAlign from "@tiptap/extension-text-align"
-import Underline from "@tiptap/extension-underline"
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import Image from "@tiptap/extension-image";
+import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
+import { useEffect } from "react";
 
 interface BlogEditorProps {
-  value?: string
-  onChange: (content: string) => void
+  value?: string;
+  onChange: (content: string) => void;
 }
 
 export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
@@ -34,16 +35,22 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
     content: value,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML())
+      onChange(editor.getHTML());
     },
-  })
+  });
 
-  if (!editor) return null
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value || "");
+    }
+  }, [value, editor]);
+
+  if (!editor) return null;
 
   const addImage = () => {
-    const url = prompt("Enter image URL")
-    if (url) editor.chain().focus().setImage({ src: url }).run()
-  }
+    const url = prompt("Enter image URL");
+    if (url) editor.chain().focus().setImage({ src: url }).run();
+  };
 
   return (
     <div className="border rounded-lg p-3 bg-white dark:bg-gray-900">
@@ -92,7 +99,9 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         {/* Headings */}
         <button
           type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
           className={`px-2 py-1 rounded ${
             editor.isActive("heading", { level: 1 })
               ? "bg-blue-500 text-white"
@@ -103,7 +112,9 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         </button>
         <button
           type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
           className={`px-2 py-1 rounded ${
             editor.isActive("heading", { level: 2 })
               ? "bg-blue-500 text-white"
@@ -114,7 +125,9 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         </button>
         <button
           type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
           className={`px-2 py-1 rounded ${
             editor.isActive("heading", { level: 3 })
               ? "bg-blue-500 text-white"
@@ -185,8 +198,8 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         <button
           type="button"
           onClick={() => {
-            const url = prompt("Enter link URL")
-            if (url) editor.chain().focus().setLink({ href: url }).run()
+            const url = prompt("Enter link URL");
+            if (url) editor.chain().focus().setLink({ href: url }).run();
           }}
           className="px-2 py-1 rounded bg-gray-200"
         >
@@ -223,5 +236,5 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         className="prose dark:prose-invert min-h-[200px] p-2"
       />
     </div>
-  )
+  );
 }

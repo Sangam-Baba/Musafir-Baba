@@ -83,18 +83,8 @@ export default function CreateVisaPage() {
     metaTitle: "",
     metaDescription: "",
     keywords: [],
-    bannerImage: {
-      url: "",
-      alt: "",
-    },
     cost: 0,
     visaType: "DAC",
-    coverImage: {
-      url: "",
-      alt: "",
-      width: 50,
-      height: 50,
-    },
     faqs: [
       {
         question: "",
@@ -133,8 +123,8 @@ export default function CreateVisaPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-md">
+    <div className="w-full min-h-screen  bg-gray-50 px-4">
+      <div className="w-full max-w-7xl mx-auto rounded-2xl bg-white p-6 shadow-md">
         <h1 className="mb-6 text-center text-2xl font-bold">Create Visa</h1>
 
         <Form {...form}>
@@ -185,69 +175,72 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
-            {/* Name */}
-            <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Thailand" {...field} required />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex flex-col md:flex-row gap-4 justify-between">
+              {/* COuntry */}
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Thailand" {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* cost */}
-            <FormField
-              control={form.control}
-              name="cost"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fee</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="100"
-                      {...field}
-                      required
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/* cost */}
+              <FormField
+                control={form.control}
+                name="cost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fee</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="100"
+                        {...field}
+                        required
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* About */}
-            <FormField
-              control={form.control}
-              name="duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duration</FormLabel>
-                  <FormControl>
-                    <Input type="text" placeholder="2 to 7" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* About */}
-            <FormField
-              control={form.control}
-              name="visaProcessed"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Total Visa Processed</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="100" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Duration */}
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="2 to 7" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* VIsa Processed */}
+              <FormField
+                control={form.control}
+                name="visaProcessed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Total Visa Processed</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="100" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             {/* metaTitle */}
             <FormField
               control={form.control}
@@ -335,47 +328,54 @@ export default function CreateVisaPage() {
             />
 
             {/* Avatar */}
-            <FormField
-              control={form.control}
-              name="coverImage"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Flag</FormLabel>
-                  <FormControl>
-                    <ImageUploader
-                      onUpload={(img) =>
-                        form.setValue("coverImage", {
-                          url: img.url,
-                          alt: form.getValues("country") ?? "",
-                        })
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Banner Image */}
-            <FormField
-              control={form.control}
-              name="bannerImage"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Banner Image</FormLabel>
-                  <FormControl>
-                    <ImageUploader
-                      onUpload={(img) =>
-                        form.setValue("bannerImage", {
-                          url: img.url,
-                          alt: form.getValues("country") ?? "",
-                        })
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex flex-col md:flex-row gap-4">
+              <FormField
+                control={form.control}
+                name="coverImage"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Flag</FormLabel>
+                    <FormControl>
+                      <ImageUploader
+                        initialImage={form.getValues("coverImage")}
+                        onUpload={(img) => {
+                          if (!img) return;
+                          form.setValue("coverImage", {
+                            url: img ? img.url : "",
+                            alt: form.getValues("country") ?? "",
+                          });
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Banner Image */}
+              <FormField
+                control={form.control}
+                name="bannerImage"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Banner Image</FormLabel>
+                    <FormControl>
+                      <ImageUploader
+                        initialImage={form.getValues("coverImage")}
+                        onUpload={(img) => {
+                          if (!img) return;
+                          form.setValue("bannerImage", {
+                            url: img ? img.url : "",
+                            alt: form.getValues("country") ?? "",
+                          });
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className="space-y-2">
               <FormLabel className="block text-sm font-medium">
                 Keywords
