@@ -29,7 +29,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
+          "prose prose-sm sm:prose lg:prose-md xl:prose-lg focus:outline-none max-w-none",
       },
     },
     content: value,
@@ -53,7 +53,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   };
 
   return (
-    <div className="border rounded-lg p-3 bg-white dark:bg-gray-900">
+    <div className="w-full border rounded-lg p-3 bg-white dark:bg-gray-900">
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 border-b pb-2 mb-2">
         {/* Text formatting */}
@@ -233,7 +233,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="prose dark:prose-invert min-h-[200px] p-2"
+        className="prose max-w-none min-h-[200px] p-2 w-full "
       />
     </div>
   );

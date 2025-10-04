@@ -13,6 +13,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import RelatedPages from "@/components/custom/RelatedPages";
+import NotFoundPage from "@/components/common/Not-Found";
 
 interface Faq {
   question: string;
@@ -24,22 +25,19 @@ const getWebPageBySlug = async (slug: string) => {
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
-  return data?.data;
+  return data;
 };
 function BookingsWebPage() {
   const slug = useParams().slug as string;
 
-  const {
-    data: visa,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["visa", slug],
     queryFn: () => getWebPageBySlug(slug),
   });
   if (isLoading) return <Loader size="lg" message="Loading Bookings..." />;
   if (isError) return <h1>{(error as Error).message}</h1>;
+  if (!data || slug === "bookings") return <NotFoundPage />;
+  const visa = data.data;
   return (
     <section className="">
       <Hero image={visa.coverImage.url} title="Bookings" />

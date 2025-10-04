@@ -66,11 +66,6 @@ export default function CreateWebpage() {
     metaDescription: "",
     keywords: [],
     schemaType: "",
-    coverImage: {
-      url: "",
-      public_id: "",
-      alt: "",
-    },
     status: "published",
     excerpt: "",
     faqs: [],
@@ -160,16 +155,24 @@ export default function CreateWebpage() {
 
         <div className="space-y-2">
           <ImageUploader
-            onUpload={(img) =>
+            onUpload={(img) => {
+              if (!img) return null;
               form.setValue("coverImage", {
-                url: img.url,
-                public_id: img.public_id,
-                width: img.width,
-                height: img.height,
+                url: img ? img.url : "",
+                public_id: img ? img.public_id : "",
+                width: img ? img.width : 0,
+                height: img ? img.height : 0,
                 alt: form.getValues("title") || "Cover Image",
-              })
-            }
+              });
+            }}
           />
+          {form.watch("coverImage") && (
+            <input
+              {...form.register("coverImage.alt")}
+              placeholder="Cover Image Alt"
+              className="w-full border rounded p-2"
+            />
+          )}
         </div>
 
         <div className="space-y-2">
@@ -246,11 +249,6 @@ export default function CreateWebpage() {
             Add FAQ
           </Button>
         </div>
-        <input
-          {...form.register("coverImage.alt")}
-          placeholder="Cover Image Alt"
-          className="w-full border rounded p-2"
-        />
         <select
           {...form.register("parent")}
           className="w-full border rounded p-2"
@@ -258,6 +256,7 @@ export default function CreateWebpage() {
           <option value="" disabled>
             Select Parent
           </option>
+          <option value="noparent">NoParent</option>
           <option value="visa">Visa</option>
           <option value="bookings">Bookings</option>
         </select>

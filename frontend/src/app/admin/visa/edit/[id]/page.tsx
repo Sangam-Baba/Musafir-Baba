@@ -134,10 +134,8 @@ export default function CreateVisaPage() {
   // ✅ pass variables (values) into mutate
   const mutation = useMutation({
     mutationFn: (values: Visa) => updateVisa(values, accessToken, id),
-    onSuccess: (data) => {
-      console.log("Updated successfully:", data);
+    onSuccess: () => {
       toast.success("Updated successful!");
-      form.reset(defaultValues);
     },
     onError: (error: unknown) => {
       console.error("Updation failed:", error);

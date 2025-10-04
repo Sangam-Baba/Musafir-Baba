@@ -58,22 +58,11 @@ function VisaWebPage() {
   if (isError) return <h1>{(error as Error).message}</h1>;
   return (
     <section className="">
-      <Hero image={visa.coverImage.url} title="Visa" />
+      <Hero image={visa.bannerImage.url} title={visa.title} />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {visa.keywords.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
           </header>
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={visa.content} />

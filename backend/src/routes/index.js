@@ -17,6 +17,7 @@ import itineraryRoutes from "./itinerary.routes.js";
 import visaRoutes from "./visa.routes.js";
 import webPageRoute from "./webPage.routes.js";
 import membershipRoutes from "./membership.routes.js";
+import membershipBookingRoute from "./membershipBooking.routes.js";
 const router = Router();
 
 router.use("/packages", pkgRoutes);
@@ -37,4 +38,5 @@ router.use("/itinerary", itineraryRoutes);
 router.use("/visa", visaRoutes);
 router.use("/webpage", webPageRoute);
 router.use("/membership", membershipRoutes);
+router.use("/membershipbooking", membershipBookingRoute);
 export default router;

@@ -11,7 +11,6 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
 });
 import ImageUploader from "@/components/admin/ImageUploader";
 import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { useParams } from "next/navigation";
@@ -65,7 +64,6 @@ const updatePage = async (values: FormData, token: string, id: string) => {
 
 export default function UpdateWebpage() {
   const token = useAuthStore((state) => state.accessToken) ?? "";
-  const router = useRouter();
   const { id } = useParams();
 
   const {
@@ -86,11 +84,6 @@ export default function UpdateWebpage() {
     metaDescription: "",
     keywords: [],
     schemaType: "",
-    coverImage: {
-      url: "",
-      public_id: "",
-      alt: "",
-    },
     status: "published",
     excerpt: "",
     faqs: [],
@@ -123,8 +116,6 @@ export default function UpdateWebpage() {
     mutationFn: (values: FormData) => updatePage(values, token, id as string),
     onSuccess: () => {
       toast.success("Page updated successfully!");
-      form.reset();
-      router.refresh();
     },
     onError: (error: unknown) => {
       if (error instanceof Error) {
@@ -199,16 +190,25 @@ export default function UpdateWebpage() {
 
         <div className="space-y-2">
           <ImageUploader
-            onUpload={(img) =>
+            initialImage={webpage.coverImage}
+            onUpload={(img) => {
+              if (!img) return null;
               form.setValue("coverImage", {
-                url: img.url,
-                public_id: img.public_id,
-                width: img.width,
-                height: img.height,
+                url: img ? img.url : "",
+                public_id: img ? img.public_id : "",
+                width: img ? img.width : 1200,
+                height: img ? img.height : 400,
                 alt: form.getValues("title") || "Cover Image",
-              })
-            }
+              });
+            }}
           />
+          {form.watch("coverImage") && (
+            <input
+              {...form.register("coverImage.alt")}
+              placeholder="Cover Image Alt"
+              className="w-full border rounded p-2"
+            />
+          )}
         </div>
         {/* keywords */}
         <div className="space-y-2">
@@ -284,11 +284,7 @@ export default function UpdateWebpage() {
             Add FAQ
           </Button>
         </div>
-        <input
-          {...form.register("coverImage.alt")}
-          placeholder="Cover Image Alt"
-          className="w-full border rounded p-2"
-        />
+
         <select
           {...form.register("parent")}
           className="w-full border rounded p-2"
@@ -296,6 +292,7 @@ export default function UpdateWebpage() {
           <option value="" disabled>
             Select Parent
           </option>
+          <option value="noparent">No-Parent</option>
           <option value="visa">Visa</option>
           <option value="bookings">Bookings</option>
         </select>
