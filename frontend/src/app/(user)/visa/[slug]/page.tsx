@@ -12,19 +12,28 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import RelatedPages from "@/components/custom/RelatedPages";
+import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
 
 interface Faq {
   question: string;
   answer: string;
 }
-const getWebPageBySlug = async (slug: string) => {
+const getVisaBySlug = async (slug: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/slug/${slug}`
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
   return data?.data;
+};
+
+const getRelatedPages = async (slug: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/related/${slug}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch related pages");
+  const data = await res.json();
+  return data;
 };
 function VisaWebPage() {
   const slug = useParams().slug as string;
@@ -36,8 +45,15 @@ function VisaWebPage() {
     error,
   } = useQuery({
     queryKey: ["visa", slug],
-    queryFn: () => getWebPageBySlug(slug),
+    queryFn: () => getVisaBySlug(slug),
   });
+
+  const { data: relatedPages, isLoading: relatedPagesLoading } = useQuery({
+    queryKey: ["relatedPages", slug],
+    queryFn: () => getRelatedPages(slug),
+  });
+  const relatedPageArray = relatedPages?.data ?? [];
+
   if (isLoading) return <Loader size="lg" message="Loading visas..." />;
   if (isError) return <h1>{(error as Error).message}</h1>;
   return (
@@ -83,7 +99,17 @@ function VisaWebPage() {
         </article>
         <aside className="w-full md:w-1/3">
           <QueryForm />
-          <RelatedPages slug={slug} parent="visa" />
+          {relatedPagesLoading && (
+            <Loader size="lg" message="Loading visas..." />
+          )}
+          {relatedPageArray.length > 0 && (
+            <ListBlogSidebar
+              blogs={relatedPageArray}
+              title="Related Pages"
+              type="latest"
+              url="visa"
+            />
+          )}
         </aside>
       </div>
       {/* ✅ JSON-LD Schema

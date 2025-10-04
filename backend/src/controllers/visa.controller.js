@@ -36,19 +36,31 @@ const getVisaById = async (req, res) => {
     const visa = await Visa.findById(id);
     if (!visa)
       return res.status(404).json({ success: false, message: "Invalid Id" });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Visa fetched successfully",
-        data: visa,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Visa fetched successfully",
+      data: visa,
+    });
   } catch (error) {
     console.log("Visa getting by Id failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
+const getVisaBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug)
+      return res.status(400).json({ success: false, message: "Invalid Slug" });
+    const visa = await Visa.findOne({ slug }).lean();
+    if (!visa)
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    res.status(200).json({ success: true, data: visa });
+  } catch (error) {
+    console.log("Visa getting by slug failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 const updateVisa = async (req, res) => {
   try {
     const { id } = req.params;
@@ -86,4 +98,37 @@ const deleteVisa = async (req, res) => {
   }
 };
 
-export { createVisa, getAllVisa, updateVisa, deleteVisa, getVisaById };
+const getRelatedPages = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug)
+      return res.status(400).json({ success: false, message: "Invalid Slug" });
+    const visa = await Visa.findOne({ slug }).lean();
+    if (!visa)
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    if (!visa.keywords || visa.keywords.length === 0)
+      return res.status(200).json({ success: true, data: [] });
+    const relatedVisa = await Visa.find({
+      _id: { $ne: visa._id },
+      isActive: "true",
+      keywords: { $in: visa.keywords },
+    })
+      .limit(5)
+      .select("title slug coverImage keywords excerpt createdAt")
+      .lean();
+    return res.status(200).json({ success: true, data: relatedVisa });
+  } catch (error) {
+    console.log("Visa getting related pages by slug failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export {
+  createVisa,
+  getAllVisa,
+  updateVisa,
+  deleteVisa,
+  getVisaById,
+  getVisaBySlug,
+  getRelatedPages,
+};

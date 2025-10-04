@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Musafirbaba - Best Travel Agency in Delhi |Holidays | Visa",
+  title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
   description:
     "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services. Book your tour now in just 60 seconds.",
   alternates: {
