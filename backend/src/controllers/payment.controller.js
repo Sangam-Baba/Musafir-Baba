@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { Booking } from "../models/Booking.js";
+import { MembershipBooking } from "../models/MembershipBooking.js";
 
 // ENV CONFIG
 const merchantKey = process.env.PAYU_KEY;
@@ -9,21 +10,57 @@ const payuBaseUrl =
     ? "https://secure.payu.in"
     : "https://test.payu.in";
 
-function generateHash({ txnid, amount, productinfo, firstname, email, udf1 = "", udf2 = "", udf3 = "", udf4 = "", udf5 = "" }) {
-  const hashString =
-    `${merchantKey}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${merchantSalt}`;
+function generateHash({
+  txnid,
+  amount,
+  productinfo,
+  firstname,
+  email,
+  udf1 = "",
+  udf2 = "",
+  udf3 = "",
+  udf4 = "",
+  udf5 = "",
+}) {
+  const hashString = `${merchantKey}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|${udf1}|${udf2}|${udf3}|${udf4}|${udf5}||||||${merchantSalt}`;
 
   return crypto.createHash("sha512").update(hashString).digest("hex");
 }
 // API to initiate payment
-export const createPayemnt= (req, res) => {
-  const { txnid, amount, productinfo, firstname, email, phone , udf1 } = req.body;
+export const createPayemnt = (req, res) => {
+  const {
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    phone,
+    udf1,
+    surl,
+    furl,
+  } = req.body;
 
-  if (!txnid || !amount || !productinfo || !firstname || !email || !udf1) {
+  if (
+    !txnid ||
+    !amount ||
+    !productinfo ||
+    !firstname ||
+    !email ||
+    !udf1 ||
+    !surl ||
+    !furl
+  ) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  const hash = generateHash({ txnid, amount, productinfo, firstname, email , udf1});
+  const hash = generateHash({
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
 
   const paymentData = {
     key: merchantKey,
@@ -33,8 +70,8 @@ export const createPayemnt= (req, res) => {
     firstname,
     email,
     phone,
-    surl: `${process.env.BACKEND_URL}/api/payment/success`, // Success page
-    furl: `${process.env.BACKEND_URL}/api/payment/failure`, // Failure page
+    surl, // Success page
+    furl, // Failure page
     hash,
     udf1,
     service_provider: "payu_paisa",
@@ -43,22 +80,46 @@ export const createPayemnt= (req, res) => {
   res.json({ payuUrl: `${payuBaseUrl}/_payment`, paymentData });
 };
 
-// PayU Callback (server-to-server)
-
-function verifyHash({ 
-  status, txnid, amount, productinfo, firstname, email, 
-  udf1 = "", udf2 = "", udf3 = "", udf4 = "", udf5 = "" 
+function verifyHash({
+  status,
+  txnid,
+  amount,
+  productinfo,
+  firstname,
+  email,
+  udf1 = "",
+  udf2 = "",
+  udf3 = "",
+  udf4 = "",
+  udf5 = "",
 }) {
-  const hashString =
-    `${merchantSalt}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
+  const hashString = `${merchantSalt}|${status}||||||${udf5}|${udf4}|${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
 
   return crypto.createHash("sha512").update(hashString).digest("hex");
 }
 export const verifySuccessPayment = async (req, res) => {
   const data = req.body;
-  const { status, txnid, amount, productinfo, firstname, email, hash , udf1 , mihpayid} = data;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
 
-  const expectedHash = verifyHash({ status, txnid, amount, productinfo, firstname, email, udf1 });
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
 
   if (expectedHash !== hash) {
     console.error("⚠️ Hash mismatch, possible tampering");
@@ -66,26 +127,47 @@ export const verifySuccessPayment = async (req, res) => {
   }
 
   // ✅ Update DB with payment status here
-  const booking=await Booking.findOneAndUpdate({_id:udf1},
-    {paymentInfo :{
-     orderId: txnid,
-     paymentId: mihpayid,
-     signature: hash,
-     status: "Paid"
+  const booking = await Booking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Paid",
+      },
+      bookingStatus: "Confirmed",
     },
-    bookingStatus:"Confirmed"
-  },{new: true}
-).exec();
-  console.log("Payment Verified:", data , booking);
+    { new: true }
+  ).exec();
+  console.log("Payment Verified:", data, booking);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
 };
 
 export const verifyFailurePayment = async (req, res) => {
   const data = req.body;
-  const { status, txnid, amount, productinfo, firstname, email, hash , udf1 , mihpayid} = data;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
 
-  const expectedHash = verifyHash({ status, txnid, amount, productinfo, firstname, email, udf1 });
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
 
   if (expectedHash !== hash) {
     console.error("⚠️ Hash mismatch, possible tampering");
@@ -93,17 +175,115 @@ export const verifyFailurePayment = async (req, res) => {
   }
 
   // ✅ Update DB with payment status here
-  const booking=await Booking.findOneAndUpdate({_id:udf1},
-    {paymentInfo :{
-     orderId: txnid,
-     paymentId: mihpayid,
-     signature: hash,
-     status: "Failed"
+  const booking = await Booking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Failed",
+      },
     },
-  },{new: true}
-).exec();
-  console.log("Payment Failed:", data , booking);
+    { new: true }
+  ).exec();
+  console.log("Payment Failed:", data, booking);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
 };
 
+export const verifyMembershipSuccessPayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+  const booking = await MembershipBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Paid",
+      },
+      membershipStatus: "Active",
+    },
+    { new: true }
+  ).exec();
+  console.log("Payment Verified:", data, booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+};
+
+export const verifyMembershipFailurePayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+  const booking = await MembershipBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Failed",
+      },
+      membershipStatus: "Cancelled",
+    },
+    { new: true }
+  ).exec();
+  console.log("Payment Failed:", data, booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+};

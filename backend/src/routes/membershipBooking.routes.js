@@ -1,6 +1,7 @@
 import {
   createBooking,
   getBookingsById,
+  updateBooking,
 } from "../controllers/membershipBooking.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -19,6 +20,13 @@ membershipBookingRoute.get(
   isAuthenticated,
   authorizedRoles(["user", "admin"]),
   getBookingsById
+);
+
+membershipBookingRoute.patch(
+  "/:id",
+  isAuthenticated,
+  authorizedRoles(["user", "admin"]),
+  updateBooking
 );
 
 export default membershipBookingRoute;

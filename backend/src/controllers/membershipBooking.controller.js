@@ -1,4 +1,4 @@
-import { MembershipBooking } from "../models/membershipBooking.js";
+import { MembershipBooking } from "../models/MembershipBooking.js";
 import { Membership } from "../models/membership.js";
 
 const createBooking = async (req, res) => {
@@ -20,7 +20,7 @@ const createBooking = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     const startDate = new Date();
     let endDate = new Date(startDate);
-    if (duration == "monthly") {
+    if (duration == "quaterly") {
       endDate.setMonth(endDate.getMonth() + 1);
     }
     if (duration == "half-yearly") {
@@ -78,4 +78,35 @@ const getBookingsById = async (req, res) => {
   }
 };
 
-export { createBooking, getBookingsById };
+const updateBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Bookings id not found" });
+    }
+    const membershipBooking = await MembershipBooking.findByIdAndUpdate(
+      id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (!membershipBooking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Booking updated successfully",
+      data: membershipBooking,
+    });
+  } catch (error) {
+    console.log("Error updating booking", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+export { createBooking, getBookingsById, updateBooking };

@@ -1,48 +1,56 @@
 "use client";
 import Hero from "@/components/custom/Hero";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { useParams } from "next/navigation";
-import { Loader } from "@/components/custom/loader";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import RelatedPages from "@/components/custom/RelatedPages";
-import NotFoundPage from "@/components/common/Not-Found";
 
-interface Faq {
+export interface Faq {
+  _id: string;
   question: string;
   answer: string;
 }
-const getWebPageBySlug = async (slug: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}`
-  );
-  if (!res.ok) throw new Error("Failed to fetch visas");
-  const data = await res.json();
-  return data;
-};
-function BookingsWebPage() {
-  const slug = useParams().slug as string;
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["visa", slug],
-    queryFn: () => getWebPageBySlug(slug),
-  });
-  if (isLoading) return <Loader size="lg" message="Loading Bookings..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
-  if (!data || slug === "bookings") return <NotFoundPage />;
-  const visa = data.data;
+export interface WebPage {
+  _id: string;
+  title: string;
+  slug: string;
+  content: string; // comes as HTML string
+  metaTitle: string;
+  metaDescription: string;
+  excerpt: string;
+  schemaType: string;
+  keywords: string[];
+  coverImage: {
+    url: string;
+    alt: string;
+    width?: number;
+    height?: number;
+  };
+  status: "draft" | "published";
+  faqs: Faq[];
+  parent: string;
+  createdAt: string; // ISO date
+  updatedAt: string; // ISO date
+  __v: number;
+}
+
+function DelhiTourWebPage({ DelhiTourData }: { DelhiTourData: WebPage }) {
+  const visa = DelhiTourData;
+
   return (
     <section className="">
-      <Hero image={visa.coverImage.url} title={visa.title} />
+      <Hero
+        image={visa.coverImage ? visa.coverImage?.url : ""}
+        title="Delhi Tour Packages"
+      />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
-        <article className="w-full md:w-2/3">
+        <article className="w-full md:w-5/7">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
           </header>
@@ -68,9 +76,9 @@ function BookingsWebPage() {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-1/3">
+        <aside className="w-full md:w-2/7">
           <QueryForm />
-          <RelatedPages slug={slug} parent="visa" />
+          {/* <RelatedPages slug={slug} parent="bookings" /> */}
         </aside>
       </div>
       {/* ✅ JSON-LD Schema
@@ -81,4 +89,4 @@ function BookingsWebPage() {
   );
 }
 
-export default BookingsWebPage;
+export default DelhiTourWebPage;

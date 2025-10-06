@@ -4,15 +4,24 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import {  z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { format, parseISO, isAfter } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
-
 
 interface Batch {
   startDate: string;
@@ -32,7 +41,6 @@ interface Package {
   description: string;
   batch: Batch[];
 }
-
 
 const formSchema = z.object({
   user: z.string(),
@@ -55,13 +63,13 @@ const formSchema = z.object({
 });
 type BookingFormValues = z.infer<typeof formSchema>;
 
-
 async function bookPkgApi(values: BookingFormValues, accessToken: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/booking`, {
     method: "POST",
-    headers: { "Content-Type": "application/json",
+    headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
-     },
+    },
     body: JSON.stringify(values),
   });
   if (!res.ok) throw new Error("Booking failed");
@@ -70,7 +78,11 @@ async function bookPkgApi(values: BookingFormValues, accessToken: string) {
 
 function groupBatchesByMonth(batches: Batch[]) {
   const now = new Date();
-  const upcoming = batches.filter(b => isAfter(parseISO(b.startDate), now)  || format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd"));
+  const upcoming = batches.filter(
+    (b) =>
+      isAfter(parseISO(b.startDate), now) ||
+      format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd")
+  );
   return upcoming.reduce((acc: Record<string, Batch[]>, batch) => {
     const key = format(parseISO(batch.startDate), "MMM ''yy");
     if (!acc[key]) acc[key] = [];
@@ -80,17 +92,22 @@ function groupBatchesByMonth(batches: Batch[]) {
 }
 
 export default function BookingClient({ pkg }: { pkg: Package }) {
-  console.log("Getting package: ",pkg);
+  console.log("Getting package: ", pkg);
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
-  const [travellers, setTravellers] = useState({ quad: 0, triple: 0, double: 0, child: 0 });
+  const [travellers, setTravellers] = useState({
+    quad: 0,
+    triple: 0,
+    double: 0,
+    child: 0,
+  });
   const [price, setPrice] = useState(0);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      user:  "", // myUser?._id || "",
+      user: "", // myUser?._id || "",
       packageId: pkg._id,
       travellers,
       totalPrice: 0,
@@ -99,7 +116,8 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (payload: BookingFormValues) => bookPkgApi(payload, accessToken || ""),
+    mutationFn: (payload: BookingFormValues) =>
+      bookPkgApi(payload, accessToken || ""),
     onSuccess: (res) => {
       toast.success("Booking created");
       router.push(`/payment/${res.data._id}`);
@@ -109,17 +127,20 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
   const totalPrice = useMemo(() => {
     if (!selectedBatch) return 0;
-    const price=
+    const price =
       travellers.quad * selectedBatch.quad +
       travellers.triple * selectedBatch.triple +
       travellers.double * selectedBatch.double +
-      travellers.child * selectedBatch.child
-      setPrice(price);
+      travellers.child * selectedBatch.child;
+    setPrice(price);
     return price;
   }, [travellers, selectedBatch]);
-  const totalPriceWithTax=Math.ceil(totalPrice*1.05)
-  
-  const batchesByMonth = useMemo(() => groupBatchesByMonth(pkg.batch? pkg.batch : []), [pkg.batch]);
+  const totalPriceWithTax = Math.ceil(totalPrice * 1.05);
+
+  const batchesByMonth = useMemo(
+    () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
+    [pkg.batch]
+  );
 
   const confirmSelection = () => {
     if (!selectedBatch) return;
@@ -139,7 +160,12 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
       <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2>
 
       {/* Batches Accordion */}
-      <Accordion type="single" collapsible defaultValue={Object.keys(batchesByMonth)[0]} className="w-full border rounded-lg p-4">
+      <Accordion
+        type="single"
+        collapsible
+        defaultValue={Object.keys(batchesByMonth)[0]}
+        className="w-full border rounded-lg p-4"
+      >
         {Object.entries(batchesByMonth).map(([month, list]) => (
           <AccordionItem key={month} value={month}>
             <AccordionTrigger>{month}</AccordionTrigger>
@@ -155,13 +181,19 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                       className="flex justify-between p-3 border rounded-lg cursor-pointer hover:bg-blue-50"
                     >
                       <div>
-                        <p className="font-medium">{start} – {end}</p>
+                        <p className="font-medium">
+                          {start} – {end}
+                        </p>
                         <p className="text-green-600 text-sm">Open</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-500">Starting Price</p>
-                        <p className="font-semibold text-[#FE5300]">₹{b.quad.toLocaleString()}</p>
-                        <span className="font-semibold line-through">₹{b.quadDiscount.toLocaleString()}</span>
+                        <p className="font-semibold text-[#FE5300]">
+                          ₹{b.quad.toLocaleString()}
+                        </p>
+                        <span className="font-semibold line-through">
+                          ₹{b.quadDiscount.toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   );
@@ -172,62 +204,99 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
         ))}
       </Accordion>
 
-
-      <Dialog open={!!selectedBatch} onOpenChange={() => setSelectedBatch(null)}>
+      <Dialog
+        open={!!selectedBatch}
+        onOpenChange={() => setSelectedBatch(null)}
+      >
         <DialogContent>
-          <DialogHeader><DialogTitle>Select Travellers</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Select Travellers</DialogTitle>
+          </DialogHeader>
           {selectedBatch && (
             <div className="space-y-4">
-              {(["quad", "triple", "double", "child"] as const).map(type => (
+              {(["quad", "triple", "double", "child"] as const).map((type) => (
                 <div key={type} className="flex  justify-between items-center">
                   <span className="capitalize">{type}</span>
                   <div className="flex items-center gap-2">
-                    <Button type="button" size="sm" onClick={() => setTravellers(t => ({ ...t, [type]: Math.max(0, t[type] - 1) }))}>-</Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() =>
+                        setTravellers((t) => ({
+                          ...t,
+                          [type]: Math.max(0, t[type] - 1),
+                        }))
+                      }
+                    >
+                      -
+                    </Button>
                     <span>{travellers[type]}</span>
-                    <Button type="button" size="sm" onClick={() => setTravellers(t => ({ ...t, [type]: t[type] + 1 }))}>+</Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() =>
+                        setTravellers((t) => ({ ...t, [type]: t[type] + 1 }))
+                      }
+                    >
+                      +
+                    </Button>
                   </div>
-                  <p className="text-md text-[#FE5300] font-semibold">₹{selectedBatch[type]}</p>
+                  <p className="text-md text-[#FE5300] font-semibold">
+                    ₹{selectedBatch[type]}
+                  </p>
                 </div>
               ))}
               <div className="flex justify-between border-t pt-2">
                 <span className="font-medium">Total</span>
-                <span className="font-semibold">₹{totalPrice.toLocaleString()}</span>
+                <span className="font-semibold">
+                  ₹{totalPrice.toLocaleString()}
+                </span>
               </div>
-              <Button className="w-full" onClick={confirmSelection}>Confirm</Button>
+              <Button className="w-full" onClick={confirmSelection}>
+                Confirm
+              </Button>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4"> 
-          <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
-              <div>
-              <div className="flex justify-between">
-                <p className="text-md font-semibold"> Travel Date </p>
-                 <p>{form.watch("travelDate").slice(0, 10)}</p>
-              </div>
-              <div className="flex justify-between">
-                <p>Travellers</p>
-                 <p className="text-sm text-gray-500">{travellers.quad + travellers.triple + travellers.double} adult(s) · {travellers.child} child(ren)</p>
-              </div>
-              </div>
-
-             <div className="flex justify-between">
-              <p className="text-md font-semibold">Package Price INR  </p>
-              <p>{price}</p>
-             </div>
-             <div className="flex justify-between">
-              <p>GST (5%)</p>
-              <p className="text-sm text-gray-500"> { price*0.05 } </p>
-             </div>
-              <div className="flex justify-between">
-                <p className="text-md font-semibold">Total Price (Incl. GST) </p>
-                <p className="text-md font-semibold"> ₹{form.watch("totalPrice")}</p>
-              </div>
-              
-            {/* </div> */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+        <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
+          <div>
+            <div className="flex justify-between">
+              <p className="text-md font-semibold"> Travel Date </p>
+              <p>{form.watch("travelDate").slice(0, 10)}</p>
+            </div>
+            <div className="flex justify-between">
+              <p>Travellers</p>
+              <p className="text-sm text-gray-500">
+                {travellers.quad + travellers.triple + travellers.double}{" "}
+                adult(s) · {travellers.child} child(ren)
+              </p>
+            </div>
           </div>
+
+          <div className="flex justify-between">
+            <p className="text-md font-semibold">Package Price INR </p>
+            <p>{price}</p>
+          </div>
+          <div className="flex justify-between">
+            <p>GST (5%)</p>
+            <p className="text-sm text-gray-500">
+              {" "}
+              {Math.floor(price * 0.05)}{" "}
+            </p>
+          </div>
+          <div className="flex justify-between">
+            <p className="text-md font-semibold">Total Price (Incl. GST) </p>
+            <p className="text-md font-semibold">
+              {" "}
+              ₹{form.watch("totalPrice")}
+            </p>
+          </div>
+
+          {/* </div> */}
+        </div>
         <Button type="submit" className="w-full" disabled={mutation.isPending}>
           {mutation.isPending ? "Processing..." : "Book Now"}
         </Button>

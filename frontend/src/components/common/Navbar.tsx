@@ -16,13 +16,13 @@ export function Navbar() {
             <Link href="/holidays">Holidays</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="bookings">Bookings</Link>
+            <Link href="/bookings">Bookings</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Link href="/visa">Visa</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="membership">Membership</Link>
+            <Link href="/membership">Membership</Link>
           </li>
           <li className="font-semi-bold bg-[FE5300] text-[#FE5300]">
             <Link href="/blog">Blog</Link>

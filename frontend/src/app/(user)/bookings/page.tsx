@@ -46,17 +46,6 @@ function VisaWebPage() {
         <article className="w-full md:w-5/7">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {visa.keywords.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
           </header>
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={visa.content} />

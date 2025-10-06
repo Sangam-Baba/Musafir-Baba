@@ -89,7 +89,6 @@ function UpdateMembershipPage() {
       updateMembership(values, accessToken, id),
     onSuccess: (data) => {
       toast.success("Membership created successfully", data);
-      form.reset(defaultValues);
     },
     onError: () => {
       toast.error("Something went wrong");
