@@ -1,11 +1,8 @@
-"use client";
 import Hero from "@/components/custom/Hero";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Metadata } from "next";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { useParams } from "next/navigation";
-import { Loader } from "@/components/custom/loader";
 import {
   Accordion,
   AccordionContent,
@@ -27,17 +24,29 @@ const getWebPageBySlug = async (slug: string) => {
   const data = await res.json();
   return data;
 };
-function BookingsWebPage() {
-  const slug = useParams().slug as string;
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["visa", slug],
-    queryFn: () => getWebPageBySlug(slug),
-  });
-  if (isLoading) return <Loader size="lg" message="Loading Bookings..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
-  if (!data || slug === "bookings") return <NotFoundPage />;
-  const visa = data.data;
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const page = await getWebPageBySlug(params.slug);
+  return {
+    title: page.metaTitle || page.title,
+    description: page.metaDescription,
+    keywords: page.keywords,
+    openGraph: {
+      title: page.metaTitle || page.title,
+      description: page.metaDescription,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings/${page.slug}`,
+      type: "website",
+    },
+  };
+}
+async function BookingsWebPage({ params }: { params: { slug: string } }) {
+  const res = await getWebPageBySlug(params.slug);
+  if (!res.data || params.slug === "bookings") return <NotFoundPage />;
+  const visa = res?.data;
   return (
     <section className="">
       <Hero image={visa.coverImage.url} title={visa.title} />
@@ -70,7 +79,7 @@ function BookingsWebPage() {
         </article>
         <aside className="w-full md:w-1/3">
           <QueryForm />
-          <RelatedPages slug={slug} parent="visa" />
+          <RelatedPages slug={params.slug} parent="visa" />
         </aside>
       </div>
       {/* ✅ JSON-LD Schema

@@ -166,7 +166,7 @@ function PackageDetails() {
         <div className="absolute z-20 w-full flex justify-center bottom-35 px-4">
           <ItineryDialog
             title={pkg.title}
-            description={pkg.description}
+            description={pkg.description.slice(0, 50)}
             url={pkg.itineraryDownload?.url ?? ""}
             img={pkg.coverImage?.url}
             packageId={pkg._id}
@@ -175,7 +175,7 @@ function PackageDetails() {
         <Hero
           image={pkg.coverImage.url ?? ""}
           title={pkg.title}
-          description={pkg.metaDescription ?? ""}
+          description={pkg.description.slice(0, 200) ?? ""}
           align="center"
           height="lg"
           overlayOpacity={55}

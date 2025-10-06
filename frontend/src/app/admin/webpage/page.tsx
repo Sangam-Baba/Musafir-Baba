@@ -89,8 +89,10 @@ function WebPage() {
             id: b._id,
             title: b.title,
             status: b.status === "published" ? "Published" : "Draft",
-            parent: b.parent,
-            url: `/${b.parent}/${b.slug}`,
+            parent: `${b.parent.charAt(0).toUpperCase() + b.parent.slice(1)}`,
+            url: `${
+              b.parent === "noparent" ? `/${b.slug}` : `/${b.parent}/${b.slug}`
+            }`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

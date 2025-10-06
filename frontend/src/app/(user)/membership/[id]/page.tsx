@@ -110,157 +110,161 @@ function BookingPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-center w-full px-4 md:px-8 lg:px-20 py-16 gap-4">
-      <Card className="flex-1 border border-gray-300 h-full hidden md:block">
-        <CardHeader>
-          <CardTitle className="flex text-2xl items-center justify-center gap-2">
-            Membership Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading && <p>Loading...</p>}
-          {isError && <p>Error</p>}
-          {data && (
-            <div className="p-6 ">
-              <h1 className="text-xl">Name: {bookings.userId.name}</h1>
-              <p className="mb-4 text-gray-600">
-                Email: {bookings.userId.email}
-              </p>
-              <p className="mb-4">Your Membership Includes: </p>
-              <ul className="list-disc list-inside space-y-2">
-                {bookings.membershipId.include?.map(
-                  (item: Item, idx: number) => (
-                    <li key={idx} className="flex ">
-                      <CircleArrowRight
-                        color="#FE5300"
-                        className="mr-2 w-[10%]"
-                      />
-                      <p className="w-[90%]">{item.item}</p>
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      <Accordion type="single" collapsible className="w-full md:hidden">
-        <AccordionItem
-          value={"item-1"}
-          key={1}
-          className="rounded-2xl shadow-lg p-4"
+    <section className="w-full flex flex-col items-center">
+      <div className="flex flex-col max-w-7xl md:flex-row items-stretch justify-center w-full px-4 md:px-8 lg:px-20 py-16 gap-6">
+        <Card className="flex-1 border border-gray-300 h-full hidden md:block shadow-md rounded-2xl">
+          <CardHeader>
+            <CardTitle className="flex text-2xl items-center justify-center gap-2">
+              Membership Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-y-auto p-6">
+            {isLoading && <p>Loading...</p>}
+            {isError && <p>Error</p>}
+            {data && (
+              <div className="p-6 ">
+                <h1 className="text-xl">Name: {bookings.userId.name}</h1>
+                <p className="mb-4 text-gray-600">
+                  Email: {bookings.userId.email}
+                </p>
+                <p className="mb-4">Your Membership Includes: </p>
+                <ul className="list-disc list-inside space-y-2">
+                  {bookings.membershipId.include?.map(
+                    (item: Item, idx: number) => (
+                      <li key={idx} className="flex ">
+                        <CircleArrowRight
+                          color="#FE5300"
+                          className="mr-2 w-[10%]"
+                        />
+                        <p className="w-[90%]">{item.item}</p>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full md:hidden shadow-md"
         >
-          <AccordionTrigger className="text-2xl text-center">
-            Membership Details
-          </AccordionTrigger>
-          <AccordionContent className="text-justify">
-            <Card className="flex-1 border border-gray-300 h-full ">
-              <CardContent>
-                {isLoading && <p> Loading... </p>}
-                {isError && <p>Error</p>}
-                {data && (
-                  <div className="p-6 ">
-                    <h1 className="text-xl">Name: {bookings.userId.name}</h1>
-                    <p className="mb-4 text-gray-600">
-                      Email: {bookings.userId.email}
-                    </p>
-                    <p className="mb-4">Your Membership Includes: </p>
-                    <ul className="list-disc list-inside space-y-2">
-                      {bookings.membershipId.include?.map(
-                        (item: Item, idx: number) => (
-                          <li key={idx} className="flex ">
-                            <CircleArrowRight
-                              color="#FE5300"
-                              className="mr-2 w-[10%]"
-                            />
-                            <p className="w-[90%]">{item.item}</p>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-      <Card className="h-full flex-1">
-        <CardHeader>
-          <CardTitle className="flex text-2xl items-center justify-center gap-2">
-            Amount Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading && <p>Loading...</p>}
-          {isError && <p>Error</p>}
-          {data && (
-            <div className="p-6 space-y-2">
-              <h1 className="text-xl">
-                Membership: {bookings.membershipId.name}
-              </h1>
-              <p>Start Date: {bookings.startDate.split("T")[0]}</p>
-              <p>End Date: {bookings.endDate.split("T")[0]}</p>
-              <p className="">
-                Amout:{" "}
-                <span className="text-[#FE5300]">₹{bookings.amount}</span>
-              </p>
-              <p>
-                @GST:<span className="text-[#FE5300]">₹{gst}</span>
-              </p>
-              <p>
-                Final Amount:
-                <span className="text-[#FE5300]">₹{finalAmount}</span>
-              </p>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter>
-          <Button
-            className="bg-[#FE5300]"
-            onClick={handlePayment}
-            disabled={loading}
+          <AccordionItem
+            value={"item-1"}
+            key={1}
+            className="rounded-2xl shadow-lg p-4"
           >
-            {loading
-              ? "Processing..."
-              : `Confirm Booking for ₹${finalAmount.toFixed(2)}`}
-          </Button>
-          <div className="mt-4 p-4 ">
-            <form
-              ref={formRef}
-              action="https://secure.payu.in/_payment"
-              method="post"
-              className="flex flex-col"
+            <AccordionTrigger className="text-2xl text-center">
+              Membership Details
+            </AccordionTrigger>
+            <AccordionContent className="text-justify">
+              <Card className="flex-1 border border-gray-300 h-full ">
+                <CardContent>
+                  {isLoading && <p> Loading... </p>}
+                  {isError && <p>Error</p>}
+                  {data && (
+                    <div className="p-6 ">
+                      <h1 className="text-xl">Name: {bookings.userId.name}</h1>
+                      <p className="mb-4 text-gray-600">
+                        Email: {bookings.userId.email}
+                      </p>
+                      <p className="mb-4">Your Membership Includes: </p>
+                      <ul className="list-disc list-inside space-y-2">
+                        {bookings.membershipId.include?.map(
+                          (item: Item, idx: number) => (
+                            <li key={idx} className="flex ">
+                              <CircleArrowRight
+                                color="#FE5300"
+                                className="mr-2 w-[10%]"
+                              />
+                              <p className="w-[90%]">{item.item}</p>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+        <Card className="h-full flex-1 border border-gray-300 shadow-md rounded-2xl">
+          <CardHeader>
+            <CardTitle className="flex text-2xl items-center justify-center gap-2">
+              Amount Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading && <p>Loading...</p>}
+            {isError && <p>Error</p>}
+            {data && (
+              <div className="p-6 space-y-2">
+                <h1 className="text-xl">
+                  Membership: {bookings.membershipId.name}
+                </h1>
+                <p>Start Date: {bookings.startDate.split("T")[0]}</p>
+                <p>End Date: {bookings.endDate.split("T")[0]}</p>
+                <p className="">
+                  Amout:{" "}
+                  <span className="text-[#FE5300]">₹{bookings.amount}</span>
+                </p>
+                <p>
+                  @GST:<span className="text-[#FE5300]">₹{gst}</span>
+                </p>
+                <p>
+                  Final Amount:
+                  <span className="text-[#FE5300]">₹{finalAmount}</span>
+                </p>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex items-center justify-center">
+            <Button
+              className="bg-[#FE5300] "
+              onClick={handlePayment}
+              disabled={loading}
             >
-              <input type="hidden" name="key" value={paymentData.key} />
-              <input type="hidden" name="txnid" value={paymentData.txnid} />
-              <input
-                type="hidden"
-                name="productinfo"
-                value={paymentData.productinfo}
-              />
-              <input type="hidden" name="amount" value={paymentData.amount} />
-              <input type="hidden" name="email" value={paymentData.email} />
-              <input
-                type="hidden"
-                name="firstname"
-                value={paymentData.firstname}
-              />
-              <input
-                type="hidden"
-                name="lastname"
-                value={paymentData.lastname}
-              />
-              <input type="hidden" name="surl" value={paymentData.surl} />
-              <input type="hidden" name="furl" value={paymentData.furl} />
-              <input type="hidden" name="phone" value={paymentData.phone} />
-              <input type="hidden" name="hash" value={paymentData.hash} />
-              <input type="hidden" name="udf1" value={paymentData.udf1} />
-            </form>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+              {loading ? "Processing..." : `Pay Now ₹${finalAmount.toFixed(2)}`}
+            </Button>
+            <div className="mt-4 p-4 ">
+              <form
+                ref={formRef}
+                action="https://secure.payu.in/_payment"
+                method="post"
+                className="flex flex-col"
+              >
+                <input type="hidden" name="key" value={paymentData.key} />
+                <input type="hidden" name="txnid" value={paymentData.txnid} />
+                <input
+                  type="hidden"
+                  name="productinfo"
+                  value={paymentData.productinfo}
+                />
+                <input type="hidden" name="amount" value={paymentData.amount} />
+                <input type="hidden" name="email" value={paymentData.email} />
+                <input
+                  type="hidden"
+                  name="firstname"
+                  value={paymentData.firstname}
+                />
+                <input
+                  type="hidden"
+                  name="lastname"
+                  value={paymentData.lastname}
+                />
+                <input type="hidden" name="surl" value={paymentData.surl} />
+                <input type="hidden" name="furl" value={paymentData.furl} />
+                <input type="hidden" name="phone" value={paymentData.phone} />
+                <input type="hidden" name="hash" value={paymentData.hash} />
+                <input type="hidden" name="udf1" value={paymentData.udf1} />
+              </form>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
+    </section>
   );
 }
 

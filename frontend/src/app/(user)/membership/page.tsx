@@ -1,17 +1,14 @@
-"use client";
+import { Metadata } from "next";
 import Hero from "@/components/custom/Hero";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { Loader } from "@/components/custom/loader";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-// import RelatedPages from "@/components/custom/RelatedPages";
 import MembershipCard from "@/components/custom/MembershipCard";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 
@@ -27,25 +24,30 @@ const getWebPageBySlug = async () => {
   const data = await res.json();
   return data?.data;
 };
-function VisaWebPage() {
-  const slug = "membership";
 
-  const {
-    data: visa,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["membership", slug],
-    queryFn: getWebPageBySlug,
-  });
-  if (isLoading) return <Loader size="lg" message="Loading memberships..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getWebPageBySlug();
+  return {
+    title: page.metaTitle || page.title,
+    description: page.metaDescription,
+    keywords: page.keywords,
+    openGraph: {
+      title: page.metaTitle || page.title,
+      description: page.metaDescription,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/membership`,
+      type: "website",
+    },
+  };
+}
+
+async function VisaWebPage() {
+  const visa = await getWebPageBySlug();
+
   return (
     <section className="">
       <div className="w-full flex relative">
         <Hero
-          image="/Hero1.jpg"
+          image={visa?.coverImage?.url || "/Hero1.jpg"}
           title="Membership"
           className="h-[400px] md:h-[500px]"
         />
@@ -61,17 +63,6 @@ function VisaWebPage() {
         <article className="w-full ">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {visa.keywords.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
           </header>
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={visa.content} />

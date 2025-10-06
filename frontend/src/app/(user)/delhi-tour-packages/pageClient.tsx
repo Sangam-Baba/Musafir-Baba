@@ -46,7 +46,7 @@ function DelhiTourWebPage({ DelhiTourData }: { DelhiTourData: WebPage }) {
   return (
     <section className="">
       <Hero
-        image={visa.coverImage ? visa.coverImage?.url : ""}
+        image={visa?.coverImage?.url || "/Hero1.jpg"}
         title="Delhi Tour Packages"
       />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">

@@ -1,11 +1,9 @@
-"use client";
 import Hero from "@/components/custom/Hero";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { useParams } from "next/navigation";
-import { Loader } from "@/components/custom/loader";
+import { Metadata } from "next";
+import NotFoundPage from "@/components/common/Not-Found";
 import {
   Accordion,
   AccordionContent,
@@ -27,6 +25,25 @@ const getVisaBySlug = async (slug: string) => {
   return data?.data;
 };
 
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const page = await getVisaBySlug(params.slug);
+  return {
+    title: page.metaTitle || page.title,
+    description: page.metaDescription,
+    keywords: page.keywords,
+    openGraph: {
+      title: page.metaTitle || page.title,
+      description: page.metaDescription,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
+      type: "website",
+    },
+  };
+}
+
 const getRelatedPages = async (slug: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/related/${slug}`
@@ -35,30 +52,21 @@ const getRelatedPages = async (slug: string) => {
   const data = await res.json();
   return data;
 };
-function VisaWebPage() {
-  const slug = useParams().slug as string;
+async function VisaWebPage({ params }: { params: { slug: string } }) {
+  const slug = params.slug;
+  const visa = await getVisaBySlug(slug);
+  if (!visa) return <NotFoundPage />;
 
-  const {
-    data: visa,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["visa", slug],
-    queryFn: () => getVisaBySlug(slug),
-  });
+  const relatedPages = await getRelatedPages(slug);
 
-  const { data: relatedPages, isLoading: relatedPagesLoading } = useQuery({
-    queryKey: ["relatedPages", slug],
-    queryFn: () => getRelatedPages(slug),
-  });
   const relatedPageArray = relatedPages?.data ?? [];
 
-  if (isLoading) return <Loader size="lg" message="Loading visas..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
   return (
     <section className="">
-      <Hero image={visa.bannerImage.url} title={visa.title} />
+      <Hero
+        image={visa?.bannerImage?.url || visa.coverImage.url}
+        title={visa.title}
+      />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
           <header className="mt-6 space-y-2">
@@ -88,9 +96,6 @@ function VisaWebPage() {
         </article>
         <aside className="w-full md:w-1/3">
           <QueryForm />
-          {relatedPagesLoading && (
-            <Loader size="lg" message="Loading visas..." />
-          )}
           {relatedPageArray.length > 0 && (
             <ListBlogSidebar
               blogs={relatedPageArray}
