@@ -1,5 +1,5 @@
-import { MembershipBooking } from "../models/MembershipBooking.js";
 import { Membership } from "../models/membership.js";
+import { MembershipBooking } from "../models/membershipBooking.js";
 
 const createBooking = async (req, res) => {
   try {

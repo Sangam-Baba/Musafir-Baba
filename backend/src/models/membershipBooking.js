@@ -45,5 +45,6 @@ const membershipBookingSchema = new mongoose.Schema(
 
 export const MembershipBooking = mongoose.model(
   "MembershipBooking",
+
   membershipBookingSchema
 );
