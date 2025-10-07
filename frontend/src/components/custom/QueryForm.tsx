@@ -90,29 +90,27 @@ export default function QueryForm() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
-              <Mail className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
-              <input
-                placeholder="Email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
-              />
-            </div>
+          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
+            <Mail className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
+            <input
+              placeholder="Email"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
+            />
+          </div>
 
-            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
-              <Phone className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
-              <input
-                placeholder="Phone No"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
-              />
-            </div>
+          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
+            <Phone className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
+            <input
+              placeholder="Phone No"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
+            />
           </div>
 
           <Textarea

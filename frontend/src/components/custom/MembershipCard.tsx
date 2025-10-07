@@ -63,7 +63,9 @@ function MembershipCard() {
 
   const handleSubmit = (id: string) => {
     if (!accessToken) {
-      useAuthDialogStore.getState().openDialog("login", `/membership/${id}`);
+      useAuthDialogStore
+        .getState()
+        .openDialog("login", undefined, `/membership/${id}`);
       return;
       // router.push("/auth/login");
     }

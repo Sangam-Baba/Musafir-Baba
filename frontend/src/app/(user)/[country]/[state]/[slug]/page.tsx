@@ -309,7 +309,7 @@ function PackageDetails() {
                 if (!auth.isAuthenticated) {
                   useAuthDialogStore
                     .getState()
-                    .openDialog("login", `${pathName}/${pkg._id}`);
+                    .openDialog("login", undefined, `${pathName}/${pkg._id}`);
                 } else {
                   router.push(`./${pkg.slug}/${pkg._id}`);
                 }

@@ -1,22 +1,31 @@
-"use client";
 import { create } from "zustand";
 
-interface AuthDialogStore {
+type Mode = "login" | "register" | "verify-otp" | "forgot-password";
+
+interface AuthDialogState {
   isOpen: boolean;
-  redirectUrl: string | null;
-  mode: "login" | "register";
-  openDialog: (mode: "login" | "register", redirectUrl?: string) => void;
+  mode: Mode;
+  email?: string;
+  redirectUrl?: string;
+  openDialog: (mode: Mode, email?: string, redirectUrl?: string) => void;
   closeDialog: () => void;
   toggleMode: () => void;
 }
 
-export const useAuthDialogStore = create<AuthDialogStore>((set) => ({
+export const useAuthDialogStore = create<AuthDialogState>((set, get) => ({
   isOpen: false,
-  redirectUrl: null,
   mode: "login",
-  openDialog: (mode, redirectUrl) =>
-    set({ isOpen: true, mode, redirectUrl: redirectUrl || null }),
+  redirectUrl: "/",
+  openDialog: (mode, email, redirectUrl) =>
+    set({
+      isOpen: true,
+      mode,
+      email: email ?? get().email,
+      redirectUrl: redirectUrl ?? get().redirectUrl,
+    }),
   closeDialog: () => set({ isOpen: false }),
   toggleMode: () =>
-    set((state) => ({ mode: state.mode === "login" ? "register" : "login" })),
+    set({
+      mode: get().mode === "login" ? "register" : "login",
+    }),
 }));
