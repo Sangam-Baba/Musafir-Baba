@@ -38,10 +38,17 @@ const createBooking = async (req, res) => {
       ...req.body,
     });
     await membershipBooking.save();
+
+    const savedMembershipBooking = await MembershipBooking.findById(
+      membershipBooking._id
+    )
+      .populate("membershipId")
+      .populate("userId")
+      .lean();
     res.status(201).json({
       success: true,
       message: "Membership booking created successfully",
-      data: membershipBooking,
+      data: savedMembershipBooking,
     });
   } catch (error) {
     console.log("Error creating membership booking", error);

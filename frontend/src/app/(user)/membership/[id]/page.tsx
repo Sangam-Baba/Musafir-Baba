@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   Card,
@@ -24,9 +24,61 @@ import {
 interface Item {
   item: string;
 }
-const getBooking = async (id: string, accessToken: string) => {
+interface Bookings {
+  _id: string;
+  membershipId: {
+    _id: string;
+    name: string;
+    price: number;
+    duration: string;
+    include: [{ item: string }];
+    exclude: [{ item: string }];
+    isActive: boolean;
+    slug: string;
+  };
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  amount: number;
+  paymentInfo: {
+    orderId: string;
+    paymentId: string;
+    signature: string;
+    status: string;
+  };
+  startDate: Date;
+  endDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  membershipStatus: string;
+}
+const bookMembership = async (id: string, accessToken: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/membershipbooking/${id}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/membershipbooking`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ membershipId: id }),
+    }
+  );
+  if (!res.ok) throw new Error("Failed to book membership");
+  return res
+    .json()
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      return error;
+    });
+};
+const getMembershipById = async (id: string, accessToken: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/membership/${id}`,
     {
       method: "GET",
       headers: {
@@ -35,10 +87,11 @@ const getBooking = async (id: string, accessToken: string) => {
       },
     }
   );
+  if (!res.ok) throw new Error("Failed to get membership");
   return res.json();
 };
 function BookingPage() {
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const accessToken = useAuthStore((state) => state.accessToken) as string;
   const id = useParams().id as string;
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -57,20 +110,45 @@ function BookingPage() {
     udf1: "",
     service_provider: "",
   });
-  // const [booking, setBooking] = React.useState(bookings);
 
+  const muttation = useMutation({
+    mutationFn: (id: string) => bookMembership(id, accessToken),
+    onSuccess: (data) => {
+      const bookings = data?.data;
+      handlePayment(bookings);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Failed to book membership");
+    },
+  });
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["booking", id],
-    queryFn: () => getBooking(id, accessToken as string),
-    enabled: !!accessToken,
+    queryKey: ["getMembershipById", id],
+    queryFn: () => getMembershipById(id, accessToken),
   });
   if (isLoading) return <Loader size="lg" message="Loading booking..." />;
-  const bookings = data?.data;
+  const membership = data?.data;
 
-  const gst = Math.floor(0.05 * bookings.amount);
-  const finalAmount = gst + bookings.amount;
+  const startDate = new Date();
+  const endDate = new Date(startDate);
+  if (membership?.duration == "quaterly") {
+    endDate.setMonth(endDate.getMonth() + 1);
+  }
+  if (membership?.duration == "half-yearly") {
+    endDate.setMonth(endDate.getMonth() + 6);
+  }
+  if (membership?.duration == "yearly") {
+    endDate.setFullYear(endDate.getFullYear() + 1);
+  }
 
-  const handlePayment = async () => {
+  const gst = Math.floor(0.05 * membership.price);
+  const finalAmount = gst + membership.price;
+
+  const handleSubmit = async function () {
+    muttation.mutate(id);
+  };
+
+  const handlePayment = async (bookings: Bookings) => {
     setLoading(true);
 
     try {
@@ -86,7 +164,7 @@ function BookingPage() {
           amount: finalAmount.toFixed(2),
           productinfo: bookings?.membershipId?.name ?? "Membership Package",
           firstname: bookings.userId.name ?? "Guest",
-          email: bookings.userId.name ?? "abhi@example.com",
+          email: bookings.userId.email ?? "abhi@example.com",
           phone: "9876543210",
           udf1: bookings?._id,
           surl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success-membership`,
@@ -123,23 +201,21 @@ function BookingPage() {
             {isError && <p>Error</p>}
             {data && (
               <div className="p-6 ">
-                <h1 className="text-xl">Name: {bookings.userId.name}</h1>
+                {/* <h1 className="text-xl">Name: {bookings.userId.name}</h1>
                 <p className="mb-4 text-gray-600">
                   Email: {bookings.userId.email}
-                </p>
+                </p> */}
                 <p className="mb-4">Your Membership Includes: </p>
                 <ul className="list-disc list-inside space-y-2">
-                  {bookings.membershipId.include?.map(
-                    (item: Item, idx: number) => (
-                      <li key={idx} className="flex ">
-                        <CircleArrowRight
-                          color="#FE5300"
-                          className="mr-2 w-[10%]"
-                        />
-                        <p className="w-[90%]">{item.item}</p>
-                      </li>
-                    )
-                  )}
+                  {membership.include?.map((item: Item, idx: number) => (
+                    <li key={idx} className="flex ">
+                      <CircleArrowRight
+                        color="#FE5300"
+                        className="mr-2 w-[10%]"
+                      />
+                      <p className="w-[90%]">{item.item}</p>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
@@ -165,23 +241,21 @@ function BookingPage() {
                   {isError && <p>Error</p>}
                   {data && (
                     <div className="p-6 ">
-                      <h1 className="text-xl">Name: {bookings.userId.name}</h1>
+                      {/* <h1 className="text-xl">Name: {bookings.userId.name}</h1>
                       <p className="mb-4 text-gray-600">
                         Email: {bookings.userId.email}
-                      </p>
+                      </p> */}
                       <p className="mb-4">Your Membership Includes: </p>
                       <ul className="list-disc list-inside space-y-2">
-                        {bookings.membershipId.include?.map(
-                          (item: Item, idx: number) => (
-                            <li key={idx} className="flex ">
-                              <CircleArrowRight
-                                color="#FE5300"
-                                className="mr-2 w-[10%]"
-                              />
-                              <p className="w-[90%]">{item.item}</p>
-                            </li>
-                          )
-                        )}
+                        {membership.include?.map((item: Item, idx: number) => (
+                          <li key={idx} className="flex ">
+                            <CircleArrowRight
+                              color="#FE5300"
+                              className="mr-2 w-[10%]"
+                            />
+                            <p className="w-[90%]">{item.item}</p>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   )}
@@ -201,14 +275,12 @@ function BookingPage() {
             {isError && <p>Error</p>}
             {data && (
               <div className="p-6 space-y-2">
-                <h1 className="text-xl">
-                  Membership: {bookings.membershipId.name}
-                </h1>
-                <p>Start Date: {bookings.startDate.split("T")[0]}</p>
-                <p>End Date: {bookings.endDate.split("T")[0]}</p>
+                <h1 className="text-xl">Membership: {membership.name}</h1>
+                <p>Start Date: {startDate.toString().split("T")[0]}</p>
+                <p>End Date: {endDate.toString().split("T")[0]}</p>
                 <p className="">
                   Amout:{" "}
-                  <span className="text-[#FE5300]">₹{bookings.amount}</span>
+                  <span className="text-[#FE5300]">₹{membership.price}</span>
                 </p>
                 <p>
                   @GST:<span className="text-[#FE5300]">₹{gst}</span>
@@ -223,7 +295,7 @@ function BookingPage() {
           <CardFooter className="flex items-center justify-center">
             <Button
               className="bg-[#FE5300] "
-              onClick={handlePayment}
+              onClick={handleSubmit}
               disabled={loading}
             >
               {loading ? "Processing..." : `Pay Now ₹${finalAmount.toFixed(2)}`}

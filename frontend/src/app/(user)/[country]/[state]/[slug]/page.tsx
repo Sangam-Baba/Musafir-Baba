@@ -7,7 +7,7 @@ import { ImageGallery } from "@/components/custom/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Loader } from "@/components/custom/loader";
 import {
   Accordion,
@@ -21,6 +21,8 @@ import QueryForm from "@/components/custom/QueryForm";
 import { ItineryDialog } from "@/components/custom/ItineryDialog";
 import NotFoundPage from "@/components/common/Not-Found";
 import { Clock, MapPin } from "lucide-react";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { AuthDialog } from "@/components/auth/AuthDialog";
 type TabKey =
   | "description"
   | "highlights"
@@ -124,7 +126,7 @@ const getSinglePackages = async (
 
 function PackageDetails() {
   const auth = useAuthStore();
-  console.log(auth);
+  const pathName = usePathname();
   const { slug, state } = useParams<{ state: string; slug: string }>();
   const StateName = state;
   const router = useRouter();
@@ -305,7 +307,9 @@ function PackageDetails() {
             <Button
               onClick={() => {
                 if (!auth.isAuthenticated) {
-                  router.push("/auth/login");
+                  useAuthDialogStore
+                    .getState()
+                    .openDialog("login", `${pathName}/${pkg._id}`);
                 } else {
                   router.push(`./${pkg.slug}/${pkg._id}`);
                 }
@@ -320,6 +324,7 @@ function PackageDetails() {
         </div>
       </div>
       <ImageGallery />
+      <AuthDialog />
     </section>
   );
 }

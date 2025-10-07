@@ -1,13 +1,14 @@
 "use client";
 import React from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { CircleCheckBig, CircleX } from "lucide-react";
 import { Loader } from "./loader";
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { AuthDialog } from "@/components/auth/AuthDialog";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 interface Membership {
   _id: string;
   name: string;
@@ -30,28 +31,28 @@ const getMembership = async () => {
   return data?.data;
 };
 
-const bookMembership = async (id: string, accessToken: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/membershipbooking`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ membershipId: id }),
-    }
-  );
-  if (!res.ok) throw new Error("Failed to book membership");
-  return res
-    .json()
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      return error;
-    });
-};
+// const bookMembership = async (id: string, accessToken: string) => {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/membershipbooking`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//       body: JSON.stringify({ membershipId: id }),
+//     }
+//   );
+//   if (!res.ok) throw new Error("Failed to book membership");
+//   return res
+//     .json()
+//     .then((data) => {
+//       return data;
+//     })
+//     .catch((error) => {
+//       return error;
+//     });
+// };
 function MembershipCard() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const router = useRouter();
@@ -59,24 +60,14 @@ function MembershipCard() {
     queryKey: ["membership"],
     queryFn: getMembership,
   });
-  const muttation = useMutation({
-    mutationFn: (id: string) => bookMembership(id, accessToken),
-    onSuccess: (data) => {
-      console.log(data);
-      toast.success("Membership Booked Successfully");
-      router.push(`/membership/${data.data._id}`);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error("Failed to book membership");
-    },
-  });
 
   const handleSubmit = (id: string) => {
     if (!accessToken) {
-      router.push("/auth/login");
+      useAuthDialogStore.getState().openDialog("login", `/membership/${id}`);
+      return;
+      // router.push("/auth/login");
     }
-    muttation.mutate(id);
+    router.push(`/membership/${id}`);
   };
 
   if (isLoading) return <Loader size="lg" message="Loading membership..." />;
@@ -123,6 +114,7 @@ function MembershipCard() {
           </div>
         </Card>
       ))}
+      <AuthDialog />
     </div>
   );
 }
