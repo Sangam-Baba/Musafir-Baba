@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { Booking } from "../models/Booking.js";
-import { MembershipBooking } from "../models/MembershipBooking.js";
+import { MembershipBooking } from "../models/membershipBooking.js";
 
 // ENV CONFIG
 const merchantKey = process.env.PAYU_KEY;
