@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/store/useUIStore";
 import {
@@ -56,7 +55,7 @@ export function AdminSidebar() {
             const Icon = item.icon;
             const active = pathname === item.href;
             return (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
                 className={cx(
@@ -66,7 +65,7 @@ export function AdminSidebar() {
               >
                 <Icon />
                 <span>{item.label}</span>
-              </Link>
+              </a>
             );
           })}
           <div className="mt-4 border-t pt-3"></div>
@@ -115,7 +114,7 @@ export function AdminSidebar() {
               const Icon = item.icon;
               const active = pathname === item.href;
               return (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
                   className={cx(
@@ -125,7 +124,7 @@ export function AdminSidebar() {
                 >
                   <Icon />
                   <span>{item.label}</span>
-                </Link>
+                </a>
               );
             })}
           </nav>

@@ -31,6 +31,11 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   const page = await getWebPageBySlug(params.slug);
+  if (!page)
+    return {
+      title: "Musafir Baba",
+      description: "Musafir Baba",
+    };
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
@@ -49,7 +54,7 @@ async function BookingsWebPage({ params }: { params: { slug: string } }) {
   const visa = res?.data;
   return (
     <section className="">
-      <Hero image={visa.coverImage.url} title={visa.title} />
+      <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title={visa.title} />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
           <header className="mt-6 space-y-2">

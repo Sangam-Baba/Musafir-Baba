@@ -55,7 +55,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   return (
     <div className="w-full border rounded-lg p-3 bg-white dark:bg-gray-900">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 border-b pb-2 mb-2">
+      <div className="flex flex-wrap gap-2 border-b p-2 mt-0 mb-2 sticky top-0 bg-gray-800 dark:bg-gray-900 z-50">
         {/* Text formatting */}
         <button
           type="button"
@@ -233,7 +233,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="prose max-w-none min-h-[200px] p-2 w-full "
+        className="prose max-w-none min-h-[200px] p-2 w-full"
       />
     </div>
   );

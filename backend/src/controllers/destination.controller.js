@@ -25,13 +25,11 @@ const createDestination = async (req, res) => {
     }
     const destination = new Destination({ ...req.body, coverImage, gallery });
     await destination.save();
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Destination created successful",
-        data: destination,
-      });
+    res.status(201).json({
+      success: true,
+      message: "Destination created successful",
+      data: destination,
+    });
   } catch (error) {
     console.log("Destination Creation Failed ", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -42,7 +40,7 @@ const getAllDestination = async (req, res) => {
   try {
     const { search, country, state } = req.query;
     const page = Math.max(parseInt(req.query.page || "1"), 1);
-    const limit = Math.min(parseInt(req.query.limit || "20"), 20);
+    const limit = Math.min(parseInt(req.query.limit || "40"), 40);
     const skip = (page - 1) * limit;
 
     const filter = {};
