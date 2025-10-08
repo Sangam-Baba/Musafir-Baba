@@ -13,6 +13,7 @@ import SearchBanner from "@/components/custom/Search";
 import ThirdSection from "@/components/custom/ThirdSection";
 import BlogsHome from "@/components/custom/BlogsHome";
 import Image from "next/image";
+import HomeBooking from "../../components/custom/HomeBooking";
 
 const faqs = [
   {
@@ -85,7 +86,7 @@ export default function HomePage() {
       <SevenSection />
       <DestinationSection />
       <ImageGallery />
-      <BusBooking />
+      <HomeBooking />
       <Testimonial />
       <BlogsHome />
       <Faqs faqs={faqs} />
