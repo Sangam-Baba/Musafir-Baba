@@ -1,27 +1,28 @@
-"use client"
+"use client";
 
-import React from "react"
-import Hero from "@/components/custom/Hero"
-import { useQuery } from "@tanstack/react-query"
-import { toast } from "sonner"
-import { Loader } from "@/components/custom/loader"
-import img1 from "../../../../public/Hero1.jpg"
+import React from "react";
+import Hero from "@/components/custom/Hero";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Loader } from "@/components/custom/loader";
+import img1 from "../../../../public/Hero1.jpg";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
-import Image from "next/image"
+import Image from "next/image";
+import NotFoundPage from "@/components/common/Not-Found";
 interface Category {
-  id: string
-  name: string
-  slug: string
+  id: string;
+  name: string;
+  slug: string;
   coverImage: {
-    url: string
-    alt: string
-  }
-  description: string
+    url: string;
+    alt: string;
+  };
+  description: string;
 }
 
 interface CategoryResponse {
-  data: Category[]
+  data: Category[];
 }
 
 const getCategory = async (): Promise<CategoryResponse> => {
@@ -31,34 +32,29 @@ const getCategory = async (): Promise<CategoryResponse> => {
       "Content-Type": "application/json",
     },
     credentials: "include",
-  })
-  if (!res.ok) throw new Error("Failed to fetch posts")
-  return res.json()
-}
+  });
+  if (!res.ok) throw new Error("Failed to fetch posts");
+  return res.json();
+};
 
 export default function PackagesClient() {
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-  } = useQuery<CategoryResponse>({
+  const { data, isLoading, isError, error } = useQuery<CategoryResponse>({
     queryKey: ["categories"],
     queryFn: getCategory,
     staleTime: 1000 * 60 * 5,
     retry: 2,
-  })
+  });
 
   if (isLoading) {
-    return <Loader size="lg" message="Loading categories..." />
+    return <Loader size="lg" message="Loading categories..." />;
   }
 
   if (isError) {
-    toast.error((error as Error).message)
-    return <h1>{(error as Error).message}</h1>
+    toast.error((error as Error).message);
+    return <h1>{(error as Error).message}</h1>;
   }
-
-  const categories = data?.data ?? []
+  if (data?.data.length === 0) return <NotFoundPage />;
+  const categories = data?.data ?? [];
 
   return (
     <section>
@@ -70,19 +66,34 @@ export default function PackagesClient() {
         height="lg"
         overlayOpacity={55}
       />
-      <div className='max-w-7xl mx-auto py-10 px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8'>
-           {categories.map((category, idx) =>
-           <Card key={idx} className={`flex flex-col gap-4 ${idx % 2 === 0 ? "bg-[#FFF5E4]" : "bg-[#EBFFF2]"} items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500 h-50 `}>
-              <Link href={`/holidays/${category.slug}`} className='flex flex-col gap-4 items-center '>
-              <Image src={category.coverImage.url} alt={category.name} width={50} height={50}/>
-              <h1 className='text-xl font-semibold text-center'>{category.name}</h1>
-              <p className='text-sm text-center line-clamp-3 px-2'>{category.description}</p>
+      <div className="max-w-7xl mx-auto py-10 px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+        {categories.map((category, idx) => (
+          <Card
+            key={idx}
+            className={`flex flex-col gap-4 ${
+              idx % 2 === 0 ? "bg-[#FFF5E4]" : "bg-[#EBFFF2]"
+            } items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500 h-50 `}
+          >
+            <Link
+              href={`/holidays/${category.slug}`}
+              className="flex flex-col gap-4 items-center "
+            >
+              <Image
+                src={category.coverImage.url}
+                alt={category.name}
+                width={50}
+                height={50}
+              />
+              <h1 className="text-xl font-semibold text-center">
+                {category.name}
+              </h1>
+              <p className="text-sm text-center line-clamp-3 px-2">
+                {category.description}
+              </p>
             </Link>
-           </Card>
-           )}
-        
-          
+          </Card>
+        ))}
       </div>
     </section>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { Button } from "../ui/button"
-import { MapPin } from "lucide-react"
-import { useRouter } from "next/navigation"
-import React, { useState } from "react"
+import { Button } from "../ui/button";
+import { MapPin, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
-function Search() {
-  const [location, setLocation] = useState("")
-  const router = useRouter()
+function SearchBanner() {
+  const [location, setLocation] = useState("");
+  const router = useRouter();
 
   const handleSearch = () => {
-    if (!location) return
-    router.push(`/india/${location}`)
-  }
+    if (!location) return;
+    router.push(`/india/${location}`);
+  };
 
   return (
-    <section className="border rounded-3xl shadow-lg flex gap-4 w-full max-w-xl mx-auto px-4 py-3 items-center bg-white justify-between">
+    <section className="border rounded-xl shadow-lg flex gap-4 w-full  mx-auto px-4 py-3 items-center bg-white justify-between">
       <MapPin className="text-[#FE5300]" />
       <select
         value={location}
@@ -36,12 +36,10 @@ function Search() {
         disabled={!location}
         className="bg-[#FE5300] hover:bg-[#e04a00] text-white rounded-md"
       >
-        Search
+        <Search />
       </Button>
     </section>
-  )
+  );
 }
 
-
-export default Search
-
+export default SearchBanner;

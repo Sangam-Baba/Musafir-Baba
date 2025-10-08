@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "MusafirBaba",
     images: [
       {
-        url: "./logo.svg", // replace with your image
+        url: "https://musafirbaba.com/logo.svg", // replace with your image
         width: 1200,
         height: 630,
         alt: "MusafirBaba Travel",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
     description:
       "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services.",
-    images: ["./logo.svg"], // recommended 1200x630
+    images: ["https://musafirbaba.com/logo.svg"], // recommended 1200x630
     creator: "@", // optional
   },
   icons: {

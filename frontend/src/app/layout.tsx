@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/favicon.ico", // default
-    shortcut: "/favicon.ico", // for older browsers
+    icon: "./favicon.ico", // default
+    shortcut: "./favicon.ico", // for older browsers
   },
   verification: {
     google: "8Ft_waDuE7XSNxKBK_Qeng07HW9LwdunSYzZeCclHHY",

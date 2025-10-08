@@ -51,7 +51,7 @@ async function VisaWebPage() {
           title="Membership"
           className="h-[400px] md:h-[500px]"
         />
-        <div className="hidden md:block z-10 w-1/4   absolute top-1/2 -translate-y-1/2 right-2 ">
+        <div className="hidden md:block z-10 w-1/4   absolute top-1/2 -translate-y-1/2 right-10 ">
           <QueryForm />
         </div>
         <div className="md:hidden absolute top-1/2 right-8 bottom-5 z-10 rotate-90  ">
@@ -87,14 +87,7 @@ async function VisaWebPage() {
             </Accordion>
           </section>
         </article>
-        <aside className="">
-          {/* <RelatedPages slug={slug} parent="bookings" /> */}
-        </aside>
       </div>
-      {/* ✅ JSON-LD Schema
-      <Script id="blog-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script> */}
     </section>
   );
 }
