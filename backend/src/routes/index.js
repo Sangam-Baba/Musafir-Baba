@@ -18,6 +18,7 @@ import visaRoutes from "./visa.routes.js";
 import webPageRoute from "./webPage.routes.js";
 import membershipRoutes from "./membership.routes.js";
 import membershipBookingRoute from "./membershipBooking.routes.js";
+import counterRoutes from "./counter.routes.js";
 const router = Router();
 
 router.use("/packages", pkgRoutes);
@@ -39,4 +40,5 @@ router.use("/visa", visaRoutes);
 router.use("/webpage", webPageRoute);
 router.use("/membership", membershipRoutes);
 router.use("/membershipbooking", membershipBookingRoute);
+router.use("/counter", counterRoutes);
 export default router;

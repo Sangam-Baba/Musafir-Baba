@@ -98,14 +98,14 @@ export function SevenSection() {
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-b-[80px] rounded-tr-[80px] w-full h-[200px] object-cover shadow-lg"
+                            className="rounded-b-[80px] rounded-tr-[80px] w-full h-[100px] md:h-[200px] object-cover shadow-lg"
                           />
                           <Image
                             src={pkg?.coverImage?.url || bg}
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-b-[80px] rounded-tl-[80px] w-full h-[300px] object-cover shadow-lg"
+                            className="rounded-b-[80px] rounded-tl-[80px] w-full h-[150px] md:h-[300px] object-cover shadow-lg"
                           />
                         </div>
                         <div className="w-full flex flex-col gap-4">
@@ -114,14 +114,14 @@ export function SevenSection() {
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-t-[80px] rounded-br-[80px] w-full h-[300px] object-cover shadow-lg"
+                            className="rounded-t-[80px] rounded-br-[80px] w-full h-[150px] md:h-[300px] object-cover shadow-lg"
                           />
                           <Image
                             src={pkg?.coverImage?.url || bg}
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-t-[80px] rounded-bl-[80px] w-full h-[200px] object-cover shadow-lg"
+                            className="rounded-t-[80px] rounded-bl-[80px] w-full h-[100px] md:h-[200px] object-cover shadow-lg"
                           />
                         </div>
                       </div>
