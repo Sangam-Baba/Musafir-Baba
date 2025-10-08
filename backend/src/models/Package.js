@@ -8,42 +8,44 @@ const packageSchema = new mongoose.Schema(
     slug: { type: String, unique: true, index: true },
 
     destination: {
-       type:mongoose.Schema.Types.ObjectId,
-       ref:'Destination',
-       required:true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Destination",
+      required: true,
     },
 
-    coverImage: { 
+    coverImage: {
+      url: String,
+      alt: String,
+      public_id: String,
+      width: Number,
+      height: Number,
+    },
+    gallery: [
+      {
         url: String,
         alt: String,
         public_id: String,
         width: Number,
-        height: Number
-     },
-    gallery: [{
-        url: String,
-        alt: String,
-        public_id: String,
-        width: Number,
-        height: Number
-    }],
+        height: Number,
+      },
+    ],
     duration: {
       days: { type: Number, required: true },
       nights: { type: Number, required: true },
     },
-    batch:[
-        {
-            startDate: { type: Date, required: true },
-            endDate: { type: Date, required: true },
-            quad: { type: Number, required: true },
-            quadDiscount: { type: Number },
-            triple: { type: Number, required: true },
-            tripleDiscount: { type: Number },
-            double: { type: Number, required: true },
-            doubleDiscount: { type: Number },
-            child: { type: Number, required: true },
-            childDiscount: { type: Number },
-        },
+    batch: [
+      {
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true },
+        quad: { type: Number, required: true },
+        quadDiscount: { type: Number },
+        triple: { type: Number, required: true },
+        tripleDiscount: { type: Number },
+        double: { type: Number, required: true },
+        doubleDiscount: { type: Number },
+        child: { type: Number, required: true },
+        childDiscount: { type: Number },
+      },
     ],
     metaTitle: String,
     metaDescription: String,
@@ -61,21 +63,22 @@ const packageSchema = new mongoose.Schema(
     exclusions: [String],
     faqs: [
       {
-        question: { type: String},
+        question: { type: String },
         answer: { type: String },
       },
     ],
     itinerary: [
       {
-        title: { type: String},
+        title: { type: String },
         description: { type: String },
       },
     ],
-    itineraryDownload:{
+    itineraryDownload: {
       url: String,
       public_id: String,
-      alt: String
+      alt: String,
     },
+    isBestSeller: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
@@ -84,18 +87,24 @@ const packageSchema = new mongoose.Schema(
 
 packageSchema.pre("save", function (next) {
   if (this.isModified("slug")) {
-    this.slug = slugify(this.slug? this.slug : this.title, { lower: true, strict: true });
+    this.slug = slugify(this.slug ? this.slug : this.title, {
+      lower: true,
+      strict: true,
+    });
   }
   next();
 });
 
-packageSchema.pre("findOneAndUpdate", function(next){
-  const update = this.getUpdate()
+packageSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
   if (update.slug) {
-    update.slug = slugify(update.slug || update.title, { lower: true, strict: true })
-    this.setUpdate(update)
+    update.slug = slugify(update.slug || update.title, {
+      lower: true,
+      strict: true,
+    });
+    this.setUpdate(update);
   }
-  next()
-})
+  next();
+});
 
 export const Package = mongoose.model("Package", packageSchema);
