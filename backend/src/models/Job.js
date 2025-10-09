@@ -32,16 +32,15 @@ const jobSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: true,
     },
     responsibilities: [
       {
-        type: String,
+        name: String,
       },
     ],
     requirements: [
       {
-        type: String,
+        name: String,
       },
     ],
     isActive: {
