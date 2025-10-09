@@ -19,6 +19,8 @@ import webPageRoute from "./webPage.routes.js";
 import membershipRoutes from "./membership.routes.js";
 import membershipBookingRoute from "./membershipBooking.routes.js";
 import counterRoutes from "./counter.routes.js";
+import jobRoute from "./job.routes.js";
+import jobApplicationRoutes from "./jobApplication.routes.js";
 const router = Router();
 
 router.use("/packages", pkgRoutes);
@@ -41,4 +43,6 @@ router.use("/webpage", webPageRoute);
 router.use("/membership", membershipRoutes);
 router.use("/membershipbooking", membershipBookingRoute);
 router.use("/counter", counterRoutes);
+router.use("/job", jobRoute);
+router.use("/jobapplication", jobApplicationRoutes);
 export default router;

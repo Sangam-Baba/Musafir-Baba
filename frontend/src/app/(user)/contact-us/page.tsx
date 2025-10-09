@@ -14,6 +14,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Map from "@/components/custom/Map";
+import Image from "next/image";
 interface Faq {
   question: string;
   answer: string;
@@ -55,7 +56,7 @@ function VisaWebPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
-            <Card className="mt-8 bg-[#CDFFC9] ">
+            <Card className="mt-8 bg-[#CDFFC9] shadow hover:shadow-lg transition duration-500 ">
               <CardContent className="flex  flex-col items-center gap-4">
                 <MapPin className=" h-10 w-10" color="#FF5733" />
                 <p className="font-bold text-2xl text-center">Our Location</p>
@@ -66,7 +67,7 @@ function VisaWebPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="mt-8 bg-[#FE5000]">
+            <Card className="mt-8 bg-[#FE5000] shadow hover:shadow-lg transition duration-500 ">
               <CardContent className="flex  flex-col items-center gap-4">
                 <Phone className=" h-10 w-10" color="#CDFFC9" />
                 <p className="font-bold text-2xl text-center text-white">
@@ -76,14 +77,14 @@ function VisaWebPage() {
                 <p className="text-center text-white">Visa: +91 93556 63591</p>
               </CardContent>
             </Card>
-            <Card className="mt-8 bg-[#CDFFC9] ">
+            <Card className="mt-8 bg-[#CDFFC9] shadow hover:shadow-lg transition duration-500  ">
               <CardContent className="flex  flex-col items-center gap-4">
                 <Mail className=" h-10 w-10" color="#FF5733" />
                 <p className="font-bold text-2xl text-center">Email</p>
                 <p className="text-center">care@musafirbaba.com</p>
               </CardContent>
             </Card>
-            <Card className="mt-8 bg-[#FE5000]">
+            <Card className="mt-8 bg-[#FE5000] shadow hover:shadow-lg transition duration-500 ">
               <CardContent className="flex  flex-col items-center gap-4">
                 <Clock className=" h-10 w-10" color="#CDFFC9" />
                 <p className="font-bold text-2xl text-center text-white">
@@ -97,12 +98,19 @@ function VisaWebPage() {
             </Card>
           </div>
           <div className="mt-20 w-full flex flex-col md:flex-row gap-4">
-            <div className="w-full md:w-1/2 h-[400px] md:h-full">
-              <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" />
-            </div>
+            <Image
+              className="object-cover w-full md:w-1/2 h-full  rounded-xl"
+              src="https://res.cloudinary.com/dmmsemrty/image/upload/v1760004946/5561899_21273_u8g7cq.jpg"
+              width={500}
+              height={510}
+              alt="Musafirbaba Contact Us"
+            />
             <div className="w-full md:w-1/2">
               <QueryForm />
             </div>
+          </div>
+          <div className="w-full border border-gray-200 shadow-lg  rounded-2xl mt-20 h-[400px] overflow-hidden">
+            <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" />
           </div>
 
           <section>
