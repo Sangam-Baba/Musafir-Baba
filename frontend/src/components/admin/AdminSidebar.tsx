@@ -15,6 +15,7 @@ import {
   UserRoundCheck,
   ListChecks,
   Rocket,
+  Briefcase,
 } from "lucide-react";
 
 const NAV = [
@@ -29,6 +30,7 @@ const NAV = [
   { label: "Role Management", href: "/admin/role", icon: Settings },
   { label: "Membership", href: "/admin/membership", icon: UserRoundCheck },
   { label: "Visa", href: "/admin/visa", icon: Rocket },
+  { label: "Career", href: "/admin/career", icon: Briefcase },
   { label: "Footer Items", href: "/admin/footer", icon: ListChecks },
 ];
 
