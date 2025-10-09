@@ -81,15 +81,15 @@ const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
 };
 
 type TabSlug =
-  | "customized-tour-packages"
-  | "backpacking-tour-packages"
-  | "weekend-tour-packages"
-  | "honeymoon-tour-packages"
+  | "customized-tour-package"
+  | "backpacking-trips"
+  | "weekend-gateway"
+  | "honeymoon-package"
   | "early-bird-2026"
   | "international-tour-packages";
 
 export function FeaturedTour() {
-  const [slug, setSlug] = useState<TabSlug>("customized-tour-packages");
+  const [slug, setSlug] = useState<TabSlug>("customized-tour-package");
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["category", slug],
@@ -110,24 +110,24 @@ export function FeaturedTour() {
 
   const tabs: { key: TabSlug; label: string; slug: TabSlug }[] = [
     {
-      key: "customized-tour-packages",
+      key: "customized-tour-package",
       label: "Customized Trips",
-      slug: "customized-tour-packages",
+      slug: "customized-tour-package",
     },
     {
-      key: "backpacking-tour-packages",
+      key: "backpacking-trips",
       label: "Backpacking Trips",
-      slug: "backpacking-tour-packages",
+      slug: "backpacking-trips",
     },
     {
-      key: "weekend-tour-packages",
+      key: "weekend-gateway",
       label: "Weekend Trips",
-      slug: "weekend-tour-packages",
+      slug: "weekend-gateway",
     },
     {
-      key: "honeymoon-tour-packages",
+      key: "honeymoon-package",
       label: "Honeymoon Trips",
-      slug: "honeymoon-tour-packages",
+      slug: "honeymoon-package",
     },
     {
       key: "early-bird-2026",

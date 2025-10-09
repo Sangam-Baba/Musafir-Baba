@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import CategoryList from "@/components/admin/CategoryList";
@@ -27,10 +27,9 @@ export default function CategoryPage() {
   const fetchCategory = async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/category`, 
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       if (data.success) {
@@ -105,7 +104,7 @@ export default function CategoryPage() {
             id: b._id,
             name: b.name,
             slug: b.slug,
-            url: `/packages/${b.slug}/`, 
+            url: `/holidays/${b.slug}/`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

@@ -42,8 +42,8 @@ function HomeBooking() {
               key={index}
               className="flex flex-col items-center text-gray-800"
             >
-              <div className="bg-[#87E87F] p-3 rounded-lg flex items-center justify-center shadow-sm">
-                <Icon color="white" className="w-8 h-8" />
+              <div className="bg-[#87E87F] hover:bg-[#FE5300] hover:scale-110 transition duration-500 ease-in-out p-3 rounded-lg flex items-center justify-center shadow-sm">
+                <Icon color="white" className="w-8 h-8  " />
               </div>
               <p className="text-sm font-medium mt-2">{label}</p>
             </Link>

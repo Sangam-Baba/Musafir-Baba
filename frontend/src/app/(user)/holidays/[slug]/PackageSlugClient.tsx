@@ -1,8 +1,8 @@
 "use client";
-import React from 'react'
-import Hero from '@/components/custom/Hero';
+import React from "react";
+import Hero from "@/components/custom/Hero";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import { Loader } from "@/components/custom/loader";
 import PackageCard from "@/components/custom/PackageCard";
 import img1 from "../../../../../public/Hero1.jpg";
@@ -20,12 +20,12 @@ interface Batch {
   doubleDiscount: number;
   childDiscount: number;
 }
-interface CoverImage{
-    url: string;
-    public_id: string;
-    width: number;
-    height: number;
-    alt: string;
+interface CoverImage {
+  url: string;
+  public_id: string;
+  width: number;
+  height: number;
+  alt: string;
 }
 interface Package {
   _id: string;
@@ -52,7 +52,7 @@ interface Category {
   _id: string;
   name: string;
   slug: string;
-  image: string;
+  coverImage: CoverImage;
   description: string;
   packages: Package[];
 }
@@ -63,52 +63,51 @@ interface CategoryResponse {
   };
 }
 
-const getCategoryBySlug =async (slug: string): Promise<CategoryResponse>=>{
-    const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,{
-      method:"GET",
-      headers:{ "content-type": "application/json"},
-      credentials:"include",
-      cache:"no-cache",
-    });
-    if(!res.ok){
-        throw new Error("Failed to fetch category");
+const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
+    {
+      method: "GET",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      cache: "no-cache",
     }
-    return res.json();
-}
-
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch category");
+  }
+  return res.json();
+};
 
 function SingleCategoryPage({ slug }: { slug: string }) {
-    
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["category", slug],
+    queryFn: () => getCategoryBySlug(slug as string),
+    retry: 2,
+  });
 
-const { data, isLoading, isError, error } = useQuery({
-  queryKey: ["category", slug],
-  queryFn: ()=> getCategoryBySlug(slug as string),
-  retry: 2,
-})
+  if (isLoading) {
+    return <Loader size="lg" message="Loading category..." />;
+  }
+  if (isError) {
+    toast.error(error.message);
+    return <h1>{error.message}</h1>;
+  }
 
-if(isLoading){
-  return <Loader size="lg" message="Loading category..." />;
-}
-if(isError){
-  toast.error(error.message);
-  return <h1>{error.message}</h1>
-}
-
- const { category } = data?.data ?? {};
- const packages = category?.packages ?? [];
-
+  const { category } = data?.data ?? {};
+  const packages = category?.packages ?? [];
 
   return (
- <section className="w-full mb-12">
+    <section className="w-full mb-12">
       <Hero
-      image={img1.src}
-      title="Find Your Perfect Getaway"
-      description="Curated itineraries, flexible dates, and best-price guarantees."
-      align="center"
-      height="lg"
-      overlayOpacity={55}
+        image={packages[0]?.coverImage?.url || img1.src}
+        title="Find Your Perfect Getaway"
+        description="Curated itineraries, flexible dates, and best-price guarantees."
+        align="center"
+        height="lg"
+        overlayOpacity={55}
       />
-      
+
       {/* Show category details */}
       <div className="max-w-4xl mx-auto text-center my-12">
         <h1 className="text-3xl font-bold">{category?.name}</h1>
@@ -119,21 +118,25 @@ if(isError){
       {packages && packages.length > 0 && (
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
           {packages.map((pkg) => (
-          <PackageCard key={pkg._id} pkg={{
-            id: pkg._id,
-            name: pkg.title,
-            slug: pkg.slug,
-            image: pkg.coverImage?.url ?? "",
-            price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
-            duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-            destination: pkg.destination?.name ?? "",
-            batch: pkg?.batch? pkg?.batch: []
-          }} url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`} />
-           ))}
+            <PackageCard
+              key={pkg._id}
+              pkg={{
+                id: pkg._id,
+                name: pkg.title,
+                slug: pkg.slug,
+                image: pkg.coverImage?.url ?? "",
+                price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
+                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                destination: pkg.destination?.name ?? "",
+                batch: pkg?.batch ? pkg?.batch : [],
+              }}
+              url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`}
+            />
+          ))}
         </div>
       )}
     </section>
-  )
+  );
 }
 
-export default SingleCategoryPage
+export default SingleCategoryPage;
