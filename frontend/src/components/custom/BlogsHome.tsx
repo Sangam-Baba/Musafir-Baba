@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { MoveRightIcon } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -31,10 +31,9 @@ function BlogsHome() {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs`,
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       if (data.success) {
@@ -58,7 +57,6 @@ function BlogsHome() {
 
   if (!blogs.length) return null;
 
- 
   const [featured, ...rest] = blogs;
 
   return (
@@ -66,7 +64,9 @@ function BlogsHome() {
       {/* Header */}
       <div className="flex w-full justify-between gap-2 items-center mb-10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold">Latest Travel Trends</h1>
+          <h2 className="text-2xl md:text-3xl font-bold">
+            Latest Travel Trends
+          </h2>
           <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
         </div>
         <div className="flex gap-2 items-center">
@@ -77,9 +77,7 @@ function BlogsHome() {
         </div>
       </div>
 
-     
       <div className="w-full flex flex-col md:flex-row gap-6 justify-between items-center">
-       
         <div className="md:w-1/2 flex flex-col gap-4">
           {rest.slice(0, 4).map((blog) => (
             <Card
@@ -108,7 +106,9 @@ function BlogsHome() {
                   })}{" "}
                   • 6 MIN READ
                 </p>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-1">{blog.excerpt}</p>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1">
+                  {blog.excerpt}
+                </p>
               </CardContent>
             </Card>
           ))}

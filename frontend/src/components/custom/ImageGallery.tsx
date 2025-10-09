@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Autoplay from "embla-carousel-autoplay"
+import * as React from "react";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   // CarouselNext,
   // CarouselPrevious,
-} from "@/components/ui/carousel"
-import Image from "next/image"
+} from "@/components/ui/carousel";
+import Image from "next/image";
 
-import frame1 from "../../../public/frame1.webp"
-import frame2 from "../../../public/frame2.jpg"
-import frame3 from "../../../public/frame3.jpg"
-import frame4 from "../../../public/frame4.webp"
-import frame5 from "../../../public/frame5.jpg"
-import frame6 from "../../../public/frame6.jpg"
-import frame7 from "../../../public/frame7.jpg"
-import frame8 from "../../../public/frame8.webp"
+import frame1 from "../../../public/frame1.webp";
+import frame2 from "../../../public/frame2.jpg";
+import frame3 from "../../../public/frame3.jpg";
+import frame4 from "../../../public/frame4.webp";
+import frame5 from "../../../public/frame5.jpg";
+import frame6 from "../../../public/frame6.jpg";
+import frame7 from "../../../public/frame7.jpg";
+import frame8 from "../../../public/frame8.webp";
 const images = [
   {
     id: 1,
@@ -56,18 +56,18 @@ const images = [
     id: 9,
     img: frame8,
   },
-]
+];
 
 export function ImageGallery() {
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
-  )
+  );
 
   return (
     <section className="w-full px-4 md:px-8 lg:px-20 py-16 flex flex-col items-center">
       {/* Heading */}
       <div className="flex flex-col gap-2 items-center py-4 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold">JOURNEY IN FRAMES</h1>
+        <h4 className="text-2xl md:text-3xl font-bold">Journey In Frames</h4>
         <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
         <p className="text-gray-600">
           Picture Perfect Moments with the Best Travel Agency in Delhi
@@ -110,5 +110,5 @@ export function ImageGallery() {
         <CarouselNext /> */}
       </Carousel>
     </section>
-  )
+  );
 }

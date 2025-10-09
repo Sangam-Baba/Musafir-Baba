@@ -1,6 +1,7 @@
-import { Plane, Bus, Car, Train } from "lucide-react";
+import { Plane, Bus, Hotel, Train } from "lucide-react";
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 function HomeBooking() {
   return (
@@ -19,12 +20,25 @@ function HomeBooking() {
         {/* Icons */}
         <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-4">
           {[
-            { Icon: Plane, label: "Flight" },
-            { Icon: Car, label: "Hotels" },
-            { Icon: Bus, label: "Cab" },
-            { Icon: Train, label: "Bus" },
-          ].map(({ Icon, label }, index) => (
-            <div
+            { Icon: Plane, label: "Flight", url: "/" },
+            {
+              Icon: Hotel,
+              label: "Hotels",
+              url: "https://musafirbaba.com/bookings/hotel-booking",
+            },
+            {
+              Icon: Bus,
+              label: "Bus",
+              url: "https://musafirbaba.com/bookings/cab-booking",
+            },
+            {
+              Icon: Train,
+              label: "Train",
+              url: "https://musafirbaba.com/bookings/train-ticket-booking",
+            },
+          ].map(({ Icon, label, url }, index) => (
+            <Link
+              href={url}
               key={index}
               className="flex flex-col items-center text-gray-800"
             >
@@ -32,7 +46,7 @@ function HomeBooking() {
                 <Icon color="white" className="w-8 h-8" />
               </div>
               <p className="text-sm font-medium mt-2">{label}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

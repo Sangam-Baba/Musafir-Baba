@@ -9,10 +9,9 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 interface Batch {
   _id: number;
@@ -39,7 +38,15 @@ interface BestSeller {
     width?: number;
     height?: number;
   };
+  destination: {
+    _id: string;
+    name: string;
+    country: string;
+    state: string;
+    city: string;
+  };
   batch: Batch[];
+  slug: string;
 }
 const getBestSeller = async () => {
   const res = await fetch(
@@ -67,9 +74,9 @@ export function SevenSection() {
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col gap-8 items-center">
         {/* Heading */}
         <div className="text-center space-y-4">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-wide">
             Explore the Spiti Valley: A Himalayan Adventure
-          </h1>
+          </h2>
           <div className="mx-auto w-24 h-1 bg-[#FE5300] rounded-full"></div>
         </div>
 
@@ -81,9 +88,9 @@ export function SevenSection() {
                 <CarouselItem key={i}>
                   <Card className="bg-transparent border-none shadow-none  overflow-hidden ">
                     <CardHeader className="flex justify-center items-center text-center">
-                      <h2 className="text-2xl font-bold text-white">
+                      <h3 className="text-2xl font-bold text-white">
                         {pkg.title}
-                      </h2>
+                      </h3>
                     </CardHeader>
 
                     <CardContent
@@ -130,9 +137,13 @@ export function SevenSection() {
                         <p className="text-gray-100 leading-relaxed line-clamp-10">
                           {pkg.description}
                         </p>
-                        <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
-                          Explore Now
-                        </Button>
+                        <Link
+                          href={`/${pkg?.destination?.country}/${pkg?.destination?.state}/${pkg.slug}`}
+                        >
+                          <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
+                            Explore Now
+                          </Button>
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>
@@ -140,8 +151,8 @@ export function SevenSection() {
               ))}
             </CarouselContent>
 
-            <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
-            <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
+            {/* <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
+            <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" /> */}
           </Carousel>
         </div>
       </div>

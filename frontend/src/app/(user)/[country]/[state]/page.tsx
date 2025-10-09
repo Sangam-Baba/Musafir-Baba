@@ -16,7 +16,7 @@ interface Destination {
   state: string;
   city?: string;
   description: string;
-  coverImage: string;
+  coverImage: coverImage;
   slug: string;
 }
 interface Batch {
@@ -119,8 +119,8 @@ function StatePackages() {
   return (
     <section>
       <Hero
-        image={img1.src}
-        title="Explore Best Destinations"
+        image={packages[0]?.destination?.coverImage?.url || img1.src}
+        title={`Explore ${packages[0]?.destination?.name} Best Packages`}
         description="Curated itineraries, flexible dates, and best-price guarantees"
         height="lg"
         align="center"

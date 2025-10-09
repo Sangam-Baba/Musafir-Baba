@@ -4,7 +4,6 @@ import SectionFour from "../../components/custom/SectionFour";
 import SectionFive from "../../components/custom/SectionFive";
 import { Testimonial } from "../../components/custom/Testimonial";
 import { ImageGallery } from "../../components/custom/ImageGallery";
-import { BusBooking } from "../../components/custom/BusBooking";
 import { SevenSection } from "../../components/custom/SevenSection";
 import { DestinationSection } from "../../components/custom/DestinationSection";
 import { Faqs } from "../../components/custom/Faqs";

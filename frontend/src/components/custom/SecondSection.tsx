@@ -1,6 +1,5 @@
 "use client";
 
-import { Smile, Star, Route } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 const getCount = async () => {
@@ -75,7 +74,7 @@ function SecondSection() {
             className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
           />
           {/* <Route className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <h1 className="text-2xl font-bold">200+</h1>
+          <h1 className="text-2xl font-bold">500+</h1>
           <p className="text-sm">Tour Packages</p>
         </div>
       </div>

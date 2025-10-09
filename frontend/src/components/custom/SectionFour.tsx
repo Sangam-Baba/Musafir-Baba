@@ -11,9 +11,9 @@ export default function SectionFour() {
       <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12">
         {/* Text Section */}
         <div className="flex flex-col gap-4 md:w-1/2">
-          <h1 className="text-2xl md:text-3xl font-bold">
+          <h2 className="text-2xl md:text-3xl font-bold">
             Delhi Tour Packages
-          </h1>
+          </h2>
           <div className="bg-[#FE5300] w-12 h-1"></div>
           <p className="text-sm md:text-base leading-relaxed text-gray-700">
             As the best travel agency in Delhi, we offer customizable Delhi tour

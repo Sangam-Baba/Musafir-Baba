@@ -18,10 +18,10 @@ export function DestinationSection() {
       <div className="flex flex-col gap-2 items-center max-w-7xl mx-auto">
         {/* Heading */}
         <div className="flex flex-col gap-5 items-center w-full">
-          <h1 className="text-2xl md:text-3xl font-bold text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-center">
             Not Sure Where to Travel? Explore Top Destinations Across India &
             the World!
-          </h1>
+          </h2>
           <div className="w-20 h-1 bg-[#FE5300]"></div>
           <div className="flex gap-4">
             <Button
@@ -45,14 +45,12 @@ export function DestinationSection() {
           </div>
         </div>
         <div className="flex  justify-between  items-center w-full p-2">
-          <div className="text-xl font-semibold">
+          <h3 className="text-xl font-semibold">
             {active === "domestic" ? "Domestic" : "International"} Trips
-          </div>
+          </h3>
           <div>
             <Link
-              href={`https://musafirbaba.com/${
-                active === "domestic" ? "india" : "india"
-              }`}
+              href={`/${active === "domestic" ? "india" : "india"}`}
               className="text-[#FE5300] font-semibold"
             >
               {" "}
@@ -74,9 +72,9 @@ export function DestinationSection() {
                       className="rounded-2xl w-full h-56 object-cover"
                     />
                   </Link>
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Uttarakhand
-                  </div>
+                  </h4>
                 </div>
                 <div className="relative">
                   <Link href="/india/rajasthan">
@@ -86,9 +84,9 @@ export function DestinationSection() {
                       className="rounded-2xl w-full h-56 object-cover"
                     />
                   </Link>
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Rajasthan
-                  </div>
+                  </h4>
                 </div>
               </div>
               <div className="md:w-1/2">
@@ -102,9 +100,9 @@ export function DestinationSection() {
                       height={500}
                     />
                   </Link>
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Kerala
-                  </div>
+                  </h4>
                 </div>
               </div>
             </div>
@@ -120,9 +118,9 @@ export function DestinationSection() {
                       height={500}
                     />
                   </Link>
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Meghalaya
-                  </div>
+                  </h4>
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-4 w-full">
@@ -134,9 +132,9 @@ export function DestinationSection() {
                       className="rounded-2xl  h-56 object-cover"
                     />
                   </Link>
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Himachal Pradesh
-                  </div>
+                  </h4>
                 </div>
                 <div className="relative md:w-1/2">
                   <Link href="/india/jammu-and-kashmir">
@@ -146,9 +144,9 @@ export function DestinationSection() {
                       className="rounded-2xl h-56 object-cover"
                     />
                   </Link>
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Kashmir
-                  </div>
+                  </h4>
                 </div>
               </div>
             </div>
@@ -167,9 +165,9 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                   />
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Singapore
-                  </div>
+                  </h4>
                 </div>
                 <div className="relative">
                   <Image
@@ -179,9 +177,9 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                   />
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Dubai
-                  </div>
+                  </h4>
                 </div>
               </div>
               <div className="md:w-1/2">
@@ -193,9 +191,9 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                   />
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Bali
-                  </div>
+                  </h4>
                 </div>
               </div>
             </div>
@@ -209,9 +207,9 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                   />
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Thailand
-                  </div>
+                  </h4>
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-4 w-full">
@@ -223,9 +221,9 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                   />
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
                     Japan
-                  </div>
+                  </h4>
                 </div>
                 <div className="relative md:w-1/2 ">
                   <Image
@@ -235,9 +233,9 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                   />
-                  <div className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold ">
+                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold ">
                     Maldives
-                  </div>
+                  </h4>
                 </div>
               </div>
             </div>
