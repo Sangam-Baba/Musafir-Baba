@@ -39,7 +39,7 @@ function Map({ address }: { address: string }) {
     });
   }, [address]);
 
-  return <div ref={mapRef} style={{ height: "200px", width: "100%" }} />;
+  return <div ref={mapRef} style={{ height: "100%", width: "100%" }} />;
 }
 
 export default Map;

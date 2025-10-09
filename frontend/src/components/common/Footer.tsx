@@ -52,7 +52,9 @@ function Footer() {
               <Mail size={40} color="#FE5300" className="w-[10%] h-6  " />
               <p className="flex justify-start w-[90%]">care@musafirbaba.com</p>
             </div>
-            <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" />
+            <div className="h-[200px]">
+              <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" />
+            </div>
 
             <div className="flex gap-4 item-center space-y-4">
               <p className="text-md font-bold">Follow Us:</p>
