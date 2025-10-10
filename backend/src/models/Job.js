@@ -43,6 +43,7 @@ const jobSchema = new mongoose.Schema(
         name: String,
       },
     ],
+    skills: [String],
     isActive: {
       type: Boolean,
       default: true,

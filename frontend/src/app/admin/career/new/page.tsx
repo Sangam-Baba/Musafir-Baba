@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
 
 interface Job {
   title: string;
@@ -28,6 +29,7 @@ interface Job {
   department: string;
   requirements: { name: string }[];
   responsibilities: { name: string }[];
+  skills: string[];
   isActive: boolean;
 }
 
@@ -63,6 +65,7 @@ export default function CreateJob() {
     department: "",
     requirements: [{ name: "" }],
     responsibilities: [{ name: "" }],
+    skills: [],
     isActive: true,
   };
 
@@ -80,7 +83,7 @@ export default function CreateJob() {
 
   const mutation = useMutation({
     mutationFn: (values: Job) => JobPost(values, accessToken),
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Job posted successfully!");
       form.reset(defaultValues);
     },
@@ -289,6 +292,52 @@ export default function CreateJob() {
               </Button>
             </div>
 
+            {/* Skills */}
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">Skills</Label>
+              <div className="flex flex-wrap gap-2 border rounded p-2">
+                {form.watch("skills")?.map((kw, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+                  >
+                    {kw}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newKeywords = form
+                          .getValues("skills")
+                          ?.filter((_, idx) => idx !== i);
+                        form.setValue("skills", newKeywords);
+                      }}
+                      className="text-gray-600 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </span>
+                ))}
+
+                <input
+                  type=" text"
+                  className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+                  placeholder="Type keyword and press Enter"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      const value = e.currentTarget.value.trim();
+                      if (value) {
+                        const current = form.getValues("skills") || [];
+                        if (!current.includes(value)) {
+                          form.setValue("skills", [...current, value]);
+                        }
+                        e.currentTarget.value = "";
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
             <Button
               type="submit"
               className="w-full"
@@ -298,6 +347,12 @@ export default function CreateJob() {
             </Button>
           </form>
         </Form>
+        {mutation.isError && (
+          <p className="text-red-500"> {"Something went wrong"} </p>
+        )}
+        {mutation.isSuccess && (
+          <p className="text-green-500"> {"Job posted successfully"} </p>
+        )}
       </div>
     </div>
   );

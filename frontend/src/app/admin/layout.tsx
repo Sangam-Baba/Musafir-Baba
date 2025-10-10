@@ -11,25 +11,23 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-   const pathname = usePathname();
-   const isLoginPage = pathname === "/admin/login";
-return (
-  <RootProvider>
-<AdminProtected>
-<div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-<div className="flex h-screen">
-  {!isLoginPage && <AdminSidebar />}
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
+  return (
+    <RootProvider>
+      <AdminProtected>
+        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+          <div className="flex h-screen">
+            {!isLoginPage && <AdminSidebar />}
 
-<div className="flex-1 flex flex-col">
-<AdminHeader />
+            <div className="flex-1 flex flex-col">
+              <AdminHeader />
 
-
-<main className="p-6 overflow-y-auto">{children}</main>
-</div>
-</div>
-</div>
-</AdminProtected>
-  </RootProvider>
-
-);
+              <main className="p-6 overflow-y-auto">{children}</main>
+            </div>
+          </div>
+        </div>
+      </AdminProtected>
+    </RootProvider>
+  );
 }

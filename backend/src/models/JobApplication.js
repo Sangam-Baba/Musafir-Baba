@@ -23,6 +23,17 @@ const jobApplicationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    hightestQualification: {
+      type: String,
+      enum: ["Bachelors", "Graduate", "Masters", "PhD"],
+    },
+    age: {
+      type: Number,
+    },
+    experience: {
+      type: String,
+      enum: ["Fresher", "1-3 years", "3-5 years", "5+ years"],
+    },
     coverLetter: {
       type: String,
     },

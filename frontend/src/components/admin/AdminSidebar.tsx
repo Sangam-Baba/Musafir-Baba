@@ -61,7 +61,7 @@ export function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cx(
-                  "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition",
+                  "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#FE5300] dark:hover:bg-slate-800 transition",
                   active ? "bg-[#FE5300] dark:bg-slate-800 font-medium" : ""
                 )}
               >
