@@ -17,6 +17,7 @@ const createApplication = async (req, res) => {
       resumeUrl,
       ...req.body,
     });
+    await jobApplication.save();
     res.status(201).json({
       success: true,
       message: "Job application created successfully",

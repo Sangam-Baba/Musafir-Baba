@@ -21,6 +21,7 @@ import membershipBookingRoute from "./membershipBooking.routes.js";
 import counterRoutes from "./counter.routes.js";
 import jobRoute from "./job.routes.js";
 import jobApplicationRoutes from "./jobApplication.routes.js";
+import aboutUsRoutes from "./aboutUs.routes.js";
 const router = Router();
 
 router.use("/packages", pkgRoutes);
@@ -45,4 +46,5 @@ router.use("/membershipbooking", membershipBookingRoute);
 router.use("/counter", counterRoutes);
 router.use("/job", jobRoute);
 router.use("/jobapplication", jobApplicationRoutes);
+router.use("/aboutus", aboutUsRoutes);
 export default router;

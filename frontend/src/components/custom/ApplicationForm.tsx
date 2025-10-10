@@ -221,14 +221,27 @@ export default function ApplicationForm() {
                   </select>
                 </div>
 
-                {/* Resume URL */}
-                <div className="flex items-center border border-gray-300 rounded-xl px-4 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                {/* Resume Upload */}
+                <div className="flex flex-col items-start border border-gray-300 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                  <label className="text-sm font-medium text-gray-600 mb-2">
+                    Upload Resume
+                  </label>
+
                   <ImageUploader
                     onUpload={(img) => {
-                      if (!img) return null;
-                      formData.resumeUrl = img.url;
+                      if (!img) return;
+                      setFormData((prev) => ({
+                        ...prev,
+                        resumeUrl: img.url,
+                      }));
                     }}
                   />
+
+                  {formData.resumeUrl && (
+                    <p className="text-xs text-green-600 mt-2 break-all">
+                      Resume Uploaded:
+                    </p>
+                  )}
                 </div>
 
                 {/* Job ID */}

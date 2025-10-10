@@ -21,6 +21,7 @@ import {
 const NAV = [
   { label: "Dashboard", href: "/admin", icon: Home },
   { label: "WebPages", href: "/admin/webpage", icon: LayoutTemplate },
+  { label: "About Us", href: "/admin/about-us", icon: Users },
   { label: "Blogs", href: "/admin/blogs", icon: ScrollText },
   { label: "News", href: "/admin/news", icon: Newspaper },
   { label: "Packages", href: "/admin/holidays", icon: Box },
