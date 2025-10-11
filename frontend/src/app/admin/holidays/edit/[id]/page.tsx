@@ -191,7 +191,10 @@ export default function CreatePackagePage() {
     queryKey: ["destination"],
     queryFn: getDestination,
   });
-  const form = useForm<PackageFormValues>({ defaultValues });
+  const form = useForm<PackageFormValues>({
+    defaultValues,
+    shouldUnregister: false,
+  });
 
   useEffect(() => {
     if (pkg) {
@@ -460,21 +463,26 @@ export default function CreatePackagePage() {
             <FormField
               control={form.control}
               name="coverImage"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Cover Image</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      initialImage={pkg?.coverImage}
+                      // initialImage={pkg?.coverImage}
+                      initialImage={field.value}
                       onUpload={(img) => {
                         if (!img) return;
-                        form.setValue("coverImage", {
+                        const newImg = {
                           url: img.url,
                           public_id: img.public_id,
                           alt: form.getValues("title") ?? "",
                           width: img.width,
                           height: img.height,
+                        };
+                        form.setValue("coverImage", newImg, {
+                          shouldDirty: true,
                         });
+                        field.onChange(newImg);
                       }}
                     />
                   </FormControl>
@@ -491,7 +499,7 @@ export default function CreatePackagePage() {
                   <FormLabel>Itinerary PDF Upload</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      initialImage={pkg?.itineraryDownload}
+                      // initialImage={pkg?.itineraryDownload}
                       onUpload={(img) => {
                         if (!img) return;
                         form.setValue("itineraryDownload", {
@@ -512,7 +520,7 @@ export default function CreatePackagePage() {
               {coverImageArray.fields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 mb-2">
                   <ImageUploader
-                    initialImage={pkg?.gallery?.[index]}
+                    // initialImage={pkg?.gallery?.[index]}
                     onUpload={(img) => {
                       if (!img) return;
                       form.setValue(`gallery.${index}`, {

@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import logo from "../../../public/logo.svg";
-import Map from "../custom/Map";
 import {
   MapPin,
   Phone,
