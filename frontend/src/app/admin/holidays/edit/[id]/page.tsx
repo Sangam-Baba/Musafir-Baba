@@ -468,8 +468,7 @@ export default function CreatePackagePage() {
                   <FormLabel>Cover Image</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      // initialImage={pkg?.coverImage}
-                      initialImage={field.value}
+                      initialImage={form.watch("coverImage")}
                       onUpload={(img) => {
                         if (!img) return;
                         const newImg = {
@@ -499,7 +498,7 @@ export default function CreatePackagePage() {
                   <FormLabel>Itinerary PDF Upload</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      // initialImage={pkg?.itineraryDownload}
+                      initialImage={form.watch("itineraryDownload")}
                       onUpload={(img) => {
                         if (!img) return;
                         form.setValue("itineraryDownload", {
@@ -520,7 +519,7 @@ export default function CreatePackagePage() {
               {coverImageArray.fields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 mb-2">
                   <ImageUploader
-                    // initialImage={pkg?.gallery?.[index]}
+                    initialImage={form.watch(`gallery.${index}`)}
                     onUpload={(img) => {
                       if (!img) return;
                       form.setValue(`gallery.${index}`, {

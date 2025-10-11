@@ -18,7 +18,7 @@ export default function ImageUploader({
   initialImage,
   onUpload,
 }: {
-  initialImage?: UploadedFile;
+  initialImage?: UploadedFile | null;
   onUpload: (img: UploadedFile | null) => void;
 }) {
   const token = useAuthStore((state) => state.accessToken);
@@ -30,9 +30,9 @@ export default function ImageUploader({
 
   useEffect(() => {
     if (initialImage) {
-      onUpload(initialImage);
+      setUploadedImages([initialImage]);
     }
-  }, [initialImage, onUpload]);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles(e.target.files);
