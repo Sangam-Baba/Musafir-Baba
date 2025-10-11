@@ -83,9 +83,9 @@ export function Testimonial() {
                       “{item.content}”
                     </p>
                     <div className="mt-4">
-                      <h3 className="text-lg font-semibold text-[#FE5300]">
+                      <p className="text-lg font-semibold text-[#FE5300]">
                         {item.name}
-                      </h3>
+                      </p>
                       <p className="text-sm text-gray-500">{item.title}</p>
                     </div>
                   </CardContent>

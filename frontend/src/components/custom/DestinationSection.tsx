@@ -40,14 +40,11 @@ export function DestinationSection() {
                 active === "international" ? "bg-[#FE5300]" : "bg-gray-400"
               }`}
             >
-              International Trips
+              <h3>International Trips</h3>
             </Button>
           </div>
         </div>
-        <div className="flex  justify-between  items-center w-full p-2">
-          <h3 className="text-xl font-semibold">
-            {active === "domestic" ? "Domestic" : "International"} Trips
-          </h3>
+        <div className="flex  justify-end  items-center w-full p-2">
           <div>
             <Link
               href={`/${active === "domestic" ? "india" : "india"}`}
@@ -65,7 +62,7 @@ export function DestinationSection() {
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
                 <div className="relative">
-                  <Link href="/india/uttrakhand">
+                  <Link href="/india/uttarakhand">
                     <Image
                       src={badrinath}
                       alt="Uttarakhand"

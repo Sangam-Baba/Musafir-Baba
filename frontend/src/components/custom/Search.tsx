@@ -4,14 +4,32 @@ import { Button } from "../ui/button";
 import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
+interface Location {
+  _id: string;
+  name: string;
+  country: string;
+  state: string;
+}
+const getAllLocations = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/destination/only`
+  );
+  return res.json();
+};
 function SearchBanner() {
   const [location, setLocation] = useState("");
   const router = useRouter();
+  const { data } = useQuery({
+    queryKey: ["locations"],
+    queryFn: getAllLocations,
+  });
+  const dest = data?.data ?? [];
 
   const handleSearch = () => {
     if (!location) return;
-    router.push(`/india/${location}`);
+    router.push(`/${location}`);
   };
 
   return (
@@ -23,13 +41,16 @@ function SearchBanner() {
         className="w-3/2 border border-[#FE5300] rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#FE5300]"
       >
         <option value="">Select Location</option>
-        <option value="delhi">Delhi</option>
-        <option value="uttrakhand">Uttrakhand</option>
-        <option value="kerla">Kerla</option>
-        <option value="himachal pradesh">Himachal Pradesh</option>
-        <option value="uttar-pradesh">Uttar Pradesh</option>
-        <option value="rajasthan">Rajasthan</option>
-        <option value="meghalaya">Meghalaya</option>
+        {dest.map((location: Location) => {
+          return (
+            <option
+              key={location._id}
+              value={`${location.country}/${location.state}`}
+            >
+              {location.state}
+            </option>
+          );
+        })}
       </select>
       <Button
         onClick={handleSearch}

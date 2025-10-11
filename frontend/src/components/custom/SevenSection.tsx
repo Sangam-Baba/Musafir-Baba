@@ -81,12 +81,12 @@ export function SevenSection() {
         </div>
 
         {/* Carousel */}
-        <div className="w-full p-5">
-          <Carousel className="w-full max-w-7xl">
+        <div className="w-full max-w-7xl flex justify-center">
+          <Carousel className="w-full max-w-6xl" opts={{ loop: true }}>
             <CarouselContent>
               {bestSeller?.map((pkg: BestSeller, i: number) => (
                 <CarouselItem key={i}>
-                  <Card className="bg-transparent border-none shadow-none  overflow-hidden ">
+                  <Card className="bg-transparent border-none shadow-none  overflow-hidden p-0 m-0">
                     <CardHeader className="flex justify-center items-center text-center">
                       <h3 className="text-2xl font-bold text-white">
                         {pkg.title}
@@ -96,7 +96,7 @@ export function SevenSection() {
                     <CardContent
                       className={`flex flex-col md:flex-row ${
                         i % 2 === 0 ? "md:flex-row-reverse" : ""
-                      }  justify-center gap-8 p-6`}
+                      }  justify-center gap-18`}
                     >
                       <div className="w-full md:w-1/2 flex gap-4">
                         <div className="w-full flex flex-col gap-4">
@@ -105,14 +105,14 @@ export function SevenSection() {
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-b-[80px] rounded-tr-[80px] w-full h-[100px] md:h-[200px] object-cover shadow-lg"
+                            className="rounded-b-[50px] rounded-tr-[50px] w-full h-[70px] md:h-[170px] object-cover shadow-lg"
                           />
                           <Image
                             src={pkg?.coverImage?.url || bg}
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-b-[80px] rounded-tl-[80px] w-full h-[150px] md:h-[300px] object-cover shadow-lg"
+                            className="rounded-b-[50px] rounded-tl-[50px] w-full h-[130px] md:h-[230px] object-cover shadow-lg"
                           />
                         </div>
                         <div className="w-full flex flex-col gap-4">
@@ -121,20 +121,20 @@ export function SevenSection() {
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-t-[80px] rounded-br-[80px] w-full h-[150px] md:h-[300px] object-cover shadow-lg"
+                            className="rounded-t-[50px] rounded-br-[50px] w-full h-[130px] md:h-[230px] object-cover shadow-lg"
                           />
                           <Image
                             src={pkg?.coverImage?.url || bg}
                             alt={pkg?.coverImage?.alt || pkg.title}
                             width={600}
                             height={400}
-                            className="rounded-t-[80px] rounded-bl-[80px] w-full h-[100px] md:h-[200px] object-cover shadow-lg"
+                            className="rounded-t-[50px] rounded-bl-[50px] w-full h-[70px] md:h-[170px] object-cover shadow-lg"
                           />
                         </div>
                       </div>
 
-                      <div className="w-full md:w-1/2 flex flex-col gap-4 justify-between ">
-                        <p className="text-gray-100 leading-relaxed line-clamp-10">
+                      <div className="w-full md:w-1/2 flex flex-col gap-4 justify-start">
+                        <p className="text-gray-100 leading-relaxed line-clamp-10 text-justify">
                           {pkg.description}
                         </p>
                         <Link

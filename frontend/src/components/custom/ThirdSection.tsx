@@ -5,46 +5,46 @@ import Link from "next/link";
 
 const data = [
   {
-    title: "Weekend Getaways",
+    title: "Weekend Getaway",
     description:
-      "Experience thrilling adventures and unforgettable moments in the heart of Delhi.",
+      " Plan your perfect weekend getaway with relaxing trips and memorable experiences.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757402014/j3jyqodvzgarftilb3dd.png",
-    url: "/holidays/weekend-tour-packages",
+    url: "/holidays/weekend-gateway",
   },
   {
-    title: "Honeymoon Packages",
+    title: "Honeymoon Package",
     description:
-      "Discover the beauty of Delhi on your own and create unforgettable memories.",
+      "Celebrate love with our romantic honeymoon packages and unforgettable memories.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757399660/mscievdho61vs6fhhlzj.png",
-    url: "/holidays/honeymoon-tour-packages",
+    url: "/holidays/honeymoon-tour-package",
   },
   {
-    title: "Customized Tour Packages",
+    title: "Customized Tour Package",
     description:
-      "Your tip, your way. Create a customized tour package that perfectly fits your interests and preferences.",
+      " Create your perfect journey with our fully personalized travel packages.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757400475/rmgdcyoxb9knlangdols.png",
     url: "/holidays/customized-tour-packages",
   },
   {
     title: "Group Tour Packages",
     description:
-      "Travel together with our Group Tour Packages- seamless planning, grate deals, and unforgetable group adventures.",
+      "Travel together with our group tours for fun, bonding, and new experiences.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757400865/j6sun08brrmcaovhbqh1.png",
-    url: "/holidays/group-tour-package",
+    url: "/holidays/group-tour-packages",
   },
   {
     title: "Solo Tour Packages",
     description:
-      "Explore freely with our Solo tripss- safe, well planned and perfect fro independent travellers.",
+      "Go on a solo trip and create unique memories, explore freely, and embrace adventure",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757505917/service-1_2_xzguaq.svg",
     url: "/holidays/solo-tour-packages",
   },
   {
     title: "Family Tour Packages",
     description:
-      "Make memories with our Family Tour fun filled, safe and perfect for all ages",
+      "Plan the perfect family trip with fun, adventure, and memorable moments together.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757505061/service-2_1_u6yuzr.png",
-    url: "/holidays/family-tour-packages",
+    url: "/holidays/family-tours",
   },
   {
     title: "Corporate Tour Packages",
@@ -56,9 +56,9 @@ const data = [
   {
     title: "Backpacking Trips",
     description:
-      "Adventure awaits! Our Backpacking Trips offer the perfect blend of adventure and relaxation.",
+      "Experience adventure and freedom like never before with our backpacking tours.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757505061/service-9_ztf8ca.png",
-    url: "/holidays/backpacking-tour-packages",
+    url: "/holidays/backpacking-trips",
   },
 ];
 function ThirdSection() {
@@ -83,9 +83,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[0].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[0].description}</p>
             </Link>
           </Card>
@@ -101,9 +101,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[1].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[1].description}</p>
             </Link>
           </Card>
@@ -118,9 +118,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[2].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[2].description}</p>
             </Link>
           </Card>
@@ -135,9 +135,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[3].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[3].description}</p>
             </Link>
           </Card>
@@ -152,9 +152,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[4].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[4].description}</p>
             </Link>
           </Card>
@@ -169,9 +169,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[7].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[7].description}</p>
             </Link>
           </Card>
@@ -186,9 +186,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[5].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[5].description}</p>
             </Link>
           </Card>
@@ -203,9 +203,9 @@ function ThirdSection() {
                 width={50}
                 height={50}
               />
-              <h2 className="text-xl font-semibold text-center">
+              <h3 className="text-xl font-semibold text-center">
                 {data[6].title}
-              </h2>
+              </h3>
               <p className="text-sm text-center">{data[6].description}</p>
             </Link>
           </Card>

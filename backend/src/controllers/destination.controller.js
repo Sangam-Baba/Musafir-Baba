@@ -167,10 +167,27 @@ const deleteDestination = async (req, res) => {
     });
   }
 };
+
+const getOnlyDestination = async (req, res) => {
+  try {
+    const alldest = await Destination.find({ status: "published" }).select(
+      "_id name country state"
+    );
+    if (!alldest)
+      return res
+        .status(404)
+        .json({ success: false, message: "Destination not found" });
+    res.status(200).json({ success: true, data: alldest });
+  } catch (error) {
+    console.log("Only Destination getting failed", error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
 export {
   createDestination,
   getAllDestination,
   getDestinationById,
   updateDestination,
   deleteDestination,
+  getOnlyDestination,
 };

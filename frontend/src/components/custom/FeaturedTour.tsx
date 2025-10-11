@@ -168,8 +168,7 @@ export function FeaturedTour() {
           </h3>
         </div>
 
-        <div className="flex  justify-between  items-center w-full p-4">
-          <h3 className="text-xl font-semibold">{category?.name}</h3>
+        <div className="flex  justify-end  items-center w-full p-4">
           <div>
             <Link
               href={`/holidays/${slug}`}
