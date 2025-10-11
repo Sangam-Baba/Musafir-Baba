@@ -2,7 +2,6 @@
 
 import { Button } from "../ui/button";
 import { MapPin, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -20,17 +19,11 @@ const getAllLocations = async () => {
 };
 function SearchBanner() {
   const [location, setLocation] = useState("");
-  const router = useRouter();
   const { data } = useQuery({
     queryKey: ["locations"],
     queryFn: getAllLocations,
   });
   const dest = data?.data ?? [];
-
-  const handleSearch = () => {
-    if (!location) return;
-    router.push(`/${location}`);
-  };
 
   return (
     <section className="border rounded-xl shadow-lg flex gap-4 w-full  mx-auto px-4 py-3 items-center bg-white justify-between">
@@ -53,11 +46,12 @@ function SearchBanner() {
         })}
       </select>
       <Button
-        onClick={handleSearch}
         disabled={!location}
         className="bg-[#FE5300] hover:bg-[#e04a00] text-white rounded-md"
       >
-        <Search />
+        <a href={`/${location}`}>
+          <Search />
+        </a>
       </Button>
     </section>
   );

@@ -75,7 +75,7 @@ export function SevenSection() {
         {/* Heading */}
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-wide">
-            Explore the Spiti Valley: A Himalayan Adventure
+            Hot Picks of the Season — Don’t Miss Out!
           </h2>
           <div className="mx-auto w-24 h-1 bg-[#FE5300] rounded-full"></div>
         </div>
