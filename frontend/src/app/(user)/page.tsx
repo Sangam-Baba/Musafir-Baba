@@ -56,7 +56,11 @@ const faqs = [
 export default function HomePage() {
   return (
     <main className="">
-      <div className="relative z-10 px-5 md:px-10 flex md:flex-row flex-col gap-4 items-center justify-around mt-16 md:mt-0">
+      <div
+        className="relative z-10 px-5 md:px-10 flex md:flex-row flex-col gap-4 items-center justify-around mt-16 md:mt-0"
+        // style={{ backgroundImage: "url('/baba-page.jpg')" }}
+      >
+        {/* <div className="absolute inset-0 bg-black/40 z-0"></div> */}
         <div className="flex flex-col gap-10 items-center md:items-start">
           <Image
             className="w-full  object-cover"

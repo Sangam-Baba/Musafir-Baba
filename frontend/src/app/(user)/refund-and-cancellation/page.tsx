@@ -1,50 +1,84 @@
-import Hero from "@/components/custom/Hero"
+import { Metadata } from "next";
+import Hero from "@/components/custom/Hero";
+import React from "react";
+import QueryForm from "@/components/custom/QueryForm";
+import { BlogContent } from "@/components/custom/BlogContent";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-import { Metadata } from "next"
-export const metadata: Metadata = {
-  title: "Refund & Cancellation Policy | Travel Booking Terms",
-  description:
-    "Our refund and cancellation policy explained simply. Clear terms for travel booking changes and refunds.",
-  alternates: {
-    canonical: "https://www.musafirbaba.com/refund-&-cancellation",
-  },
+interface Faq {
+  question: string;
+  answer: string;
 }
+const getWebPageBySlug = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/refund-and-cancellation`
+  );
+  if (!res.ok) throw new Error("Failed to fetch refund-and-cancellation");
+  const data = await res.json();
+  return data?.data;
+};
 
-function RefundPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getWebPageBySlug();
+  return {
+    title: page.metaTitle || page.title,
+    description: page.metaDescription,
+    keywords: page.keywords,
+    openGraph: {
+      title: page.metaTitle || page.title,
+      description: page.metaDescription,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/refund-and-cancellation`,
+      type: "website",
+    },
+  };
+}
+async function BookingsWebPage() {
+  const visa = await getWebPageBySlug();
+
   return (
-    <section>
-        <Hero image="/Heroimg.jpg" title="Refund & Cancellation" />
-        <div className="container lg:max-w-7xl mx-auto py-10 px-8">
-            <div>
-             <h1 className="text-3xl font-bold mb-4">
-                Refund & Cancellation
-             </h1>
-             <div className="w-20 h-1 bg-[#FE5300]"></div>
-            </div>
-            <div className="mt-8">
-                <p className="font-bold mt-4 mb-4">Cancellation Policy</p>
-                <p>{`Musafirbaba believes in assisting its clients to the greatest extent feasible and has a flexible cancellation policy as a result.
-
-Cancellations will be accepted only if made within 12 hours after making an order, according to this policy. However, if the purchases have been completed or if we have begun the request or process of membership or shipment either ourselves or through the vendors/merchants/representatives whom we may designate from time to time, the cancellation request will not be considered.
-
-However, there are no cancellation rules in effect for membership services. Our subscription cannot be cancelled after it has been purchased. You can, however, request that your account be deleted at any time.
-
-No cancellations are accepted for items on which the Musafirbaba marketing team has provided exceptional discounts for a variety of reasons, including but not limited to special events such as Holi, Diwali, Valentine's Day, certain examinations, and so on. Since these are limited-time deals, cancellations are not permitted.
-
-Please notify our Customer Service staff, if you get damaged study materials or non-durable products such as CDs and DVDs. The request, however, will be considered if the merchant has checked and determined the same at his end. This should be notified within a week of the items being delivered to your location.
-
-If you believe that the goods you got are not as described on the website or meet your expectations, you must notify our customer service within 24 hours of receiving the product. After reviewing your complaint, the Customer Service Team will make an appropriate conclusion.`}</p>
-
-<p className="font-bold mt-4 mb-4">Refund Policy</p>
-
-<p>{`There is no return policy in place (refund would proceed only in case if you have made a payment more than once for the same item).
-
-It is recommended that you review the website's demo videos and terms and conditions before purchasing any course or content or joining our membership. We are not responsible if you do not enjoy the course after purchasing it or if you are dissatisfied with the services provided.
-`}</p>
-            </div> 
-        </div>
+    <section className="">
+      <Hero
+        image={visa?.coverImage?.url || "/Hero1.jpg"}
+        title="Refund and Cancellation"
+      />
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
+        <article className="w-full md:w-5/7">
+          <header className="mt-6 space-y-2">
+            <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
+          </header>
+          <section className="prose prose-lg max-w-none mt-6">
+            <BlogContent html={visa.content} />
+          </section>
+          <section>
+            <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>
+            <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
+            <Accordion type="single" collapsible className="w-full">
+              {visa.faqs.map((faq: Faq, i: number) => (
+                <AccordionItem
+                  value={`faq-${i}`}
+                  key={i}
+                  className="rounded-2xl shadow-lg p-4"
+                >
+                  <AccordionTrigger>{faq.question}</AccordionTrigger>
+                  <AccordionContent className="text-justify">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </section>
+        </article>
+        <aside className="w-full md:w-2/7">
+          <QueryForm />
+        </aside>
+      </div>
     </section>
-  )
+  );
 }
 
-export default RefundPage
+export default BookingsWebPage;

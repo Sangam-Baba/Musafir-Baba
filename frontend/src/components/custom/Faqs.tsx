@@ -49,7 +49,9 @@ export function Faqs({ faqs }: FaqsProps) {
                 key={faq.id}
                 className="rounded-2xl shadow-lg p-4"
               >
-                <AccordionTrigger>{faq.question}</AccordionTrigger>
+                <AccordionTrigger>
+                  <p>{faq.question}</p>
+                </AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-4 text-justify">
                   <p>{faq.answer}</p>
                 </AccordionContent>
