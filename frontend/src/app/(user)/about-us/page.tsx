@@ -2,15 +2,12 @@
 import Hero from "@/components/custom/Hero";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import QueryForm from "@/components/custom/QueryForm";
-import { BlogContent } from "@/components/custom/BlogContent";
 import { Loader } from "@/components/custom/loader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import BlogsHome from "@/components/custom/BlogsHome";
 import { Testimonial } from "@/components/custom/Testimonial";
-
 import {
   Carousel,
   CarouselContent,
@@ -18,8 +15,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { Button } from "@/components/ui/button";
 
-interface Image {
+interface ImageType {
   url: string;
   alt: string;
   public_id?: string;
@@ -30,16 +29,16 @@ interface Image {
 interface Content {
   title: string;
   description: string;
-  image: Image;
+  image: ImageType;
 }
 
 interface FormValues {
   _id: string;
   title: string;
   description: string;
-  upperImage: Image[];
-  lowerImage: Image[];
-  coverImage: Image;
+  upperImage: ImageType[];
+  lowerImage: ImageType[];
+  coverImage: ImageType;
   metaTitle: string;
   metaDescription: string;
   keywords: string[];
@@ -47,6 +46,8 @@ interface FormValues {
   h2description: string;
   h2content: Content[];
 }
+
+// Fetch Function
 const getWebPageBySlug = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`
@@ -56,116 +57,200 @@ const getWebPageBySlug = async () => {
   console.log("About us data", data);
   return data;
 };
+
 function AboutUsPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["about"],
     queryFn: getWebPageBySlug,
   });
+
   if (isLoading) return <Loader size="lg" message="Loading About Us..." />;
   if (isError) return <h1>{(error as Error).message}</h1>;
+
   const about = data?.data || {};
+
+  // ✅ TypeScript-safe animations
+  const floatAnimation = {
+    y: [0, -10, 0],
+    rotate: [0, 3, -3, 0],
+    transition: {
+      duration: 6,
+      repeat: Infinity,
+      ease: [0.42, 0, 0.58, 1],
+    },
+  };
+  const upperImages = about?.upperImage || [];
+  const shuffledImages = [...upperImages].sort(() => Math.random() - 0.5);
+  const cornerImages = shuffledImages.slice(0, 4);
+  const centerImage = shuffledImages[4] || upperImages[0];
+
   return (
-    <section className="">
+    <section>
       <Hero image={about?.coverImage?.url || "/Hero1.jpg"} title="About Us" />
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
+
+      <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-10">
+        {/* About Section */}
+        <div className="flex flex-col md:flex-row gap-16">
+          {/* Left Text Section */}
+          <div className="w-full md:w-1/2 flex flex-col gap-10">
+            <h1 className="text-5xl font-bold mb-4">{about?.title}</h1>
+            <p className="text-gray-600 font-semibold text-justify">
+              {about?.description}
+            </p>
+          </div>
+
+          <div className="w-full md:w-1/2 hidden md:block flex m-10 relative rounded-2xl  ">
+            {[
+              { pos: "-top-10 -left-10", img: cornerImages[0] },
+              { pos: "-top-10 -right-10", img: cornerImages[1] },
+              { pos: "-bottom-10 -left-10", img: cornerImages[2] },
+              { pos: "-bottom-10 -right-10", img: cornerImages[3] },
+            ].map(
+              (item, index) =>
+                item.img && (
+                  <motion.div
+                    key={index}
+                    className={`absolute ${item.pos}`}
+                    animate={floatAnimation}
+                  >
+                    <Image
+                      src={item.img.url}
+                      alt={item.img.alt}
+                      width={150}
+                      height={100}
+                      className="rounded-xl shadow-md"
+                    />
+                  </motion.div>
+                )
+            )}
+
+            {/* Center Image */}
+            {about?.upperImage?.[1] && (
+              <div className="aspect-[3/2] overflow-hidden rounded-xl items-center">
+                <Image
+                  src={centerImage?.url}
+                  alt={centerImage?.alt}
+                  width={600}
+                  height={400}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
         <div>
-          <div>
-            <Carousel className="w-full ">
-              <CarouselContent>
-                {about?.lowerImage.map((item: Image, index: number) => (
-                  <CarouselItem key={index}>
-                    <div className="p-1">
-                      <Card>
-                        <CardContent className="flex items-center justify-center p-6">
+          <Carousel
+            className="w-full max-w-7xl p-0 m-0"
+            opts={{ loop: true }}
+            plugins={[Autoplay({ delay: 4000, stopOnFocusIn: true })]}
+          >
+            <CarouselContent>
+              {about?.lowerImage?.map((item: ImageType, index: number) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <Card className="w-full p-0 border-0 shadow-none">
+                      <CardContent className="flex items-center justify-center p-6 relative">
+                        <CarouselPrevious className="absolute left-0 z-10" />
+                        <motion.div
+                          initial={{ scale: 1.1 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            duration: 4,
+                            ease: [0.42, 0, 0.58, 1],
+                          }}
+                          className="w-full h-[300px] md:h-[600px] overflow-hidden rounded-xl"
+                        >
                           <Image
                             src={item.url}
                             alt={item.alt}
-                            width={500}
-                            height={300}
+                            width={1200}
+                            height={800}
+                            className="w-full h-full object-cover"
                           />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </div>
+                        </motion.div>
+                        <CarouselNext className="absolute right-0 z-10" />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
         </div>
-        {/* <article className="w-full  flex flex-col items-center">
-          <header className="mt-6 space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-          </header>
-          <div className="flex ietms-center">
-            <section className="prose prose-lg max-w-none mt-6 text-center">
-              <BlogContent html={visa.content} />
-            </section>
-          </div>
+      </div>
+      <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-10">
+        <div className="w-full  flex flex-col md:flex-row gap-10 justify-around">
+          <h1 className="w-full md:w-2/5 text-5xl font-bold mb-4">
+            {about?.h2title}
+          </h1>
+          <p className="w-full md:w-3/5  text-gray-600 font-semibold text-justify">
+            {about?.h2description}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
+          {about?.h2content?.map((item: Content, idx: number) => (
+            <Card key={idx} className="w-full p-0 m-0 border-0 shadow-none">
+              <CardContent>
+                <Image
+                  src={item?.image?.url}
+                  alt={item?.image?.alt}
+                  width={80}
+                  height={80}
+                />
+                <h3 className="text-2xl font-semibold text-justify">
+                  {item?.title}
+                </h3>
+                <p className="text-gray-600 font-semibold text-justify">
+                  {item?.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
-            <Card className="mt-8 bg-[#CDFFC9] shadow hover:shadow-lg transition duration-500 ">
-              <CardContent className="flex  flex-col items-center gap-4">
-                <MapPin className=" h-10 w-10" color="#FF5733" />
-                <p className="font-bold text-2xl text-center">Our Location</p>
-                <p className="text-center">
-                  1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near
-                  Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi,
-                  Delhi, 110043
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="mt-8 bg-[#FE5000] shadow hover:shadow-lg transition duration-500 ">
-              <CardContent className="flex  flex-col items-center gap-4">
-                <Phone className=" h-10 w-10" color="#CDFFC9" />
-                <p className="font-bold text-2xl text-center text-white">
-                  Phone
-                </p>
-                <p className="text-center text-white">Tour: +91 92896 02447 </p>
-                <p className="text-center text-white">Visa: +91 93556 63591</p>
-              </CardContent>
-            </Card>
-            <Card className="mt-8 bg-[#CDFFC9] shadow hover:shadow-lg transition duration-500  ">
-              <CardContent className="flex  flex-col items-center gap-4">
-                <Mail className=" h-10 w-10" color="#FF5733" />
-                <p className="font-bold text-2xl text-center">Email</p>
-                <p className="text-center">care@musafirbaba.com</p>
-              </CardContent>
-            </Card>
-            <Card className="mt-8 bg-[#FE5000] shadow hover:shadow-lg transition duration-500 ">
-              <CardContent className="flex  flex-col items-center gap-4">
-                <Clock className=" h-10 w-10" color="#CDFFC9" />
-                <p className="font-bold text-2xl text-center text-white">
-                  Working Hours
-                </p>
-                <p className="text-center text-white">
-                  Mon-Sat : 9:00 AM to 6:00 PM <br />
-                  Sun : Closed
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="mt-20 w-full flex flex-col md:flex-row gap-4">
+        <div className="w-full lg:h-[250px] flex flex-col lg:flex-row">
+          <div className="w-full lg:w-1/5">
             <Image
-              className="object-cover w-full md:w-1/2 h-full  rounded-xl"
-              src="https://res.cloudinary.com/dmmsemrty/image/upload/v1760004946/5561899_21273_u8g7cq.jpg"
-              width={500}
-              height={510}
-              alt="Musafirbaba Contact Us"
+              src={about?.lowerImage[0]?.url}
+              alt={about?.lowerImage[0]?.alt}
+              width={1024}
+              height={200}
+              className="w-full h-[250px] lg:h-full z-10 object-cover"
             />
-            <div className="w-full md:w-1/2">
-              <QueryForm />
+          </div>
+          <div
+            className="relative flex flex-col lg:flex-row justify-between items-center text-white p-8  w-full lg:w-4/5 overflow-hidden"
+            style={{
+              backgroundImage: `url(${about?.coverImage?.url})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black/70"></div>
+
+            {/* Text Content */}
+            <div className="relative z-10  lg:text-left space-y-2">
+              <h3 className="text-xl font-bold">Exclusive travel deals</h3>
+              <p className="text-4xl font-bold">
+                Book your dream vacation today!
+              </p>
+            </div>
+
+            {/* Button */}
+            <div className="relative z-10 mt-4 lg:mt-0">
+              <Button className="bg-[#FE5300] text-white hover:bg-[#ff6a1f] transition">
+                Book Now
+              </Button>
             </div>
           </div>
-        </article> */}
+        </div>
       </div>
+
+      {/* Testimonials and Blogs */}
       <Testimonial />
       <BlogsHome />
-      {/* ✅ JSON-LD Schema
-      <Script id="blog-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script> */}
     </section>
   );
 }
