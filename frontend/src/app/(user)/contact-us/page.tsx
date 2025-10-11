@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
-import Map from "@/components/custom/Map";
 import Image from "next/image";
 interface Faq {
   question: string;
@@ -110,7 +109,12 @@ function VisaWebPage() {
             </div>
           </div>
           <div className="w-full border border-gray-200 shadow-lg  rounded-2xl mt-20 h-[400px] overflow-hidden">
-            <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" />
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.624108549693!2d76.97522459999999!3d28.611051399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d05a3e076b787%3A0xc858632593d54601!2sMusafirBaba%20-%20Best%20Travel%20Agency%20in%20Delhi%20I%20Holidays%20I%20Visa!5e0!3m2!1sen!2sin!4v1760166725887!5m2!1sen!2sin"
+              width="100%"
+              height="100%"
+              style={{ border: "0" }}
+            ></iframe>
           </div>
 
           <section>
@@ -133,10 +137,6 @@ function VisaWebPage() {
           </section>
         </article>
       </div>
-      {/* ✅ JSON-LD Schema
-      <Script id="blog-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script> */}
     </section>
   );
 }

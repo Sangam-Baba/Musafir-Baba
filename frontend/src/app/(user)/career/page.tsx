@@ -60,7 +60,7 @@ const img = [
     alt: "Musafirbaba Career",
   },
   {
-    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760079192/f3vcnejcrumvkszyxamm.jpg",
+    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760165609/pexels-cottonbro-4065137_no5f8g.jpg",
     alt: "Musafirbaba Career",
   },
 ];

@@ -1,6 +1,6 @@
 "use client";
 import Hero from "@/components/custom/Hero";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/custom/loader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Button } from "@/components/ui/button";
+import PopupQueryForm from "@/components/custom/PopupQueryForm";
 
 interface ImageType {
   url: string;
@@ -59,17 +60,36 @@ const getWebPageBySlug = async () => {
 };
 
 function AboutUsPage() {
+  const [cornerImages, setCornerImages] = useState<ImageType[]>([]);
+  const [centerImage, setCenterImage] = useState<ImageType>({
+    url: "",
+    alt: "",
+  });
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["about"],
     queryFn: getWebPageBySlug,
   });
+  const about = data?.data || {};
+  useEffect(() => {
+    if (!about?.upperImage?.length) return;
 
+    const updateImages = () => {
+      const upperImages = [...about.upperImage];
+      const shuffled = upperImages.sort(() => Math.random() - 0.5);
+      setCornerImages(shuffled.slice(0, 4));
+      setCenterImage(shuffled[4] || upperImages[0]);
+    };
+
+    updateImages();
+
+    const interval = setInterval(updateImages, 10000);
+
+    // Cleanup on unmount
+    return () => clearInterval(interval);
+  }, [about?.upperImage]);
   if (isLoading) return <Loader size="lg" message="Loading About Us..." />;
   if (isError) return <h1>{(error as Error).message}</h1>;
 
-  const about = data?.data || {};
-
-  // ✅ TypeScript-safe animations
   const floatAnimation = {
     y: [0, -10, 0],
     rotate: [0, 3, -3, 0],
@@ -79,10 +99,6 @@ function AboutUsPage() {
       ease: [0.42, 0, 0.58, 1],
     },
   };
-  const upperImages = about?.upperImage || [];
-  const shuffledImages = [...upperImages].sort(() => Math.random() - 0.5);
-  const cornerImages = shuffledImages.slice(0, 4);
-  const centerImage = shuffledImages[4] || upperImages[0];
 
   return (
     <section>
@@ -118,7 +134,7 @@ function AboutUsPage() {
                       alt={item.img.alt}
                       width={150}
                       height={100}
-                      className="rounded-xl shadow-md"
+                      className="rounded-xl w-40 h-25 shadow-md"
                     />
                   </motion.div>
                 )
@@ -209,7 +225,7 @@ function AboutUsPage() {
           ))}
         </div>
 
-        <div className="w-full lg:h-[250px] flex flex-col lg:flex-row">
+        <div className="w-full lg:h-[250px] flex flex-col lg:flex-row mt-15">
           <div className="w-full lg:w-1/5">
             <Image
               src={about?.lowerImage[0]?.url}
@@ -240,9 +256,7 @@ function AboutUsPage() {
 
             {/* Button */}
             <div className="relative z-10 mt-4 lg:mt-0">
-              <Button className="bg-[#FE5300] text-white hover:bg-[#ff6a1f] transition">
-                Book Now
-              </Button>
+              <PopupQueryForm />
             </div>
           </div>
         </div>

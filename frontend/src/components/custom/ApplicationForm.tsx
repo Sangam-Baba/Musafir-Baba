@@ -56,8 +56,8 @@ export default function ApplicationForm() {
     fullName: "",
     email: "",
     phone: "",
-    age: 0,
-    experience: "Fresher",
+    experience: "",
+    age: 18,
     coverLetter: "",
     resumeUrl: "",
     jobId: "",
@@ -199,13 +199,6 @@ export default function ApplicationForm() {
                 {/* Experience */}
                 <div className="flex items-center border border-gray-300 rounded-xl px-4 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                   <FileText className="w-5 h-5 text-[#FE5300]" />
-                  <input
-                    placeholder="Experience (e.g. 2 years, Fresher)"
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleChange}
-                    className="ml-3 w-full border-none outline-none bg-transparent text-gray-700 placeholder-gray-400"
-                  />
                   <select
                     name="experience"
                     value={formData.experience}
@@ -213,35 +206,12 @@ export default function ApplicationForm() {
                     required
                     className="ml-3 w-full border-none outline-none bg-transparent text-gray-700 placeholder-gray-400"
                   >
-                    <option value="">Select Qualification</option>
+                    <option value="">Select Experience</option>
                     <option value="Fresher">Fresher</option>
                     <option value="1-3 years">1-3 years</option>
                     <option value="3-5 years">3-5 years</option>
                     <option value="5+ years">5+ years</option>
                   </select>
-                </div>
-
-                {/* Resume Upload */}
-                <div className="flex flex-col items-start border border-gray-300 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                  <label className="text-sm font-medium text-gray-600 mb-2">
-                    Upload Resume
-                  </label>
-
-                  <ImageUploader
-                    onUpload={(img) => {
-                      if (!img) return;
-                      setFormData((prev) => ({
-                        ...prev,
-                        resumeUrl: img.url,
-                      }));
-                    }}
-                  />
-
-                  {formData.resumeUrl && (
-                    <p className="text-xs text-green-600 mt-2 break-all">
-                      Resume Uploaded:
-                    </p>
-                  )}
                 </div>
 
                 {/* Job ID */}
@@ -271,6 +241,29 @@ export default function ApplicationForm() {
                   rows={4}
                   className="border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-700 placeholder-gray-400"
                 />
+
+                {/* Resume Upload */}
+                <div className="flex flex-col items-start border border-gray-300 rounded-xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                  <label className="text-sm font-medium text-gray-600 mb-2">
+                    Upload Resume
+                  </label>
+
+                  <ImageUploader
+                    onUpload={(img) => {
+                      if (!img) return;
+                      setFormData((prev) => ({
+                        ...prev,
+                        resumeUrl: img.url,
+                      }));
+                    }}
+                  />
+
+                  {formData.resumeUrl && (
+                    <p className="text-xs text-green-600 mt-2 break-all">
+                      Resume Uploaded:
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
