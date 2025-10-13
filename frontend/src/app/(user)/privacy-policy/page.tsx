@@ -15,7 +15,8 @@ interface Faq {
 }
 const getWebPageBySlug = async () => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/privacy-policy`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/privacy-policy`,
+    { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch privacy-policy");
   const data = await res.json();

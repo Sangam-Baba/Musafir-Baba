@@ -20,7 +20,7 @@ const getWebPageBySlug = async (slug: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}`
   );
-  if (!res.ok) throw new Error("Failed to fetch visas");
+  if (!res.ok) return <NotFoundPage />;
   const data = await res.json();
   return data;
 };
@@ -30,7 +30,8 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const page = await getWebPageBySlug(params.slug);
+  const res = await getWebPageBySlug(params.slug);
+  const page = res?.data;
   if (!page)
     return {
       title: "Musafir Baba",

@@ -20,21 +20,25 @@ function HomeBooking() {
         {/* Icons */}
         <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-4">
           {[
-            { Icon: Plane, label: "Flight", url: "/" },
+            {
+              Icon: Plane,
+              label: "Flight",
+              url: "https://musafirbaba.com/bookings/flight-tickets",
+            },
             {
               Icon: Hotel,
               label: "Hotels",
-              url: "https://musafirbaba.com/bookings/hotel-booking",
+              url: "https://musafirbaba.com/bookings/hotel-bookings",
             },
             {
               Icon: Bus,
               label: "Bus",
-              url: "https://musafirbaba.com/bookings/cab-booking",
+              url: "https://musafirbaba.com/bookings/bus-bookings",
             },
             {
               Icon: Train,
               label: "Train",
-              url: "https://musafirbaba.com/bookings/train-ticket-booking",
+              url: "https://musafirbaba.com/bookings/train-ticket-bookings",
             },
           ].map(({ Icon, label, url }, index) => (
             <Link
