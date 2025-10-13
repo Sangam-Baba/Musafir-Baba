@@ -45,7 +45,7 @@ async function BookingsWebPage() {
     <section className="">
       <Hero
         image={visa?.coverImage?.url || "/Hero1.jpg"}
-        title="Cancellation refund Policy"
+        title="Cancellation Refund Policy"
       />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-5/7">
