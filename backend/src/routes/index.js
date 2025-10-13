@@ -22,6 +22,8 @@ import counterRoutes from "./counter.routes.js";
 import jobRoute from "./job.routes.js";
 import jobApplicationRoutes from "./jobApplication.routes.js";
 import aboutUsRoutes from "./aboutUs.routes.js";
+import customizedPackageRoutes from "./customizedPackage.routes.js";
+import customizedBookingRoutes from "./customizedBooking.routes.js";
 const router = Router();
 
 router.use("/packages", pkgRoutes);
@@ -47,4 +49,6 @@ router.use("/counter", counterRoutes);
 router.use("/job", jobRoute);
 router.use("/jobapplication", jobApplicationRoutes);
 router.use("/aboutus", aboutUsRoutes);
+router.use("/customizedpackage", customizedPackageRoutes);
+router.use("/customizedbooking", customizedBookingRoutes);
 export default router;

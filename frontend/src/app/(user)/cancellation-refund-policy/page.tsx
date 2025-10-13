@@ -16,7 +16,7 @@ interface Faq {
 }
 const getWebPageBySlug = async () => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/refund-and-cancellation`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/cancellation-refund-policy`,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch refund-and-cancellation");
@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/refund-and-cancellation`,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/cancellation-refund-policy`,
       type: "website",
     },
   };
