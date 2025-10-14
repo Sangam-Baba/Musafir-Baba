@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Need visa help? Musafirbaba offers smooth processing for tourist, work & business visa. Quick, reliable service for Schengen, USA, UK & More.",
   alternates: {
-    canonical: "https://www.musafirbaba.com/visa",
+    canonical: "https://musafirbaba.com/visa",
   },
 };
 

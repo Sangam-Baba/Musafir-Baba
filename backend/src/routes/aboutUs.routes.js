@@ -18,7 +18,7 @@ aboutUsRoutes.post(
 );
 aboutUsRoutes.get("/", getAboutUs);
 aboutUsRoutes.patch(
-  "/",
+  "/:id",
   isAuthenticated,
   authorizedRoles(["admin", "superadmin"]),
   updateAboutUs

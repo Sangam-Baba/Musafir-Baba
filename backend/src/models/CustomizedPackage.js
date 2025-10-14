@@ -63,6 +63,11 @@ const customizedPackageSchema = new mongoose.Schema(
         price: Number,
       },
     ],
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );

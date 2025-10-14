@@ -55,7 +55,7 @@ const updateAboutUs = async (
   id: string
 ) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/${id}`, {
-    method: "POST",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
@@ -131,7 +131,6 @@ function CreateAboutUsPage({ params }: { params: { id: string } }) {
     mutationFn: (values: FormValues) => updateAboutUs(values, accessToken, id),
     onSuccess: () => {
       toast.success("About Us created successfully!");
-      form.reset(defaultValues);
     },
     onError: () => {
       toast.error("Something went wrong");
@@ -264,6 +263,7 @@ function CreateAboutUsPage({ params }: { params: { id: string } }) {
               <FormLabel>Cover Image</FormLabel>
               <FormControl>
                 <ImageUploader
+                  key={data?.coverImage?.url || "cover"}
                   initialImage={data?.coverImage}
                   onUpload={(img) => {
                     if (!img) return;
