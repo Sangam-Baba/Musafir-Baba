@@ -439,7 +439,7 @@ export default function Page({ params }: { params: { id: string } }) {
                 >
                   <option value="">Select Meal Type</option>
                   <option value="Veg">Veg</option>
-                  <option value="Nonveg">Non-Veg</option>
+                  <option value="NonVeg">Non-Veg</option>
                   <option value="Jain">Jain</option>
                 </select>
                 <Input
@@ -558,6 +558,12 @@ export default function Page({ params }: { params: { id: string } }) {
           </Button>
         </form>
       </Form>
+      {mutation.isError && (
+        <p className="text-red-500">{mutation.error.message}</p>
+      )}
+      {mutation.isSuccess && (
+        <p className="text-green-500">Package updated successfully</p>
+      )}
     </div>
   );
 }

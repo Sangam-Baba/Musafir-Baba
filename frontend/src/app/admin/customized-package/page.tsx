@@ -152,7 +152,7 @@ function PackagePage() {
                   price: b.price,
                   url: ``,
                   slug: b.destination?.slug as string,
-                  status: b.status === "published" ? "Published" : "Draft",
+                  status: b.status === "active" ? "Active" : "Inactive",
                 }))
               : []
           }

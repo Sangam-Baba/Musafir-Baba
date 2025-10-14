@@ -25,6 +25,7 @@ const getCustomizedPackages = async (req, res) => {
     const customizedPackages = await CustomizedPackage.find().populate(
       "destination"
     );
+
     res.status(200).json({ success: true, data: customizedPackages });
   } catch (error) {
     console.error("Error getting customized packages:", error);

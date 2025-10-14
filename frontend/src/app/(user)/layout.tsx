@@ -5,7 +5,7 @@ import "../globals.css";
 import Footer from "@/components/common/Footer";
 import Script from "next/script";
 export const metadata: Metadata = {
-  title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
+  title: "MusafirBaba - Best Travel Agency in Delhi | Holidays | Visa",
   description:
     "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services. Book your tour now in just 60 seconds.",
   alternates: {

@@ -16,6 +16,7 @@ import {
   ListChecks,
   Rocket,
   Briefcase,
+  Cog,
 } from "lucide-react";
 
 const NAV = [
@@ -25,6 +26,11 @@ const NAV = [
   { label: "Blogs", href: "/admin/blogs", icon: ScrollText },
   { label: "News", href: "/admin/news", icon: Newspaper },
   { label: "Packages", href: "/admin/holidays", icon: Box },
+  {
+    label: "Customized Packages",
+    href: "/admin/customized-package",
+    icon: Cog,
+  },
   { label: "Destinations", href: "/admin/destination", icon: MapPin },
   { label: "Category", href: "/admin/category", icon: Tags },
   { label: "Authors", href: "/admin/authors", icon: Users },
