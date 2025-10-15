@@ -20,7 +20,7 @@ customizedPackageRoutes.post(
 customizedPackageRoutes.get(
   "/",
   isAuthenticated,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "user"]),
   getCustomizedPackages
 );
 customizedPackageRoutes.get("/:id", getCustomizedPackagesById);

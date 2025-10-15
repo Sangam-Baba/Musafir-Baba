@@ -10,7 +10,12 @@ import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
 const customizedBookingRoutes = Router();
 
-customizedBookingRoutes.post("/", isAuthenticated, createCutomizedBooking);
+customizedBookingRoutes.post(
+  "/",
+  isAuthenticated,
+  authorizedRoles(["admin", "user", "superadmin"]),
+  createCutomizedBooking
+);
 customizedBookingRoutes.get(
   "/",
   isAuthenticated,

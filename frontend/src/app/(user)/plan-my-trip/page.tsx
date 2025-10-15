@@ -892,6 +892,18 @@ export default function CustomTourStepper() {
               </div>
             </div>
           </form>
+          {mutation.isSuccess && (
+            <div className="p-6 text-green-600">
+              <h1>✅ Payment Successful</h1>
+              <p>Thank you for your payment.</p>
+            </div>
+          )}
+          {mutation.isError && (
+            <div className="p-6 text-red-600">
+              <h1>❌ Payment Failed</h1>
+              <p>Please try again or use another payment method.</p>
+            </div>
+          )}
         </Form>
       </FormProvider>
     </div>
