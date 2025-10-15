@@ -1,612 +1,899 @@
-// "use client";
+"use client";
 
-// import React, { useEffect, useMemo, useState } from "react";
-// import { useQuery } from "@tanstack/react-query";
-// import { useForm, useFieldArray, FormProvider, Control } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { z } from "zod";
+import React, { useEffect, useMemo, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  useForm,
+  FormProvider,
+  useWatch,
+  Control,
+  Path,
+} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { useAuthStore } from "@/store/useAuthStore";
 
-// import {
-//   Dialog,
-//   DialogTrigger,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogFooter,
-// } from "@/components/ui/dialog";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import {
-//   Form,
-//   FormField,
-//   FormItem,
-//   FormLabel,
-//   FormControl,
-//   FormMessage,
-// } from "@/components/ui/form";
+/* --- Your existing Zod schema and helper types remain unchanged --- */
+// (Use your fullSchema, types, and fetchPackages as-is)
+const zNumber = (msg = "Must be a number") =>
+  z.coerce.number({ invalid_type_error: msg });
 
-// import { useAuthStore } from "@/store/useAuthStore";
+const fullSchema = z.object({
+  customizedPackageId: z.string().min(1),
+  numberOfPeople: zNumber().min(1),
+  city: z.array(z.object({ name: z.string() })),
+  duration: z.object({
+    durationType: z.enum(["fixed", "flexible"]),
+    fixed: z
+      .object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        totalDays: zNumber().optional(),
+      })
+      .optional(),
+    flexible: z
+      .object({
+        month: z.string().optional(),
+        totalDays: zNumber().optional(),
+      })
+      .optional(),
+  }),
+  transportType: z.object({
+    name: z.string().min(1),
+    price: zNumber().optional(),
+    quantity: zNumber().min(1),
+  }),
+  hotelType: z
+    .object({
+      name: z.string().min(1),
+      roomType: z.string().min(1),
+      price: zNumber().optional(),
+      quantity: zNumber().min(1),
+    })
+    .optional(),
+  mealType: z
+    .object({
+      name: z.string().min(1),
+      price: zNumber().optional(),
+    })
+    .optional(),
+  tourGuide: z
+    .object({
+      name: z.string().min(1),
+      price: zNumber().optional(),
+    })
+    .optional(),
+  activities: z
+    .array(z.object({ name: z.string().min(1), price: zNumber() }))
+    .optional(),
+  doorToDoor: z.boolean().optional(),
+  finalPrice: zNumber().optional(),
+  paidPrice: zNumber().optional(),
+});
 
-// /* ---------------------------- Helpers / Schema --------------------------- */
-// const zNumber = (message = "Must be a number") =>
-//   z.coerce.number({
-//     invalid_type_error: message,
-//   });
+type FormData = z.infer<typeof fullSchema>;
 
-// /** Full schema for final submit (mirrors backend booking shape) */
-// const fullSchema = z.object({
-//   customizedPackageId: z.string().min(1, "Please select a package"),
-//   numberOfPeople: zNumber().min(1, "At least 1 person"),
-//   city: z
-//     .array(z.object({ name: z.string().min(1) }))
-//     .min(1, "Pick at least 1 city"),
-//   duration: z.object({
-//     fixed: z
-//       .object({
-//         startDate: z.string(),
-//         endDate: z.string(),
-//         totalDays: zNumber(),
-//       })
-//       .optional(),
-//     flexible: z
-//       .object({
-//         month: z.string().optional(),
-//         totalDays: zNumber(),
-//       })
-//       .optional(),
-//   }),
-//   transportType: z.object({
-//     name: z.string().min(1),
-//     price: zNumber(),
-//     quantity: zNumber().min(1),
-//   }),
-//   hotelType: z
-//     .object({
-//       name: z.string().min(1),
-//       roomType: z.string().min(1),
-//       price: zNumber(),
-//       quantity: zNumber().min(1),
-//     })
-//     .optional(),
-//   mealType: z
-//     .object({
-//       name: z.string().min(1),
-//       price: zNumber(),
-//     })
-//     .optional(),
-//   tourGuide: z
-//     .object({
-//       name: z.string().min(1),
-//       price: zNumber(),
-//     })
-//     .optional(),
-//   activities: z
-//     .array(z.object({ name: z.string().min(1), price: zNumber() }))
-//     .optional(),
-//   doorToDoor: z.boolean().optional(),
-//   finalPrice: zNumber(),
-// });
+/* --------------------- API types --------------------- */
+interface Destination {
+  _id: string;
+  name: string;
+  state?: string;
+}
+interface City {
+  _id: string;
+  name: string;
+}
+interface Transport {
+  vehicleType: string;
+  price: number;
+}
+interface Hotel {
+  star: string; // "3", "4" ...
+  quadPrice?: number;
+  doublePrice?: number;
+  triplePrice?: number;
+}
+interface NameAndPrice {
+  name: string;
+  price: number;
+}
+interface Package {
+  _id: string;
+  title?: string;
+  destination?: Destination;
+  price?: number;
+  city?: City[];
+  transport?: Transport[];
+  hotel?: Hotel[];
+  mealType?: NameAndPrice[];
+  activities?: NameAndPrice[];
+  tourGuide?: NameAndPrice[];
+}
+const fetchPackages = async (token?: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedpackage`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch packages");
+  const json = await res.json();
+  return json.data as Package[];
+};
 
-// type FormData = z.infer<typeof fullSchema>;
+const createBooking = async (data: FormData, accessToken: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedbooking`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!res.ok) throw new Error("Failed to book package");
+  return res.json();
+};
+export default function CustomTourStepper() {
+  const token = useAuthStore((s) => s.accessToken) as string;
+  const [currentStep, setCurrentStep] = useState(0);
 
-// /* ---------------------------- API / Queries ------------------------------ */
-// const fetchPackages = async (token?: string) => {
-//   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedpackage`,
-//     {
-//       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-//     }
-//   );
-//   if (!res.ok) throw new Error("Failed to fetch packages");
-//   const json = await res.json();
-//   return json.data;
-// };
+  const methods = useForm<FormData>({
+    resolver: zodResolver(fullSchema),
+    defaultValues: {
+      customizedPackageId: "",
+      numberOfPeople: 1,
+      city: [],
+      duration: {},
+      transportType: { name: "", price: 0, quantity: 1 },
+      hotelType: { name: "", roomType: "Double", price: 0, quantity: 1 },
+      mealType: { name: "", price: 0 },
+      tourGuide: { name: "None", price: 0 },
+      activities: [],
+      doorToDoor: false,
+      finalPrice: 0,
+    },
+    mode: "onChange",
+  });
 
-// /* ----------------------------- Component -------------------------------- */
-// export default function CustomTourDialog() {
-//   const token = useAuthStore((s) => s.accessToken) as string;
-//   const [open, setOpen] = useState(false);
-//   const [currentStep, setCurrentStep] = useState(0);
+  const {
+    watch,
+    handleSubmit,
+    trigger,
+    control,
+    setValue,
+    getValues,
+    register,
+  } = methods;
 
-//   const methods = useForm<FormData>({
-//     resolver: zodResolver(fullSchema),
-//     defaultValues: {
-//       customizedPackageId: "",
-//       numberOfPeople: 1,
-//       city: [{ name: "" }],
-//       duration: {},
-//       transportType: { name: "", price: 0, quantity: 1 },
-//       hotelType: { name: "", roomType: "", price: 0, quantity: 1 },
-//       mealType: { name: "", price: 0 },
-//       tourGuide: { name: "", price: 0 },
-//       activities: [{ name: "", price: 0 }],
-//       doorToDoor: false,
-//       finalPrice: 0,
-//     },
-//     mode: "onChange",
-//   });
+  const { data: packages, isLoading } = useQuery({
+    queryKey: ["customized-packages"],
+    queryFn: () => fetchPackages(token),
+    enabled: !!token || token === undefined,
+  });
 
-//   const { watch, handleSubmit, trigger, control, setValue, getValues, reset } =
-//     methods;
+  // chosen package and helpers
+  const chosenPackageId = watch("customizedPackageId");
+  const chosenPackage = useMemo(
+    () => packages?.find((p: Package) => p._id === chosenPackageId),
+    [packages, chosenPackageId]
+  );
 
-//   const { data: packages, isLoading } = useQuery({
-//     queryKey: ["customized-packages"],
-//     queryFn: () => fetchPackages(token),
-//     enabled: !!token || token === undefined, // allow non-auth browse if your API permits
-//   });
+  // totalDays auto-calc (fixed)
+  useEffect(() => {
+    const fixed = getValues().duration?.fixed;
+    if (fixed?.startDate && fixed?.endDate) {
+      const start = new Date(fixed.startDate);
+      const end = new Date(fixed.endDate);
+      const diffDays = Math.max(
+        1,
+        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+      );
+      setValue("duration.fixed.totalDays", diffDays);
+    }
+    // watch keys are declared below in dependency list (via watch)
+  }, [
+    watch("duration.fixed.startDate"),
+    watch("duration.fixed.endDate"),
+    getValues,
+    setValue,
+  ]);
+  /* --- Keep your price calculations, helpers, and effects as-is --- */
 
-//   // field arrays
-//   const cityArray = useFieldArray({ control, name: "city" });
-//   const activitiesArray = useFieldArray({ control, name: "activities" });
+  // helper: find price by transport name
+  const getTransportPrice = (name?: string) => {
+    if (!chosenPackage?.transport || !name) return 0;
+    const found = chosenPackage.transport.find((t) => t.vehicleType === name);
+    return found ? found.price : 0;
+  };
 
-//   // derive cities for chosen package (assuming package has `destination.city` array)
-//   const chosenPackageId = watch("customizedPackageId");
-//   const chosenPackage = useMemo(
-//     () => packages?.find((p) => p._id === chosenPackageId),
-//     [packages, chosenPackageId]
-//   );
-//   const availableCities: string[] = chosenPackage?.destination?.city ?? [];
+  // helper: get hotel room price by star & roomType
+  const getHotelRoomBase = (star?: string, roomType?: string) => {
+    if (!chosenPackage?.hotel || !star || !roomType) return 0;
+    const found = chosenPackage.hotel.find(
+      (h) => String(h.star) === String(star)
+    );
+    if (!found) return 0;
+    if (roomType === "Quad") return found.quadPrice ?? 0;
+    if (roomType === "Triple") return found.triplePrice ?? 0;
+    return found.doublePrice ?? 0;
+  };
 
-//   // live final price calculation
-//   const values = watch();
-//   useEffect(() => {
-//     // Price calculation strategy:
-//     // transport price * quantity + hotel price * quantity + meal price + guide price + sum activities
-//     const transportTotal =
-//       (values.transportType?.price || 0) *
-//       (values.transportType?.quantity || 1);
-//     const hotelTotal =
-//       (values.hotelType?.price || 0) * (values.hotelType?.quantity || 1);
-//     const mealTotal =
-//       (values.mealType?.price || 0) * (values.numberOfPeople || 1);
-//     const guideTotal = values.tourGuide?.price || 0;
-//     const activitiesTotal =
-//       (values.activities || []).reduce((s, a) => s + (a?.price || 0), 0) *
-//       (values.numberOfPeople || 1);
-//     const peopleMultiplier =
-//       values.duration?.fixed?.totalDays ||
-//       values.duration?.flexible?.totalDays ||
-//       1; // if you want to multiply certain items by people
-//     const base =
-//       transportTotal + hotelTotal + mealTotal + guideTotal + activitiesTotal;
-//     const total = Math.max(0, Math.round(base * peopleMultiplier));
-//     setValue("finalPrice", total);
-//   }, [
-//     values.transportType?.price,
-//     values.transportType?.quantity,
-//     values.hotelType?.price,
-//     values.hotelType?.quantity,
-//     values.mealType?.price,
-//     values.tourGuide?.price,
-//     values.activities,
-//     values.numberOfPeople,
-//     setValue,
-//   ]);
+  // helper: meal price by name
+  const getMealPrice = (name?: string) => {
+    if (!chosenPackage?.mealType || !name) return 0;
+    const found = chosenPackage.mealType.find((m) => m.name === name);
+    return found ? found.price : 0;
+  };
 
-//   // steps
-//   const steps = [
-//     "Choose Package & City",
-//     "Duration & Transport",
-//     "Hotel & Meal",
-//     "Guide & Activities",
-//     "Summary",
-//   ];
+  // helper: activity price
+  const getActivityPrice = (name?: string) => {
+    if (!chosenPackage?.activities || !name) return 0;
+    const found = chosenPackage.activities.find((a) => a.name === name);
+    return found ? found.price : 0;
+  };
 
-//   // navigation helpers
-//   const next = async () => {
-//     const ok = await trigger(); // validate visible fields
-//     if (ok) setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-//   };
-//   const back = () => setCurrentStep((s) => Math.max(s - 1, 0));
-//   const close = () => {
-//     setOpen(false);
-//     setTimeout(() => {
-//       reset(); // reset after close to clear state (optional)
-//       setCurrentStep(0);
-//     }, 200);
-//   };
+  // helper: guide price
+  const getGuidePrice = (name?: string) => {
+    if (!chosenPackage?.tourGuide || !name) return 0;
+    const found = chosenPackage.tourGuide.find((g) => g.name === name);
+    return found ? found.price : 0;
+  };
 
-//   const onSubmit = async (data: FormData) => {
-//     try {
-//       // TODO: replace with your create booking API call
-//       // Example:
-//       // await fetch(`${BASE}/customized-bookings`, { method: "POST", body: JSON.stringify(data) })
-//       console.log("SUBMIT BOOKING", data);
-//       // show success, close dialog
-//       close();
-//       // toast.success("Booking created");
-//     } catch (err) {
-//       console.error(err);
-//       // toast.error("Booking failed");
-//     }
-//   };
+  // auto price calculation (main)
+  const watchedValues = useWatch({
+    control,
+    name: [
+      "transportType.name",
+      "transportType.quantity",
+      "hotelType.name",
+      "hotelType.roomType",
+      "hotelType.quantity",
+      "mealType.name",
+      "tourGuide.name",
+      "activities",
+      "numberOfPeople",
+      "duration.fixed.totalDays",
+      "duration.flexible.totalDays",
+    ],
+  });
 
-//   /* --------------------------- Step renderers --------------------------- */
+  useEffect(() => {
+    console.log("➡ Current Step:", currentStep);
+  }, [currentStep]);
 
-//   const StepChoosePackage = (
-//     <>
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="customizedPackageId"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Choose Package</FormLabel>
-//             <FormControl>
-//               <select {...field} className="w-full rounded border p-2">
-//                 <option value="">Select a package</option>
-//                 {isLoading ? (
-//                   <option>Loading...</option>
-//                 ) : (
-//                   packages?.map((p: any) => (
-//                     <option key={p._id} value={p._id}>
-//                       {p.destination?.state ?? p._id} — ₹{p.price ?? 0}
-//                     </option>
-//                   ))
-//                 )}
-//               </select>
-//             </FormControl>
-//             <FormMessage />
-//           </FormItem>
-//         )}
-//       />
+  useEffect(() => {
+    if (!chosenPackage) {
+      setValue("finalPrice", 0);
+      return;
+    }
 
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="numberOfPeople"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Number of People</FormLabel>
-//             <FormControl>
-//               <Input type="number" min={1} {...field} />
-//             </FormControl>
-//             <FormMessage />
-//           </FormItem>
-//         )}
-//       />
+    const vals = getValues();
+    const {
+      transportType,
+      hotelType,
+      mealType,
+      tourGuide,
+      activities,
+      numberOfPeople,
+      duration,
+    } = vals;
 
-//       {chosenPackageId && (
-//         <FormItem>
-//           <FormLabel>City (choose from package destinations)</FormLabel>
-//           <FormControl>
-//             <select
-//               {...methodsRegisterFor("city.0.name", control)}
-//               className="w-full rounded border p-2"
-//               value={watch("city")?.[0]?.name || ""}
-//               onChange={(e) => {
-//                 setValue("city", [{ name: e.target.value }]);
-//               }}
-//             >
-//               <option value="">Select City</option>
-//               {availableCities?.map((c) => (
-//                 <option key={c} value={c}>
-//                   {c}
-//                 </option>
-//               ))}
-//             </select>
-//           </FormControl>
-//         </FormItem>
-//       )}
-//     </>
-//   );
+    const totalDays =
+      duration?.fixed?.totalDays || duration?.flexible?.totalDays || 0;
+    console.log("This is totalDays:", totalDays);
+    const packageTotal = (chosenPackage.price || 1) * numberOfPeople;
+    console.log("This is packageTotal:", packageTotal);
+    const duractionTotal = packageTotal * totalDays;
+    console.log("This is duractionTotal:", duractionTotal);
 
-//   const StepDurationTransport = (
-//     <>
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="duration.fixed.startDate"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Start Date</FormLabel>
-//             <FormControl>
-//               <Input type="date" {...field} />
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="duration.fixed.endDate"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>End Date</FormLabel>
-//             <FormControl>
-//               <Input type="date" {...field} />
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
+    // Transport
+    const transportBase = getTransportPrice(transportType?.name) || 0;
+    const transportTotal = transportBase * (transportType?.quantity || 1);
+    if (transportBase)
+      setValue("transportType.price", transportBase, { shouldDirty: true });
 
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="transportType.name"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Transport Type</FormLabel>
-//             <FormControl>
-//               <select {...field} className="w-full rounded border p-2">
-//                 <option value="">Select vehicle</option>
-//                 <option value="5-Seater">5-Seater</option>
-//                 <option value="7-Seater">7-Seater</option>
-//                 <option value="12-Seater">12-Seater</option>
-//               </select>
-//             </FormControl>
-//             <FormMessage />
-//           </FormItem>
-//         )}
-//       />
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="transportType.price"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Transport Price (per unit)</FormLabel>
-//             <FormControl>
-//               <Input type="number" {...field} />
-//             </FormControl>
-//             <FormMessage />
-//           </FormItem>
-//         )}
-//       />
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="transportType.quantity"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Transport Quantity</FormLabel>
-//             <FormControl>
-//               <Input type="number" min={1} {...field} />
-//             </FormControl>
-//             <FormMessage />
-//           </FormItem>
-//         )}
-//       />
-//     </>
-//   );
+    // Hotel
+    const hotelBase =
+      getHotelRoomBase(hotelType?.name, hotelType?.roomType) || 0;
+    const hotelTotal = hotelBase * (hotelType?.quantity || 1) * totalDays;
+    console.log("hotelTotal is :", hotelTotal);
+    if (hotelBase)
+      setValue("hotelType.price", hotelBase, { shouldDirty: true });
 
-//   const StepHotelMeal = (
-//     <>
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="hotelType.name"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Hotel Star</FormLabel>
-//             <FormControl>
-//               <select {...field} className="w-full rounded border p-2">
-//                 <option value="">Select star</option>
-//                 {[1, 2, 3, 4, 5].map((n) => (
-//                   <option key={n} value={String(n)}>
-//                     {n} Star
-//                   </option>
-//                 ))}
-//               </select>
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
+    // Meal
+    const mealBase = getMealPrice(mealType?.name) || 0;
+    const mealTotal = mealBase * (numberOfPeople || 1) * totalDays;
+    console.log("mealTotal is :", mealTotal);
+    if (mealBase) setValue("mealType.price", mealBase, { shouldDirty: true });
 
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="hotelType.roomType"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Room Type</FormLabel>
-//             <FormControl>
-//               <select {...field} className="w-full rounded border p-2">
-//                 <option value="Double">Double</option>
-//                 <option value="Triple">Triple</option>
-//                 <option value="Quad">Quad</option>
-//               </select>
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="hotelType.price"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Hotel Price (per night / per unit)</FormLabel>
-//             <FormControl>
-//               <Input type="number" {...field} />
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
+    // Guide
+    const guideBase = getGuidePrice(tourGuide?.name) || 0;
+    const guideTotal = guideBase;
+    if (guideBase)
+      setValue("tourGuide.price", guideBase, { shouldDirty: true });
 
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="mealType.name"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Meal Type</FormLabel>
-//             <FormControl>
-//               <select {...field} className="w-full rounded border p-2">
-//                 <option value="Veg">Veg</option>
-//                 <option value="Non-Veg">Non-Veg</option>
-//                 <option value="Jain">Jain</option>
-//               </select>
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="mealType.price"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Meal Price (per person / per day)</FormLabel>
-//             <FormControl>
-//               <Input type="number" {...field} />
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
-//     </>
-//   );
+    // Activities
+    const activitiesSelected = activities || [];
+    const activitiesTotal =
+      activitiesSelected.reduce(
+        (sum, a) => sum + (getActivityPrice(a.name) || 0),
+        0
+      ) * (numberOfPeople || 1);
+    console.log("activitiesTotal is:", activitiesTotal);
 
-//   const StepGuideActivities = (
-//     <>
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="tourGuide.name"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Guide Gender / Option</FormLabel>
-//             <FormControl>
-//               <select {...field} className="w-full rounded border p-2">
-//                 <option value="None">None</option>
-//                 <option value="Male">Male</option>
-//                 <option value="Female">Female</option>
-//               </select>
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
-//       <FormField
-//         control={control as unknown as Control<FormData>}
-//         name="tourGuide.price"
-//         render={({ field }) => (
-//           <FormItem>
-//             <FormLabel>Guide Price</FormLabel>
-//             <FormControl>
-//               <Input type="number" {...field} />
-//             </FormControl>
-//           </FormItem>
-//         )}
-//       />
+    // Final total
+    const total =
+      packageTotal +
+      duractionTotal +
+      transportTotal +
+      hotelTotal +
+      mealTotal +
+      guideTotal +
+      activitiesTotal;
 
-//       <div>
-//         <FormLabel>Activities</FormLabel>
-//         {activitiesArray.fields.map((a, i) => (
-//           <div key={a.id} className="flex gap-2 mb-2">
-//             <Input
-//               {...methodsRegisterFor(`activities.${i}.name`, control)}
-//               placeholder="Activity name"
-//             />
-//             <Input
-//               type="number"
-//               {...methodsRegisterFor(`activities.${i}.price`, control)}
-//               placeholder="Price"
-//             />
-//             <Button
-//               type="button"
-//               variant="destructive"
-//               onClick={() => activitiesArray.remove(i)}
-//             >
-//               Remove
-//             </Button>
-//           </div>
-//         ))}
-//         <Button
-//           type="button"
-//           onClick={() => activitiesArray.append({ name: "", price: 0 })}
-//         >
-//           Add Activity
-//         </Button>
-//       </div>
-//     </>
-//   );
+    setValue("finalPrice", Math.max(0, Math.round(total)), {
+      shouldDirty: true,
+    });
+  }, [chosenPackage, ...watchedValues]);
 
-//   const StepSummary = (
-//     <>
-//       <h3 className="text-lg font-semibold mb-2">Review & Confirm</h3>
-//       <pre className="bg-slate-50 p-3 rounded mb-3">
-//         {JSON.stringify(getValues(), null, 2)}
-//       </pre>
-//       <div className="text-right font-bold">
-//         Final Price: ₹{values.finalPrice}
-//       </div>
-//     </>
-//   );
+  /* -------------------- Stepper & step validation -------------------- */
+  const steps = [
+    "Choose Package & City",
+    "Duration & Transport",
+    "Hotel & Meal",
+    "Guide & Activities",
+    "Summary",
+  ];
 
-//   /* ---------------------- Helper: register path wrapper -------------------- */
-//   // React Hook Form typing sometimes causes trouble with nested string names in custom usage.
-//   // This wrapper gives a typed `register` by delegating to control via getValues/setValue.
-//   function methodsRegisterFor(path: string, c: Control<FormData>) {
-//     // We just return the minimal set of props that a controlled input expects:
-//     // name and onChange via setValue/getValues for simple inputs.
-//     // BUT we prefer to use methods.register where possible — this is a fallback for inline usage.
-//     // To keep things simple, use methods.register by casting path as any:
-//     // @ts-ignore
-//     return (methods.register as any)(path);
-//   }
+  const stepFields: Record<number, Array<Path<FormData>>> = {
+    0: ["customizedPackageId", "numberOfPeople", "city"],
+    1: [
+      "duration.fixed.startDate",
+      "duration.fixed.endDate",
+      "transportType.name",
+      "transportType.quantity",
+    ],
+    2: [
+      "hotelType.name",
+      "hotelType.roomType",
+      "hotelType.quantity",
+      "mealType.name",
+    ],
+    3: ["tourGuide.name", "activities"],
+    4: [],
+  };
 
-//   /* ------------------------------ JSX ----------------------------------- */
-//   return (
-//     <Dialog open={open} onOpenChange={setOpen}>
-//       <DialogTrigger asChild>
-//         <Button onClick={() => setOpen(true)}>Customize & Book</Button>
-//       </DialogTrigger>
+  const next = async () => {
+    const fields = stepFields[currentStep] ?? [];
+    const ok = fields.length
+      ? await trigger(fields, { shouldFocus: true })
+      : true;
+    if (ok) setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+  };
 
-//       <DialogContent className="max-w-3xl w-full">
-//         <DialogHeader>
-//           <DialogTitle>Customize Your Tour</DialogTitle>
-//         </DialogHeader>
+  const back = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
-//         <div className="py-4">
-//           <div className="flex gap-2 mb-4">
-//             {steps.map((s, i) => (
-//               <div
-//                 key={s}
-//                 className={`flex-1 text-center py-2 rounded ${
-//                   i === currentStep
-//                     ? "bg-blue-600 text-white"
-//                     : "bg-gray-200 text-gray-700"
-//                 }`}
-//               >
-//                 {s}
-//               </div>
-//             ))}
-//           </div>
+  const mutation = useMutation({
+    mutationFn: (values: FormData) => createBooking(values, token),
+    onSuccess: (data) => {
+      console.log(data);
+      // toast.success("Booking created successfully!");
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
+  const onFullSubmit = (data: FormData) => {
+    const formData = data; // or your form values
+    const gstRate = 0.05;
 
-//           <FormProvider {...methods}>
-//             <Form {...methods}>
-//               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-//                 <div className="min-h-[240px]">
-//                   {
-//                     [
-//                       StepChoosePackage,
-//                       StepDurationTransport,
-//                       StepHotelMeal,
-//                       StepGuideActivities,
-//                       StepSummary,
-//                     ][currentStep]
-//                   }
-//                 </div>
+    const payload = {
+      ...formData,
+      finalPrice: Math.round((formData.finalPrice || 0) * (1 + gstRate)),
+      paidPrice: Math.round((formData.finalPrice || 0) * (1 + gstRate)),
+    };
+    console.log("FINAL Full BOOKING PAYLOAD:", payload);
+    mutation.mutate(payload);
+  };
+  const onPartialSubmit = (data: FormData) => {
+    const formData = data; // or your form values
+    const gstRate = 0.05;
 
-//                 <div className="flex items-center justify-between mt-4">
-//                   <div>
-//                     {currentStep > 0 && (
-//                       <Button variant="ghost" onClick={back}>
-//                         Back
-//                       </Button>
-//                     )}
-//                   </div>
+    const payload = {
+      ...formData,
+      finalPrice: Math.round((formData.finalPrice || 0) * (1 + gstRate)),
+      paidPrice: Math.round(
+        Math.round((formData.finalPrice || 0) * (1 + gstRate)) * 0.25
+      ),
+    };
+    console.log("FINAL Partial BOOKING PAYLOAD:", payload);
+    mutation.mutate(payload);
+  };
 
-//                   <div className="flex gap-2 items-center">
-//                     <div className="text-sm mr-4">
-//                       Current total: ₹{values.finalPrice}
-//                     </div>
+  /* -------------------- JSX -------------------- */
+  return (
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 my-8">
+      <h2 className="text-2xl font-bold mb-6 text-center text-[#FF5300]">
+        Customize Your Tour
+      </h2>
 
-//                     {currentStep < steps.length - 1 ? (
-//                       <Button onClick={next}>Next</Button>
-//                     ) : (
-//                       <Button type="submit">Confirm Booking</Button>
-//                     )}
-//                   </div>
-//                 </div>
-//               </form>
-//             </Form>
-//           </FormProvider>
-//         </div>
+      {/* Stepper Header */}
+      <div className="flex items-center justify-between mb-8">
+        {steps.map((step, index) => (
+          <div key={index} className="flex-1 text-center relative">
+            <div
+              className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${
+                index === currentStep
+                  ? "bg-[#FF5300] text-white"
+                  : index < currentStep
+                  ? "bg-[#FF5300]/70 text-white"
+                  : "bg-gray-300 text-gray-700"
+              }`}
+            >
+              {index + 1}
+            </div>
+            <p className="text-xs mt-2 text-gray-600">{step}</p>
 
-//         <DialogFooter>
-//           <Button variant="secondary" onClick={close}>
-//             Close
-//           </Button>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
+            {/* Progress line */}
+            {index < steps.length - 1 && (
+              <div
+                className={`absolute top-4 left-[55%] h-[2px] w-[90%] ${
+                  index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Step Content */}
+      <FormProvider {...methods}>
+        <Form {...methods}>
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="space-y-4 min-h-[300px]"
+          >
+            {/* step content (reuse from your existing Step1–Step4–Summary blocks) */}
+            {currentStep === 0 && (
+              <>
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="customizedPackageId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Choose Package</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border p-2"
+                        >
+                          <option value="">Select package</option>
+                          {isLoading ? (
+                            <option>Loading...</option>
+                          ) : (
+                            packages?.map((p) => (
+                              <option key={p._id} value={p._id}>
+                                {p.destination?.state ?? p._id} — ₹
+                                {p.price ?? 0}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="numberOfPeople"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Number of People</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {chosenPackage?.city && (
+                  <div className="mt-3">
+                    <FormLabel>Places to visit (pick any)</FormLabel>
+                    <div className="grid grid-cols-1 gap-2 mt-2">
+                      {chosenPackage?.city?.map((act) => {
+                        const checked = !!watch("city")?.find(
+                          (a) => a.name === act.name
+                        );
+                        return (
+                          <label
+                            key={act.name}
+                            className="flex items-center gap-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const list = watch("city") || [];
+                                const newList = e.target.checked
+                                  ? [...list, { name: act.name }]
+                                  : list.filter((x) => x.name !== act.name);
+
+                                setValue("city", newList, {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                });
+                              }}
+                            />
+                            <span>{act.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <FormMessage>
+                      {methods.formState.errors.city?.message as string}
+                    </FormMessage>
+                  </div>
+                )}
+              </>
+            )}
+            {currentStep === 1 && (
+              <>
+                <FormLabel>Duration</FormLabel>
+
+                <select
+                  className="border rounded p-2 mb-4"
+                  {...register("duration.durationType")}
+                  onChange={(e) =>
+                    setValue(
+                      "duration.durationType",
+                      e.target.value as "fixed" | "flexible"
+                    )
+                  }
+                >
+                  <option value="">Select Duration</option>
+                  <option value="fixed">Fixed</option>
+                  <option value="flexible">Flexible</option>
+                </select>
+                {watch("duration.durationType") === "fixed" && (
+                  <div className="flex gap-2 mb-2">
+                    <label className="flex-1">
+                      <div className="text-sm">Start Date</div>
+                      <Input
+                        type="date"
+                        {...register("duration.fixed.startDate")}
+                      />
+                    </label>
+                    <label className="flex-1">
+                      <div className="text-sm">End Date</div>
+                      <Input
+                        type="date"
+                        {...register("duration.fixed.endDate")}
+                      />
+                    </label>
+                  </div>
+                )}
+                {watch("duration.durationType") === "flexible" && (
+                  <div className="mb-4">
+                    <div className="text-sm mb-1">
+                      Or choose flexible month + total days
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Month (e.g. June)"
+                        {...register("duration.flexible.month")}
+                      />
+                      <Input
+                        type="number"
+                        {...register("duration.flexible.totalDays")}
+                        placeholder="Total days"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="transportType.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transport</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border p-2"
+                        >
+                          <option value="">Select vehicle</option>
+                          {chosenPackage?.transport?.map((t) => (
+                            <option key={t.vehicleType} value={t.vehicleType}>
+                              {t.vehicleType} — ₹{t.price}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="transportType.quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transport Quantity</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+            {currentStep === 2 && (
+              <>
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="hotelType.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hotel Star</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border p-2"
+                        >
+                          <option value="">Select star</option>
+                          {chosenPackage?.hotel?.map((h) => (
+                            <option key={h.star} value={String(h.star)}>
+                              {h.star} Star
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="hotelType.roomType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room Type</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border p-2"
+                        >
+                          <option value="Double">Double</option>
+                          <option value="Triple">Triple</option>
+                          <option value="Quad">Quad</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="hotelType.quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room Quantity</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="mealType.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meal</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border p-2"
+                        >
+                          <option value="">Select meal</option>
+                          {chosenPackage?.mealType?.map((m) => (
+                            <option key={m.name} value={m.name}>
+                              {m.name} — ₹{m.price}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+            {currentStep === 3 && (
+              <>
+                <FormField
+                  control={control as unknown as Control<FormData>}
+                  name="tourGuide.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tour Guide</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border p-2"
+                        >
+                          <option value="None">None</option>
+                          {chosenPackage?.tourGuide?.map((g) => (
+                            <option key={g.name} value={g.name}>
+                              {g.name} — ₹{g.price}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="mt-3">
+                  <FormLabel>Activities (pick any)</FormLabel>
+                  <div className="grid grid-cols-1 gap-2 mt-2">
+                    {chosenPackage?.activities?.map((act) => {
+                      const checked = !!watch("activities")?.find(
+                        (a) => a.name === act.name
+                      );
+                      return (
+                        <label
+                          key={act.name}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              const list = watch("activities") || [];
+                              if (e.target.checked) {
+                                // add
+                                setValue("activities", [
+                                  ...list,
+                                  { name: act.name, price: act.price },
+                                ]);
+                              } else {
+                                // remove
+                                setValue(
+                                  "activities",
+                                  list.filter((x) => x.name !== act.name)
+                                );
+                              }
+                            }}
+                          />
+                          <span>
+                            {act.name} — ₹{act.price}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+            {currentStep === 4 && (
+              <>
+                <h3 className="font-semibold">Summary</h3>
+                <div className="text-sm text-gray-700">
+                  <p>Destination: {chosenPackage?.destination?.state}</p>
+                  <p>
+                    Place to visit:{" "}
+                    {watch("city")
+                      ?.map((c) => c.name)
+                      .join(", ")}
+                  </p>
+                  <p>Total People: {watch("numberOfPeople")}</p>
+                  <p>
+                    Duration:{" "}
+                    {watch("duration.fixed")?.startDate
+                      ? `${watch("duration.fixed")?.startDate} → ${
+                          watch("duration.fixed")?.endDate
+                        } (${watch("duration.fixed")?.totalDays || 1} days)`
+                      : watch("duration.flexible")?.totalDays
+                      ? `Flexible: ${
+                          watch("duration.flexible")?.totalDays
+                        } days`
+                      : "1 day"}
+                  </p>
+                  <p>
+                    Transport: {watch("transportType")?.name} ×{" "}
+                    {watch("transportType")?.quantity}
+                  </p>
+                  <p>
+                    Hotel: {watch("hotelType")?.name} Star /{" "}
+                    {watch("hotelType")?.roomType}
+                    {" Sharing"} × {watch("hotelType")?.quantity}
+                  </p>
+                  <p>Meal: {watch("mealType")?.name} Food</p>
+                  <p>Guide: {watch("tourGuide")?.name}</p>
+                  <p>
+                    Activities:{" "}
+                    {(watch("activities") || [])
+                      .map((a) => a.name)
+                      .join(", ") || "—"}
+                  </p>
+                </div>
+
+                <div className="text-right font-bold mt-4">
+                  Price: ₹{watch("finalPrice") || 0}
+                </div>
+
+                <p className="text-right font-semibold mt-1">
+                  @GST: 5% — ₹{((watch("finalPrice") || 0) * 0.05).toFixed(2)}
+                </p>
+
+                <div className="text-right font-bold mt-4">
+                  Final Price including @GST: ₹
+                  {((watch("finalPrice") || 0) * 1.05).toFixed(2)}
+                </div>
+              </>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between items-center pt-6 border-t mt-6">
+              {currentStep > 0 ? (
+                <Button type="button" variant="ghost" onClick={back}>
+                  ← Back
+                </Button>
+              ) : (
+                <div />
+              )}
+              <div className="flex gap-2 items-center">
+                <div className="text-sm mr-2">
+                  Current total: ₹{(watch("finalPrice") || 0).toFixed(2)}
+                </div>
+
+                {currentStep < steps.length - 1 ? (
+                  <Button type="button" onClick={next}>
+                    Next →
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={handleSubmit(onPartialSubmit)}
+                    >
+                      Partial Payment ₹
+                      {((watch("finalPrice") || 0) * 1.05 * 0.25).toFixed(2)}
+                    </Button>
+                    <Button type="button" onClick={handleSubmit(onFullSubmit)}>
+                      Full Payment ₹
+                      {((watch("finalPrice") || 0) * 1.05).toFixed(2)}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </form>
+        </Form>
+      </FormProvider>
+    </div>
+  );
+}

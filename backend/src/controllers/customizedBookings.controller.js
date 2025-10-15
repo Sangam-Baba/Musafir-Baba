@@ -12,7 +12,7 @@ const createCutomizedBooking = async (req, res) => {
         .json({ success: false, error: "Missing required fields" });
     }
     const customizedBooking = await CustomizedBookings.create({
-      user: userId,
+      userId: userId,
       customizedPackageId,
       ...req.body,
     });

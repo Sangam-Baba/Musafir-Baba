@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Smart travelers read us first. Get exclusive travel insights, destination news & visa updates that make every trip better.",
   alternates: {
-    canonical: "https://www.musafirbaba.com/news",
+    canonical: "https://musafirbaba.com/news",
   },
 };
 interface coverImage {

@@ -18,9 +18,14 @@ const customizedBookingSchema = new mongoose.Schema(
       default: 1,
     },
     duration: {
+      durationType: {
+        type: String,
+        enum: ["fixed", "flexible"],
+      },
+
       fixed: {
-        startDate: { type: Date },
-        endDate: { type: Date },
+        startDate: { type: String },
+        endDate: { type: String },
         totalDays: Number,
       },
       flexible: {
@@ -62,14 +67,24 @@ const customizedBookingSchema = new mongoose.Schema(
       },
     },
     mealType: {
-      type: String,
-      enum: ["Veg", "Non-Veg", "Jain"],
-      default: "Veg",
+      name: {
+        type: String,
+        enum: ["Veg", "NonVeg", "Jain"],
+        default: "Veg",
+      },
+      price: {
+        type: Number,
+      },
     },
-    turGuide: {
-      type: String,
-      enum: ["Male", "Female", "None"],
-      default: "None",
+    tourGuide: {
+      name: {
+        type: String,
+        enum: ["Male", "Female", "None"],
+        default: "None",
+      },
+      price: {
+        type: Number,
+      },
     },
     finalPrice: {
       type: Number,
@@ -78,6 +93,47 @@ const customizedBookingSchema = new mongoose.Schema(
     doorToDoor: {
       type: Boolean,
       default: false,
+    },
+    city: [
+      {
+        name: {
+          type: String,
+        },
+      },
+    ],
+    activities: [
+      {
+        name: {
+          type: String,
+        },
+        price: {
+          type: Number,
+        },
+      },
+    ],
+    tourGuide: [
+      {
+        name: {
+          type: String,
+        },
+        price: {
+          type: Number,
+        },
+      },
+    ],
+    paidPrice: {
+      type: Number,
+      default: 0,
+    },
+    paymentInfo: {
+      orderId: String,
+      paymentId: String,
+      signature: String,
+      status: {
+        type: String,
+        enum: ["Pending", "Paid", "Failed", "Partial"],
+        default: "Pending",
+      },
     },
   },
   { timestamps: true }

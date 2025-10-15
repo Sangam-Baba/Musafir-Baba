@@ -4,19 +4,20 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Travel Blog - Guides, Tips & Travel Inspiration",
-  description: "Travel Blog - Guides, Tips & Travel Inspiration!Discover travel secrets on our blog! Get complete guides, visa assistance, amazing tours, money-saving tips, and inspiration for incredible adventures.",
+  description:
+    "Travel Blog - Guides, Tips & Travel Inspiration!Discover travel secrets on our blog! Get complete guides, visa assistance, amazing tours, money-saving tips, and inspiration for incredible adventures.",
   alternates: {
-    canonical: "https://www.musafirbaba.com/blog",
+    canonical: "https://musafirbaba.com/blog",
   },
 };
-interface coverImage{
-  url: string,
-  public_id: string,
-  width: number,
-  height: number
-  alt: string
+interface coverImage {
+  url: string;
+  public_id: string;
+  width: number;
+  height: number;
+  alt: string;
 }
-interface blog{
+interface blog {
   _id: string;
   title: string;
   coverImage: coverImage;
@@ -30,7 +31,7 @@ async function getBlogs() {
   });
 
   if (!res.ok) throw new Error("Failed to fetch blogs");
-  const data=await res.json();
+  const data = await res.json();
   // console.log(data);
   return data.data;
 }
@@ -40,22 +41,19 @@ export default async function BlogPage() {
 
   return (
     <section className="w-full ">
-      <Hero
-       image="/Heroimg.jpg" 
-       title="Blog" 
-       />
-    <div className="container max-w-7xl mx-auto py-10 px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {blogs.map((blog: blog) => (
-        <BlogCard
-          key={blog._id}
-          type="blog"
-          title={blog.title}
-          coverImage={blog.coverImage.url}
-          description={blog.metaDescription}
-          slug={blog.slug}
-        />
-      ))}
-    </div>
+      <Hero image="/Heroimg.jpg" title="Blog" />
+      <div className="container max-w-7xl mx-auto py-10 px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {blogs.map((blog: blog) => (
+          <BlogCard
+            key={blog._id}
+            type="blog"
+            title={blog.title}
+            coverImage={blog.coverImage.url}
+            description={blog.metaDescription}
+            slug={blog.slug}
+          />
+        ))}
+      </div>
     </section>
   );
 }
