@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import RelatedPages from "@/components/custom/RelatedPages";
 import { BusBooking } from "@/components/custom/BusBooking";
+import HomeBooking from "@/components/custom/HomeBooking";
 interface Faq {
   question: string;
   answer: string;
@@ -53,7 +54,7 @@ async function BookingsWebPage() {
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={visa.content} />
           </section>
-          <BusBooking />
+          <HomeBooking />
           <section>
             <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>
             <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>

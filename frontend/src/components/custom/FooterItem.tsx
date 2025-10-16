@@ -31,7 +31,7 @@ function FooterItem({ title }: FooterItemProps) {
       <ul className={` space-y-2 pt-4 `}>
         {FootObj?.content?.map((item: Item, idx: number) => (
           <li className="hover:text-[#FE5300]" key={idx}>
-            <Link href={item.url}>{item.text}</Link>
+            <a href={item.url}>{item.text}</a>
           </li>
         ))}
       </ul>

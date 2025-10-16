@@ -46,6 +46,7 @@ export const metadata: Metadata = {
 
 import { RootProvider } from "@/providers/root-provider";
 import GTMProvider from "@/providers/GTMProvider";
+import { AuthDialog } from "@/components/auth/AuthDialog";
 
 export default function RootLayout({
   children,
@@ -164,6 +165,7 @@ export default function RootLayout({
               __html: JSON.stringify({ localBusinessSchema }),
             }}
           />
+          <AuthDialog />
           <Footer />
           <Toaster />
           <GTMProvider />

@@ -116,25 +116,6 @@ function VisaWebPage() {
               style={{ border: "0" }}
             ></iframe>
           </div>
-
-          <section>
-            <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>
-            <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
-            <Accordion type="single" collapsible className="w-full">
-              {visa.faqs.map((faq: Faq, i: number) => (
-                <AccordionItem
-                  value={`faq-${i}`}
-                  key={i}
-                  className="rounded-2xl shadow-lg p-4"
-                >
-                  <AccordionTrigger>{faq.question}</AccordionTrigger>
-                  <AccordionContent className="text-justify">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </section>
         </article>
       </div>
     </section>

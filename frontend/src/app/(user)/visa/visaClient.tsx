@@ -137,7 +137,7 @@ function VisaClientPage() {
                 <CardFooter className="flex items-center justify-between border-t  ">
                   <p className="font-bold text-md ">
                     <span className="text-[#FF5300]">₹{visa.cost}</span>+
-                    Servics Fee
+                    Service Fee
                   </p>
                   <p className="font-bold text-blue-600">
                     <Link href={`/visa/${visa.slug}`}>

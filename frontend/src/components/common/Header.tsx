@@ -17,9 +17,24 @@ import {
 import logo from "../../../public/logo.svg";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "../ui/button";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
+  const router = useRouter();
+  const { openDialog } = useAuthDialogStore();
+  const accessToken = useAuthStore((state) => state.accessToken) as string;
+
+  const handleClick = () => {
+    if (!accessToken) {
+      openDialog("login", undefined, "/plan-my-trip");
+      return;
+    }
+    router.push(`/plan-my-trip`);
+  };
 
   return (
     <header className="w-full">
@@ -81,7 +96,11 @@ export default function Header() {
           </nav>
 
           {/* Right: account icon */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <Button onClick={handleClick} className="bg-[#FE5300]">
+              Plan My Trip
+            </Button>
+
             <AccountIcon />
           </div>
         </div>

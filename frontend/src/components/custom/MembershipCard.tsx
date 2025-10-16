@@ -31,28 +31,6 @@ const getMembership = async () => {
   return data?.data;
 };
 
-// const bookMembership = async (id: string, accessToken: string) => {
-//   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_BASE_URL}/membershipbooking`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//       body: JSON.stringify({ membershipId: id }),
-//     }
-//   );
-//   if (!res.ok) throw new Error("Failed to book membership");
-//   return res
-//     .json()
-//     .then((data) => {
-//       return data;
-//     })
-//     .catch((error) => {
-//       return error;
-//     });
-// };
 function MembershipCard() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const router = useRouter();

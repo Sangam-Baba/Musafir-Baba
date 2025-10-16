@@ -76,8 +76,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const res = await getCategoryBySlug(slug);
     const { category } = res?.data ?? {};
     const packages = category?.packages ?? [];
-    console.log("packages", packages);
-    console.log("Category", category);
 
     if (!category) {
       return {
@@ -103,8 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [
           {
             url:
-              category.coverImage.url ||
-              "https://musafirbaba.com/default-og.jpg",
+              packages[0]?.coverImage.url || "https://musafirbaba.com/logo.svg",
             width: 1200,
             height: 630,
             alt: category.name,
@@ -115,7 +112,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         card: "summary_large_image",
         title,
         description,
-        images: [category.coverImage.url || "https://musafirbaba.com/logo.svg"],
+        images: [
+          packages[0]?.coverImage.url || "https://musafirbaba.com/logo.svg",
+        ],
       },
     };
   } catch {
@@ -136,7 +135,7 @@ export default async function Page({ params }: Props) {
     "@type": "ItemList",
     name: `${category?.name} Travel Packages`,
     description: category?.description,
-    url: `https://musafirbaba.com/packages/${params.slug}`,
+    url: `https://musafirbaba.com/holidays/${params.slug}`,
     numberOfItems: packages.length,
     itemListElement: packages.map((pkg: Package, index: number) => ({
       "@type": "TouristTrip",

@@ -9,7 +9,7 @@ const data = [
     description:
       " Plan your perfect weekend getaway with relaxing trips and memorable experiences.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757402014/j3jyqodvzgarftilb3dd.png",
-    url: "/holidays/weekend-gateway",
+    url: "/holidays/weekend-getaway",
   },
   {
     title: "Honeymoon Package",
