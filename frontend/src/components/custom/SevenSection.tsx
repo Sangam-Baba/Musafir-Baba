@@ -27,17 +27,18 @@ interface Batch {
   };
 }
 
+interface Image {
+  url: string;
+  public_id: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
 interface BestSeller {
   _id: number;
   title: string;
   description: string;
-  coverImage: {
-    url: string;
-    public_id: string;
-    alt: string;
-    width?: number;
-    height?: number;
-  };
+  coverImage: Image;
   destination: {
     _id: string;
     name: string;
@@ -47,6 +48,7 @@ interface BestSeller {
   };
   batch: Batch[];
   slug: string;
+  gallery: Image[];
 }
 const getBestSeller = async () => {
   const res = await fetch(
@@ -101,15 +103,27 @@ export function SevenSection() {
                       <div className="w-full md:w-1/2 flex gap-4">
                         <div className="w-full flex flex-col gap-4">
                           <Image
-                            src={pkg?.coverImage?.url || bg}
-                            alt={pkg?.coverImage?.alt || pkg.title}
+                            src={
+                              pkg?.gallery[0]?.url || pkg?.coverImage?.url || bg
+                            }
+                            alt={
+                              pkg?.gallery[0]?.alt ||
+                              pkg?.coverImage?.alt ||
+                              pkg.title
+                            }
                             width={600}
                             height={400}
                             className="rounded-b-[50px] rounded-tr-[50px] w-full h-[70px] md:h-[170px] object-cover shadow-lg"
                           />
                           <Image
-                            src={pkg?.coverImage?.url || bg}
-                            alt={pkg?.coverImage?.alt || pkg.title}
+                            src={
+                              pkg?.gallery[1]?.url || pkg?.coverImage?.url || bg
+                            }
+                            alt={
+                              pkg?.gallery[1]?.alt ||
+                              pkg?.coverImage?.alt ||
+                              pkg.title
+                            }
                             width={600}
                             height={400}
                             className="rounded-b-[50px] rounded-tl-[50px] w-full h-[130px] md:h-[230px] object-cover shadow-lg"
@@ -117,15 +131,27 @@ export function SevenSection() {
                         </div>
                         <div className="w-full flex flex-col gap-4">
                           <Image
-                            src={pkg?.coverImage?.url || bg}
-                            alt={pkg?.coverImage?.alt || pkg.title}
+                            src={
+                              pkg?.gallery[2]?.url || pkg?.coverImage?.url || bg
+                            }
+                            alt={
+                              pkg?.gallery[2]?.alt ||
+                              pkg?.coverImage?.alt ||
+                              pkg.title
+                            }
                             width={600}
                             height={400}
                             className="rounded-t-[50px] rounded-br-[50px] w-full h-[130px] md:h-[230px] object-cover shadow-lg"
                           />
                           <Image
-                            src={pkg?.coverImage?.url || bg}
-                            alt={pkg?.coverImage?.alt || pkg.title}
+                            src={
+                              pkg?.gallery[3]?.url || pkg?.coverImage?.url || bg
+                            }
+                            alt={
+                              pkg?.gallery[3]?.url ||
+                              pkg?.coverImage?.alt ||
+                              pkg.title
+                            }
                             width={600}
                             height={400}
                             className="rounded-t-[50px] rounded-bl-[50px] w-full h-[70px] md:h-[170px] object-cover shadow-lg"
