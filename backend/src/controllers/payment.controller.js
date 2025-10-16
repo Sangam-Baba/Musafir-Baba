@@ -141,7 +141,7 @@ export const verifySuccessPayment = async (req, res) => {
     },
     { new: true }
   ).exec();
-  console.log("Payment Verified:", data, booking);
+  console.log("Package Payment Verified:", data, booking);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
 };
@@ -302,7 +302,7 @@ export const verifyCustomizedSuccessPayment = async (req, res) => {
     udf1,
     mihpayid,
   } = data;
-
+  // console.log("Success Data is:", data);
   const expectedHash = verifyHash({
     status,
     txnid,
@@ -319,7 +319,8 @@ export const verifyCustomizedSuccessPayment = async (req, res) => {
   }
 
   // ✅ Update DB with payment status here
-  const myBooking = await CustomizedBookings.findById(udf1).exec();
+  const myBooking = await CustomizedBookings.findById({ _id: udf1 }).exec();
+  // console.log("Mybooking Data is:", myBooking);
   if (myBooking.finalPrice === myBooking.paidPrice) {
     const booking = await CustomizedBookings.findOneAndUpdate(
       { _id: udf1 },
@@ -334,6 +335,7 @@ export const verifyCustomizedSuccessPayment = async (req, res) => {
       },
       { new: true }
     ).exec();
+    // console.log("Mybooking Data is finalpaymnet:", booking);
   } else {
     const booking = await CustomizedBookings.findOneAndUpdate(
       { _id: udf1 },
@@ -348,6 +350,8 @@ export const verifyCustomizedSuccessPayment = async (req, res) => {
       },
       { new: true }
     ).exec();
+
+    // console.log("Mybooking Data is partialpaymnet:", booking);
   }
   // console.log("Payment Verified:", data, booking);
 
