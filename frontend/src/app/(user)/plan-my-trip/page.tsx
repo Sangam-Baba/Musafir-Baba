@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuthStore } from "@/store/useAuthStore";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 /* --- Your existing Zod schema and helper types remain unchanged --- */
 // (Use your fullSchema, types, and fetchPackages as-is)
@@ -166,7 +166,8 @@ const createBooking = async (data: FormData, accessToken: string) => {
 };
 export default function CustomTourStepper() {
   const token = useAuthStore((s) => s.accessToken) as string;
-  if (!token) redirect("/auth/login");
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -226,6 +227,16 @@ export default function CustomTourStepper() {
     [packages, chosenPackageId]
   );
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !token) {
+      router.replace("/auth/login"); // safer than push for auth redirects
+    }
+  }, [mounted, token, router]);
+
   // totalDays auto-calc (fixed)
   useEffect(() => {
     const fixed = getValues().duration?.fixed;
@@ -238,6 +249,7 @@ export default function CustomTourStepper() {
       );
       setValue("duration.fixed.totalDays", diffDays);
     }
+
     // watch keys are declared below in dependency list (via watch)
   }, [
     watch("duration.fixed.startDate"),
@@ -497,6 +509,12 @@ export default function CustomTourStepper() {
       setLoading(false);
     }
   };
+
+  if (!mounted) return null; // prevents mismatch/hydration issues
+
+  if (!token) {
+    return <p>Redirecting to login...</p>;
+  }
   /* -------------------- JSX -------------------- */
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 my-8">
