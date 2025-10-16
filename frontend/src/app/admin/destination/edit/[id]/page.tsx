@@ -307,7 +307,7 @@ export default function EditDestination() {
 
         <div className="space-y-2">
           <ImageUploader
-            initialImage={form.getValues("coverImage")}
+            initialImage={form.watch("coverImage")}
             onUpload={(img) =>
               form.setValue(
                 "coverImage",

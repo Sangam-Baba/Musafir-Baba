@@ -28,7 +28,7 @@ const formSchema = z.object({
   }),
   coverImage: z
     .object({
-      url: z.string().url(),
+      url: z.string().url().optional(),
       public_id: z.string().optional(),
       width: z.number().optional(),
       height: z.number().optional(),
@@ -38,7 +38,7 @@ const formSchema = z.object({
   gallery: z
     .array(
       z.object({
-        url: z.string().url(),
+        url: z.string().url().optional(),
         public_id: z.string(),
         width: z.number().optional(),
         height: z.number().optional(),
