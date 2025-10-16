@@ -21,7 +21,11 @@ const getAllVisa = async (req, res) => {
   try {
     const { filter = {} } = req.query;
     if (req.query?.country) filter.country = req.query.country;
-    const visa = await Visa.find(filter).sort({ createdAt: -1 }).lean();
+    if (req.query?.isActive) filter.isActive = req.query.isActive;
+    const visa = await Visa.find(filter)
+      .sort({ createdAt: -1 })
+      .select("-content -coverImage -bannerImage -faqs")
+      .lean();
     res.status(200).json({ success: true, data: visa });
   } catch (error) {
     console.log("All Visa getting failed", error.message);

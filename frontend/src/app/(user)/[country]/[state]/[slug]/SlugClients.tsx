@@ -183,11 +183,11 @@ function SlugClients({
         </div>
         <Hero
           image={pkg.coverImage.url ?? ""}
-          title={pkg.title}
-          description={pkg.description.slice(0, 200) ?? ""}
+          title=""
+          description=""
           align="center"
           height="lg"
-          overlayOpacity={55}
+          overlayOpacity={10}
         />
       </div>
 

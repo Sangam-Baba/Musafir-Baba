@@ -19,12 +19,7 @@ webPageRoute.post(
   authorizedRoles(["admin", "superadmin"]),
   createWebPage
 );
-webPageRoute.get(
-  "/",
-  isAuthenticated,
-  authorizedRoles(["admin", "superadmin"]),
-  getWebPage
-);
+webPageRoute.get("/", getWebPage);
 webPageRoute.get("/:slug", getWebPageBySlug);
 webPageRoute.get("/id/:id", getWebPageById);
 webPageRoute.get("/related/:slug", getRelatedPages);
