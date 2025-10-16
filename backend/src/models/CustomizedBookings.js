@@ -135,6 +135,11 @@ const customizedBookingSchema = new mongoose.Schema(
         default: "Pending",
       },
     },
+    bookingStatus: {
+      type: String,
+      enum: ["Pending", "Confirmed", "Cancelled"],
+      default: "Pending",
+    },
   },
   { timestamps: true }
 );

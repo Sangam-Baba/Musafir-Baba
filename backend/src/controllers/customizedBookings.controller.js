@@ -16,7 +16,11 @@ const createCutomizedBooking = async (req, res) => {
       customizedPackageId,
       ...req.body,
     });
-    res.status(201).json({ success: true, data: customizedBooking });
+    const created = await CustomizedBookings.findById(customizedBooking._id)
+      .populate({ path: "userId", select: "name email _id" })
+      .populate({ path: "customizedPackageId", select: "title price _id" })
+      .lean();
+    res.status(201).json({ success: true, data: created });
   } catch (error) {
     console.log("Customized Booking creation failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });

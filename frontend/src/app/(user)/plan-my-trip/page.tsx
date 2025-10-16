@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   useForm,
@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuthStore } from "@/store/useAuthStore";
+import { redirect } from "next/navigation";
 
 /* --- Your existing Zod schema and helper types remain unchanged --- */
 // (Use your fullSchema, types, and fetchPackages as-is)
@@ -83,6 +84,23 @@ const fullSchema = z.object({
 
 type FormData = z.infer<typeof fullSchema>;
 
+interface BookingResponse {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    __v: number;
+  };
+  customizedPackageId: string;
+  doorToDoor: boolean;
+  finalPrice: number;
+  paidPrice: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 /* --------------------- API types --------------------- */
 interface Destination {
   _id: string;
@@ -148,8 +166,25 @@ const createBooking = async (data: FormData, accessToken: string) => {
 };
 export default function CustomTourStepper() {
   const token = useAuthStore((s) => s.accessToken) as string;
+  if (!token) redirect("/auth/login");
   const [currentStep, setCurrentStep] = useState(0);
-
+  const [loading, setLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [paymentData, setPaymentData] = useState({
+    key: "",
+    txnid: "",
+    amount: "",
+    productinfo: "",
+    firstname: "",
+    lastname: "",
+    email: "",
+    phone: "",
+    surl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success-customized`,
+    furl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/failure-customized`,
+    hash: "",
+    udf1: "",
+    service_provider: "",
+  });
   const methods = useForm<FormData>({
     resolver: zodResolver(fullSchema),
     defaultValues: {
@@ -390,7 +425,8 @@ export default function CustomTourStepper() {
     mutationFn: (values: FormData) => createBooking(values, token),
     onSuccess: (data) => {
       console.log(data);
-      // toast.success("Booking created successfully!");
+      const booking = data?.data;
+      handlePayment(booking);
     },
     onError: (error) => {
       console.error(error);
@@ -423,6 +459,44 @@ export default function CustomTourStepper() {
     mutation.mutate(payload);
   };
 
+  const handlePayment = async (bookings: BookingResponse) => {
+    setLoading(true);
+
+    try {
+      const txnid = "txn" + Date.now();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/payment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          txnid,
+          amount: bookings?.paidPrice?.toFixed(2) || 0,
+          productinfo: bookings?.customizedPackageId ?? "Membership Package",
+          firstname: bookings.userId?.name ?? "Guest",
+          email: bookings.userId?.email ?? "abhi@example.com",
+          phone: "9876543210",
+          udf1: bookings?._id,
+          surl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success-customized`,
+          furl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/failure-customized`,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Payment init failed: ${res.status}`);
+      }
+
+      const { paymentData } = await res.json();
+      setPaymentData(paymentData);
+      setTimeout(() => {
+        formRef.current?.submit();
+      }, 1000);
+    } catch (err) {
+      // toast.error((err as Error).message);
+      setLoading(false);
+    }
+  };
   /* -------------------- JSX -------------------- */
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 my-8">
@@ -474,13 +548,13 @@ export default function CustomTourStepper() {
                   name="customizedPackageId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Choose Package</FormLabel>
+                      <FormLabel>Choose Desired Destination</FormLabel>
                       <FormControl>
                         <select
                           {...field}
                           className="w-full rounded border p-2"
                         >
-                          <option value="">Select package</option>
+                          <option value="">Select Destination</option>
                           {isLoading ? (
                             <option>Loading...</option>
                           ) : (
@@ -887,6 +961,75 @@ export default function CustomTourStepper() {
                       Full Payment ₹
                       {((watch("finalPrice") || 0) * 1.05).toFixed(2)}
                     </Button>
+                    <div className="mt-4 p-4 ">
+                      <form
+                        ref={formRef}
+                        action="https://secure.payu.in/_payment"
+                        method="post"
+                        className="flex flex-col"
+                      >
+                        <input
+                          type="hidden"
+                          name="key"
+                          value={paymentData.key}
+                        />
+                        <input
+                          type="hidden"
+                          name="txnid"
+                          value={paymentData.txnid}
+                        />
+                        <input
+                          type="hidden"
+                          name="productinfo"
+                          value={paymentData.productinfo}
+                        />
+                        <input
+                          type="hidden"
+                          name="amount"
+                          value={paymentData.amount}
+                        />
+                        <input
+                          type="hidden"
+                          name="email"
+                          value={paymentData.email}
+                        />
+                        <input
+                          type="hidden"
+                          name="firstname"
+                          value={paymentData.firstname}
+                        />
+                        <input
+                          type="hidden"
+                          name="lastname"
+                          value={paymentData.lastname}
+                        />
+                        <input
+                          type="hidden"
+                          name="surl"
+                          value={paymentData.surl}
+                        />
+                        <input
+                          type="hidden"
+                          name="furl"
+                          value={paymentData.furl}
+                        />
+                        <input
+                          type="hidden"
+                          name="phone"
+                          value={paymentData.phone}
+                        />
+                        <input
+                          type="hidden"
+                          name="hash"
+                          value={paymentData.hash}
+                        />
+                        <input
+                          type="hidden"
+                          name="udf1"
+                          value={paymentData.udf1}
+                        />
+                      </form>
+                    </div>
                   </>
                 )}
               </div>
@@ -894,14 +1037,14 @@ export default function CustomTourStepper() {
           </form>
           {mutation.isSuccess && (
             <div className="p-6 text-green-600">
-              <h1>✅ Payment Successful</h1>
-              <p>Thank you for your payment.</p>
+              <h1>✅ Booking Successful</h1>
+              <p>Thank you for your Booking.</p>
             </div>
           )}
           {mutation.isError && (
             <div className="p-6 text-red-600">
-              <h1>❌ Payment Failed</h1>
-              <p>Please try again or use another payment method.</p>
+              <h1>❌ Booking Failed</h1>
+              <p>Please try again.</p>
             </div>
           )}
         </Form>

@@ -21,5 +21,6 @@ paymentRoute.post("/success", verifySuccessPayment);
 paymentRoute.post("/failure", verifyFailurePayment);
 paymentRoute.post("/success-membership", verifyMembershipSuccessPayment);
 paymentRoute.post("/failure-membership", verifyMembershipFailurePayment);
-
+paymentRoute.post("/success-customized", verifyMembershipSuccessPayment);
+paymentRoute.post("/failure-customized", verifyMembershipFailurePayment);
 export default paymentRoute;
