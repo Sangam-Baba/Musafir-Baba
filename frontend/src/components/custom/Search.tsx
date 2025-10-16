@@ -40,7 +40,7 @@ function SearchBanner() {
               key={location._id}
               value={`${location.country}/${location.state}`}
             >
-              {location.state.charAt(0).toUpperCase() + location.state.slice(1)}
+              {location.name.charAt(0).toUpperCase() + location.name.slice(1)}
             </option>
           );
         })}

@@ -18,23 +18,9 @@ import logo from "../../../public/logo.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useAuthDialogStore } from "@/store/useAuthDialogStore";
-import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
-  const router = useRouter();
-  const { openDialog } = useAuthDialogStore();
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-
-  const handleClick = () => {
-    if (!accessToken) {
-      openDialog("login", undefined, "/plan-my-trip");
-      return;
-    }
-    router.push(`/plan-my-trip`);
-  };
 
   return (
     <header className="w-full">
@@ -97,8 +83,10 @@ export default function Header() {
 
           {/* Right: account icon */}
           <div className="flex items-center gap-2">
-            <Button onClick={handleClick} className="bg-[#FE5300]">
-              Plan My Trip
+            <Button className="bg-[#FE5300] hover:bg-[#FE5300]">
+              <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
+                Pay Now
+              </Link>
             </Button>
 
             <AccountIcon />

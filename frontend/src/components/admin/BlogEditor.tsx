@@ -136,6 +136,19 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         >
           H3
         </button>
+        <button
+          type="button"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 4 }).run()
+          }
+          className={`px-2 py-1 rounded ${
+            editor.isActive("heading", { level: 4 })
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          H4
+        </button>
 
         {/* Lists */}
         <button

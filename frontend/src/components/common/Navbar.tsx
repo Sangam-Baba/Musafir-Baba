@@ -5,8 +5,22 @@ import * as React from "react";
 // import { SunMoon } from 'lucide-react';
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
+  const router = useRouter();
+  const { openDialog } = useAuthDialogStore();
+  const accessToken = useAuthStore((state) => state.accessToken) as string;
+
+  const handleClick = () => {
+    if (!accessToken) {
+      openDialog("login", undefined, "/plan-my-trip");
+      return;
+    }
+    router.push(`/plan-my-trip`);
+  };
   // const { theme, setTheme }= useTheme();
   return (
     <>
@@ -31,10 +45,8 @@ export function Navbar() {
             <Link href="/news">News</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Button className="bg-[#FE5300] hover:bg-[#FE5300]">
-              <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
-                Pay Now
-              </Link>
+            <Button onClick={handleClick} className="bg-[#FE5300]">
+              Plan My Trip
             </Button>
           </li>
           {/* <li className="font-bold ">
