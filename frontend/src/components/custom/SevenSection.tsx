@@ -14,19 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import Autoplay from "embla-carousel-autoplay";
 import { Clock, MapPin } from "lucide-react";
+import { FaMoneyBill } from "react-icons/fa";
 
 interface Batch {
-  _id: number;
-  title: string;
-  description: string;
-  price: number;
-  coverImage: {
-    url: string;
-    public_id: string;
-    alt: string;
-    width?: number;
-    height?: number;
-  };
+  quad: number;
+  _id: string;
 }
 
 interface Image {
@@ -190,16 +182,23 @@ export function SevenSection() {
                               className="w-6 h-8 inline-block "
                               color="#FE5300"
                             />
-                            {pkg?.duration?.days}D/{pkg?.duration?.nights}N
+                            {pkg?.duration?.nights}N/{pkg?.duration?.days}D
                           </div>
-                          <Link
-                            href={`/${pkg?.destination?.country}/${pkg?.destination?.state}/${pkg.slug}`}
-                          >
-                            <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
-                              Explore Now
-                            </Button>
-                          </Link>
+                          <div className="flex items-center gap-2 text-white">
+                            <FaMoneyBill
+                              className="w-6 h-8 inline-block "
+                              color="#FE5300"
+                            />
+                            ₹ {pkg?.batch[0]?.quad.toLocaleString("en-IN")}
+                          </div>
                         </div>
+                        <Link
+                          href={`/${pkg?.destination?.country}/${pkg?.destination?.state}/${pkg.slug}`}
+                        >
+                          <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
+                            Explore Now
+                          </Button>
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>
