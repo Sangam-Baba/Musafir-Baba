@@ -76,7 +76,7 @@ function DelhiTourWebPage({ DelhiTourData }: { DelhiTourData: WebPage }) {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-2/7">
+        <aside className="w-full md:w-2/7 md:sticky md:top-10 self-start">
           <QueryForm />
           {/* <RelatedPages slug={slug} parent="bookings" /> */}
         </aside>

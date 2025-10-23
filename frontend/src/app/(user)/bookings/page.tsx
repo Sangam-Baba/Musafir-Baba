@@ -50,7 +50,7 @@ async function BookingsWebPage() {
         overlayOpacity={5}
       />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
-        <article className="w-full md:w-5/7">
+        <article className="w-full md:w-2/3">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
           </header>
@@ -77,7 +77,7 @@ async function BookingsWebPage() {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-2/7 md:sticky md:top-10 self-start">
+        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start">
           <div className="space-y-6">
             <QueryForm />
             <RelatedPages slug={slug} parent="bookings" />
