@@ -16,7 +16,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { Button } from "@/components/ui/button";
 import PopupQueryForm from "@/components/custom/PopupQueryForm";
 
 interface ImageType {

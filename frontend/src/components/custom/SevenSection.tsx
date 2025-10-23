@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/carousel";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import Autoplay from "embla-carousel-autoplay";
+import { Clock, MapPin } from "lucide-react";
 
 interface Batch {
   _id: number;
@@ -49,6 +51,10 @@ interface BestSeller {
   batch: Batch[];
   slug: string;
   gallery: Image[];
+  duration: {
+    days: number;
+    nights: number;
+  };
 }
 const getBestSeller = async () => {
   const res = await fetch(
@@ -84,7 +90,11 @@ export function SevenSection() {
 
         {/* Carousel */}
         <div className="w-full max-w-7xl flex justify-center">
-          <Carousel className="w-full max-w-6xl" opts={{ loop: true }}>
+          <Carousel
+            className="w-full max-w-6xl"
+            opts={{ loop: true }}
+            plugins={[Autoplay({ delay: 4000, stopOnFocusIn: true })]}
+          >
             <CarouselContent>
               {bestSeller?.map((pkg: BestSeller, i: number) => (
                 <CarouselItem key={i}>
@@ -163,13 +173,33 @@ export function SevenSection() {
                         <p className="text-gray-100 leading-relaxed line-clamp-10 text-justify">
                           {pkg.description}
                         </p>
-                        <Link
-                          href={`/${pkg?.destination?.country}/${pkg?.destination?.state}/${pkg.slug}`}
-                        >
-                          <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
-                            Explore Now
-                          </Button>
-                        </Link>
+                        <div className="flex justify-between gap-4 mt-4">
+                          <div className="flex items-center gap-2 text-white">
+                            <MapPin
+                              className="w-6 h-8 inline-block "
+                              color="#FE5300"
+                            />
+                            {pkg?.destination?.country.charAt(0).toUpperCase() +
+                              pkg?.destination?.country.slice(1)}
+                            ,{" "}
+                            {pkg?.destination?.state.charAt(0).toUpperCase() +
+                              pkg?.destination?.state.slice(1)}
+                          </div>
+                          <div className="flex items-center gap-2 text-white">
+                            <Clock
+                              className="w-6 h-8 inline-block "
+                              color="#FE5300"
+                            />
+                            {pkg?.duration?.days}D/{pkg?.duration?.nights}N
+                          </div>
+                          <Link
+                            href={`/${pkg?.destination?.country}/${pkg?.destination?.state}/${pkg.slug}`}
+                          >
+                            <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
+                              Explore Now
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
