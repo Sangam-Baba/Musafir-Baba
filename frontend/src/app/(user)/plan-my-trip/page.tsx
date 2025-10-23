@@ -542,7 +542,7 @@ export default function CustomTourStepper() {
             {/* Progress line */}
             {index < steps.length - 1 && (
               <div
-                className={`absolute top-4 left-[55%] h-[2px] w-[90%] ${
+                className={`absolute top-4 left-[60%] h-[2px] w-[85%] ${
                   index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
                 }`}
               />
@@ -578,8 +578,7 @@ export default function CustomTourStepper() {
                           ) : (
                             packages?.map((p) => (
                               <option key={p._id} value={p._id}>
-                                {p.destination?.state ?? p._id} — ₹
-                                {p.price ?? 0}
+                                {p.destination?.state ?? p._id}
                               </option>
                             ))
                           )}

@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { UserRound, Mail, Phone } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface FormData {
   name: string;
@@ -16,6 +18,8 @@ interface FormData {
   phone: string;
   message: string;
   whatsapp: boolean;
+  policy: boolean;
+  source: string;
 }
 
 const createContact = async (formData: FormData) => {
@@ -29,24 +33,29 @@ const createContact = async (formData: FormData) => {
 };
 
 export default function QueryForm() {
+  const pathname = usePathname();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
     message: "",
     whatsapp: false,
+    policy: false,
+    source: pathname,
   });
 
   const mutation = useMutation({
     mutationFn: createContact,
     onSuccess: () => {
-      toast.success("Contact created successfully!");
+      toast.success("We will get back to you soon!");
       setFormData({
         name: "",
         email: "",
         phone: "",
         message: "",
         whatsapp: false,
+        policy: false,
+        source: pathname,
       });
     },
     onError: (error: unknown) => {
@@ -132,6 +141,34 @@ export default function QueryForm() {
             <Label htmlFor="whatsapp" className="text-sm text-gray-700">
               Send me updates on{" "}
               <span className="text-green-600 font-semibold">WhatsApp</span>
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="policy"
+              checked={formData.policy}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, policy: !!checked })
+              }
+            />
+            <Label
+              htmlFor="policy"
+              className="text-sm text-gray-700 flex items-center flex-nowrap gap-1"
+            >
+              <span>I agree to MusafirBaba&apos;s</span>
+              <Link
+                href="/terms-and-conditions"
+                className="text-blue-600 hover:underline whitespace-nowrap"
+              >
+                T&amp;C
+              </Link>
+              <span>and</span>
+              <Link
+                href="/privacy-policy"
+                className="text-blue-600 hover:underline whitespace-nowrap"
+              >
+                Privacy Policy
+              </Link>
             </Label>
           </div>
 
