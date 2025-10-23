@@ -66,7 +66,7 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
       <Hero image={visa?.bannerImage?.url || visa.coverImage.url} title="" />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
-          <header className="mt-6 space-y-2">
+          <header className="">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
           </header>
           <section className="prose prose-lg max-w-none mt-6">
@@ -91,7 +91,7 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-1/3">
+        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start">
           <QueryForm />
           {relatedPageArray.length > 0 && (
             <ListBlogSidebar

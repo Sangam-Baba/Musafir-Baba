@@ -87,15 +87,11 @@ async function BookingsWebPage({ params }: { params: { slug: string } }) {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-1/3">
+        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start">
           <QueryForm />
           <RelatedPages slug={params.slug} parent="visa" />
         </aside>
       </div>
-      {/* ✅ JSON-LD Schema
-      <Script id="blog-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script> */}
     </section>
   );
 }

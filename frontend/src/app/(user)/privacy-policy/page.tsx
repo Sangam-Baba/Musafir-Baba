@@ -42,10 +42,7 @@ async function BookingsWebPage() {
 
   return (
     <section className="">
-      <Hero
-        image={visa?.coverImage?.url || "/Hero1.jpg"}
-        title="Privacy Policy"
-      />
+      <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="" />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-5/7">
           <header className="mt-6 space-y-2">
@@ -73,7 +70,7 @@ async function BookingsWebPage() {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-2/7">
+        <aside className="w-full md:w-2/7 md:sticky md:top-10 self-start">
           <QueryForm />
         </aside>
       </div>

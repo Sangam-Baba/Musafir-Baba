@@ -77,15 +77,13 @@ async function BookingsWebPage() {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-2/7">
-          <QueryForm />
-          <RelatedPages slug={slug} parent="bookings" />
+        <aside className="w-full md:w-2/7 md:sticky md:top-10 self-start">
+          <div className="space-y-6">
+            <QueryForm />
+            <RelatedPages slug={slug} parent="bookings" />
+          </div>
         </aside>
       </div>
-      {/* ✅ JSON-LD Schema
-      <Script id="blog-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script> */}
     </section>
   );
 }
