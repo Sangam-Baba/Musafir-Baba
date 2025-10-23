@@ -187,7 +187,7 @@ function SlugClients({
           description=""
           align="center"
           height="lg"
-          overlayOpacity={10}
+          overlayOpacity={20}
         />
       </div>
 

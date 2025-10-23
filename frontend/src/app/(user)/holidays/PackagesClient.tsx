@@ -60,12 +60,15 @@ export default function PackagesClient() {
     <section>
       <Hero
         image={img1.src}
-        title="Find Your Perfect Getaway"
-        description="Curated itineraries, flexible dates, and best-price guarantees."
+        title=""
         align="center"
         height="lg"
-        overlayOpacity={55}
+        overlayOpacity={0}
       />
+      <div className="w-full flex flex-col items-center justify-center mt-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-center">Holidays</h1>
+        <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
+      </div>
       <div className="max-w-7xl mx-auto py-10 px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
         {categories.map((category, idx) => (
           <Card

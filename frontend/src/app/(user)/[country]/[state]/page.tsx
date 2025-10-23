@@ -120,11 +120,17 @@ function StatePackages() {
     <section>
       <Hero
         image={packages[0]?.destination?.coverImage?.url || img1.src}
-        title={`Explore ${packages[0]?.destination?.name} Best Packages`}
-        description="Curated itineraries, flexible dates, and best-price guarantees"
+        title=""
         height="lg"
         align="center"
+        overlayOpacity={5}
       />
+      <div className="w-full flex flex-col items-center justify-center mt-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Packages in ${
+          StateName.charAt(0).toUpperCase() + StateName.slice(1)
+        }`}</h1>
+        <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
+      </div>
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (
         <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">

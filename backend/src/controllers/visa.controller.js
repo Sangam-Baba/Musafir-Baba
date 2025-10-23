@@ -24,7 +24,7 @@ const getAllVisa = async (req, res) => {
     if (req.query?.isActive) filter.isActive = req.query.isActive;
     const visa = await Visa.find(filter)
       .sort({ createdAt: -1 })
-      .select("-content -coverImage -bannerImage -faqs")
+      .select("-content -bannerImage -faqs")
       .lean();
     res.status(200).json({ success: true, data: visa });
   } catch (error) {

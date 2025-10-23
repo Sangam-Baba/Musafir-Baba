@@ -85,13 +85,13 @@ function IndiaDestination() {
     <section>
       <Hero
         image={img1.src}
-        title="Explore Best Destinations"
-        description="Curated itineraries, flexible dates, and best-price guarantees"
+        title=""
         height="lg"
         align="center"
+        overlayOpacity={5}
       />
       {destinations.length > 0 ? (
-        <div className="px-4 md:px-8 lg:px-20 py-16">
+        <div className="px-4 md:px-8 lg:px-20 py-10">
           <CategoryGrid
             categories={destinations.map((destination) => ({
               id: destination._id,

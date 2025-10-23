@@ -48,8 +48,9 @@ async function VisaWebPage() {
       <div className="w-full flex relative">
         <Hero
           image={visa?.coverImage?.url || "/Hero1.jpg"}
-          title="Membership"
+          title=""
           className="h-[400px] md:h-[500px]"
+          overlayOpacity={5}
         />
         <div className="hidden md:block z-10 w-1/4   absolute top-1/2 -translate-y-1/2 right-10 ">
           <QueryForm />

@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useMutation } from "@tanstack/react-query"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,11 +14,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 import { toast } from "sonner";
-import Link from "next/link"
+import Link from "next/link";
 
 // ✅ Zod Schema
 const formSchema = z
@@ -37,7 +37,7 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  })
+  });
 
 // ✅ API call function
 async function registerUser(values: z.infer<typeof formSchema>) {
@@ -45,14 +45,14 @@ async function registerUser(values: z.infer<typeof formSchema>) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(values),
-  })
+  });
 
   if (!res.ok) {
-    const errorData = await res.json()
-    throw new Error(errorData.message || "Registration failed")
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Registration failed");
   }
 
-  return res.json()
+  return res.json();
 }
 
 export default function RegisterPage() {
@@ -64,33 +64,34 @@ export default function RegisterPage() {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
   // ✅ Use Mutation instead of useQuery
   const mutation = useMutation({
     mutationFn: registerUser,
     onSuccess: (data) => {
-      console.log("Registered successfully:", data)
+      console.log("Registered successfully:", data);
       toast.success("Registration successful! Please verify your email.");
       // 👉 Redirect or reset form here
       form.reset();
-      
     },
     onError: (error) => {
-      console.error("Registration failed:", error)
+      console.error("Registration failed:", error);
       toast.error(error.message);
-      form.reset()
+      form.reset();
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    mutation.mutate(values)
+    mutation.mutate(values);
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Create an Account</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold">
+          Create an Account
+        </h1>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -120,7 +121,11 @@ export default function RegisterPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,7 +162,11 @@ export default function RegisterPage() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "Registering..." : "Register"}
             </Button>
           </form>
@@ -170,17 +179,17 @@ export default function RegisterPage() {
         )}
         {mutation.isSuccess && (
           <p className="mt-3 text-center text-sm text-green-600">
-           Registration successful!
+            Registration successful!
           </p>
         )}
 
         <p className="mt-4 text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/auth/login" className="text-blue-600 hover:underline">
             Login
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }

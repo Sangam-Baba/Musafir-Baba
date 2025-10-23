@@ -10,7 +10,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import RelatedPages from "@/components/custom/RelatedPages";
-import { BusBooking } from "@/components/custom/BusBooking";
 import HomeBooking from "@/components/custom/HomeBooking";
 interface Faq {
   question: string;
@@ -45,7 +44,11 @@ async function BookingsWebPage() {
 
   return (
     <section className="">
-      <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="Bookings" />
+      <Hero
+        image={visa?.coverImage?.url || "/Hero1.jpg"}
+        title=""
+        overlayOpacity={5}
+      />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-5/7">
           <header className="mt-6 space-y-2">

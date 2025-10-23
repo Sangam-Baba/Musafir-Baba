@@ -21,10 +21,13 @@ const register = async (req, res) => {
   const { name, email, password } = req.body;
   try {
     const isExist = await User.findOne({ email });
-    if (isExist) {
+    if (isExist && isExist.isVerified) {
       return res
         .status(409)
         .json({ success: false, message: "User Already exist" });
+    }
+    if (isExist && !isExist.isVerified) {
+      await User.findByIdAndDelete(isExist._id);
     }
     let avatar = null;
     if (req.files?.avatar) {

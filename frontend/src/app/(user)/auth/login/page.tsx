@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useMutation } from "@tanstack/react-query"
-import { useAuthStore } from "@/store/useAuthStore"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/useAuthStore";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,10 +14,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 
 // ✅ Zod Schema
@@ -39,32 +39,32 @@ async function loginUser(values: z.infer<typeof formSchema>) {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(values),
-  })
+  });
 
   if (!res.ok) {
-    const errorData = await res.json()
-    throw new Error(errorData.message || "Login failed")
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Login failed");
   }
 
-  return res.json()
+  return res.json();
 }
 
 export default function LoginPage() {
   const router = useRouter();
-   const setAuth = useAuthStore((s) => s.setAuth);
+  const setAuth = useAuthStore((s) => s.setAuth);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
     },
-  })
+  });
 
   // ✅ Use Mutation instead of useQuery
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      console.log("Login successfully:", data)
+      console.log("Login successfully:", data);
       toast.success("Login successful!");
       // 👉 Redirect or reset form here
       const accessToken = data.accessToken;
@@ -72,23 +72,27 @@ export default function LoginPage() {
       // const user=data.user;
       setAuth(accessToken, data.role);
       form.reset();
-      setTimeout(()=> {router.replace("/")}, 3000);
+      setTimeout(() => {
+        router.replace("/");
+      }, 3000);
     },
     onError: (error) => {
-      console.error("Registration failed:", error)
+      console.error("Registration failed:", error);
       toast.error(error.message);
-      form.reset()
+      form.reset();
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    mutation.mutate(values)
+    mutation.mutate(values);
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Log in to your Account</h1>
+        <h1 className="mb-6 text-center text-2xl font-bold">
+          Log in to your Account
+        </h1>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -100,7 +104,11 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +130,11 @@ export default function LoginPage() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "Loging in..." : "Login"}
             </Button>
           </form>
@@ -135,12 +147,15 @@ export default function LoginPage() {
         )}
         {mutation.isSuccess && (
           <p className="mt-3 text-center text-sm text-green-600">
-           Login successful!
+            Login successful!
           </p>
         )}
 
         <div className="flex gap-2 items-center justify-center mt-4 text-center text-sm text-gray-500">
-          <Link href="/auth/reset" className="text-blue-600 hover:underline">
+          <Link
+            href="/auth/forget-password"
+            className="text-blue-600 hover:underline"
+          >
             Forget Password
           </Link>
           <Link href="/auth/register" className="text-blue-600 hover:underline">
@@ -149,5 +164,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

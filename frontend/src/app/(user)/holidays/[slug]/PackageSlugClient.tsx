@@ -101,16 +101,16 @@ function SingleCategoryPage({ slug }: { slug: string }) {
     <section className="w-full mb-12">
       <Hero
         image={packages[0]?.coverImage?.url || img1.src}
-        title="Find Your Perfect Getaway"
-        description="Curated itineraries, flexible dates, and best-price guarantees."
+        title=""
         align="center"
         height="lg"
-        overlayOpacity={55}
+        overlayOpacity={5}
       />
 
       {/* Show category details */}
-      <div className="max-w-4xl mx-auto text-center my-12">
+      <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
         <h1 className="text-3xl font-bold">{category?.name}</h1>
+        <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
         <p className="mt-2 text-muted-foreground">{category?.description}</p>
       </div>
 

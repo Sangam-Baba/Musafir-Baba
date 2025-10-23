@@ -63,10 +63,7 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
 
   return (
     <section className="">
-      <Hero
-        image={visa?.bannerImage?.url || visa.coverImage.url}
-        title={visa.title}
-      />
+      <Hero image={visa?.bannerImage?.url || visa.coverImage.url} title="" />
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
           <header className="mt-6 space-y-2">
