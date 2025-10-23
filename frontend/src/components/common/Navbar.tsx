@@ -45,7 +45,10 @@ export function Navbar() {
             <Link href="/news">News</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Button onClick={handleClick} className="bg-[#FE5300]">
+            <Button
+              onClick={handleClick}
+              className="bg-[#87E87F] text-black hover:bg-[#87E87F] hover:text-black"
+            >
               Plan My Trip
             </Button>
           </li>

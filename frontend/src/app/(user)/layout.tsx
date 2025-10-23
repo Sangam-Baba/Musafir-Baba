@@ -4,6 +4,7 @@ import Header from "@/components/common/Header";
 import "../globals.css";
 import Footer from "@/components/common/Footer";
 import Script from "next/script";
+import WhatsAppButton from "@/components/common/WhatsappButton";
 export const metadata: Metadata = {
   title: "MusafirBaba - Best Travel Agency in Delhi | Holidays | Visa",
   description:
@@ -150,7 +151,10 @@ export default function RootLayout({
         </noscript>
         <RootProvider>
           <Header />
-          <main className="flex-grow">{children}</main>
+          <main className="flex-grow">
+            {children}
+            <WhatsAppButton />
+          </main>
           <Script
             id="organization-schema"
             type="application/ld+json"
