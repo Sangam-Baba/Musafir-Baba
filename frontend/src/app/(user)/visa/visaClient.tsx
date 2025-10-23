@@ -78,19 +78,20 @@ function VisaClientPage() {
     <section>
       <div className="relative">
         <Hero image="/Heroimg.jpg" title="Visa" />
+
         <form
           onSubmit={handleSubmit}
-          className=" z-10 absolute bottom-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex border border-gray-300 rounded-md overflow-hidden "
+          className="z-10 absolute bottom-10 left-1/2 transform -translate-x-1/2 translate-y-1/2 flex w-[70%] sm:w-[70%] md:w-[50%] lg:w-[30%] border border-gray-300 rounded-full overflow-hidden shadow-lg bg-white/20 backdrop-blur-md"
         >
           <Input
-            className="border-none text-white"
+            className="flex-1 px-4 py-6 text-lg text-white placeholder-white bg-transparent border-none focus:ring-0"
             type="text"
             placeholder="Search for a country"
             value={search}
             onChange={handleChange}
           />
           <Button
-            className="border-none bg-[#FF5300] hover:bg-[#FE5300]"
+            className="px-6 py-6 text-lg font-semibold border-none rounded-none bg-[#FF5300] hover:bg-[#FE5300] text-white"
             type="submit"
           >
             Search
@@ -135,9 +136,11 @@ function VisaClientPage() {
                   </p>
                 </CardContent>
                 <CardFooter className="flex items-center justify-between border-t  ">
-                  <p className="font-bold text-md ">
-                    <span className="text-[#FF5300]">₹{visa.cost}</span>+
-                    Service Fee
+                  <p className="text-sm  text-gray-600">
+                    <span className="text-[#FF5300] font-bold text-lg">
+                      ₹{visa.cost}
+                    </span>
+                    + Service Fee
                   </p>
                   <p className="font-bold text-blue-600">
                     <Link href={`/visa/${visa.slug}`}>
