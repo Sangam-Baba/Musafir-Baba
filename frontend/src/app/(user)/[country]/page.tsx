@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Loader } from "@/components/custom/loader";
 import { useParams } from "next/navigation";
 import NotFoundPage from "@/components/common/Not-Found";
+import Breadcrumb from "@/components/common/Breadcrumb";
 interface Destination {
   seo?: {
     keywords: string[];
@@ -46,7 +47,7 @@ const getIndiaDestinations = async (
     }/destination/?country=${country.toLowerCase()}`,
     {
       method: "GET",
-      headers: { "Content-Type": "appliction/json" },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
     }
   );
@@ -90,8 +91,11 @@ function IndiaDestination() {
         align="center"
         overlayOpacity={5}
       />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-0 mt-5">
+        <Breadcrumb />
+      </div>
       {destinations.length > 0 ? (
-        <div className="px-4 md:px-8 lg:px-20 py-10">
+        <div className="">
           <CategoryGrid
             categories={destinations.map((destination) => ({
               id: destination._id,

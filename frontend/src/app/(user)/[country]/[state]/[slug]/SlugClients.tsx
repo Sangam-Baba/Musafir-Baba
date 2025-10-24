@@ -23,6 +23,7 @@ import NotFoundPage from "@/components/common/Not-Found";
 import { Clock, MapPin } from "lucide-react";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 import { AuthDialog } from "@/components/auth/AuthDialog";
+import Breadcrumb from "@/components/common/Breadcrumb";
 type TabKey =
   | "description"
   | "highlights"
@@ -190,8 +191,11 @@ function SlugClients({
           overlayOpacity={20}
         />
       </div>
+      <div className="w-full max-w-7xl mx-auto px-8  mt-4">
+        <Breadcrumb />
+      </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4  py-8 md:flex">
+      <div className="w-full max-w-7xl mx-auto px-4  my-4 md:flex">
         <section className="w-full md:w-2/3 px-4  py-16">
           <div className="flex flex-col gap-2  max-w-7xl mx-auto">
             {/* Tabs */}

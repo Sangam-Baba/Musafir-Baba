@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import RelatedPages from "@/components/custom/RelatedPages";
 import NotFoundPage from "@/components/common/Not-Found";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Faq {
   question: string;
@@ -60,6 +61,9 @@ async function BookingsWebPage({ params }: { params: { slug: string } }) {
         title=""
         overlayOpacity={5}
       />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
           <header className="">

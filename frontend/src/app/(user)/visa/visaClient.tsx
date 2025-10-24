@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/custom/loader";
 import { VisaTypesDialog } from "@/components/custom/VisaTypesDialog";
+import Breadcrumb from "@/components/common/Breadcrumb";
 interface Visa {
   id: string;
   country: string;
@@ -97,6 +98,10 @@ function VisaClientPage() {
             Search
           </Button>
         </form>
+      </div>
+
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
       </div>
 
       <div className="container lg:max-w-7xl  mx-auto py-10 px-8">

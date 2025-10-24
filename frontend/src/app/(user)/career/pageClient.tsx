@@ -9,6 +9,7 @@ import Image from "next/image";
 import ApplicationForm from "@/components/custom/ApplicationForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Job {
   _id: string;
@@ -83,6 +84,9 @@ function CareerClientPage() {
   return (
     <section className="">
       <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="Career" />
+      <div className="w-full  mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
       <div className=" mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-5 items-center">
         <article className="w-full  flex flex-col items-center">
           <div className="prose prose-lg max-w-none  text-center">

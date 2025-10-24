@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Loader } from "@/components/custom/loader";
 import PackageCard from "@/components/custom/PackageCard";
 import img1 from "../../../../../public/Hero1.jpg";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Batch {
   _id: string;
@@ -106,6 +107,9 @@ function SingleCategoryPage({ slug }: { slug: string }) {
         height="lg"
         overlayOpacity={5}
       />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
 
       {/* Show category details */}
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">

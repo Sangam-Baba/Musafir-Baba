@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import NotFoundPage from "@/components/common/Not-Found";
+import Breadcrumb from "@/components/common/Breadcrumb";
 interface Category {
   id: string;
   name: string;
@@ -65,6 +66,9 @@ export default function PackagesClient() {
         height="lg"
         overlayOpacity={0}
       />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
       <div className="w-full flex flex-col items-center justify-center mt-8">
         <h1 className="text-3xl md:text-4xl font-bold text-center">Holidays</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>

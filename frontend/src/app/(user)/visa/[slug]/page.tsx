@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Faq {
   question: string;
@@ -68,6 +69,9 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
         title=""
         overlayOpacity={0}
       />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full md:w-2/3">
           <header className="">

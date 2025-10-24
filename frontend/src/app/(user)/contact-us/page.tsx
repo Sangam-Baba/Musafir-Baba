@@ -5,19 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
 import { Loader } from "@/components/custom/loader";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import Breadcrumb from "@/components/common/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
-interface Faq {
-  question: string;
-  answer: string;
-}
 const getWebPageBySlug = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/contact-us`
@@ -43,6 +34,9 @@ function VisaWebPage() {
   return (
     <section className="">
       <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="Contact Us" />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full  flex flex-col items-center">
           <header className="mt-6 space-y-2">

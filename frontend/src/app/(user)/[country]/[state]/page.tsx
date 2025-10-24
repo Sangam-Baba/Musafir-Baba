@@ -8,6 +8,7 @@ import { Loader } from "@/components/custom/loader";
 import { useParams } from "next/navigation";
 import PackageCard from "@/components/custom/PackageCard";
 import NotFoundPage from "@/components/common/Not-Found";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Destination {
   _id: string;
@@ -125,6 +126,9 @@ function StatePackages() {
         align="center"
         overlayOpacity={5}
       />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
+        <Breadcrumb />
+      </div>
       <div className="w-full flex flex-col items-center justify-center mt-8">
         <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Packages in ${
           StateName.charAt(0).toUpperCase() + StateName.slice(1)

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import MembershipCard from "@/components/custom/MembershipCard";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Faq {
   question: string;
@@ -59,8 +60,11 @@ async function VisaWebPage() {
           <QueryDailogBox />
         </div>
       </div>
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-8 md:px-16 py-10">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 md:px-6 lg:py-8">
         <article className="w-full ">
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>

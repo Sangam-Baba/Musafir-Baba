@@ -11,6 +11,7 @@ import BlogLikes from "@/components/custom/BlogLikes";
 import { BlogComments } from "@/components/custom/BuildCommentTree";
 import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
+import Breadcrumb from "@/components/common/Breadcrumb";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -125,6 +126,9 @@ export default async function BlogDetailPage({
             className="object-cover"
             priority
           />
+        </div>
+        <div className="  mt-5">
+          <Breadcrumb />
         </div>
 
         {/* Title & Meta */}

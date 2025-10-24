@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import PopupQueryForm from "@/components/custom/PopupQueryForm";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface ImageType {
   url: string;
@@ -102,8 +103,10 @@ function AboutUsPageClient() {
   return (
     <section>
       <Hero image={about?.coverImage?.url || "/Hero1.jpg"} title="About Us" />
-
-      <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-10">
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
+      <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 md:px-6 lg:px-8 py-10">
         {/* About Section */}
         <div className="flex flex-col md:flex-row gap-16">
           {/* Left Text Section */}

@@ -58,7 +58,6 @@ function Footer() {
                 height="200"
                 style={{ border: "0" }}
               ></iframe>
-              {/* <Map address="1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi, 110043" /> */}
             </div>
 
             <div className="flex gap-4 item-center space-y-4">
