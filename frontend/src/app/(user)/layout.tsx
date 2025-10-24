@@ -84,8 +84,8 @@ export default function RootLayout({
     image: "https://musafirbaba.com/logo.svg",
     "@id": "https://musafirbaba.com/",
     url: "https://musafirbaba.com/",
-    telephone: "+91-92896 0244",
-    priceRange: "₹5000 - ₹20000",
+    telephone: "+91-92896 02447",
+    priceRange: "₹5,000–₹20,000",
     address: {
       "@type": "PostalAddress",
       streetAddress:
@@ -134,6 +134,7 @@ export default function RootLayout({
           rel="dns-prefetch"
           href="https://musafir-baba-backend.onrender.com"
         />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
         {/* Google Tag Manager Script */}
         <Script
           id="gtm-script"
@@ -174,7 +175,7 @@ export default function RootLayout({
             id="local-business-schema"
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({ localBusinessSchema }),
+              __html: JSON.stringify(localBusinessSchema),
             }}
           />
           <AuthDialog />
