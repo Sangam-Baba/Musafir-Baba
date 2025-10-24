@@ -56,35 +56,26 @@ const faqs = [
 export default function HomePage() {
   return (
     <main className="">
-      <div
-        className="relative z-10 px-5 md:px-10 flex md:flex-row flex-col gap-4 items-center justify-around mt-16 md:mt-0"
-        // style={{ backgroundImage: "url('/baba-page.jpg')" }}
+      <section
+        className="w-full px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] "
+        style={{ backgroundImage: `url(${"/BannerImg.jpg"})` }}
       >
         {/* <div className="absolute inset-0 bg-black/40 z-0"></div> */}
-        <div className="flex flex-col gap-10 items-center md:items-start">
+        <div className="flex flex-col gap-10 items-center md:items-start z-10 w-[60%] md:w-[40%] lg:w-[30%] relative">
           <Image
             className="w-full  object-cover"
             src="/Musafir-Baba-text.png"
-            width={640}
+            width={400}
             height={127}
             alt="Musafirbaba"
             priority
             fetchPriority="high"
           />
-          <SearchBanner />
+          <div className="relative z-20 w-full overflow-visible">
+            <SearchBanner />
+          </div>
         </div>
-        <div className="hidden md:block">
-          <Image
-            className="w-full h-[600px] object-cover"
-            src="/BabaImg.png"
-            width={362}
-            height={578}
-            alt="Musafirbaba"
-            priority
-            fetchPriority="high"
-          />
-        </div>
-      </div>
+      </section>
       <SecondSection />
       <ThirdSection />
       <SectionFour />

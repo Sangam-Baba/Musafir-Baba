@@ -49,7 +49,7 @@ const data = [
   {
     title: "Corporate Tour Packages",
     description:
-      "Seamless Corporate Tour Packages fro teamretreate, business trips, and stress free travel planning.",
+      "Seamless Corporate Tour Packages for teammates, business trips, and stress free travel planning.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757505061/service-8_pgcnpk.png",
     url: "/holidays/corporate-tour-package",
   },

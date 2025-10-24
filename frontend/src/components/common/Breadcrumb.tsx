@@ -23,7 +23,7 @@ export default function Breadcrumb() {
         <li>
           <Link
             href="/"
-            className="text-gray-800 hover:text-blue-600 cursor-pointer text-lg font-medium"
+            className="text-gray-800 hover:text-blue-600 cursor-pointer text-lg font-medium hover:underline"
           >
             Home
           </Link>
@@ -31,7 +31,7 @@ export default function Breadcrumb() {
 
         {breadcrumbs.map((bc, i) => (
           <li key={bc.href} className="flex items-center">
-            <ChevronRightIcon />
+            <ChevronRightIcon size={18} color="#FE5300" />
             {i === breadcrumbs.length - 1 ? (
               <span className="text-gray-800 text-lg font-medium">
                 {bc.name}{" "}
@@ -39,7 +39,7 @@ export default function Breadcrumb() {
             ) : (
               <Link
                 href={bc.href}
-                className="text-gray-800 hover:text-blue-600 cursor-pointer text-lg font-medium"
+                className="text-gray-800 hover:text-blue-600 cursor-pointer text-lg font-medium hover:underline"
               >
                 {bc.name}
               </Link>

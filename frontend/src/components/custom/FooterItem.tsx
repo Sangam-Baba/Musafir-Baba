@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 
 interface Item {
   text: string;
@@ -23,7 +22,7 @@ function FooterItem({ title }: FooterItemProps) {
     queryKey: ["footer", title],
     queryFn: () => getFooter(title),
   });
-  console.log("this is footer with ", title, "and data is ", FootObj);
+
   return (
     <section>
       <p className={`text-lg font-bold`}>{title}</p>
