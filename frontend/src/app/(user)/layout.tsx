@@ -126,6 +126,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link
+          rel="preconnect"
+          href="https://musafir-baba-backend.onrender.com"
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://musafir-baba-backend.onrender.com"
+        />
         {/* Google Tag Manager Script */}
         <Script
           id="gtm-script"

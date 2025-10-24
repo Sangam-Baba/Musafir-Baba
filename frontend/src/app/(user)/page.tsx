@@ -68,6 +68,8 @@ export default function HomePage() {
             width={640}
             height={127}
             alt="Musafirbaba"
+            priority
+            fetchPriority="high"
           />
           <SearchBanner />
         </div>
@@ -78,6 +80,8 @@ export default function HomePage() {
             width={362}
             height={578}
             alt="Musafirbaba"
+            priority
+            fetchPriority="high"
           />
         </div>
       </div>

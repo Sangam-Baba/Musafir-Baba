@@ -16,14 +16,14 @@ const data = [
     description:
       "Celebrate love with our romantic honeymoon packages and unforgettable memories.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757399660/mscievdho61vs6fhhlzj.png",
-    url: "/holidays/honeymoon-tour-package",
+    url: "/holidays/honeymoon-package",
   },
   {
     title: "Customized Tour Package",
     description:
       " Create your perfect journey with our fully personalized travel packages.",
     img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1757400475/rmgdcyoxb9knlangdols.png",
-    url: "/holidays/customized-tour-packages",
+    url: "/holidays/customized-tour-package",
   },
   {
     title: "Group Tour Packages",
