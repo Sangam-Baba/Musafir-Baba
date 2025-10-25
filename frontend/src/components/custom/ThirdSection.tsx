@@ -71,7 +71,7 @@ function ThirdSection() {
           </h1>
           <div className="w-20 h-1 bg-[#FE5300]"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 px-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 px-4">
           <Card className="flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
             <Link
               href={data[0].url}
@@ -86,7 +86,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[0].title}
               </h3>
-              <p className="text-sm text-center">{data[0].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[0].description}
+              </p>
             </Link>
           </Card>
 
@@ -104,7 +106,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[1].title}
               </h3>
-              <p className="text-sm text-center">{data[1].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[1].description}
+              </p>
             </Link>
           </Card>
           <Card className="flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
@@ -121,7 +125,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[2].title}
               </h3>
-              <p className="text-sm text-center">{data[2].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[2].description}
+              </p>
             </Link>
           </Card>
           <Card className="flex flex-col gap-4 bg-[#FFF5E4] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
@@ -138,7 +144,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[3].title}
               </h3>
-              <p className="text-sm text-center">{data[3].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[3].description}
+              </p>
             </Link>
           </Card>
           <Card className="flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
@@ -155,7 +163,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[4].title}
               </h3>
-              <p className="text-sm text-center">{data[4].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[4].description}
+              </p>
             </Link>
           </Card>
           <Card className="flex flex-col gap-4 bg-[#FFF6F6] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
@@ -172,7 +182,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[7].title}
               </h3>
-              <p className="text-sm text-center">{data[7].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[7].description}
+              </p>
             </Link>
           </Card>
           <Card className="flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
@@ -189,7 +201,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[5].title}
               </h3>
-              <p className="text-sm text-center">{data[5].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[5].description}
+              </p>
             </Link>
           </Card>
           <Card className="flex flex-col gap-4 bg-[#FFF6F6] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">
@@ -206,7 +220,9 @@ function ThirdSection() {
               <h3 className="text-xl font-semibold text-center">
                 {data[6].title}
               </h3>
-              <p className="text-sm text-center">{data[6].description}</p>
+              <p className="text-sm text-center hidden lg:block">
+                {data[6].description}
+              </p>
             </Link>
           </Card>
         </div>

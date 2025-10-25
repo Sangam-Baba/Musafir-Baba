@@ -48,7 +48,7 @@ function SecondSection() {
             className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
           />
           {/* <Smile className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <p className="text-2xl font-bold">{counter}+</p>
+          <p className="text-2xl font-bold">{counter}</p>
           <p className="text-sm">Happy Travellers</p>
         </div>
 

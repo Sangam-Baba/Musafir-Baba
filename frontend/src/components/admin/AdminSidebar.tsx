@@ -18,6 +18,7 @@ import {
   Briefcase,
   Cog,
 } from "lucide-react";
+import { MdDashboardCustomize } from "react-icons/md";
 
 const NAV = [
   { label: "Dashboard", href: "/admin", icon: Home },
@@ -28,6 +29,11 @@ const NAV = [
   { label: "Packages", href: "/admin/holidays", icon: Box },
   {
     label: "Customized Packages",
+    href: "/admin/customized-tour-package",
+    icon: MdDashboardCustomize,
+  },
+  {
+    label: "Plan My Trip",
     href: "/admin/customized-package",
     icon: Cog,
   },
