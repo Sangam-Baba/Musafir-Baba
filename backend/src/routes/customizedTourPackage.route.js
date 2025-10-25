@@ -5,6 +5,7 @@ import {
   getCustomizedTourPackageById,
   updateCustomizedTourPackage,
   deleteCustomizedTourPackage,
+  getCustomizedTourPackageBySlug,
 } from "../controllers/customizedTourPackage.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -18,6 +19,7 @@ customizedTourPackageRoute.post(
   createCustomizedTourPackage
 );
 customizedTourPackageRoute.get("/", getAllCustomizedTourPackages);
+customizedTourPackageRoute.get("/slug/:slug", getCustomizedTourPackageBySlug);
 customizedTourPackageRoute.get("/:id", getCustomizedTourPackageById);
 customizedTourPackageRoute.patch(
   "/:id",

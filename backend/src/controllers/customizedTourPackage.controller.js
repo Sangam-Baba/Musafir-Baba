@@ -57,9 +57,9 @@ const getAllCustomizedTourPackages = async (req, res) => {
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.slug) filter.slug = req.query.slug;
     if (req.query?.status) filter.status = req.query.status;
-    const customizedTourPackages = await CustomizedTourPackage.find(
-      filter
-    ).lean();
+    const customizedTourPackages = await CustomizedTourPackage.find(filter)
+      .populate("destination", "_id name country state city slug")
+      .lean();
     res.status(200).json({
       success: true,
       message: "Customized tour packages fetched successfully",
@@ -96,6 +96,29 @@ const getCustomizedTourPackageById = async (req, res) => {
   }
 };
 
+const getCustomizedTourPackageBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const customizedTourPackage = await CustomizedTourPackage.findOne({
+      slug,
+    })
+      .populate("destination", "_id name country state city slug")
+      .lean();
+    if (!customizedTourPackage) {
+      return res
+        .status(404)
+        .json({ message: "Customized tour package not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Customized tour package fetched successfully",
+      data: customizedTourPackage,
+    });
+  } catch (error) {
+    console.log("Error getting customized tour package by slug", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 const deleteCustomizedTourPackage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -127,4 +150,5 @@ export {
   getAllCustomizedTourPackages,
   getCustomizedTourPackageById,
   deleteCustomizedTourPackage,
+  getCustomizedTourPackageBySlug,
 };
