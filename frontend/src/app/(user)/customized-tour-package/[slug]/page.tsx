@@ -378,7 +378,26 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
           </Accordion>
         </div>
 
-        {/* Show packages under this category */}
+        {/* Highlights */}
+        <div className="w-full  mt-8">
+          <h2 className="text-2xl font-bold">Highlights</h2>
+          <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
+          {pkg.highlight.map((item: Highlight, i: number) => (
+            <div key={i} className="flex  gap-2  p-4">
+              <ArrowBigRight className="w-6 h-6 text-[#FE5300]" />
+              <p className="text-lg font-semibold">{item.title}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* description */}
+        <div className="w-full mt-8">
+          <h2 className="text-2xl font-bold">About This Tour</h2>
+          <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
+          {pkg.description}
+        </div>
+
+        {/* Show related packages under this category */}
         <div className="mt-8">
           <h2 className="text-2xl font-bold">Nearby Tours</h2>
           <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
@@ -402,24 +421,6 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
               ))}
             </div>
           )}
-        </div>
-        {/* Highlights */}
-        <div className="w-full  mt-8">
-          <h2 className="text-2xl font-bold">Highlights</h2>
-          <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
-          {pkg.highlight.map((item: Highlight, i: number) => (
-            <div key={i} className="flex  gap-2  p-4">
-              <ArrowBigRight className="w-6 h-6 text-[#FE5300]" />
-              <p className="text-lg font-semibold">{item.title}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* description */}
-        <div className="w-full mt-8">
-          <h2 className="text-2xl font-bold">About This Tour</h2>
-          <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
-          {pkg.description}
         </div>
       </div>
 

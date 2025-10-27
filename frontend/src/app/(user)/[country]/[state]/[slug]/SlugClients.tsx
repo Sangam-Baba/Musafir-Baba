@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import QueryForm from "@/components/custom/QueryForm";
 import { ItineryDialog } from "@/components/custom/ItineryDialog";
 import NotFoundPage from "@/components/common/Not-Found";
-import { Clock, MapPin } from "lucide-react";
+import { Check, ChevronDown, Clock, MapPin, X } from "lucide-react";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -134,6 +134,7 @@ function SlugClients({
   state: string;
   country: string;
 }) {
+  const [openItem, setOpenItem] = useState<string | undefined>(undefined);
   const auth = useAuthStore();
   const pathName = usePathname();
   const StateName = state;
@@ -249,15 +250,29 @@ function SlugClients({
               )}
 
               {active === "itineraries" && (
-                <Accordion type="single" collapsible className="w-full">
-                  {pkg.itinerary.map((item, i) => (
+                <Accordion type="multiple" className="relative space-y-4">
+                  {pkg.itinerary.map((item: Itinerary, i: number) => (
                     <AccordionItem
-                      value={`itinerary-${i}`}
                       key={i}
-                      className="rounded-2xl shadow-lg p-4"
+                      value={`itinerary-${i}`}
+                      className="relative border-l-2 border-dotted border-[#FE5300] border-b-0 pl-8"
                     >
-                      <AccordionTrigger>{item.title}</AccordionTrigger>
-                      <AccordionContent className="text-justify whitespace-pre-line">
+                      {/* Timeline circle */}
+                      <div className="absolute -left-[11px] top-4 w-5 h-5 rounded-full border-2 border-[#FE5300] bg-white flex items-center justify-center shadow-sm">
+                        <div className="w-2 h-2 rounded-full bg-[#FE5300]" />
+                      </div>
+
+                      {/* Accordion Header */}
+                      <AccordionTrigger
+                        className="text-lg font-semibold text-gray-800 hover:no-underline py-2 
+                     flex justify-between items-center transition-colors duration-200 
+                     hover:text-[#FE5300] focus-visible:ring-0 focus-visible:outline-none"
+                      >
+                        {item.title}
+                      </AccordionTrigger>
+
+                      {/* Accordion Content */}
+                      <AccordionContent className="text-gray-600 text-sm ">
                         {item.description}
                       </AccordionContent>
                     </AccordionItem>
@@ -266,36 +281,92 @@ function SlugClients({
               )}
 
               {active === "includeexclude" && (
-                <div>
-                  <h2 className="font-bold">Includes</h2>
-                  <ul className="list-disc list-inside">
-                    {pkg.inclusions.map((inc, i) => (
-                      <li key={i}>{inc}</li>
-                    ))}
-                  </ul>
-                  <h2 className="font-bold mt-4">Excludes</h2>
-                  <ul className="list-disc list-inside">
-                    {pkg.exclusions.map((exc, i) => (
-                      <li key={i}>{exc}</li>
-                    ))}
-                  </ul>
+                <div className="space-y-8">
+                  {/* Includes Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">{`What's Included`}</h3>
+                    <ul className="space-y-3">
+                      {pkg?.inclusions.map((inc, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-foreground">{inc}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Excludes Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">{`What's Not Included`}</h3>
+                    <ul className="space-y-3">
+                      {pkg?.exclusions.map((exc, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <X className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-muted-foreground">
+                            {exc}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
 
               {active === "faqs" && (
-                <Accordion type="single" collapsible className="w-full">
-                  {pkg.faqs.map((faq, i) => (
-                    <AccordionItem
-                      value={`faq-${i}`}
-                      key={i}
-                      className="rounded-2xl shadow-lg p-4"
-                    >
-                      <AccordionTrigger>{faq.question}</AccordionTrigger>
-                      <AccordionContent className="text-justify">
-                        {faq.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
+                <Accordion
+                  type="single"
+                  collapsible
+                  value={openItem}
+                  onValueChange={setOpenItem}
+                  className="w-full space-y-3"
+                >
+                  {pkg?.faqs.map((faq, index) => {
+                    const isOpen = openItem === `faq-${index}`;
+                    return (
+                      <AccordionItem
+                        key={index}
+                        value={`faq-${index}`}
+                        className={`group overflow-hidden rounded-lg border transition-all duration-200 ${
+                          isOpen
+                            ? "border-1 border-[#FE5300] shadow-lg"
+                            : "border-gray-200 hover:border-[#FE5300] hover:shadow-md"
+                        }`}
+                      >
+                        <AccordionTrigger
+                          className={`px-6 py-4 text-left font-semibold transition-colors ${
+                            isOpen
+                              ? "text-blue-600"
+                              : "text-gray-900 hover:text-[#FE5300]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <div
+                              className={`flex-shrink-0 rounded-full p-2 transition-colors ${
+                                isOpen
+                                  ? "bg-blue-100"
+                                  : "bg-gray-100 group-hover:bg-blue-50"
+                              }`}
+                            >
+                              <ChevronDown
+                                className={`h-5 w-5 transition-transform duration-300 ${
+                                  isOpen ? "rotate-180" : ""
+                                }`}
+                              />
+                            </div>
+                            <span className="text-base md:text-lg">
+                              {faq.question}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+
+                        <AccordionContent className="px-6 pb-4 pt-0">
+                          <div className="ml-11 space-y-3 text-gray-600 leading-relaxed">
+                            {faq.answer}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
                 </Accordion>
               )}
             </div>

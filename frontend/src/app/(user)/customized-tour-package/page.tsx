@@ -10,6 +10,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin } from "lucide-react";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { useRouter } from "next/navigation";
 interface Plan {
   title: string;
   include: string;
@@ -61,6 +62,7 @@ const getAllCustomizedPackages = async () => {
 };
 
 function CustomizedPackagePage() {
+  const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken);
   const openDialog = useAuthDialogStore((state) => state.openDialog);
   const {
@@ -88,7 +90,7 @@ function CustomizedPackagePage() {
       openDialog("login", undefined, `/customized-tour-package/${slug}`);
     } else {
       // 👇 If logged in, go to package detail page
-      return `/customized-tour-package/${slug}`;
+      router.push(`/customized-tour-package/${slug}`);
     }
   };
 
@@ -149,7 +151,7 @@ function CustomizedPackagePage() {
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4 text-blue-600" />
                       <span>
-                        {pkg.duration?.nights}N/${pkg.duration?.days}D,
+                        {pkg.duration?.nights}N/{pkg.duration?.days}D,
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
