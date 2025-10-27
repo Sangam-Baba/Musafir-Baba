@@ -144,6 +144,34 @@ const deleteCustomizedTourPackage = async (req, res) => {
   }
 };
 
+const getRelatedTour = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug) {
+      return res.status(400).json({ success: false, message: "Invalid Slug" });
+    }
+    const customizedTourPackage = await CustomizedTourPackage.findOne({
+      slug,
+    }).lean();
+    if (!customizedTourPackage) {
+      return res
+        .status(404)
+        .json({ message: "Customized tour package not found" });
+    }
+    const relatedTours = await CustomizedTourPackage.find({
+      keywords: { $in: customizedTourPackage.keywords },
+    }).lean();
+    res.status(200).json({
+      success: true,
+      message: "Related tour fetched successfully",
+      data: relatedTours,
+    });
+  } catch (error) {
+    console.log("Error getting related tour", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export {
   createCustomizedTourPackage,
   updateCustomizedTourPackage,
@@ -151,4 +179,5 @@ export {
   getCustomizedTourPackageById,
   deleteCustomizedTourPackage,
   getCustomizedTourPackageBySlug,
+  getRelatedTour,
 };

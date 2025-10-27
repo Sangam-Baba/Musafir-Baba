@@ -25,6 +25,7 @@ import aboutUsRoutes from "./aboutUs.routes.js";
 import customizedPackageRoutes from "./customizedPackage.routes.js";
 import customizedBookingRoutes from "./customizedBooking.routes.js";
 import customizedTourPackageRoute from "./customizedTourPackage.route.js";
+import customizedTourBookingRoute from "./customizedTourBooking.routes.js";
 const router = Router();
 
 router.use("/packages", pkgRoutes);
@@ -53,4 +54,5 @@ router.use("/aboutus", aboutUsRoutes);
 router.use("/customizedpackage", customizedPackageRoutes);
 router.use("/customizedbooking", customizedBookingRoutes);
 router.use("/customizedtourpackage", customizedTourPackageRoute);
+router.use("/customizedtourbooking", customizedTourBookingRoute);
 export default router;

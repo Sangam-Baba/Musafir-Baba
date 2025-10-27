@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { Booking } from "../models/Booking.js";
 import { MembershipBooking } from "../models/membershipBooking.js";
 import { CustomizedBookings } from "../models/CustomizedBookings.js";
+import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
 
 // ENV CONFIG
 const merchantKey = process.env.PAYU_KEY;
@@ -401,6 +402,104 @@ export const verifyCustomizedFailurePayment = async (req, res) => {
     { new: true }
   ).exec();
   console.log("Payment Failed:", data, booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+};
+
+export const verifyCustomizedTourSuccessPayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+
+  const booking = await CustomizedTourBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Paid",
+      },
+      bookingStatus: "Confirmed",
+    },
+    { new: true }
+  ).exec();
+  console.log("Mybooking Data is finalpayment:", booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+};
+
+export const verifyCustomizedTourFailurePayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+
+  const booking = await CustomizedTourBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Failed",
+      },
+      bookingStatus: "Cancelled",
+    },
+    { new: true }
+  ).exec();
+  console.log("Mybooking Data is finalpayment:", booking);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
 };
