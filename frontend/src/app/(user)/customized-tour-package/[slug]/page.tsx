@@ -225,22 +225,22 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
         <form onSubmit={handleSubmit} method="post">
           <div className="w-full max-w-7xl mx-auto px-4  flex flex-col-reverse md:flex-row gap-4">
             {/* LEFT SIDE */}
-            <div className="w-full md:w-2/3 px-4 ">
+            <div className="w-full md:w-2/3 px-4">
               <Accordion
                 type="single"
                 collapsible
-                className="w-full flex flex-col gap-4 "
+                className="w-full flex flex-col divide-y divide-gray-300 border border-gray-300 rounded-2xl overflow-hidden"
                 defaultValue="plan-0"
               >
                 {pkg.plans.map((plan: Plan, i: number) => (
                   <AccordionItem
                     value={`plan-${i}`}
                     key={i}
-                    className={`border-2   shadow-none ${
+                    className={`px-4 py-3 transition-all ${
                       formData.plan === plan.title
-                        ? "border-[#FE5300]"
-                        : "border-gray-400"
-                    } rounded-2xl p-4`}
+                        ? "bg-orange-50 border-l-4 border-[#FE5300]"
+                        : "border-l-4 border-transparent"
+                    }`}
                   >
                     <AccordionTrigger
                       onClick={() => handleSelectPlan(plan)}
@@ -249,15 +249,17 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
                       <h2 className="text-2xl font-bold">{plan.title}</h2>
                       <div className="text-right">
                         <p>
-                          {formData.noOfPeople} Adults x ₹{plan.price}
+                          {formData.noOfPeople} Adults × ₹{plan.price}
                         </p>
-                        <p>₹{formData.totalPrice}</p>
+                        <p>₹{formData.noOfPeople * plan.price}</p>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="text-justify ">
+
+                    <AccordionContent className="text-justify pt-3">
                       <p className="font-bold">Includes:</p>
                       <p>{plan.include}</p>
                       <div className="w-full h-0.5 bg-gray-300 my-3"></div>
+
                       <div className="flex justify-between items-center">
                         <div>
                           <p>
@@ -273,6 +275,7 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
                             </span>
                           </p>
                         </div>
+
                         <Button
                           type="submit"
                           className="bg-[#FE5300] hover:bg-[#FE5300]/90 font-bold text-lg"
@@ -380,7 +383,7 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
           <h2 className="text-2xl font-bold">Nearby Tours</h2>
           <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
           {relatedPackages && relatedPackages.length > 0 && (
-            <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
+            <div className="mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
               {relatedPackages.map((pkg: Package) => (
                 <PackageCard
                   key={pkg._id}

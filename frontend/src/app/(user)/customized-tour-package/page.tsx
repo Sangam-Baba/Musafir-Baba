@@ -4,9 +4,12 @@ import Hero from "@/components/custom/Hero";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader } from "@/components/custom/loader";
-import PackageCard from "@/components/custom/PackageCard";
 import Breadcrumb from "@/components/common/Breadcrumb";
-
+import { useAuthStore } from "@/store/useAuthStore";
+import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, MapPin } from "lucide-react";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 interface Plan {
   title: string;
   include: string;
@@ -58,6 +61,8 @@ const getAllCustomizedPackages = async () => {
 };
 
 function CustomizedPackagePage() {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const openDialog = useAuthDialogStore((state) => state.openDialog);
   const {
     data: AllPackages,
     isLoading,
@@ -76,6 +81,16 @@ function CustomizedPackagePage() {
     toast.error(error.message);
     return <h1>{error.message}</h1>;
   }
+
+  const handlePackageClick = (slug: string) => {
+    if (!accessToken) {
+      toast.info("Please login to view package details.");
+      openDialog("login", undefined, `/customized-tour-package/${slug}`);
+    } else {
+      // 👇 If logged in, go to package detail page
+      return `/customized-tour-package/${slug}`;
+    }
+  };
 
   return (
     <section className="w-full mb-12">
@@ -103,20 +118,52 @@ function CustomizedPackagePage() {
       {AllPackages && AllPackages.length > 0 && (
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
           {AllPackages.map((pkg: Package) => (
-            <PackageCard
+            <div
+              onClick={() => handlePackageClick(pkg.slug)}
               key={pkg._id}
-              pkg={{
-                id: pkg._id,
-                name: pkg.title,
-                slug: pkg.slug,
-                image: pkg.coverImage?.url ?? "",
-                price: pkg?.plans ? pkg?.plans[0]?.price : 999,
-                duration: `${pkg.duration?.nights}N/${pkg.duration?.days}D`,
-                destination: pkg.destination?.name ?? "",
-                batch: [],
-              }}
-              url={`/customized-tour-package/${pkg.slug}`}
-            />
+              className="cursor-pointer"
+            >
+              <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
+                {/* Image + Price tag */}
+                <div className="relative h-56 w-full">
+                  <Image
+                    src={pkg.coverImage.url}
+                    alt={pkg.coverImage.alt}
+                    width={500}
+                    height={500}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3 bg-[#FE5300] text-white px-3 py-1 rounded-full font-semibold text-sm shadow">
+                    ₹{pkg.plans[0].price.toLocaleString("en-IN")}/- onwards
+                  </div>
+                </div>
+
+                <CardContent className="p-4 space-y-3">
+                  {/* Title */}
+                  <h3 className="font-semibold text-lg line-clamp-1">
+                    {pkg.title}
+                  </h3>
+
+                  {/* Duration & Location */}
+                  <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                      <span>
+                        {pkg.duration?.nights}N/${pkg.duration?.days}D,
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4 text-blue-600" />
+                      <span>{pkg.destination?.name}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-600 mt-2 line-clamp-1">
+                    Any Date of your choice
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
       )}
