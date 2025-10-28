@@ -11,8 +11,8 @@ const getWebPageBySlug = async () => {
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getWebPageBySlug();
   return {
-    title: data?.title,
-    description: data?.description,
+    title: data?.metaTitle,
+    description: data?.metsDescription,
     keywords: data?.keywords,
     openGraph: {
       title: data?.title,

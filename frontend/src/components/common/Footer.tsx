@@ -41,9 +41,9 @@ function Footer() {
           {/* SOcial */}
 
           <div className="flex flex-col gap-2 mt-4">
-            <p className="text-md font-bold">Follow Us</p>
+            <p className="text-lg font-bold">Follow Us</p>
             <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
-            <div className="flex items-center  gap-4 pt-4">
+            <div className="flex items-center  gap-4 pt-2">
               <Link href="https://www.youtube.com/@hello_musafirbaba">
                 <Youtube
                   color="#FE5300"
@@ -93,22 +93,32 @@ function Footer() {
           </div>
 
           <div className="flex flex-col py-2 gap-4">
-            <div className="flex">
-              <MapPin size={40} color="#FE5300" className="w-[10%] h-6  " />
+            <div className="flex gap-1 ">
+              <MapPin size={20} color="#FE5300" className="w-[5%] h-5 mt-1 " />
               <p className="flex justify-start w-[90%]">
                 1st Floor, Khaira More, Metro Station, Plot no. 2 & 3, near Main
                 Gopal Nagar Road, Prem Nagar, Najafgarh, New Delhi, Delhi,
                 110043
               </p>
             </div>
-            <div className="flex gap-2">
-              <Phone size={40} color="#FE5300" className="w-[10%] h-6  " />
-              <p className="flex justify-start w-[90%]">
-                Tour: +91 92896 02447 | Visa: +91 93556 63591
-              </p>
+            <div className="flex gap-1 items-center">
+              <Phone size={20} color="#FE5300" className="w-[5%] h-5  " />
+              <div className="md:flex justify-start w-[90%] gap-2">
+                <p>
+                  <span className="font-bold">Tour:</span>+91 92896 02447
+                </p>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Mail size={40} color="#FE5300" className="w-[10%] h-6  " />
+            <div className="flex gap-1 items-center">
+              <Phone size={20} color="#FE5300" className="w-[5%] h-5  " />
+              <div className="md:flex justify-start w-[90%] gap-2">
+                <p>
+                  <span className="font-bold">Visa:</span>+91 93556 63591
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-1 items-center">
+              <Mail size={20} color="#FE5300" className="w-[5%] h-5  " />
               <p className="flex justify-start w-[90%]">care@musafirbaba.com</p>
             </div>
             <div className="h-[200px] rounded-xl overflow-hidden mt-3">
