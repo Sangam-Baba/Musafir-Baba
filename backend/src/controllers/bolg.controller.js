@@ -111,7 +111,12 @@ const getAllBlog = async (req, res) => {
         { tags: { $regex: search, $options: "i" } },
       ];
     }
-    if (category) {
+    if (
+      category &&
+      category !== "undefined" &&
+      category !== "null" &&
+      category.trim() !== ""
+    ) {
       console.log(category);
       const cat = await Category.findOne({ slug: category });
       if (!cat) {
