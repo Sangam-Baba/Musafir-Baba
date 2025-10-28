@@ -26,10 +26,13 @@ interface blog {
   metaDescription: string;
   slug: string;
 }
-async function getBlogs() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`, {
-    next: { revalidate: 60 }, // ISR: revalidate every 1 minute
-  });
+async function getBlogs(category?: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=${category}`,
+    {
+      next: { revalidate: 60 }, // ISR: revalidate every 1 minute
+    }
+  );
 
   if (!res.ok) throw new Error("Failed to fetch blogs");
   const data = await res.json();
@@ -37,8 +40,14 @@ async function getBlogs() {
   return data.data;
 }
 
-export default async function BlogPage() {
-  const blogs = await getBlogs();
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: { category: string };
+}) {
+  const category = searchParams.category;
+
+  const blogs = await getBlogs(category);
 
   return (
     <section className="w-full ">
