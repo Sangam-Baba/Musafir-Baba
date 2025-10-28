@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Blog } from "../models/Blog.js";
 import { Comment } from "../models/Comment.js";
 import { Category } from "../models/Category.js";
-import { uploadToCloudinary } from "../services/fileUpload.service.js";
+import { Author } from "../models/Authors.js";
 const createBlog = async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -96,7 +96,7 @@ const getBlogBySlug = async (req, res) => {
 
 const getAllBlog = async (req, res) => {
   try {
-    const { title, search, category } = req.query;
+    const { title, search, category, author } = req.query;
     const page = Math.max(parseInt(req.query.page || "1"), 1);
     const limit = Math.min(parseInt(req.query.limit || "20"), 25);
     const skip = (page - 1) * limit;
@@ -128,6 +128,20 @@ const getAllBlog = async (req, res) => {
       filter.category = cat._id.toString();
       //   filter.category = category;
       //   console.log("Filter is: ", filter);
+    }
+    if (
+      author &&
+      author !== "undefined" &&
+      author !== "null" &&
+      author.trim() !== ""
+    ) {
+      const aut = await Author.findOne({ slug: author });
+      if (!aut) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Invalid author" });
+      }
+      filter.author = aut._id.toString();
     }
 
     const total = await Blog.countDocuments(filter);
