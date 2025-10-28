@@ -9,7 +9,7 @@ export function QueryDailogBox() {
         <form>
           <DialogTrigger asChild>
             <Button
-              className="bg-[#FE5300] hover:bg-[#FE5300]"
+              className="bg-[#FE5300] hover:bg-[#FE5300] text-white hover:text-white"
               variant="outline"
             >
               ENQUIRE NOW

@@ -3,24 +3,24 @@
 import * as React from "react";
 // import { useTheme } from "next-themes";
 // import { SunMoon } from 'lucide-react';
-import { Button } from "../ui/button";
+// import { Button } from "../ui/button";
 import Link from "next/link";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useAuthDialogStore } from "@/store/useAuthDialogStore";
-import { useRouter } from "next/navigation";
+// import { useAuthStore } from "@/store/useAuthStore";
+// import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+// import { useRouter } from "next/navigation";
 
 export function Navbar() {
-  const router = useRouter();
-  const { openDialog } = useAuthDialogStore();
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  // const router = useRouter();
+  // const { openDialog } = useAuthDialogStore();
+  // const accessToken = useAuthStore((state) => state.accessToken) as string;
 
-  const handleClick = () => {
-    if (!accessToken) {
-      openDialog("login", undefined, "/plan-my-trip");
-      return;
-    }
-    router.push(`/plan-my-trip`);
-  };
+  // const handleClick = () => {
+  //   if (!accessToken) {
+  //     openDialog("login", undefined, "/plan-my-trip");
+  //     return;
+  //   }
+  //   router.push(`/plan-my-trip`);
+  // };
   // const { theme, setTheme }= useTheme();
   return (
     <>
@@ -47,14 +47,14 @@ export function Navbar() {
           <li className="font-semi-bold bg-[FE5300] text-[#FE5300]">
             <Link href="/news">News</Link>
           </li>
-          <li className="font-semi-bold  text-[#FE5300]">
+          {/* <li className="font-semi-bold  text-[#FE5300]">
             <Button
               onClick={handleClick}
               className="bg-[#87E87F] text-black hover:bg-[#87E87F] hover:text-black"
             >
               Plan My Trip
             </Button>
-          </li>
+          </li> */}
           {/* <li className="font-bold ">
             <Button onClick={() => setTheme(theme === "light" ? "dark" : "light")}><SunMoon /></Button>
           </li> */}
