@@ -4,17 +4,22 @@ import QueryForm from "../custom/QueryForm";
 
 export function QueryDailogBox() {
   return (
-    <Dialog>
-      <form>
-        <DialogTrigger asChild>
-          <Button className="bg-[#FE5300] hover:bg-[#FE5300]" variant="outline">
-            Enquery Now
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <QueryForm />
-        </DialogContent>
-      </form>
-    </Dialog>
+    <div className="fixed top-100 -right-10 z-50 flex items-center gap-2 rotate-270">
+      <Dialog>
+        <form>
+          <DialogTrigger asChild>
+            <Button
+              className="bg-[#FE5300] hover:bg-[#FE5300]"
+              variant="outline"
+            >
+              ENQUIRE NOW
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <QueryForm />
+          </DialogContent>
+        </form>
+      </Dialog>
+    </div>
   );
 }

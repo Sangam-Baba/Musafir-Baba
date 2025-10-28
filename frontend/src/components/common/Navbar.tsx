@@ -30,6 +30,9 @@ export function Navbar() {
             <Link href="/holidays">Holidays</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
+            <Link href="/customized-tour-package">Customized</Link>
+          </li>
+          <li className="font-semi-bold  text-[#FE5300]">
             <Link href="/bookings">Bookings</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">

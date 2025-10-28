@@ -10,7 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import MembershipCard from "@/components/custom/MembershipCard";
-import { QueryDailogBox } from "@/components/common/QueryDailogBox";
+// import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import Breadcrumb from "@/components/common/Breadcrumb";
 
 interface Faq {
@@ -56,9 +56,9 @@ async function VisaWebPage() {
         <div className="hidden md:block z-10 w-1/4   absolute top-1/2 -translate-y-1/2 right-10 ">
           <QueryForm />
         </div>
-        <div className="md:hidden absolute top-1/2 right-8 bottom-5 z-10 rotate-90  ">
+        {/* <div className="md:hidden absolute top-1/2 right-8 bottom-5 z-10 rotate-90  ">
           <QueryDailogBox />
-        </div>
+        </div> */}
       </div>
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />

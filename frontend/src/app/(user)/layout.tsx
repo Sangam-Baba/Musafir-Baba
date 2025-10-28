@@ -49,6 +49,7 @@ import { RootProvider } from "@/providers/root-provider";
 import GTMProvider from "@/providers/GTMProvider";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 import BreadcrumbSEO from "@/components/common/BreadcrumbSEO";
+import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 
 export default function RootLayout({
   children,
@@ -164,6 +165,7 @@ export default function RootLayout({
           <main className="flex-grow">
             <BreadcrumbSEO />
             {children}
+            <QueryDailogBox />
             <WhatsAppButton />
           </main>
           <Script
