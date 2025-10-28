@@ -12,7 +12,7 @@ export function QueryDailogBox() {
               className="bg-[#FE5300] hover:bg-[#FE5300] text-white hover:text-white"
               variant="outline"
             >
-              ENQUIRE NOW
+              Enquire Now
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">

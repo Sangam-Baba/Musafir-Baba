@@ -83,7 +83,7 @@ const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
 type TabSlug =
   | "customized-tour-package"
   | "backpacking-trips"
-  | "weekend-gateway"
+  | "weekend-getaway"
   | "honeymoon-package"
   | "early-bird-2026"
   | "international-tour-packages";
@@ -120,9 +120,9 @@ export function FeaturedTour() {
       slug: "backpacking-trips",
     },
     {
-      key: "weekend-gateway",
+      key: "weekend-getaway",
       label: "Weekend Trips",
-      slug: "weekend-gateway",
+      slug: "weekend-getaway",
     },
     {
       key: "honeymoon-package",
@@ -145,11 +145,12 @@ export function FeaturedTour() {
     <section className="w-full px-4 md:px-8 lg:px-20 py-16">
       <div className="flex flex-col gap-2  max-w-7xl mx-auto">
         {/* Heading */}
-        <div className="flex flex-col gap-5 items-center w-full">
+        <div className="flex flex-col gap-2 items-center w-full">
           <h2 className="text-2xl md:text-3xl font-bold text-center">
             Featured Tour Packages
           </h2>
           <div className="w-20 h-1 bg-[#FE5300]"></div>
+          <p>Top-rated holiday packages curated for every journey</p>
 
           {/* Tabs */}
           <h3 className="flex flex-wrap justify-center w-full gap-2 mt-4 ">

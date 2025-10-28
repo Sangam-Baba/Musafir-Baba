@@ -63,11 +63,12 @@ function BlogsHome() {
     <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-16">
       {/* Header */}
       <div className="flex w-full justify-between gap-2 items-center mb-10">
-        <div>
+        <div className="space-y-2">
           <h2 className="text-2xl md:text-3xl font-bold">
-            Latest Travel Trends
+            Latest Travel Trends & Tips
           </h2>
-          <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
+          <p className="w-20 h-1 bg-[#FE5300] mt-2"></p>
+          <p>Read travel guides, insights, and expert tips.</p>
         </div>
         <div className="flex gap-2 items-center">
           <Link href="/blog" className="text-[#FE5300] font-semibold">

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 interface Item {
-    _id: string;
+  _id: string;
   text: string;
   url: string;
 }
@@ -28,26 +28,25 @@ function LowerFooterItem() {
     queryFn: getFooter,
   });
 
-  const lowerFooter = footerArray?.filter((item) =>
-    !["Services", "About Us", "Domestic Trips", "International Trips"].includes(  item.title   ));
+  const lowerFooter = footerArray?.filter(
+    (item) => !["Services", "About Us"].includes(item.title)
+  );
 
   return (
-    <section className="w-full flex flex-col gap-6">
+    <section className="w-full flex flex-col gap-2">
       {lowerFooter?.map((item) => (
         <div key={item._id} className="flex gap-2">
-          
-          <h2 className="font-semibold mb-3">
-            {item.title}:
-          </h2>
+          <h2 className="font-semibold mb-3">{item.title}:</h2>
 
-          
           <ul className="flex flex-wrap gap-2 text-sm md:text-base">
             {item.content?.map((link) => (
               <li
                 key={link._id}
-                className="hover:text-[#FE5300] transition-colors duration-200"
+                className="hover:text-[#FE5300] transition-colors duration-200 ease-in-out"
               >
-                <Link href={link.url}>{link.text} |</Link>
+                <Link className="text-justify" href={link.url}>
+                  {link.text} |
+                </Link>
               </li>
             ))}
           </ul>

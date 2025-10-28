@@ -19,12 +19,12 @@ export default function PlanMyTrip() {
   };
 
   return (
-    <div className="fixed top-67 -right-9 z-50 flex items-center gap-2 rotate-270">
+    <div className="fixed top-69 -right-9 z-50 flex items-center gap-2 rotate-270 ">
       <Button
         onClick={handleClick}
         className="bg-[#87E87F] text-black hover:bg-[#87E87F] hover:text-black"
       >
-        PLAN MY TRIP
+        Plan My Trip
       </Button>
     </div>
   );

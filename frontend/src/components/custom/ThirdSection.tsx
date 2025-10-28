@@ -69,7 +69,8 @@ function ThirdSection() {
           <h1 className="text-xl md:text-3xl font-bold">
             Find Your Perfect Getaway with the Best Travel Agency in Delhi
           </h1>
-          <div className="w-20 h-1 bg-[#FE5300]"></div>
+          <p className="w-20 h-1 bg-[#FE5300]"></p>
+          <p>Handpicked India & international tours for every traveller</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 px-4">
           <Card className="flex flex-col gap-4 bg-[#EBFFF2] items-center py-4 px-4 hover:scale-105 shadow-md hover:shadow-xl transition duration-500">

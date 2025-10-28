@@ -83,9 +83,13 @@ export default function QueryForm() {
   return (
     <Card className="w-full mx-auto  rounded-2xl">
       <CardContent>
-        <h4 className="text-xl font-bold text-center mb-6 text-gray-800">
-          Get a Free Quote
-        </h4>
+        <div className="text-center mb-6 flex flex-col gap-2 items-center">
+          <h4 className="text-xl font-bold text-center  text-gray-800">
+            Get a Free Quote
+          </h4>
+          <p className="w-[10%] h-1 bg-[#FE5300] text-center"></p>
+          <p>Share your trip details — get a custom plan instantly</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">

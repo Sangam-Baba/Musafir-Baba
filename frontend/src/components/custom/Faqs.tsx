@@ -27,11 +27,12 @@ export function Faqs({ faqs }: FaqsProps) {
     <section className="w-full px-4 md:px-8 lg:px-20 py-16">
       <div className="flex flex-col gap-10 items-center max-w-7xl mx-auto">
         {/* Section Title */}
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <h3 className="text-2xl md:text-3xl font-bold">
             Frequently Asked Questions (FAQs)
           </h3>
           <div className="h-1 w-24 bg-[#FE5300] rounded-full mx-auto mt-2"></div>
+          <p>Find quick answers to your travel and visa queries</p>
         </div>
 
         {/* FAQ Grid */}

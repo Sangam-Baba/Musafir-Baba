@@ -27,18 +27,71 @@ function Footer() {
       <Newslatter />
       {/* Desktop Footer */}
       <div className="hidden md:flex md:flex-row  gap-6 mb-8 py-15 px-4 md:px-10 lg:px-25 items-center md:items-start justify-between ">
-        <div className="md:w-1/4 flex flex-col gap-2 ">
+        <div className="md:w-[30%] flex flex-col gap-2 ">
+          <Image src={logo} alt="logo" />
+          <p>
+            {" "}
+            MusafirBaba, a trusted name in the tour and travel industry in
+            Delhi. We offer expertly crafted customised tour packages, group
+            bike tours, international trips, family vacations, weekend getaways,
+            honeymoon packages and corporate trips along with visa assistance
+            and bus/train/flight bookings etc.
+          </p>
+
+          {/* SOcial */}
+
+          <div className="flex flex-col gap-2 mt-4">
+            <p className="text-md font-bold">Follow Us</p>
+            <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
+            <div className="flex items-center  gap-4 pt-4">
+              <Link href="https://www.youtube.com/@hello_musafirbaba">
+                <Youtube
+                  color="#FE5300"
+                  className="w-6 h-6 hover:scale-110 transition-transform"
+                />
+              </Link>
+              <Link href="http://facebook.com/hellomusafirbaba">
+                <Facebook
+                  color="#FE5300"
+                  className="w-6 h-6 hover:scale-110 transition-transform"
+                />
+              </Link>
+              <Link href="https://x.com/itsmusafirbaba">
+                <LucideTwitter
+                  color="#FE5300"
+                  className="w-6 h-6 hover:scale-110 transition-transform"
+                />
+              </Link>
+              <Link href="https://www.instagram.com/hello_musafirbaba">
+                <Instagram
+                  color="#FE5300"
+                  className="w-6 h-6 hover:scale-110 transition-transform"
+                />
+              </Link>
+              <Link href="https://in.linkedin.com/company/musafirbaba">
+                <Linkedin
+                  color="#FE5300"
+                  className="w-6 h-6 hover:scale-110 transition-transform"
+                />
+              </Link>
+            </div>
+          </div>
+        </div>
+        {/*     Services */}
+        <div className="md:w-[20%] flex flex-col gap-2">
           <FooterItem title="Services" />
         </div>
-        <div className="md:w-1/4 flex flex-col gap-2">
-          <FooterItem title="Domestic Trips " />
-          <FooterItem title="International Trips" />
-        </div>
-        <div className="md:w-1/4 flex flex-col gap-2">
+        {/* About us */}
+        <div className="md:w-[20%] flex flex-col gap-2">
           <FooterItem title="About Us" />
         </div>
-        <div className="md:w-1/4 space-y-4">
-          <Image src={logo} alt="logo" />
+        {/* contact us */}
+        <div className="md:w-[30%] space-y-4">
+          <div>
+            <p className="text-lg font-bold">Contact Us</p>
+            <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
+          </div>
+
           <div className="flex flex-col py-2 gap-4">
             <div className="flex">
               <MapPin size={40} color="#FE5300" className="w-[10%] h-6  " />
@@ -58,7 +111,7 @@ function Footer() {
               <Mail size={40} color="#FE5300" className="w-[10%] h-6  " />
               <p className="flex justify-start w-[90%]">care@musafirbaba.com</p>
             </div>
-            <div className="h-[200px]">
+            <div className="h-[200px] rounded-xl overflow-hidden mt-3">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.624108549693!2d76.97522459999999!3d28.611051399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d05a3e076b787%3A0xc858632593d54601!2sMusafirBaba%20-%20Best%20Travel%20Agency%20in%20Delhi%20I%20Holidays%20I%20Visa!5e0!3m2!1sen!2sin!4v1760166725887!5m2!1sen!2sin"
                 width="100%"
@@ -66,36 +119,7 @@ function Footer() {
                 style={{ border: "0" }}
               ></iframe>
             </div>
-
-            <div className="flex gap-4 item-center space-y-4">
-              <p className="text-md font-bold">Follow Us:</p>
-              <Link href="https://www.youtube.com/@hello_musafirbaba">
-                {" "}
-                <Youtube color="#FE5300" className="w-5 h-5 " />{" "}
-              </Link>
-              <Link href="http://facebook.com/hellomusafirbaba">
-                {" "}
-                <Facebook
-                  color="#FE5300"
-                  fill="white"
-                  className="w-5 h-5"
-                />{" "}
-              </Link>
-              <Link href="https://x.com/Musafircare">
-                {" "}
-                <LucideTwitter
-                  color="#FE5300"
-                  fill="white"
-                  className="w-5 h-5"
-                />{" "}
-              </Link>
-              <Link href="https://www.instagram.com/hello_musafirbaba">
-                <Instagram color="#FE5300" className="w-5 h-5" />{" "}
-              </Link>
-              <Link href="https://in.linkedin.com/company/musafirbaba">
-                <Linkedin color="#FE5300" fill="white" className="w-5 h-5" />{" "}
-              </Link>
-            </div>
+            {/* Socials */}
           </div>
         </div>
       </div>
@@ -113,24 +137,34 @@ function Footer() {
             className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
           >
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
-              <span>Services</span>
+              <span>Overview</span>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-4 text-gray-700 text-sm flex flex-col gap-3 animate-fadeIn">
-              <FooterItem title="Services" />
+              <Image
+                src={logo}
+                alt="Musafir Baba Logo"
+                className="w-40 mx-auto"
+              />
+              <p>
+                MusafirBaba, a trusted name in the tour and travel industry in
+                Delhi. We offer expertly crafted customised tour packages, group
+                bike tours, international trips, family vacations, weekend
+                getaways, honeymoon packages and corporate trips along with visa
+                assistance and bus/train/flight bookings etc.
+              </p>
             </AccordionContent>
           </AccordionItem>
 
-          {/* === Trips === */}
+          {/* === Services === */}
           <AccordionItem
             value="trips"
             className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
           >
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
-              <span>Trips</span>
+              <span>Services</span>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-4 text-gray-700 text-sm flex flex-col gap-3 animate-fadeIn">
-              <FooterItem title="Domestic Trips" />
-              <FooterItem title="International Trips" />
+              <FooterItem title="Services" />
             </AccordionContent>
           </AccordionItem>
 
@@ -153,14 +187,9 @@ function Footer() {
             className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
           >
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
-              <span>Connect</span>
+              <span>Contact Us</span>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-4 text-gray-700 text-sm flex flex-col gap-4 animate-fadeIn">
-              <Image
-                src={logo}
-                alt="Musafir Baba Logo"
-                className="w-40 mx-auto"
-              />
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <MapPin color="#FE5300" className="mt-1 shrink-0" />
@@ -206,7 +235,7 @@ function Footer() {
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://x.com/Musafircare">
+                <Link href="https://x.com/itsmusafirbaba">
                   <LucideTwitter
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"

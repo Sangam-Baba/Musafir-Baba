@@ -9,7 +9,7 @@ function HomeBooking() {
       {/* Left Content */}
       <div className="flex flex-col gap-4 w-full md:w-1/2 text-center md:text-left z-10">
         <h2 className="text-3xl md:text-4xl font-bold text-[#1B1B1B]">
-          Bookings
+          Hassle-Free Bookings
         </h2>
         <p className="text-gray-700 leading-relaxed max-w-md">
           Travel planning should be exciting, not stressful. At Musafirbaba, we

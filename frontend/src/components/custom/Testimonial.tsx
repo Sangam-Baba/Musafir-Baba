@@ -60,7 +60,7 @@ export function Testimonial() {
           Why Choose Musafirbaba?
         </h2>
         <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
-        <p className="text-gray-600">Hear it from our happy travelers ✨</p>
+        <p className="text-gray-600">Hear it from our happy travellers</p>
       </div>
 
       {/* Carousel */}
