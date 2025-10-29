@@ -11,7 +11,7 @@ import {
   verifyAccess,
   verifyRefresh,
 } from "../utils/tokens.js";
-import mongoose from "mongoose";
+import { verifyEmailTemplate } from "../utils/verifyEmailTemplate.js";
 function issueTokens(userId, role) {
   const accessToken = signAccessToken({ sub: userId, role });
   const refreshToken = signRefreshToken({ sub: userId, role });
@@ -41,7 +41,7 @@ const register = async (req, res) => {
     const hashedpassword = await bcrypt.hash(password, 10);
     const otp = Math.floor(Math.random() * 1000000);
 
-    const { token, hashedToken } = generateCryptoToken();
+    // const { token, hashedToken } = generateCryptoToken();
 
     const user = new User({
       name,
@@ -53,8 +53,9 @@ const register = async (req, res) => {
     });
 
     const subject = "Verify your Musafir-Baba account";
-    const emailBody = `Hi! ${name}, your OTP is ${otp} `;
-    const emailResponse = await sendEmail(email, subject, emailBody);
+    const htmlBody = verifyEmailTemplate(name, otp);
+    // const emailBody = `Hi! ${name}, your OTP is ${otp} `;
+    const emailResponse = await sendEmail(email, subject, htmlBody);
 
     if (!emailResponse || emailResponse.error !== null) {
       console.error("Email sending failed:", emailResponse.error);
