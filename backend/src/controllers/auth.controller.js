@@ -12,6 +12,7 @@ import {
   verifyRefresh,
 } from "../utils/tokens.js";
 import { verifyEmailTemplate } from "../utils/verifyEmailTemplate.js";
+import { thankYouEmail } from "../utils/thankYouEmail.js";
 function issueTokens(userId, role) {
   const accessToken = signAccessToken({ sub: userId, role });
   const refreshToken = signRefreshToken({ sub: userId, role });
@@ -141,7 +142,15 @@ const verifyOtp = async (req, res) => {
     if (user.otp !== hashOtp || user.otpExpire < Date.now()) {
       return res.status(400).json({ success: true, message: "Invalid OTP" });
     }
-
+    const subject = "Welcome to Musafir-Baba";
+    const htmlBody = thankYouEmail(user.name);
+    const emailResponse = await sendEmail(user.email, subject, htmlBody);
+    if (!emailResponse || emailResponse.error !== null) {
+      console.error("Email sending failed:", emailResponse.error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Could not send Welcome email" });
+    }
     user.isVerified = true;
     (user.otp = undefined), (user.otpExpire = undefined);
     await user.save();

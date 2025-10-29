@@ -1,4 +1,4 @@
-export const verifyEmailTemplate = (name, otp) => `
+export const thankYouEmail = (name) => `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,33 +14,20 @@ export const verifyEmailTemplate = (name, otp) => `
 
     <!-- Hero Section -->
     <div style="background:#87e87f;padding:60px 20px;text-align:center;">
-      <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761729585/verify-email-musafir-baba_sanwav.png" alt="Verify Email Illustration" style="max-width:300px;height:auto;" />
+      <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761737826/image__1_-removebg-preview_w38ntb.png" alt="Thank You Musafirbaba" style="max-width:300px;height:auto;" />
     </div>
 
     <!-- Main Container -->
     <div style="max-width:600px;margin:0 auto;background-color:#ffffff;">
       <div style="padding:50px 40px;text-align:center;">
+      <p style="font-size:20px;font-weight:600;margin-bottom:30px;"> Dear, ${name}</p>
         <h1 style="font-size:32px;font-weight:700;margin-bottom:30px;color:#FE5300;">
-          Verify Email <span style="color:#87e87f;">Address</span>
+          Thank you for Registring with us
         </h1>
 
-        <div style="font-size:16px;font-weight:600;text-align:left;margin-bottom:20px;color:#000;">
-          Hello ${name},
-        </div>
-
         <p style="font-size:14px;line-height:1.6;text-align:left;margin-bottom:30px;color:#555;">
-          Please copy the OTP below to validate your email address so you can use all features of MusafirBaba.com.
+         Now you can use all features of MusafirBaba.com
         </p>
-
-        <!-- OTP Section -->
-        <div style="margin-bottom:30px;text-align:center;">
-          <div style="margin-bottom:10px;">
-            <input type="text" value="${otp}" readonly
-              style="width:100%;padding:12px 15px;border:1px solid #ddd;font-size:16px;background-color:#f9f9f9;text-align:center;font-weight:bold;color:#333;"
-            />
-          </div>
-          <div style="font-size:12px;color:#999;">Copy and paste the OTP</div>
-        </div>
 
         <!-- Sign-off -->
         <div style="text-align:left;font-size:14px;line-height:1.8;color:#333;">
@@ -62,7 +49,7 @@ export const verifyEmailTemplate = (name, otp) => `
       <a href="https://musafirbaba.com/" style="color:#7c2ae8;text-decoration:none;font-weight:600;">MusafirBaba.com</a>
     </td>
     <td style="padding:0 10px;">
-      <a href="https://musafirbaba.com/about-us" style="color:#7c2ae8;text-decoration:none;font-weight:600;">About</a>
+      <a href="https://musafirbaba.com/about-us" style="color:#7c2ae8;text-decoration:none;font-weight:600;">About Us</a>
     </td>
     <td style="padding:0 10px;">
       <a href="https://musafirbaba.com/holidays" style="color:#7c2ae8;text-decoration:none;font-weight:600;">Holidays</a>
@@ -89,7 +76,7 @@ export const verifyEmailTemplate = (name, otp) => `
         </div>
 
         <!-- Social Icons -->
-       <!-- Social Icons -->
+        <!-- Social Icons -->
 <table role="presentation" align="center" style="margin:20px auto;">
   <tr>
     <td style="padding:0 8px;">

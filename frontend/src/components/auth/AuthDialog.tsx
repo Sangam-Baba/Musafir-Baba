@@ -161,7 +161,10 @@ export function AuthDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>
             {mode === "login"
@@ -262,7 +265,7 @@ export function AuthDialog() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-[#FE5300] hover:bg-[#FE5300]/90"
               disabled={
                 loginMutation.isPending ||
                 registerMutation.isPending ||
