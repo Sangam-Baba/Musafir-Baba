@@ -113,81 +113,83 @@ export default async function NewsDetailPage({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-10 px-12">
-      <article className="lg:w-5/7  ">
-        {/* Cover Image */}
-        <BlogViewTracker id={news._id} />
-        <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
-          <Image
-            src={news.coverImage.url}
-            alt={news.title}
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
-        <div className=" mt-5">
-          <Breadcrumb />
-        </div>
-
-        {/* Title & Meta */}
-        <header className="mt-6 space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold">{news.title}</h1>
-          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-            <span>
-              👤 Author:{" "}
-              <Link href={`/author/${news.author?.slug}`}>
-                {news.author?.name}
-              </Link>
-            </span>
-            <span>📅 {new Date(news.createdAt).toLocaleDateString()}</span>
-            <span>👀 {news.views + 1000} views</span>
-            <span>
-              <BlogLikes id={news._id} initialLikes={news.likes} />
-            </span>
-            <span>
-              <SocialShare
-                url={`https://musafirbaba.com/news/${news.slug}`}
-                title={news.title}
-              />
-            </span>
-          </div>
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {news.tags.map((tag: string) => (
-              <span
-                key={tag}
-                className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </header>
-
-        {/* Blog Content */}
-        <section className="prose prose-lg max-w-none mt-6">
-          <BlogContent html={news.content} />
-        </section>
-
-        {/* Comments Section */}
-        <section className="mt-10">
-          <BlogComments
-            blogId={news._id}
-            initialComments={comments}
-            type="news"
-          />
-        </section>
-      </article>
-      <div className="lg:w-2/7">
-        <QueryForm />
-        <LatestNewsSidebar />
-        <TrandingNewsSidebar />
+    <div>
+      <div className="flex flex-col mx-auto max-w-7xl px-12">
+        <Breadcrumb />
       </div>
-      {/* ✅ JSON-LD Schema */}
-      <Script id="blog-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script>
+      <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
+        <article className="lg:w-6/9  ">
+          {/* Cover Image */}
+          <BlogViewTracker id={news._id} />
+          <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+            <Image
+              src={news.coverImage.url}
+              alt={news.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+
+          {/* Title & Meta */}
+          <header className="mt-6 space-y-2">
+            <h1 className="text-3xl md:text-4xl font-bold ">{news.title}</h1>
+            <div className="flex flex-wrap gap-4 text-sm text-gray-600 items-center">
+              <span>
+                👤 Author:{" "}
+                <Link href={`/author/${news.author?.slug}`}>
+                  {news.author?.name}
+                </Link>
+              </span>
+              <span>📅 {new Date(news.createdAt).toLocaleDateString()}</span>
+              <span>👀 {news.views + 1000} views</span>
+              <span>
+                <BlogLikes id={news._id} initialLikes={news.likes} />
+              </span>
+              <span>
+                <SocialShare
+                  url={`https://musafirbaba.com/news/${news.slug}`}
+                  title={news.title}
+                />
+              </span>
+            </div>
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {news.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </header>
+
+          {/* Blog Content */}
+          <section className="prose prose-lg max-w-none mt-6">
+            <BlogContent html={news.content} />
+          </section>
+
+          {/* Comments Section */}
+          <section className="mt-10">
+            <BlogComments
+              blogId={news._id}
+              initialComments={comments}
+              type="news"
+            />
+          </section>
+        </article>
+        <div className="lg:w-3/9">
+          <QueryForm />
+          <LatestNewsSidebar />
+          <TrandingNewsSidebar />
+        </div>
+        {/* ✅ JSON-LD Schema */}
+        <Script id="blog-schema" type="application/ld+json">
+          {JSON.stringify(schema)}
+        </Script>
+      </div>
     </div>
   );
 }

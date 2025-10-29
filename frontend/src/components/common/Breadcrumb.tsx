@@ -10,20 +10,19 @@ export default function Breadcrumb() {
 
   const breadcrumbs = pathSegments.map((segment, index) => {
     const href = "/" + pathSegments.slice(0, index + 1).join("/");
-    const name = segment
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+    const name =
+      segment.split("-").join(" ").charAt(0).toUpperCase() +
+      segment.split("-").join(" ").slice(1);
     return { name, href };
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-4">
+    <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-2">
       <ol className="flex items-center flex-wrap">
         <li>
           <Link
             href="/"
-            className="text-gray-800 hover:text-blue-600 cursor-pointer text-lg  hover:underline"
+            className="text-gray-800 hover:text-blue-600 cursor-pointer text-md  hover:underline"
           >
             Home
           </Link>
@@ -31,13 +30,13 @@ export default function Breadcrumb() {
 
         {breadcrumbs.map((bc, i) => (
           <li key={bc.href} className="flex items-center">
-            <ChevronRightIcon size={18} color="#FE5300" />
+            <ChevronRightIcon size={13} color="#FE5300" />
             {i === breadcrumbs.length - 1 ? (
-              <span className="text-gray-800 text-lg ">{bc.name} </span>
+              <span className="text-gray-800 text-md ">{bc.name} </span>
             ) : (
               <Link
                 href={bc.href}
-                className="text-gray-800 hover:text-blue-600 cursor-pointer text-lg  hover:underline"
+                className="text-gray-800 hover:text-blue-600 cursor-pointer text-md  hover:underline"
               >
                 {bc.name}
               </Link>
