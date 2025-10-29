@@ -115,14 +115,11 @@ export default async function BlogDetailPage({
 
   return (
     <div>
-      <div className="flex flex-col mx-auto max-w-7xl px-12">
+      <div className="flex flex-col mx-auto max-w-7xl px-12 mt-5">
         <Breadcrumb />
       </div>
-      <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-10 px-12">
+      <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
         <article className="lg:w-6/9 ">
-          <div className=" ">
-            <Breadcrumb />
-          </div>
           {/* Cover Image */}
           <BlogViewTracker id={blog._id} />
           <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">

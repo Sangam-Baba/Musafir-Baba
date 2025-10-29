@@ -114,7 +114,7 @@ export default async function NewsDetailPage({
 
   return (
     <div>
-      <div className="flex flex-col mx-auto max-w-7xl px-12">
+      <div className="flex flex-col mx-auto max-w-7xl px-12 mt-5">
         <Breadcrumb />
       </div>
       <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
