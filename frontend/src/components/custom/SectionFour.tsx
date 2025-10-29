@@ -30,7 +30,7 @@ export default function SectionFour() {
             create memories that will last a lifetime. Contact us to plan your
             perfect Delhi tour package!
           </p>
-          <Link href="/delhi-tour-packages">
+          <Link href="https://musafirbaba.com/customized-tour-package/delhi-tour-packages">
             <Button className="w-fit bg-[#FE5300] hover:bg-[#e64a00]">
               Explore More
             </Button>
