@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { News } from "../models/News.js";
 import { NewsComment } from "../models/NewsComment.js";
+import { Author } from "../models/Authors.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 const createNews = async (req, res) => {
   try {
@@ -93,7 +94,7 @@ const getNewsBySlug = async (req, res) => {
 
 const getAllNews = async (req, res) => {
   try {
-    const { title, search } = req.query;
+    const { title, search, author } = req.query;
     const page = Math.max(parseInt(req.query.page || "1"), 1);
     const limit = Math.min(parseInt(req.query.limit || "20"), 25);
     const skip = (page - 1) * limit;
@@ -107,6 +108,20 @@ const getAllNews = async (req, res) => {
         { content: { $regex: search, $options: "i" } },
         { tags: { $regex: search, $options: "i" } },
       ];
+    }
+    if (
+      author &&
+      author !== "undefined" &&
+      author !== "null" &&
+      author.trim() !== ""
+    ) {
+      const auth = await Author.findOne({ slug: author });
+      if (!auth) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Invalid author" });
+      }
+      filter.author = auth._id;
     }
 
     const total = await News.countDocuments(filter);

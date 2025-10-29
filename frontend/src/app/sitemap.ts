@@ -100,7 +100,12 @@ interface Destination {
   };
   updatedAt: string;
 }
-
+interface Author {
+  _id: string;
+  name: string;
+  slug: string;
+  updatedAt: string;
+}
 interface Webpage {
   _id: string;
   title: string;
@@ -114,6 +119,7 @@ interface Visa {
   slug: string;
   updatedAt: string;
 }
+
 // Example: Fetch blog slugs from your DB or API
 async function getBlogs() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`);
@@ -183,6 +189,13 @@ const getAllVisa = async () => {
   const data = await res.json();
   return data?.data ?? [];
 };
+
+const getAllAuthors = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`);
+  if (!res.ok) throw new Error("Failed to fetch Authors");
+  const data = await res.json();
+  return data?.data ?? [];
+};
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogs = await getBlogs();
   const news = await getNews();
@@ -198,6 +211,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     (webpage: Webpage) => webpage.parent === "noparent"
   );
   const visas = await getAllVisa();
+
+  const authors = await getAllAuthors();
   return [
     {
       url: "https://musafirbaba.com/",
@@ -235,17 +250,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+
     {
-      url: "https://musafirbaba.com/terms-and-conditions",
+      url: "https://musafirbaba.com/about-us",
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
-      url: "https://musafirbaba.com/refund-and-cancellation",
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
+      priority: 0.5,
     },
     ...blogs.map((blog: blog) => ({
       url: `https://musafirbaba.com/blog/${blog.slug}`,
@@ -296,6 +306,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(page.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,
+    })),
+    ...authors.map((author: Author) => ({
+      url: `https://musafirbaba.com/author/${author?.slug}`,
+      lastModified: new Date(author.updatedAt),
+      changeFrequency: "monthly",
+      priority: 0.5,
     })),
   ];
 }
