@@ -5,7 +5,6 @@ import Hero from "@/components/custom/Hero";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader } from "@/components/custom/loader";
-import img1 from "../../../../public/Hero1.jpg";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
@@ -60,7 +59,7 @@ export default function PackagesClient() {
   return (
     <section>
       <Hero
-        image={img1.src}
+        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1761815676/tour_package_k5ijnt.webp"
         title=""
         align="center"
         height="lg"
