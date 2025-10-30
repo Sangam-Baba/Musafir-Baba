@@ -64,12 +64,12 @@ function EnquiryPage() {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">All Enquriy ({totalEnquriy})</h1>
+        <h1 className="text-2xl font-bold">All Enquiry ({totalEnquriy})</h1>
         <button
           onClick={handleExport}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
         >
-          + Export
+          + Export CSV
         </button>
       </div>
 

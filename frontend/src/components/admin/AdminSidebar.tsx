@@ -17,11 +17,13 @@ import {
   Rocket,
   Briefcase,
   Cog,
+  CircleQuestionMark,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 
 const NAV = [
   { label: "Dashboard", href: "/admin", icon: Home },
+  { label: "Enquiry", href: "/admin/enquiry", icon: CircleQuestionMark },
   { label: "WebPages", href: "/admin/webpage", icon: LayoutTemplate },
   { label: "About Us", href: "/admin/about-us", icon: Users },
   { label: "Blogs", href: "/admin/blogs", icon: ScrollText },
