@@ -1,9 +1,5 @@
-"use client";
 import React from "react";
 import Hero from "@/components/custom/Hero";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Loader } from "@/components/custom/loader";
 import PackageCard from "@/components/custom/PackageCard";
 import img1 from "../../../../../public/Hero1.jpg";
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -68,10 +64,7 @@ const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
     {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      cache: "no-cache",
+      next: { revalidate: 6000 },
     }
   );
   if (!res.ok) {
@@ -80,20 +73,8 @@ const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
   return res.json();
 };
 
-function SingleCategoryPage({ slug }: { slug: string }) {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["category", slug],
-    queryFn: () => getCategoryBySlug(slug as string),
-    retry: 2,
-  });
-
-  if (isLoading) {
-    return <Loader size="lg" message="Loading category..." />;
-  }
-  if (isError) {
-    toast.error(error.message);
-    return <h1>{error.message}</h1>;
-  }
+async function SingleCategoryPage({ slug }: { slug: string }) {
+  const data = await getCategoryBySlug(slug);
 
   const { category } = data?.data ?? {};
   const packages = category?.packages ?? [];

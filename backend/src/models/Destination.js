@@ -43,7 +43,7 @@ const destinationSchema = new mongoose.Schema(
 
 destinationSchema.pre("save", function (next) {
   if (this.isModified("name")) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
+    this.slug = slugify(this.state, { lower: true, strict: true });
   }
   next();
 });
@@ -74,6 +74,14 @@ destinationSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate();
   if (update.state) {
     update.state = slugify(update.state, { lower: true, strict: true });
+    this.setUpdate(update);
+  }
+  next();
+});
+destinationSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.state) {
+    update.slug = slugify(update.state, { lower: true, strict: true });
     this.setUpdate(update);
   }
   next();

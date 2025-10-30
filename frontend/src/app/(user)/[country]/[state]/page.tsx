@@ -125,8 +125,8 @@ export async function StatePackages({
   params: { state: string; country: string };
 }) {
   const { state, country } = params;
-  const StateName = decodeURIComponent(state);
-  const data = await getStatePackages(StateName);
+
+  const data = await getStatePackages(state);
   if (!data.data.length) return <NotFoundPage />;
 
   const packages = data?.data ?? [];
@@ -144,7 +144,7 @@ export async function StatePackages({
       </div>
       <div className="w-full flex flex-col items-center justify-center mt-8">
         <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Packages in ${
-          StateName.charAt(0).toUpperCase() + StateName.slice(1)
+          state.charAt(0).toUpperCase() + state.slice(1)
         }`}</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
       </div>

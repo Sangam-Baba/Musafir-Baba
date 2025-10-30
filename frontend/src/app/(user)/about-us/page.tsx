@@ -49,12 +49,12 @@ export async function generateMetadata(): Promise<Metadata> {
     description: about?.metaDescription,
     keywords: about?.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/about-us`,
+      canonical: `https://musafirbaba.com/about-us`,
     },
     openGraph: {
       title: about?.metaTitle || page?.title,
       description: about?.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/about-us`,
+      url: `https://musafirbaba.com/about-us`,
       type: "website",
     },
   };
