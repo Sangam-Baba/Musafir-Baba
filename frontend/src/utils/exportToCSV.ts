@@ -4,7 +4,7 @@ interface ExportCSVOptions {
   delimiter?: string; // Default: ","
 }
 
-export function exportToCSV<T extends Record<string, any>>(
+export function exportToCSV<T extends Record<string, unknown>>(
   data: T[],
   options: ExportCSVOptions = {}
 ) {
