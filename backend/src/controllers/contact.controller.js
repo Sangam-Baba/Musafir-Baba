@@ -37,7 +37,9 @@ const createContact = async (req, res) => {
 
 const getAllContact = async (req, res) => {
   try {
-    const contacts = await ContactEnquiry.find({});
+    const contacts = await ContactEnquiry.find({})
+      .sort({ createdAt: -1 })
+      .lean();
     res.status(200).json({
       success: true,
       message: "Contact fetched successfully",
