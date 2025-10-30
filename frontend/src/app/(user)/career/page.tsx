@@ -14,6 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: data?.metaTitle,
     description: data?.metsDescription,
     keywords: data?.keywords,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/career`,
+    },
     openGraph: {
       title: data?.title,
       description: data?.description,

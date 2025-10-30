@@ -54,6 +54,9 @@ export async function generateMetadata({
     keywords: blog.keywords?.length
       ? blog.keywords.join(", ")
       : blog.tags?.join(", "),
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title,
       description,

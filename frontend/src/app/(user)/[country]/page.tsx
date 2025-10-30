@@ -1,12 +1,7 @@
-"use client";
 import React from "react";
 import Hero from "@/components/custom/Hero";
 import CategoryGrid from "@/components/custom/CategoryGrid";
 import img1 from "../../../../public/Hero1.jpg";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Loader } from "@/components/custom/loader";
-import { useParams } from "next/navigation";
 import NotFoundPage from "@/components/common/Not-Found";
 import Breadcrumb from "@/components/common/Breadcrumb";
 interface Destination {
@@ -45,39 +40,31 @@ const getIndiaDestinations = async (
     `${
       process.env.NEXT_PUBLIC_BASE_URL
     }/destination/?country=${country.toLowerCase()}`,
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    }
+    { next: { revalidate: 600 } }
   );
   if (!res.ok) {
     throw new Error("Failed to fetch india destinations");
   }
   return res.json();
 };
-function IndiaDestination() {
-  const { country } = useParams<{ country: string }>();
-  const CountryName = country;
-  const {
-    data: destinationResponse,
-    isLoading,
-    isError,
-    error,
-  } = useQuery<QueryResponse>({
-    queryKey: ["india-destinations"],
-    queryFn: () => getIndiaDestinations(CountryName),
-    retry: 2,
-    staleTime: 1000 * 60 * 5,
-  });
 
-  if (isLoading) {
-    return <Loader size="lg" message="Loading india destinations..." />;
-  }
-  if (isError) {
-    toast.error(error.message);
-    return <h1>{error.message}</h1>;
-  }
+export async function generateMetadata({
+  params,
+}: {
+  params: { country: string };
+}) {
+  const { country } = params;
+  return {
+    title: `${country}'s Best Destinations | Musafir Baba`,
+    description: `${country}'s Best Destinations | Musafir Baba`,
+    alternates: {
+      canonical: `https://musafirbaba.com/${country}`,
+    },
+  };
+}
+async function IndiaDestination({ params }: { params: { country: string } }) {
+  const { country } = params;
+  const destinationResponse = await getIndiaDestinations(country);
 
   const destinations = destinationResponse?.data ?? [];
   return destinations.length === 0 ? (
@@ -94,27 +81,19 @@ function IndiaDestination() {
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-0 mt-5">
         <Breadcrumb />
       </div>
-      {destinations.length > 0 ? (
-        <div className="">
-          <CategoryGrid
-            categories={destinations.map((destination) => ({
-              id: destination._id,
-              name: destination.name,
-              slug: destination.slug,
-              coverImage: destination.coverImage
-                ? destination.coverImage
-                : { url: "", alt: "" },
-            }))}
-            limit={100}
-            title={`${CountryName}'s Best Destinations`}
-            url={`/${country}`}
-          />
-        </div>
-      ) : (
-        <p className="text-center text-gray-600 mt-6">
-          No destinations found for {CountryName}.
-        </p>
-      )}
+      <CategoryGrid
+        categories={destinations.map((destination) => ({
+          id: destination._id,
+          name: destination.name,
+          slug: destination.slug,
+          coverImage: destination.coverImage
+            ? destination.coverImage
+            : { url: "", alt: "" },
+        }))}
+        limit={100}
+        title={`${country}'s Best Destinations`}
+        url={`/${country}`}
+      />
     </section>
   );
 }

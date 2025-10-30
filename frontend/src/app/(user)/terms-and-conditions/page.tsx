@@ -30,6 +30,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/terms-and-conditions`,
+    },
     keywords: page.keywords,
     openGraph: {
       title: page.metaTitle || page.title,

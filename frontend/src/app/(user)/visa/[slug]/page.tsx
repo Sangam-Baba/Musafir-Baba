@@ -36,6 +36,9 @@ export async function generateMetadata({
     title: page.metaTitle || page.title,
     description: page.metaDescription,
     keywords: page.keywords,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
+    },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,

@@ -105,6 +105,9 @@ export async function generateMetadata({
   return {
     title: page.data[0].metaTitle || page.data[0].title,
     description: page.data[0].metaDescription,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${params.country}/${params.state}/${page.data[0].slug}`,
+    },
     keywords: page.data[0].keywords,
     openGraph: {
       title: page.data[0].metaTitle || page.data[0].title,

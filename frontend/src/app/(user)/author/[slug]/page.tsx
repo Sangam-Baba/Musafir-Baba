@@ -45,7 +45,6 @@ async function getNews(author: string) {
   const data = await res.json();
   return data?.data;
 }
-
 export async function generateMetadata({
   params,
 }: {

@@ -187,7 +187,10 @@ const getPackages = async (req, res) => {
     console.log(query);
     // ✅ Query execution
     const packages = await Package.find(query)
-      .populate("destination", "name country state city slug coverImage") // populate category details
+      .populate(
+        "destination",
+        "name country state city slug coverImage metaTitle metaDescription keywords"
+      ) // populate category details
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))

@@ -1,10 +1,6 @@
-"use client";
-
 import React from "react";
 import Hero from "@/components/custom/Hero";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Loader } from "@/components/custom/loader";
+
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
@@ -27,32 +23,15 @@ interface CategoryResponse {
 
 const getCategory = async (): Promise<CategoryResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
+    next: { revalidate: 6000 },
   });
   if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();
 };
 
-export default function PackagesClient() {
-  const { data, isLoading, isError, error } = useQuery<CategoryResponse>({
-    queryKey: ["categories"],
-    queryFn: getCategory,
-    staleTime: 1000 * 60 * 5,
-    retry: 2,
-  });
+export default async function PackagesClient() {
+  const data = await getCategory();
 
-  if (isLoading) {
-    return <Loader size="lg" message="Loading categories..." />;
-  }
-
-  if (isError) {
-    toast.error((error as Error).message);
-    return <h1>{(error as Error).message}</h1>;
-  }
   if (data?.data.length === 0) return <NotFoundPage />;
   const categories = data?.data ?? [];
 

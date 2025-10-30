@@ -4,8 +4,8 @@ import slugify from "slugify";
 const destinationSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trime: true, unique: true },
-    country: { type: String, required: true },
-    state: { type: String },
+    country: { type: String, required: true, index: true },
+    state: { type: String, index: true },
     city: { type: String },
     description: { type: String },
     coverImage: {

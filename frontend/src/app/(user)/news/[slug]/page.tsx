@@ -50,6 +50,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: url,
+    },
     keywords: news.keywords?.length
       ? news.keywords.join(", ")
       : news.tags?.join(", "),

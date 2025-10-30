@@ -1,11 +1,6 @@
-"use client";
 import React from "react";
 import Hero from "@/components/custom/Hero";
 import img1 from "../../../../../public/Hero1.jpg";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Loader } from "@/components/custom/loader";
-import { useParams } from "next/navigation";
 import PackageCard from "@/components/custom/PackageCard";
 import NotFoundPage from "@/components/common/Not-Found";
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -18,6 +13,9 @@ interface Destination {
   city?: string;
   description: string;
   coverImage: coverImage;
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string[];
   slug: string;
 }
 interface Batch {
@@ -88,9 +86,7 @@ const getStatePackages = async (state: string): Promise<QueryResponse> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${state}`,
     {
-      method: "GET",
-      headers: { "Content-Type": "appliction/json" },
-      credentials: "include",
+      next: { revalidate: 60 },
     }
   );
   if (!res.ok) {
@@ -98,23 +94,40 @@ const getStatePackages = async (state: string): Promise<QueryResponse> => {
   }
   return res.json();
 };
-function StatePackages() {
-  const { state, country } = useParams<{ state: string; country: string }>();
-  const StateName = decodeURIComponent(state);
-  const { data, isLoading, isError } = useQuery<QueryResponse>({
-    queryKey: ["state-packages"],
-    queryFn: () => getStatePackages(StateName),
-    retry: 2,
-    staleTime: 1000 * 60 * 5,
-  });
 
-  if (isLoading) {
-    return <Loader size="lg" message="Loading packages..." />;
-  }
-  if (isError) {
-    toast.error(`No destinations found for ${StateName}`);
-    return <NotFoundPage />;
-  }
+export async function generateMetadata({
+  params,
+}: {
+  params: { country: string; state: string };
+}) {
+  const { state, country } = params;
+  const data = await getStatePackages(state);
+  const pkg = data?.data ?? [];
+  return {
+    title: `${
+      pkg[0]?.destination?.metaTitle || pkg[0]?.destination?.name
+    } | Musafir Baba`,
+    description: `${
+      pkg[0]?.destination?.metaDescription || pkg[0]?.destination?.name
+    } | Musafir Baba`,
+    alternates: {
+      canonical: `https://musafirbaba.com/${country}/${state}`,
+    },
+    keywords: pkg[0]?.destination?.keywords || [],
+    openGraph: {
+      images: pkg[0]?.destination?.coverImage?.url,
+    },
+  };
+}
+export async function StatePackages({
+  params,
+}: {
+  params: { state: string; country: string };
+}) {
+  const { state, country } = params;
+  const StateName = decodeURIComponent(state);
+  const data = await getStatePackages(StateName);
+  if (!data.data.length) return <NotFoundPage />;
 
   const packages = data?.data ?? [];
   return (

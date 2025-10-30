@@ -1,10 +1,7 @@
-"use client";
 import Hero from "@/components/custom/Hero";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { Loader } from "@/components/custom/loader";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
@@ -17,20 +14,27 @@ const getWebPageBySlug = async () => {
   const data = await res.json();
   return data?.data;
 };
-function VisaWebPage() {
-  const slug = "contact-us";
 
-  const {
-    data: visa,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["visa", slug],
-    queryFn: getWebPageBySlug,
-  });
-  if (isLoading) return <Loader size="lg" message="Loading Contact..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
+export async function generateMetadata() {
+  const data = await getWebPageBySlug();
+  return {
+    title: data?.metaTitle,
+    description: data?.metsDescription,
+    keywords: data?.keywords,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
+    },
+    openGraph: {
+      title: data?.title,
+      description: data?.description,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
+      type: "website",
+    },
+  };
+}
+async function VisaWebPage() {
+  const visa = await getWebPageBySlug();
+
   return (
     <section className="">
       <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="Contact Us" />
