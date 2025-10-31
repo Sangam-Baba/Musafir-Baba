@@ -1,6 +1,4 @@
-"use client";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 interface Item {
@@ -16,17 +14,16 @@ interface Footer {
 }
 
 const getFooter = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+    next: { revalidate: 86400 },
+  });
   if (!res.ok) throw new Error("Failed to fetch footer");
   const data = await res.json();
   return data.data as Footer[];
 };
 
-function LowerFooterItem() {
-  const { data: footerArray } = useQuery({
-    queryKey: ["footer"],
-    queryFn: getFooter,
-  });
+async function LowerFooterItem() {
+  const footerArray = await getFooter();
 
   const lowerFooter = footerArray?.filter(
     (item) => !["Services", "About Us"].includes(item.title)

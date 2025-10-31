@@ -1,6 +1,4 @@
-"use client";
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 
 interface Item {
   text: string;
@@ -8,7 +6,10 @@ interface Item {
 }
 const getFooter = async (title: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+    {
+      next: { revalidate: 86400 },
+    }
   );
   if (!res.ok) throw new Error("Failed to fetch footer");
   const data = await res.json();
@@ -17,11 +18,8 @@ const getFooter = async (title: string) => {
 interface FooterItemProps {
   title: string;
 }
-function FooterItem({ title }: FooterItemProps) {
-  const { data: FootObj } = useQuery({
-    queryKey: ["footer", title],
-    queryFn: () => getFooter(title),
-  });
+async function FooterItem({ title }: FooterItemProps) {
+  const FootObj = await getFooter(title);
 
   return (
     <section>
