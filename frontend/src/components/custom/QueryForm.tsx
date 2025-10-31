@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { UserRound, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   name: string;
@@ -33,6 +34,7 @@ const createContact = async (formData: FormData) => {
 };
 
 export default function QueryForm() {
+  const router = useRouter();
   const pathname = usePathname();
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -47,7 +49,6 @@ export default function QueryForm() {
   const mutation = useMutation({
     mutationFn: createContact,
     onSuccess: () => {
-      toast.success("We will get back to you soon!");
       setFormData({
         name: "",
         email: "",
@@ -57,6 +58,7 @@ export default function QueryForm() {
         policy: false,
         source: pathname,
       });
+      router.push("/thank-you");
     },
     onError: (error: unknown) => {
       toast.error("Failed to create Contact");

@@ -137,6 +137,8 @@ export default function RootLayout({
           rel="dns-prefetch"
           href="https://musafir-baba-backend.onrender.com"
         />
+        <link rel="preload" as="image" href="/BannerImg.webp" />
+
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         {/* Google Tag Manager Script */}
         <Script
