@@ -1,4 +1,3 @@
-"use client";
 import SecondSection from "../../components/custom/SecondSection";
 import SectionFour from "../../components/custom/SectionFour";
 import SectionFive from "../../components/custom/SectionFive";
@@ -7,7 +6,7 @@ import { ImageGallery } from "../../components/custom/ImageGallery";
 import { SevenSection } from "../../components/custom/SevenSection";
 import { DestinationSection } from "../../components/custom/DestinationSection";
 import { Faqs } from "../../components/custom/Faqs";
-import { FeaturedTour } from "../../components/custom/FeaturedTour";
+import FeaturedTourSSG from "../../components/custom/FeaturedTourSSG";
 import SearchBanner from "@/components/custom/Search";
 import ThirdSection from "@/components/custom/ThirdSection";
 import BlogsHome from "@/components/custom/BlogsHome";
@@ -80,7 +79,7 @@ export default function HomePage() {
       <ThirdSection />
       <SectionFour />
       <SectionFive />
-      <FeaturedTour />
+      <FeaturedTourSSG />
       <SevenSection />
       <DestinationSection />
       <ImageGallery />

@@ -1,11 +1,8 @@
-"use client";
 import { MoveRightIcon } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { Card, CardContent } from "../ui/card";
-import { Loader } from "@/components/custom/loader";
 import Image from "next/image";
-import { toast } from "sonner";
 
 interface Blog {
   _id: string;
@@ -24,36 +21,16 @@ interface Blog {
   createdAt: string;
 }
 
-function BlogsHome() {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
+const getBlogs = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
+    next: { revalidate: 86400 },
+  });
+  const data = await res.json();
+  return data.data;
+};
 
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
-        cache: "no-store",
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setBlogs(data.data);
-      } else {
-        toast.error(data.message || "Failed to fetch blogs");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong fetching blogs");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBlogs();
-  }, []);
-
-  if (loading) return <Loader />;
+async function BlogsHome() {
+  const blogs = await getBlogs();
 
   if (!blogs.length) return null;
 
@@ -80,7 +57,7 @@ function BlogsHome() {
 
       <div className="w-full flex flex-col md:flex-row gap-6 justify-between items-center">
         <div className="md:w-1/2 flex flex-col gap-4">
-          {rest.slice(0, 4).map((blog) => (
+          {rest.slice(0, 4).map((blog: Blog) => (
             <Card
               key={blog._id}
               className="flex flex-row items-center px-2 py-2 gap-2 rounded-xl shadow hover:shadow-lg transition"

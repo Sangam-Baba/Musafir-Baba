@@ -1,6 +1,3 @@
-"use client";
-
-import React from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import bg from "../../../public/bg-2.png";
@@ -9,10 +6,10 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import Autoplay from "embla-carousel-autoplay";
 import { Clock, MapPin } from "lucide-react";
 import { FaMoneyBill } from "react-icons/fa";
 
@@ -50,19 +47,18 @@ interface BestSeller {
 }
 const getBestSeller = async () => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/best-seller`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/best-seller`,
+    {
+      next: { revalidate: 86400 },
+    }
   );
   if (!res.ok) throw new Error("Failed to fetch data");
   const data = await res.json();
   return data?.data || [];
 };
-export function SevenSection() {
-  const { data: bestSeller } = useQuery({
-    queryKey: ["best-seller"],
-    queryFn: getBestSeller,
-  });
+export async function SevenSection() {
+  const bestSeller = await getBestSeller();
 
-  console.log("data is: ", bestSeller);
   return (
     <section
       className="w-full px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white"
@@ -81,11 +77,11 @@ export function SevenSection() {
         </div>
 
         {/* Carousel */}
-        <div className="w-full max-w-7xl flex justify-center">
+        <div className="w-full max-w-7xl flex justify-center px-8  lg:px-10">
           <Carousel
-            className="w-full max-w-6xl"
+            className="w-full max-w-6xl "
             opts={{ loop: true }}
-            plugins={[Autoplay({ delay: 4000, stopOnFocusIn: true })]}
+            // plugins={[Autoplay({ delay: 4000, stopOnFocusIn: true })]}
           >
             <CarouselContent>
               {bestSeller?.map((pkg: BestSeller, i: number) => (
@@ -206,8 +202,8 @@ export function SevenSection() {
               ))}
             </CarouselContent>
 
-            {/* <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
-            <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" /> */}
+            <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
+            <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
           </Carousel>
         </div>
       </div>
