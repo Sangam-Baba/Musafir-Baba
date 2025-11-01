@@ -56,13 +56,13 @@ export default function HomePage() {
   return (
     <main className="">
       <section
-        className="w-full px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] lg:h-[800px]"
+        className="w-full px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] xl:h-[800px] "
         style={{
-          backgroundImage: `url(${"/banner.webp"})`,
+          backgroundImage: `url(${"/bannerImage.webp"})`,
         }}
       >
-        {/* <div className="absolute inset-0 bg-black/40 z-0"></div> */}
-        <div className="flex flex-col gap-10 items-center md:items-start z-10 w-[60%] md:w-[40%] lg:w-[30%] relative">
+        {/* <div className="absolute inset-0 bg-black/10 z-10 w-[40%] left-0"></div> */}
+        <div className="flex flex-col md:gap-10 gap-4 items-center md:items-start z-10 w-[60%] md:w-[40%] lg:w-[30%] relative">
           <Image
             className="w-full  object-cover"
             src="/Musafir-Baba-text.png"
@@ -75,9 +75,12 @@ export default function HomePage() {
           <div className="relative z-20 w-full overflow-visible">
             <SearchBanner />
           </div>
+          <div className="relative z-20 w-full overflow-visible">
+            <SecondSection />
+          </div>
         </div>
       </section>
-      <SecondSection />
+
       <ThirdSection />
       <SectionFour />
       <SectionFive />

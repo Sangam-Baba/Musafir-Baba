@@ -37,19 +37,20 @@ function SecondSection() {
   }, []);
 
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16">
-      <div className="max-w-7xl mx-auto flex justify-around items-center px-8 py-4">
+    <section className="w-full ">
+      {/* <div className="absolute inset-0 bg-white/10 z-10 "></div> */}
+      <div className="max-w-7xl mx-auto flex justify-around items-center px-8  gap-6">
         <div className="flex flex-col gap-2 items-center">
           <Image
             src="/smile.png"
             alt="logo"
             width={100}
             height={100}
-            className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
+            className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 "
           />
           {/* <Smile className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <p className="text-2xl font-bold">{counter}</p>
-          <p className="text-sm">Happy Travellers</p>
+          <p className="text-xl md:text-2xl font-bold text-black">{counter}</p>
+          <p className="text-sm text-black">Happy Travellers</p>
         </div>
 
         <div className="flex flex-col gap-2 items-center">
@@ -61,8 +62,8 @@ function SecondSection() {
             className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
           />
           {/* <Star className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <p className="text-2xl font-bold">4.8/5</p>
-          <p className="text-sm">Google Ratings</p>
+          <p className="text-xl md:text-2xl font-bold text-black">4.8/5</p>
+          <p className="text-sm text-black">Google Ratings</p>
         </div>
 
         <div className="flex flex-col gap-2 items-center">
@@ -74,8 +75,8 @@ function SecondSection() {
             className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
           />
           {/* <Route className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <p className="text-2xl font-bold">500+</p>
-          <p className="text-sm">Tour Packages</p>
+          <p className="text-xl md:text-2xl font-bold text-black">500+</p>
+          <p className="text-sm text-black">Tour Packages</p>
         </div>
       </div>
     </section>
