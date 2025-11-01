@@ -42,7 +42,7 @@ function SecondSection() {
       <div className="max-w-7xl mx-auto flex justify-around items-center px-8  gap-6">
         <div className="flex flex-col gap-2 items-center">
           <Image
-            src="/smile.png"
+            src="/Frame-smile.png"
             alt="logo"
             width={100}
             height={100}
@@ -68,7 +68,7 @@ function SecondSection() {
 
         <div className="flex flex-col gap-2 items-center">
           <Image
-            src="/map.png"
+            src="/location-icon.png"
             alt="logo"
             width={100}
             height={100}
