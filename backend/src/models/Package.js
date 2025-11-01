@@ -35,16 +35,8 @@ const packageSchema = new mongoose.Schema(
     },
     batch: [
       {
-        startDate: { type: Date, required: true },
-        endDate: { type: Date, required: true },
-        quad: { type: Number, required: true },
-        quadDiscount: { type: Number },
-        triple: { type: Number, required: true },
-        tripleDiscount: { type: Number },
-        double: { type: Number, required: true },
-        doubleDiscount: { type: Number },
-        child: { type: Number, required: true },
-        childDiscount: { type: Number },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Batch",
       },
     ],
     metaTitle: String,

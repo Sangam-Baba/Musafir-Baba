@@ -1,4 +1,5 @@
 import { Batch } from "../models/Batch.js";
+import mongoose from "mongoose";
 
 const createBatch = async (req, res) => {
   try {
@@ -7,10 +8,10 @@ const createBatch = async (req, res) => {
       !name ||
       !startDate ||
       !endDate ||
-      !quad ||
-      !triple ||
-      !double ||
-      !child
+      quad === undefined ||
+      triple === undefined ||
+      double === undefined ||
+      child === undefined
     ) {
       return res
         .status(400)

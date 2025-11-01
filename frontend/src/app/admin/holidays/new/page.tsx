@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import ImageUploader from "@/components/admin/ImageUploader";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { Textarea } from "@/components/ui/textarea";
-import { useRouter } from "next/navigation";
+import { CreateBatchModal } from "@/components/admin/Newbatch";
 
 interface Image {
   url: string;
@@ -35,6 +35,7 @@ interface Itinerary {
   description: string;
 }
 interface Batch {
+  name: string;
   startDate: string;
   endDate: string;
   quad: number;
@@ -50,7 +51,7 @@ interface Batch {
 interface PackageFormValues {
   title: string;
   description?: string;
-  batch: Batch[];
+  batch: string[];
   slug: string;
   destination: string;
   coverImage?: Image;
@@ -110,9 +111,22 @@ const getDestination = async () => {
   const data = await res.json();
   return data?.data;
 };
+
+const deleteBatch = async (accessToken: string, id: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/batch/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to delete batch");
+  return res.json();
+};
 export default function CreatePackagePage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const router = useRouter();
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [editBatchId, setEditBatchId] = useState<string | null>(null);
   const defaultValues: PackageFormValues = {
     title: "",
     description: "",
@@ -122,20 +136,7 @@ export default function CreatePackagePage() {
     keywords: [],
     coverImage: { url: "", alt: "", public_id: "" },
     gallery: [],
-    batch: [
-      {
-        startDate: "",
-        endDate: "",
-        quad: 0,
-        triple: 0,
-        double: 0,
-        child: 0,
-        quadDiscount: 0,
-        tripleDiscount: 0,
-        doubleDiscount: 0,
-        childDiscount: 0,
-      },
-    ],
+    batch: [],
     destination: "",
     duration: { days: 0, nights: 0 },
     maxPeople: 0,
@@ -189,8 +190,7 @@ export default function CreatePackagePage() {
       CreatePackage(values, accessToken),
     onSuccess: (data) => {
       toast.success("Package Created successfully");
-      form.reset(defaultValues);
-      router.refresh();
+      // router.refresh();
     },
     onError: (error: unknown) => {
       toast.error(
@@ -198,6 +198,21 @@ export default function CreatePackagePage() {
       );
     },
   });
+
+  const handleBatchCreated = (id: string) => {
+    batchArray.append(id);
+    setShowBatchModal(false);
+  };
+
+  const handleBatchEdit = (id: string) => {
+    setEditBatchId(id);
+    setShowBatchModal(true);
+  };
+  const handleBatchUpdated = (id: string) => {
+    toast.success("Batch updated successfully");
+    setShowBatchModal(false);
+    setEditBatchId(null);
+  };
 
   const onSubmit: SubmitHandler<PackageFormValues> = (values) => {
     mutation.mutate(values);
@@ -262,57 +277,8 @@ export default function CreatePackagePage() {
             <div>
               <FormLabel className="mb-2 text-lg">Batch *</FormLabel>
               {batchArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
-                  <Input
-                    type="date"
-                    {...form.register(`batch.${index}.startDate`)}
-                    placeholder="Start Date"
-                  />
-                  <Input
-                    type="date"
-                    {...form.register(`batch.${index}.endDate`)}
-                    placeholder="End Date"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.quad`)}
-                    placeholder="Quad Original Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.quadDiscount`)}
-                    placeholder="Quad Fake Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.triple`)}
-                    placeholder="Triple Original Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.tripleDiscount`)}
-                    placeholder="Triple Fake Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.double`)}
-                    placeholder="Double Original Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.doubleDiscount`)}
-                    placeholder="Double Fake Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.child`)}
-                    placeholder="Child Original Price"
-                  />
-                  <Input
-                    type="number"
-                    {...form.register(`batch.${index}.childDiscount`)}
-                    placeholder="Child Fake Price"
-                  />
+                <div key={field.id} className="grid grid-cols-4 gap-2 mb-2">
+                  <p>Batch {index + 1}</p>
                   <Button
                     type="button"
                     variant="destructive"
@@ -320,27 +286,47 @@ export default function CreatePackagePage() {
                   >
                     Remove
                   </Button>
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={() =>
+                      handleBatchEdit(form.getValues(`batch.${index}`))
+                    }
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={async () => {
+                      const res = await deleteBatch(
+                        accessToken,
+                        form.getValues(`batch.${index}`)
+                      );
+                      if (res) batchArray.remove(index);
+                    }}
+                  >
+                    Delete
+                  </Button>
                 </div>
               ))}
-              <Button
-                type="button"
-                onClick={() =>
-                  batchArray.append({
-                    startDate: "",
-                    endDate: "",
-                    quad: 0,
-                    triple: 0,
-                    double: 0,
-                    child: 0,
-                    quadDiscount: 0,
-                    tripleDiscount: 0,
-                    doubleDiscount: 0,
-                    childDiscount: 0,
-                  })
-                }
-              >
-                Add Batch
+
+              <Button type="button" onClick={() => setShowBatchModal(true)}>
+                + Add New Batch
               </Button>
+              {showBatchModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <CreateBatchModal
+                    onBatchCreated={handleBatchCreated}
+                    onClose={() => {
+                      setShowBatchModal(false);
+                      setEditBatchId(null);
+                    }}
+                    onBatchUpdated={handleBatchUpdated}
+                    existingBatch={editBatchId}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Duration */}
