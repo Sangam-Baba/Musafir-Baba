@@ -46,7 +46,7 @@ function SecondSection() {
             alt="logo"
             width={100}
             height={100}
-            className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 "
+            className="w-10 h-10 md:w-14 md:h-14  "
           />
           {/* <Smile className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
           <p className="text-xl md:text-2xl font-bold text-black">{counter}</p>
@@ -59,7 +59,7 @@ function SecondSection() {
             alt="logo"
             width={100}
             height={100}
-            className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
+            className="w-10 h-10 md:w-13 md:h-13 "
           />
           {/* <Star className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
           <p className="text-xl md:text-2xl font-bold text-black">4.8/5</p>
@@ -72,7 +72,7 @@ function SecondSection() {
             alt="logo"
             width={100}
             height={100}
-            className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18"
+            className="w-10 h-10 md:w-14 md:h-14"
           />
           {/* <Route className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
           <p className="text-xl md:text-2xl font-bold text-black">500+</p>
