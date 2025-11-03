@@ -34,7 +34,21 @@ interface Itinerary {
   title: string;
   description: string;
 }
-
+interface Batch {
+  name: string;
+  startDate: string;
+  endDate: string;
+  quad: number;
+  triple: number;
+  double: number;
+  child: number;
+  quadDiscount: number;
+  tripleDiscount: number;
+  doubleDiscount: number;
+  childDiscount: number;
+  _id: string;
+  status: string;
+}
 interface PackageFormValues {
   title: string;
   description?: string;
@@ -110,10 +124,24 @@ const deleteBatch = async (accessToken: string, id: string) => {
   if (!res.ok) throw new Error("Failed to delete batch");
   return res.json();
 };
+const getBatchByIds = async (accessToken: string, ids: string[]) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/batch/ids`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ ids }),
+  });
+  if (!res.ok) throw new Error("Failed to get batch");
+  const data = await res.json();
+  return data?.data;
+};
 export default function CreatePackagePage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
+  const [batchDetails, setBatchDetails] = useState<Batch[]>([]);
   const defaultValues: PackageFormValues = {
     title: "",
     description: "",
@@ -186,8 +214,10 @@ export default function CreatePackagePage() {
     },
   });
 
-  const handleBatchCreated = (id: string) => {
+  const handleBatchCreated = async (id: string) => {
     batchArray.append(id);
+    const newBatch = await getBatchByIds(accessToken, [id]);
+    setBatchDetails((prev) => [...prev, ...newBatch]);
     setShowBatchModal(false);
   };
 
@@ -195,8 +225,10 @@ export default function CreatePackagePage() {
     setEditBatchId(id);
     setShowBatchModal(true);
   };
-  const handleBatchUpdated = (id: string) => {
+  const handleBatchUpdated = async (id: string) => {
     toast.success("Batch updated successfully");
+    const updated = await getBatchByIds(accessToken, [id]);
+    setBatchDetails((prev) => prev.map((b) => (b._id === id ? updated[0] : b)));
     setShowBatchModal(false);
     setEditBatchId(null);
   };
@@ -264,37 +296,55 @@ export default function CreatePackagePage() {
             <div>
               <FormLabel className="mb-2 text-lg">Batch *</FormLabel>
               {batchArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-4 gap-2 mb-2">
-                  <p>Batch {index + 1}</p>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => batchArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="default"
-                    onClick={() =>
-                      handleBatchEdit(form.getValues(`batch.${index}`))
-                    }
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={async () => {
-                      const res = await deleteBatch(
-                        accessToken,
-                        form.getValues(`batch.${index}`)
-                      );
-                      if (res) batchArray.remove(index);
-                    }}
-                  >
-                    Delete
-                  </Button>
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  {/* Batch Content */}
+                  <div className="flex  items-center text-left gap-2">
+                    <span className="font-medium">
+                      {batchDetails[index]?.name || `Batch ${index + 1}`}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {batchDetails[index]?.startDate
+                        ? `${new Date(
+                            batchDetails[index].startDate
+                          ).toLocaleDateString()} → ${new Date(
+                            batchDetails[index].endDate
+                          ).toLocaleDateString()}`
+                        : "No date info"}
+                    </span>
+                  </div>
+
+                  {/* Batch Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => batchArray.remove(index)}
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() =>
+                        handleBatchEdit(form.getValues(`batch.${index}`))
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={async () => {
+                        const res = await deleteBatch(
+                          accessToken,
+                          form.getValues(`batch.${index}`)
+                        );
+                        if (res) batchArray.remove(index);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               ))}
 

@@ -28,12 +28,7 @@ const createBatch = async (accessToken: string, form: Batch) => {
     },
     body: JSON.stringify(form),
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Batch creation failed");
-  }
-
+  if (!res.ok) throw new Error("Batch creation failed");
   return res.json();
 };
 
@@ -46,12 +41,7 @@ const updateBatch = async (accessToken: string, id: string, form: Batch) => {
     },
     body: JSON.stringify(form),
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Batch update failed");
-  }
-
+  if (!res.ok) throw new Error("Batch update failed");
   return res.json();
 };
 
@@ -66,12 +56,10 @@ const getBatch = async (accessToken: string, id: string) => {
       },
     }
   );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Batch update failed");
-  }
+  if (!res.ok) throw new Error("Failed to fetch batch");
   return res.json();
 };
+
 export const CreateBatchModal = ({
   onBatchCreated,
   onBatchUpdated,
@@ -105,6 +93,7 @@ export const CreateBatchModal = ({
     queryFn: () => getBatch(accessToken, existingBatch as string),
     enabled: !!existingBatch,
   });
+
   const batch = data?.data;
   useEffect(() => {
     if (existingBatch && batch) {
@@ -124,6 +113,7 @@ export const CreateBatchModal = ({
       });
     }
   }, [existingBatch, batch]);
+
   const mutation = useMutation({
     mutationFn: () =>
       existingBatch
@@ -136,19 +126,13 @@ export const CreateBatchModal = ({
           : "Batch created successfully!"
       );
       if (existingBatch) onBatchUpdated?.(existingBatch);
-      else {
-        const id = res?.data?._id || res?._id;
-        if (id) onBatchCreated(id);
-      }
+      else onBatchCreated(res?.data?._id || res?._id);
       onClose();
     },
-    onError: (err) => {
-      toast.error(err.message || "Failed to create batch");
-    },
+    onError: (err) => toast.error(err.message || "Failed to create batch"),
   });
 
   const handleChange = (key: keyof Batch, value: string) => {
-    // convert numeric inputs to numbers
     if (
       [
         "quad",
@@ -172,111 +156,100 @@ export const CreateBatchModal = ({
 
   return (
     <div
-      className="bg-white rounded-xl shadow-xl p-6 w-[400px]"
-      onClick={(e) => e.stopPropagation()} // ✅ prevent overlay click bubbling
+      className="bg-white rounded-xl shadow-2xl w-[420px] max-h-[90vh] overflow-y-auto p-6"
+      onClick={(e) => e.stopPropagation()}
     >
-      <h2 className="text-xl font-semibold text-center mb-4">Create Batch</h2>
-      <form
-        // onSubmit={handleSubmit}
-        className="flex flex-col gap-4 p-4 bg-white rounded-md shadow-md"
-      >
-        <input
-          type="text"
-          placeholder="Batch Name"
-          value={form.name}
-          onChange={(e) => handleChange("name", e.target.value)}
-          required
-          className="border p-2 rounded-md"
-        />
+      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+        {existingBatch ? "Update Batch" : "Create Batch"}
+      </h2>
 
-        <input
-          type="date"
-          value={form.startDate}
-          onChange={(e) => handleChange("startDate", e.target.value)}
-          required
-          className="border p-2 rounded-md"
-        />
-
-        <input
-          type="date"
-          value={form.endDate}
-          onChange={(e) => handleChange("endDate", e.target.value)}
-          required
-          className="border p-2 rounded-md"
-        />
-
-        <div className="grid grid-cols-2 gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        {/* Basic Info */}
+        <div className="space-y-2">
+          <label className="text-gray-600 font-medium">Batch Name</label>
           <input
-            type="number"
-            placeholder="Quad"
-            value={form.quad}
-            onChange={(e) => handleChange("quad", e.target.value)}
+            type="text"
+            placeholder="Enter batch name"
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
             required
-            className="border p-2 rounded-md"
           />
-          <input
-            type="number"
-            placeholder="Quad Discount"
-            value={form.quadDiscount}
-            onChange={(e) => handleChange("quadDiscount", e.target.value)}
-            className="border p-2 rounded-md"
-          />
+        </div>
 
-          <input
-            type="number"
-            placeholder="Triple"
-            value={form.triple}
-            onChange={(e) => handleChange("triple", e.target.value)}
-            required
-            className="border p-2 rounded-md"
-          />
-          <input
-            type="number"
-            placeholder="Triple Discount"
-            value={form.tripleDiscount}
-            onChange={(e) => handleChange("tripleDiscount", e.target.value)}
-            className="border p-2 rounded-md"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-gray-600 font-medium">Start Date</label>
+            <input
+              type="date"
+              value={form.startDate}
+              onChange={(e) => handleChange("startDate", e.target.value)}
+              className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-gray-600 font-medium">End Date</label>
+            <input
+              type="date"
+              value={form.endDate}
+              onChange={(e) => handleChange("endDate", e.target.value)}
+              className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
+              required
+            />
+          </div>
+        </div>
 
-          <input
-            type="number"
-            placeholder="Double"
-            value={form.double}
-            onChange={(e) => handleChange("double", e.target.value)}
-            required
-            className="border p-2 rounded-md"
-          />
-          <input
-            type="number"
-            placeholder="Double Discount"
-            value={form.doubleDiscount}
-            onChange={(e) => handleChange("doubleDiscount", e.target.value)}
-            className="border p-2 rounded-md"
-          />
+        {/* Price Section */}
+        <div className="border-t pt-4 mt-2">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">
+            Pricing Details
+          </h3>
 
-          <input
-            type="number"
-            placeholder="Child"
-            value={form.child}
-            onChange={(e) => handleChange("child", e.target.value)}
-            required
-            className="border p-2 rounded-md"
-          />
-          <input
-            type="number"
-            placeholder="Child Discount"
-            value={form.childDiscount}
-            onChange={(e) => handleChange("childDiscount", e.target.value)}
-            className="border p-2 rounded-md"
-          />
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              ["Quad", "quad", "quadDiscount"],
+              ["Triple", "triple", "tripleDiscount"],
+              ["Double", "double", "doubleDiscount"],
+              ["Child", "child", "childDiscount"],
+            ].map(([label, priceKey, fakePriceKey]) => (
+              <div key={label} className="col-span-2 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-gray-600 text-sm">{label} Price</label>
+                  <input
+                    type="number"
+                    value={form[priceKey as keyof Batch]}
+                    onChange={(e) =>
+                      handleChange(priceKey as keyof Batch, e.target.value)
+                    }
+                    className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-gray-600 text-sm">{label} Fake</label>
+                  <input
+                    type="number"
+                    value={form[fakePriceKey as keyof Batch]}
+                    onChange={(e) =>
+                      handleChange(fakePriceKey as keyof Batch, e.target.value)
+                    }
+                    className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Status */}
+        <div className="mt-2">
+          <label className="text-gray-600 font-medium">Batch Status</label>
           <select
             value={form.status}
             onChange={(e) => handleChange("status", e.target.value)}
-            className="border p-2 rounded-md"
+            className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
           >
-            <option value="" disabled>
-              Select Status
-            </option>
             <option value="upcoming">Upcoming</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
@@ -284,27 +257,29 @@ export const CreateBatchModal = ({
           </select>
         </div>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-md mt-2"
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending
-            ? existingBatch
-              ? "Updating..."
-              : "Creating..."
-            : existingBatch
-            ? "Update Batch"
-            : "Create Batch"}
-        </button>
-        <button
-          type="button"
-          className="flex-1 border border-gray-300 py-2 rounded-md"
-          onClick={onClose}
-        >
-          Close
-        </button>
+        {/* Buttons */}
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={mutation.isPending}
+            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition disabled:opacity-50"
+          >
+            {mutation.isPending
+              ? existingBatch
+                ? "Updating..."
+                : "Creating..."
+              : existingBatch
+              ? "Update Batch"
+              : "Create Batch"}
+          </button>
+        </div>
       </form>
     </div>
   );
