@@ -5,6 +5,7 @@ import {
   deleteBatch,
   getAllBatch,
   getBatchById,
+  getBatchByIds,
 } from "../controllers/batch.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -28,6 +29,12 @@ batchRoutes.get(
   isAuthenticated,
   authorizedRoles(["admin", "superadmin"]),
   getBatchById
+);
+batchRoutes.post(
+  "/ids",
+  isAuthenticated,
+  authorizedRoles(["admin", "superadmin"]),
+  getBatchByIds
 );
 batchRoutes.patch(
   "/:id",

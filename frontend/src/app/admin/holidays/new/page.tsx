@@ -34,19 +34,6 @@ interface Itinerary {
   title: string;
   description: string;
 }
-interface Batch {
-  name: string;
-  startDate: string;
-  endDate: string;
-  quad: number;
-  triple: number;
-  double: number;
-  child: number;
-  quadDiscount: number;
-  tripleDiscount: number;
-  doubleDiscount: number;
-  childDiscount: number;
-}
 
 interface PackageFormValues {
   title: string;

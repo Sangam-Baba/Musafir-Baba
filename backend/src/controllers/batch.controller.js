@@ -127,4 +127,37 @@ const getBatchById = async (req, res) => {
   }
 };
 
-export { createBatch, updateBatch, getAllBatch, deleteBatch, getBatchById };
+const getBatchByIds = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !ids.length) {
+      return res.status(400).json({ success: false, message: "Invalid Ids" });
+    }
+    const batches = await Batch.find({ _id: { $in: ids } })
+      .select("_id name startDate endDate")
+      .lean()
+      .exec();
+    if (!batches) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Batch not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Batch fetched successfully",
+      data: batches,
+    });
+  } catch (error) {
+    console.log("batch getting by Ids failed: ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export {
+  createBatch,
+  updateBatch,
+  getAllBatch,
+  deleteBatch,
+  getBatchById,
+  getBatchByIds,
+};
