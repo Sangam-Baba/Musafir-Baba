@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
   description:
     "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services. Book your tour now in just 60 seconds.",
+  keywords:
+    "Travel Agency, Tour Packages, Visa Services, Delhi, India,  Visa, Bookings",
   alternates: {
     canonical: "https://musafirbaba.com/",
   },

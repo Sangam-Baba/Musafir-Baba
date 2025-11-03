@@ -32,7 +32,7 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
         {/* Heading */}
         <div className="flex flex-col gap-2 items-center w-full text-center">
           <h2 className="text-2xl md:text-3xl font-bold">
-            Featured Tour Packages
+            Featured Group Tour Packages
           </h2>
           <div className="w-20 h-1 bg-[#FE5300]" />
           <p>Top-rated holiday packages curated for every journey</p>
@@ -75,7 +75,7 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
                   </h3>
                   <Link
                     href={`/holidays/${tab.slug}`}
-                    className="text-[#FE5300] font-medium"
+                    className="text-[#FE5300] font-semibold"
                   >
                     View All →
                   </Link>

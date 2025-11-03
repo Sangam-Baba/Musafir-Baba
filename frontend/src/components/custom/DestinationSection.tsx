@@ -50,11 +50,13 @@ export function DestinationSection() {
         <div className="flex  justify-end  items-center w-full p-2">
           <div>
             <Link
-              href={`/${active === "domestic" ? "india" : "india"}`}
+              href={`/${
+                active === "domestic" ? "india" : "international-trips"
+              }`}
               className="text-[#FE5300] font-semibold"
             >
               {" "}
-              View All
+              View All →
             </Link>
           </div>
         </div>

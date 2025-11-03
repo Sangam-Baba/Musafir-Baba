@@ -1,27 +1,10 @@
 "use client";
 
 import * as React from "react";
-// import { useTheme } from "next-themes";
-// import { SunMoon } from 'lucide-react';
-// import { Button } from "../ui/button";
+
 import Link from "next/link";
-// import { useAuthStore } from "@/store/useAuthStore";
-// import { useAuthDialogStore } from "@/store/useAuthDialogStore";
-// import { useRouter } from "next/navigation";
 
 export function Navbar() {
-  // const router = useRouter();
-  // const { openDialog } = useAuthDialogStore();
-  // const accessToken = useAuthStore((state) => state.accessToken) as string;
-
-  // const handleClick = () => {
-  //   if (!accessToken) {
-  //     openDialog("login", undefined, "/plan-my-trip");
-  //     return;
-  //   }
-  //   router.push(`/plan-my-trip`);
-  // };
-  // const { theme, setTheme }= useTheme();
   return (
     <>
       <nav className="flex lg:items-center">
@@ -30,19 +13,18 @@ export function Navbar() {
             <Link href="/holidays">Holidays</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="/customized-tour-package">Customized</Link>
+            <Link href="/holidays/honeymoon-package">Honeymoon Trips</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
-            <Link href="/bookings">Bookings</Link>
+            <Link href="/holidays/international-tour-packages">
+              International Trips
+            </Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Link href="/visa">Visa</Link>
           </li>
           <li className="font-semi-bold  text-[#FE5300]">
             <Link href="/membership">Membership</Link>
-          </li>
-          <li className="font-semi-bold bg-[FE5300] text-[#FE5300]">
-            <Link href="/blog">Blog</Link>
           </li>
           <li className="font-semi-bold bg-[FE5300] text-[#FE5300]">
             <Link href="/news">News</Link>

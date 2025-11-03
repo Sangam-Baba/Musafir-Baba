@@ -4,9 +4,7 @@ const CATEGORY_SLUGS = [
   { slug: "customized-tour-package", label: "Customized Trips" },
   { slug: "backpacking-trips", label: "Backpacking Trips" },
   { slug: "weekend-getaway", label: "Weekend Trips" },
-  { slug: "honeymoon-package", label: "Honeymoon Trips" },
   { slug: "early-bird-2026", label: "Early Bird 2026" },
-  { slug: "international-tour-packages", label: "International Trips" },
 ];
 
 async function getCategory(slug: string) {

@@ -10,7 +10,7 @@ import FeaturedTourSSG from "../../components/custom/FeaturedTourSSG";
 import SearchBanner from "@/components/custom/Search";
 import ThirdSection from "@/components/custom/ThirdSection";
 import BlogsHome from "@/components/custom/BlogsHome";
-import Image from "next/image";
+// import Image from "next/image";
 import HomeBooking from "../../components/custom/HomeBooking";
 
 const faqs = [
@@ -56,14 +56,14 @@ export default function HomePage() {
   return (
     <main className="">
       <section
-        className="w-full flex px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center"
+        className="w-full flex px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[500px] 2xl:h-[800px] items-center"
         style={{
           backgroundImage: `url(${"/bannerImage.webp"})`,
         }}
       >
-        {/* <div className="absolute inset-0 bg-black/10 z-10 w-[40%] left-0"></div> */}
+        <div className="absolute inset-0 bg-black/10 z-10  left-0"></div>
         <div className="flex flex-col md:gap-10 gap-4 items-center md:items-start z-10 w-[60%] md:w-[40%] lg:w-[30%] relative ">
-          <Image
+          {/* <Image
             className="w-full  object-cover"
             src="/Musafir-Baba-text.png"
             width={400}
@@ -71,7 +71,19 @@ export default function HomePage() {
             alt="Musafirbaba"
             priority
             fetchPriority="high"
-          />
+          /> */}
+          <h1 className="text-3xl md:text-5xl font-bold text-[#112A46] text-center text-inline leading-tight">
+            Book your trip in just{" "}
+            <span
+              className="text-white text-4xl md:text-6xl font-bold text-inline leading-tight"
+              style={{
+                textShadow:
+                  "-2px -2px 0 #112A46, 2px -2px 0 #112A46, -2px 2px 0 #112A46, 2px 2px 0 #112A46",
+              }}
+            >
+              60 seconds
+            </span>
+          </h1>
           <div className="relative z-20 w-full overflow-visible">
             <SearchBanner />
           </div>
@@ -82,10 +94,10 @@ export default function HomePage() {
       </section>
 
       <ThirdSection />
-      <SectionFour />
+      <SevenSection />
       <SectionFive />
       <FeaturedTourSSG />
-      <SevenSection />
+      <SectionFour />
       <DestinationSection />
       <ImageGallery />
       <HomeBooking />
