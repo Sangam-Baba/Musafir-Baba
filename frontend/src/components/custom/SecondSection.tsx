@@ -50,7 +50,7 @@ function SecondSection() {
           />
           {/* <Smile className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
           <p className="text-xl md:text-2xl font-bold text-black">{counter}</p>
-          <p className="text-sm text-black">Happy Travellers</p>
+          <p className="text-sm text-black text-center">Happy Travellers</p>
         </div>
 
         <div className="flex flex-col gap-2 items-center">
@@ -63,7 +63,7 @@ function SecondSection() {
           />
           {/* <Star className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
           <p className="text-xl md:text-2xl font-bold text-black">4.8/5</p>
-          <p className="text-sm text-black">Google Ratings</p>
+          <p className="text-sm text-black text-center">Google Ratings</p>
         </div>
 
         <div className="flex flex-col gap-2 items-center">
@@ -76,7 +76,7 @@ function SecondSection() {
           />
           {/* <Route className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
           <p className="text-xl md:text-2xl font-bold text-black">500+</p>
-          <p className="text-sm text-black">Tour Packages</p>
+          <p className="text-sm text-black text-center">Tour Packages</p>
         </div>
       </div>
     </section>

@@ -72,13 +72,13 @@ export default function HomePage() {
             priority
             fetchPriority="high"
           /> */}
-          <h1 className="text-3xl md:text-5xl font-bold text-[#112A46] text-center text-inline leading-tight">
+          <h1 className="text-2xl md:text-4xl xl:text-6xl font-bold text-[#112A46] text-center text-inline leading-tight">
             Book your trip in just{" "}
             <span
-              className="text-white text-4xl md:text-6xl font-bold text-inline leading-tight"
+              className="text-white text-2xl md:text-4xl xl:text-6xl font-bold text-inline leading-tight tracking-wide"
               style={{
                 textShadow:
-                  "-2px -2px 0 #112A46, 2px -2px 0 #112A46, -2px 2px 0 #112A46, 2px 2px 0 #112A46",
+                  "-1px -1px 0 #112A46, 1px -1px 0 #112A46, -1px 1px 0 #112A46, 1px 1px 0 #112A46",
               }}
             >
               60 seconds
