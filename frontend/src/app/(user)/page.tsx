@@ -72,10 +72,10 @@ export default function HomePage() {
             priority
             fetchPriority="high"
           /> */}
-          <h1 className="text-2xl md:text-4xl xl:text-6xl font-bold text-[#112A46] text-center text-inline leading-tight">
+          <h1 className="text-2xl md:text-4xl  font-bold text-[#112A46] text-center text-inline leading-tight">
             Book your trip in just{" "}
             <span
-              className="text-white text-2xl md:text-4xl xl:text-6xl font-bold text-inline leading-tight tracking-wide"
+              className="text-white text-2xl md:text-4xl  font-bold text-inline leading-tight tracking-wide"
               style={{
                 textShadow:
                   "-1px -1px 0 #112A46, 1px -1px 0 #112A46, -1px 1px 0 #112A46, 1px 1px 0 #112A46",
