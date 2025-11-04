@@ -1,103 +1,119 @@
 import { Category } from "../models/Category.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import { Package } from "../models/Package.js";
-import mongoose, { model } from "mongoose";
+import mongoose from "mongoose";
 import { Destination } from "../models/Destination.js";
-const createCategory=async(req, res)=>{
-    try {
-        const {name,  description}=req.body;
-        
-        const isExist=await Category.findOne({name:name.trim()});
-        if(isExist){
-            return res.status(400).json({success:false, message:"Category with this name already exists"});
-        }
-        const category=new Category({name, description,  ...req.body});
-        await category.save();
+const createCategory = async (req, res) => {
+  try {
+    const { name, description } = req.body;
 
-       res.status(201).json({success:true, message:"Category created successfully", data:category});
-    } catch (error) {
-        console.log("Unable to create category", error.message);
-        res.status(500).json({success: false, message:"Server Error"})
+    const isExist = await Category.findOne({ name: name.trim() });
+    if (isExist) {
+      return res.status(400).json({
+        success: false,
+        message: "Category with this name already exists",
+      });
     }
+    const category = new Category({ name, description, ...req.body });
+    await category.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Category created successfully",
+      data: category,
+    });
+  } catch (error) {
+    console.log("Unable to create category", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
 };
 
-const getCategory=async(req, res)=>{
-    try {
-      const categories = await Category.find({ isActive: true })
-      .sort({ createdAt: -1 }) 
-      .lean(); 
+const getCategory = async (req, res) => {
+  try {
+    const categories = await Category.find({ isActive: true })
+      .sort({ createdAt: -1 })
+      .lean();
 
-      res.status(200).json({
+    res.status(200).json({
       success: true,
       count: categories.length,
       data: categories,
-      });      
-    } catch (error) {
-        console.log("All Category  getting failed  ", error.message);
-        res.status(500).json({success:false, message:"Server Error"})
+    });
+  } catch (error) {
+    console.log("All Category  getting failed  ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+const getCategoryById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({ success: false, message: "Invalid" });
+
+    const category = await Category.findById({ _id: id })
+      .select("name slug description coverImage packages isActive")
+      .lean();
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
-}
+    res.status(200).json({
+      success: true,
+      data: {
+        category,
+      },
+    });
+  } catch (error) {
+    console.log("Category By Id getting failed ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
-const getCategoryById=async(req, res)=>{
-      try {
-        const {id}=req.params;
-
-        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({success:false, message:"Invalid"});
-
-
-        const category=await Category.findById({_id:id})
-        .select("name slug description coverImage packages isActive")
-        .lean();
-        
-        if (!category) {
-          return res.status(404).json({
-          success: false,
-         message: "Category not found",
-          });
-         }
-     res.status(200).json({
-       success: true,
-       data: {
-         category,
-       },
-     });
-
-    } catch (error) {
-        console.log("Category By Id getting failed ", error.message);
-        res.status(500).json({success:false, message:"Server Error"})
-    }
-}
-
-const getCategoryBySlug=async(req, res)=>{
-    try {
-        const {slug}=req.params;
-        const category=await Category.findOne({slug:slug, isActive:true, })
-        .populate({path:"packages",  match: { status: "published" }, 
-          populate:{
-            path:"destination",
-            model:"Destination"
+const getCategoryBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const category = await Category.findOne({ slug: slug, isActive: true })
+      .populate({
+        path: "packages",
+        match: { status: "published" },
+        select: "title slug coverImage destination batch duration",
+        populate: [
+          {
+            path: "destination",
+            model: "Destination",
+            select: "name slug country state city",
           },
-        })
-        .lean();
-        
-        if (!category) {
-          return res.status(404).json({
-          success: false,
-         message: "Category not found",
-          });
-         }
-     res.status(200).json({
-       success: true,
-       data: {
-         category,
-       },
-     });
+          {
+            path: "batch",
+            model: "Batch",
+            select: "quad startDate endDate",
+          },
+        ],
+      })
+      .lean();
 
-    } catch (error) {
-        console.log("Category By Slug getting failed ", error.message);
-        res.status(500).json({success:false, message:"Server Error"})
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
-}
+    res.status(200).json({
+      success: true,
+      data: {
+        category,
+      },
+    });
+  } catch (error) {
+    console.log("Category By Slug getting failed ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
 const updateCategory = async (req, res) => {
   try {
@@ -155,4 +171,11 @@ const deleteCategory = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-export {createCategory, getCategory, getCategoryBySlug , updateCategory , deleteCategory , getCategoryById}
+export {
+  createCategory,
+  getCategory,
+  getCategoryBySlug,
+  updateCategory,
+  deleteCategory,
+  getCategoryById,
+};

@@ -159,7 +159,7 @@ export async function StatePackages({
                 name: pkg.title,
                 slug: pkg.slug,
                 image: pkg.coverImage ? pkg.coverImage.url : "",
-                price: pkg.batch ? pkg.batch[0].quad : 9999,
+                price: pkg.batch ? pkg.batch[0]?.quad : 9999,
                 duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
                 destination:
                   pkg.destination.state.charAt(0).toUpperCase() +
