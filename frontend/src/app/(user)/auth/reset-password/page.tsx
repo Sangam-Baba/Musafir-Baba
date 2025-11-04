@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useMutation } from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,10 +12,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+export const dynamic = "force-dynamic";
 
 const formSchema = z
   .object({
@@ -27,15 +28,15 @@ const formSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  })
+  });
 
 export default function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: { token?: string }
+  searchParams: { token?: string };
 }) {
-  const router = useRouter()
-  const token = searchParams.token // ✅ safe, no Suspense error
+  const router = useRouter();
+  const token = searchParams.token; // ✅ safe, no Suspense error
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,7 +44,7 @@ export default function ResetPasswordPage({
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
   async function resetUser(values: z.infer<typeof formSchema>) {
     const res = await fetch(
@@ -53,30 +54,30 @@ export default function ResetPasswordPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: values.password }),
       }
-    )
+    );
 
     if (!res.ok) {
-      const errorData = await res.json()
-      throw new Error(errorData.message || "Password reset failed")
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Password reset failed");
     }
 
-    return res.json()
+    return res.json();
   }
 
   const mutation = useMutation({
     mutationFn: resetUser,
     onSuccess: () => {
-      toast.success("Password Reset successful! Please log in.")
-      setTimeout(() => router.push("/auth/login"), 2000)
-      form.reset()
+      toast.success("Password Reset successful! Please log in.");
+      setTimeout(() => router.push("/auth/login"), 2000);
+      form.reset();
     },
     onError: (error) => {
-      toast.error(error.message)
+      toast.error(error.message);
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    mutation.mutate(values)
+    mutation.mutate(values);
   }
 
   return (
@@ -116,12 +117,16 @@ export default function ResetPasswordPage({
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "Resetting..." : "Reset Password"}
             </Button>
           </form>
         </Form>
       </div>
     </div>
-  )
+  );
 }

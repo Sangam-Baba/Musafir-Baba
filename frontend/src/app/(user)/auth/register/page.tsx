@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 
 import { toast } from "sonner";
 import Link from "next/link";
+export const dynamic = "force-dynamic";
 
 // ✅ Zod Schema
 const formSchema = z

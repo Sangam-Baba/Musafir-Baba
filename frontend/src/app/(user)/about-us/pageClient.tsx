@@ -1,8 +1,7 @@
 "use client";
+
 import Hero from "@/components/custom/Hero";
 import React, { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Loader } from "@/components/custom/loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -48,27 +47,27 @@ interface FormValues {
 }
 
 // Fetch Function
-const getWebPageBySlug = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`
-  );
-  if (!res.ok) throw new Error("Failed to fetch about");
-  const data = await res.json();
-  console.log("About us data", data);
-  return data;
-};
+// const getWebPageBySlug = async () => {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`
+//   );
+//   if (!res.ok) throw new Error("Failed to fetch about");
+//   const data = await res.json();
+//   console.log("About us data", data);
+//   return data;
+// };
 
-function AboutUsPageClient() {
+function AboutUsPageClient({ about }: { about: FormValues }) {
   const [cornerImages, setCornerImages] = useState<ImageType[]>([]);
   const [centerImage, setCenterImage] = useState<ImageType>({
     url: "",
     alt: "",
   });
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["about"],
-    queryFn: getWebPageBySlug,
-  });
-  const about = data?.data || {};
+  // const { data, isLoading, isError, error } = useQuery({
+  //   queryKey: ["about"],
+  //   queryFn: getWebPageBySlug,
+  // });
+  // const about = data?.data || {};
   useEffect(() => {
     if (!about?.upperImage?.length) return;
 
@@ -86,8 +85,8 @@ function AboutUsPageClient() {
     // Cleanup on unmount
     return () => clearInterval(interval);
   }, [about?.upperImage]);
-  if (isLoading) return <Loader size="lg" message="Loading About Us..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
+  // if (isLoading) return <Loader size="lg" message="Loading About Us..." />;
+  // if (isError) return <h1>{(error as Error).message}</h1>;
 
   const floatAnimation = {
     y: [0, -10, 0],

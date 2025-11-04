@@ -35,17 +35,17 @@ interface FormValues {
 // Fetch Function
 const getWebPageBySlug = async () => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`,
+    { next: { revalidate: 86400 } }
   );
   if (!res.ok) throw new Error("Failed to fetch about");
   const data = await res.json();
-  console.log("About us data", data);
-  return data;
+  return data?.data as FormValues;
 };
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getWebPageBySlug();
-  const about = page?.data || {};
+  const about = page || {};
   return {
     title: about?.metaTitle || page?.title,
     description: about?.metaDescription,
@@ -62,10 +62,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function AboutUsPage() {
+async function AboutUsPage() {
+  const data = await getWebPageBySlug();
   return (
     <div>
-      <AboutUsPageClient />
+      <AboutUsPageClient about={data} />
       {/* Testimonials and Blogs */}
       <Testimonial />
       <BlogsHome />

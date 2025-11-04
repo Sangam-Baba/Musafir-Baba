@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { useMutation } from "@tanstack/react-query"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,12 +13,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
-import Link from "next/link"
+import Link from "next/link";
+export const dynamic = "force-dynamic";
 
 // ✅ Zod Schema
 const formSchema = z
@@ -31,18 +32,21 @@ const formSchema = z
 
 // ✅ API call function
 async function resetUser(values: z.infer<typeof formSchema>) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgotPassword`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(values),
-  })
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgotPassword`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    }
+  );
 
   if (!res.ok) {
-    const errorData = await res.json()
-    throw new Error(errorData.message || "Reset Password failed")
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Reset Password failed");
   }
 
-  return res.json()
+  return res.json();
 }
 
 export default function LoginPage() {
@@ -52,27 +56,29 @@ export default function LoginPage() {
     defaultValues: {
       email: "",
     },
-  })
+  });
 
   // ✅ Use Mutation instead of useQuery
   const mutation = useMutation({
     mutationFn: resetUser,
     onSuccess: () => {
-      console.log("Reset Link send to your email successful!")
+      console.log("Reset Link send to your email successful!");
       toast.success("Reset Link send to your email successful!");
       // 👉 Redirect or reset form here
       form.reset();
-      setTimeout(()=> {router.push("/")}, 3000);
+      setTimeout(() => {
+        router.push("/");
+      }, 3000);
     },
     onError: (error) => {
-      console.error("Reset failed:", error)
+      console.error("Reset failed:", error);
       toast.error(error.message);
-      form.reset()
+      form.reset();
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    mutation.mutate(values)
+    mutation.mutate(values);
   }
 
   return (
@@ -90,14 +96,22 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "Sending..." : "Send Reset Link"}
             </Button>
           </form>
@@ -110,7 +124,7 @@ export default function LoginPage() {
         )}
         {mutation.isSuccess && (
           <p className="mt-3 text-center text-sm text-green-600">
-           Reset Link send to your email
+            Reset Link send to your email
           </p>
         )}
 
@@ -124,5 +138,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
