@@ -1,0 +1,354 @@
+"use client";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/useAuthStore";
+import { Loader } from "@/components/custom/loader";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Search, Filter } from "lucide-react";
+import Pagination from "@/components/common/Pagination";
+
+interface Booking {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  packageId: {
+    _id: string;
+    title: string;
+  };
+  date: string;
+  noOfPeople: number;
+  plan: string;
+  totalPrice: number;
+  paymentMethod: string;
+  paymentInfo: {
+    orderId?: string;
+    paymentId?: string;
+    signature?: string;
+    status: string;
+  };
+  bookingStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const getGroupBookings = async (
+  accessToken: string,
+  page: number,
+  limit: number
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourbooking/admin?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to get customized tour bookings");
+  const data = await res.json();
+  return data;
+};
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const getStatusColor = (status: string) => {
+  const statusLower = status?.toLowerCase();
+  if (
+    statusLower === "confirmed" ||
+    statusLower === "completed" ||
+    statusLower === "paid"
+  )
+    return "bg-emerald-100 text-emerald-800";
+  if (statusLower === "pending" || statusLower === "processing")
+    return "bg-amber-100 text-amber-800";
+  if (
+    statusLower === "cancelled" ||
+    statusLower === "failed" ||
+    statusLower === "refunded"
+  )
+    return "bg-red-100 text-red-800";
+  return "bg-slate-100 text-slate-800";
+};
+
+function BookingPage() {
+  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(15);
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["bookings", page, limit],
+    queryFn: () => getGroupBookings(accessToken, page, limit),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const bookings = data?.data || [];
+
+  const filteredData =
+    bookings?.filter(
+      (booking: Booking) =>
+        booking.userId?.name
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        booking.userId?.email
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        booking.packageId?.title
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
+    ) || [];
+
+  const bookingStats = {
+    total: data?.meta?.total || 0,
+    confirmed:
+      bookings?.filter(
+        (b: Booking) => b.bookingStatus?.toLowerCase() === "confirmed"
+      ).length || 0,
+    pending:
+      bookings?.filter(
+        (b: Booking) => b.bookingStatus?.toLowerCase() === "pending"
+      ).length || 0,
+    cancelled:
+      bookings?.filter(
+        (b: Booking) => b.bookingStatus?.toLowerCase() === "cancelled"
+      ).length || 0,
+  };
+
+  const handlePageChange = (page: number) => setPage(page);
+  return (
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          Customized Bookings
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400">
+          Manage and track all Customized Tour Bookings
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Total Bookings
+            </p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-white">
+              {bookings?.length}/ {bookingStats.total}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Confirmed
+            </p>
+            <p className="text-3xl font-bold text-emerald-600">
+              {bookingStats.confirmed}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Pending
+            </p>
+            <p className="text-3xl font-bold text-amber-600">
+              {bookingStats.pending}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Cancelled
+            </p>
+            <p className="text-3xl font-bold text-red-600">
+              {bookingStats.cancelled}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+        <CardHeader>
+          <CardTitle>Bookings List</CardTitle>
+          <CardDescription>
+            View and manage all group tour bookings
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Input
+                placeholder="Search by name, email, or package..."
+                className="pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button variant="outline" className="gap-2 bg-transparent">
+              <Filter className="w-4 h-4" />
+              Filter
+            </Button>
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader size="lg" message="Loading group bookings..." />
+            </div>
+          ) : isError ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 dark:text-red-400">
+                Error: {error?.message}
+              </p>
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-slate-500 dark:text-slate-400">
+                No bookings found
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      S/N
+                    </TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Guest
+                    </TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Package
+                    </TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Payment
+                    </TableHead>
+                    {/* <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Trip Status
+                    </TableHead> */}
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Travel Date
+                    </TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Booking Date
+                    </TableHead>
+                    <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">
+                      Amount
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredData.map((booking: Booking, index: number) => (
+                    <TableRow
+                      key={booking._id}
+                      className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <TableCell className="text-slate-700 dark:text-slate-300 font-medium">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <p className="font-medium text-slate-900 dark:text-white">
+                            {booking.userId?.name}
+                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {booking.userId?.email}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-slate-700 dark:text-slate-300">
+                        {booking.packageId?.title}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`${getStatusColor(
+                            booking.bookingStatus
+                          )} border-0`}
+                        >
+                          {booking.bookingStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`${getStatusColor(
+                            booking.paymentInfo.status
+                          )} border-0`}
+                        >
+                          {booking.paymentInfo.status}
+                        </Badge>
+                      </TableCell>
+                      {/* <TableCell>
+                        <Badge
+                          className={`${getStatusColor(
+                            booking.batchId?.status
+                          )} border-0`}
+                        >
+                          {booking.batchId?.status}
+                        </Badge>
+                      </TableCell> */}
+                      <TableCell className="text-slate-700 dark:text-slate-300">
+                        {formatDate(booking.date)}
+                      </TableCell>
+                      <TableCell className="text-slate-700 dark:text-slate-300">
+                        {formatDate(booking.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
+                        Rs.{booking.totalPrice.toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <div>
+        <div>
+          <Pagination
+            currentPage={page}
+            totalPages={data?.meta?.total || 0}
+            onPageChange={handlePageChange}
+            pageSize={limit}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default BookingPage;

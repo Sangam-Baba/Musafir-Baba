@@ -99,8 +99,9 @@ const getAllBookings = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate({ path: "user", select: "neme email" })
-        .populate({ path: "package", select: "title price" })
+        .populate({ path: "user", select: "name email" })
+        .populate({ path: "packageId", select: "title " })
+        .populate({ path: "batchId", select: "startDate status" })
         .lean()
         .exec(),
     ]);

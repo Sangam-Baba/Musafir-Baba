@@ -108,9 +108,49 @@ const updateCustomizedTourBooking = async (req, res) => {
   }
 };
 
+const getAllCustomizedTourBooking = async (req, res) => {
+  try {
+    const { filter = {} } = req.query;
+    const page = Math.max(parseInt(req.query?.page || "1", 10), 1);
+    const limit = Math.min(parseInt(req.query?.limit || "20", 10), 100);
+    const skip = (page - 1) * limit;
+    if (req.query?.userId) filter.userId = req.query.userId;
+    if (req.query?.packageId) filter.packageId = req.query.packageId;
+    if (req.query?.date) filter.date = req.query.date;
+    if (req.query?.totalPrice) filter.totalPrice = req.query.totalPrice;
+    if (req.query?.noOfPeople) filter.noOfPeople = req.query.noOfPeople;
+    if (req.query?.bookingStatus)
+      filter.bookingStatus = req.query.bookingStatus;
+    const total = await CustomizedTourBooking.countDocuments(filter);
+    const customizedTourBookings = await CustomizedTourBooking.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("packageId", "title")
+      .populate("userId", "name email")
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    if (!customizedTourBookings) {
+      return res.status(404).json({
+        success: false,
+        message: "Customized tour bookings not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Customized tour bookings fetched successfully",
+      meta: { total, page, limit },
+      data: customizedTourBookings,
+    });
+  } catch (error) {
+    console.log("Error getting customized tour booking", error.message);
+    res.status(500).json({ success: false, message: "Server Errror" });
+  }
+};
+
 export {
   createCustomizedTourBooking,
   getCustomizedTourBookingById,
   deleteCustomizedTourBooking,
   updateCustomizedTourBooking,
+  getAllCustomizedTourBooking,
 };
