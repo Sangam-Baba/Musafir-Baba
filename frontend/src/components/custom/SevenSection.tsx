@@ -185,7 +185,10 @@ export async function SevenSection() {
                               className="w-6 h-8 inline-block "
                               color="#FE5300"
                             />
-                            ₹ {pkg?.batch[0]?.quad.toLocaleString("en-IN")}
+                            ₹{" "}
+                            {Number(
+                              pkg?.batch?.[0]?.quad ?? 9999
+                            ).toLocaleString("en-IN")}
                           </div>
                         </div>
                         <Link
