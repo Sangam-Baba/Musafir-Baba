@@ -72,9 +72,11 @@ export default function HomePage() {
             priority
             fetchPriority="high"
           /> */}
-          <h1 className="text-2xl md:text-4xl  font-bold text-[#112A46] text-center text-inline leading-tight">
-            Book your trip in just{" "}
-            <span
+          <div className="text-center flex flex-col items-center justify-center">
+            <h1 className="text-2xl md:text-4xl  font-bold text-[#112A46]  text-inline leading-tight">
+              Book your trip in just
+            </h1>
+            <p
               className="text-white text-2xl md:text-4xl  font-bold text-inline leading-tight tracking-wide"
               style={{
                 textShadow:
@@ -82,8 +84,9 @@ export default function HomePage() {
               }}
             >
               60 seconds
-            </span>
-          </h1>
+            </p>
+          </div>
+
           <div className="relative z-20 w-full overflow-visible">
             <SearchBanner />
           </div>
