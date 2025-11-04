@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import AboutUsPageClient from "./pageClient";
+import BlogsHome from "@/components/custom/BlogsHome";
+import { Testimonial } from "@/components/custom/Testimonial";
 
 interface ImageType {
   url: string;
@@ -61,7 +63,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 function AboutUsPage() {
-  return <AboutUsPageClient />;
+  return (
+    <div>
+      <AboutUsPageClient />
+      {/* Testimonials and Blogs */}
+      <Testimonial />
+      <BlogsHome />
+    </div>
+  );
 }
 
 export default AboutUsPage;

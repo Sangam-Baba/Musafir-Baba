@@ -6,8 +6,7 @@ import { Loader } from "@/components/custom/loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import BlogsHome from "@/components/custom/BlogsHome";
-import { Testimonial } from "@/components/custom/Testimonial";
+
 import {
   Carousel,
   CarouselContent,
@@ -197,7 +196,7 @@ function AboutUsPageClient() {
           </Carousel>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-10 bg-slate-100">
+      <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-10 bg-slate-100 rounded-lg">
         <div className="w-full  flex flex-col md:flex-row gap-10 justify-around">
           <h1 className="w-full md:w-2/5 text-5xl font-bold mb-4">
             {about?.h2title}
@@ -263,10 +262,6 @@ function AboutUsPageClient() {
           </div>
         </div>
       </div>
-
-      {/* Testimonials and Blogs */}
-      <Testimonial />
-      <BlogsHome />
     </section>
   );
 }
