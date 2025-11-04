@@ -90,7 +90,7 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
                         name: pkg.title,
                         slug: pkg.slug,
                         image: pkg.coverImage?.url || "",
-                        price: pkg.batch?.[0] ? pkg.batch[0].quad : 9999,
+                        price: pkg.batch?.[0]?.quad ?? 8999,
                         duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
                         destination:
                           pkg.destination.state.charAt(0).toUpperCase() +

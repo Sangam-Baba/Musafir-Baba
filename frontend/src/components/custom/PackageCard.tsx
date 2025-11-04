@@ -74,7 +74,7 @@ export default function PackageCard({
             className="h-full w-full object-cover"
           />
           <div className="absolute top-3 right-3 bg-[#FE5300] text-white px-3 py-1 rounded-full font-semibold text-sm shadow">
-            ₹{pkg?.price?.toLocaleString("en-IN")}/- onwards
+            ₹{(pkg?.price ?? 9999).toLocaleString("en-IN")}/- onwards
           </div>
         </div>
 
