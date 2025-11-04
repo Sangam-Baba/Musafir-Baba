@@ -12,6 +12,11 @@ const bookingSchema = new mongoose.Schema(
       ref: "Package",
       required: true,
     },
+    batchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Batch",
+      required: true,
+    },
     firstName: {
       type: String,
 
@@ -42,10 +47,10 @@ const bookingSchema = new mongoose.Schema(
         type: Number,
       },
     },
-    travelDate: {
-      type: Date,
-      required: true,
-    },
+    // travelDate: {
+    //   type: Date,
+    //   required: true,
+    // },
     bookingDate: {
       type: Date,
       default: Date.now(),

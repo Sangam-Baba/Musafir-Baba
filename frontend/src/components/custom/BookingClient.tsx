@@ -24,6 +24,7 @@ import { format, parseISO, isAfter } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
 
 interface Batch {
+  _id: string;
   startDate: string;
   endDate: string;
   quad: number;
@@ -43,8 +44,8 @@ interface Package {
 }
 
 const formSchema = z.object({
-  user: z.string(),
   packageId: z.string(),
+  batchId: z.string(),
   address: z
     .object({
       city: z.string().optional(),
@@ -58,7 +59,6 @@ const formSchema = z.object({
     double: z.number().nonnegative(),
     child: z.number().nonnegative(),
   }),
-  travelDate: z.string().min(1),
   totalPrice: z.number().min(0),
 });
 type BookingFormValues = z.infer<typeof formSchema>;
@@ -92,7 +92,7 @@ function groupBatchesByMonth(batches: Batch[]) {
 }
 
 export default function BookingClient({ pkg }: { pkg: Package }) {
-  console.log("Getting package: ", pkg);
+  // console.log("Getting package: ", pkg);
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
@@ -107,11 +107,10 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      user: "", // myUser?._id || "",
       packageId: pkg._id,
+      batchId: selectedBatch?._id || "",
       travellers,
       totalPrice: 0,
-      travelDate: "",
     },
   });
 
@@ -146,7 +145,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     if (!selectedBatch) return;
     form.setValue("travellers", travellers);
     form.setValue("totalPrice", totalPriceWithTax);
-    form.setValue("travelDate", selectedBatch.startDate);
+    form.setValue("batchId", selectedBatch._id);
     setSelectedBatch(null);
   };
 
@@ -265,7 +264,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
           <div>
             <div className="flex justify-between">
               <p className="text-md font-semibold"> Travel Date </p>
-              <p>{form.watch("travelDate").slice(0, 10)}</p>
+              <p>{selectedBatch?.startDate}</p>
             </div>
             <div className="flex justify-between">
               <p>Travellers</p>

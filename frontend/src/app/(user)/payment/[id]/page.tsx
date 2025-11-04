@@ -7,13 +7,22 @@ import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Calendar,
+  Check,
+  Lock,
+  MapPin,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
 
 type BookingApiResponse = {
   data: {
     _id: string;
     totalPrice: number;
-    travelDate: string;
+
     travellers: {
       quad: number;
       triple: number;
@@ -23,11 +32,19 @@ type BookingApiResponse = {
     packageId: {
       _id: string;
       title: string;
+      coverImage: {
+        url: string;
+      };
     };
     user: {
       _id: string;
       name: string;
       email: string;
+    };
+    batchId: {
+      _id: string;
+      startDate: string;
+      endDate: string;
     };
   };
 };
@@ -140,93 +157,211 @@ export default function CheckoutButton() {
   };
 
   return (
-    <section className="max-w-5xl mx-auto px-4 md:px-8 lg:px-20 py-16">
-      <Card className="p-4 shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl">
-            Preview Booking
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-2 font-bold text-lg">
-            Name:{" "}
-            <span className="font-normal">
-              {booking?.user?.name ?? "Guest"}
-            </span>
+    <main className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-8 md:py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 md:mb-12">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+              <Check className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">
+              Booking Details
+            </p>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            Complete Your Booking
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Review your travel details and secure your reservation
           </p>
-          <p className="mb-2 font-bold text-lg">
-            Email:{" "}
-            <span className="font-normal">
-              {booking?.user?.email ?? "abhi@example.com"}
-            </span>
-          </p>
-          <p className="mb-2 font-bold text-lg">
-            Package Name:{" "}
-            <span className="font-normal">
-              {booking?.packageId?.title ?? "Travel Package"}
-            </span>
-          </p>
-          <p className="mb-2 font-bold text-lg">
-            Travellers:{" "}
-            <span className="font-normal">
-              {booking?.travellers?.quad} Quad + {booking?.travellers?.triple}{" "}
-              Triple + {booking?.travellers?.double} Double +{" "}
-              {booking?.travellers?.child} Child
-            </span>
-          </p>
-          <p className="mb-2 font-bold text-lg">
-            Travel Date:{" "}
-            <span className="font-normal">
-              {booking?.travelDate.split("T")[0] ?? "Unknown"}
-            </span>
-          </p>
-
-          <p className="mb-2 font-bold text-lg">
-            Total Amount:{" "}
-            <span className="font-normal">
-              ₹{(amountInPaise / 100).toFixed(2)} to complete your booking
-            </span>
-          </p>
-        </CardContent>
-        <Button
-          className="bg-[#FE5300]"
-          onClick={handlePayment}
-          disabled={loading}
-        >
-          {loading
-            ? "Processing..."
-            : `Confirm Booking for ₹${(amountInPaise / 100).toFixed(2)}`}
-        </Button>
-        <div className="mt-4 p-4 ">
-          <form
-            action="https://secure.payu.in/_payment"
-            method="post"
-            className="flex flex-col"
-            ref={formRef}
-          >
-            <input type="hidden" name="key" value={paymentData.key} />
-            <input type="hidden" name="txnid" value={paymentData.txnid} />
-            <input
-              type="hidden"
-              name="productinfo"
-              value={paymentData.productinfo}
-            />
-            <input type="hidden" name="amount" value={paymentData.amount} />
-            <input type="hidden" name="email" value={paymentData.email} />
-            <input
-              type="hidden"
-              name="firstname"
-              value={paymentData.firstname}
-            />
-            <input type="hidden" name="lastname" value={paymentData.lastname} />
-            <input type="hidden" name="surl" value={paymentData.surl} />
-            <input type="hidden" name="furl" value={paymentData.furl} />
-            <input type="hidden" name="phone" value={paymentData.phone} />
-            <input type="hidden" name="hash" value={paymentData.hash} />
-            <input type="hidden" name="udf1" value={paymentData.udf1} />
-          </form>
         </div>
-      </Card>
-    </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Package Details Card */}
+            <Card className="overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow pt-0">
+              <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                {booking?.packageId?.coverImage?.url ? (
+                  <Image
+                    src={booking.packageId.coverImage.url || "/placeholder.svg"}
+                    alt={booking.packageId.title}
+                    width={500}
+                    height={500}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <MapPin className="w-16 h-16 text-muted-foreground/30" />
+                )}
+              </div>
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  {booking?.packageId?.title ?? "Travel Package"}
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Travel Dates
+                      </p>
+                      <p className="text-sm font-semibold text-foreground mt-1">
+                        {booking?.batchId?.startDate.split("T")[0]}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        to {booking?.batchId?.endDate.split("T")[0]}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Travellers
+                      </p>
+                      <p className="text-sm font-semibold text-foreground mt-1">
+                        {booking?.travellers?.quad} Quad +{" "}
+                        {booking?.travellers?.triple} Triple +{" "}
+                        {booking?.travellers?.double} Double +{" "}
+                        {booking?.travellers?.child} Child
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {booking?.travellers?.quad
+                          ? `${booking.travellers.quad}Q `
+                          : ""}
+                        {booking?.travellers?.triple
+                          ? `${booking.travellers.triple}T `
+                          : ""}
+                        {booking?.travellers?.double
+                          ? `${booking.travellers.double}D `
+                          : ""}
+                        {booking?.travellers?.child
+                          ? `${booking.travellers.child}C`
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Traveller Information Card */}
+            <Card className="border-border/50 shadow-sm">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Traveller Information
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-muted-foreground">Name</span>
+                    <span className="font-semibold text-foreground">
+                      {booking?.user?.name ?? "Guest"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                    <span className="text-sm text-muted-foreground">Email</span>
+                    <span className="font-semibold text-foreground">
+                      {booking?.user?.email ?? "abhi@example.com"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Order Summary Sidebar */}
+          <div className="lg:col-span-1">
+            {/* Summary Card */}
+            <Card className="border-border/50 shadow-sm sticky top-6 lg:top-8">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-6">
+                  Order Summary
+                </h3>
+
+                {/* Breakdown */}
+                <div className="space-y-3 mb-6 pb-6 border-b border-border/50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">
+                      {booking?.packageId?.title ?? "Travel Package"}
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      ₹{price.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Total */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-foreground">Total</span>
+                    <span className="text-2xl font-bold text-primary">
+                      ₹{(amountInPaise / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Prices include all fees
+                  </p>
+                </div>
+
+                {/* CTA Button */}
+                <Button
+                  onClick={handlePayment}
+                  disabled={loading}
+                  size="lg"
+                  className="w-full mb-4 bg-[#FE5300] hover:bg-[#FE5300]/90 text-primary-foreground font-semibold py-6"
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                      Processing...
+                    </span>
+                  ) : (
+                    `Pay ₹${(amountInPaise / 100).toFixed(2)}`
+                  )}
+                </Button>
+
+                {/* Trust Indicators */}
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Lock className="w-4 h-4 text-primary" />
+                    <span>Secure SSL encrypted payment</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ShieldCheck className="w-4 h-4 text-primary" />
+                    <span>Your data is protected</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Hidden Payment Form */}
+      <form
+        action="https://secure.payu.in/_payment"
+        method="post"
+        className="hidden"
+        ref={formRef}
+      >
+        <input type="hidden" name="key" value={paymentData.key} />
+        <input type="hidden" name="txnid" value={paymentData.txnid} />
+        <input
+          type="hidden"
+          name="productinfo"
+          value={paymentData.productinfo}
+        />
+        <input type="hidden" name="amount" value={paymentData.amount} />
+        <input type="hidden" name="email" value={paymentData.email} />
+        <input type="hidden" name="firstname" value={paymentData.firstname} />
+        <input type="hidden" name="lastname" value={paymentData.lastname} />
+        <input type="hidden" name="surl" value={paymentData.surl} />
+        <input type="hidden" name="furl" value={paymentData.furl} />
+        <input type="hidden" name="phone" value={paymentData.phone} />
+        <input type="hidden" name="hash" value={paymentData.hash} />
+        <input type="hidden" name="udf1" value={paymentData.udf1} />
+      </form>
+    </main>
   );
 }
