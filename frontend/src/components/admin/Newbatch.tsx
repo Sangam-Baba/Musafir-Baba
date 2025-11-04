@@ -267,7 +267,8 @@ export const CreateBatchModal = ({
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={mutation.isPending}
             className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition disabled:opacity-50"
           >
