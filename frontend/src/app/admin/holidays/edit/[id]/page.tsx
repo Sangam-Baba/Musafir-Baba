@@ -217,9 +217,9 @@ export default function CreatePackagePage() {
   });
 
   const handleBatchCreated = async (id: string) => {
-    batchArray.append(id);
     const newBatch = await getBatchByIds(accessToken, [id]);
-    setBatchDetails((prev) => [...prev, ...newBatch]);
+    batchArray.append(id);
+    setBatchDetails((prev) => [...prev, newBatch[0]]);
     setShowBatchModal(false);
   };
 
@@ -244,16 +244,21 @@ export default function CreatePackagePage() {
         batch: batchIds,
       });
       if (batchIds.length > 0) {
-        if (batchIds.length > 0) {
-          console.log("batchIds", batchIds);
-          getBatchByIds(accessToken, batchIds)
-            .then(setBatchDetails)
-            .catch((err) => console.error("Failed to fetch batch info:", err));
-        }
+        getBatchByIds(accessToken, batchIds)
+          .then((data) => {
+            // Reorder results to match batchIds order
+            const ordered = batchIds
+              .map((id: string) => data.find((b: Batch) => b._id === id))
+              .filter(Boolean);
+            setBatchDetails(ordered as Batch[]);
+          })
+          .catch((err) => console.error("Failed to fetch batch info:", err));
       }
+      // console.log("Package Batch: ", pkg?.batch);
     }
   }, [pkg, form, accessToken]);
-
+  // console.log("Batch Details: ", batchDetails);
+  // console.log("Batch Array Fields: ", batchArray.fields);
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
@@ -374,7 +379,12 @@ export default function CreatePackagePage() {
                     <Button
                       type="button"
                       variant="destructive"
-                      onClick={() => batchArray.remove(index)}
+                      onClick={() => {
+                        batchArray.remove(index);
+                        setBatchDetails((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        );
+                      }}
                     >
                       Remove
                     </Button>
@@ -391,11 +401,14 @@ export default function CreatePackagePage() {
                       type="button"
                       variant="destructive"
                       onClick={async () => {
-                        const res = await deleteBatch(
-                          accessToken,
-                          form.getValues(`batch.${index}`)
-                        );
-                        if (res) batchArray.remove(index);
+                        const batchId = form.getValues(`batch.${index}`);
+                        const res = await deleteBatch(accessToken, batchId);
+                        if (res) {
+                          batchArray.remove(index);
+                          setBatchDetails((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          );
+                        }
                       }}
                     >
                       Delete

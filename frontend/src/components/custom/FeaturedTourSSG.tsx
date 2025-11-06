@@ -13,7 +13,8 @@ async function getCategory(slug: string) {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
       {
-        next: { revalidate: 86400 }, // revalidate once a day
+        next: { revalidate: 86400 },
+        cache: "no-cache",
       }
     );
     if (!res.ok) return null;

@@ -50,6 +50,7 @@ const getBestSeller = async () => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/best-seller`,
     {
       next: { revalidate: 86400 },
+      cache: "no-cache",
     }
   );
   if (!res.ok) throw new Error("Failed to fetch data");
