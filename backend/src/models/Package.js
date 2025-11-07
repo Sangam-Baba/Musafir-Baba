@@ -45,6 +45,16 @@ const packageSchema = new mongoose.Schema(
     canonicalUrl: {
       type: String,
     },
+    mainCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+    otherCategory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
     schemaType: {
       type: String,
     },

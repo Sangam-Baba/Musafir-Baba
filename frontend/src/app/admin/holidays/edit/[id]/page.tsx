@@ -58,6 +58,8 @@ interface PackageFormValues {
   batch: string[];
   slug: string;
   destination: string;
+  mainCategory: string;
+  otherCategory: string[];
   coverImage: Image;
   gallery?: Image[];
   duration: { days: number; nights: number };
@@ -90,6 +92,10 @@ interface Destination {
     alt?: string;
   };
   slug: string;
+}
+interface Category {
+  _id: string;
+  name: string;
 }
 async function updatePackage(
   values: PackageFormValues,
@@ -161,6 +167,13 @@ const getBatchByIds = async (accessToken: string, ids: string[]) => {
   const data = await res.json();
   return data?.data;
 };
+
+const getCategory = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`);
+  if (!res.ok) throw new Error("Failed to get category");
+  const data = await res.json();
+  return data?.data;
+};
 export default function CreatePackagePage() {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
@@ -180,6 +193,8 @@ export default function CreatePackagePage() {
     gallery: [],
     batch: [],
     destination: "",
+    mainCategory: "",
+    otherCategory: [],
     duration: { days: 0, nights: 0 },
     maxPeople: 0,
     highlights: [],
@@ -211,6 +226,16 @@ export default function CreatePackagePage() {
     queryKey: ["destination"],
     queryFn: getDestination,
   });
+
+  const {
+    data: category,
+    isLoading: categoryLoading,
+    isError: categoryError,
+  } = useQuery({
+    queryKey: ["category"],
+    queryFn: getCategory,
+  });
+
   const form = useForm<PackageFormValues>({
     defaultValues,
     shouldUnregister: false,
@@ -257,8 +282,6 @@ export default function CreatePackagePage() {
       // console.log("Package Batch: ", pkg?.batch);
     }
   }, [pkg, form, accessToken]);
-  // console.log("Batch Details: ", batchDetails);
-  // console.log("Batch Array Fields: ", batchArray.fields);
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
@@ -497,6 +520,69 @@ export default function CreatePackagePage() {
                       ))}
                     </select>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Main Categpry */}
+            <FormField
+              control={form.control}
+              name="mainCategory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Main Category *</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="w-full rounded-md border border-gray-300 p-2"
+                      value={field.value || ""}
+                    >
+                      <option value="" disabled>
+                        Select a category
+                      </option>
+                      {category?.map((cat: Category) => (
+                        <option key={cat._id} value={cat._id}>
+                          {cat.name.toLocaleUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Other Category */}
+            <FormField
+              control={form.control}
+              name="otherCategory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Other Category</FormLabel>
+                  <div className="flex flex-wrap space-y-2 gap-2 mt-2">
+                    {category?.map((cat: Category) => (
+                      <label
+                        key={cat._id}
+                        className="flex items-center space-x-2"
+                      >
+                        <input
+                          type="checkbox"
+                          value={cat._id}
+                          checked={field.value?.includes(cat._id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              field.onChange([...(field.value || []), cat._id]);
+                            } else {
+                              field.onChange(
+                                field.value?.filter((id) => id !== cat._id)
+                              );
+                            }
+                          }}
+                        />
+                        <span>{cat.name}</span>
+                      </label>
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
