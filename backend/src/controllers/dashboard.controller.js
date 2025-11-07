@@ -124,6 +124,10 @@ const getMonthlyBookings = async (req, res) => {
 const getBookingVSVisaEnquiry = async (req, res) => {
   try {
     const { start, end, tz = "Asia/Kolkata" } = req.query;
+    console.log(
+      "Server Timezone:",
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
 
     // compute start/end (default: last 12 months)
     const endDate = end ? new Date(end) : new Date();
