@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useForm, SubmitHandler } from "react-hook-form"
-import { useMutation , useQuery} from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
+import { useForm, SubmitHandler } from "react-hook-form";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,55 +11,60 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
-import ImageUploader from "@/components/admin/ImageUploader"
-import { useAuthStore } from "@/store/useAuthStore"
-import { useParams } from "next/navigation"
-import { Loader } from "lucide-react"
-import { useEffect } from "react"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import ImageUploader from "@/components/admin/ImageUploader";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useParams } from "next/navigation";
+import { Loader } from "lucide-react";
+import { useEffect } from "react";
 
 interface AuthorFormValues {
-  _id: string
-  name: string
-  email: string
-  about?: string
-  role: "author" | "editor"
+  _id: string;
+  name: string;
+  email: string;
+  about?: string;
+  role: "author" | "editor";
   avatar?: {
-    url?: string
-    public_id?: string
-    alt?: string
-  }
+    url: string;
+    public_id: string;
+    alt: string;
+  };
 }
 
 const getAuthor = async (id: string) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors/${id}`)
-  const data=await res.json();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/authors/id/${id}`
+  );
+  const data = await res.json();
   return data?.data;
-}
+};
 
 async function updateAuthor(values: AuthorFormValues, accessToken: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors/${values._id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(values),
-  })
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/authors/${values._id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(values),
+    }
+  );
 
   if (!res.ok) {
-    const errorData = await res.json()
-    throw new Error(errorData.message || "Update failed")
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Update failed");
   }
 
-  return res.json()
+  return res.json();
 }
 
 export default function UpdateAuthorPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string
-  const {id } = useParams() as { id: string };
+  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const { id } = useParams() as { id: string };
 
   const defaultValues: AuthorFormValues = {
     _id: id,
@@ -68,41 +73,48 @@ export default function UpdateAuthorPage() {
     about: "",
     avatar: undefined,
     role: "author",
-  }
+  };
 
-  const form = useForm<AuthorFormValues>({ defaultValues })
+  const form = useForm<AuthorFormValues>({ defaultValues });
 
-  const { data: author, isLoading, isError, error } = useQuery({
+  const {
+    data: author,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["author", id],
     queryFn: () => getAuthor(id),
-  })
-  useEffect(()=>{
-    if(author){
-      form.setValue("name", author.name)
-      form.setValue("email", author.email)
-      form.setValue("about", author.about)
-      form.setValue("avatar", author.avatar)
+  });
+  useEffect(() => {
+    if (author) {
+      form.setValue("name", author.name);
+      form.setValue("email", author.email);
+      form.setValue("about", author.about);
+      form.setValue("avatar", author.avatar);
       form.setValue("role", author.role);
     }
-  }, [author, form])
+  }, [author, form]);
   const mutation = useMutation({
     mutationFn: (values: AuthorFormValues) => updateAuthor(values, accessToken),
     onSuccess: (data) => {
-      console.log("Registered successfully:", data)
-      toast.success("Registration successful!")
-      form.reset(defaultValues)
+      console.log("Registered successfully:", data);
+      toast.success("Registration successful!");
+      form.reset(defaultValues);
     },
     onError: (error: unknown) => {
-      console.error("Registration failed:", error)
-      toast.error(error instanceof Error ? error.message : "Something went wrong")
+      console.error("Registration failed:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong"
+      );
     },
-  })
+  });
 
-  if(isLoading ) return <Loader size="lg" className="h-6 w-6 animate-spin" />
-  if(isError) return <h1>{error.message}</h1>
+  if (isLoading) return <Loader size="lg" className="h-6 w-6 animate-spin" />;
+  if (isError) return <h1>{error.message}</h1>;
   const onSubmit: SubmitHandler<AuthorFormValues> = (values) => {
-    mutation.mutate(values)
-  }
+    mutation.mutate(values);
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -121,7 +133,9 @@ export default function UpdateAuthorPage() {
                   <FormControl>
                     <Input placeholder="johndoe" {...field} required />
                   </FormControl>
-                  <FormDescription>This will be your public display name.</FormDescription>
+                  <FormDescription>
+                    This will be your public display name.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -135,7 +149,12 @@ export default function UpdateAuthorPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} required />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      {...field}
+                      required
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,7 +169,11 @@ export default function UpdateAuthorPage() {
                 <FormItem>
                   <FormLabel>About</FormLabel>
                   <FormControl>
-                    <Input type="text" placeholder="Describe yourself" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="Describe yourself"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,10 +211,11 @@ export default function UpdateAuthorPage() {
                   <FormLabel>Avatar</FormLabel>
                   <FormControl>
                     <ImageUploader
+                      initialImage={form.getValues("avatar")}
                       onUpload={(img) =>
                         form.setValue("avatar", {
-                          url: img.url,
-                          public_id: img.public_id,
+                          url: img?.url ?? "",
+                          public_id: img?.public_id ?? "",
                           alt: form.getValues("name") ?? "",
                         })
                       }
@@ -202,7 +226,11 @@ export default function UpdateAuthorPage() {
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "Updating..." : "Update"}
             </Button>
           </form>
@@ -214,9 +242,11 @@ export default function UpdateAuthorPage() {
           </p>
         )}
         {mutation.isSuccess && (
-          <p className="mt-3 text-center text-sm text-green-600">Update successful!</p>
+          <p className="mt-3 text-center text-sm text-green-600">
+            Update successful!
+          </p>
         )}
       </div>
     </div>
-  )
+  );
 }

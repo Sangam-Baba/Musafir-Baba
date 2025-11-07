@@ -58,13 +58,37 @@ const getAuthorBySlug = async (req, res) => {
   }
 };
 
+const getAuthorById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Invalid id" });
+    }
+
+    const author = await Author.findById(id);
+    if (!author) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Author not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Author fetched successfully",
+      data: author,
+    });
+  } catch (error) {
+    console.log("Author getting failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 const updateAuthor = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
-    const author = await Author.findById(id);
+    console.log("Id is ", id);
+    const author = await Author.findOne({ _id: id });
     if (!author) {
       return res
         .status(404)
@@ -124,4 +148,5 @@ export {
   deleteAuthor,
   updateAuthor,
   getAuthorBySlug,
+  getAuthorById,
 };
