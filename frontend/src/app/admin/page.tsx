@@ -90,15 +90,8 @@ const getVisaVsBooking = async (
     }
   );
   if (!res.ok) throw new Error("Failed to fetch dashboard summary");
-  return res
-    .json()
-    .then((data) => {
-      return data?.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-      return [];
-    });
+  const data = await res.json();
+  return data?.data;
 };
 
 const getLatestActivity = async (accessToken: string) => {
@@ -155,6 +148,17 @@ function AdminDashBoard() {
     queryFn: () => getVisaVsBooking(accessToken, start, end),
     enabled: !!accessToken,
   });
+
+  const dataForBarChart =
+    visaVsBooking?.map(
+      (booking: { month: string; visa: number; bookings: number }) => ({
+        month: new Date(booking.month).toLocaleDateString("en-US", {
+          month: "short",
+        }),
+        visa: booking.visa,
+        bookings: booking.bookings,
+      })
+    ) || [];
 
   const {
     data: latestActivity,
@@ -347,7 +351,7 @@ function AdminDashBoard() {
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={visaVsBooking}>
+                <BarChart data={dataForBarChart}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
                   <XAxis
                     dataKey="month"
