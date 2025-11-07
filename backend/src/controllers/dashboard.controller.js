@@ -123,25 +123,37 @@ const getMonthlyBookings = async (req, res) => {
 
 const getBookingVSVisaEnquiry = async (req, res) => {
   try {
-    // Optional date filters (default: current year)
-    const start = req.query.start
-      ? new Date(req.query.start)
-      : new Date(new Date().getFullYear(), 0, 1); // Jan 1st
-    const end = req.query.end ? new Date(req.query.end) : new Date();
+    const { start, end, tz = "Asia/Kolkata" } = req.query;
 
-    // Aggregate enquiries and categorize them
+    // compute start/end (default: last 12 months)
+    const endDate = end ? new Date(end) : new Date();
+    const startDate = start
+      ? new Date(start)
+      : new Date(new Date(endDate).setMonth(endDate.getMonth() - 11, 1));
+
+    // normalize to cover whole months/days
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    // build aggregation: match -> mark type -> group by month-start (dateTrunc) + type -> sort
     const result = await ContactEnquiry.aggregate([
       {
         $match: {
-          createdAt: { $gte: start, $lte: end },
+          createdAt: { $gte: startDate, $lte: endDate },
         },
       },
       {
+        // create `type` field: 'visa' if `source` contains 'visa' (case-insensitive), else 'booking'
         $addFields: {
           type: {
             $cond: [
               {
-                $regexMatch: { input: "$source", regex: "visa", options: "i" },
+                $regexMatch: {
+                  input: { $ifNull: ["$source", ""] },
+                  regex: "visa",
+                  options: "i",
+                },
               },
               "visa",
               "booking",
@@ -150,55 +162,94 @@ const getBookingVSVisaEnquiry = async (req, res) => {
         },
       },
       {
+        // group by the month start date (preserves year) and type; timezone-aware
         $group: {
           _id: {
-            month: { $month: "$createdAt" },
+            monthStart: {
+              $dateTrunc: { date: "$createdAt", unit: "month", timezone: tz },
+            },
             type: "$type",
           },
           count: { $sum: 1 },
         },
       },
-      { $sort: { "_id.month": 1 } },
-    ]);
+      {
+        // sort chronologically by monthStart
+        $sort: { "_id.monthStart": 1 },
+      },
+    ]).allowDiskUse(true);
 
-    // Convert result to frontend-friendly format
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+    // Helper: create an array of month-start Dates between startDate and endDate inclusive
+    const monthsInRange = [];
+    const iter = new Date(startDate);
+    while (iter <= endDate) {
+      monthsInRange.push(new Date(iter)); // push copy
+      iter.setMonth(iter.getMonth() + 1);
+    }
 
-    const finalData = months.map((month, i) => {
-      const visaCount =
-        result.find((r) => r._id.month === i + 1 && r._id.type === "visa")
-          ?.count || 0;
-      const bookingCount =
-        result.find((r) => r._id.month === i + 1 && r._id.type === "booking")
-          ?.count || 0;
+    // Convert aggregation result into a lookup map for quick access
+    // key = ISO monthStart string (exact value returned by $dateTrunc)
+    const map = new Map();
+    for (const r of result) {
+      // r._id.monthStart is a Date (from Mongo). Convert to ISO for stable keying.
+      const key = new Date(r._id.monthStart).toISOString();
+      const type = r._id.type;
+      if (!map.has(key)) map.set(key, { visa: 0, booking: 0 });
+      map.get(key)[type] = r.count;
+    }
+
+    // Produce final data array in chronological order for the months in range.
+    // Use localized month+year label (respecting tz) so frontend can display nicely.
+    const finalData = monthsInRange.map((d) => {
+      const iso = new Date(d).toISOString(); // match aggregation key format
+      const counts = map.get(iso) || { visa: 0, booking: 0 };
+
+      // Label example: "Nov 2025" (uses Intl to respect timezone)
+      const label = new Date(d).toLocaleString("en-US", {
+        month: "short",
+        year: "numeric",
+        timeZone: tz,
+      });
 
       return {
-        month,
-        visa: visaCount,
-        bookings: bookingCount,
+        month: label,
+        monthStart: iso, // optional: include machine-readable month start
+        visa: counts.visa || 0,
+        bookings: counts.booking || 0,
       };
     });
 
-    res.status(200).json({
-      success: true,
-      data: finalData,
-    });
+    return res.status(200).json({ success: true, data: finalData });
   } catch (error) {
     console.log("Booking vs Visa Enquiry failed", error.message);
-    res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-export { getDashboardSummary, getMonthlyBookings, getBookingVSVisaEnquiry };
+
+const getLatestAcitvity = async (req, res) => {
+  try {
+    const enquiry = await ContactEnquiry.findOne()
+      .sort({ createdAt: -1 })
+      .limit(1);
+    const booking = await Booking.findOne()
+      .populate("user", "name email")
+      .populate("packageId", "title")
+      .sort({ createdAt: -1 })
+      .limit(1);
+    const news = await News.findOne().sort({ createdAt: -1 }).limit(1);
+    const blog = await Blog.findOne().sort({ createdAt: -1 }).limit(1);
+
+    const result = { enquiry, booking, news, blog };
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.log("Latest Activity failed", error.message);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export {
+  getDashboardSummary,
+  getMonthlyBookings,
+  getBookingVSVisaEnquiry,
+  getLatestAcitvity,
+};

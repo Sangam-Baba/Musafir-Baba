@@ -5,6 +5,7 @@ import {
   getDashboardSummary,
   getMonthlyBookings,
   getBookingVSVisaEnquiry,
+  getLatestAcitvity,
 } from "../controllers/dashboard.controller.js";
 
 const dashboardRoute = Router();
@@ -28,5 +29,12 @@ dashboardRoute.get(
   isAuthenticated,
   authorizedRoles(["admin", "superadmin"]),
   getBookingVSVisaEnquiry
+);
+
+dashboardRoute.get(
+  "/latest-activity",
+  isAuthenticated,
+  authorizedRoles(["admin", "superadmin"]),
+  getLatestAcitvity
 );
 export default dashboardRoute;

@@ -87,7 +87,6 @@ const updateAuthor = async (req, res) => {
     if (!id) {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
-    console.log("Id is ", id);
     const author = await Author.findOne({ _id: id });
     if (!author) {
       return res
