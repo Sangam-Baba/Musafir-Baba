@@ -211,6 +211,41 @@ const getPackages = async (req, res) => {
   }
 };
 
+const getPackageByCategorySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const category = await Category.findOne({ slug });
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    const packages = await Package.find({
+      $and: [
+        { status: "published" },
+        {
+          $or: [
+            { mainCategory: category._id },
+            { otherCategory: { $in: [category._id] } },
+          ],
+        },
+      ],
+    })
+      .populate("destination", "_id name country state city slug")
+      .populate("batch")
+      .lean();
+    if (!packages) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Packages not found" });
+    }
+    res.json({ success: true, data: packages });
+  } catch (error) {
+    console.log("Package getting failed ", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 const getBestSeller = async (req, res) => {
   try {
     const bestSellers = await Package.find({
@@ -243,4 +278,5 @@ export {
   getAllPackages,
   getPackageById,
   getBestSeller,
+  getPackageByCategorySlug,
 };

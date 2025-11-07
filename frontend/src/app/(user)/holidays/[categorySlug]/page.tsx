@@ -3,7 +3,7 @@ import SingleCategoryPage from "./PackageSlugClient";
 import Script from "next/script";
 
 interface Props {
-  params: { slug: string };
+  params: { categorySlug: string };
 }
 interface Batch {
   _id: string;
@@ -70,10 +70,21 @@ async function getCategoryBySlug(slug: string) {
   }
   return res.json();
 }
+async function getPackageByCategorySlug(slug: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
+    {
+      cache: "no-cache",
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch packages");
+  const data = await res.json();
+  return data?.data ?? [];
+}
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = params;
+  const { categorySlug } = params;
   try {
-    const res = await getCategoryBySlug(slug);
+    const res = await getCategoryBySlug(categorySlug);
     const { category } = res?.data ?? {};
     const packages = category?.packages ?? [];
 
@@ -84,24 +95,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${category.name} | Musafir Baba`;
-    const description =
-      category.description || "Explore the best travel packages.";
+    const title = `${category.metaTitle || category.name} | Musafir Baba`;
+    const description = `${category.metaDescription || category.description}`;
 
     return {
       title,
       description,
       alternates: {
-        canonical: `https://musafirbaba.com/packages/${slug}`,
+        canonical: `https://musafirbaba.com/holidays/${categorySlug}`,
       },
       openGraph: {
         title,
         description,
-        url: `https://musafirbaba.com/packages/${slug}`,
+        url: `https://musafirbaba.com/holidays/${categorySlug}`,
         images: [
           {
-            url:
-              packages[0]?.coverImage.url || "https://musafirbaba.com/logo.svg",
+            url: category?.coverImage.url || "https://musafirbaba.com/logo.svg",
             width: 1200,
             height: 630,
             alt: category.name,
@@ -113,7 +122,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title,
         description,
         images: [
-          packages[0]?.coverImage.url || "https://musafirbaba.com/logo.svg",
+          category?.coverImage.url || "https://musafirbaba.com/logo.svg",
         ],
       },
     };
@@ -125,9 +134,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 export default async function Page({ params }: Props) {
-  const res = await getCategoryBySlug(params.slug);
+  const res = await getCategoryBySlug(params.categorySlug);
   const { category } = res?.data ?? {};
-  const packages = category?.packages ?? [];
+  const packages = await getPackageByCategorySlug(params.categorySlug);
+  // const packages = category?.packages ?? [];
 
   // ✅ Build JSON-LD Schema
   const schema = {
@@ -135,7 +145,7 @@ export default async function Page({ params }: Props) {
     "@type": "ItemList",
     name: `${category?.name} Travel Packages`,
     description: category?.description,
-    url: `https://musafirbaba.com/holidays/${params.slug}`,
+    url: `https://musafirbaba.com/holidays/${params.categorySlug}`,
     numberOfItems: packages.length,
     itemListElement: packages.map((pkg: Package, index: number) => ({
       "@type": "TouristTrip",
@@ -172,7 +182,7 @@ export default async function Page({ params }: Props) {
   };
   return (
     <>
-      <SingleCategoryPage slug={params.slug} />
+      <SingleCategoryPage categoryData={category} packagesData={packages} />
       <Script id="json-schema" type="application/ld+json">
         {JSON.stringify(schema)}
       </Script>

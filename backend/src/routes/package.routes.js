@@ -7,6 +7,7 @@ import {
   getAllPackages,
   getPackageById,
   getBestSeller,
+  getPackageByCategorySlug,
 } from "../controllers/package.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -16,6 +17,7 @@ const pkgRoute = Router();
 
 pkgRoute.get("/best-seller", getBestSeller);
 pkgRoute.get("/all", getAllPackages);
+pkgRoute.get("/category/:slug", getPackageByCategorySlug);
 pkgRoute.get("/id/:id", getPackageById);
 pkgRoute.get("/:slug", getPackageBySlug);
 pkgRoute.post(

@@ -51,33 +51,37 @@ interface Category {
   slug: string;
   coverImage: CoverImage;
   description: string;
-  packages: Package[];
+  // packages: Package[];
 }
-interface CategoryResponse {
-  success: boolean;
-  data: {
-    category: Category;
-  };
-}
+// interface CategoryResponse {
+//   category: Category;
+//   packages: Package[];
+// }
 
-const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
-    {
-      next: { revalidate: 6000 },
-    }
-  );
-  if (!res.ok) {
-    throw new Error("Failed to fetch category");
-  }
-  return res.json();
-};
+// const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
+//     {
+//       next: { revalidate: 6000 },
+//     }
+//   );
+//   if (!res.ok) {
+//     throw new Error("Failed to fetch category");
+//   }
+//   return res.json();
+// };
 
-async function SingleCategoryPage({ slug }: { slug: string }) {
-  const data = await getCategoryBySlug(slug);
+async function SingleCategoryPage({
+  categoryData,
+  packagesData,
+}: {
+  categoryData: Category;
+  packagesData: Package[];
+}) {
+  // const data = await getCategoryBySlug(slug);
 
-  const { category } = data?.data ?? {};
-  const packages = category?.packages ?? [];
+  const category = categoryData ?? {};
+  const packages = packagesData ?? [];
 
   return (
     <section className="w-full mb-12">
@@ -115,7 +119,7 @@ async function SingleCategoryPage({ slug }: { slug: string }) {
                 destination: pkg.destination?.name ?? "",
                 batch: pkg?.batch ? pkg?.batch : [],
               }}
-              url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`}
+              url={`/holidays/${category.slug}/${pkg.destination.state}/${pkg.slug}`}
             />
           ))}
         </div>
