@@ -209,6 +209,7 @@ function AdminDashBoard() {
               value: `${allCounts?.blogCount}/${allCounts?.newsCount}`,
               color: "text-amber-600",
               link: "/admin/blogs",
+              link2: "/admin/news",
             },
             {
               label: "Verified Users",
@@ -234,12 +235,21 @@ function AdminDashBoard() {
                 <p className={`text-3xl font-bold mt-2 ${card.color}`}>
                   {card.value ?? "--"}
                 </p>
-                <Link href={card.link}>
-                  <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 mt-3">
-                    View Details
-                    <ExternalLink size={15} />
-                  </p>
-                </Link>
+                <div className="flex items-center">
+                  <Link href={card.link}>
+                    <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 mt-3">
+                      View Details
+                      <ExternalLink size={15} />
+                    </p>
+                  </Link>
+                  {card.link2 && (
+                    <Link href={card.link2}>
+                      <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 mt-3">
+                        <ExternalLink size={15} />
+                      </p>
+                    </Link>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}
