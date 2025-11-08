@@ -8,30 +8,25 @@ const CATEGORY_SLUGS = [
   { slug: "mountain-treks", label: "Mountain Treks" },
 ];
 
-async function getCategory(slug: string) {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
-      {
-        next: { revalidate: 86400 },
-        cache: "no-cache",
-      }
-    );
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json?.data?.category || null;
-  } catch {
-    return null;
-  }
+async function getPackageByCategorySlug(slug: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
+    {
+      cache: "no-cache",
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch packages");
+  const data = await res.json();
+  return data?.data ?? [];
 }
 
 export default async function FeaturedTourSSG() {
-  const categories = await Promise.all(
+  const packages = await Promise.all(
     CATEGORY_SLUGS.map(async (tab) => ({
       ...tab,
-      category: await getCategory(tab.slug),
+      categoryPackages: await getPackageByCategorySlug(tab.slug),
     }))
   );
 
-  return <FeaturedTour categories={categories} />;
+  return <FeaturedTour categoriesPkg={packages} />;
 }

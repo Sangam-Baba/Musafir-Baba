@@ -91,7 +91,6 @@ const getCategoryBySlug = async (req, res) => {
           {
             path: "batch",
             model: "Batch",
-            select: "quad startDate endDate",
           },
         ],
       })

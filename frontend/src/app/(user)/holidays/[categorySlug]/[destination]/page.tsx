@@ -1,6 +1,7 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
 import PackageCard from "@/components/custom/PackageCard";
+import { notFound } from "next/navigation";
 import React from "react";
 
 interface Destination {
@@ -82,7 +83,7 @@ async function getPackageByDestinationSlug(slug: string) {
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
   const data = await res.json();
-  return data?.data ?? [];
+  return data?.data;
 }
 async function DestinationPage({
   params,
@@ -91,6 +92,7 @@ async function DestinationPage({
 }) {
   const { categorySlug, destination } = params;
   const packages = await getPackageByDestinationSlug(destination);
+  if (!packages || packages.length === 0) return notFound();
   return (
     <section>
       <Hero

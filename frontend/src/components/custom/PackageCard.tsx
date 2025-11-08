@@ -11,13 +11,13 @@ interface Batch {
   startDate: string;
   endDate: string;
   quad: number;
-  triple: number;
-  double: number;
-  child: number;
-  quadDiscount: number;
-  tripleDiscount: number;
-  doubleDiscount: number;
-  childDiscount: number;
+  triple?: number;
+  double?: number;
+  child?: number;
+  quadDiscount?: number;
+  tripleDiscount?: number;
+  doubleDiscount?: number;
+  childDiscount?: number;
 }
 interface Package {
   id: string;

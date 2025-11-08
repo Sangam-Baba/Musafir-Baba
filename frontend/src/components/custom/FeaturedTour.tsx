@@ -5,26 +5,30 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import PackageCard from "./PackageCard";
 
+interface Batch {
+  _id: string;
+  startDate: string;
+  endDate: string;
+  quad: number;
+}
 interface Package {
   _id: string;
   title: string;
   slug: string;
   coverImage?: { url: string };
-  batch?: { quad: number }[];
   duration: { days: number; nights: number };
   destination: { country: string; state: string };
+  batch: Batch[];
 }
 
 interface Category {
   slug: string;
   label: string;
-  category: {
-    packages: Package[];
-  } | null;
+  categoryPackages: Package[];
 }
 
-export function FeaturedTour({ categories }: { categories: Category[] }) {
-  const [active, setActive] = useState(categories[0]?.slug);
+export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
+  const [active, setActive] = useState(categoriesPkg[0]?.slug);
 
   return (
     <section className="w-full px-4 md:px-8 lg:px-20 py-16">
@@ -40,7 +44,7 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
 
         {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-3 mt-6">
-          {categories.map((tab) => (
+          {categoriesPkg.map((tab) => (
             <Button
               key={tab.slug}
               size="lg"
@@ -56,11 +60,12 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
 
         {/* Packages */}
         <div className="mt-10">
-          {categories.map((tab) => {
-            const category = tab.category;
+          {categoriesPkg.map((tab) => {
+            // const category = tab.category;
             const isActive = active === tab.slug;
 
-            if (!category || !category.packages?.length) return null;
+            if (!tab.categoryPackages || !tab.categoryPackages?.length)
+              return null;
 
             return (
               <div
@@ -82,7 +87,7 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {category.packages.slice(0, 4).map((pkg) => (
+                  {tab.categoryPackages.slice(0, 4).map((pkg) => (
                     <PackageCard
                       key={pkg._id}
                       pkg={{
@@ -92,11 +97,12 @@ export function FeaturedTour({ categories }: { categories: Category[] }) {
                         image: pkg.coverImage?.url || "",
                         price: Number(pkg?.batch?.[0]?.quad ?? 8999),
                         duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                        batch: pkg.batch,
                         destination:
                           pkg.destination.state.charAt(0).toUpperCase() +
                           pkg.destination.state.slice(1),
                       }}
-                      url={`/${pkg.destination.country}/${pkg.destination.state}/${pkg.slug}`}
+                      url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
                     />
                   ))}
                 </div>

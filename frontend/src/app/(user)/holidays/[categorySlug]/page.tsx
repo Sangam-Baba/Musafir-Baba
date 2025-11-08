@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import SingleCategoryPage from "./PackageSlugClient";
 import Script from "next/script";
+import { notFound } from "next/navigation";
 
 interface Props {
   params: { categorySlug: string };
@@ -59,12 +60,12 @@ async function getCategoryBySlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
     {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
       cache: "no-cache",
     }
   );
+  if (res.status === 404) {
+    return notFound();
+  }
   if (!res.ok) {
     throw new Error("Failed to fetch category");
   }
@@ -79,7 +80,7 @@ async function getPackageByCategorySlug(slug: string) {
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
   const data = await res.json();
-  return data?.data ?? [];
+  return data?.data;
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = params;
@@ -135,8 +136,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function Page({ params }: Props) {
   const res = await getCategoryBySlug(params.categorySlug);
-  const { category } = res?.data ?? {};
+  const { category } = res?.data;
   const packages = await getPackageByCategorySlug(params.categorySlug);
+  if (!category) return notFound();
   // const packages = category?.packages ?? [];
 
   // ✅ Build JSON-LD Schema

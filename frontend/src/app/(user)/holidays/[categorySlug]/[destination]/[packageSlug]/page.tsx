@@ -125,7 +125,7 @@ async function PackageDetails({
   params: { categorySlug: string; destination: string; packageSlug: string };
 }) {
   const { destination, packageSlug } = params;
-  const packageData = await getSinglePackages(destination, packageSlug);
+  // const packageData = await getSinglePackages(destination, packageSlug);
   return <SlugClients slug={packageSlug} state={destination} />;
 }
 

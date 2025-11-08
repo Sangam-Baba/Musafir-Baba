@@ -7,7 +7,7 @@ import { ImageGallery } from "@/components/custom/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { usePathname } from "next/navigation";
+import { notFound, usePathname } from "next/navigation";
 import { Loader } from "@/components/custom/loader";
 import {
   Accordion,
@@ -19,7 +19,6 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import QueryForm from "@/components/custom/QueryForm";
 import { ItineryDialog } from "@/components/custom/ItineryDialog";
-import NotFoundPage from "@/components/common/Not-Found";
 import { Check, ChevronDown, Clock, MapPin, X } from "lucide-react";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 import { AuthDialog } from "@/components/auth/AuthDialog";
@@ -152,13 +151,13 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
   if (isLoading) return <Loader size="lg" message="Loading package..." />;
   if (isError) {
     toast.error(`No package found for ${StateName}`);
-    return <NotFoundPage />;
+    return notFound();
   }
 
   const pkg = data?.data[0];
 
   if (!pkg) {
-    return <p>No package found.</p>;
+    return notFound();
   }
   const price = pkg.batch?.length ? pkg?.batch[0].quad : 3999;
   const dicountedPrice = pkg.batch?.length ? pkg?.batch[0].quadDiscount : 5999;
