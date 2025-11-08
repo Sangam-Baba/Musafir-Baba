@@ -1,6 +1,6 @@
 import { CustomizedTourPackage } from "../models/CustomizedTourPackage.js";
 import mongoose from "mongoose";
-
+import { Destination } from "../models/Destination.js";
 const createCustomizedTourPackage = async (req, res) => {
   try {
     const { title, slug, plans, destination } = req.body;
@@ -54,6 +54,23 @@ const updateCustomizedTourPackage = async (req, res) => {
 const getAllCustomizedTourPackages = async (req, res) => {
   try {
     const { filter = {} } = req.query;
+    const destination = req.query?.destination?.trim();
+    if (destination && destination !== "undefined" && destination !== "null") {
+      // If you want to allow name/slug instead of ObjectId
+      const dest = await Destination.findOne({
+        $or: [
+          { country: req.query.destination },
+          { state: req.query.destination },
+          { city: req.query.destination },
+        ],
+      }).select("_id");
+      if (!dest) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Destination not found" });
+      }
+      filter.destination = dest._id;
+    }
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.slug) filter.slug = req.query.slug;
     if (req.query?.status) filter.status = req.query.status;

@@ -35,6 +35,19 @@ export default async function PackagesClient() {
   if (data?.data.length === 0) return <NotFoundPage />;
   const categories = data?.data ?? [];
 
+  const totalCategory = [
+    ...categories,
+    {
+      id: "customized-tour-packages",
+      name: "Customized Tour Packages",
+      slug: "customized-tour-packages",
+      coverImage: {
+        url: "",
+        alt: "",
+      },
+      description: "customized-tour-packages",
+    },
+  ];
   return (
     <section>
       <Hero
@@ -52,7 +65,7 @@ export default async function PackagesClient() {
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
       </div>
       <div className="max-w-7xl mx-auto py-10 px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        {categories.map((category, idx) => (
+        {totalCategory.map((category, idx) => (
           <Card
             key={idx}
             className={`flex flex-col gap-4 ${
