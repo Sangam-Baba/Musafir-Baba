@@ -20,6 +20,8 @@ import { Faqs } from "@/components/custom/Faqs";
 import { ArrowBigRight } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { useCustomizedBookingStore } from "@/store/useCutomizedBookingStore";
 
 interface Plan {
   _id: string;
@@ -102,6 +104,10 @@ function CustomizedPackagePage({ params }: { params: { pkgSlug: string } }) {
   const slug = params.pkgSlug as string;
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const openDialog = useAuthDialogStore((state) => state.openDialog);
+  const setFormBookData = useCustomizedBookingStore(
+    (state) => state.setFormBookData
+  );
 
   const {
     data: pkg,
@@ -170,27 +176,17 @@ function CustomizedPackagePage({ params }: { params: { pkgSlug: string } }) {
       toast.error("Please select a plan before booking");
       return;
     }
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourbooking`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(formData),
-      }
-    );
-
-    if (res.ok) {
-      toast.success("Package Booked Successfully!");
-      const data = await res.json();
-      const bookingId = data?.data?._id;
-      router.replace(`/customized-tour-packages/${slug}/${bookingId}`);
-    } else {
-      toast.error("Failed to book package. Try again.");
+    setFormBookData(formData);
+    if (!accessToken) {
+      openDialog(
+        "login",
+        undefined,
+        `/holidays/customized-tour-packages/${pkg?.destination?.state}/${slug}/${pkg._id}}`
+      );
     }
+    router.push(
+      `/holidays/customized-tour-packages/${pkg?.destination?.state}/${slug}/${pkg._id}`
+    );
   };
 
   return (

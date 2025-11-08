@@ -20,11 +20,16 @@ const createCustomizedTourBooking = async (req, res) => {
       noOfPeople,
       ...req.body,
     });
-
+    const createdBooking = await CustomizedTourBooking.findById(
+      customizedTourBooking._id
+    )
+      .populate({ path: "userId", select: "name email" })
+      .populate({ path: "packageId", select: "title coverImage" })
+      .lean();
     res.status(201).json({
       success: true,
       message: "Customized tour booking created successfully",
-      data: customizedTourBooking,
+      data: createdBooking,
     });
   } catch (error) {
     console.log("Error creating customized tour booking", error);
