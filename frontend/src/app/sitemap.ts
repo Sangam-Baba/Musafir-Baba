@@ -32,6 +32,7 @@ interface Package {
   _id: string;
   title: string;
   description: string;
+  mainCategory: string;
   batch: Batch[];
   slug: string;
   coverImage: {
@@ -276,7 +277,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     ...packages.map((pkg: Package) => ({
-      url: `https://musafirbaba.com/${pkg.destination?.country}/${pkg.destination?.state}/${pkg.slug}`,
+      url: `https://musafirbaba.com/holidays/${pkg.mainCategory}/${pkg.destination?.state}/${pkg.slug}`,
       lastModified: new Date(pkg.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,
