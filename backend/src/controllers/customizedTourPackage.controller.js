@@ -177,7 +177,9 @@ const getRelatedTour = async (req, res) => {
     }
     const relatedTours = await CustomizedTourPackage.find({
       keywords: { $in: customizedTourPackage.keywords },
-    }).lean();
+    })
+      .populate("destination", "_id name country state city slug")
+      .lean();
     res.status(200).json({
       success: true,
       message: "Related tour fetched successfully",

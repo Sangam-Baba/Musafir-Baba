@@ -85,6 +85,25 @@ async function getPackageByDestinationSlug(slug: string) {
   const data = await res.json();
   return data?.data;
 }
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { categorySlug: string; destination: string };
+}) {
+  const { destination } = params;
+  const pkgData = await getPackageByDestinationSlug(destination);
+  return {
+    title: `${
+      pkgData[0]?.destination?.metaTitle || pkgData[0]?.destination?.name
+    } | Musafir Baba`,
+    description: pkgData[0]?.destination?.metaDescription,
+    keywords: pkgData[0]?.destination?.keywords,
+    alternates: {
+      canonical: `https://musafirbaba.com/holidays/${params.categorySlug}/${params.destination}`,
+    },
+  };
+}
 async function DestinationPage({
   params,
 }: {

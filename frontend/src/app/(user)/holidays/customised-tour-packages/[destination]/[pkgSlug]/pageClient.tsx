@@ -1,11 +1,16 @@
+// app/holidays/customized-tour-packages/[state]/[pkgSlug]/CustomizedPackageClient.tsx
 "use client";
-import React, { use } from "react";
-import Hero from "@/components/custom/Hero";
-import { useQuery } from "@tanstack/react-query";
+
+import React from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { useCustomizedBookingStore } from "@/store/useCutomizedBookingStore";
+import Hero from "@/components/custom/Hero";
 import { Loader } from "@/components/custom/loader";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, ArrowBigRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +22,6 @@ import {
 } from "@/components/ui/accordion";
 import PackageCard from "@/components/custom/PackageCard";
 import { Faqs } from "@/components/custom/Faqs";
-import { ArrowBigRight } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
-
 interface Plan {
   _id: string;
   title: string;
@@ -56,6 +57,7 @@ interface Destination {
 interface Package {
   _id: string;
   title: string;
+  description: string;
   slug: string;
   coverImage: CoverImage;
   gallery: CoverImage[];
@@ -70,80 +72,35 @@ interface Package {
   destination: Destination;
   status: "draft" | "published";
 }
-
-const getCustomizedPackagesBySlug = async (slug: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/slug/${slug}`,
-    {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-      cache: "no-cache",
-    }
-  );
-  if (!res.ok) throw new Error("Failed to fetch Packages");
-  const data = await res.json();
-  return data?.data;
-};
-
-const getRelatedPackages = async (slug: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/related/${slug}`,
-    {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-    }
-  );
-  if (!res.ok) throw new Error("Failed to fetch Packages");
-  const data = await res.json();
-  return data?.data;
-};
-
-function CustomizedPackagePage({ params }: { params: { slug: string } }) {
-  const slug = params.slug as string;
+export default function CustomizedPackageClient({
+  pkg,
+  relatedPackages,
+}: {
+  pkg: Package;
+  relatedPackages: Package[];
+}) {
   const router = useRouter();
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-
-  const {
-    data: pkg,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["CustomizedPackages", slug],
-    queryFn: () => getCustomizedPackagesBySlug(slug),
-    retry: 2,
-  });
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const openDialog = useAuthDialogStore((state) => state.openDialog);
+  const setFormBookData = useCustomizedBookingStore(
+    (state) => state.setFormBookData
+  );
 
   const [formData, setFormData] = React.useState({
     date: new Date().toISOString().split("T")[0],
     noOfPeople: 1,
     totalPrice: 0,
     plan: "",
-    packageId: "",
+    packageId: pkg?._id,
     status: "pending",
   });
 
-  const { data: relatedPackages } = useQuery({
-    queryKey: ["relatedPackages", slug],
-    queryFn: () => getRelatedPackages(slug),
-  });
-  React.useEffect(() => {
-    if (pkg?._id) {
-      setFormData((prev) => ({
-        ...prev,
-        packageId: pkg._id,
-      }));
-    }
-  }, [pkg]);
-
-  if (isLoading) return <Loader size="lg" message="Loading ..." />;
-  if (isError) {
-    toast.error((error as Error).message);
-    return <h1>{(error as Error).message}</h1>;
-  }
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, date: e.target.value }));
+  const handleSelectPlan = (plan: Plan) => {
+    setFormData((prev) => ({
+      ...prev,
+      plan: plan.title,
+      totalPrice: plan.price * prev.noOfPeople,
+    }));
   };
 
   const handlePeopleChange = (delta: number) => {
@@ -155,15 +112,11 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
     });
   };
 
-  const handleSelectPlan = (plan: Plan) => {
-    setFormData((prev) => ({
-      ...prev,
-      plan: plan.title,
-      totalPrice: plan.price * prev.noOfPeople,
-    }));
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, date: e.target.value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!formData.plan) {
@@ -171,27 +124,18 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
       return;
     }
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourbooking`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(formData),
-      }
-    );
+    setFormBookData(formData);
 
-    if (res.ok) {
-      toast.success("Package Booked Successfully!");
-      const data = await res.json();
-      const bookingId = data?.data?._id;
-      router.replace(`/customized-tour-package/${slug}/${bookingId}`);
+    const redirectUrl = `/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}/${pkg._id}`;
+
+    if (!accessToken) {
+      openDialog("login", undefined, redirectUrl);
     } else {
-      toast.error("Failed to book package. Try again.");
+      router.push(redirectUrl);
     }
   };
+
+  if (!pkg) return <Loader message="Loading..." />;
 
   return (
     <section className="w-full mb-12">
@@ -416,7 +360,7 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
                     destination: pkg.destination?.name ?? "",
                     batch: [],
                   }}
-                  url={`/customized-tour-package/${pkg.slug}`}
+                  url={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
                 />
               ))}
             </div>
@@ -428,5 +372,3 @@ function CustomizedPackagePage({ params }: { params: { slug: string } }) {
     </section>
   );
 }
-
-export default CustomizedPackagePage;

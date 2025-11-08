@@ -96,8 +96,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${category.metaTitle || category.name} | Musafir Baba`;
-    const description = `${category.metaDescription || category.description}`;
+    const title = `${category?.name} | Musafir Baba`;
+    const description = `${category?.description}`;
 
     return {
       title,

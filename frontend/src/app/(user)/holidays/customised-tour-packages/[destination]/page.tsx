@@ -53,6 +53,21 @@ async function getPackageByDestinationSlug(slug: string) {
   const data = await res.json();
   return data?.data;
 }
+export async function generateMetadata({
+  params,
+}: {
+  params: { destination: string };
+}) {
+  const { destination } = params;
+  return {
+    title: `MusafirBaba | Customized Packages in ${
+      destination.charAt(0).toUpperCase() + destination.slice(1)
+    }`,
+    description: `Customized Packages in ${
+      destination.charAt(0).toUpperCase() + destination.slice(1)
+    }`,
+  };
+}
 async function DestinationPage({
   params,
 }: {
@@ -85,12 +100,9 @@ async function DestinationPage({
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 mt-10">
           {packages.map((pkg: Package) => (
             <Link
-              //   onClick={() =>
-              //     handlePackageClick(pkg.slug, pkg?.destination?.state)
-              //   }
               key={pkg._id}
               className="cursor-pointer"
-              href={`/holidays/customized-tour-packages/${pkg.destination?.state}/${pkg.slug}`}
+              href={`/holidays/customised-tour-packages/${pkg.destination?.state}/${pkg.slug}`}
             >
               <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
                 {/* Image + Price tag */}

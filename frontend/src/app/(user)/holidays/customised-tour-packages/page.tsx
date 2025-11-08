@@ -1,16 +1,10 @@
-"use client";
 import React from "react";
 import Hero from "@/components/custom/Hero";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Loader } from "@/components/custom/loader";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin } from "lucide-react";
-import { useAuthDialogStore } from "@/store/useAuthDialogStore";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 interface Plan {
   title: string;
   include: string;
@@ -49,8 +43,6 @@ const getAllCustomizedPackages = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/`,
     {
-      method: "GET",
-      headers: { "content-type": "application/json" },
       cache: "no-cache",
     }
   );
@@ -61,38 +53,36 @@ const getAllCustomizedPackages = async () => {
   return data?.data;
 };
 
-function CustomizedPackagePage() {
-  const router = useRouter();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const openDialog = useAuthDialogStore((state) => state.openDialog);
-  const {
-    data: AllPackages,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["category"],
-    queryFn: getAllCustomizedPackages,
-    retry: 2,
-  });
-
-  if (isLoading) {
-    return <Loader size="lg" message="Loading ..." />;
-  }
-  if (isError) {
-    toast.error(error.message);
-    return <h1>{error.message}</h1>;
-  }
-
-  const handlePackageClick = (slug: string) => {
-    if (!accessToken) {
-      toast.info("Please login to view package details.");
-      openDialog("login", undefined, `/customized-tour-package/${slug}`);
-    } else {
-      // 👇 If logged in, go to package detail page
-      router.push(`/customized-tour-package/${slug}`);
-    }
+export async function generateMetadata() {
+  return {
+    title: "Customised Tour Packages – Tailor-Made Holidays for Every Traveler",
+    description:
+      "Explore customised tour packages designed around your interests, budget, and travel style. From luxury getaways to family vacations, we plan every detail so you can enjoy a truly personalised holiday experience.",
+    alternates: {
+      canonical: "https://musafirbaba.com/holidays/customised-tour-packages",
+    },
+    openGraph: {
+      title:
+        "Customised Tour Packages – Tailor-Made Holidays for Every Traveler",
+      description:
+        "Explore customised tour packages designed around your interests, budget, and travel style. From luxury getaways to family vacations, we plan every detail so you can enjoy a truly personalised holiday experience.",
+      url: "https://musafirbaba.com/holidays/customised-tour-packages",
+      siteName: "MusafirBaba",
+      images: [
+        {
+          url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1762488352/rolvmorbutnkmwgnmh5s.jpg", // replace with your image
+          width: 1200,
+          height: 630,
+          alt: "MusafirBaba Travel",
+        },
+      ],
+      type: "website",
+    },
   };
+}
+
+async function CustomizedPackagePage() {
+  const AllPackages = await getAllCustomizedPackages();
 
   return (
     <section className="w-full mb-12">
@@ -120,9 +110,9 @@ function CustomizedPackagePage() {
       {AllPackages && AllPackages.length > 0 && (
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
           {AllPackages.map((pkg: Package) => (
-            <div
-              onClick={() => handlePackageClick(pkg.slug)}
+            <Link
               key={pkg._id}
+              href={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
               className="cursor-pointer"
             >
               <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
@@ -165,7 +155,7 @@ function CustomizedPackagePage() {
                   </p>
                 </CardContent>
               </Card>
-            </div>
+            </Link>
           ))}
         </div>
       )}

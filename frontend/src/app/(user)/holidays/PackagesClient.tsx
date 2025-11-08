@@ -38,14 +38,15 @@ export default async function PackagesClient() {
   const totalCategory = [
     ...categories,
     {
-      id: "customized-tour-packages",
-      name: "Customized Tour Packages",
-      slug: "customized-tour-packages",
+      id: "customised-tour-packages",
+      name: "Customised Tour Packages",
+      slug: "customised-tour-packages",
       coverImage: {
-        url: "",
-        alt: "",
+        url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1762603238/customer-service-business-svgrepo-com_nalaol.svg",
+        alt: "customized-tour-packages",
       },
-      description: "customized-tour-packages",
+      description:
+        "Design your dream vacation your way! Our customised tour packages let you choose destinations, hotels, meals, and experiences — all tailored to your travel style and budget.",
     },
   ];
   return (
