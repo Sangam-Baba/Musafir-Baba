@@ -99,10 +99,12 @@ async function CustomizedPackagePage() {
 
       {/* Show category details */}
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
-        <h1 className="text-3xl font-bold">Customized Packages</h1>
+        <h1 className="text-3xl font-bold">Custosized Packages</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
         <p className="mt-2 text-muted-foreground">
-          This is customized tour packages
+          Design your dream vacation your way! Our customised tour packages let
+          you choose destinations, hotels, meals, and experiences — all tailored
+          to your travel style and budget.
         </p>
       </div>
 

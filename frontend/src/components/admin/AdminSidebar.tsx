@@ -33,7 +33,7 @@ const NAV = [
   },
   {
     label: "Customized Bookings",
-    href: "/admin/customized-bookings",
+    href: "/admin/bookings/customized-bookings",
     icon: Hamburger,
   },
   { label: "WebPages", href: "/admin/webpage", icon: LayoutTemplate },

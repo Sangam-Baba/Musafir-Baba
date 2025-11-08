@@ -1,5 +1,4 @@
-// app/holidays/customized-tour-packages/[state]/[pkgSlug]/page.tsx
-
+import { notFound } from "next/navigation";
 import CustomizedPackageClient from "./pageClient";
 async function getCustomizedPackage(slug: string) {
   const res = await fetch(
@@ -35,7 +34,7 @@ export async function generateMetadata({
   if (!pkg) {
     return {
       title: "Package Not Found | Musafir Baba",
-      description: "This customized tour package does not exist.",
+      description: "This customised tour package does not exist.",
     };
   }
 
@@ -48,6 +47,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg.destination}/${params.pkgSlug}`,
+    },
     openGraph: {
       title,
       description,
@@ -70,8 +72,7 @@ export default async function Page({
   const relatedPackages = await getRelatedPackages(params.pkgSlug);
 
   if (!pkg) {
-    // render 404 page
-    return <h1 className="text-center text-2xl mt-20">Package not found</h1>;
+    return notFound();
   }
 
   return (

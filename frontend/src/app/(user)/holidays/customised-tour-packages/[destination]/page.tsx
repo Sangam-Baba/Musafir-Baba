@@ -60,10 +60,10 @@ export async function generateMetadata({
 }) {
   const { destination } = params;
   return {
-    title: `MusafirBaba | Customized Packages in ${
+    title: `MusafirBaba | Customised Packages in ${
       destination.charAt(0).toUpperCase() + destination.slice(1)
     }`,
-    description: `Customized Packages in ${
+    description: `Customised Packages in ${
       destination.charAt(0).toUpperCase() + destination.slice(1)
     }`,
   };
@@ -89,7 +89,7 @@ async function DestinationPage({
         <Breadcrumb />
       </div>
       <div className="w-full flex flex-col items-center justify-center mt-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Customized Packages in ${
+        <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Customised Packages in ${
           destination.charAt(0).toUpperCase() + destination.slice(1)
         }`}</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
