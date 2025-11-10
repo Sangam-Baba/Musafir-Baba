@@ -192,6 +192,7 @@ const getPackages = async (req, res) => {
         "name country state city slug coverImage metaTitle metaDescription keywords"
       )
       .populate("batch")
+      .populate("mainCategory", "name slug")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
@@ -253,6 +254,8 @@ const getBestSeller = async (req, res) => {
       status: "published",
     })
       .populate("destination", "_id name country state")
+      .populate("batch", "quad")
+      .populate("mainCategory", "name slug")
       .lean();
 
     if (!bestSellers)

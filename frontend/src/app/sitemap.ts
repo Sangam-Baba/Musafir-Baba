@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
-export const dynamic = "force-dynamic";
+import { Category } from "./admin/blogs/new/page";
+// export const dynamic = "force-dynamic";
 interface coverImage {
   url: string;
   public_id: string;
@@ -32,7 +33,7 @@ interface Package {
   _id: string;
   title: string;
   description: string;
-  mainCategory: string;
+  mainCategory: Category;
   batch: Batch[];
   slug: string;
   coverImage: {
@@ -42,34 +43,12 @@ interface Package {
     width?: number;
     height?: number;
   };
-  gallery: [
-    {
-      url: string;
-      public_id: string;
-      alt: string;
-      width?: number;
-      height?: number;
-    }
-  ];
+  gallery: coverImage[];
   duration: {
     days: number;
     nights: number;
   };
-  destination?: {
-    _id: string;
-    name: string;
-    slug: string;
-    country: string;
-    state: string;
-    city?: string;
-    coverImage: {
-      url: string;
-      public_id: string;
-      alt: string;
-      width?: number;
-      height?: number;
-    };
-  };
+  destination?: Destination;
   metaTitle: string;
   metaDescription: string;
   keywords: string[];
@@ -157,17 +136,17 @@ async function getPackages() {
   return data?.data;
 }
 
-async function getDestination() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!res.ok) throw new Error("Failed to fetch posts");
-  const data = await res.json();
-  return data?.data ?? [];
-}
+// async function getDestination() {
+//   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
+//     method: "GET",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   });
+//   if (!res.ok) throw new Error("Failed to fetch posts");
+//   const data = await res.json();
+//   return data?.data ?? [];
+// }
 
 const getAllWebPage = async () => {
   const res = await fetch(
@@ -203,7 +182,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const category = await getCategory();
   const categories = category?.data ?? [];
   const packages = await getPackages();
-  const destinations = await getDestination();
+  // const destinations = await getDestination();
   const webpages = await getAllWebPage();
   const bookingsPages = webpages.filter(
     (webpage: Webpage) => webpage.parent === "bookings"
@@ -214,6 +193,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const visas = await getAllVisa();
 
   const authors = await getAllAuthors();
+
+  const uniqueDestinations = [];
+
+  const seenDestinations = new Set();
+
+  for (const pkg of packages) {
+    const destId = pkg.destination?._id?.toString();
+    if (destId && !seenDestinations.has(destId)) {
+      seenDestinations.add(destId);
+      uniqueDestinations.push(pkg);
+    }
+  }
   return [
     {
       url: "https://musafirbaba.com/",
@@ -277,15 +268,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     ...packages.map((pkg: Package) => ({
-      url: `https://musafirbaba.com/holidays/${pkg.mainCategory}/${pkg.destination?.state}/${pkg.slug}`,
+      url: `https://musafirbaba.com/holidays/${pkg.mainCategory?.slug}/${pkg.destination?.state}/${pkg.slug}`,
       lastModified: new Date(pkg.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,
     })),
-    ...destinations.map((dest: Destination) => ({
-      url: `https://musafirbaba.com/${dest?.country}/${encodeURIComponent(
-        dest?.state
-      )}`,
+    ...uniqueDestinations.map((dest: Package) => ({
+      url: `https://musafirbaba.com/holidays/${dest.mainCategory?.slug}/${dest.destination?.state}`,
       lastModified: new Date(dest.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,

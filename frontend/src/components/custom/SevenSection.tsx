@@ -30,6 +30,11 @@ interface BestSeller {
   title: string;
   description: string;
   coverImage: Image;
+  mainCategory: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
   destination: {
     _id: string;
     name: string;
@@ -193,7 +198,7 @@ export async function SevenSection() {
                           </div>
                         </div>
                         <Link
-                          href={`/${pkg?.destination?.country}/${pkg?.destination?.state}/${pkg.slug}`}
+                          href={`/holidays/${pkg?.mainCategory?.slug}/${pkg?.destination?.state}/${pkg.slug}`}
                         >
                           <Button className="bg-[#FE5300] hover:bg-[#ff6a24] text-white font-semibold px-6 py-2 rounded-full shadow-md transition-all">
                             Explore Now
