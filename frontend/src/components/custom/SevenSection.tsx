@@ -164,7 +164,9 @@ export async function SevenSection() {
                       </div>
 
                       <div className="w-full md:w-1/2 flex flex-col gap-4 justify-start">
-                        <p className="text-gray-100 leading-relaxed line-clamp-10 text-justify">
+                        <p
+                          className={`text-gray-100 leading-relaxed line-clamp-4 md:line-clamp-10 text-justify`}
+                        >
                           {pkg.description}
                         </p>
                         <div className="flex justify-between gap-4 mt-4">

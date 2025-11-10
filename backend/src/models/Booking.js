@@ -47,10 +47,6 @@ const bookingSchema = new mongoose.Schema(
         type: Number,
       },
     },
-    // travelDate: {
-    //   type: Date,
-    //   required: true,
-    // },
     bookingDate: {
       type: Date,
       default: Date.now(),

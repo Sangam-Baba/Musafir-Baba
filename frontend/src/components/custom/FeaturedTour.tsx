@@ -4,6 +4,13 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import PackageCard from "./PackageCard";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface Batch {
   _id: string;
@@ -74,10 +81,10 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                   isActive ? "block" : "hidden"
                 } transition-opacity duration-300`}
               >
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold text-[#FE5300]">
+                <div className="flex justify-end items-center mb-6">
+                  {/* <h3 className="text-xl font-semibold text-[#FE5300]">
                     {tab.label}
-                  </h3>
+                  </h3> */}
                   <Link
                     href={`/holidays/${tab.slug}`}
                     className="text-[#FE5300] font-semibold"
@@ -86,7 +93,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {tab.categoryPackages.slice(0, 4).map((pkg) => (
                     <PackageCard
                       key={pkg._id}
@@ -105,6 +112,44 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                       url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
                     />
                   ))}
+                </div>
+                <div className="md:hidden flex flex-col items-center mx-auto px-8">
+                  <Carousel
+                    opts={{
+                      align: "start",
+                      loop: true,
+                    }}
+                    className="w-full"
+                  >
+                    <CarouselContent className="">
+                      {tab.categoryPackages.slice(0, 4).map((pkg, i) => (
+                        <CarouselItem key={i}>
+                          <div className="p-1">
+                            <PackageCard
+                              key={pkg._id}
+                              pkg={{
+                                id: pkg._id,
+                                name: pkg.title,
+                                slug: pkg.slug,
+                                image: pkg.coverImage?.url || "",
+                                price: Number(pkg?.batch?.[0]?.quad ?? 8999),
+                                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                                batch: pkg.batch,
+                                destination:
+                                  pkg.destination.state
+                                    .charAt(0)
+                                    .toUpperCase() +
+                                  pkg.destination.state.slice(1),
+                              }}
+                              url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                  </Carousel>
                 </div>
               </div>
             );
