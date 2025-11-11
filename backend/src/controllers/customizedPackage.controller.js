@@ -22,9 +22,9 @@ const createCustomizedPackage = async (req, res) => {
 
 const getCustomizedPackages = async (req, res) => {
   try {
-    const customizedPackages = await CustomizedPackage.find().populate(
-      "destination"
-    );
+    const customizedPackages = await CustomizedPackage.find()
+      .populate("destination")
+      .lean();
 
     res.status(200).json({ success: true, data: customizedPackages });
   } catch (error) {

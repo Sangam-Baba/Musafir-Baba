@@ -1,5 +1,6 @@
 import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
 import mongoose from "mongoose";
+import { User } from "../models/User.js";
 
 const createCustomizedTourBooking = async (req, res) => {
   try {
@@ -37,6 +38,79 @@ const createCustomizedTourBooking = async (req, res) => {
   }
 };
 
+const createManualCustomizedTourBooking = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      packageId,
+      date,
+      plan,
+      noOfPeople,
+      totalPrice,
+      bookingStatus,
+      paymentMethod,
+      paymentInfo,
+    } = req.body;
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !packageId ||
+      !date ||
+      !plan ||
+      !noOfPeople ||
+      !totalPrice
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+    const userPassword = Math.floor(100000 + Math.random() * 900000).toString();
+    let UserId = null;
+    const isExist = await User.findOne({ email });
+    if (isExist) {
+      UserId = isExist._id;
+    } else {
+      const user = await User.create({
+        name,
+        email,
+        phone,
+        password: userPassword,
+        role: "user",
+        isActive: true,
+        isVerified: true,
+      });
+      if (!user)
+        return res
+          .status(500)
+          .json({ success: false, message: "Server Error" });
+      UserId = user._id;
+    }
+    const customizedTourBooking = await CustomizedTourBooking.create({
+      userId: UserId,
+      packageId,
+      date,
+      plan,
+      noOfPeople,
+      totalPrice,
+      bookingStatus,
+      paymentMethod,
+      paymentInfo,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Customized tour manual booking created successfully",
+      data: customizedTourBooking,
+    });
+  } catch (error) {
+    console.log("Error maunal creating customized tour booking", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: `Server Error: ${error.message}` });
+  }
+};
 const getCustomizedTourBookingById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -158,4 +232,5 @@ export {
   deleteCustomizedTourBooking,
   updateCustomizedTourBooking,
   getAllCustomizedTourBooking,
+  createManualCustomizedTourBooking,
 };

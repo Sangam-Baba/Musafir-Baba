@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Search, Filter } from "lucide-react";
 import Pagination from "@/components/common/Pagination";
+import ManualCustomizedBookings from "@/components/admin/ManualCustomizedBooking";
 
 interface Booking {
   _id: string;
@@ -103,6 +104,7 @@ function BookingPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["bookings", page, limit],
@@ -145,15 +147,25 @@ function BookingPage() {
   const handlePageChange = (page: number) => setPage(page);
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-          Customized Bookings
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400">
-          Manage and track all Customized Tour Bookings
-        </p>
-      </div>
+      <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            Customized Bookings
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            Manage and track all Customized Tour Bookings
+          </p>
+        </div>
 
+        <Button onClick={() => setIsModalOpen(true)} className="mt-4">
+          Add Manual Booking
+        </Button>
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <ManualCustomizedBookings onClose={() => setIsModalOpen(false)} />
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="pt-6">

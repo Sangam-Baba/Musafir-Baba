@@ -76,6 +76,7 @@ const getAllCustomizedTourPackages = async (req, res) => {
     if (req.query?.status) filter.status = req.query.status;
     const customizedTourPackages = await CustomizedTourPackage.find(filter)
       .populate("destination", "_id name country state city slug")
+      .populate("plans")
       .lean();
     res.status(200).json({
       success: true,
