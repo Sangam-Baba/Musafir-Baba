@@ -58,7 +58,7 @@ const bookingSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["PayU", "Cash"],
+      enum: ["PayU", "Cash", "Online"],
       default: "PayU",
     },
     paymentInfo: {

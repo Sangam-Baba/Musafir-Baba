@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Booking } from "../models/Booking.js";
 import { Package } from "../models/Package.js";
+import { User } from "../models/User.js";
 const createBooking = async (req, res) => {
   try {
     const userId = req.user.sub;
@@ -45,6 +46,69 @@ const createBooking = async (req, res) => {
   }
 };
 
+const createManualBooking = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      packageId,
+      batchId,
+      travellers,
+      totalPrice,
+      bookingStatus,
+      PaymentStatus,
+      paymentInfo,
+    } = req.body;
+
+    if (!name || !email || !phone || !packageId || !batchId || !travellers) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing required fields" });
+    }
+    const userPassword = Math.floor(100000 + Math.random() * 900000).toString();
+    let UserId = null;
+    const isExist = await User.findOne({ email });
+    if (isExist) {
+      UserId = isExist._id;
+    } else {
+      const user = await User.create({
+        name,
+        email,
+        phone,
+        password: userPassword,
+        role: "user",
+        isActive: true,
+        isVerified: true,
+      });
+      if (!user)
+        return res
+          .status(500)
+          .json({ success: false, message: "Server Error" });
+      UserId = user._id;
+    }
+    const booking = await Booking.create({
+      user: UserId,
+      packageId,
+      travellers,
+      batchId,
+      totalPrice,
+      firstName: name,
+      bookingStatus,
+      paymentInfo,
+    });
+    if (!booking)
+      return res.status(500).json({ success: false, message: "Server Error" });
+    res
+      .status(201)
+      .json({ success: true, message: "Booking Success", data: booking });
+  } catch (error) {
+    console.log("Manual booking failed ", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: `Server Error: ${error.message}` });
+  }
+};
 const getMyBookings = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -203,4 +267,5 @@ export {
   getBookingById,
   adminUpdateBookingStatus,
   cancelMyBooking,
+  createManualBooking,
 };

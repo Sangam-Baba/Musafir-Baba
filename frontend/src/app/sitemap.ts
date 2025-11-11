@@ -17,7 +17,9 @@ interface blog {
   slug: string;
   updatedAt: string;
 }
-interface Batch {
+export interface Batch {
+  _id: string;
+  name: string;
   startDate: string;
   endDate: string;
   quad: number;
@@ -29,7 +31,7 @@ interface Batch {
   doubleDiscount: number;
   childDiscount: number;
 }
-interface Package {
+export interface Package {
   _id: string;
   title: string;
   description: string;

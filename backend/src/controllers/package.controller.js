@@ -117,6 +117,7 @@ const getAllPackages = async (req, res) => {
   try {
     const packages = await Package.find({ status: "published" })
       .select("_id title batch duration coverImage slug isFeatured status")
+      .populate("batch")
       .lean();
 
     if (!packages)

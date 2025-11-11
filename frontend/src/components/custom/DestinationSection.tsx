@@ -8,13 +8,56 @@ import badrinath from "../../../public/badrinath.jpg";
 import kashmir from "../../../public/kashmir.jpg";
 import himachal from "../../../public/Himachal.jpg";
 import Link from "next/link";
+// import { Card } from "../ui/card";
 export function DestinationSection() {
   const [active, setActive] = useState<"domestic" | "international">(
     "domestic"
   );
 
+  // const destinations = [
+  //   {
+  //     name: "Jaipur",
+  //     image: jaipur,
+  //     url: "jaipur",
+  //   },
+  //   {
+  //     name: "Badrinath",
+  //     image: badrinath,
+  //     url: "badrinath",
+  //   },
+  //   {
+  //     name: "Kashmir",
+  //     image: kashmir,
+  //     url: "kashmir",
+  //   },
+  //   {
+  //     name: "Himachal",
+  //     image: himachal,
+  //     url: "himachal",
+  //   },
+  //   {
+  //     name: "Jaipur",
+  //     image: jaipur,
+  //     url: "jaipur",
+  //   },
+  //   {
+  //     name: "Badrinath",
+  //     image: badrinath,
+  //     url: "badrinath",
+  //   },
+  //   {
+  //     name: "Kashmir",
+  //     image: kashmir,
+  //     url: "kashmir",
+  //   },
+  //   {
+  //     name: "Himachal",
+  //     image: himachal,
+  //     url: "himachal",
+  //   },
+  // ];
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16">
+    <section className="w-full px-4 md:px-8 lg:px-20 py-16  ">
       <div className="flex flex-col gap-2 items-center max-w-7xl mx-auto">
         {/* Heading */}
         <div className="flex flex-col gap-5 items-center w-full">
@@ -244,6 +287,24 @@ export function DestinationSection() {
           </div>
         )}
       </div>
+      {/* <div className="flex flex-wrap gap-2">
+        {destinations.map((dest, i) => (
+          <Card
+            key={i}
+            className="flex flex-col md:flex-row items-center pt-0 overflow-hidden  hover:scale-105 shadow-md hover:shadow-xl transition duration-500"
+          >
+            <Link href={`${dest.url}`}>
+              <Image
+                src={dest.image}
+                alt={`${dest.name} musafirbaba`}
+                width={200}
+                height={200}
+              ></Image>
+              <p>{dest.name}</p>
+            </Link>
+          </Card>
+        ))}
+      </div> */}
     </section>
   );
 }
