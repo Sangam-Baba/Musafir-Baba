@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
@@ -24,31 +25,21 @@ import {
 import { Search, Filter } from "lucide-react";
 import Pagination from "@/components/common/Pagination";
 import ManualGroupBookings from "@/components/admin/ManualGroupBookings";
+import ManualCustomizedBookings from "@/components/admin/ManualCustomizedBooking";
 
-interface Booking {
+interface BookingBase {
   _id: string;
   user: {
     _id: string;
     name: string;
     email: string;
   };
-  packageId: {
+  packageId?: {
     _id: string;
-    title: string;
-  };
-  batchId: {
-    _id: string;
-    startDate: string;
-    status: string;
-  };
-  travellers: {
-    quad: number;
-    triple: number;
-    double: number;
-    child: number;
-  };
+    title?: string;
+  } | null;
   totalPrice: number;
-  paymentMethod: string;
+  paymentMethod?: string;
   paymentInfo: {
     orderId?: string;
     paymentId?: string;
@@ -56,9 +47,47 @@ interface Booking {
     status: string;
   };
   bookingStatus: string;
-  bookingDate: string;
-  createdAt: string;
-  updatedAt: string;
+  bookingDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface GroupBooking extends BookingBase {
+  batchId: {
+    _id: string;
+    startDate: string;
+    status?: string;
+  };
+  travellers: {
+    quad: number;
+    triple: number;
+    double: number;
+    child: number;
+  };
+}
+interface CustomizedBooking extends BookingBase {
+  date?: string;
+  noOfPeople?: number;
+  plan?: string;
+}
+
+interface GroupApiresponse {
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+  };
+  data: GroupBooking[];
+}
+interface CustomizedApiresponse {
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+  };
+  data: CustomizedBooking[];
 }
 
 const getGroupBookings = async (
@@ -77,20 +106,41 @@ const getGroupBookings = async (
     }
   );
   if (!res.ok) throw new Error("Failed to get group bookings");
-  const data = await res.json();
-  return data;
+  return res.json();
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
+const getCustomizedBookings = async (
+  accessToken: string,
+  page: number,
+  limit: number
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourbooking/admin?page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to get customized tour bookings");
+  return res.json();
+};
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return dateString;
+  return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 };
 
-const getStatusColor = (status: string) => {
-  const statusLower = status?.toLowerCase();
+const getStatusColor = (status?: string) => {
+  const statusLower = String(status ?? "").toLowerCase();
   if (
     statusLower === "confirmed" ||
     statusLower === "completed" ||
@@ -113,61 +163,133 @@ function BookingPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [isCustomizedModalOpen, setIsCustomizedModalOpen] = useState(false);
+  const [filterType, setFilterType] = useState<"all" | "group" | "customized">(
+    "all"
+  );
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["bookings", page, limit],
+  const {
+    data: groupData,
+    isLoading: isGroupLoading,
+    isError: isGroupError,
+    error: groupError,
+  } = useQuery<GroupApiresponse>({
+    queryKey: ["groupBookings", page, limit],
     queryFn: () => getGroupBookings(accessToken, page, limit),
     staleTime: 1000 * 60 * 5,
   });
 
-  const bookings = data?.data || [];
+  const {
+    data: customizedData,
+    isLoading: isCustomizedLoading,
+    isError: isCustomizedError,
+    error: customizedError,
+  } = useQuery<CustomizedApiresponse>({
+    queryKey: ["customizedBookings", page, limit],
+    queryFn: () => getCustomizedBookings(accessToken, page, limit),
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const filteredData =
-    bookings?.filter(
-      (booking: Booking) =>
-        booking.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.packageId?.title
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase())
-    ) || [];
+  const groupBookings = groupData?.data ?? [];
+  const customizedBookings = customizedData?.data ?? [];
+
+  // map to a common shape and keep raw date
+  const mappedGroup = groupBookings.map((b) => ({
+    ...b,
+    date: b.batchId?.startDate ?? b.createdAt ?? b.bookingDate,
+    type: "group" as const,
+  }));
+
+  const mappedCustom = customizedBookings.map((b) => ({
+    ...b,
+    date: b.date ?? b.createdAt ?? b.bookingDate,
+    type: "customized" as const,
+  }));
+
+  const bookings = useMemo(
+    () => [...mappedGroup, ...mappedCustom],
+    [mappedGroup, mappedCustom]
+  );
+
+  // filter by search + type
+  const filteredData = bookings.filter((booking) => {
+    if (filterType !== "all" && booking.type !== filterType) return false;
+
+    if (!searchTerm) return true;
+    const s = searchTerm.toLowerCase();
+    const name = booking.user?.name ?? "";
+    const email = booking.user?.email ?? "";
+    const title = booking.packageId?.title ?? "";
+    return (
+      name.toLowerCase().includes(s) ||
+      email.toLowerCase().includes(s) ||
+      title.toLowerCase().includes(s)
+    );
+  });
+
+  const totalItems =
+    (groupData?.meta?.total ?? 0) + (customizedData?.meta?.total ?? 0);
 
   const bookingStats = {
-    total: data?.meta?.total || 0,
+    total: totalItems,
     confirmed:
-      bookings?.filter(
-        (b: Booking) => b.bookingStatus?.toLowerCase() === "confirmed"
+      bookings.filter(
+        (b) => (b.bookingStatus ?? "").toLowerCase() === "confirmed"
       ).length || 0,
     pending:
-      bookings?.filter(
-        (b: Booking) => b.bookingStatus?.toLowerCase() === "pending"
+      bookings.filter(
+        (b) => (b.bookingStatus ?? "").toLowerCase() === "pending"
       ).length || 0,
     cancelled:
-      bookings?.filter(
-        (b: Booking) => b.bookingStatus?.toLowerCase() === "cancelled"
+      bookings.filter(
+        (b) => (b.bookingStatus ?? "").toLowerCase() === "cancelled"
       ).length || 0,
   };
 
-  const handlePageChange = (page: number) => setPage(page);
+  const handlePageChange = (p: number) => setPage(p);
+
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Group Bookings
+            Bookings
           </h1>
           <p className="text-slate-500 dark:text-slate-400">
             Manage and track all tour bookings
           </p>
         </div>
 
-        <Button onClick={() => setIsModalOpen(true)} className="mt-4">
-          Add Manual Booking
-        </Button>
-        {isModalOpen && (
+        <div className="flex items-center gap-3">
+          <select
+            value={filterType}
+            onChange={(e) =>
+              setFilterType(e.target.value as "all" | "group" | "customized")
+            }
+            className="rounded-md border px-3 py-2 bg-white"
+          >
+            <option value="all">All</option>
+            <option value="group">Group</option>
+            <option value="customized">Customized</option>
+          </select>
+
+          <Button onClick={() => setIsGroupModalOpen(true)}>Add Group</Button>
+          <Button onClick={() => setIsCustomizedModalOpen(true)}>
+            Add Customized
+          </Button>
+        </div>
+
+        {isGroupModalOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <ManualGroupBookings onClose={() => setIsModalOpen(false)} />
+            <ManualGroupBookings onClose={() => setIsGroupModalOpen(false)} />
+          </div>
+        )}
+        {isCustomizedModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <ManualCustomizedBookings
+              onClose={() => setIsCustomizedModalOpen(false)}
+            />
           </div>
         )}
       </div>
@@ -176,13 +298,14 @@ function BookingPage() {
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="pt-6">
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Total Bookings
+              Total Bookings (Shown / All)
             </p>
             <p className="text-3xl font-bold text-slate-900 dark:text-white">
-              {bookings?.length}/ {bookingStats.total}
+              {filteredData.length} / {bookingStats.total}
             </p>
           </CardContent>
         </Card>
+
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="pt-6">
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -193,6 +316,7 @@ function BookingPage() {
             </p>
           </CardContent>
         </Card>
+
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="pt-6">
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -203,6 +327,7 @@ function BookingPage() {
             </p>
           </CardContent>
         </Card>
+
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="pt-6">
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -218,10 +343,9 @@ function BookingPage() {
       <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <CardHeader>
           <CardTitle>Bookings List</CardTitle>
-          <CardDescription>
-            View and manage all group tour bookings
-          </CardDescription>
+          <CardDescription>View and manage all tour bookings</CardDescription>
         </CardHeader>
+
         <CardContent>
           <div className="flex gap-2 mb-6">
             <div className="flex-1 relative">
@@ -233,20 +357,21 @@ function BookingPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
             <Button variant="outline" className="gap-2 bg-transparent">
               <Filter className="w-4 h-4" />
               Filter
             </Button>
           </div>
 
-          {isLoading ? (
+          {isGroupLoading || isCustomizedLoading ? (
             <div className="flex justify-center py-12">
-              <Loader size="lg" message="Loading group bookings..." />
+              <Loader size="lg" message="Loading bookings..." />
             </div>
-          ) : isError ? (
+          ) : isGroupError || isCustomizedError ? (
             <div className="text-center py-12">
               <p className="text-red-600 dark:text-red-400">
-                Error: {error?.message}
+                Error: {String(groupError?.message ?? customizedError?.message)}
               </p>
             </div>
           ) : filteredData.length === 0 ? (
@@ -284,13 +409,17 @@ function BookingPage() {
                     <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
                       Booking Date
                     </TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
+                      Booking Type
+                    </TableHead>
                     <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">
                       Amount
                     </TableHead>
                   </TableRow>
                 </TableHeader>
+
                 <TableBody>
-                  {filteredData.map((booking: Booking, index: number) => (
+                  {filteredData.map((booking, index) => (
                     <TableRow
                       key={booking._id}
                       className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
@@ -298,19 +427,22 @@ function BookingPage() {
                       <TableCell className="text-slate-700 dark:text-slate-300 font-medium">
                         {index + 1}
                       </TableCell>
+
                       <TableCell>
                         <div className="flex flex-col">
                           <p className="font-medium text-slate-900 dark:text-white">
-                            {booking.user.name}
+                            {booking.user?.name}
                           </p>
                           <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {booking.user.email}
+                            {booking.user?.email}
                           </p>
                         </div>
                       </TableCell>
+
                       <TableCell className="text-slate-700 dark:text-slate-300">
-                        {booking.packageId?.title}
+                        {booking.packageId?.title ?? "-"}
                       </TableCell>
+
                       <TableCell>
                         <Badge
                           className={`${getStatusColor(
@@ -320,32 +452,41 @@ function BookingPage() {
                           {booking.bookingStatus}
                         </Badge>
                       </TableCell>
+
                       <TableCell>
                         <Badge
                           className={`${getStatusColor(
-                            booking.paymentInfo.status
+                            booking.paymentInfo?.status
                           )} border-0`}
                         >
-                          {booking.paymentInfo.status}
+                          {booking.paymentInfo?.status}
                         </Badge>
                       </TableCell>
+
                       <TableCell>
                         <Badge
                           className={`${getStatusColor(
-                            booking.batchId?.status
+                            (booking as any).batchId?.status
                           )} border-0`}
                         >
-                          {booking.batchId?.status}
+                          {(booking as any).batchId?.status ?? "-"}
                         </Badge>
                       </TableCell>
+
                       <TableCell className="text-slate-700 dark:text-slate-300">
-                        {formatDate(booking.batchId?.startDate)}
+                        {formatDate(booking.date)}
                       </TableCell>
+
                       <TableCell className="text-slate-700 dark:text-slate-300">
-                        {formatDate(booking.createdAt)}
+                        {formatDate(booking.createdAt ?? booking.bookingDate)}
                       </TableCell>
+
                       <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
-                        Rs.{booking.totalPrice.toFixed(2)}
+                        <span className="capitalize">{booking.type}</span>
+                      </TableCell>
+
+                      <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
+                        Rs.{Number(booking.totalPrice ?? 0).toFixed(2)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -355,15 +496,14 @@ function BookingPage() {
           )}
         </CardContent>
       </Card>
+
       <div>
-        <div>
-          <Pagination
-            currentPage={page}
-            totalPages={data?.meta?.total || 0}
-            onPageChange={handlePageChange}
-            pageSize={limit}
-          />
-        </div>
+        <Pagination
+          currentPage={page}
+          totalPages={Math.max(1, Math.ceil((totalItems || 0) / limit))}
+          onPageChange={handlePageChange}
+          pageSize={limit}
+        />
       </div>
     </main>
   );
