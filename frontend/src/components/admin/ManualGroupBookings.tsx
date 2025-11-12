@@ -105,7 +105,7 @@ export default function ManualGroupBookings({
   });
 
   const { data: packages = [], isLoading } = useQuery({
-    queryKey: ["packages"],
+    queryKey: ["group-packages"],
     queryFn: () => getAllPackages(accessToken),
   });
 

@@ -104,7 +104,7 @@ export default function ManualCustomizedBookings({
   });
 
   const { data: packages = [], isLoading } = useQuery({
-    queryKey: ["packages"],
+    queryKey: ["customized-packages"],
     queryFn: () => getAllPackages(accessToken),
   });
 
