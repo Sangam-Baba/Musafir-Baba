@@ -122,30 +122,33 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                     className="w-full"
                   >
                     <CarouselContent className="">
-                      {tab.categoryPackages.slice(0, 4).map((pkg, i) => (
-                        <CarouselItem key={i}>
-                          <div className="p-1">
-                            <PackageCard
-                              key={pkg._id}
-                              pkg={{
-                                id: pkg._id,
-                                name: pkg.title,
-                                slug: pkg.slug,
-                                image: pkg.coverImage?.url || "",
-                                price: Number(pkg?.batch?.[0]?.quad ?? 8999),
-                                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                                batch: pkg.batch,
-                                destination:
-                                  pkg.destination.state
-                                    .charAt(0)
-                                    .toUpperCase() +
-                                  pkg.destination.state.slice(1),
-                              }}
-                              url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
-                            />
-                          </div>
-                        </CarouselItem>
-                      ))}
+                      {tab.categoryPackages
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, 4)
+                        .map((pkg, i) => (
+                          <CarouselItem key={i}>
+                            <div className="p-1">
+                              <PackageCard
+                                key={pkg._id}
+                                pkg={{
+                                  id: pkg._id,
+                                  name: pkg.title,
+                                  slug: pkg.slug,
+                                  image: pkg.coverImage?.url || "",
+                                  price: Number(pkg?.batch?.[0]?.quad ?? 8999),
+                                  duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                                  batch: pkg.batch,
+                                  destination:
+                                    pkg.destination.state
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                    pkg.destination.state.slice(1),
+                                }}
+                                url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
+                              />
+                            </div>
+                          </CarouselItem>
+                        ))}
                     </CarouselContent>
                     <CarouselPrevious />
                     <CarouselNext />
