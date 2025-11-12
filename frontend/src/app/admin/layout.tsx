@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminSidebar as AppSidebar } from "@/components/admin/app-sidebar";
 import { RootProvider } from "@/providers/root-provider";
 import AdminProtected from "@/components/admin/AdminProtected";
 import { usePathname } from "next/navigation";
+
 export default function AdminLayout({
   children,
 }: {
@@ -13,20 +14,27 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/admin/login";
+
   return (
     <RootProvider>
       <AdminProtected>
-        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-          <div className="flex h-screen">
-            {!isLoginPage && <AdminSidebar />}
+        <SidebarProvider>
+          <div className="flex w-full min-h-screen bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+            {/* Sidebar */}
+            {!isLoginPage && <AppSidebar />}
 
-            <div className="flex-1 flex flex-col">
-              <AdminHeader />
+            <div className="flex flex-col flex-1">
+              {!isLoginPage && (
+                <header className="flex items-center h-14 px-4 border-b bg-white dark:bg-slate-950">
+                  <SidebarTrigger />
+                </header>
+              )}
 
-              <main className="p-6 overflow-y-auto">{children}</main>
+              {/* Page Content */}
+              <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
           </div>
-        </div>
+        </SidebarProvider>
       </AdminProtected>
     </RootProvider>
   );
