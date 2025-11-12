@@ -140,13 +140,10 @@ export default function ManualCustomizedBookings({
   }, [selectedPlan, people, form]);
 
   return (
-    <div
-      className="bg-white rounded-xl shadow-2xl max-w-3xl max-h-[90vh] overflow-y-auto p-6"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h1 className="text-2xl font-semibold mb-6">
+    <div className="" onClick={(e) => e.stopPropagation()}>
+      {/* <h1 className="text-2xl font-semibold mb-6">
         Manual Customized Bookings
-      </h1>
+      </h1> */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -251,35 +248,37 @@ export default function ManualCustomizedBookings({
               )}
             />
           )}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Date Selection */}
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tour Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* TRAVELLERS */}
+            <FormField
+              control={form.control}
+              name={`noOfPeople`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>No of People</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-          {/* Date Selection */}
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tour Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* TRAVELLERS */}
-          <FormField
-            control={form.control}
-            name={`noOfPeople`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>No of People</FormLabel>
-                <FormControl>
-                  <Input type="number" min={0} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <FormField
             control={form.control}
             name="totalPrice"
@@ -293,77 +292,79 @@ export default function ManualCustomizedBookings({
               </FormItem>
             )}
           />
-          {/* PAYMENT INFO */}
-          <FormField
-            control={form.control}
-            name="paymentMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Method</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="w-full rounded-md border p-2"
-                    onChange={(e) =>
-                      form.setValue(
-                        "paymentMethod",
-                        e.target.value as "Cash" | "Online" | "Payu"
-                      )
-                    }
-                  >
-                    <option value="">Select Method</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Online">Online</option>
-                    <option value="Payu">PayU</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {form.watch("paymentMethod") === "Online" && (
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* PAYMENT INFO */}
             <FormField
               control={form.control}
-              name="paymentInfo.payemntId"
+              name="paymentMethod"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Payment ID</FormLabel>
+                  <FormLabel>Payment Method</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter Payment ID" />
+                    <select
+                      {...field}
+                      className="w-full rounded-md border p-2"
+                      onChange={(e) =>
+                        form.setValue(
+                          "paymentMethod",
+                          e.target.value as "Cash" | "Online" | "Payu"
+                        )
+                      }
+                    >
+                      <option value="">Select Method</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Online">Online</option>
+                      <option value="Payu">PayU</option>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          )}
 
-          <FormField
-            control={form.control}
-            name="paymentInfo.status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Status</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="w-full rounded-md border p-2"
-                    onChange={(e) =>
-                      form.setValue(
-                        "paymentInfo.status",
-                        e.target.value as "Pending" | "Paid" | "Failed"
-                      )
-                    }
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Failed">Failed</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            {form.watch("paymentMethod") === "Online" && (
+              <FormField
+                control={form.control}
+                name="paymentInfo.payemntId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment ID</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter Payment ID" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
+
+            <FormField
+              control={form.control}
+              name="paymentInfo.status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Status</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full rounded-md border p-2"
+                      onChange={(e) =>
+                        form.setValue(
+                          "paymentInfo.status",
+                          e.target.value as "Pending" | "Paid" | "Failed"
+                        )
+                      }
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Failed">Failed</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
@@ -391,15 +392,23 @@ export default function ManualCustomizedBookings({
               </FormItem>
             )}
           />
-
-          {/* SUBMIT */}
-          <Button
-            type="submit"
-            disabled={mutation.isPending || isLoading}
-            className="w-full mt-4"
-          >
-            {mutation.isPending ? "Submitting..." : "Submit Booking"}
-          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            {/* SUBMIT */}
+            <Button
+              type="submit"
+              disabled={mutation.isPending || isLoading}
+              className="w-full mt-4 bg-[#FE5300] hover:bg-[#FE5300]/80"
+            >
+              {mutation.isPending ? "Submitting..." : "Submit Booking"}
+            </Button>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="w-full mt-4 bg-red-400 hover:bg-red-500"
+            >
+              Close
+            </Button>
+          </div>
         </form>
       </Form>
 
@@ -409,9 +418,6 @@ export default function ManualCustomizedBookings({
       {mutation.isError && (
         <p className="text-red-600 mt-2">❌ {mutation.error?.message}</p>
       )}
-      <Button type="button" onClick={onClose} className="w-full mt-4">
-        Close
-      </Button>
     </div>
   );
 }

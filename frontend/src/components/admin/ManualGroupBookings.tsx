@@ -82,7 +82,6 @@ export default function ManualGroupBookings({
   onClose: () => void;
 }) {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const [price, setPrice] = React.useState(0);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema) as Resolver<FormSchemaType>,
@@ -137,7 +136,6 @@ export default function ManualGroupBookings({
 
   useEffect(() => {
     if (!selectedBatch) {
-      setPrice(0);
       form.setValue("totalPrice", 0);
       return;
     }
@@ -149,16 +147,12 @@ export default function ManualGroupBookings({
       (selectedBatch.child ?? 0) * (child ?? 0);
 
     const totalWithTax = Math.ceil(total * 1.05); // 5% tax
-    setPrice(totalWithTax);
     form.setValue("totalPrice", totalWithTax);
   }, [selectedBatch, quad, triple, double, child, form]);
 
   return (
-    <div
-      className="bg-white rounded-xl shadow-2xl max-w-3xl max-h-[90vh] overflow-y-auto p-6"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h1 className="text-2xl font-semibold mb-6">Manual Group Bookings</h1>
+    <div className="" onClick={(e) => e.stopPropagation()}>
+      {/* <h1 className="text-2xl font-semibold mb-6">Manual Group Bookings</h1> */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -269,7 +263,7 @@ export default function ManualGroupBookings({
 
           {/* TRAVELLERS */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">Travellers</h3>
+            {/* <h3 className="text-md font-semibold mb-2">Travellers</h3> */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {(["quad", "triple", "double", "child"] as const).map((type) => (
                 <FormField
@@ -302,77 +296,79 @@ export default function ManualGroupBookings({
               </FormItem>
             )}
           />
-          {/* PAYMENT INFO */}
-          <FormField
-            control={form.control}
-            name="paymentMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Method</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="w-full rounded-md border p-2"
-                    onChange={(e) =>
-                      form.setValue(
-                        "paymentMethod",
-                        e.target.value as "Cash" | "Online" | "Payu"
-                      )
-                    }
-                  >
-                    <option value="">Select Method</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Online">Online</option>
-                    <option value="Payu">PayU</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {form.watch("paymentMethod") === "Online" && (
+          <div className="grid grid-cols-3 gap-4">
+            {/* PAYMENT INFO */}
             <FormField
               control={form.control}
-              name="paymentInfo.payemntId"
+              name="paymentMethod"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Payment ID</FormLabel>
+                  <FormLabel>Payment Method</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter Payment ID" />
+                    <select
+                      {...field}
+                      className="w-full rounded-md border p-2"
+                      onChange={(e) =>
+                        form.setValue(
+                          "paymentMethod",
+                          e.target.value as "Cash" | "Online" | "Payu"
+                        )
+                      }
+                    >
+                      <option value="">Select Method</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Online">Online</option>
+                      <option value="Payu">PayU</option>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          )}
 
-          <FormField
-            control={form.control}
-            name="paymentInfo.status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Status</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="w-full rounded-md border p-2"
-                    onChange={(e) =>
-                      form.setValue(
-                        "paymentInfo.status",
-                        e.target.value as "Pending" | "Paid" | "Failed"
-                      )
-                    }
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Failed">Failed</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            {form.watch("paymentMethod") === "Online" && (
+              <FormField
+                control={form.control}
+                name="paymentInfo.payemntId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payment ID</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter Payment ID" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-          />
+
+            <FormField
+              control={form.control}
+              name="paymentInfo.status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Payment Status</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full rounded-md border p-2"
+                      onChange={(e) =>
+                        form.setValue(
+                          "paymentInfo.status",
+                          e.target.value as "Pending" | "Paid" | "Failed"
+                        )
+                      }
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Failed">Failed</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
@@ -400,27 +396,34 @@ export default function ManualGroupBookings({
               </FormItem>
             )}
           />
-
-          {/* SUBMIT */}
-          <Button
-            type="submit"
-            disabled={mutation.isPending || isLoading}
-            className="w-full mt-4"
-          >
-            {mutation.isPending ? "Submitting..." : "Submit Booking"}
-          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            {/* SUBMIT */}
+            <Button
+              type="submit"
+              disabled={mutation.isPending || isLoading}
+              className="w-full mt-4 bg-[#FE5300] hover:bg-[#FE5300]/80"
+            >
+              {mutation.isPending ? "Submitting..." : "Submit Booking"}
+            </Button>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="w-full mt-4 bg-red-400 hover:bg-red-500"
+            >
+              Close
+            </Button>
+          </div>
         </form>
       </Form>
 
       {mutation.isSuccess && (
-        <p className="text-green-600 mt-2">✅ Booking Created</p>
+        <p className="text-green-600 mt-2 text-center">✅ Booking Created</p>
       )}
       {mutation.isError && (
-        <p className="text-red-600 mt-2">❌ {mutation.error?.message}</p>
+        <p className="text-red-600 mt-2 text-center">
+          ❌ {mutation.error?.message}
+        </p>
       )}
-      <Button type="button" onClick={onClose} className="w-full mt-4">
-        Close
-      </Button>
     </div>
   );
 }

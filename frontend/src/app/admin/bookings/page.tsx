@@ -26,6 +26,7 @@ import { Search, Filter } from "lucide-react";
 import Pagination from "@/components/common/Pagination";
 import ManualGroupBookings from "@/components/admin/ManualGroupBookings";
 import ManualCustomizedBookings from "@/components/admin/ManualCustomizedBooking";
+import ManualBooking from "@/components/admin/ManualBooking";
 
 interface BookingBase {
   _id: string;
@@ -163,8 +164,7 @@ function BookingPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
-  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
-  const [isCustomizedModalOpen, setIsCustomizedModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterType, setFilterType] = useState<"all" | "group" | "customized">(
     "all"
   );
@@ -194,7 +194,6 @@ function BookingPage() {
   const groupBookings = groupData?.data ?? [];
   const customizedBookings = customizedData?.data ?? [];
 
-  // map to a common shape and keep raw date
   const mappedGroup = groupBookings.map((b) => ({
     ...b,
     date: b.batchId?.startDate ?? b.createdAt ?? b.bookingDate,
@@ -303,22 +302,18 @@ function BookingPage() {
             <option value="customized">Customized</option>
           </select>
 
-          <Button onClick={() => setIsGroupModalOpen(true)}>Add Group</Button>
-          <Button onClick={() => setIsCustomizedModalOpen(true)}>
-            Add Customized
+          <Button
+            className="bg-[#FE5300] hover:bg-[#FE5300]"
+            onClick={() => setIsModalOpen(true)}
+          >
+            + Add Booking
           </Button>
         </div>
 
-        {isGroupModalOpen && (
+        {isModalOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <ManualGroupBookings onClose={() => setIsGroupModalOpen(false)} />
-          </div>
-        )}
-        {isCustomizedModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <ManualCustomizedBookings
-              onClose={() => setIsCustomizedModalOpen(false)}
-            />
+            <ManualBooking onClose={() => setIsModalOpen(false)} />
+            {/* <ManualGroupBookings onClose={() => setIsGroupModalOpen(false)} /> */}
           </div>
         )}
       </div>
