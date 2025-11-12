@@ -16,9 +16,9 @@ export default function Pagination({
   pageSize = 15,
   totalItems,
 }: PaginationProps) {
-  const total = Math.ceil(totalPages / pageSize); // Convert total items into total pages
+  const total = totalPages; // Convert total items into total pages
 
-  if (total <= 1) return null; // No pagination needed
+  // if (total <= 1) return null; // No pagination needed
 
   const handlePrev = () => {
     if (currentPage > 1) onPageChange(currentPage - 1);

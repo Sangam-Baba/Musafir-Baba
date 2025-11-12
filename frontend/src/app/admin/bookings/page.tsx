@@ -228,23 +228,52 @@ function BookingPage() {
     );
   });
 
-  const totalItems =
-    (groupData?.meta?.total ?? 0) + (customizedData?.meta?.total ?? 0);
-
   const bookingStats = {
-    total: totalItems,
+    total:
+      filterType === "group"
+        ? groupData?.meta?.total ?? 0
+        : filterType === "customized"
+        ? customizedData?.meta?.total ?? 0
+        : (groupData?.meta?.total ?? 0) + (customizedData?.meta?.total ?? 0),
+
     confirmed:
-      bookings.filter(
-        (b) => (b.bookingStatus ?? "").toLowerCase() === "confirmed"
-      ).length || 0,
+      filterType === "group"
+        ? groupBookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "confirmed"
+          ).length
+        : filterType === "customized"
+        ? customizedBookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "confirmed"
+          ).length
+        : bookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "confirmed"
+          ).length,
+
     pending:
-      bookings.filter(
-        (b) => (b.bookingStatus ?? "").toLowerCase() === "pending"
-      ).length || 0,
+      filterType === "group"
+        ? groupBookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "pending"
+          ).length
+        : filterType === "customized"
+        ? customizedBookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "pending"
+          ).length
+        : bookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "pending"
+          ).length,
+
     cancelled:
-      bookings.filter(
-        (b) => (b.bookingStatus ?? "").toLowerCase() === "cancelled"
-      ).length || 0,
+      filterType === "group"
+        ? groupBookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "cancelled"
+          ).length
+        : filterType === "customized"
+        ? customizedBookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "cancelled"
+          ).length
+        : bookings.filter(
+            (b) => (b.bookingStatus ?? "").toLowerCase() === "cancelled"
+          ).length,
   };
 
   const handlePageChange = (p: number) => setPage(p);
@@ -293,7 +322,6 @@ function BookingPage() {
           </div>
         )}
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <CardContent className="pt-6">
@@ -339,7 +367,6 @@ function BookingPage() {
           </CardContent>
         </Card>
       </div>
-
       <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <CardHeader>
           <CardTitle>Bookings List</CardTitle>
@@ -466,10 +493,10 @@ function BookingPage() {
                       <TableCell>
                         <Badge
                           className={`${getStatusColor(
-                            (booking as any).batchId?.status
+                            (booking as GroupBooking).batchId?.status
                           )} border-0`}
                         >
-                          {(booking as any).batchId?.status ?? "-"}
+                          {(booking as GroupBooking).batchId?.status ?? "-"}
                         </Badge>
                       </TableCell>
 
@@ -498,12 +525,19 @@ function BookingPage() {
       </Card>
 
       <div>
-        <Pagination
-          currentPage={page}
-          totalPages={Math.max(1, Math.ceil((totalItems || 0) / limit))}
-          onPageChange={handlePageChange}
-          pageSize={limit}
-        />
+        {isCustomizedLoading || isGroupLoading ? (
+          <Loader />
+        ) : (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.max(
+              1,
+              Math.ceil((bookingStats.total || 0) / limit)
+            )}
+            onPageChange={handlePageChange}
+            pageSize={limit}
+          />
+        )}
       </div>
     </main>
   );
