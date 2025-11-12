@@ -25,7 +25,7 @@ function ManualBooking({ onClose }: { onClose: () => void }) {
           />
         </div>
       </div>
-      <div className="mt-4 w-3xl">
+      <div className="mt-4 md:w-3xl mx-auto ">
         {isGroupModalOpen && <ManualGroupBookings onClose={onClose} />}
         {!isGroupModalOpen && <ManualCustomizedBookings onClose={onClose} />}
       </div>

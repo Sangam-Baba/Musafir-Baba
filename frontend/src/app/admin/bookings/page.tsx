@@ -24,17 +24,10 @@ import {
 } from "@/components/ui/card";
 import { Search, Filter } from "lucide-react";
 import Pagination from "@/components/common/Pagination";
-import ManualGroupBookings from "@/components/admin/ManualGroupBookings";
-import ManualCustomizedBookings from "@/components/admin/ManualCustomizedBooking";
 import ManualBooking from "@/components/admin/ManualBooking";
 
 interface BookingBase {
   _id: string;
-  user: {
-    _id: string;
-    name: string;
-    email: string;
-  };
   packageId?: {
     _id: string;
     title?: string;
@@ -65,11 +58,21 @@ interface GroupBooking extends BookingBase {
     double: number;
     child: number;
   };
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  };
 }
 interface CustomizedBooking extends BookingBase {
   date?: string;
   noOfPeople?: number;
   plan?: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
 }
 
 interface GroupApiresponse {
@@ -204,6 +207,11 @@ function BookingPage() {
     ...b,
     date: b.date ?? b.createdAt ?? b.bookingDate,
     type: "customized" as const,
+    user: {
+      _id: b.userId?._id,
+      name: b.userId?.name,
+      email: b.userId?.name,
+    },
   }));
 
   const bookings = useMemo(
@@ -313,7 +321,6 @@ function BookingPage() {
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <ManualBooking onClose={() => setIsModalOpen(false)} />
-            {/* <ManualGroupBookings onClose={() => setIsGroupModalOpen(false)} /> */}
           </div>
         )}
       </div>
