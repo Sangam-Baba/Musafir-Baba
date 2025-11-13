@@ -38,6 +38,7 @@ import {
   Cog,
   CircleQuestionMark,
   CookingPot,
+  MapPinPenIcon,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -77,6 +78,11 @@ const NAV_GROUPS = [
       },
       { label: "Plan My Trip", href: "/admin/customized-package", icon: Cog },
       { label: "Destinations", href: "/admin/destination", icon: MapPin },
+      {
+        label: "Destinations Meta",
+        href: "/admin/destination-seo",
+        icon: MapPinPenIcon,
+      },
       { label: "Category", href: "/admin/category", icon: Tags },
     ],
   },
