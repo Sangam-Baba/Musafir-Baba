@@ -99,7 +99,7 @@ async function CustomizedPackagePage() {
 
       {/* Show category details */}
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
-        <h1 className="text-3xl font-bold">Custosized Packages</h1>
+        <h1 className="text-3xl font-bold">Customised Packages</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
         <p className="mt-2 text-muted-foreground">
           Design your dream vacation your way! Our customised tour packages let

@@ -198,7 +198,8 @@ function AdminDashBoard() {
           {[
             {
               label: "Total Bookings",
-              value: allCounts?.bookingCount,
+              value:
+                allCounts?.bookingCount + allCounts?.customizedTourBookingCount,
               color: "text-blue-600",
               link: "/admin/bookings",
             },

@@ -106,10 +106,25 @@ const getMonthlyBookings = async (req, res) => {
       { $sort: { month: 1 } },
     ];
 
-    const results = await Booking.aggregate(pipeline).allowDiskUse(true);
-
+    const resu = await Booking.aggregate(pipeline).allowDiskUse(true);
+    const CustomizedTourBookings = await CustomizedTourBooking.aggregate(
+      pipeline
+    ).allowDiskUse(true);
     // return ISO strings so client timezone formatting is consistent
-    const data = results.map((r) => ({
+    const results = [...resu, ...CustomizedTourBookings];
+    const uniqueResults = [];
+
+    for (const result of results) {
+      const existingResult = uniqueResults.find(
+        (r) => r.month.toISOString() === result.month.toISOString()
+      );
+      if (existingResult) {
+        existingResult.count += result.count;
+      } else {
+        uniqueResults.push(result);
+      }
+    }
+    const data = uniqueResults.map((r) => ({
       month: r.month.toISOString(),
       count: r.count,
     }));
