@@ -71,7 +71,7 @@ async function getCategoryBySlug(slug: string) {
   }
   return res.json();
 }
-async function getPackageByCategorySlug(slug: string) {
+export async function getPackageByCategorySlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
     {
@@ -87,7 +87,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const res = await getCategoryBySlug(categorySlug);
     const { category } = res?.data ?? {};
-    const packages = category?.packages ?? [];
 
     if (!category) {
       return {

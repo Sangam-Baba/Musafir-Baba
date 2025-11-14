@@ -5,6 +5,7 @@ import {
   updateDestination,
   deleteDestination,
   getOnlyDestination,
+  getDestinationByCategoryId,
 } from "../controllers/destination.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -25,6 +26,7 @@ destinationRoutes.post(
 );
 destinationRoutes.get("/", getAllDestination);
 destinationRoutes.get("/only", getOnlyDestination);
+destinationRoutes.get("/category/:id", getDestinationByCategoryId);
 destinationRoutes.get("/:id", getDestinationById);
 destinationRoutes.patch(
   "/:id",

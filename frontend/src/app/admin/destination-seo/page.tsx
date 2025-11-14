@@ -86,7 +86,6 @@ function DestinationSeoMain() {
               setIsOpen(false);
               setEditId(null);
             }}
-            // 👇 Added this callback to refresh automatically
             onSuccess={() => {
               queryClient.invalidateQueries({
                 queryKey: ["all-destinationSeo"],

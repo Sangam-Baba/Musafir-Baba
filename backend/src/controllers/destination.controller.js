@@ -183,6 +183,38 @@ const getOnlyDestination = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+const getDestinationByCategoryId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "id required things missing" });
+    }
+    const pkg = await Package.find({ mainCategory: id })
+      .select("destination")
+      .populate("destination", "_id state");
+    if (!pkg || pkg.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Destination not found" });
+    }
+    const uniqueDestination = [...new Set(pkg.map((item) => item.destination))];
+
+    res.status(200).json({
+      success: true,
+      message: "Destination found",
+      data: uniqueDestination,
+    });
+  } catch (error) {
+    console.log("Destination getting Failed ", error.message);
+    res.status(500).json({
+      success: false,
+      message: `Server Error: ${error.message}`,
+    });
+  }
+};
 export {
   createDestination,
   getAllDestination,
@@ -190,4 +222,5 @@ export {
   updateDestination,
   deleteDestination,
   getOnlyDestination,
+  getDestinationByCategoryId,
 };

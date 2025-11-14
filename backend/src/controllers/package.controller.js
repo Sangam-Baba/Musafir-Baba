@@ -204,7 +204,7 @@ const getPackages = async (req, res) => {
         "name country state city slug coverImage metaTitle metaDescription keywords"
       )
       .populate("batch")
-      .populate("mainCategory", "name slug")
+      .populate("mainCategory", "_id name slug")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))

@@ -43,10 +43,13 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-const getDestinations = async (accessToken: string) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+const getDestinations = async (accessToken: string, id: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/destination/category/${id}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
   if (!res.ok) throw new Error("Failed to fetch destinations");
   return (await res.json())?.data;
 };
@@ -107,7 +110,7 @@ const getDestinationSeo = async (accessToken: string, id: string) => {
 function DestinationSeoNew({
   id,
   onClose,
-  onSuccess, // 👈 new prop
+  onSuccess,
 }: {
   id?: string | null;
   onClose: () => void;
@@ -133,6 +136,11 @@ function DestinationSeoNew({
     enabled: !!id,
   });
 
+  // const {data:getPackageByCategorySlug} = useQuery({
+  //   queryKey: ["packages", id],
+  //   queryFn: () => getPackageByCategorySlug(id as string),
+  //   enabled: !! form.watch(),
+  // })
   useEffect(() => {
     if (destinationSeo) {
       form.reset({
@@ -151,8 +159,9 @@ function DestinationSeoNew({
   });
 
   const { data: Destination, isLoading: destinationLoading } = useQuery({
-    queryKey: ["destinations"],
-    queryFn: () => getDestinations(accessToken),
+    queryKey: ["destinations", form.watch("categoryId")],
+    queryFn: () => getDestinations(accessToken, form.watch("categoryId")),
+    enabled: !!form.watch("categoryId"),
   });
 
   const mutation = useMutation({
@@ -209,26 +218,31 @@ function DestinationSeoNew({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="destinationId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Destination</FormLabel>
-                  <FormControl>
-                    <select {...field} className="w-full rounded-md border p-2">
-                      <option value="">Select Destination</option>
-                      {Destination?.map((d: Destination) => (
-                        <option key={d._id} value={d._id}>
-                          {d.state}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {form.watch("categoryId") && (
+              <FormField
+                control={form.control}
+                name="destinationId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Destination</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="w-full rounded-md border p-2"
+                      >
+                        <option value="">Select Destination</option>
+                        {Destination?.map((d: Destination) => (
+                          <option key={d._id} value={d._id}>
+                            {d.state}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
 
           {/* Inputs */}
