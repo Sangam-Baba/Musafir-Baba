@@ -44,7 +44,7 @@ interface Image {
   width?: number;
   height?: number;
 }
-interface Package {
+export interface Package {
   _id: string;
   title: string;
   description: string;
@@ -70,13 +70,6 @@ interface Package {
   slug: string;
   __v: number;
 }
-// interface QueryResponse {
-//   success: boolean;
-//   data: Package[];
-//   total: number;
-//   page: number;
-//   totalPages: number;
-// }
 
 const getSinglePackages = async (
   state: string,
@@ -94,7 +87,7 @@ const getSinglePackages = async (
     throw new Error("Failed to fetch Package");
   }
   const data = await res.json();
-  return data?.data ?? {};
+  return data?.data[0] ?? {};
 };
 
 export async function generateMetadata({

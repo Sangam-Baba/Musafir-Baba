@@ -29,6 +29,7 @@ interface Package {
   title: string;
   slug: string;
   coverImage: CoverImage;
+  mainCategory: Category;
   batch: Batch[];
   duration: {
     days: number;
@@ -51,25 +52,7 @@ interface Category {
   slug: string;
   coverImage: CoverImage;
   description: string;
-  // packages: Package[];
 }
-// interface CategoryResponse {
-//   category: Category;
-//   packages: Package[];
-// }
-
-// const getCategoryBySlug = async (slug: string): Promise<CategoryResponse> => {
-//   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
-//     {
-//       next: { revalidate: 6000 },
-//     }
-//   );
-//   if (!res.ok) {
-//     throw new Error("Failed to fetch category");
-//   }
-//   return res.json();
-// };
 
 async function SingleCategoryPage({
   categoryData,
@@ -119,7 +102,7 @@ async function SingleCategoryPage({
                 destination: pkg.destination?.name ?? "",
                 batch: pkg?.batch ? pkg?.batch : [],
               }}
-              url={`/holidays/${category.slug}/${pkg.destination.state}/${pkg.slug}`}
+              url={`/holidays/${pkg?.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
             />
           ))}
         </div>

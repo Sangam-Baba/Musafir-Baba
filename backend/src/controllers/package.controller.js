@@ -143,6 +143,7 @@ const getPackages = async (req, res) => {
       destination,
       minDays,
       maxDays,
+      category,
       search,
       slug,
       status = "published",
@@ -159,6 +160,16 @@ const getPackages = async (req, res) => {
       query["duration.days"] = {};
       if (minDays) query["duration.days"].$gte = Number(minDays);
       if (maxDays) query["duration.days"].$lte = Number(maxDays);
+    }
+
+    if (category) {
+      const cat = await Category.findOne({ slug: category }).select("_id");
+      if (!cat) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Category not found" });
+      }
+      query.mainCategory = cat._id;
     }
 
     if (destination) {
@@ -236,6 +247,7 @@ const getPackageByCategorySlug = async (req, res) => {
     })
       .populate("destination", "_id name country state city slug")
       .populate("batch")
+      .populate("mainCategory", "name slug")
       .lean();
     if (!packages) {
       return res

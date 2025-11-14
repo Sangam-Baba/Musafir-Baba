@@ -30,6 +30,11 @@ interface Batch {
   doubleDiscount: number;
   childDiscount: number;
 }
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
 export interface Duration {
   days: number;
   nights: number;
@@ -54,6 +59,7 @@ interface Package {
   title: string;
   description: string;
   destination: Destination;
+  mainCategory: Category;
   coverImage: coverImage;
   gallery: string[];
   batch: Batch[];
@@ -74,9 +80,9 @@ interface Package {
   slug: string;
   __v: number;
 }
-async function getPackageByDestinationSlug(slug: string) {
+async function getPackageByDestinationSlug(categorySlug: string, slug: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}&category=${categorySlug}`,
     {
       cache: "no-cache",
     }
@@ -91,8 +97,8 @@ export async function generateMetadata({
 }: {
   params: { categorySlug: string; destination: string };
 }) {
-  const { destination } = params;
-  const pkgData = await getPackageByDestinationSlug(destination);
+  const { categorySlug, destination } = params;
+  const pkgData = await getPackageByDestinationSlug(categorySlug, destination);
   return {
     title: `${
       pkgData[0]?.destination?.metaTitle || pkgData[0]?.destination?.name
@@ -110,7 +116,7 @@ async function DestinationPage({
   params: { categorySlug: string; destination: string };
 }) {
   const { categorySlug, destination } = params;
-  const packages = await getPackageByDestinationSlug(destination);
+  const packages = await getPackageByDestinationSlug(categorySlug, destination);
   if (!packages || packages.length === 0) return notFound();
   return (
     <section>
