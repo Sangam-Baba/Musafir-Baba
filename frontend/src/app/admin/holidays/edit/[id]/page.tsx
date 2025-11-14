@@ -597,7 +597,7 @@ export default function CreatePackagePage() {
                   <FormLabel>Cover Image</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      initialImage={form.watch("coverImage")}
+                      initialImage={pkg?.coverImage}
                       onUpload={(img) => {
                         if (!img) return;
                         const newImg = {
@@ -627,7 +627,7 @@ export default function CreatePackagePage() {
                   <FormLabel>Itinerary PDF Upload</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      initialImage={form.watch("itineraryDownload")}
+                      initialImage={pkg?.itineraryDownload}
                       onUpload={(img) => {
                         if (!img) return;
                         form.setValue("itineraryDownload", {

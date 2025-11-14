@@ -53,7 +53,9 @@ const getCategoryById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid" });
 
     const category = await Category.findById({ _id: id })
-      .select("name slug description coverImage packages isActive")
+      .select(
+        "name slug description coverImage packages isActive metaTitle metaDescription keywords"
+      )
       .lean();
 
     if (!category) {
@@ -117,24 +119,22 @@ const getCategoryBySlug = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { slug } = req.params;
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
 
-    const category = await Category.findOne({ slug });
+    const category = await Category.findOneAndUpdate({ slug }, req.body, {
+      new: true,
+    });
     if (!category) {
       return res.status(404).json({
         success: false,
         message: "Category not found",
       });
     }
-
-    // update fields only if provided
-    category.name = req.body.name || category.name;
-    category.description = req.body.description || category.description;
-    category.coverImage = req.body.coverImage || category.coverImage;
-    category.packages = req.body.packages || category.packages;
-    // category.isActive =
-    //   req.body.isActive !== undefined ? req.body.isActive : category.isActive;
-
-    await category.save();
 
     res.status(200).json({
       success: true,

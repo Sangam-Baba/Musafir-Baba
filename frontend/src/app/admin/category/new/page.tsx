@@ -10,6 +10,7 @@ import ImageUploader from "@/components/admin/ImageUploader";
 import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/custom/loader";
+import { X } from "lucide-react";
 
 interface Package {
   _id: string;
@@ -26,6 +27,13 @@ const formSchema = z.object({
   description: z.string().min(2, {
     message: "Description must be at least 2 characters.",
   }),
+  metaTitle: z.string().min(2, {
+    message: "Meta title must be at least 2 characters.",
+  }),
+  metaDescription: z.string().min(2, {
+    message: "Meta description must be at least 2 characters.",
+  }),
+  keywords: z.string().array().optional(),
   coverImage: z
     .object({
       url: z.string().url().optional(),
@@ -72,7 +80,9 @@ export default function CreateCategory() {
     defaultValues: {
       name: "",
       description: "",
-      coverImage: undefined,
+      metaTitle: "",
+      metaDescription: "",
+      keywords: [],
       packages: [],
       isActive: true,
     },
@@ -91,7 +101,6 @@ export default function CreateCategory() {
     mutationFn: (values: z.infer<typeof formSchema>) =>
       create(values, accessToken),
     onSuccess: () => {
-      form.reset();
       toast.success("Category created successfully!");
     },
     onError: (error) => {
@@ -188,11 +197,70 @@ export default function CreateCategory() {
             </p>
           )}
         </div>
+        {form.watch("coverImage")?.url && (
+          <input
+            {...form.register("coverImage.alt")}
+            placeholder="Cover Image Alt"
+            className="w-full border rounded p-2"
+          />
+        )}
+        {/* meta */}
         <input
-          {...form.register("coverImage.alt")}
-          placeholder="Cover Image Alt"
+          {...form.register("metaTitle")}
+          placeholder="Meta Title"
           className="w-full border rounded p-2"
         />
+        <input
+          {...form.register("metaDescription")}
+          placeholder="Meta Description"
+          className="w-full border rounded p-2"
+        />
+
+        {/* keywords */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Keywords</label>
+          <div className="flex flex-wrap gap-2 border rounded p-2">
+            {form.watch("keywords")?.map((kw, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+              >
+                {kw}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newKeywords = form
+                      .getValues("keywords")
+                      ?.filter((_, idx) => idx !== i);
+                    form.setValue("keywords", newKeywords);
+                  }}
+                  className="text-gray-600 hover:text-red-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </span>
+            ))}
+
+            <input
+              type=" text"
+              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+              placeholder="Type keyword and press Enter"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === ",") {
+                  e.preventDefault();
+                  const value = e.currentTarget.value.trim();
+                  if (value) {
+                    const current = form.getValues("keywords") || [];
+                    if (!current.includes(value)) {
+                      form.setValue("keywords", [...current, value]);
+                    }
+                    e.currentTarget.value = "";
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
 
         <select
           value={form.watch("isActive") ? "true" : "false"}
@@ -207,6 +275,12 @@ export default function CreateCategory() {
           {mutation.isPending ? "Creating..." : "Create Category"}
         </Button>
       </form>
+      {mutation.isError && (
+        <p className="text-red-500">{mutation.error.message}</p>
+      )}
+      {mutation.isSuccess && (
+        <p className="text-green-500">Category created successfully</p>
+      )}
     </div>
   );
 }
