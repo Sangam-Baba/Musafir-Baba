@@ -267,11 +267,6 @@ export default function CreateBlog() {
             />
           )}
         </div>
-        <input
-          {...form.register("coverImage.alt")}
-          placeholder="Cover Image Alt"
-          className="w-full border rounded p-2"
-        />
 
         <select
           {...form.register("status")}

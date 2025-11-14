@@ -15,6 +15,7 @@ import {
   User2,
 } from "lucide-react";
 import ImageUploader from "../admin/ImageUploader";
+import ImageUploaderClient from "../custom/ImageUploaderClient";
 
 interface FormData {
   fullName: string;
@@ -248,7 +249,7 @@ export default function ApplicationForm() {
                     Upload Resume
                   </label>
 
-                  <ImageUploader
+                  <ImageUploaderClient
                     onUpload={(img) => {
                       if (!img) return;
                       setFormData((prev) => ({

@@ -618,6 +618,27 @@ export default function CreatePackagePage() {
                 </FormItem>
               )}
             />
+            {form.watch("coverImage") && (
+              <FormField
+                control={form.control}
+                name="coverImage.alt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CoverImage Alt</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        defaultValue={form.watch("title")}
+                        type="text"
+                        placeholder="Cover Image Alt"
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             {/* Itinary Download */}
             <FormField
               control={form.control}

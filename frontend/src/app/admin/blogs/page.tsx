@@ -23,14 +23,12 @@ export default function BlogsPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // ✅ Fetch blogs
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs`,
-        { cache: "no-store" }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
+        cache: "no-store",
+      });
       const data = await res.json();
 
       if (data.success) {
@@ -50,12 +48,10 @@ export default function BlogsPage() {
     fetchBlogs();
   }, []);
 
-  // ✅ Edit
   const handleEdit = (slug: string) => {
     router.push(`/admin/blogs/edit/${slug}`);
   };
 
-  // ✅ Delete
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this blog?")) return;
 

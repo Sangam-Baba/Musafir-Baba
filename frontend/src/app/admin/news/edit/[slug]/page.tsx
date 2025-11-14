@@ -12,7 +12,6 @@ import dynamic from "next/dynamic";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/custom/loader";
-import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
@@ -39,8 +38,6 @@ const formSchema = z.object({
         : [],
     z.array(z.string())
   ),
-  canonicalUrl: z.string().optional(),
-  schemaType: z.string().optional(),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
     url: z.string().url(),
@@ -116,8 +113,6 @@ export default function EditNews() {
       metaTitle: "",
       metaDescription: "",
       keywords: [],
-      canonicalUrl: "",
-      schemaType: "",
       tags: [],
       coverImage: { url: "", public_id: "", alt: "" },
       gallery: [],
@@ -136,8 +131,6 @@ export default function EditNews() {
         metaTitle: news.metaTitle,
         metaDescription: news.metaDescription,
         keywords: news.keywords,
-        canonicalUrl: news.canonicalUrl,
-        schemaType: news.schemaType,
         tags: news.tags,
         coverImage: news.coverImage,
         gallery: news.gallery,
@@ -169,7 +162,7 @@ export default function EditNews() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Update Blog</h1>
+      <h1 className="text-2xl font-bold mb-6">Update News</h1>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <input
           {...form.register("title")}
@@ -219,17 +212,6 @@ export default function EditNews() {
         <textarea
           {...form.register("excerpt")}
           placeholder="Excerpt"
-          className="w-full border rounded p-2"
-        />
-
-        <input
-          {...form.register("canonicalUrl")}
-          placeholder="Canonical URL"
-          className="w-full border rounded p-2"
-        />
-        <input
-          {...form.register("schemaType")}
-          placeholder="Schema Type"
           className="w-full border rounded p-2"
         />
         <input
