@@ -29,6 +29,7 @@ import customizedTourBookingRoute from "./customizedTourBooking.routes.js";
 import batchRoutes from "./batch.routes.js";
 import dashboardRoute from "./dashboard.routes.js";
 import destinationSeoRoute from "./destinationSeo.routes.js";
+import mediaRoutes from "./media.routes.js";
 
 const router = Router();
 
@@ -62,4 +63,5 @@ router.use("/customizedtourbooking", customizedTourBookingRoute);
 router.use("/batch", batchRoutes);
 router.use("/dashboard", dashboardRoute);
 router.use("/destinationseo", destinationSeoRoute);
+router.use("/media", mediaRoutes);
 export default router;

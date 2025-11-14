@@ -3,8 +3,9 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { X } from "lucide-react";
+import MediaPicker from "../common/MediaList";
 
-interface UploadedFile {
+export interface UploadedFile {
   url: string;
   public_id?: string;
   resource_type?: string;
@@ -14,6 +15,18 @@ interface UploadedFile {
   pages?: number;
 }
 
+const uploadToDb = async (accessToken: string, media: UploadedFile) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/media`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(media),
+  });
+  if (!res.ok) throw new Error("Failed to fetch footers");
+  return res.json();
+};
 export default function ImageUploader({
   initialImage,
   onUpload,
@@ -21,18 +34,19 @@ export default function ImageUploader({
   initialImage?: UploadedFile | null;
   onUpload: (img: UploadedFile | null) => void;
 }) {
-  const token = useAuthStore((state) => state.accessToken);
+  const token = useAuthStore((state) => state.accessToken) as string;
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>(
     initialImage ? [initialImage] : []
   );
   const [uploading, setUploading] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     if (initialImage) {
       setUploadedImages([initialImage]);
     }
-  }, []);
+  }, [initialImage]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles(e.target.files);
@@ -81,6 +95,7 @@ export default function ImageUploader({
           height: json.height,
           pages: json.pages,
         };
+        const res2 = await uploadToDb(token, uploaded);
         onUpload(uploaded);
         return uploaded;
       });
@@ -118,6 +133,13 @@ export default function ImageUploader({
       >
         {uploading ? "Uploading..." : "Upload"}
       </button>
+      <button
+        type="button"
+        onClick={() => setShowPicker(true)}
+        className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
+      >
+        Choose from Library
+      </button>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         {uploadedImages.map((img, idx) => (
@@ -139,6 +161,18 @@ export default function ImageUploader({
           </div>
         ))}
       </div>
+      {showPicker && (
+        <MediaPicker
+          open={showPicker}
+          onClose={() => setShowPicker(false)}
+          onSelect={(media) => {
+            setUploadedImages([media]);
+            onUpload(media);
+            setShowPicker(false);
+            setFiles(null);
+          }}
+        />
+      )}
     </div>
   );
 }

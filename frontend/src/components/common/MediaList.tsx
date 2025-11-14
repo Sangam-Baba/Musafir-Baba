@@ -1,0 +1,67 @@
+"use client";
+import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/useAuthStore";
+import { UploadedFile } from "../admin/ImageUploader";
+
+export default function MediaPicker({
+  open,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (media: UploadedFile) => void;
+}) {
+  const accessToken = useAuthStore((s) => s.accessToken) as string;
+
+  const { data: media, isLoading } = useQuery({
+    queryKey: ["media-picker"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/media`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const json = await res.json();
+      return json.data;
+    },
+    enabled: open,
+  });
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-4 w-[600px] max-h-[80vh] overflow-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Media Library</h2>
+          <button onClick={onClose} className="text-red-500">
+            Close
+          </button>
+        </div>
+
+        {isLoading && <p>Loading...</p>}
+
+        <div className="grid grid-cols-3 gap-3">
+          {media?.map((item: UploadedFile, i: number) => (
+            <div
+              key={i}
+              className="border rounded cursor-pointer hover:ring-2 ring-blue-500 p-1"
+              onClick={() => {
+                onSelect(item);
+                onClose();
+              }}
+            >
+              <Image
+                src={item.url}
+                alt="Media"
+                width={200}
+                height={200}
+                className="w-full h-32 object-cover rounded"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
