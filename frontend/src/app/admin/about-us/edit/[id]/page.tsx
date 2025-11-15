@@ -203,6 +203,19 @@ function CreateAboutUsPage({ params }: { params: { id: string } }) {
                       });
                     }}
                   />
+                  <FormField
+                    control={form.control}
+                    name={`upperImage.${index}.alt`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Alt Text</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter alt text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <Button
                     type="button"
                     variant="destructive"
@@ -240,6 +253,19 @@ function CreateAboutUsPage({ params }: { params: { id: string } }) {
                         height: img.height,
                       });
                     }}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`lowerImage.${index}.alt`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Alt Text</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter alt text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                   <Button
                     type="button"
@@ -279,6 +305,19 @@ function CreateAboutUsPage({ params }: { params: { id: string } }) {
               </FormControl>
               <FormMessage />
             </FormItem>
+            <FormField
+              control={form.control}
+              name={`coverImage.alt`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alt Text</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter alt text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* META DATA */}
             <FormField
@@ -404,6 +443,19 @@ function CreateAboutUsPage({ params }: { params: { id: string } }) {
                         height: img.height,
                       });
                     }}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`h2content.${index}.image.alt`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Alt Text</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter alt text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                   <Button
                     type="button"

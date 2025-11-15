@@ -351,7 +351,28 @@ export default function CreateVisaPage() {
                   </FormItem>
                 )}
               />
-
+              {form.watch("coverImage") && (
+                <FormField
+                  control={form.control}
+                  name="coverImage.alt"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Flag Alt</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Thailand"
+                          {...form.register("coverImage.alt")}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+            {/* Avatar */}
+            <div className="flex flex-col md:flex-row gap-4">
               {/* Banner Image */}
               <FormField
                 control={form.control}
@@ -375,6 +396,25 @@ export default function CreateVisaPage() {
                   </FormItem>
                 )}
               />
+              {form.watch("bannerImage") && (
+                <FormField
+                  control={form.control}
+                  name="bannerImage.alt"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Banner Image Alt</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Thailand"
+                          {...form.register("bannerImage.alt")}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <div className="space-y-2">
               <FormLabel className="block text-sm font-medium">

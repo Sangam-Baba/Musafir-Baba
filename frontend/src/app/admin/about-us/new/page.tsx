@@ -159,18 +159,47 @@ function CreateAboutUsPage() {
                   key={field.id}
                   className="border rounded-md p-3 mb-3 space-y-2"
                 >
-                  <ImageUploader
-                    onUpload={(img) => {
-                      if (!img) return;
-                      form.setValue(`upperImage.${index}`, {
-                        url: img.url,
-                        public_id: img.public_id,
-                        alt: form.getValues("title") ?? "",
-                        width: img.width,
-                        height: img.height,
-                      });
-                    }}
-                  />
+                  <div className="space-y-2 grid grid-cols-2">
+                    <ImageUploader
+                      onUpload={(img) => {
+                        if (!img) return;
+                        form.setValue(`upperImage.${index}`, {
+                          url: img.url,
+                          public_id: img.public_id,
+                          alt: form.getValues("title") ?? "",
+                          width: img.width,
+                          height: img.height,
+                        });
+                      }}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`upperImage.${index}.alt`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Alt Text</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter alt text" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`upperImage.${index}.alt`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Alt Text</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter alt text" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <Button
                     type="button"
                     variant="destructive"
@@ -208,6 +237,20 @@ function CreateAboutUsPage() {
                       });
                     }}
                   />
+                  <FormField
+                    control={form.control}
+                    name={`lowerImage.${index}.alt`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Alt Text</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter alt text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <Button
                     type="button"
                     variant="destructive"
@@ -244,6 +287,19 @@ function CreateAboutUsPage() {
               </FormControl>
               <FormMessage />
             </FormItem>
+            <FormField
+              control={form.control}
+              name={`coverImage.alt`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alt Text</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter alt text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* META DATA */}
             <FormField
@@ -344,7 +400,7 @@ function CreateAboutUsPage() {
             {/* H2 CONTENT BLOCKS */}
             <div>
               <FormLabel>H2 Content Blocks</FormLabel>
-              {h2contentArray.fields.map((field, index) => (
+              {h2contentArray.fields.map((field, index: number) => (
                 <div
                   key={field.id}
                   className="border rounded-md p-4 mb-4 space-y-2"
@@ -368,6 +424,19 @@ function CreateAboutUsPage() {
                         height: img.height,
                       });
                     }}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`h2content.${index}.image.alt`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Alt Text</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter alt text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                   <Button
                     type="button"
