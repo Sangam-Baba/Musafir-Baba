@@ -92,6 +92,20 @@ async function getPackageByDestinationSlug(categorySlug: string, slug: string) {
   return data?.data;
 }
 
+async function getDestinationMeta(
+  categorySlug: string,
+  destinationSlug: string
+) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/destinationseo/${categorySlug}/${destinationSlug}`,
+    {
+      next: { revalidate: 86400 },
+    }
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.data;
+}
 export async function generateMetadata({
   params,
 }: {
@@ -99,12 +113,11 @@ export async function generateMetadata({
 }) {
   const { categorySlug, destination } = params;
   const pkgData = await getPackageByDestinationSlug(categorySlug, destination);
+  const meta = await getDestinationMeta(categorySlug, destination);
   return {
-    title: `${
-      pkgData[0]?.destination?.metaTitle || pkgData[0]?.destination?.name
-    } | Musafir Baba`,
-    description: pkgData[0]?.destination?.metaDescription,
-    keywords: pkgData[0]?.destination?.keywords,
+    title: `${meta?.metaTitle || pkgData[0]?.destination?.name} | Musafir Baba`,
+    description: meta?.metaDescription || pkgData[0]?.destination?.description,
+    keywords: meta?.keywords || pkgData[0]?.destination?.keywords,
     alternates: {
       canonical: `https://musafirbaba.com/holidays/${params.categorySlug}/${params.destination}`,
     },

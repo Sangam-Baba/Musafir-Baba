@@ -35,20 +35,7 @@ export default async function PackagesClient() {
   if (data?.data.length === 0) return <NotFoundPage />;
   const categories = data?.data ?? [];
 
-  const totalCategory = [
-    ...categories,
-    {
-      id: "customised-tour-packages",
-      name: "Customised Tour Packages",
-      slug: "customised-tour-packages",
-      coverImage: {
-        url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1762603238/customer-service-business-svgrepo-com_nalaol.svg",
-        alt: "customized-tour-packages",
-      },
-      description:
-        "Design your dream vacation your way! Our customised tour packages let you choose destinations, hotels, meals, and experiences — all tailored to your travel style and budget.",
-    },
-  ];
+  const totalCategory = [...categories];
   return (
     <section>
       <Hero

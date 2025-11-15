@@ -26,7 +26,7 @@ destinationSeoRoute.get(
   getDestinationSeoById
 );
 
-destinationSeoRoute.get("/:destination_slug/:category_slug", getDestinationSeo);
+destinationSeoRoute.get("/:category_slug/:destination_slug", getDestinationSeo);
 
 destinationSeoRoute.get(
   "/",

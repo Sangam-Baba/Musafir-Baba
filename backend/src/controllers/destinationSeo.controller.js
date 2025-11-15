@@ -1,4 +1,6 @@
 import { DestinationSeo } from "../models/Destination-Seo.js";
+import { Destination } from "../models/Destination.js";
+import { Category } from "../models/Category.js";
 
 const createDestinationSeo = async (req, res) => {
   try {

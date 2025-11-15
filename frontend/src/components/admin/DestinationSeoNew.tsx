@@ -136,11 +136,6 @@ function DestinationSeoNew({
     enabled: !!id,
   });
 
-  // const {data:getPackageByCategorySlug} = useQuery({
-  //   queryKey: ["packages", id],
-  //   queryFn: () => getPackageByCategorySlug(id as string),
-  //   enabled: !! form.watch(),
-  // })
   useEffect(() => {
     if (destinationSeo) {
       form.reset({
@@ -177,6 +172,7 @@ function DestinationSeoNew({
       );
       queryClient.invalidateQueries({ queryKey: ["all-destinationSeo"] });
       onSuccess?.();
+      onClose();
     },
     onError: (error) => {
       toast.error(error.message || "Something went wrong");
@@ -339,6 +335,8 @@ function DestinationSeoNew({
           </div>
         </form>
       </Form>
+      {mutation.isError && toast.error(mutation.error.message)}
+      {mutation.isSuccess && toast.success("Destination Meta created")}
     </div>
   );
 }
