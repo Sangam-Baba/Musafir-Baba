@@ -87,7 +87,7 @@ async function getPackageByDestinationSlug(slug: string) {
       cache: "no-cache",
     }
   );
-  if (!res.ok) throw new Error("Failed to fetch packages");
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data?.data;
 }
@@ -163,7 +163,7 @@ async function DestinationPage({ params }: { params: { slug: string } }) {
                   pkg.destination.state.slice(1),
                 batch: pkg?.batch ? pkg?.batch : [],
               }}
-              url={`/holidays/${pkg.mainCategory.slug}/${pkg.destination.state}/${pkg.slug}`}
+              url={`/holidays/${pkg.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
             />
           ))}
         </div>

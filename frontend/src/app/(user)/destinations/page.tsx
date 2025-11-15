@@ -48,7 +48,7 @@ async function page() {
         <div className="w-20 h-1 bg-[#FE5300] mt-2 "></div>
       </div>
       <div className="max-w-7xl mx-auto py-16 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 mt-6">
           {destinations.map((destination: Destination, i: number) => (
             <Link key={i} href={`/destinations/${destination.state}`}>
               <Card
@@ -63,18 +63,18 @@ async function page() {
                   <Image
                     src={destination?.coverImage?.url ?? "/Heroimg.jpg"}
                     alt={destination?.coverImage?.alt ?? "Destination image"}
-                    width={500}
+                    width={200}
                     height={500}
                     className="
-                w-full h-52 object-cover 
+                w-full h-32 object-cover 
                 transition-transform duration-700
                 group-hover:scale-110
               "
                   />
                 </div>
 
-                <CardContent className="p-5">
-                  <p className="text-lg font-semibold text-center tracking-wide">
+                <CardContent className="">
+                  <p className="text-sm font-semibold text-center tracking-wide">
                     {destination?.name}
                   </p>
                 </CardContent>
