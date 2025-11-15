@@ -98,7 +98,7 @@ const updateDestinationSeo = async (
   return res.json();
 };
 
-const getDestinationSeo = async (accessToken: string, id: string) => {
+export const getDestinationSeo = async (accessToken: string, id: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/destinationseo/id/${id}`,
     { headers: { Authorization: `Bearer ${accessToken}` } }

@@ -7,7 +7,7 @@ import Image from "next/image";
 import NotFoundPage from "@/components/common/Not-Found";
 import Breadcrumb from "@/components/common/Breadcrumb";
 interface Category {
-  id: string;
+  _id: string;
   name: string;
   slug: string;
   coverImage: {
@@ -21,7 +21,7 @@ interface CategoryResponse {
   data: Category[];
 }
 
-const getCategory = async (): Promise<CategoryResponse> => {
+export const getCategory = async (): Promise<CategoryResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
     next: { revalidate: 6000 },
   });

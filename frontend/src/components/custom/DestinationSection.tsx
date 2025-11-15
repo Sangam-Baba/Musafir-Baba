@@ -94,7 +94,7 @@ export function DestinationSection() {
           <div>
             <Link
               href={`/${
-                active === "domestic" ? "india" : "international-trips"
+                active === "domestic" ? "destinations" : "destinations"
               }`}
               className="text-[#FE5300] font-semibold"
             >
@@ -110,7 +110,7 @@ export function DestinationSection() {
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
                 <div className="relative">
-                  <Link href="/india/uttarakhand">
+                  <Link href="/destinations/uttarakhand">
                     <Image
                       src={badrinath}
                       alt="Uttarakhand"
@@ -122,7 +122,7 @@ export function DestinationSection() {
                   </h4>
                 </div>
                 <div className="relative">
-                  <Link href="/india/rajasthan">
+                  <Link href="/destinations/rajasthan">
                     <Image
                       src={jaipur}
                       alt="Rajasthan"
@@ -136,7 +136,7 @@ export function DestinationSection() {
               </div>
               <div className="md:w-1/2">
                 <div className="relative">
-                  <Link href="/india/kerala">
+                  <Link href="/destinations/kerala">
                     <Image
                       src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758340822/Untitled_design_5_hgguwf.jpg"
                       alt="Kerala"
@@ -154,7 +154,7 @@ export function DestinationSection() {
             <div className="flex flex-col gap-4 md:w-1/2">
               <div className="w-full">
                 <div className="relative">
-                  <Link href="/india/meghalaya">
+                  <Link href="/destinations/meghalaya">
                     <Image
                       src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758340821/Untitled_design_6_mggpgh.jpg"
                       alt="meghalaya"
@@ -170,7 +170,7 @@ export function DestinationSection() {
               </div>
               <div className="flex flex-col md:flex-row gap-4 w-full">
                 <div className="relative md:w-1/2">
-                  <Link href="/india/himachal-pradesh">
+                  <Link href="/destinations/himachal-pradesh">
                     <Image
                       src={himachal}
                       alt="himachal"
@@ -182,7 +182,7 @@ export function DestinationSection() {
                   </h4>
                 </div>
                 <div className="relative md:w-1/2">
-                  <Link href="/india/jammu-and-kashmir">
+                  <Link href="/destinations/jammu-and-kashmir">
                     <Image
                       src={kashmir}
                       alt="Kerala"
