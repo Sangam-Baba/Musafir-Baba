@@ -56,7 +56,7 @@ interface Destination {
   slug: string;
   city: string;
 }
-async function getCategoryBySlug(slug: string) {
+export async function getCategoryBySlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
     {

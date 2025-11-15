@@ -197,7 +197,7 @@ export default function CreateCategory() {
             </p>
           )}
         </div>
-        {form.watch("coverImage")?.url && (
+        {form.watch("coverImage") && (
           <input
             {...form.register("coverImage.alt")}
             placeholder="Cover Image Alt"

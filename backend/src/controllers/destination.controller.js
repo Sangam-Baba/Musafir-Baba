@@ -1,4 +1,5 @@
 import { Destination } from "../models/Destination.js";
+import { CustomizedTourPackage } from "../models/CustomizedTourPackage.js";
 import { Package } from "../models/Package.js";
 import mongoose from "mongoose";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
@@ -191,6 +192,24 @@ const getDestinationByCategoryId = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "id required things missing" });
+    }
+    if (id === "691809074507e98432f338b9") {
+      const pkg = await CustomizedTourPackage.find({ status: "published" })
+        .select("destination")
+        .populate("destination", "_id state");
+      if (!pkg || pkg.length === 0) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Destination not found" });
+      }
+      const uniqueDestination = [
+        ...new Set(pkg.map((item) => item.destination)),
+      ];
+      return res.status(200).json({
+        success: true,
+        message: "Customized Destination found",
+        data: uniqueDestination,
+      });
     }
     const pkg = await Package.find({ mainCategory: id })
       .select("destination")

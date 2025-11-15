@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
+import { getCategoryBySlug } from "../[categorySlug]/page";
 interface Plan {
   title: string;
   include: string;
@@ -70,7 +71,7 @@ export async function generateMetadata() {
       siteName: "MusafirBaba",
       images: [
         {
-          url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1762488352/rolvmorbutnkmwgnmh5s.jpg", // replace with your image
+          url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1762488352/rolvmorbutnkmwgnmh5s.jpg",
           width: 1200,
           height: 630,
           alt: "MusafirBaba Travel",
@@ -83,7 +84,8 @@ export async function generateMetadata() {
 
 async function CustomizedPackagePage() {
   const AllPackages = await getAllCustomizedPackages();
-
+  const res = await getCategoryBySlug("customised-tour-packages");
+  const { category } = res?.data ?? {};
   return (
     <section className="w-full mb-12">
       <Hero
@@ -99,13 +101,9 @@ async function CustomizedPackagePage() {
 
       {/* Show category details */}
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
-        <h1 className="text-3xl font-bold">Customised Packages</h1>
+        <h1 className="text-3xl font-bold">{category?.name}</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
-        <p className="mt-2 text-muted-foreground">
-          Design your dream vacation your way! Our customised tour packages let
-          you choose destinations, hotels, meals, and experiences — all tailored
-          to your travel style and budget.
-        </p>
+        <p className="mt-2 text-muted-foreground">{category?.description}</p>
       </div>
 
       {/* Show packages under this category */}
