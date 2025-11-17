@@ -14,6 +14,7 @@ import BlogsHome from "@/components/custom/BlogsHome";
 import HomeBooking from "../../components/custom/HomeBooking";
 import VisaHome from "@/components/custom/VisaHome";
 import VideoSection from "@/components/custom/VideoSection";
+import Newslatter from "@/components/common/Newslatter";
 
 const faqs = [
   {
@@ -106,10 +107,11 @@ export default function HomePage() {
       <SectionFive />
       <DestinationSection />
       <VideoSection />
+      <Testimonial />
       <ImageGallery />
       <HomeBooking />
-      <Testimonial />
       <BlogsHome />
+      <Newslatter />
       <Faqs faqs={faqs} />
     </main>
   );

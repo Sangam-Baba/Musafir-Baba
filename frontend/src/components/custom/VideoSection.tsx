@@ -1,5 +1,6 @@
 import React from "react";
 import { Card } from "../ui/card";
+import Link from "next/link";
 
 function VideoSection() {
   return (
@@ -16,7 +17,7 @@ function VideoSection() {
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-16 items-center">
         <div className="lg:col-span-3 group cursor-pointer">
           <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-0 p-0">
             <div className="relative aspect-video">
@@ -49,7 +50,7 @@ function VideoSection() {
           {/* CTA Button */}
           <div>
             <button className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-              Learn More About Us
+              <Link href="/about-us">Learn More About Us</Link>
             </button>
           </div>
 

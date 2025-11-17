@@ -24,7 +24,6 @@ import {
 function Footer() {
   return (
     <div className="">
-      <Newslatter />
       {/* Desktop Footer */}
       <div className="hidden md:flex md:flex-row  gap-6 mb-8 py-15 px-4 md:px-10 lg:px-25 items-center md:items-start justify-between ">
         <div className="md:w-[30%] flex flex-col gap-2 ">

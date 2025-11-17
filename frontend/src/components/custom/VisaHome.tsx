@@ -10,7 +10,7 @@ import {
 import { Card } from "../ui/card";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
@@ -49,19 +49,24 @@ async function VisaHome() {
             Fast, reliable visa assistance for top travel destinations.
           </p>
         </div>
-        <div className="hidden md:grid  md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8 px-4">
+        <div className="flex  justify-end  items-center w-full p-2">
+          <div>
+            <Link href="/visa" className="text-[#FE5300] font-semibold">
+              {" "}
+              View All →
+            </Link>
+          </div>
+        </div>
+        <div className="hidden md:grid  md:grid-cols-3 lg:grid-cols-6 gap-6 mt-8 px-4">
           {visa.slice(0, 12).map((data, i) => {
             return (
               <Link key={i} href={`/visa/${data.slug}`}>
                 <div className="group relative  overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400">
-                  {/* Background gradient overlay */}
-                  {/* <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" /> */}
-
                   {/* Flag Image */}
                   <div className="relative h-25 w-full overflow-hidden bg-neutral-100">
                     <Image
-                      src={data.coverImage?.url || "/placeholder.svg"}
-                      alt={data.coverImage?.alt || "Flag Image"}
+                      src={data.bannerImage?.url || data.coverImage?.url || ""}
+                      alt={data.bannerImage?.alt || "Musafirbaba Visa"}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -126,8 +131,8 @@ async function VisaHome() {
                       {/* Flag Image */}
                       <div className="relative h-25 w-full overflow-hidden bg-neutral-100">
                         <Image
-                          src={data.coverImage?.url || "/placeholder.svg"}
-                          alt={data.coverImage?.alt || "Flag Image"}
+                          src={data.bannerImage?.url || "/placeholder.svg"}
+                          alt={data.bannerImage?.alt || "Musafirbaba Visa"}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -142,7 +147,7 @@ async function VisaHome() {
                             {/* <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
                           Visa
                         </p> */}
-                            <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors mt-1">
+                            <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors mt-1 line-clamp-1">
                               {data.country}
                             </h3>
                           </div>

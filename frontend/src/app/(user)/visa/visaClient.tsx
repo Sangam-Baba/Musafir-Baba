@@ -30,6 +30,12 @@ export interface Visa {
   visaType: string;
   visaProcessed: number;
   slug: string;
+  bannerImage?: {
+    url: string;
+    alt: string;
+    width: number;
+    height: number;
+  };
 }
 const getVisa = async (search: string) => {
   const res = await fetch(
