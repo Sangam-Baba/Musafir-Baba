@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/custom/loader";
 import { VisaTypesDialog } from "@/components/custom/VisaTypesDialog";
 import Breadcrumb from "@/components/common/Breadcrumb";
-interface Visa {
+export interface Visa {
   id: string;
   country: string;
   coverImage?: {
@@ -37,7 +37,7 @@ const getVisa = async (search: string) => {
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
-  console.log(data.data);
+  // console.log(data.data);
   return data?.data; // []
 };
 function VisaClientPage() {

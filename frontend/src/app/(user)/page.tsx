@@ -12,6 +12,8 @@ import ThirdSection from "@/components/custom/ThirdSection";
 import BlogsHome from "@/components/custom/BlogsHome";
 // import Image from "next/image";
 import HomeBooking from "../../components/custom/HomeBooking";
+import VisaHome from "@/components/custom/VisaHome";
+import VideoSection from "@/components/custom/VideoSection";
 
 const faqs = [
   {
@@ -95,13 +97,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <ThirdSection />
+      <VisaHome />
+      {/* <ThirdSection /> */}
       <SevenSection />
-      <SectionFive />
+
       <FeaturedTourSSG />
       <SectionFour />
+      <SectionFive />
       <DestinationSection />
+      <VideoSection />
       <ImageGallery />
       <HomeBooking />
       <Testimonial />
