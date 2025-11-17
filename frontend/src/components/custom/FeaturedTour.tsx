@@ -113,7 +113,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                     />
                   ))}
                 </div>
-                <div className="md:hidden flex flex-col items-center mx-auto px-8">
+                <div className="md:hidden flex flex-col items-center mx-auto px-6">
                   <Carousel
                     opts={{
                       align: "start",
@@ -150,8 +150,8 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                           </CarouselItem>
                         ))}
                     </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
+                    <CarouselPrevious className="ml-4" />
+                    <CarouselNext className="mr-4" />
                   </Carousel>
                 </div>
               </div>

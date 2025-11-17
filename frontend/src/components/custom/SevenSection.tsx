@@ -213,8 +213,8 @@ export async function SevenSection() {
               ))}
             </CarouselContent>
 
-            <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
-            <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white" />
+            <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white ml-2" />
+            <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white mr-2" />
           </Carousel>
         </div>
       </div>

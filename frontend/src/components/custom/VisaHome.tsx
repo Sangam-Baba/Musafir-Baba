@@ -16,7 +16,7 @@ const getVisa = async (search: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 86400 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
@@ -44,11 +44,11 @@ async function VisaHome() {
     <section className="w-full mx-auto px-4 md:px-8 lg:px-20 py-16">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-2 items-center">
-          <h1 className="text-xl md:text-3xl font-bold text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-center">
             Popular Visa Services for Indian Travellers
           </h1>
           <p className="w-20 h-1 bg-[#FE5300] text-center"></p>
-          <p className="text-sm text-center">
+          <p className=" text-center">
             Fast, reliable visa assistance for top travel destinations.
           </p>
         </div>
@@ -156,22 +156,6 @@ async function VisaHome() {
                           </div>
                           <Globe className="w-5 h-5 text-neutral-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-1" />
                         </div>
-
-                        {/* Pricing and CTA */}
-                        {/* <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-xs text-neutral-500 mb-1">
-                          Starting from
-                        </p>
-                        <p className="text-md font-bold text-neutral-900">
-                          {data.cost}
-                          <span className="text-xs text-neutral-500 font-normal ml-1">
-                            + fees
-                          </span>
-                        </p>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-blue-600 transform group-hover:translate-x-1 transition-transform" />
-                    </div> */}
                       </div>
 
                       {/* Hover effect border */}
@@ -181,8 +165,8 @@ async function VisaHome() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="ml-6" />
+            <CarouselNext className="mr-6" />
           </Carousel>
         </div>
       </div>
