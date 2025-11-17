@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
+import { Metadata } from "next";
 // import { getCategory } from "../holidays/PackagesClient";
 // import { getDestinationSeo } from "@/components/admin/DestinationSeoNew";
 interface Destination {
@@ -16,6 +17,19 @@ interface Destination {
     alt: string;
   };
 }
+export function generateMetadata(): Metadata {
+  return {
+    title:
+      "Top Travel Destinations Worldwide for Every Kind of Traveller | Musafir Baba",
+    description:
+      "Explore the best travel destinations across India and the world. Find curated places to visit, top attractions, ideal seasons, and trip ideas for every traveller. | Musafir Baba",
+    keywords: "Destinations",
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/destinations`,
+    },
+  };
+}
+
 const getAllDestinations = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
     next: { revalidate: 86400 },
@@ -48,7 +62,7 @@ async function page() {
         <div className="w-20 h-1 bg-[#FE5300] mt-2 "></div>
       </div>
       <div className="max-w-7xl mx-auto py-16 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mt-6">
           {destinations.map((destination: Destination, i: number) => (
             <Link key={i} href={`/destinations/${destination.state}`}>
               <Card

@@ -92,12 +92,11 @@ async function getPackageByDestinationSlug(slug: string) {
   return data?.data;
 }
 
-// async function getDestinationMeta(
-//   categorySlug: string,
-//   destinationSlug: string
+// async function getDestination(
+//   slug: string
 // ) {
 //   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_BASE_URL}/destinationseo/${categorySlug}/${destinationSlug}`,
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/destination/${slug}/`,
 //     {
 //       next: { revalidate: 86400 },
 //     }
@@ -106,23 +105,26 @@ async function getPackageByDestinationSlug(slug: string) {
 //   const data = await res.json();
 //   return data?.data;
 // }
-// export async function generateMetadata({
-//   params,
-// }: {
-//   params: { categorySlug: string; destination: string };
-// }) {
-//   const { categorySlug, destination } = params;
-//   const pkgData = await getPackageByDestinationSlug(categorySlug, destination);
-//   const meta = await getDestinationMeta(categorySlug, destination);
-//   return {
-//     title: `${meta?.metaTitle || pkgData[0]?.destination?.name} | Musafir Baba`,
-//     description: meta?.metaDescription || pkgData[0]?.destination?.description,
-//     keywords: meta?.keywords || pkgData[0]?.destination?.keywords,
-//     alternates: {
-//       canonical: `https://musafirbaba.com/holidays/${params.categorySlug}/${params.destination}`,
-//     },
-//   };
-// }
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const { slug } = params;
+  const packages = await getPackageByDestinationSlug(slug);
+  if (!packages || packages.length === 0) return null;
+  const meta = packages[0]?.destination;
+  return {
+    title: `${
+      meta?.metaTitle || packages[0]?.destination?.name
+    } | Musafir Baba`,
+    description: meta?.metaDescription || packages[0]?.destination?.description,
+    keywords: meta?.keywords || packages[0]?.destination?.keywords,
+    alternates: {
+      canonical: `https://musafirbaba.com/destinations/${slug}`,
+    },
+  };
+}
 async function DestinationPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const packages = await getPackageByDestinationSlug(slug);
