@@ -14,7 +14,10 @@ import { Globe } from "lucide-react";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`,
+    {
+      cache: "no-cache",
+    }
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
