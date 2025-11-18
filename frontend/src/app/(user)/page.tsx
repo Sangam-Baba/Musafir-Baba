@@ -15,6 +15,7 @@ import HomeBooking from "../../components/custom/HomeBooking";
 import VisaHome from "@/components/custom/VisaHome";
 import VideoSection from "@/components/custom/VideoSection";
 import Newslatter from "@/components/common/Newslatter";
+import WhyChoose from "@/components/custom/WhyChoose";
 
 const faqs = [
   {
@@ -59,45 +60,33 @@ export default function HomePage() {
   return (
     <main className="">
       <section
-        className="w-full flex px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[500px] 2xl:h-[800px] items-center"
+        className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center"
         style={{
-          backgroundImage: `url(${"/bannerImage.webp"})`,
+          backgroundImage: `url(${"/homebanner.jpg"})`,
         }}
       >
-        <div className="absolute inset-0 bg-black/10 z-10  left-0"></div>
-        <div className="flex flex-col md:gap-10 gap-4 items-center md:items-start z-10 w-[60%] md:w-[40%] lg:w-[30%] relative ">
-          {/* <Image
-            className="w-full  object-cover"
-            src="/Musafir-Baba-text.png"
-            width={400}
-            height={127}
-            alt="Musafirbaba"
-            priority
-            fetchPriority="high"
-          /> */}
+        {/* <div className="absolute inset-0  z-10  bg-gradient-to-r from-black/20 to-transparent"></div> */}
+        <div className="flex flex-col ml-15 md:gap-10 gap-4 items-center  z-10 w-[70%] md:w-[50%] lg:w-[50%] relative ">
           <div className="text-center flex flex-col items-center justify-center">
-            <h1 className="text-2xl md:text-4xl  font-bold text-[#112A46]  text-inline leading-tight">
-              Book your trip in just
-            </h1>
-            <p
-              className="text-white text-2xl md:text-4xl  font-bold text-inline leading-tight tracking-wide"
-              style={{
-                textShadow:
-                  "-1px -1px 0 #112A46, 1px -1px 0 #112A46, -1px 1px 0 #112A46, 1px 1px 0 #112A46",
-              }}
+            <h1
+              className={` text-xl md:text-2xl lg:text-5xl font-bold  text-inline leading-tight`}
             >
+              Book your dream trip in just
+            </h1>
+            <p className="text-white text-xl md:text-2xl lg:text-5xl  font-bold text-inline leading-tight tracking-wide">
               60 seconds
+            </p>
+            <p className="hidden md:block text-sm md:text-lg mt-1">
+              Get curated tours & seamless visa assistance - all in one place.
             </p>
           </div>
 
-          <div className="relative z-20 w-full overflow-visible">
+          <div className="relative z-20 w-full md:w-2/3   overflow-visible">
             <SearchBanner />
-          </div>
-          <div className="relative z-20 w-full overflow-visible">
-            <SecondSection />
           </div>
         </div>
       </section>
+      <SecondSection />
       <VisaHome />
       {/* <ThirdSection /> */}
       <SevenSection />
@@ -107,6 +96,7 @@ export default function HomePage() {
       <SectionFive />
       <DestinationSection />
       <VideoSection />
+      <WhyChoose />
       <Testimonial />
       <ImageGallery />
       <HomeBooking />

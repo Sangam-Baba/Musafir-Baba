@@ -16,30 +16,38 @@ const getVisa = async (search: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`,
     {
-      next: { revalidate: 86400 },
+      cache: "no-cache",
     }
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
-  console.log(data.data);
+  // console.log(data.data);
   return data?.data; // []
 };
 async function VisaHome() {
   const visa: Visa[] = await getVisa("");
-  //   const shownVisa = visa.filter(
-  //     (visa) =>
-  //       visa.country.toLocaleLowerCase() === "united states" ||
-  //       visa.country.toLocaleLowerCase() === "canada" ||
-  //       visa.country.toLocaleLowerCase() === "dubai" ||
-  //       visa.country.toLocaleLowerCase() === "china" ||
-  //       visa.country.toLocaleLowerCase() === "singapore" ||
-  //       visa.country.toLocaleLowerCase() === "japan" ||
-  //       visa.country.toLocaleLowerCase() === "australia" ||
-  //       visa.country.toLocaleLowerCase() === "dubai" ||
-  //       visa.country.toLocaleLowerCase() === "uk" ||
-  //       visa.country.toLocaleLowerCase() === "schengen" ||
-  //       visa.country.toLocaleLowerCase() === "vietnam"
-  //   );
+  const finalVisa = [
+    "UAE",
+    "Schengen",
+    "USA",
+    "UK",
+    "Canada",
+    "Australia",
+    "Singapore",
+    "Japan",
+    "Vietnam",
+    "China",
+    "New Zealand",
+    "Turkey",
+  ];
+  const shownVisa = visa
+    .filter((visa) => finalVisa.includes(visa.country))
+    .sort(
+      (a, b) => finalVisa.indexOf(a.country) - finalVisa.indexOf(b.country)
+    );
+
+  // const firstRow = shownVisa.filter((_, index) => index % 2 === 0);
+  // const secondRow = shownVisa.filter((_, index) => index % 2 === 1);
   return (
     <section className="w-full mx-auto px-4 md:px-8 lg:px-20 py-16">
       <div className="max-w-7xl mx-auto">
@@ -60,8 +68,8 @@ async function VisaHome() {
             </Link>
           </div>
         </div>
-        <div className="hidden md:grid  md:grid-cols-3 lg:grid-cols-6 gap-6 mt-8 px-4">
-          {visa.slice(0, 12).map((data, i) => {
+        <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-6 gap-6 mt-8 px-4">
+          {shownVisa.slice(0, 12).map((data, i) => {
             return (
               <Link key={i} href={`/visa/${data.slug}`}>
                 <div className="group relative  overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400">
@@ -115,6 +123,8 @@ async function VisaHome() {
             );
           })}
         </div>
+
+        {/* Carosal */}
         <div className=" md:hidden flex flex-col gap-2 items-center mt-8 px-4">
           <Carousel
             opts={{
@@ -124,7 +134,7 @@ async function VisaHome() {
             className="w-full max-w-sm"
           >
             <CarouselContent>
-              {visa.slice(0, 12).map((data, i) => (
+              {shownVisa.slice(0, 12).map((data, i) => (
                 <CarouselItem key={i} className="basis-1/2">
                   <Link key={i} href={`/visa/${data.slug}`}>
                     <div className="group relative  overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400">

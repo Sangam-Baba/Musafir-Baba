@@ -17,7 +17,7 @@ import Autoplay from "embla-carousel-autoplay";
 import PopupQueryForm from "@/components/custom/PopupQueryForm";
 import Breadcrumb from "@/components/common/Breadcrumb";
 
-interface ImageType {
+export interface ImageType {
   url: string;
   alt: string;
   public_id?: string;
@@ -85,8 +85,6 @@ function AboutUsPageClient({ about }: { about: FormValues }) {
     // Cleanup on unmount
     return () => clearInterval(interval);
   }, [about?.upperImage]);
-  // if (isLoading) return <Loader size="lg" message="Loading About Us..." />;
-  // if (isError) return <h1>{(error as Error).message}</h1>;
 
   const floatAnimation = {
     y: [0, -10, 0],
@@ -144,7 +142,7 @@ function AboutUsPageClient({ about }: { about: FormValues }) {
             {about?.upperImage?.[1] && (
               <div className="aspect-[3/2] overflow-hidden rounded-xl items-center">
                 <Image
-                  src={centerImage?.url}
+                  src={centerImage?.url || "/Hero1.jpg"}
                   alt={centerImage?.alt}
                   width={600}
                   height={400}

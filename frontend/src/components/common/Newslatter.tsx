@@ -7,7 +7,7 @@ function Newslatter() {
   return (
     <section className="flex  md:flex-row justify-between  w-full bg-[#FF5300]">
       <Image src={imgright} alt="logo" className="w-1/7" />
-      <div className="w-6/7 flex flex-col gap-2 items-center py-10 ">
+      <div className="w-5/7 flex flex-col gap-2 items-center py-10 ">
         <h4 className="text-2xl font-bold text-white">{`Get Ready to Explore the Beauty of India`}</h4>
         <p className="text-white">
           Join our travel community — discover hidden gems, latest deals, and
@@ -28,7 +28,7 @@ function Newslatter() {
           </button>
         </div>
       </div>
-      <div className="">
+      <div className="1/7">
         <Image src={imgleft} alt="logo" />
       </div>
     </section>

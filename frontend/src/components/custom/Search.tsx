@@ -29,7 +29,7 @@ function SearchBanner() {
   const dest = data?.data ?? [];
 
   return (
-    <section className="relative z-20 flex w-full items-center gap-3 rounded-2xl  bg-white/95 px-4 py-3 shadow-xl backdrop-blur-sm">
+    <section className="relative z-20 flex w-full items-center gap-3 rounded-2xl  bg-white/95 px-4 py-1 md:py-3 shadow-xl backdrop-blur-sm">
       <MapPin className="text-[#FE5300] shrink-0" />
 
       <select
@@ -50,7 +50,7 @@ function SearchBanner() {
         className="flex items-center gap-1 shrink-0 rounded-md bg-[#FE5300] px-4 py-2 text-white hover:bg-[#e04a00] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <a href={`/${location}`} className="flex items-center gap-2">
-          <Search className="h-4 w-4" /> Search
+          <Search className="h-4 w-4" />
         </a>
       </Button>
     </section>
