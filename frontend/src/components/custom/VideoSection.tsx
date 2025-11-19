@@ -1,7 +1,6 @@
 import React from "react";
 import { Card } from "../ui/card";
 import Link from "next/link";
-import bg from "../../../public/bg-2.png";
 
 function VideoSection() {
   return (

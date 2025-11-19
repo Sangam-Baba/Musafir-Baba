@@ -54,8 +54,7 @@ const getBestSeller = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/best-seller`,
     {
-      next: { revalidate: 86400 },
-      cache: "no-cache",
+      next: { revalidate: 3600 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch data");
@@ -117,6 +116,7 @@ export async function SevenSection() {
                             }
                             width={600}
                             height={400}
+                            sizes="(max-width: 768px) 70px, (max-width: 1024px) 170px, 230px"
                             className="rounded-b-[50px] rounded-tr-[50px] w-full h-[70px] md:h-[170px] object-cover shadow-lg"
                           />
                           <Image
@@ -130,6 +130,7 @@ export async function SevenSection() {
                             }
                             width={600}
                             height={400}
+                            sizes="(max-width: 768px) 130px, (max-width: 1024px) 230px, 230px"
                             className="rounded-b-[50px] rounded-tl-[50px] w-full h-[130px] md:h-[230px] object-cover shadow-lg"
                           />
                         </div>
@@ -145,6 +146,7 @@ export async function SevenSection() {
                             }
                             width={600}
                             height={400}
+                            sizes="(max-width: 768px) 130px, (max-width: 1024px) 230px, 230px"
                             className="rounded-t-[50px] rounded-br-[50px] w-full h-[130px] md:h-[230px] object-cover shadow-lg"
                           />
                           <Image
@@ -158,6 +160,7 @@ export async function SevenSection() {
                             }
                             width={600}
                             height={400}
+                            sizes="(max-width: 768px) 70px, (max-width: 1024px) 170px, 230px"
                             className="rounded-t-[50px] rounded-bl-[50px] w-full h-[70px] md:h-[170px] object-cover shadow-lg"
                           />
                         </div>

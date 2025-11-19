@@ -7,18 +7,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
-import { Card } from "../ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import { Globe } from "lucide-react";
-import { Button } from "../ui/button";
 import PopupQueryForm from "./PopupQueryForm";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 3600 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
