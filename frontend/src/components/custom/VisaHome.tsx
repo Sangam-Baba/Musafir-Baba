@@ -11,6 +11,8 @@ import { Card } from "../ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import { Globe } from "lucide-react";
+import { Button } from "../ui/button";
+import PopupQueryForm from "./PopupQueryForm";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
@@ -49,8 +51,8 @@ async function VisaHome() {
   // const firstRow = shownVisa.filter((_, index) => index % 2 === 0);
   // const secondRow = shownVisa.filter((_, index) => index % 2 === 1);
   return (
-    <section className="w-full mx-auto px-4 md:px-8 lg:px-20 py-16">
-      <div className="max-w-7xl mx-auto">
+    <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16 py-8">
+      <div className="max-w-7xl mx-auto flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center">
           <h1 className="text-2xl md:text-3xl font-bold text-center">
             Popular Visa Services for Indian Travellers
@@ -178,6 +180,9 @@ async function VisaHome() {
             <CarouselPrevious className="ml-6" />
             <CarouselNext className="mr-6" />
           </Carousel>
+        </div>
+        <div className="mt-6">
+          <PopupQueryForm />
         </div>
       </div>
     </section>

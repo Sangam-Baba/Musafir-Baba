@@ -7,7 +7,7 @@ import h2 from "../../../public/2.webp";
 import h3 from "../../../public/3.webp";
 export default function SectionFour() {
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-6 ">
+    <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 ">
       <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12">
         {/* Text Section */}
         <div className="flex flex-col gap-4 md:w-1/2">

@@ -37,7 +37,7 @@ async function BlogsHome() {
   const [featured, ...rest] = blogs;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-16">
+    <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-8 md:py-16">
       {/* Header */}
       <div className="flex w-full justify-between gap-2 items-center mb-10">
         <div className="space-y-2">

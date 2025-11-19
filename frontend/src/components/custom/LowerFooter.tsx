@@ -43,7 +43,10 @@ async function LowerFooterItem() {
                 key={link._id}
                 className="hover:text-[#FE5300] transition-colors duration-200 ease-in-out"
               >
-                <Link className="text-justify" href={link.url}>
+                <Link
+                  className="text-justify text-xs md:text-sm"
+                  href={link.url}
+                >
                   {link.text} |
                 </Link>
               </li>

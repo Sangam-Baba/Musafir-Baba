@@ -24,7 +24,7 @@ export function Faqs({ faqs }: FaqsProps) {
   const secondColumn = faqs.slice(midIndex);
 
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16">
+    <section className="w-full px-4 md:px-8 lg:px-20 py-8 md:py-16">
       <div className="flex flex-col gap-10 items-center max-w-7xl mx-auto">
         {/* Section Title */}
         <div className="text-center space-y-2">

@@ -37,7 +37,7 @@ function SecondSection() {
   }, []);
 
   return (
-    <section className="w-full py-10">
+    <section className="w-full md:py-16 py-8">
       {/* <div className="absolute inset-0 bg-white/10 z-10 "></div> */}
       <div className="max-w-7xl mx-auto flex justify-around items-center px-8  gap-6">
         <div className="flex flex-col gap-2 items-center">

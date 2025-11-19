@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: "MusafirBaba",
     images: [
       {
-        url: "https://musafirbaba.com/logo.svg", // replace with your image
+        url: "https://musafirbaba.com/homebanner.webp", // replace with your image
         width: 1200,
         height: 630,
         alt: "MusafirBaba Travel",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
     description:
       "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services.",
-    images: ["https://musafirbaba.com/logo.svg"], // recommended 1200x630
+    images: ["https://musafirbaba.com/homebanner.webp"], // recommended 1200x630
     creator: "@", // optional
   },
   icons: {
@@ -139,7 +139,12 @@ export default function RootLayout({
           rel="dns-prefetch"
           href="https://musafir-baba-backend.onrender.com"
         />
-        <link rel="preload" as="image" href="/bannerImage.webp" />
+        <link
+          rel="preload"
+          as="image"
+          type="image/webp"
+          href="/homebanner.webp"
+        />
 
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         {/* Google Tag Manager Script */}

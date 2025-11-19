@@ -57,7 +57,7 @@ export function DestinationSection() {
   //   },
   // ];
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16  ">
+    <section className="w-full px-4 md:px-8 lg:px-20 py-8 md:py-16 ">
       <div className="flex flex-col gap-2 items-center max-w-7xl mx-auto">
         {/* Heading */}
         <div className="flex flex-col gap-5 items-center w-full">

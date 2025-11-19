@@ -5,7 +5,7 @@ import Link from "next/link";
 
 function HomeBooking() {
   return (
-    <section className="relative max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between bg-[#CFFFD2] w-full px-6 md:px-12 lg:px-24 py-12 overflow-visible rounded-xl pb-0 gap-5 ">
+    <section className="relative max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between bg-[#CFFFD2] w-full px-6 md:px-12 lg:px-24 py-8 md:py-16 my-12 overflow-visible rounded-xl pb-0 gap-5 ">
       {/* Left Content */}
       <div className="flex flex-col gap-4 w-full md:w-1/2 text-center md:text-left z-10">
         <h2 className="text-3xl md:text-4xl font-bold text-[#1B1B1B]">

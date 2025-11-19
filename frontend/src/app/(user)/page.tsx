@@ -16,6 +16,7 @@ import VisaHome from "@/components/custom/VisaHome";
 import VideoSection from "@/components/custom/VideoSection";
 import Newslatter from "@/components/common/Newslatter";
 import WhyChoose from "@/components/custom/WhyChoose";
+import Image from "next/image";
 
 const faqs = [
   {
@@ -61,10 +62,18 @@ export default function HomePage() {
     <main className="">
       <section
         className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center"
-        style={{
-          backgroundImage: `url(${"/homebanner.jpg"})`,
-        }}
+        // style={{
+        //   backgroundImage: `url(${"/homebanner.webp"})`,
+        // }}
       >
+        <Image
+          src="/homebanner.webp"
+          alt="Home Banner MusafirBaba"
+          fill
+          priority // load this image fast
+          sizes="100vw"
+          className="object-cover"
+        />
         {/* <div className="absolute inset-0  z-10  bg-gradient-to-r from-black/20 to-transparent"></div> */}
         <div className="flex flex-col ml-15 md:gap-10 gap-4 items-center  z-10 w-[70%] md:w-[50%] lg:w-[50%] relative ">
           <div className="text-center flex flex-col items-center justify-center">
@@ -101,7 +110,7 @@ export default function HomePage() {
       <ImageGallery />
       <HomeBooking />
       <BlogsHome />
-      <Newslatter />
+
       <Faqs faqs={faqs} />
     </main>
   );

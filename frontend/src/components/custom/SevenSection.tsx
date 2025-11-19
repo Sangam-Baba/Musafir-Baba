@@ -67,7 +67,7 @@ export async function SevenSection() {
 
   return (
     <section
-      className="w-full px-4 md:px-8 lg:px-20 py-16 relative bg-cover bg-center bg-no-repeat text-white"
+      className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 my-12  relative bg-cover bg-center bg-no-repeat text-white"
       style={{ backgroundImage: `url(${bg.src})` }}
     >
       {/* semi-transparent dark overlay */}
@@ -76,7 +76,7 @@ export async function SevenSection() {
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col gap-8 items-center">
         {/* Heading */}
         <div className="text-center space-y-4">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-wide">
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-wide">
             Hot Picks of the Season — Don’t Miss Out!
           </h2>
           <div className="mx-auto w-24 h-1 bg-[#FE5300] rounded-full"></div>
@@ -94,7 +94,7 @@ export async function SevenSection() {
                 <CarouselItem key={i}>
                   <Card className="bg-transparent border-none shadow-none  overflow-hidden p-0 m-0">
                     <CardHeader className="flex justify-center items-center text-center">
-                      <h3 className="text-2xl font-bold text-white">
+                      <h3 className="text-xl  md:text-2xl font-semibold text-white">
                         {pkg.title}
                       </h3>
                     </CardHeader>
@@ -102,7 +102,7 @@ export async function SevenSection() {
                     <CardContent
                       className={`flex flex-col md:flex-row ${
                         i % 2 === 0 ? "md:flex-row-reverse" : ""
-                      }  justify-center gap-18`}
+                      }  justify-center gap-10 md:gap-16 `}
                     >
                       <div className="w-full md:w-1/2 flex gap-4">
                         <div className="w-full flex flex-col gap-4">
@@ -169,8 +169,8 @@ export async function SevenSection() {
                         >
                           {pkg.description}
                         </p>
-                        <div className="flex justify-between gap-4 mt-4">
-                          <div className="flex items-center gap-2 text-white">
+                        <div className="flex justify-between gap-2 md:gap-4 mt-4">
+                          <div className="flex flex-col md:flex-row items-center gap-2 text-white">
                             <MapPin
                               className="w-6 h-8 inline-block "
                               color="#FE5300"
@@ -181,14 +181,14 @@ export async function SevenSection() {
                             {pkg?.destination?.state.charAt(0).toUpperCase() +
                               pkg?.destination?.state.slice(1)}
                           </div>
-                          <div className="flex items-center gap-2 text-white">
+                          <div className="flex flex-col md:flex-row items-center gap-2 text-white">
                             <Clock
                               className="w-6 h-8 inline-block "
                               color="#FE5300"
                             />
                             {pkg?.duration?.nights}N/{pkg?.duration?.days}D
                           </div>
-                          <div className="flex items-center gap-2 text-white">
+                          <div className="flex flex-col md:flex-row items-center gap-2 text-white">
                             <FaMoneyBill
                               className="w-6 h-8 inline-block "
                               color="#FE5300"

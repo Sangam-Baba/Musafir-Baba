@@ -53,9 +53,9 @@ export function Testimonial() {
   );
 
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-16 flex flex-col items-center">
+    <section className="w-full px-4 md:px-8 lg:px-20 md:py-10 py-8 flex flex-col items-center">
       {/* Heading */}
-      <div className="flex flex-col gap-2 items-center py-4 text-center">
+      <div className="flex flex-col gap-2 items-center  text-center">
         <h2 className="text-2xl md:text-3xl font-bold">Testimonials</h2>
         <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
         <p className="text-gray-600">Hear it from our happy travellers</p>

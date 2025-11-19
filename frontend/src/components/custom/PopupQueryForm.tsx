@@ -6,8 +6,11 @@ export default function PopupQueryForm() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-[#FE5300] hover:bg-[#FE5300]">
-          Enquery Now
+        <Button
+          variant="outline"
+          className="bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300]"
+        >
+          Enquiry Now
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
