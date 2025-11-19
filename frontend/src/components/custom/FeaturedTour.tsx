@@ -11,6 +11,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { CarouselDots } from "../ui/carousel-indicators";
 
 interface Batch {
   _id: string;
@@ -150,8 +151,9 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                           </CarouselItem>
                         ))}
                     </CarouselContent>
-                    <CarouselPrevious className="ml-4" />
-                    <CarouselNext className="mr-4" />
+                    {/* <CarouselPrevious className="ml-4" />
+                    <CarouselNext className="mr-4" /> */}
+                    <CarouselDots />
                   </Carousel>
                 </div>
               </div>

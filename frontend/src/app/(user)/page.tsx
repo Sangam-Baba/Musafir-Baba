@@ -78,14 +78,19 @@ export default function HomePage() {
         <div className="flex flex-col ml-15 md:gap-10 gap-4 items-center  z-10 w-[70%] md:w-[50%] lg:w-[50%] relative ">
           <div className="text-center flex flex-col items-center justify-center">
             <h1
-              className={` text-xl md:text-2xl lg:text-5xl font-bold  text-inline leading-tight`}
+              className={`text-xl font-poppins font-extrabold md:text-2xl lg:text-5xl   text-inline leading-tight`}
             >
               Book your dream trip in just
             </h1>
-            <p className="text-white text-xl md:text-2xl lg:text-5xl  font-bold text-inline leading-tight tracking-wide">
+            <p
+              className="
+  text-xl md:text-2xl lg:text-5xl font-bold leading-tight tracking-wide font-poppins font-extrabold
+  text-[#f8b914]
+"
+            >
               60 seconds
             </p>
-            <p className="hidden md:block text-sm md:text-lg mt-1">
+            <p className="hidden md:block text-sm md:text-lg mt-1 font-poppins ">
               Get curated tours & seamless visa assistance - all in one place.
             </p>
           </div>

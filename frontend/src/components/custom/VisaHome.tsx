@@ -11,6 +11,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Globe } from "lucide-react";
 import PopupQueryForm from "./PopupQueryForm";
+import { CarouselDots } from "../ui/carousel-indicators";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
@@ -125,7 +126,8 @@ async function VisaHome() {
         </div>
 
         {/* Carosal */}
-        <div className=" md:hidden flex flex-col gap-2 items-center mt-8 px-4">
+
+        <div className=" md:hidden flex flex-col gap-2 items-center mt-8 px-4 w-full">
           <Carousel
             opts={{
               align: "start",
@@ -175,8 +177,9 @@ async function VisaHome() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="ml-6" />
-            <CarouselNext className="mr-6" />
+            {/* <CarouselPrevious className="ml-6" />
+            <CarouselNext className="mr-6" /> */}
+            <CarouselDots />
           </Carousel>
         </div>
         <div className="mt-6">

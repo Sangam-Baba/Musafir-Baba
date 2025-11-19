@@ -7,6 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
+import { CarouselDots } from "../ui/carousel-indicators";
 
 function WhyChoose() {
   const data = [
@@ -117,8 +118,9 @@ function WhyChoose() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="ml-16" />
-          <CarouselNext className="mr-16" />
+          {/* <CarouselPrevious className="ml-16" />
+          <CarouselNext className="mr-16" /> */}
+          <CarouselDots />
         </Carousel>
       </div>
     </section>

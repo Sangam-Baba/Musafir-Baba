@@ -135,12 +135,7 @@ function Footer() {
       </div>
       {/* Mobile Footer */}
       <div className="md:hidden flex flex-col gap-4  px-4 py-8">
-        <Accordion
-          type="single"
-          collapsible
-          className="w-full space-y-4"
-          defaultValue="services"
-        >
+        <Accordion type="single" collapsible className="w-full space-y-4">
           {/* === Services === */}
           <AccordionItem
             value="services"
@@ -266,11 +261,25 @@ function Footer() {
               </div>
             </AccordionContent>
           </AccordionItem>
+
+          <AccordionItem
+            value="Quick Links"
+            className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
+          >
+            <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
+              <span>Quick Links</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-4 text-gray-700 text-sm flex flex-col gap-3 animate-fadeIn">
+              <div>
+                <LowerFooterItem />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </div>
-
+      {/* <div className="h-0.5 w-[100%] bg-gray-200 "></div> */}
       {/* Quick Links */}
-      <div className="border-t border-gray-200 md:py-12 py-8  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
+      <div className="hidden md:flex border-t border-gray-200 md:py-12 py-8  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
         <div className="flex flex-col gap-2 pb-4">
           <p className="text-2xl font-bold">Quick Links</p>
           <p className="h-1 w-[5%] bg-[#FE5300]"></p>
@@ -279,6 +288,13 @@ function Footer() {
           <LowerFooterItem />
         </div>
       </div>
+      {/* <div className="md:hidden flex flex-col gap-4  px-4 py-8">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full space-y-4"
+        ></Accordion>
+      </div> */}
       {/* LowerFooter */}
       <div className="text-center py-4 border-t border-gray-200 px-4">
         <p>

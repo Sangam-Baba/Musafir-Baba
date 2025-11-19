@@ -10,6 +10,8 @@ import {
   // CarouselNext,
   // CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Car } from "lucide-react";
+import { CarouselDots } from "../ui/carousel-indicators";
 
 const testi = [
   {
@@ -94,6 +96,7 @@ export function Testimonial() {
         </CarouselContent>
         {/* <CarouselPrevious />
         <CarouselNext /> */}
+        <CarouselDots />
       </Carousel>
     </section>
   );

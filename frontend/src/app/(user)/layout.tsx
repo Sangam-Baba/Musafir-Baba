@@ -53,7 +53,13 @@ import { AuthDialog } from "@/components/auth/AuthDialog";
 import BreadcrumbSEO from "@/components/common/BreadcrumbSEO";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import PlanMyTrip from "@/components/common/Plan-My-Trip";
+import { Poppins } from "next/font/google";
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"], // add heavy/bold weights
+  variable: "--font-poppins",
+});
 export default function RootLayout({
   children,
 }: {
@@ -129,7 +135,7 @@ export default function RootLayout({
     ],
   };
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable}`}>
       <head>
         <link
           rel="preconnect"

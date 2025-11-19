@@ -55,7 +55,7 @@ async function BlogsHome() {
         </div>
       </div>
 
-      <div className="w-full flex flex-col md:flex-row gap-6 justify-between items-center">
+      <div className="w-full flex flex-col-reverse md:flex-row gap-6 justify-between items-center">
         <div className="md:w-1/2 flex flex-col gap-4">
           {rest.slice(0, 4).map((blog: Blog) => (
             <Card

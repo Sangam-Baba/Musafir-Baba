@@ -65,8 +65,10 @@ export function DestinationSection() {
             <h2 className="text-2xl md:text-3xl font-bold text-center">
               Top Destinations in India & Around the World
             </h2>
-            <div className="w-20 h-1 bg-[#FE5300]"></div>
-            <p>Discover trending destinations across India and abroad</p>
+            <div className="w-20 h-1 bg-[#FE5300] "></div>
+            <p className="text-center">
+              Discover trending destinations across India and abroad
+            </p>
           </div>
 
           <div className="flex gap-4">

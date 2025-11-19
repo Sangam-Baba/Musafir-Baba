@@ -38,12 +38,7 @@ export function Faqs({ faqs }: FaqsProps) {
         {/* FAQ Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
           {/* Left Column */}
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-            defaultValue={firstColumn[0]?.id.toString()}
-          >
+          <Accordion type="single" collapsible className="w-full">
             {firstColumn.map((faq) => (
               <AccordionItem
                 value={faq.id.toString()}
@@ -61,12 +56,7 @@ export function Faqs({ faqs }: FaqsProps) {
           </Accordion>
 
           {/* Right Column */}
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-            defaultValue={secondColumn[0]?.id.toString()}
-          >
+          <Accordion type="single" collapsible className="w-full">
             {secondColumn.map((faq) => (
               <AccordionItem
                 value={faq.id.toString()}

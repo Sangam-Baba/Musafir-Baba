@@ -10,7 +10,7 @@ export default function PopupQueryForm() {
           variant="outline"
           className="bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300]"
         >
-          Enquiry Now
+          Apply Now
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
