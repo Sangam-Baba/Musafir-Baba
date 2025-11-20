@@ -37,44 +37,15 @@ function Footer() {
             honeymoon packages and corporate trips along with visa assistance
             and bus/train/flight bookings etc.
           </p>
-
-          {/* SOcial */}
-
-          <div className="flex flex-col gap-2 mt-4">
-            <p className="text-lg font-bold">Follow Us</p>
-            <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
-            <div className="flex items-center  gap-4 pt-2">
-              <Link href="https://www.youtube.com/@hello_musafirbaba">
-                <Youtube
-                  color="#FE5300"
-                  className="w-6 h-6 hover:scale-110 transition-transform"
-                />
-              </Link>
-              <Link href="http://facebook.com/hellomusafirbaba">
-                <Facebook
-                  color="#FE5300"
-                  className="w-6 h-6 hover:scale-110 transition-transform"
-                />
-              </Link>
-              <Link href="https://x.com/itsmusafirbaba">
-                <LucideTwitter
-                  color="#FE5300"
-                  className="w-6 h-6 hover:scale-110 transition-transform"
-                />
-              </Link>
-              <Link href="https://www.instagram.com/hello_musafirbaba">
-                <Instagram
-                  color="#FE5300"
-                  className="w-6 h-6 hover:scale-110 transition-transform"
-                />
-              </Link>
-              <Link href="https://in.linkedin.com/company/musafirbaba">
-                <Linkedin
-                  color="#FE5300"
-                  className="w-6 h-6 hover:scale-110 transition-transform"
-                />
-              </Link>
-            </div>
+          <div className="relative h-[150px] rounded-xl overflow-hidden mt-2">
+            <Link href="https://maps.app.goo.gl/bsvktDpBfWtxsVRm8">
+              <Image
+                src="https://res.cloudinary.com/dmmsemrty/image/upload/v1763615567/image_2_gqvedz.png"
+                fill
+                alt="Musafir Baba Map"
+                className="object-cover"
+              />
+            </Link>
           </div>
         </div>
         {/*     Services */}
@@ -121,15 +92,46 @@ function Footer() {
               <Mail size={20} color="#FE5300" className="w-[5%] h-5  " />
               <p className="flex justify-start w-[90%]">care@musafirbaba.com</p>
             </div>
-            <div className="h-[200px] rounded-xl overflow-hidden mt-3">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.624108549693!2d76.97522459999999!3d28.611051399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d05a3e076b787%3A0xc858632593d54601!2sMusafirBaba%20-%20Best%20Travel%20Agency%20in%20Delhi%20I%20Holidays%20I%20Visa!5e0!3m2!1sen!2sin!4v1760166725887!5m2!1sen!2sin"
-                width="100%"
-                height="200"
-                style={{ border: "0" }}
-              ></iframe>
-            </div>
+
             {/* Socials */}
+            {/* SOcial */}
+
+            <div className="flex flex-col gap-2 xl:mt-2 ">
+              <p className="text-lg font-bold">Follow Us</p>
+              <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
+              <div className="flex items-center  gap-4 pt-2">
+                <Link href="https://www.youtube.com/@hello_musafirbaba">
+                  <Youtube
+                    color="#FE5300"
+                    className="w-6 h-6 hover:scale-110 transition-transform"
+                  />
+                </Link>
+                <Link href="http://facebook.com/hellomusafirbaba">
+                  <Facebook
+                    color="#FE5300"
+                    className="w-6 h-6 hover:scale-110 transition-transform"
+                  />
+                </Link>
+                <Link href="https://x.com/itsmusafirbaba">
+                  <LucideTwitter
+                    color="#FE5300"
+                    className="w-6 h-6 hover:scale-110 transition-transform"
+                  />
+                </Link>
+                <Link href="https://www.instagram.com/hello_musafirbaba">
+                  <Instagram
+                    color="#FE5300"
+                    className="w-6 h-6 hover:scale-110 transition-transform"
+                  />
+                </Link>
+                <Link href="https://in.linkedin.com/company/musafirbaba">
+                  <Linkedin
+                    color="#FE5300"
+                    className="w-6 h-6 hover:scale-110 transition-transform"
+                  />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -216,18 +218,19 @@ function Footer() {
                 </div>
               </div>
 
-              <div className="rounded-xl overflow-hidden mt-3">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.624108549693!2d76.97522459999999!3d28.611051399999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d05a3e076b787%3A0xc858632593d54601!2sMusafirBaba%20-%20Best%20Travel%20Agency%20in%20Delhi%20I%20Holidays%20I%20Visa!5e0!3m2!1sen!2sin!4v1760166725887!5m2!1sen!2sin"
-                  width="100%"
-                  height="180"
-                  style={{ border: "0" }}
-                  loading="lazy"
-                ></iframe>
-              </div>
+              {/* <div className="rounded-xl overflow-hidden mt-3">
+                <Link href="https://maps.app.goo.gl/bsvktDpBfWtxsVRm8">
+                  <Image
+                    src="https://res.cloudinary.com/dmmsemrty/image/upload/v1763615567/image_2_gqvedz.png"
+                    fill
+                    alt="Musafir Baba Map"
+                    className="w-full h-auto"
+                  />
+                </Link>
+              </div> */}
 
               {/* Socials */}
-              <div className="flex items-center justify-center gap-4 pt-4">
+              <div className="flex items-center  gap-4 pt-4">
                 <Link href="https://www.youtube.com/@hello_musafirbaba">
                   <Youtube
                     color="#FE5300"
@@ -277,24 +280,18 @@ function Footer() {
           </AccordionItem>
         </Accordion>
       </div>
-      {/* <div className="h-0.5 w-[100%] bg-gray-200 "></div> */}
+
       {/* Quick Links */}
-      <div className="hidden md:flex border-t border-gray-200 md:py-12 py-8  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
+      <div className="hidden md:flex flex-col border-t border-gray-200 md:py-12 py-8  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
         <div className="flex flex-col gap-2 pb-4">
           <p className="text-2xl font-bold">Quick Links</p>
-          <p className="h-1 w-[5%] bg-[#FE5300]"></p>
+          <p className="h-1 w-[15%] bg-[#FE5300] rounded-full"></p>
         </div>
         <div>
           <LowerFooterItem />
         </div>
       </div>
-      {/* <div className="md:hidden flex flex-col gap-4  px-4 py-8">
-        <Accordion
-          type="single"
-          collapsible
-          className="w-full space-y-4"
-        ></Accordion>
-      </div> */}
+
       {/* LowerFooter */}
       <div className="text-center py-4 border-t border-gray-200 px-4">
         <p>

@@ -70,7 +70,8 @@ export default function HomePage() {
           src="/homebanner.webp"
           alt="Home Banner MusafirBaba"
           fill
-          priority // load this image fast
+          priority
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover"
         />

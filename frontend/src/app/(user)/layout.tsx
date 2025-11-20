@@ -153,6 +153,7 @@ export default function RootLayout({
         />
 
         <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://static.doubleclick.net" />
         {/* Google Tag Manager Script */}
         <Script
           id="gtm-script"

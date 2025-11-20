@@ -1,6 +1,9 @@
+"use client";
 import React from "react";
 import { Card } from "../ui/card";
 import Link from "next/link";
+import "react-lite-youtube-embed/dist/LiteYouTubeEmbed.css";
+import LiteYouTubeEmbed from "react-lite-youtube-embed";
 
 function VideoSection() {
   return (
@@ -17,15 +20,15 @@ function VideoSection() {
           <div className="lg:col-span-4 group cursor-pointer">
             <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-0 p-0">
               <div className="relative aspect-video">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/iFEIzFtT8yQ?si=hduEXvsF3HREYLy-"
+                <LiteYouTubeEmbed
+                  id="iFEIzFtT8yQ"
                   title="Behind the Scenes Video"
-                  className="w-full h-full object-cover z-10"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+                  lazyLoad={true}
+                  poster="maxresdefault" // better thumbnail quality
+                  cookie={true} // privacy mode, faster load
+                  webp={true} // lighter images
+                  playlist={false}
+                ></LiteYouTubeEmbed>
               </div>
             </Card>
           </div>

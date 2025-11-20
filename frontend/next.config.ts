@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
+  browsersListForSwc: true,
   images: {
     minimumCacheTTL: 31536000, // 1 year
     remotePatterns: [
