@@ -14,6 +14,7 @@ import VisaHome from "@/components/custom/VisaHome";
 import VideoSection from "@/components/custom/VideoSection";
 import WhyChoose from "@/components/custom/WhyChoose";
 import Image from "next/image";
+import SecondSectionServer from "@/components/custom/SecondSectionServer";
 
 const faqs = [
   {
@@ -98,7 +99,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <SecondSection />
+      <SecondSectionServer />
       <VisaHome />
       {/* <ThirdSection /> */}
       <SevenSection />

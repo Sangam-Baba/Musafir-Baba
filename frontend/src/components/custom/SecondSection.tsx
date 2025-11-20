@@ -2,14 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-const getCount = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/counter/68e6549442582b78aea7c191`,
-    { cache: "no-store" } // ensures fresh data
-  );
-  if (!res.ok) throw new Error("Failed to fetch counter");
-  return res.json();
-};
 
 const updateCounter = async () => {
   const res = await fetch(
@@ -20,20 +12,11 @@ const updateCounter = async () => {
   return res.json();
 };
 
-function SecondSection() {
-  const [counter, setCounter] = useState<number>(999);
+function SecondSection({ initialCount }: { initialCount: number }) {
+  const [counter, setCounter] = useState<number>(initialCount);
 
   useEffect(() => {
-    const updateAndFetch = async () => {
-      try {
-        await updateCounter();
-        const data = await getCount();
-        setCounter(data.count);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    updateAndFetch();
+    updateCounter();
   }, []);
 
   return (
@@ -62,7 +45,7 @@ function SecondSection() {
             className="w-10 h-10 md:w-13 md:h-13 "
           />
           {/* <Star className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <p className="text-xl md:text-2xl font-bold text-black">4.8/5</p>
+          <p className="text-xl md:text-2xl font-bold text-black">4.8</p>
           <p className="text-sm text-black text-center">Google Ratings</p>
         </div>
 

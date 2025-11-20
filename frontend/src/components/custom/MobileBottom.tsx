@@ -2,18 +2,16 @@ import { Phone } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { FaWhatsapp } from "react-icons/fa";
-import PopupQueryForm from "./PopupQueryForm";
 import { SquarePen } from "lucide-react";
 import { Dialog } from "@radix-ui/react-dialog";
 import { DialogContent, DialogTrigger } from "../ui/dialog";
-import { Button } from "../ui/button";
 import QueryForm from "./QueryForm";
 function MobileBottom() {
   const whatsappNumber = "919289602447";
 
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
   return (
-    <div className="fixed bottom-0 z-50 flex items-center px-10 py-2 justify-between w-full bg-white border-t border-gray-400 ">
+    <div className="block md:hidden fixed bottom-0 z-50 flex items-center px-10 py-2 justify-between w-full bg-white border-t border-gray-400 ">
       <div>
         <Link
           href="tel:1234567890"

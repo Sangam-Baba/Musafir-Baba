@@ -15,7 +15,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
-    next: { revalidate: 60 }, // ISR: revalidate every 1 min
+    cache: "no-cache", // ISR: revalidate every 1 min
   });
 
   if (!res.ok) return null;
@@ -124,7 +124,7 @@ export default async function BlogDetailPage({
       <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
         <article className="lg:w-6/9 ">
           {/* Cover Image */}
-          <BlogViewTracker id={blog._id} />
+          {/* <BlogViewTracker id={blog._id} /> */}
           <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
             <Image
               src={blog.coverImage.url}
@@ -147,7 +147,9 @@ export default async function BlogDetailPage({
               </span>
               <span>Category: {blog.category.name}</span>
               <span>📅 {new Date(blog.createdAt).toLocaleDateString()}</span>
-              <span>👀 {blog.views + 1000} views</span>
+              <span>
+                <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
+              </span>
               <span>
                 <BlogLikes id={blog._id} initialLikes={blog.likes} />
               </span>

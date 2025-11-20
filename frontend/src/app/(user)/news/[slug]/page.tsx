@@ -14,7 +14,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
-    next: { revalidate: 60 }, // ISR: revalidate every 1 min
+    cache: "no-cache",
   });
 
   if (!res.ok) return null;
@@ -123,7 +123,7 @@ export default async function NewsDetailPage({
       <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
         <article className="lg:w-6/9  ">
           {/* Cover Image */}
-          <BlogViewTracker id={news._id} />
+
           <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
             <Image
               src={news.coverImage.url}
@@ -145,7 +145,9 @@ export default async function NewsDetailPage({
                 </Link>
               </span>
               <span>📅 {new Date(news.createdAt).toLocaleDateString()}</span>
-              <span>👀 {news.views + 1000} views</span>
+              <span>
+                <BlogViewTracker id={news._id} view={news?.views} type="news" />
+              </span>
               <span>
                 <BlogLikes id={news._id} initialLikes={news.likes} />
               </span>

@@ -177,9 +177,9 @@ async function VisaHome() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            {/* <CarouselPrevious className="ml-6" />
-            <CarouselNext className="mr-6" /> */}
-            <CarouselDots />
+            <CarouselPrevious className="ml-6" />
+            <CarouselNext className="mr-6" />
+            {/* <CarouselDots /> */}
           </Carousel>
         </div>
         <div className="mt-6">
