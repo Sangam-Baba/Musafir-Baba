@@ -54,6 +54,7 @@ import BreadcrumbSEO from "@/components/common/BreadcrumbSEO";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import PlanMyTrip from "@/components/common/Plan-My-Trip";
 import { Poppins } from "next/font/google";
+import MobileBottom from "@/components/custom/MobileBottom";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -154,6 +155,7 @@ export default function RootLayout({
 
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://static.doubleclick.net" />
+
         {/* Google Tag Manager Script */}
         <Script
           id="gtm-script"
@@ -185,6 +187,7 @@ export default function RootLayout({
             <PlanMyTrip />
             <QueryDailogBox />
             <WhatsAppButton />
+            <MobileBottom />
           </main>
           <Script
             id="organization-schema"

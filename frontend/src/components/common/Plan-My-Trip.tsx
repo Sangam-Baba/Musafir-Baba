@@ -19,7 +19,7 @@ export default function PlanMyTrip() {
   };
 
   return (
-    <div className="fixed top-69 -right-9 z-50 flex items-center gap-2 rotate-[270deg] ">
+    <div className="hidden md:flex fixed top-69 -right-9 z-50 flex items-center gap-2 rotate-[270deg] ">
       <Button
         onClick={handleClick}
         className="bg-[#87E87F] text-black hover:bg-[#87E87F] hover:text-black"

@@ -5,7 +5,7 @@ import QueryForm from "../custom/QueryForm";
 
 export function QueryDailogBox() {
   return (
-    <div className="fixed top-100 -right-10 z-50 flex items-center gap-2 rotate-[270deg]">
+    <div className="hidden md:flex fixed top-100 -right-10 z-50 flex items-center gap-2 rotate-[270deg]">
       <Dialog>
         <DialogTrigger asChild>
           <Button

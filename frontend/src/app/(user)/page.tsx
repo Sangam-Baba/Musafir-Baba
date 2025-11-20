@@ -8,13 +8,10 @@ import { DestinationSection } from "../../components/custom/DestinationSection";
 import { Faqs } from "../../components/custom/Faqs";
 import FeaturedTourSSG from "../../components/custom/FeaturedTourSSG";
 import SearchBanner from "@/components/custom/Search";
-import ThirdSection from "@/components/custom/ThirdSection";
 import BlogsHome from "@/components/custom/BlogsHome";
-// import Image from "next/image";
 import HomeBooking from "../../components/custom/HomeBooking";
 import VisaHome from "@/components/custom/VisaHome";
 import VideoSection from "@/components/custom/VideoSection";
-import Newslatter from "@/components/common/Newslatter";
 import WhyChoose from "@/components/custom/WhyChoose";
 import Image from "next/image";
 
@@ -81,18 +78,18 @@ export default function HomePage() {
             <h1
               className={`text-xl font-poppins font-extrabold md:text-2xl lg:text-5xl   text-inline leading-tight`}
             >
-              Book your dream trip in just
+              Book your <span className="text-[#74ff18]">dream trip</span> in
+              just
             </h1>
             <p
               className="
   text-xl md:text-2xl lg:text-5xl font-bold leading-tight tracking-wide font-poppins font-extrabold
-  text-[#f8b914]
 "
             >
               60 seconds
             </p>
             <p className="hidden md:block text-sm md:text-lg mt-1 font-poppins ">
-              Get curated tours & seamless visa assistance - all in one place.
+              Get curated tours & seamless visa assistance - all in one place
             </p>
           </div>
 

@@ -1,6 +1,7 @@
 import QueryForm from "./QueryForm";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { SquarePen } from "lucide-react";
 
 export default function PopupQueryForm() {
   return (
@@ -10,6 +11,7 @@ export default function PopupQueryForm() {
           variant="outline"
           className="bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300]"
         >
+          <SquarePen />
           Apply Now
         </Button>
       </DialogTrigger>
