@@ -30,14 +30,14 @@ async function LowerFooterItem() {
   );
 
   return (
-    <section className="w-full flex flex-col gap-2">
+    <section className="w-full flex flex-col ">
       {lowerFooter?.map((item) => (
-        <div key={item._id} className="flex gap-2">
+        <div key={item._id} className="flex gap-1">
           <h2 className="font-semibold mb-3 inline-block whitespace-nowrap pr-2">
             {item.title}:
           </h2>
 
-          <ul className="flex flex-wrap gap-2 text-sm md:text-base">
+          <ul className="flex flex-wrap gap-1 text-sm md:text-base">
             {item.content?.map((link) => (
               <li
                 key={link._id}

@@ -24,7 +24,7 @@ async function FooterItem({ title }: FooterItemProps) {
   return (
     <section>
       <p className={`text-lg font-bold`}>{title}</p>
-      <p className="h-0.5 w-[5%] bg-[#FE5300]"></p>
+      <p className="h-0.5 w-[8%] bg-[#FE5300]"></p>
       <ul className={` space-y-2 pt-4 `}>
         {FootObj?.content?.map((item: Item, idx: number) => (
           <li className="hover:text-[#FE5300]" key={idx}>

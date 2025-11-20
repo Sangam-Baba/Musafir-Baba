@@ -283,9 +283,9 @@ function Footer() {
 
       {/* Quick Links */}
       <div className="hidden md:flex flex-col border-t border-gray-200 md:py-12 py-8  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
-        <div className="flex flex-col gap-2 pb-4">
-          <p className="text-2xl font-bold">Quick Links</p>
-          <p className="h-1 w-[15%] bg-[#FE5300] rounded-full"></p>
+        <div className="flex flex-col gap-1 pb-4">
+          <p className="text-lg font-bold">Quick Links</p>
+          <p className="h-0.5 w-[20%] bg-[#FE5300] rounded-full"></p>
         </div>
         <div>
           <LowerFooterItem />
