@@ -11,7 +11,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Globe } from "lucide-react";
 import PopupQueryForm from "./PopupQueryForm";
-import { CarouselDots } from "../ui/carousel-indicators";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
@@ -22,7 +21,6 @@ const getVisa = async (search: string) => {
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
-  // console.log(data.data);
   return data?.data; // []
 };
 async function VisaHome() {
@@ -46,9 +44,6 @@ async function VisaHome() {
     .sort(
       (a, b) => finalVisa.indexOf(a.country) - finalVisa.indexOf(b.country)
     );
-
-  // const firstRow = shownVisa.filter((_, index) => index % 2 === 0);
-  // const secondRow = shownVisa.filter((_, index) => index % 2 === 1);
   return (
     <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16 py-8">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
@@ -75,11 +70,12 @@ async function VisaHome() {
               <Link key={i} href={`/visa/${data.slug}`}>
                 <div className="group relative  overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400">
                   {/* Flag Image */}
-                  <div className="relative h-25 w-full overflow-hidden bg-neutral-100">
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
                     <Image
                       src={data.bannerImage?.url || data.coverImage?.url || ""}
                       alt={data.bannerImage?.alt || "Musafirbaba Visa"}
-                      fill
+                      width={200}
+                      height={50}
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
@@ -148,7 +144,8 @@ async function VisaHome() {
                         <Image
                           src={data.bannerImage?.url || "/placeholder.svg"}
                           alt={data.bannerImage?.alt || "Musafirbaba Visa"}
-                          fill
+                          width={200}
+                          height={30}
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />

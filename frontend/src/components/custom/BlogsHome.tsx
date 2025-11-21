@@ -89,9 +89,9 @@ async function BlogsHome() {
             <Image
               src={featured.coverImage.url}
               alt={featured.coverImage.alt || featured.title}
-              width={480}
-              height={200}
-              className="rounded-xl object-cover w-full h-full"
+              width={530}
+              height={150}
+              className="rounded-xl object-cover w-full md:h-80 h-50"
             />
             <CardContent className="">
               <Link

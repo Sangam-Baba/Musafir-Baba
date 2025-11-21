@@ -56,8 +56,7 @@ export default function PackageCard({
     () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
     [pkg.batch]
   );
-  //  console.log("this is batchesByMonth",batchesByMonth);
-  //  console.log("this is batchesByMonth length",Object.keys(batchesByMonth)[0]);
+
   const allDates = Object.values(batchesByMonth)
     .flat()
     .map((b) => format(parseISO(b.startDate), "dd MMM"));
