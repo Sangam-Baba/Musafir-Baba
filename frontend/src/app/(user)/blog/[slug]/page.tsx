@@ -12,6 +12,8 @@ import { BlogComments } from "@/components/custom/BuildCommentTree";
 import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { readingTime } from "@/utils/readingTime";
+import { Clock, User } from "lucide-react";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -89,7 +91,7 @@ export default async function BlogDetailPage({
 }) {
   const { blog, comments } = await getBlog(params.slug);
   if (!blog) return <NotFoundPage />;
-
+  const readTime = readingTime(blog.content || "");
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -139,8 +141,8 @@ export default async function BlogDetailPage({
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{blog.title}</h1>
             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <span>
-                👤 Author:{" "}
+              <span className="flex items-center gap-2 ">
+                <User size={16} />
                 <Link href={`/author/${blog.author?.slug}`}>
                   {blog.author?.name}
                 </Link>
@@ -152,6 +154,9 @@ export default async function BlogDetailPage({
               </span>
               <span>
                 <BlogLikes id={blog._id} initialLikes={blog.likes} />
+              </span>
+              <span className="flex gap-2 items-center">
+                <Clock size={16} /> {readTime} Min Read
               </span>
               <span>
                 <SocialShare

@@ -11,6 +11,8 @@ import LatestNewsSidebar from "@/components/custom/LatestNewsSidebar";
 import TrandingNewsSidebar from "@/components/custom/TrandingNewsSidebar";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { readingTime } from "@/utils/readingTime";
+import { Clock, User } from "lucide-react";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -88,7 +90,7 @@ export default async function NewsDetailPage({
 }) {
   const { news, comments } = await getNews(params.slug);
   if (!news) return <NotFoundPage />;
-
+  const readTime = readingTime(news.content || "");
   const schema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -138,8 +140,8 @@ export default async function NewsDetailPage({
           <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold ">{news.title}</h1>
             <div className="flex flex-wrap gap-4 text-sm text-gray-600 items-center">
-              <span>
-                👤 Author:{" "}
+              <span className="flex items-center gap-2 ">
+                <User size={16} />
                 <Link href={`/author/${news.author?.slug}`}>
                   {news.author?.name}
                 </Link>
@@ -150,6 +152,10 @@ export default async function NewsDetailPage({
               </span>
               <span>
                 <BlogLikes id={news._id} initialLikes={news.likes} />
+              </span>
+              <span className="flex items-center gap-2 ">
+                <Clock size={16} />
+                {readTime} Min Read
               </span>
               <span>
                 <SocialShare

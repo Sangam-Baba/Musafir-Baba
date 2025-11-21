@@ -45,7 +45,10 @@ export default async function NewsPage() {
 
   return (
     <section className="w-full ">
-      <Hero image="/Heroimg.jpg" title="News" />
+      <Hero
+        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1763716873/istockphoto-1328182974-640x640_u0562o.jpg"
+        title="News"
+      />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>

@@ -60,18 +60,19 @@ async function BlogsHome() {
               />
               <CardContent className="p-2">
                 <Link
-                  href={`/ ${blog.type}/${blog.slug}`}
+                  href={`/${blog.type}/${blog.slug}`}
                   className="font-semibold text-sm line-clamp-2 hover:text-[#FE5300]"
                 >
                   {blog.title}
                 </Link>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1 flex gap-2 items-center ">
                   {new Date(blog.createdAt).toLocaleDateString("en-US", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
                   })}
                   {"  "}
+                  <span className="w-1.5 h-1.5 inline-block bg-[#FE5300] rounded-full "></span>{" "}
                   <span className="font-semibold">
                     {blog.type == "blog" ? "Blog" : "News"}
                   </span>
@@ -95,18 +96,19 @@ async function BlogsHome() {
             />
             <CardContent className="">
               <Link
-                href={`/ ${featured.type}/${featured.slug}`}
+                href={`/${featured.type}/${featured.slug}`}
                 className="text-lg md:text-xl font-semibold hover:text-[#FE5300]"
               >
                 {featured.title}
               </Link>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-500 mt-2 flex gap-2 items-center">
                 {new Date(featured.createdAt).toLocaleDateString("en-US", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
                 })}
                 {"  "}
+                <span className="w-1.5 h-1.5 inline-block bg-[#FE5300] rounded-full"></span>{" "}
                 <span className="font-semibold">
                   {featured.type == "blog" ? "Blog" : "News"}
                 </span>
