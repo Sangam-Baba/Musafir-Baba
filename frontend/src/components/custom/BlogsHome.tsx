@@ -3,38 +3,27 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
+import { News } from "@/app/(user)/news/page";
 
-interface Blog {
-  _id: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  coverImage: {
-    url: string;
-    public_id: string;
-    width?: number;
-    height?: number;
-    alt?: string;
-  };
-  slug: string;
-  updatedAt: string;
-  createdAt: string;
+interface NewType extends News {
+  type: string;
 }
-
-const getBlogs = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
-    next: { revalidate: 3600 },
-  });
+const getCombinedData = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/combined-news-blog`,
+    {
+      next: { revalidate: 360 },
+    }
+  );
   const data = await res.json();
   return data.data;
 };
 
 async function BlogsHome() {
-  const blogs = await getBlogs();
+  const data = await getCombinedData();
+  if (!data.length) return null;
 
-  if (!blogs.length) return null;
-
-  const [featured, ...rest] = blogs;
+  const [featured, ...rest] = data;
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-8 md:py-16">
@@ -57,7 +46,7 @@ async function BlogsHome() {
 
       <div className="w-full flex flex-col-reverse md:flex-row gap-6 justify-between items-center">
         <div className="md:w-1/2 flex flex-col gap-4">
-          {rest.slice(0, 4).map((blog: Blog) => (
+          {rest.slice(0, 4).map((blog: NewType) => (
             <Card
               key={blog._id}
               className="flex flex-row items-center px-2 py-2 gap-2 rounded-xl shadow hover:shadow-lg transition"
@@ -71,7 +60,7 @@ async function BlogsHome() {
               />
               <CardContent className="p-2">
                 <Link
-                  href={`/blog/${blog.slug}`}
+                  href={`/ ${blog.type}/${blog.slug}`}
                   className="font-semibold text-sm line-clamp-2 hover:text-[#FE5300]"
                 >
                   {blog.title}
@@ -81,8 +70,11 @@ async function BlogsHome() {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
-                  })}{" "}
-                  • 6 MIN READ
+                  })}
+                  {"  "}
+                  <span className="font-semibold">
+                    {blog.type == "blog" ? "Blog" : "News"}
+                  </span>
                 </p>
                 <p className="text-sm text-gray-500 mt-1 line-clamp-1">
                   {blog.excerpt}
@@ -103,7 +95,7 @@ async function BlogsHome() {
             />
             <CardContent className="">
               <Link
-                href={`/blog/${featured.slug}`}
+                href={`/ ${featured.type}/${featured.slug}`}
                 className="text-lg md:text-xl font-semibold hover:text-[#FE5300]"
               >
                 {featured.title}
@@ -113,8 +105,11 @@ async function BlogsHome() {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
-                })}{" "}
-                • 6 MIN READ
+                })}
+                {"  "}
+                <span className="font-semibold">
+                  {featured.type == "blog" ? "Blog" : "News"}
+                </span>
               </p>
               <p className="text-sm text-gray-600 mt-3 line-clamp-2">
                 {featured.excerpt}

@@ -6,6 +6,7 @@ import {
   getMonthlyBookings,
   getBookingVSVisaEnquiry,
   getLatestAcitvity,
+  getCombinedNewsBlog,
 } from "../controllers/dashboard.controller.js";
 
 const dashboardRoute = Router();
@@ -37,4 +38,6 @@ dashboardRoute.get(
   authorizedRoles(["admin", "superadmin"]),
   getLatestAcitvity
 );
+
+dashboardRoute.get("/combined-news-blog", getCombinedNewsBlog);
 export default dashboardRoute;

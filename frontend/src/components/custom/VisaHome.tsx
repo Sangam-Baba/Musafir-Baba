@@ -53,9 +53,9 @@ async function VisaHome() {
     <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16 py-8">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-center">
             Popular Visa Services for Indian Travellers
-          </h1>
+          </h2>
           <p className="w-20 h-1 bg-[#FE5300] text-center"></p>
           <p className=" text-center">
             Fast, reliable visa assistance for top travel destinations.

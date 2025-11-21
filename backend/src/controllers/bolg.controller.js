@@ -217,10 +217,16 @@ const blogLike = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id)
-      return res.status(400).json({ success: false, message: "Invalid Id" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid Blog Id" });
+
+    console.log(id);
     const blog = await Blog.findById(id);
     if (!blog)
-      return res.status(404).json({ success: false, message: "Invalid Id" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid Blogs Id" });
     const newBlog = await Blog.findByIdAndUpdate(
       id,
       { $inc: { likes: 1 } },

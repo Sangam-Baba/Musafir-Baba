@@ -33,9 +33,9 @@ async function LowerFooterItem() {
     <section className="w-full flex flex-col ">
       {lowerFooter?.map((item) => (
         <div key={item._id} className="flex gap-1">
-          <h2 className="font-semibold mb-3 inline-block whitespace-nowrap pr-2">
+          <h4 className="font-semibold mb-3 inline-block whitespace-nowrap pr-2">
             {item.title}:
-          </h2>
+          </h4>
 
           <ul className="flex flex-wrap gap-1 text-sm md:text-base">
             {item.content?.map((link) => (

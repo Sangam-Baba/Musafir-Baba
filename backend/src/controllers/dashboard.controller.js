@@ -242,9 +242,33 @@ const getLatestAcitvity = async (req, res) => {
   }
 };
 
+const getCombinedNewsBlog = async (req, res) => {
+  try {
+    const news = await News.find()
+      .select("title coverImage excerpt  slug createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+    const newNews = news.map((item) => ({ ...item, type: "news" }));
+    const blog = await Blog.find()
+      .select("title coverImage excerpt  slug createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+    const newBlog = blog.map((item) => ({ ...item, type: "blog" }));
+    const result = [...newNews, ...newBlog]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+    return res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.log("getCombinedNewsBlog failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 export {
   getDashboardSummary,
   getMonthlyBookings,
   getBookingVSVisaEnquiry,
   getLatestAcitvity,
+  getCombinedNewsBlog,
 };

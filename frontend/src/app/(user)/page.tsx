@@ -74,27 +74,28 @@ export default function HomePage() {
           className="object-cover"
         />
         {/* <div className="absolute inset-0  z-10  bg-gradient-to-r from-black/20 to-transparent"></div> */}
-        <div className="flex flex-col ml-15 md:gap-10 gap-4 items-center  z-10 w-[70%] md:w-[50%] lg:w-[50%] relative ">
+        <div className="flex flex-col ml-15 md:gap-10 gap-4 items-center  z-10 w-[80%] md:w-[60%] lg:w-[55%] xl:w-[50%] relative ">
           <div className="text-center flex flex-col items-center justify-center">
             <h1
-              className={`text-xl font-poppins font-extrabold md:text-2xl lg:text-5xl   text-inline leading-tight`}
+              className={`text-xl font-poppins font-extrabold md:text-2xl xl:text-4xl   text-inline leading-tight`}
             >
               Book your <span className="text-[#74ff18]">dream trip</span> in
-              just
+              just <br></br>
+              <span>60 seconds</span>
             </h1>
-            <p
+            {/* <h1
               className="
   text-xl md:text-2xl lg:text-5xl font-bold leading-tight tracking-wide font-poppins font-extrabold
 "
             >
               60 seconds
-            </p>
-            <p className="hidden md:block text-sm md:text-lg mt-1 font-poppins ">
+            </h1> */}
+            <p className="hidden md:block text-sm md:text-md xl:text-lg mt-1 font-poppins ">
               Get curated tours & seamless visa assistance - all in one place
             </p>
           </div>
 
-          <div className="relative z-20 w-full md:w-2/3   overflow-visible">
+          <div className="relative z-20 w-4/5 md:w-3/5   overflow-visible">
             <SearchBanner />
           </div>
         </div>

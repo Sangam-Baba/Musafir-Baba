@@ -11,22 +11,25 @@ export const metadata: Metadata = {
     canonical: "https://musafirbaba.com/news",
   },
 };
-interface coverImage {
+export interface coverImage {
   url: string;
   public_id: string;
   width: number;
   height: number;
   alt: string;
 }
-interface news {
+export interface News {
   _id: string;
   title: string;
   coverImage: coverImage;
   content: string;
   metaDescription: string;
   slug: string;
+  excerpt: string;
+  createdAt: string;
+  updatedAt: string;
 }
-async function getNews() {
+export async function getNews() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/`, {
     next: { revalidate: 60 }, // ISR: revalidate every 1 minute
   });
@@ -47,7 +50,7 @@ export default async function NewsPage() {
         <Breadcrumb />
       </div>
       <div className="container max-w-7xl mx-auto py-10 px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {news.map((blog: news) => (
+        {news.map((blog: News) => (
           <BlogCard
             key={blog._id}
             type="news"
