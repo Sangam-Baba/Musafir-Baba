@@ -49,9 +49,11 @@ const getAllPackages = async (accessToken: string) => {
 function PackagePage() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["customizedpackage"],
     queryFn: () => getAllPackages(accessToken),
+    enabled: permissions.includes("customized-package"),
   });
   if (isLoading) return <Loader size="lg" message="Loading packages..." />;
   if (isError) return <h1>{error.message}</h1>;
@@ -81,6 +83,9 @@ function PackagePage() {
       toast.error("Something went wrong while deleting package");
     }
   };
+
+  if (!permissions.includes("customized-package"))
+    return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">

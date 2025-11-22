@@ -76,7 +76,7 @@ export default function PackagesPage() {
   return (
     <>
       <PackagesClient />
-      {/* ✅ JSON-LD Schema */}
+      {/* JSON-LD Schema */}
       <Script id="json-schema" type="application/ld+json">
         {JSON.stringify(schema)}
       </Script>

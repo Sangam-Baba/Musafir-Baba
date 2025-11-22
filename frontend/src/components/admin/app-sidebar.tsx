@@ -43,64 +43,152 @@ import {
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
 import { FaChevronCircleDown } from "react-icons/fa";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const NAV_GROUPS = [
   {
     label: "Main",
     icon: FaHome,
     items: [
-      { label: "Dashboard", href: "/admin", icon: Home },
-      { label: "Enquiry", href: "/admin/enquiry", icon: CircleQuestionMark },
-      { label: "Bookings", href: "/admin/bookings", icon: CookingPot },
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: Home,
+        permission: "dashboard",
+      },
+      {
+        label: "Enquiry",
+        href: "/admin/enquiry",
+        icon: CircleQuestionMark,
+        permission: "enquiry",
+      },
+      {
+        label: "Bookings",
+        href: "/admin/bookings",
+        icon: CookingPot,
+        permission: "bookings",
+      },
     ],
   },
   {
     label: "Content Management",
     icon: ListChecks,
     items: [
-      { label: "WebPages", href: "/admin/webpage", icon: LayoutTemplate },
-      { label: "Blogs", href: "/admin/blogs", icon: ScrollText },
-      { label: "News", href: "/admin/news", icon: Newspaper },
-      { label: "Visa", href: "/admin/visa", icon: Rocket },
-      { label: "Career", href: "/admin/career", icon: Briefcase },
-      { label: "About Us", href: "/admin/about-us", icon: Users },
+      {
+        label: "WebPages",
+        href: "/admin/webpage",
+        icon: LayoutTemplate,
+        permission: "webpage",
+      },
+      {
+        label: "Blogs",
+        href: "/admin/blogs",
+        icon: ScrollText,
+        permission: "blog",
+      },
+      {
+        label: "News",
+        href: "/admin/news",
+        icon: Newspaper,
+        permission: "news",
+      },
+      { label: "Visa", href: "/admin/visa", icon: Rocket, permission: "visa" },
+      {
+        label: "Career",
+        href: "/admin/career",
+        icon: Briefcase,
+        permission: "career",
+      },
+      {
+        label: "About Us",
+        href: "/admin/about-us",
+        icon: Users,
+        permission: "about-us",
+      },
     ],
   },
   {
     label: "Packages",
     icon: FaBox,
     items: [
-      { label: "All Packages", href: "/admin/holidays", icon: Box },
+      {
+        label: "All Packages",
+        href: "/admin/holidays",
+        icon: Box,
+        permission: "holidays",
+      },
       {
         label: "Customized Packages",
         href: "/admin/customized-tour-package",
         icon: MdDashboardCustomize,
+        permission: "customized-tour-package",
       },
-      { label: "Plan My Trip", href: "/admin/customized-package", icon: Cog },
-      { label: "Destinations", href: "/admin/destination", icon: MapPin },
+      {
+        label: "Plan My Trip",
+        href: "/admin/customized-package",
+        icon: Cog,
+        permission: "customized-package",
+      },
+      {
+        label: "Destinations",
+        href: "/admin/destination",
+        icon: MapPin,
+        permission: "destination",
+      },
       {
         label: "Destinations Meta",
         href: "/admin/destination-seo",
         icon: MapPinPenIcon,
+        permission: "destination-seo",
       },
-      { label: "Category", href: "/admin/category", icon: Tags },
+      {
+        label: "Category",
+        href: "/admin/category",
+        icon: Tags,
+        permission: "category",
+      },
     ],
   },
   {
     label: "Settings",
     icon: FaCog,
     items: [
-      { label: "Authors", href: "/admin/authors", icon: Users },
-      { label: "Role Management", href: "/admin/role", icon: Settings },
-      { label: "Membership", href: "/admin/membership", icon: UserRoundCheck },
-      { label: "Footer Items", href: "/admin/footer", icon: ListChecks },
+      {
+        label: "Authors",
+        href: "/admin/authors",
+        icon: Users,
+        permission: "authors",
+      },
+      {
+        label: "Role Management",
+        href: "/admin/role",
+        icon: Settings,
+        permission: "role",
+      },
+      {
+        label: "Membership",
+        href: "/admin/membership",
+        icon: UserRoundCheck,
+        permission: "membership",
+      },
+      {
+        label: "Footer Items",
+        href: "/admin/footer",
+        icon: ListChecks,
+        permission: "footer",
+      },
     ],
   },
 ];
 
 export function AdminSidebar() {
+  const permissions = useAuthStore((s) => s.permissions) as string[];
   const pathname = usePathname();
 
+  const filteredNavGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => permissions.includes(item.permission)),
+  })).filter((group) => group.items.length > 0);
   return (
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
@@ -110,7 +198,7 @@ export function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="">
-        {NAV_GROUPS.map((group) => (
+        {filteredNavGroups.map((group) => (
           <SidebarGroup
             key={group.label}
             className="space-y-0 py-1 border-b last:border-b-0 border-slate-200/40 dark:border-slate-800/60"

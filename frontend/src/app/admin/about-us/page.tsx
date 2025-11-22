@@ -47,11 +47,13 @@ const getAllAboutUs = async () => {
 };
 function AboutPage() {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const router = useRouter();
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
     queryKey: ["aboutus"],
     queryFn: getAllAboutUs,
     retry: 2,
+    enabled: permissions.includes("about-us"),
   });
   if (isError) {
     toast.error(error.message);

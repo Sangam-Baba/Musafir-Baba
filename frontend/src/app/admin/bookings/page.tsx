@@ -164,6 +164,7 @@ const getStatusColor = (status?: string) => {
 
 function BookingPage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
@@ -284,7 +285,8 @@ function BookingPage() {
   };
 
   const handlePageChange = (p: number) => setPage(p);
-
+  if (!permissions.includes("bookings"))
+    return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
       <div className="mb-8 flex items-center justify-between gap-4">

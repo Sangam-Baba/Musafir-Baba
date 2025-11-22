@@ -13,9 +13,9 @@ import {
 } from "../utils/tokens.js";
 import { verifyEmailTemplate } from "../utils/verifyEmailTemplate.js";
 import { thankYouEmail } from "../utils/thankYouEmail.js";
-function issueTokens(userId, role) {
-  const accessToken = signAccessToken({ sub: userId, role });
-  const refreshToken = signRefreshToken({ sub: userId, role });
+function issueTokens(userId, role, permissions) {
+  const accessToken = signAccessToken({ sub: userId, role, permissions });
+  const refreshToken = signRefreshToken({ sub: userId, role, permissions });
   return { accessToken, refreshToken };
 }
 const register = async (req, res) => {
@@ -30,14 +30,6 @@ const register = async (req, res) => {
     if (isExist && !isExist.isVerified) {
       await User.findByIdAndDelete(isExist._id);
     }
-    let avatar = null;
-    if (req.files?.avatar) {
-      const result = await uploadToCloudinary(
-        req.files.avatar[0].buffer,
-        "avatars"
-      );
-      avatar = result.secure_url;
-    }
 
     const hashedpassword = await bcrypt.hash(password, 10);
     const otp = Math.floor(Math.random() * 1000000);
@@ -48,7 +40,6 @@ const register = async (req, res) => {
       name,
       email,
       password: hashedpassword,
-      avatar,
       otp: otp,
       otpExpire: Date.now() + 60 * 60 * 1000,
     });
@@ -76,7 +67,6 @@ const register = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -99,7 +89,11 @@ const login = async (req, res) => {
         .status(401)
         .json({ success: false, message: "User Unauthorized" });
     }
-    const { accessToken, refreshToken } = issueTokens(user._id, user.role);
+    const { accessToken, refreshToken } = issueTokens(
+      user._id,
+      user.role,
+      user.permissions
+    );
 
     const cookieOption = {
       httpOnly: true,
@@ -114,6 +108,7 @@ const login = async (req, res) => {
       message: "User Login Successfully",
       accessToken,
       role: user.role,
+      permissions: user.permissions,
     });
   } catch (error) {
     console.log("Login failed ", error.message);
@@ -253,7 +248,6 @@ const resetPassword = async (req, res) => {
 const refresh = async (req, res) => {
   try {
     const token = req.cookies?.refreshToken;
-    console.log(req.cookies);
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -265,7 +259,8 @@ const refresh = async (req, res) => {
 
     const { accessToken, refreshToken } = issueTokens(
       payload.sub,
-      payload.role
+      payload.role,
+      payload.permissions
     );
     const cookieOptions = {
       httpOnly: true,
@@ -276,7 +271,11 @@ const refresh = async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, cookieOptions);
 
-    return res.json({ accessToken, role: payload.role });
+    return res.json({
+      accessToken,
+      role: payload.role,
+      permissions: payload.permissions,
+    });
   } catch (error) {
     console.log("Refresh token error:", error.message);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -339,6 +338,15 @@ const getAllUsers = async (req, res) => {
     const { email } = req.query;
     if (email) {
       const user = await User.find({ email });
+      if (!user) {
+        return res
+          .status(400)
+          .json({ success: false, message: "User not found" });
+      }
+      return res.status(200).json({ success: true, data: user });
+    }
+    if (req.query?.role) {
+      const user = await User.find({ role: req.query.role });
       if (!user) {
         return res
           .status(400)
@@ -410,6 +418,94 @@ const blockUser = async (req, res) => {
   }
 };
 
+const registerAdmin = async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body;
+    if (!name || !email || !password || !phone) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
+    }
+    const exist = await User.findOne({ email });
+    if (exist) {
+      return res
+        .status(409)
+        .json({ success: false, message: "User Already exist" });
+    }
+    // const hashedpassword = await bcrypt.hash(password, 10);
+    const user = new User({
+      name,
+      email,
+      password,
+      phone,
+      role: "admin",
+      isVerified: true,
+      permissions: req.body?.permissions ?? [],
+    });
+    await user.save();
+    return res
+      .status(201)
+      .json({ success: true, message: "User Registerrd Successfully" });
+  } catch (error) {
+    console.log("Registration failed", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+const updateAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Invalid Id" });
+    }
+    const admin = await User.findById(id);
+    if (!admin) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+    if (req.body?.password) {
+      const hashedpassword = await bcrypt.hash(req.body.password, 10);
+      req.body.password = hashedpassword;
+    }
+    const updatedAdmin = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+    }).select("name email phone permissions");
+    res.status(200).json({
+      success: true,
+      message: "Admin updated successfully",
+      data: updatedAdmin,
+    });
+  } catch (error) {
+    console.log("update admin error:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+const getAdminById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Invalid Id" });
+    }
+    const admin = await User.findById(id).select(
+      " name email phone permissions"
+    );
+    if (!admin) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Admin found successfully",
+      data: admin,
+    });
+  } catch (error) {
+    console.log("getting admin by id error:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 export {
   register,
   login,
@@ -422,4 +518,7 @@ export {
   getAllUsers,
   changeRole,
   blockUser,
+  registerAdmin,
+  updateAdmin,
+  getAdminById,
 };

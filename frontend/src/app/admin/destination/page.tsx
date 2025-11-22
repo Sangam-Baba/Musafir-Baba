@@ -18,6 +18,7 @@ interface Destination {
 
 export default function DestinationPage() {
   const token = useAuthStore((state) => state.accessToken);
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const [destination, setDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -83,6 +84,8 @@ export default function DestinationPage() {
     }
   };
 
+  if (!permissions.includes("destination"))
+    return <h1 className="text-2xl font-bold">Access Denied</h1>;
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">

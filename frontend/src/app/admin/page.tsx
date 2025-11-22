@@ -111,8 +111,10 @@ const getLatestActivity = async (accessToken: string) => {
 };
 function AdminDashBoard() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const [start, setStart] = React.useState<string>("");
   const [end, setEnd] = React.useState<string>("");
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => getDashBoardSummary(accessToken),
@@ -170,6 +172,7 @@ function AdminDashBoard() {
     queryFn: () => getLatestActivity(accessToken),
     enabled: !!accessToken,
   });
+  if (!permissions.includes("dashboard")) return <div>Access Denied</div>;
 
   return (
     <main className="min-h-screen  px-6 lg:px-12 py-10 max-w-7xl mx-auto ">

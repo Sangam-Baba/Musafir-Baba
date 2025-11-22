@@ -19,6 +19,7 @@ interface Blog {
 
 export default function BlogsPage() {
   const token = useAuthStore((state) => state.accessToken);
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -79,7 +80,9 @@ export default function BlogsPage() {
       toast.error("Something went wrong while deleting blog");
     }
   };
-
+  if (!permissions.includes("blogs")) {
+    return <h1 className="mx-auto text-2xl">Access Denied</h1>;
+  }
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">

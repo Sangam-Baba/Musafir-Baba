@@ -25,9 +25,11 @@ const getAllJobs = async () => {
 function CareerPage() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const { data, isLoading, isError } = useQuery({
     queryKey: ["jobs"],
     queryFn: getAllJobs,
+    enabled: permissions.includes("career"),
   });
   if (isLoading) return;
   if (isError) return <h1>Failed to fetch jobs</h1>;
@@ -53,6 +55,8 @@ function CareerPage() {
       console.log(error);
     }
   };
+  if (!permissions.includes("career"))
+    return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">

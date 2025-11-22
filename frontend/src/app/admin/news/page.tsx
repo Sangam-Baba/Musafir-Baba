@@ -19,6 +19,7 @@ interface News {
 
 export default function NewsPage() {
   const token = useAuthStore((state) => state.accessToken);
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -84,6 +85,8 @@ export default function NewsPage() {
     }
   };
 
+  if (!permissions.includes("news"))
+    return <h1 className="text-2xl">Access Denied</h1>;
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">

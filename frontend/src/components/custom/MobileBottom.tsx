@@ -14,7 +14,7 @@ function MobileBottom() {
     <div className="block md:hidden fixed bottom-0 z-50 flex items-center px-10 py-2 justify-between w-full bg-white border-t border-gray-400 ">
       <div>
         <Link
-          href="tel:1234567890"
+          href="tel:+919289602447"
           className="flex items-center justify-center py-1  text-white rounded-lg"
         >
           <Phone className="w-10 h-8 text-primary" color="#FE5300" />

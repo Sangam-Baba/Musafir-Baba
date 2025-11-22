@@ -31,6 +31,7 @@ const getAllMemberships = async (accessToken: string) => {
 };
 function MembershipPage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const router = useRouter();
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
     queryKey: ["membership"],
@@ -66,6 +67,8 @@ function MembershipPage() {
       toast.error("Something went wrong while deleting membership");
     }
   };
+
+  if (!permissions.includes("membership")) return <h1>Access Denied</h1>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">

@@ -4,6 +4,8 @@ import React, { useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Navbar } from "../common/Navbar";
 import { useUIStore } from "@/store/useUIStore";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 export default function Sidebar() {
   const { toggleSidebar, closeSidebar } = useUIStore();
@@ -53,9 +55,13 @@ export default function Sidebar() {
         </div>
 
         <nav className="px-4 py-2">
-          {/* Reuse your Navbar component - you may want to render a mobile-friendly version */}
           <Navbar />
         </nav>
+        <Button className="mx-4 my-2 md:hidden bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300] text-white">
+          <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
+            Pay Now
+          </Link>
+        </Button>
       </aside>
 
       {/* For larger screens, keep the rest clickable/hidden by overlay; layout uses absolute overlay above */}

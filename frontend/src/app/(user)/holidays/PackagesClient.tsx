@@ -29,6 +29,13 @@ export const getCategory = async (): Promise<CategoryResponse> => {
   return res.json();
 };
 
+// const getPackages= async ()=>{
+//   const res= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages`,{
+//     next:{revalidate:6000}
+//   })
+//   if(!res.ok) throw new Error("Failed to fetch posts");
+//   return res.json();
+// }
 export default async function PackagesClient() {
   const data = await getCategory();
 

@@ -34,6 +34,7 @@ const getAllWebPage = async (accessToken: string) => {
 };
 function WebPage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const permissions = useAuthStore((state) => state.permissions) as string[];
   const router = useRouter();
 
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
@@ -67,6 +68,9 @@ function WebPage() {
       toast.error("Failed to delete webpage");
     }
   };
+
+  if (!permissions.includes("webpage"))
+    return <h1 className="text-2xl">Access Denied</h1>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
