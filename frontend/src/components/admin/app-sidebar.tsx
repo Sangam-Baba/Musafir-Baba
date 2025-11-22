@@ -105,6 +105,12 @@ const NAV_GROUPS = [
         icon: Users,
         permission: "about-us",
       },
+      {
+        label: "Footer Items",
+        href: "/admin/footer",
+        icon: ListChecks,
+        permission: "footer",
+      },
     ],
   },
   {
@@ -170,12 +176,6 @@ const NAV_GROUPS = [
         href: "/admin/membership",
         icon: UserRoundCheck,
         permission: "membership",
-      },
-      {
-        label: "Footer Items",
-        href: "/admin/footer",
-        icon: ListChecks,
-        permission: "footer",
       },
     ],
   },

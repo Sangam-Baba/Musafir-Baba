@@ -135,26 +135,38 @@ function CreateEditStaff({
     mutate.mutate(values);
   }
 
-  const data = [
-    "role",
-    "about-us",
-    "enquiry",
-    "bookings",
-    "dashboard",
-    "webpage",
-    "blogs",
-    "news",
-    "holidays",
-    "customized-tour-package",
-    "customized-package",
-    "destination",
-    "destination-seo",
-    "category",
-    "authors",
-    "membership",
-    "visa",
-    "career",
-    "footer",
+  const newData = [
+    {
+      label: "Main",
+      values: ["dashboard", "enquiry", "bookings"],
+    },
+    {
+      label: "Content Management",
+      values: [
+        "visa",
+        "webpage",
+        "about-us",
+        "news",
+        "blogs",
+        "footer",
+        "career",
+      ],
+    },
+    {
+      label: "Packages",
+      values: [
+        "holidays",
+        "customized-tour-package",
+        "customized-package",
+        "destination",
+        "destination-seo",
+        "category",
+      ],
+    },
+    {
+      label: "Settings",
+      values: ["role", "membership", "authors"],
+    },
   ];
   return (
     <div className="flex flex-col max-w-2xl items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
@@ -223,27 +235,40 @@ function CreateEditStaff({
                 <FormItem>
                   <FormLabel>Assign Permissions</FormLabel>
                   <FormControl>
-                    <div className="flex flex-wrap space-y-2 gap-2 mt-2">
-                      {data?.map((cat: string, i: number) => (
-                        <label key={i} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            value={cat}
-                            checked={field.value?.includes(cat)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                field.onChange([...(field.value || []), cat]);
-                              } else {
-                                field.onChange(
-                                  field.value?.filter((id) => id !== cat)
-                                );
-                              }
-                            }}
-                          />
-                          <span>
-                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                          </span>
-                        </label>
+                    <div className="flex flex-col space-y-2">
+                      {newData.map((item, i) => (
+                        <div key={i}>
+                          <h1 className="text-gray-600">{item.label}</h1>
+                          <div className="flex flex-wrap space-y-2 gap-2 mt-2">
+                            {item.values?.map((cat: string, i: number) => (
+                              <label
+                                key={i}
+                                className="flex items-center space-x-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  value={cat}
+                                  checked={field.value?.includes(cat)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      field.onChange([
+                                        ...(field.value || []),
+                                        cat,
+                                      ]);
+                                    } else {
+                                      field.onChange(
+                                        field.value?.filter((id) => id !== cat)
+                                      );
+                                    }
+                                  }}
+                                />
+                                <span>
+                                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </FormControl>

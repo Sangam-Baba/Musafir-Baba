@@ -489,7 +489,7 @@ const getAdminById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
     const admin = await User.findById(id).select(
-      " name email phone permissions"
+      " name email phone permissions role"
     );
     if (!admin) {
       return res
