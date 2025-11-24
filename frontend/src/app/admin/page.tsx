@@ -172,7 +172,8 @@ function AdminDashBoard() {
     queryFn: () => getLatestActivity(accessToken),
     enabled: !!accessToken,
   });
-  if (!permissions.includes("dashboard")) return <div>Access Denied</div>;
+  if (!permissions.includes("dashboard"))
+    return <div>You are not authorized for Dashboard</div>;
 
   return (
     <main className="min-h-screen  px-6 lg:px-12 py-10 max-w-7xl mx-auto ">

@@ -126,7 +126,7 @@ function PackagePage() {
     }
   };
 
-  if (!permissions.includes("customized-package"))
+  if (!permissions.includes("plan-my-trip"))
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">

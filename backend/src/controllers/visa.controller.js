@@ -20,7 +20,8 @@ const createVisa = async (req, res) => {
 const getAllVisa = async (req, res) => {
   try {
     const { filter = {} } = req.query;
-    if (req.query?.country) filter.country = req.query.country;
+    if (req.query?.country)
+      filter.country = { $regex: req.query.country, $options: "i" };
     if (req.query?.isActive) filter.isActive = req.query.isActive;
     const visa = await Visa.find(filter)
       .sort({ createdAt: -1 })

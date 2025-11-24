@@ -133,7 +133,7 @@ const NAV_GROUPS = [
         label: "Plan My Trip",
         href: "/admin/customized-package",
         icon: Cog,
-        permission: "customized-package",
+        permission: "plan-my-trip",
       },
       {
         label: "Destinations",

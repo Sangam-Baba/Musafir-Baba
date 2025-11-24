@@ -157,7 +157,7 @@ function CreateEditStaff({
       values: [
         "holidays",
         "customized-tour-package",
-        "customized-package",
+        "plan-my-trip",
         "destination",
         "destination-seo",
         "category",

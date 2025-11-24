@@ -39,11 +39,15 @@ export interface Visa {
 }
 const getVisa = async (search: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=${search}`,
+    {
+      next: {
+        revalidate: 60,
+      },
+    }
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
-  // console.log(data.data);
   return data?.data; // []
 };
 function VisaClientPage() {
