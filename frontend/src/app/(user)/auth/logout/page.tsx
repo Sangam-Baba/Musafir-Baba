@@ -33,7 +33,7 @@ export default function LogoutPage() {
     return () => {
       cancelled = true;
     };
-  }, [logout, router, pathname]);
+  }, [logout, router]);
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
