@@ -44,7 +44,7 @@ export default function PackagesClient({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
-      <div className="w-full md:max-w-7xl mx-auto flex px-4 md:px-6 lg:px-8 items-center justify-between my-8">
+      <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-between my-8">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-center">
             Holidays
@@ -52,7 +52,8 @@ export default function PackagesClient({
           <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
         </div>
         {/* filter */}
-        <div className="flex justify-between border rounded-md border-gray-600 p-1">
+        <div className="flex gap-2 justify-between border rounded-md border-gray-600 p-1">
+          <FilterIcon />
           <select
             className="focus-none"
             onChange={(e) => router.push(`/holidays/${e.target.value}`)}
@@ -64,7 +65,6 @@ export default function PackagesClient({
               </option>
             ))}
           </select>
-          <FilterIcon />
         </div>
       </div>
 
