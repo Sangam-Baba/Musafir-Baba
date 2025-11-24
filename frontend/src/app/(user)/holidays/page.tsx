@@ -2,6 +2,21 @@ import PackagesClient from "./PackagesClient";
 import { Metadata } from "next";
 import Script from "next/script";
 
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  coverImage: {
+    url: string;
+    alt: string;
+  };
+  description: string;
+}
+
+interface CategoryResponse {
+  data: Category[];
+}
+
 export const metadata: Metadata = {
   title:
     "Affordable Holiday Tour Packages - Domestic & International | Book Now",
@@ -12,7 +27,34 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PackagesPage() {
+export const getCategory = async (): Promise<CategoryResponse> => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
+    next: { revalidate: 6000 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch posts");
+  return res.json();
+};
+const getPackages = async (page: number) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?limit=12&page=${page}`,
+    {
+      // next:{revalidate:6000}
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch posts");
+  return res.json();
+};
+export default async function PackagesPage({
+  searchParams,
+}: {
+  searchParams: { page: number };
+}) {
+  const page = searchParams.page || 1;
+  const data = await getPackages(page);
+  const categorydata = await getCategory();
+  const categories = categorydata?.data ?? [];
+
+  const totalCategory = [...categories];
   const schema = {
     "@context": "https://schema.org",
     "@type": "TouristTrip",
@@ -75,7 +117,7 @@ export default function PackagesPage() {
 
   return (
     <>
-      <PackagesClient />
+      <PackagesClient data={data} category={totalCategory} />
       {/* JSON-LD Schema */}
       <Script id="json-schema" type="application/ld+json">
         {JSON.stringify(schema)}

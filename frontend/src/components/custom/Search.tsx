@@ -39,7 +39,7 @@ function SearchBanner() {
       >
         <option value="">Select Location</option>
         {dest.map((loc: Location) => (
-          <option key={loc._id} value={`${loc.country}/${loc.state}`}>
+          <option key={loc._id} value={`${loc.state}`}>
             {loc.name.charAt(0).toUpperCase() + loc.name.slice(1)}
           </option>
         ))}
@@ -49,7 +49,10 @@ function SearchBanner() {
         disabled={!location}
         className="flex items-center gap-1 shrink-0 rounded-md bg-[#FE5300] px-4 py-2 text-white hover:bg-[#e04a00] disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <a href={`/${location}`} className="flex items-center gap-2">
+        <a
+          href={`/destinations/${location}`}
+          className="flex items-center gap-2"
+        >
           <Search className="h-4 w-4" />
         </a>
       </Button>

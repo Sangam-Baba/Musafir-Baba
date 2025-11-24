@@ -84,7 +84,7 @@ const NAV_GROUPS = [
         label: "Blogs",
         href: "/admin/blogs",
         icon: ScrollText,
-        permission: "blog",
+        permission: "blogs",
       },
       {
         label: "News",

@@ -37,14 +37,20 @@ function Footer() {
             honeymoon packages and corporate trips along with visa assistance
             and bus/train/flight bookings etc.
           </p>
-          <div className="relative h-[150px] rounded-xl overflow-hidden mt-2">
+          <div className="group relative h-[150px] rounded-xl overflow-hidden mt-2">
             <Link href="https://maps.app.goo.gl/bsvktDpBfWtxsVRm8">
               <Image
                 src="https://res.cloudinary.com/dmmsemrty/image/upload/v1763615567/image_2_gqvedz.png"
                 fill
                 alt="Musafir Baba Map"
-                className="object-cover"
+                className="object-cover group-hover:scale-105 transition-all duration-300"
               />
+              <button
+                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg
+        transition-all duration-300 shadow-lg group-hover:bg-[#87E87F] text-black absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              >
+                View Map
+              </button>
             </Link>
           </div>
         </div>

@@ -24,7 +24,7 @@ interface CoverImage {
   height: number;
   alt: string;
 }
-interface Package {
+export interface Package {
   _id: string;
   title: string;
   slug: string;
