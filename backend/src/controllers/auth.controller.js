@@ -432,11 +432,11 @@ const registerAdmin = async (req, res) => {
         .status(409)
         .json({ success: false, message: "User Already exist" });
     }
-    // const hashedpassword = await bcrypt.hash(password, 10);
+    const hashedpassword = await bcrypt.hash(password, 10);
     const user = new User({
       name,
       email,
-      password,
+      password: hashedpassword,
       phone,
       role: "admin",
       isVerified: true,

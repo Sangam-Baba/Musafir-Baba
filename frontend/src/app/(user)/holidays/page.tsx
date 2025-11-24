@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export const getCategory = async (): Promise<CategoryResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    next: { revalidate: 6000 },
+    next: { revalidate: 600 },
   });
   if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();

@@ -33,7 +33,7 @@ authRouter.get(
   authorizedRoles(["admin", "superadmin"]),
   getAdminById
 );
-authRouter.post("/logout", isAuthenticated, logout);
+authRouter.post("/logout", logout);
 authRouter.patch("/reset-pasword/:token", resetPassword);
 authRouter.get(
   "/getAllUsers",

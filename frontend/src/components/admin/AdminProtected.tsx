@@ -1,29 +1,31 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter , usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
 
-export default function AdminProtected({ children }: { children: React.ReactNode }) {
+export default function AdminProtected({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
-    const pathname = usePathname();
-  const { accessToken,  refreshAccessToken, clearAuth } = useAuthStore();
+  const pathname = usePathname();
+  const { accessToken, refreshAccessToken, clearAuth } = useAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
-            //skip admin/login
-        if (pathname === "/admin/login") {
-          if (mounted) setLoading(false);
-          return;
-        }
+    if (pathname === "/admin/login") {
+      if (mounted) setLoading(false);
+      return;
+    }
 
     async function bootstrap() {
       try {
         let token = accessToken;
-        console.log(token);
         // Step 1: If no token in store, try refresh
         if (!token) {
           await refreshAccessToken();
@@ -38,10 +40,13 @@ export default function AdminProtected({ children }: { children: React.ReactNode
         }
 
         // Step 3: Verify token with /auth/me
-        const meRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: "include",
-        });
+        const meRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+          }
+        );
 
         if (meRes.ok) {
           const user = await meRes.json();
@@ -66,10 +71,13 @@ export default function AdminProtected({ children }: { children: React.ReactNode
             return;
           }
 
-          const meRes2 = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${newToken}` },
-            credentials: "include",
-          });
+          const meRes2 = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,
+            {
+              headers: { Authorization: `Bearer ${newToken}` },
+              credentials: "include",
+            }
+          );
 
           if (meRes2.ok) {
             const user = await meRes2.json();
