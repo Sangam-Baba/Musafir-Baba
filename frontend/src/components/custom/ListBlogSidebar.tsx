@@ -3,6 +3,7 @@ import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { readingTime } from "@/utils/readingTime";
+import { Dot } from "lucide-react";
 interface Blog {
   _id: string;
   title: string;
@@ -61,13 +62,15 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
                     month: "short",
                     year: "numeric",
                   })}{" "}
+                  <span className="text-[#FE5300] font-semibold ">|</span>{" "}
                   {readingTime(blog.content || "")} Min Read
                 </p>
               )}
               {type === "trending" && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Views: {blog.views + 1000} {readingTime(blog.content || "")}{" "}
-                  Min Read
+                  Views: {blog.views + 1000}{" "}
+                  <span className="text-[#FE5300] font-semibold ">|</span>{" "}
+                  {readingTime(blog.content || "")} Min Read
                 </p>
               )}
             </CardContent>
