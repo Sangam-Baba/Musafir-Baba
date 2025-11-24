@@ -12,7 +12,7 @@ import TrandingNewsSidebar from "@/components/custom/TrandingNewsSidebar";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
-import { Clock, User } from "lucide-react";
+import { Clock, User, Share2 } from "lucide-react";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -157,11 +157,17 @@ export default async function NewsDetailPage({
                 <Clock size={16} />
                 {readTime} Min Read
               </span>
-              <span>
-                <SocialShare
-                  url={`https://musafirbaba.com/news/${news.slug}`}
-                  title={news.title}
-                />
+              <span className="relative group inline-block">
+                {/* Social buttons (hidden until hover) */}
+                <div className="absolute hidden group-hover:flex">
+                  <SocialShare
+                    url={`https://musafirbaba.com/news/${news.slug}`}
+                    title={news.title}
+                  />
+                </div>
+
+                {/* Share icon */}
+                <Share2 className="cursor-pointer" />
               </span>
             </div>
             {/* Tags */}
@@ -183,7 +189,7 @@ export default async function NewsDetailPage({
           </section>
 
           {/* Comments Section */}
-          <section className="mt-10">
+          <section className="mt-10 w-full">
             <BlogComments
               blogId={news._id}
               initialComments={comments}

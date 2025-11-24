@@ -1,8 +1,16 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import {toast} from "sonner"
-function NewsCommentPage({ id , parentId  , onSuccess}: { id: string , parentId?: string , onSuccess?: () => void}) {
+import React, { useState } from "react";
+import { toast } from "sonner";
+function NewsCommentPage({
+  id,
+  parentId,
+  onSuccess,
+}: {
+  id: string;
+  parentId?: string;
+  onSuccess?: () => void;
+}) {
   const [comment, setComment] = useState({
     newsId: id,
     parentId: parentId || null,
@@ -10,45 +18,57 @@ function NewsCommentPage({ id , parentId  , onSuccess}: { id: string , parentId?
     email: "",
     text: "",
     rating: 0,
-  })
+  });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setComment({
       ...comment,
       [name]: name === "rating" ? Number(value) : value,
-    })
-  }
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/newscomments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(comment),
-      })
-      if (!res.ok) throw new Error("Failed to create comment")
-      const data = await res.json()
-      toast.success("Thank you for your comment!")
-      console.log("Comment saved:", data)
-      setComment({ newsId: id, parentId: parentId || null, name: "", email: "", text: "", rating: 0 })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/newscomments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(comment),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to create comment");
+      const data = await res.json();
+      toast.success("Thank you for your comment!");
+      console.log("Comment saved:", data);
+      setComment({
+        newsId: id,
+        parentId: parentId || null,
+        name: "",
+        email: "",
+        text: "",
+        rating: 0,
+      });
     } catch (error) {
-      console.error(error)
+      console.error(error);
       toast.error("Could not submit comment");
     }
-  }
+  };
 
   return (
     <div className="w-full flex  ">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full ">
         <div className="flex flex-col">
           <label htmlFor="rating" className="text-sm font-medium mb-1">
-           Give Rating:
+            Give Rating:
           </label>
           <select
             name="rating"
@@ -100,7 +120,7 @@ function NewsCommentPage({ id , parentId  , onSuccess}: { id: string , parentId?
         </button>
       </form>
     </div>
-  )
+  );
 }
 
-export default NewsCommentPage
+export default NewsCommentPage;

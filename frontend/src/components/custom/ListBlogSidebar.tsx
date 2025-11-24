@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import Link from "next/link";
+import { readingTime } from "@/utils/readingTime";
 interface Blog {
   _id: string;
   title: string;
@@ -60,12 +61,13 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
                     month: "short",
                     year: "numeric",
                   })}{" "}
-                  • 6 MIN READ
+                  {readingTime(blog.content || "")} Min Read
                 </p>
               )}
               {type === "trending" && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Views: {blog.views + 1000} • 6 MIN READ
+                  Views: {blog.views + 1000} {readingTime(blog.content || "")}{" "}
+                  Min Read
                 </p>
               )}
             </CardContent>

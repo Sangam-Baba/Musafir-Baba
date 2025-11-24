@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, Check, Facebook, Twitter, Linkedin, MessageSquare } from "lucide-react";
+import {
+  Copy,
+  Check,
+  Facebook,
+  Twitter,
+  Linkedin,
+  MessageSquare,
+} from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 interface SocialShareProps {
   title: string;
@@ -28,7 +36,7 @@ export default function SocialShare({ title, url }: SocialShareProps) {
   };
 
   return (
-    <div className="flex gap-3 items-center flex-wrap">
+    <div className="flex  gap-2 items-center ">
       <a
         href={shareLinks.twitter}
         target="_blank"
@@ -59,7 +67,7 @@ export default function SocialShare({ title, url }: SocialShareProps) {
         rel="noopener noreferrer"
         className="p-2 rounded-full bg-green-500 hover:bg-green-600 text-white"
       >
-        <MessageSquare size={18} />
+        <FaWhatsapp size={18} />
       </a>
       <button
         onClick={handleCopy}
