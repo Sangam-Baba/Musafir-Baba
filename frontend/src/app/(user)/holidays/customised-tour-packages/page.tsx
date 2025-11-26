@@ -90,21 +90,22 @@ async function CustomizedPackagePage() {
     <section className="w-full mb-12">
       <Hero
         image={AllPackages[0]?.coverImage?.url || "/Hero1.jpg"}
-        title=""
+        title={category?.name}
+        description={category?.description}
         align="center"
         height="lg"
-        overlayOpacity={5}
+        overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
 
       {/* Show category details */}
-      <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
+      {/* <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
         <h1 className="text-3xl font-bold">{category?.name}</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
         <p className="mt-2 text-muted-foreground">{category?.description}</p>
-      </div>
+      </div> */}
 
       {/* Show packages under this category */}
       {AllPackages && AllPackages.length > 0 && (

@@ -21,6 +21,7 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
+import BlogEditor from "@/components/admin/BlogEditor";
 interface Image {
   url: string;
   alt: string;
@@ -370,7 +371,7 @@ export default function CreatePackagePage() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Describe the package" {...field} />
+                    <BlogEditor value={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

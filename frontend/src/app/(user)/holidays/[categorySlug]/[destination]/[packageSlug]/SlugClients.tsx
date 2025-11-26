@@ -176,11 +176,11 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
         </div>
         <Hero
           image={pkg.coverImage.url ?? ""}
-          title=""
+          title={pkg.title}
           description=""
           align="center"
           height="lg"
-          overlayOpacity={20}
+          overlayOpacity={100}
         />
       </div>
       <div className="w-full max-w-7xl mx-auto px-8  mt-4">
@@ -192,7 +192,7 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
           <div className="flex flex-col gap-2  max-w-7xl mx-auto">
             {/* Tabs */}
             <div>
-              <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1>
+              {/* <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1> */}
               <div className="flex gap-2">
                 <span className="flex items-center gap-1">
                   <MapPin color="#FE5300" size={14} />{" "}

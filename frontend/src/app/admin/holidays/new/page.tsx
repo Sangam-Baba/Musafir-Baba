@@ -18,6 +18,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
+import BlogEditor from "@/components/admin/BlogEditor";
 
 interface Image {
   url: string;
@@ -299,7 +300,7 @@ export default function CreatePackagePage() {
             />
 
             {/* Description */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
@@ -307,6 +308,19 @@ export default function CreatePackagePage() {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Describe the package" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <BlogEditor value={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

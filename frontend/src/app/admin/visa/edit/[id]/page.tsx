@@ -380,7 +380,25 @@ export default function CreateVisaPage() {
                   </FormItem>
                 )}
               />
-
+              <FormField
+                control={form.control}
+                name="coverImage.alt"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Flag Alt</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Thailand"
+                        {...form.register("coverImage.alt")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
               {/* Banner Image */}
               <FormField
                 control={form.control}
@@ -398,6 +416,23 @@ export default function CreateVisaPage() {
                             alt: form.getValues("country") ?? "",
                           });
                         }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bannerImage.alt"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Banner Image Alt</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Thailand"
+                        {...form.register("bannerImage.alt")}
                       />
                     </FormControl>
                     <FormMessage />

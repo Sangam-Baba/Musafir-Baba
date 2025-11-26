@@ -36,21 +36,15 @@ export default function PackagesClient({
     <section>
       <Hero
         image="https://res.cloudinary.com/dmmsemrty/image/upload/v1761815676/tour_package_k5ijnt.webp"
-        title=""
+        title="Holidays"
         align="center"
         height="lg"
-        overlayOpacity={0}
+        overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
-      <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-between my-8">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-center">
-            Holidays
-          </h1>
-          <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
-        </div>
+      <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-end my-8">
         {/* filter */}
         <div className="flex gap-2 justify-between border rounded-md border-gray-600 p-1">
           <FilterIcon />

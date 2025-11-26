@@ -80,7 +80,9 @@ async function DestinationPage({
     <section>
       <Hero
         image={packages[0]?.coverImage?.url}
-        title=""
+        title={`Explore Customised Packages in ${
+          destination.charAt(0).toUpperCase() + destination.slice(1)
+        }`}
         height="lg"
         align="center"
         overlayOpacity={5}
@@ -88,12 +90,12 @@ async function DestinationPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
         <Breadcrumb />
       </div>
-      <div className="w-full flex flex-col items-center justify-center mt-8">
+      {/* <div className="w-full flex flex-col items-center justify-center mt-8">
         <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Customised Packages in ${
           destination.charAt(0).toUpperCase() + destination.slice(1)
         }`}</h1>
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
-      </div>
+      </div> */}
 
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (

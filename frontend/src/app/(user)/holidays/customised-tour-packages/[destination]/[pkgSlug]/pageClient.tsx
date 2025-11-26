@@ -141,17 +141,17 @@ export default function CustomizedPackageClient({
     <section className="w-full mb-12">
       <Hero
         image={pkg?.coverImage?.url || "/Hero1.jpg"}
-        title=""
+        title={pkg.title}
         align="center"
         height="lg"
-        overlayOpacity={5}
+        overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
 
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-        <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1>
+        {/* <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1> */}
         <div className="flex gap-2 mb-6">
           <span className="flex items-center gap-1">
             <MapPin color="#FE5300" size={14} />{" "}
