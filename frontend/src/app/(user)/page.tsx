@@ -100,7 +100,10 @@ export default function HomePage() {
       <VideoSection />
       <WhyChoose />
       <Testimonial />
-      <ImageGallery />
+      <ImageGallery
+        title="Memories in Motion"
+        description=" Picture Perfect Moments with the Best Travel Agency in Delhi"
+      />
       <HomeBooking />
       <BlogsHome />
       <Faqs faqs={faqs} />

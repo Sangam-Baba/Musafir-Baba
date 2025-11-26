@@ -30,6 +30,7 @@ import batchRoutes from "./batch.routes.js";
 import dashboardRoute from "./dashboard.routes.js";
 import destinationSeoRoute from "./destinationSeo.routes.js";
 import mediaRoutes from "./media.routes.js";
+import reviewRoutes from "./reviews.routes.js";
 
 const router = Router();
 
@@ -64,4 +65,5 @@ router.use("/batch", batchRoutes);
 router.use("/dashboard", dashboardRoute);
 router.use("/destinationseo", destinationSeoRoute);
 router.use("/media", mediaRoutes);
+router.use("/reviews", reviewRoutes);
 export default router;

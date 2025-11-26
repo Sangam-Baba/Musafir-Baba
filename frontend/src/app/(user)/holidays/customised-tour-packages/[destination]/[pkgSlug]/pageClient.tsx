@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/accordion";
 import PackageCard from "@/components/custom/PackageCard";
 import { Faqs } from "@/components/custom/Faqs";
+import WhyChoose from "@/components/custom/WhyChoose";
+import { Testimonial } from "@/components/custom/Testimonial";
 interface Plan {
   _id: string;
   title: string;
@@ -369,6 +371,8 @@ export default function CustomizedPackageClient({
       </div>
 
       <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
+      <WhyChoose />
+      <Testimonial />
     </section>
   );
 }

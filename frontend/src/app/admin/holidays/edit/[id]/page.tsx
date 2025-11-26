@@ -22,6 +22,10 @@ import { useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
 import BlogEditor from "@/components/admin/BlogEditor";
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import { Reviews } from "../../new/page";
+import { deleteReview } from "../../new/page";
+import { getReviewsByIds } from "../../new/page";
 interface Image {
   url: string;
   alt: string;
@@ -57,6 +61,7 @@ interface PackageFormValues {
   title: string;
   description: string;
   batch: string[];
+  reviews?: Reviews[];
   slug: string;
   destination: string;
   mainCategory: string;
@@ -179,6 +184,9 @@ export default function CreatePackagePage() {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
   const [batchDetails, setBatchDetails] = useState<Batch[]>([]);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const params = useParams();
   const id = params.id as string;
@@ -242,6 +250,10 @@ export default function CreatePackagePage() {
     shouldUnregister: false,
   });
 
+  const reviewsArray = useFieldArray({
+    control: form.control,
+    name: "reviews",
+  });
   const handleBatchCreated = async (id: string) => {
     const newBatch = await getBatchByIds(accessToken, [id]);
     batchArray.append(id);
@@ -260,14 +272,36 @@ export default function CreatePackagePage() {
     setShowBatchModal(false);
     setEditBatchId(null);
   };
+  const handleReviewsCreated = async (id: string) => {
+    reviewsArray.append(id);
+    const newBatch = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) => [...prev, ...newBatch]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
   const batchArray = useFieldArray({ control: form.control, name: "batch" });
   useEffect(() => {
     if (pkg) {
       const batchIds = pkg.batch?.map((b: string) => b) || [];
+      const reviewsIds = pkg.reviews?.map((b: string) => b) || [];
       form.reset({
         ...pkg,
         destination: pkg.destination?._id.toString() || "",
         batch: batchIds,
+        reviews: reviewsIds,
       });
       if (batchIds.length > 0) {
         getBatchByIds(accessToken, batchIds)
@@ -280,7 +314,17 @@ export default function CreatePackagePage() {
           })
           .catch((err) => console.error("Failed to fetch batch info:", err));
       }
-      // console.log("Package Batch: ", pkg?.batch);
+      if (reviewsIds.length > 0) {
+        getReviewsByIds(accessToken, reviewsIds)
+          .then((data) => {
+            // Reorder results to match batchIds order
+            const ordered = reviewsIds
+              .map((id: string) => data.find((b: Reviews) => b._id === id))
+              .filter(Boolean);
+            setReviewsDetails(ordered as Reviews[]);
+          })
+          .catch((err) => console.error("Failed to fetch review info:", err));
+      }
     }
   }, [pkg, form, accessToken]);
   const coverImageArray = useFieldArray({
@@ -805,6 +849,71 @@ export default function CreatePackagePage() {
               </Button>
             </div>
 
+            {/* Reviews */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
+              {reviewsArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  {/* REVIEW Content */}
+                  <div className="flex  items-center text-left gap-2">
+                    <span className="font-medium">
+                      {reviewsDetails[index]?.name || `Reviews ${index + 1}`}
+                    </span>
+                  </div>
+
+                  {/* Batch Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => reviewsArray.remove(index)}
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() =>
+                        handleReviewsEdit(form.getValues(`reviews.${index}`))
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={async () => {
+                        const res = await deleteReview(
+                          accessToken,
+                          form.getValues(`reviews.${index}`)
+                        );
+                        if (res) reviewsArray.remove(index);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <Button type="button" onClick={() => setShowReviewsModal(true)}>
+                + Add New Review
+              </Button>
+              {showReviewsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <CreateReviewsModal
+                    onReviewsCreated={handleReviewsCreated}
+                    onClose={() => {
+                      setShowReviewsModal(false);
+                      setEditReviewsId(null);
+                    }}
+                    onReviewsUpdated={handleReviewsUpdated}
+                    existingReviews={editReviewsId}
+                    type="package"
+                  />
+                </div>
+              )}
+            </div>
             {/* Itinerary Dynamic */}
             <div>
               <FormLabel className="mb-2 text-lg">Itinerary</FormLabel>

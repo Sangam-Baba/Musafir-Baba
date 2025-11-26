@@ -58,7 +58,13 @@ const images = [
   },
 ];
 
-export function ImageGallery() {
+export function ImageGallery({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
@@ -67,11 +73,9 @@ export function ImageGallery() {
     <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 flex flex-col items-center">
       {/* Heading */}
       <div className="flex flex-col gap-2 items-center py-4 text-center">
-        <h4 className="text-2xl md:text-3xl font-bold">Memories in Motion</h4>
+        <h4 className="text-2xl md:text-3xl font-bold">{title}</h4>
         <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
-        <p className="text-gray-600">
-          Picture Perfect Moments with the Best Travel Agency in Delhi
-        </p>
+        <p className="text-gray-600">{description}</p>
       </div>
 
       {/* Carousel */}

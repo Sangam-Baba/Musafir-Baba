@@ -29,6 +29,12 @@ const customizedTourPackageSchema = new mongoose.Schema(
       ref: "Destination",
       required: true,
     },
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Reviews",
+      },
+    ],
     coverImage: {
       url: String,
       alt: String,

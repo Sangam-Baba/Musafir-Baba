@@ -39,6 +39,12 @@ const packageSchema = new mongoose.Schema(
         ref: "Batch",
       },
     ],
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Reviews",
+      },
+    ],
     metaTitle: String,
     metaDescription: String,
     keywords: [String],
@@ -59,7 +65,6 @@ const packageSchema = new mongoose.Schema(
       type: String,
     },
     maxPeople: Number,
-
     highlights: [String],
     inclusions: [String],
     exclusions: [String],

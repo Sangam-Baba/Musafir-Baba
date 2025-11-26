@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/accordion";
 import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import WhyChooseUs from "@/components/custom/WhyChooseUS";
-import { TestimonialWebpage } from "@/components/custom/TestimonialWebpage";
+import WhyChoose from "@/components/custom/WhyChoose";
+import { Testimonial } from "@/components/custom/Testimonial";
 
 interface Faq {
   question: string;
@@ -85,21 +85,6 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
           <section className="prose prose-lg max-w-none">
             <BlogContent html={visa.content} />
           </section>
-          <section className="w-full ">
-            <div className="flex flex-col gap-2  py-4">
-              <h2 className="text-2xl  font-bold">{`Why Choose MusafirBaba`}</h2>
-              <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
-              <p className="text-gray-600">
-                We combine expertise, transparency, and personalised planning to
-                deliver unforgettable journeys
-              </p>
-            </div>
-
-            <WhyChooseUs />
-          </section>
-          <section>
-            <TestimonialWebpage />
-          </section>
           <section>
             <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>
             <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
@@ -130,6 +115,12 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
             />
           )}
         </aside>
+      </div>
+      <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">
+        <WhyChoose />
+        <section>
+          <Testimonial />
+        </section>
       </div>
     </section>
   );

@@ -19,6 +19,7 @@ import { Loader } from "@/components/custom/loader";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
 import BlogEditor from "@/components/admin/BlogEditor";
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 
 interface Image {
   url: string;
@@ -50,6 +51,14 @@ interface Batch {
   _id: string;
   status: string;
 }
+export interface Reviews {
+  name: string;
+  comment: string;
+  rating: number;
+  type: string;
+  _id?: string;
+  location: string;
+}
 interface PackageFormValues {
   title: string;
   description?: string;
@@ -58,6 +67,7 @@ interface PackageFormValues {
   destination: string;
   mainCategory: string;
   otherCategory: string[];
+  reviews?: Reviews[];
   coverImage?: Image;
   gallery?: Image[];
   duration: { days: number; nights: number };
@@ -137,7 +147,7 @@ const deleteBatch = async (accessToken: string, id: string) => {
   if (!res.ok) throw new Error("Failed to delete batch");
   return res.json();
 };
-const getBatchByIds = async (accessToken: string, ids: string[]) => {
+export const getBatchByIds = async (accessToken: string, ids: string[]) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/batch/ids`, {
     method: "POST",
     headers: {
@@ -150,11 +160,39 @@ const getBatchByIds = async (accessToken: string, ids: string[]) => {
   const data = await res.json();
   return data?.data;
 };
+export const getReviewsByIds = async (accessToken: string, ids: string[]) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/reviews/ids`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ ids }),
+  });
+  if (!res.ok) throw new Error("Failed to get reviews");
+  const data = await res.json();
+  return data?.data;
+};
+
+export const deleteReview = async (accessToken: string, id: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/reviews/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to delete review");
+  return res.json();
+};
 export default function CreatePackagePage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
   const [batchDetails, setBatchDetails] = useState<Batch[]>([]);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const defaultValues: PackageFormValues = {
     title: "",
     description: "",
@@ -164,6 +202,7 @@ export default function CreatePackagePage() {
     keywords: [],
     gallery: [],
     batch: [],
+    reviews: [],
     destination: "",
     mainCategory: "",
     otherCategory: [],
@@ -200,6 +239,10 @@ export default function CreatePackagePage() {
   const form = useForm<PackageFormValues>({ defaultValues });
 
   const batchArray = useFieldArray({ control: form.control, name: "batch" });
+  const reviewsArray = useFieldArray({
+    control: form.control,
+    name: "reviews",
+  });
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
@@ -255,6 +298,27 @@ export default function CreatePackagePage() {
     setEditBatchId(null);
   };
 
+  const handleReviewsCreated = async (id: string) => {
+    reviewsArray.append(id);
+    const newBatch = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) => [...prev, ...newBatch]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
+
   const onSubmit: SubmitHandler<PackageFormValues> = (values) => {
     mutation.mutate(values);
   };
@@ -300,19 +364,6 @@ export default function CreatePackagePage() {
             />
 
             {/* Description */}
-            {/* <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Describe the package" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
             <FormField
               control={form.control}
               name="description"
@@ -740,6 +791,72 @@ export default function CreatePackagePage() {
               >
                 Add FAQ
               </Button>
+            </div>
+
+            {/* Reviews */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
+              {reviewsArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  {/* REVIEW Content */}
+                  <div className="flex  items-center text-left gap-2">
+                    <span className="font-medium">
+                      {reviewsDetails[index]?.name || `Reviews ${index + 1}`}
+                    </span>
+                  </div>
+
+                  {/* Batch Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => reviewsArray.remove(index)}
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() =>
+                        handleReviewsEdit(form.getValues(`reviews.${index}`))
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={async () => {
+                        const res = await deleteReview(
+                          accessToken,
+                          form.getValues(`reviews.${index}`)
+                        );
+                        if (res) reviewsArray.remove(index);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <Button type="button" onClick={() => setShowReviewsModal(true)}>
+                + Add New Review
+              </Button>
+              {showReviewsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <CreateReviewsModal
+                    onReviewsCreated={handleReviewsCreated}
+                    onClose={() => {
+                      setShowReviewsModal(false);
+                      setEditReviewsId(null);
+                    }}
+                    onReviewsUpdated={handleReviewsUpdated}
+                    existingReviews={editReviewsId}
+                    type="package"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Itinerary Dynamic */}

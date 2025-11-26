@@ -64,6 +64,12 @@ const visaSchema = new mongoose.Schema(
         answer: { type: String },
       },
     ],
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Reviews",
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,

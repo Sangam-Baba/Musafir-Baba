@@ -23,6 +23,8 @@ import { Check, ChevronDown, Clock, MapPin, X } from "lucide-react";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import WhyChoose from "@/components/custom/WhyChoose";
+import { Testimonial } from "@/components/custom/Testimonial";
 type TabKey =
   | "description"
   | "highlights"
@@ -396,7 +398,9 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
           <QueryForm />
         </div>
       </div>
-      <ImageGallery />
+      <WhyChoose />
+      <Testimonial />
+      <ImageGallery title="Memories in Motion" />
       <AuthDialog />
     </section>
   );
