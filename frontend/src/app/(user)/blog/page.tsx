@@ -51,7 +51,7 @@ export default async function BlogPage({
 
   return (
     <section className="w-full ">
-      <Hero image="/Heroimg.jpg" title="Blog" />
+      <Hero image="/Heroimg.jpg" title="Blog" overlayOpacity={100} />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>

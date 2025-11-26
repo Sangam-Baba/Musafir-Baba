@@ -12,6 +12,8 @@ import {
 import RelatedPages from "@/components/custom/RelatedPages";
 import NotFoundPage from "@/components/common/Not-Found";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import WhyChooseUs from "@/components/custom/WhyChooseUS";
+import { TestimonialWebpage } from "@/components/custom/TestimonialWebpage";
 
 interface Faq {
   question: string;
@@ -61,19 +63,34 @@ async function BookingsWebPage({ params }: { params: { slug: string } }) {
     <section className="">
       <Hero
         image={visa?.coverImage?.url || "/Hero1.jpg"}
-        title=""
-        overlayOpacity={5}
+        title={visa.title}
+        overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
-        <article className="w-full md:w-2/3">
-          <header className="">
+        <article className="w-full md:w-2/3 space-y-10">
+          {/* <header className="">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-          </header>
+          </header> */}
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={visa.content} />
+          </section>
+          <section className="w-full ">
+            <div className="flex flex-col gap-2  py-4">
+              <h2 className="text-2xl  font-bold">{`Why Choose MusafirBaba`}</h2>
+              <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
+              <p className="text-gray-600">
+                We combine expertise, transparency, and personalised planning to
+                deliver unforgettable journeys
+              </p>
+            </div>
+
+            <WhyChooseUs />
+          </section>
+          <section>
+            <TestimonialWebpage />
           </section>
           <section>
             <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>

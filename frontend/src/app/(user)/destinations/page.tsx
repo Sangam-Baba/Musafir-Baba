@@ -49,19 +49,13 @@ async function page() {
       <div>
         <Hero
           image="/Heroimg.jpg"
-          title=""
+          title="Destinations"
           align="center"
           height="lg"
-          overlayOpacity={0}
+          overlayOpacity={100}
         />
       </div>
-      <div className="flex flex-col items-center mt-5">
-        <h1 className="text-3xl md:text-4xl font-bold text-center">
-          Destinations
-        </h1>
-        <div className="w-20 h-1 bg-[#FE5300] mt-2 "></div>
-        <p></p>
-      </div>
+
       <div className="max-w-7xl mx-auto py-16 px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mt-6">
           {destinations.map((destination: Destination, i: number) => (

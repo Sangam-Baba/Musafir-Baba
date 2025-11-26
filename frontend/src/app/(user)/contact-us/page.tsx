@@ -37,15 +37,19 @@ async function VisaWebPage() {
 
   return (
     <section className="">
-      <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="Contact Us" />
+      <Hero
+        image={visa?.coverImage?.url || "/Hero1.jpg"}
+        title={visa.title}
+        overlayOpacity={100}
+      />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <article className="w-full  flex flex-col items-center">
-          <header className="mt-6 space-y-2">
+          {/* <header className="mt-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-          </header>
+          </header> */}
           <div className="flex ietms-center">
             <section className="prose prose-lg max-w-none mt-6 text-center">
               <BlogContent html={visa.content} />

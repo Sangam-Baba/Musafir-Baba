@@ -52,8 +52,8 @@ async function VisaWebPage() {
       <div className="w-full flex relative">
         <Hero
           image={visa?.coverImage?.url || "/Hero1.jpg"}
-          title=""
-          overlayOpacity={5}
+          title={visa.title}
+          overlayOpacity={100}
         />
       </div>
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
@@ -64,9 +64,9 @@ async function VisaWebPage() {
         <div className="flex flex-col md:flex-row gap-8 items-start">
           {/* maincontent */}
           <article className="w-full md:w-4/7 ">
-            <header className=" space-y-2">
+            {/* <header className=" space-y-2">
               <h1 className="text-3xl md:text-4xl font-bold">{visa.title}</h1>
-            </header>
+            </header> */}
             <section className="prose prose-lg max-w-none mt-6">
               <BlogContent html={visa.content} />
             </section>

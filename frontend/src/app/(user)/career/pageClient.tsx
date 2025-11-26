@@ -83,7 +83,11 @@ function CareerClientPage() {
   if (isError) return <h1>{(error as Error).message}</h1>;
   return (
     <section className="">
-      <Hero image={visa?.coverImage?.url || "/Hero1.jpg"} title="Career" />
+      <Hero
+        image={visa?.coverImage?.url || "/Hero1.jpg"}
+        title="Career"
+        overlayOpacity={100}
+      />
       <div className="w-full  mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>

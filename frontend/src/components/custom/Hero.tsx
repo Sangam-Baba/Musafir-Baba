@@ -9,24 +9,22 @@ type Align = "left" | "center" | "right";
 type Height = "sm" | "md" | "lg" | "xl";
 
 export interface HeroProps {
-  
   image: string;
-  
+
   title: string;
-  
+
   description?: string;
- 
+
   align?: Align;
- 
+
   height?: Height;
- 
+
   overlayOpacity?: number;
-  
+
   className?: string;
-  
+
   children?: React.ReactNode;
 }
-
 
 const heightToClasses: Record<Height, string> = {
   sm: "h-[260px] md:h-[320px]",
@@ -48,7 +46,9 @@ export default function Hero({
   const overlay = Math.min(100, Math.max(0, overlayOpacity));
 
   return (
-    <section className={`relative w-full ${heightToClasses[height]}  ${className}`}>
+    <section
+      className={`relative w-full ${heightToClasses[height]}  ${className}`}
+    >
       {/* Background image */}
       <div className="absolute inset-0">
         <Image
@@ -61,25 +61,26 @@ export default function Hero({
         />
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-black"
+          className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
           style={{ opacity: overlay / 100 }}
         />
-        {/* Subtle gradient at bottom for readability */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />
       </div>
 
       {/* Content */}
-      <div className={`relative z-10 h-full flex items-center ${
-    align === "left"
-      ? "justify-start text-left"
-      : align === "right"
-      ? "justify-end text-right"
-      : "justify-center text-center"
-  }`}
+      <div
+        className={`relative z-10 h-full flex items-center ${
+          align === "left"
+            ? "justify-start text-left"
+            : align === "right"
+            ? "justify-end text-right"
+            : "justify-center text-center"
+        }`}
       >
-        <div className={`px-4 md:px-8 ${
-      align === "center" ? "w-full max-w-6xl" : "max-w-2xl"
-    }`}>
+        <div
+          className={`px-4 md:px-8 ${
+            align === "center" ? "w-full max-w-6xl" : "max-w-2xl"
+          }`}
+        >
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -115,4 +116,3 @@ export default function Hero({
     </section>
   );
 }
-

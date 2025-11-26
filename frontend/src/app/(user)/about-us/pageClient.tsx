@@ -46,28 +46,12 @@ interface FormValues {
   h2content: Content[];
 }
 
-// Fetch Function
-// const getWebPageBySlug = async () => {
-//   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`
-//   );
-//   if (!res.ok) throw new Error("Failed to fetch about");
-//   const data = await res.json();
-//   console.log("About us data", data);
-//   return data;
-// };
-
 function AboutUsPageClient({ about }: { about: FormValues }) {
   const [cornerImages, setCornerImages] = useState<ImageType[]>([]);
   const [centerImage, setCenterImage] = useState<ImageType>({
     url: "",
     alt: "",
   });
-  // const { data, isLoading, isError, error } = useQuery({
-  //   queryKey: ["about"],
-  //   queryFn: getWebPageBySlug,
-  // });
-  // const about = data?.data || {};
   useEffect(() => {
     if (!about?.upperImage?.length) return;
 
@@ -98,7 +82,11 @@ function AboutUsPageClient({ about }: { about: FormValues }) {
 
   return (
     <section>
-      <Hero image={about?.coverImage?.url || "/Hero1.jpg"} title="About Us" />
+      <Hero
+        image={about?.coverImage?.url || "/Hero1.jpg"}
+        title="About Us"
+        overlayOpacity={100}
+      />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
@@ -107,7 +95,7 @@ function AboutUsPageClient({ about }: { about: FormValues }) {
         <div className="flex flex-col md:flex-row gap-16">
           {/* Left Text Section */}
           <div className="w-full md:w-1/2 flex flex-col gap-10">
-            <h1 className="text-5xl font-bold mb-4">{about?.title}</h1>
+            <h2 className="text-5xl font-bold mb-4">{about?.title}</h2>
             <p className="text-gray-600 font-semibold text-justify">
               {about?.description}
             </p>
@@ -195,9 +183,9 @@ function AboutUsPageClient({ about }: { about: FormValues }) {
       </div>
       <div className="max-w-7xl mx-auto flex flex-col gap-8 px-4 sm:px-6 lg:px-8 py-10 bg-slate-100 rounded-lg">
         <div className="w-full  flex flex-col md:flex-row gap-10 justify-around">
-          <h1 className="w-full md:w-2/5 text-5xl font-bold mb-4">
+          <h2 className="w-full md:w-2/5 text-5xl font-bold mb-4">
             {about?.h2title}
-          </h1>
+          </h2>
           <p className="w-full md:w-3/5  text-gray-600 font-semibold text-justify">
             {about?.h2description}
           </p>
