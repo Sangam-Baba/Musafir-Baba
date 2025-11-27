@@ -372,7 +372,7 @@ export default function CustomizedPackageClient({
 
       <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
       <WhyChoose />
-      <Testimonial />
+      <Testimonial data={[]} />
     </section>
   );
 }

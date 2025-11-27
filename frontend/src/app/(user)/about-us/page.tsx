@@ -68,7 +68,7 @@ async function AboutUsPage() {
     <div>
       <AboutUsPageClient about={data} />
       {/* Testimonials and Blogs */}
-      <Testimonial />
+      <Testimonial data={[]} />
       <BlogsHome />
     </div>
   );
