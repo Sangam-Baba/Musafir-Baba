@@ -10,36 +10,41 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
 });
 import ImageUploader from "@/components/admin/ImageUploader";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { useParams } from "next/navigation";
 import { Loader } from "@/components/custom/loader";
 import { X } from "lucide-react";
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import { Reviews } from "../../../holidays/new/page";
+import { deleteReview } from "../../../holidays/new/page";
+import { getReviewsByIds } from "../../../holidays/new/page";
+import { WebpageFormData } from "../../new/page";
 
-interface FormData {
-  title: string;
-  content: string;
-  slug: string;
-  parent: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  keywords?: string[];
-  schemaType?: string;
-  coverImage?: {
-    url?: string;
-    public_id?: string;
-    alt?: string;
-    width?: number;
-    height?: number;
-  };
-  status: string;
-  excerpt?: string;
-  faqs?: {
-    question: string;
-    answer: string;
-  }[];
-}
+// interface FormData {
+//   title: string;
+//   content: string;
+//   slug: string;
+//   parent: string;
+//   metaTitle?: string;
+//   metaDescription?: string;
+//   keywords?: string[];
+//   schemaType?: string;
+//   coverImage?: {
+//     url?: string;
+//     public_id?: string;
+//     alt?: string;
+//     width?: number;
+//     height?: number;
+//   };
+//   status: string;
+//   excerpt?: string;
+//   faqs?: {
+//     question: string;
+//     answer: string;
+//   }[];
+// }
 
 const getWebpage = async (id: string) => {
   const res = await fetch(
@@ -49,7 +54,11 @@ const getWebpage = async (id: string) => {
   const data = await res.json();
   return data?.data;
 };
-const updatePage = async (values: FormData, token: string, id: string) => {
+const updatePage = async (
+  values: WebpageFormData,
+  token: string,
+  id: string
+) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${id}`, {
     method: "PATCH",
     headers: {
@@ -65,6 +74,9 @@ const updatePage = async (values: FormData, token: string, id: string) => {
 export default function UpdateWebpage() {
   const token = useAuthStore((state) => state.accessToken) ?? "";
   const { id } = useParams();
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
 
   const {
     data: webpage,
@@ -75,7 +87,7 @@ export default function UpdateWebpage() {
     queryFn: () => getWebpage(id as string),
   });
 
-  const defaultValues: FormData = {
+  const defaultValues: WebpageFormData = {
     title: "",
     content: "",
     slug: "",
@@ -83,37 +95,42 @@ export default function UpdateWebpage() {
     metaTitle: "",
     metaDescription: "",
     keywords: [],
+    reviews: [],
     schemaType: "",
     status: "published",
     excerpt: "",
     faqs: [],
   };
 
-  const form = useForm<FormData>({
+  const form = useForm<WebpageFormData>({
     defaultValues,
   });
 
   useEffect(() => {
     if (webpage) {
-      form.setValue("title", webpage.title);
-      form.setValue("content", webpage.content);
-      form.setValue("slug", webpage.slug);
-      form.setValue("parent", webpage.parent);
-      form.setValue("metaTitle", webpage.metaTitle);
-      form.setValue("metaDescription", webpage.metaDescription);
-      form.setValue("keywords", webpage.keywords);
-      form.setValue("schemaType", webpage.schemaType);
-      form.setValue("coverImage", webpage.coverImage);
-      form.setValue("status", webpage.status);
-      form.setValue("excerpt", webpage.excerpt);
-      form.setValue("faqs", webpage.faqs);
+      const reviewsIds = webpage.reviews?.map((r: string) => r) || [];
+      form.reset({
+        ...webpage,
+        reviews: reviewsIds,
+      });
+      if (reviewsIds.length > 0) {
+        getReviewsByIds(token, reviewsIds)
+          .then((data) => {
+            const ordered = reviewsIds
+              .map((id: string) => data.find((b: Reviews) => b._id === id))
+              .filter(Boolean);
+            setReviewsDetails(ordered as Reviews[]);
+          })
+          .catch((err) => console.error("Failed to fetch review info:", err));
+      }
     }
-  }, [webpage, form]);
+  }, [webpage, form, token]);
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
 
   const mutation = useMutation({
-    mutationFn: (values: FormData) => updatePage(values, token, id as string),
+    mutationFn: (values: WebpageFormData) =>
+      updatePage(values, token, id as string),
     onSuccess: () => {
       toast.success("Page updated successfully!");
     },
@@ -126,7 +143,37 @@ export default function UpdateWebpage() {
     },
   });
 
-  function onSubmit(values: FormData) {
+  const handleReviewsCreated = async (id: string) => {
+    const existing = form.getValues("reviews") || [];
+    form.setValue("reviews", [...existing, id]); // update form array
+
+    const newReview = await getReviewsByIds(token, [id]);
+    setReviewsDetails((prev) => [...prev, ...newReview]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(token, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
+  const handleReviewsRemove = async (id: string, index: number) => {
+    await deleteReview(token, id);
+    const updatedIds = form.getValues("reviews")?.filter((_, i) => i !== index);
+    const updatedDetails = reviewsDetails.filter((_, i) => i !== index);
+
+    form.setValue("reviews", updatedIds);
+    setReviewsDetails(updatedDetails);
+  };
+  function onSubmit(values: WebpageFormData) {
     mutation.mutate(values);
   }
   if (isLoading) return <Loader size={"lg"} />;
@@ -284,7 +331,58 @@ export default function UpdateWebpage() {
             Add FAQ
           </Button>
         </div>
+        {/* Reviews */}
+        <div>
+          <Label className="mb-2 text-lg">Reviews</Label>
 
+          {reviewsDetails.map((review, index) => (
+            <div
+              key={review._id}
+              className="flex justify-between items-center mb-2"
+            >
+              <span>{review.name}</span>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={() => handleReviewsEdit(review._id as string)}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() =>
+                    handleReviewsRemove(review._id as string, index)
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+
+          <Button type="button" onClick={() => setShowReviewsModal(true)}>
+            + Add New Review
+          </Button>
+
+          {showReviewsModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <CreateReviewsModal
+                onReviewsCreated={handleReviewsCreated}
+                onClose={() => {
+                  setShowReviewsModal(false);
+                  setEditReviewsId(null);
+                }}
+                onReviewsUpdated={handleReviewsUpdated}
+                existingReviews={editReviewsId}
+                type="package"
+              />
+            </div>
+          )}
+        </div>
         <select
           {...form.register("parent")}
           className="w-full border rounded p-2"

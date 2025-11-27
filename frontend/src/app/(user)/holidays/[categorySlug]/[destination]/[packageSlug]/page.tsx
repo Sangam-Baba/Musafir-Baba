@@ -1,6 +1,7 @@
 import React from "react";
 import SlugClients from "./SlugClients";
 import { Metadata } from "next";
+import { getPackageByDestinationSlug } from "../page";
 
 interface Destination {
   _id: string;
@@ -117,9 +118,21 @@ async function PackageDetails({
 }: {
   params: { categorySlug: string; destination: string; packageSlug: string };
 }) {
-  const { destination, packageSlug } = params;
+  const { categorySlug, destination, packageSlug } = params;
+  const relatedGroupPackages = await getPackageByDestinationSlug(
+    categorySlug,
+    destination
+  );
   // const packageData = await getSinglePackages(destination, packageSlug);
-  return <SlugClients slug={packageSlug} state={destination} />;
+  return (
+    <SlugClients
+      slug={packageSlug}
+      state={destination}
+      relatedGroupPackages={relatedGroupPackages.filter(
+        (p: Package) => p.slug !== packageSlug
+      )}
+    />
+  );
 }
 
 export default PackageDetails;

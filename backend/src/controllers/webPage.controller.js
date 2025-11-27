@@ -40,7 +40,7 @@ const getWebPageBySlug = async (req, res) => {
     const { slug } = req.params;
     if (!slug)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
-    const webpage = await WebPage.findOne({ slug }).lean();
+    const webpage = await WebPage.findOne({ slug }).populate("reviews").lean();
     if (!webpage)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
     res.status(200).json({ success: true, data: webpage });

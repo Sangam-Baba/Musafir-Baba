@@ -1,9 +1,7 @@
 import { Package } from "../models/Package.js";
-import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import { Category } from "../models/Category.js";
 import { Destination } from "../models/Destination.js";
 import mongoose from "mongoose";
-import { populate } from "dotenv";
 const createPackage = async (req, res) => {
   try {
     const { title, destination, duration, batch } = req.body;

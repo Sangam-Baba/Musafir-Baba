@@ -80,11 +80,14 @@ interface Package {
   slug: string;
   __v: number;
 }
-async function getPackageByDestinationSlug(categorySlug: string, slug: string) {
+export async function getPackageByDestinationSlug(
+  categorySlug: string,
+  slug: string
+) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}&category=${categorySlug}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 60 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
@@ -145,12 +148,6 @@ async function DestinationPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
         <Breadcrumb />
       </div>
-      {/* <div className="w-full flex flex-col items-center justify-center mt-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Packages in ${
-          destination.charAt(0).toUpperCase() + destination.slice(1)
-        }`}</h1>
-        <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
-      </div> */}
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (
         <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">

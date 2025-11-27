@@ -116,10 +116,10 @@ const getRelatedPages = async (req, res) => {
     const relatedVisa = await Visa.find({
       _id: { $ne: visa._id },
       isActive: "true",
-      keywords: { $in: visa.keywords },
+      visaType: visa.visaType,
     })
       .limit(5)
-      .select("title slug coverImage keywords excerpt createdAt")
+      .select("title slug coverImage content excerpt createdAt")
       .lean();
     return res.status(200).json({ success: true, data: relatedVisa });
   } catch (error) {

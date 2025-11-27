@@ -27,6 +27,7 @@ import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
 import { Reviews } from "@/app/admin/holidays/new/page";
+import PackageCard from "@/components/custom/PackageCard";
 type TabKey =
   | "description"
   | "highlights"
@@ -55,6 +56,7 @@ interface Batch {
   doubleDiscount: number;
   tripleDiscount: number;
   childDiscount: number;
+  _id: string;
 }
 export interface Duration {
   days: number;
@@ -129,7 +131,15 @@ const getSinglePackages = async (
   return res.json();
 };
 
-function SlugClients({ slug, state }: { slug: string; state: string }) {
+function SlugClients({
+  slug,
+  state,
+  relatedGroupPackages,
+}: {
+  slug: string;
+  state: string;
+  relatedGroupPackages: Package[];
+}) {
   const [openItem, setOpenItem] = useState<string | undefined>(undefined);
   const auth = useAuthStore();
   const pathName = usePathname();
@@ -401,9 +411,36 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
           <QueryForm />
         </div>
       </div>
+      <div className="w-full max-w-7xl mx-auto px-8  mt-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold">Nearby Tours</h2>
+        <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
+        {relatedGroupPackages && relatedGroupPackages.length > 0 && (
+          <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
+            {relatedGroupPackages.slice(0, 4).map((pkg: Package) => (
+              <PackageCard
+                key={pkg._id}
+                pkg={{
+                  id: pkg._id,
+                  name: pkg.title,
+                  slug: pkg.slug,
+                  image: pkg.coverImage ? pkg.coverImage.url : "",
+                  price: pkg.batch ? pkg.batch[0]?.quad : 9999,
+                  duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                  destination:
+                    pkg.destination.state.charAt(0).toUpperCase() +
+                    pkg.destination.state.slice(1),
+                  batch: pkg?.batch ? pkg?.batch : [],
+                }}
+                url={`./${pkg.slug}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      <ImageGallery title="Memories in Motion" />
       <WhyChoose />
       <Testimonial data={pkg?.reviews ?? []} />
-      <ImageGallery title="Memories in Motion" />
+
       <AuthDialog />
     </section>
   );

@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,15 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
 });
 import ImageUploader from "@/components/admin/ImageUploader";
-import React from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { X } from "lucide-react";
+import { getReviewsByIds, Reviews } from "../../holidays/new/page";
+import { deleteReview } from "../../holidays/new/page";
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 
-interface FormData {
+export interface WebpageFormData {
   title: string;
   content: string;
   slug: string;
@@ -24,6 +26,7 @@ interface FormData {
   metaTitle?: string;
   metaDescription?: string;
   keywords?: string[];
+  reviews?: string[];
   schemaType?: string;
   coverImage?: {
     url?: string;
@@ -40,7 +43,7 @@ interface FormData {
   }[];
 }
 
-const createPage = async (values: FormData, token: string) => {
+const createPage = async (values: WebpageFormData, token: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/`, {
     method: "POST",
     headers: {
@@ -55,9 +58,12 @@ const createPage = async (values: FormData, token: string) => {
 
 export default function CreateWebpage() {
   const token = useAuthStore((state) => state.accessToken) ?? "";
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const router = useRouter();
 
-  const defaultValues: FormData = {
+  const defaultValues: WebpageFormData = {
     title: "",
     content: "",
     slug: "",
@@ -65,20 +71,21 @@ export default function CreateWebpage() {
     metaTitle: "",
     metaDescription: "",
     keywords: [],
+    reviews: [],
     schemaType: "",
     status: "published",
     excerpt: "",
     faqs: [],
   };
 
-  const form = useForm<FormData>({
+  const form = useForm<WebpageFormData>({
     defaultValues,
   });
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
 
   const mutation = useMutation({
-    mutationFn: (values: FormData) => createPage(values, token),
+    mutationFn: (values: WebpageFormData) => createPage(values, token),
     onSuccess: () => {
       toast.success("Page created successfully!");
       form.reset();
@@ -93,7 +100,37 @@ export default function CreateWebpage() {
     },
   });
 
-  function onSubmit(values: FormData) {
+  const handleReviewsCreated = async (id: string) => {
+    const existing = form.getValues("reviews") || [];
+    form.setValue("reviews", [...existing, id]); // update form array
+
+    const newReview = await getReviewsByIds(token, [id]);
+    setReviewsDetails((prev) => [...prev, ...newReview]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(token, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
+  const handleReviewsRemove = async (id: string, index: number) => {
+    await deleteReview(token, id);
+    const updatedIds = form.getValues("reviews")?.filter((_, i) => i !== index);
+    const updatedDetails = reviewsDetails.filter((_, i) => i !== index);
+
+    form.setValue("reviews", updatedIds);
+    setReviewsDetails(updatedDetails);
+  };
+  function onSubmit(values: WebpageFormData) {
     mutation.mutate(values);
   }
 
@@ -248,6 +285,59 @@ export default function CreateWebpage() {
           >
             Add FAQ
           </Button>
+        </div>
+
+        {/* Reviews */}
+        <div>
+          <Label className="mb-2 text-lg">Reviews</Label>
+
+          {reviewsDetails.map((review, index) => (
+            <div
+              key={review._id}
+              className="flex justify-between items-center mb-2"
+            >
+              <span>{review.name}</span>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={() => handleReviewsEdit(review._id as string)}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() =>
+                    handleReviewsRemove(review._id as string, index)
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
+          ))}
+
+          <Button type="button" onClick={() => setShowReviewsModal(true)}>
+            + Add New Review
+          </Button>
+
+          {showReviewsModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <CreateReviewsModal
+                onReviewsCreated={handleReviewsCreated}
+                onClose={() => {
+                  setShowReviewsModal(false);
+                  setEditReviewsId(null);
+                }}
+                onReviewsUpdated={handleReviewsUpdated}
+                existingReviews={editReviewsId}
+                type="package"
+              />
+            </div>
+          )}
         </div>
         <select
           {...form.register("parent")}

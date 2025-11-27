@@ -3,7 +3,6 @@ import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { readingTime } from "@/utils/readingTime";
-import { Dot } from "lucide-react";
 interface Blog {
   _id: string;
   title: string;
@@ -46,7 +45,7 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
               alt={blog.coverImage.alt || blog.title}
               width={120}
               height={80}
-              className="rounded-md object-cover"
+              className="rounded-md object-cover border border-gray-200"
             />
             <CardContent className="p-2">
               <Link

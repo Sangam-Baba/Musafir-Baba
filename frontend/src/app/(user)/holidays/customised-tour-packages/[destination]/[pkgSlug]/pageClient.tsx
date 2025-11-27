@@ -350,7 +350,7 @@ export default function CustomizedPackageClient({
           <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
           {relatedPackages && relatedPackages.length > 0 && (
             <div className="mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
-              {relatedPackages.map((pkg: Package) => (
+              {relatedPackages.slice(0, 4).map((pkg: Package) => (
                 <PackageCard
                   key={pkg._id}
                   pkg={{
@@ -370,7 +370,6 @@ export default function CustomizedPackageClient({
           )}
         </div>
       </div>
-
       <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
       <WhyChoose />
       <Testimonial data={pkg.reviews ?? []} />

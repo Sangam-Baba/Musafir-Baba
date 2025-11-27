@@ -23,6 +23,12 @@ const webPageSchema = new mongoose.Schema(
       width: Number,
       height: Number,
     },
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Reviews",
+      },
+    ],
     metaTitle: String,
     metaDescription: String,
     excerpt: String,

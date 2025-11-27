@@ -10,10 +10,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import RelatedPages from "@/components/custom/RelatedPages";
-import NotFoundPage from "@/components/common/Not-Found";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
+import { notFound } from "next/navigation";
 
 interface Faq {
   question: string;
@@ -21,9 +21,12 @@ interface Faq {
 }
 const getWebPageBySlug = async (slug: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}`,
+    {
+      cache: "no-cache",
+    }
   );
-  if (!res.ok) return <NotFoundPage />;
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data;
 };
@@ -57,7 +60,7 @@ export async function generateMetadata({
 }
 async function BookingsWebPage({ params }: { params: { slug: string } }) {
   const res = await getWebPageBySlug(params.slug);
-  if (!res.data || params.slug === "bookings") return <NotFoundPage />;
+  if (!res.data || params.slug === "bookings") return notFound();
   const visa = res?.data;
   return (
     <section className="">
@@ -104,7 +107,7 @@ async function BookingsWebPage({ params }: { params: { slug: string } }) {
       <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <WhyChoose />
         <section>
-          <Testimonial data={[]} />
+          <Testimonial data={visa.reviews ?? []} />
         </section>
       </div>
     </section>

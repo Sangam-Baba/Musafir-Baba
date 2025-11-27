@@ -170,13 +170,13 @@ export default function CreatePackagePage() {
 
   useEffect(() => {
     if (packageData) {
-      const reviewsIds = packageData.reviews.map((b: string) => b);
+      const reviewsIds = packageData.reviews?.map((b: string) => b) || [];
       form.reset({
         ...packageData,
         destination: packageData.destination._id,
         reviews: reviewsIds,
       });
-      if (packageData.reviews.length > 0) {
+      if (packageData.reviews?.length > 0) {
         getReviewsByIds(accessToken, reviewsIds)
           .then((data) => {
             const ordered = reviewsIds
@@ -186,9 +186,8 @@ export default function CreatePackagePage() {
           })
           .catch((err) => console.error("Failed to fetch review info:", err));
       }
-      setReviewsDetails(packageData.reviews);
     }
-  }, [packageData, form, accessToken, setReviewsDetails]);
+  }, [packageData, form, accessToken]);
 
   const coverImageArray = useFieldArray({
     control: form.control,

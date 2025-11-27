@@ -4,7 +4,7 @@ async function getCustomizedPackage(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/slug/${slug}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 60 },
     }
   );
   if (!res.ok) return null;
@@ -16,7 +16,7 @@ async function getRelatedPackages(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/related/${slug}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 600 },
     }
   );
   if (!res.ok) return [];
