@@ -437,7 +437,7 @@ function SlugClients({
           </div>
         )}
       </div>
-      <ImageGallery title="Memories in Motion" />
+      <ImageGallery title="Memories in Motion" data={pkg?.gallery ?? []} />
       <WhyChoose />
       <Testimonial data={pkg?.reviews ?? []} />
 

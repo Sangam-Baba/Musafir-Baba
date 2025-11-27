@@ -24,6 +24,7 @@ import { Faqs } from "@/components/custom/Faqs";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { Reviews } from "@/app/admin/holidays/new/page";
+import { ImageGallery } from "@/components/custom/ImageGallery";
 interface Plan {
   _id: string;
   title: string;
@@ -370,6 +371,7 @@ export default function CustomizedPackageClient({
           )}
         </div>
       </div>
+      <ImageGallery title="Memories in Motion" data={pkg?.gallery ?? []} />
       <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
       <WhyChoose />
       <Testimonial data={pkg.reviews ?? []} />

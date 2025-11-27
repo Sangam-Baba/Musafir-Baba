@@ -19,56 +19,71 @@ import frame5 from "../../../public/frame5.jpg";
 import frame6 from "../../../public/frame6.jpg";
 import frame7 from "../../../public/frame7.jpg";
 import frame8 from "../../../public/frame8.webp";
+import { coverImage } from "@/app/(user)/news/page";
 const images = [
   {
     id: 1,
-    img: frame5,
+    url: frame5,
+    public_id: "",
+    width: 0,
+    height: 0,
+    alt: "",
   },
   {
     id: 2,
-    img: frame1,
+    url: frame1,
+    alt: "",
   },
   {
     id: 3,
-    img: frame2,
+    url: frame2,
+    alt: "",
   },
   {
     id: 4,
-    img: frame3,
+    url: frame3,
+    alt: "",
   },
   {
     id: 5,
-    img: frame4,
+    url: frame4,
+    alt: "",
   },
   {
     id: 6,
     img: frame5,
+    alt: "",
   },
   {
     id: 7,
-    img: frame6,
+    url: frame6,
+    alt: "",
   },
   {
     id: 8,
-    img: frame7,
+    url: frame7,
+    alt: "",
   },
   {
     id: 9,
-    img: frame8,
+    url: frame8,
+    alt: "",
   },
 ];
 
 export function ImageGallery({
   title,
   description,
+  data,
 }: {
   title: string;
   description?: string;
+  data?: coverImage[];
 }) {
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
-
+  const finalImages = data ? (data?.length > 0 ? data : images) : images;
   return (
     <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 flex flex-col items-center">
       {/* Heading */}
@@ -86,9 +101,9 @@ export function ImageGallery({
         onMouseLeave={plugin.current.reset}
       >
         <CarouselContent>
-          {images.map((item) => (
+          {finalImages.map((item, i) => (
             <CarouselItem
-              key={item.id}
+              key={i}
               className="md:basis-1/2 lg:basis-1/4 flex justify-center"
             >
               <div className="p-4 w-full">
@@ -101,8 +116,8 @@ export function ImageGallery({
                   <Image
                     width={550}
                     height={550}
-                    src={item.img}
-                    alt={`trip-${item.id}`}
+                    src={item.url as string}
+                    alt={item.alt}
                     className="w-full h-80 object-cover"
                   />
                 </div>

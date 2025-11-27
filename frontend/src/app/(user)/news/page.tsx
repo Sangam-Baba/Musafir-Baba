@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 export interface coverImage {
   url: string;
   public_id: string;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   alt: string;
 }
 export interface News {

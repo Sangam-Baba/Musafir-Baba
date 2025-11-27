@@ -199,7 +199,7 @@ const getPackages = async (req, res) => {
     const packages = await Package.find(query)
       .populate(
         "destination",
-        "name country state city slug coverImage metaTitle metaDescription keywords"
+        "name country state city slug coverImage gallery metaTitle metaDescription keywords"
       )
       .populate("batch")
       .populate("mainCategory", "_id name slug")
