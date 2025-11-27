@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -20,42 +20,11 @@ import { Loader } from "@/components/custom/loader";
 import { useEffect } from "react";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { X } from "lucide-react";
-interface Faq {
-  question: string;
-  answer: string;
-}
-
-interface Visa {
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string;
-  schemaType: string;
-  metaTitle: string;
-  metaDescription: string;
-  keywords: string[];
-  country: string;
-  cost: number;
-  visaType: string;
-  bannerImage?: {
-    url: string;
-    alt: string;
-    public_id?: string;
-    resource_type?: string;
-    format?: string;
-    width?: number;
-    height?: number;
-  };
-  coverImage?: {
-    url: string;
-    alt: string;
-    width?: number;
-    height?: number;
-  };
-  faqs?: Faq[];
-  duration: string;
-  visaProcessed: number;
-}
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import { Reviews } from "@/app/admin/holidays/new/page";
+import { deleteReview } from "@/app/admin/holidays/new/page";
+import { getReviewsByIds } from "@/app/admin/holidays/new/page";
+import { Visa } from "../../new/page";
 
 async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
@@ -90,6 +59,9 @@ async function getVisa(id: string, accessToken: string) {
 export default function CreateVisaPage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const { id } = useParams() as { id: string };
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
 
   const defaultValues: Visa = {
     country: "",
@@ -127,9 +99,24 @@ export default function CreateVisaPage() {
 
   useEffect(() => {
     if (data) {
-      form.reset(data);
+      const reviewsIds = data.reviews?.map((b: string) => b) || [];
+      form.reset({
+        ...data,
+        reviews: reviewsIds,
+      });
+      if (reviewsIds.length > 0) {
+        getReviewsByIds(accessToken, reviewsIds)
+          .then((data) => {
+            // Reorder results to match batchIds order
+            const ordered = reviewsIds
+              .map((id: string) => data.find((b: Reviews) => b._id === id))
+              .filter(Boolean);
+            setReviewsDetails(ordered as Reviews[]);
+          })
+          .catch((err) => console.error("Failed to fetch review info:", err));
+      }
     }
-  }, [data, form]);
+  }, [data, form, accessToken]);
 
   // ✅ pass variables (values) into mutate
   const mutation = useMutation({
@@ -144,6 +131,31 @@ export default function CreateVisaPage() {
       );
     },
   });
+
+  const reviewsArray = useFieldArray({
+    control: form.control,
+    name: "reviews",
+  });
+  const handleReviewsCreated = async (id: string) => {
+    reviewsArray.append(id);
+    const newBatch = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) => [...prev, ...newBatch]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
 
   const onSubmit: SubmitHandler<Visa> = (values) => {
     mutation.mutate(values);
@@ -516,7 +528,71 @@ export default function CreateVisaPage() {
                 Add FAQ
               </Button>
             </div>
+            {/* Reviews */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
+              {reviewsArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  {/* REVIEW Content */}
+                  <div className="flex  items-center text-left gap-2">
+                    <span className="font-medium">
+                      {reviewsDetails[index]?.name || `Reviews ${index + 1}`}
+                    </span>
+                  </div>
 
+                  {/* Batch Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => reviewsArray.remove(index)}
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() =>
+                        handleReviewsEdit(form.getValues(`reviews.${index}`))
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={async () => {
+                        const res = await deleteReview(
+                          accessToken,
+                          form.getValues(`reviews.${index}`)
+                        );
+                        if (res) reviewsArray.remove(index);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <Button type="button" onClick={() => setShowReviewsModal(true)}>
+                + Add New Review
+              </Button>
+              {showReviewsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <CreateReviewsModal
+                    onReviewsCreated={handleReviewsCreated}
+                    onClose={() => {
+                      setShowReviewsModal(false);
+                      setEditReviewsId(null);
+                    }}
+                    onReviewsUpdated={handleReviewsUpdated}
+                    existingReviews={editReviewsId}
+                    type="package"
+                  />
+                </div>
+              )}
+            </div>
             <Button
               type="submit"
               className="w-full"

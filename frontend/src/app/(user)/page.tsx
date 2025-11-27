@@ -99,7 +99,7 @@ export default function HomePage() {
       <DestinationSection />
       <VideoSection />
       <WhyChoose />
-      <Testimonial />
+      <Testimonial data={[]} />
       <ImageGallery
         title="Memories in Motion"
         description=" Picture Perfect Moments with the Best Travel Agency in Delhi"

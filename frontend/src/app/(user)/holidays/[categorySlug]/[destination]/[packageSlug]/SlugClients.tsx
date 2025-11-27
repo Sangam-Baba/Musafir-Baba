@@ -25,6 +25,8 @@ import { AuthDialog } from "@/components/auth/AuthDialog";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
+import { BlogContent } from "@/components/custom/BlogContent";
+import { Reviews } from "@/app/admin/holidays/new/page";
 type TabKey =
   | "description"
   | "highlights"
@@ -82,6 +84,7 @@ interface Package {
   coverImage: Image;
   gallery: Image[];
   batch: Batch[];
+  reviews?: Reviews[];
   duration: Duration;
   metaTitle?: string;
   metaDescription?: string;
@@ -228,9 +231,9 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
               {active === "description" && (
                 <div>
                   <h2 className="font-bold text-lg mb-2">About This Tour</h2>
-                  <p className="text-justify whitespace-pre-line">
-                    {pkg.description}
-                  </p>
+                  <section className="prose prose-lg max-w-none mt-6">
+                    <BlogContent html={pkg.description} />
+                  </section>
                 </div>
               )}
 
@@ -399,7 +402,7 @@ function SlugClients({ slug, state }: { slug: string; state: string }) {
         </div>
       </div>
       <WhyChoose />
-      <Testimonial />
+      <Testimonial data={pkg?.reviews ?? []} />
       <ImageGallery title="Memories in Motion" />
       <AuthDialog />
     </section>

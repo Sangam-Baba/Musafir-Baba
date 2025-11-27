@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Reviews } from "@/app/admin/holidays/new/page";
+import { Textarea } from "../ui/textarea";
 
 const createReviews = async (accessToken: string, form: Reviews) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/reviews`, {
@@ -133,36 +134,36 @@ export const CreateReviewsModal = ({
           <label className="text-gray-600 font-medium">Name</label>
           <input
             type="text"
-            placeholder="Enter batch name"
+            placeholder="Enter customer name"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
             className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
             required
           />
         </div>
-
+        <div>
+          <label className="text-gray-600 font-medium">Comment</label>
+          <Textarea
+            placeholder="Enter customer comments"
+            value={form.comment}
+            onChange={(e) => handleChange("comment", e.target.value)}
+            className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
+            required
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-gray-600 font-medium">Comment</label>
-            <input
-              type="text"
-              value={form.comment}
-              onChange={(e) => handleChange("comment", e.target.value)}
-              className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-              required
-            />
-          </div>
           <div>
             <label className="text-gray-600 font-medium">Location</label>
             <input
               type="text"
+              placeholder="Delhi"
               value={form.location}
               onChange={(e) => handleChange("location", e.target.value)}
               className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
             />
           </div>
           <div>
-            <label className="text-gray-600 font-medium">Rating</label>
+            <label className="text-gray-600 font-medium">Rating(1-5)</label>
             <input
               type="number"
               value={form.rating}
@@ -173,14 +174,7 @@ export const CreateReviewsModal = ({
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
+        <div className="flex justify-between gap-3 mt-6">
           <button
             type="button"
             onClick={handleSubmit}
@@ -195,8 +189,19 @@ export const CreateReviewsModal = ({
               ? "Update Review"
               : "Create Review"}
           </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+          >
+            Cancel
+          </button>
         </div>
       </form>
+      {mutation.isError && (
+        <p className="text-red-500">{mutation.error.message}</p>
+      )}
+      {mutation.isSuccess && <p className="text-green-500">Success</p>}
     </div>
   );
 };

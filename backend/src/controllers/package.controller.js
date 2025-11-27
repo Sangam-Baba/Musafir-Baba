@@ -205,6 +205,7 @@ const getPackages = async (req, res) => {
       )
       .populate("batch")
       .populate("mainCategory", "_id name slug")
+      .populate("reviews")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))

@@ -3,7 +3,6 @@ import React from "react";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
 import { Metadata } from "next";
-import NotFoundPage from "@/components/common/Not-Found";
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +13,7 @@ import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
+import { notFound } from "next/navigation";
 
 interface Faq {
   question: string;
@@ -61,7 +61,7 @@ const getRelatedPages = async (slug: string) => {
 async function VisaWebPage({ params }: { params: { slug: string } }) {
   const slug = params.slug;
   const visa = await getVisaBySlug(slug);
-  if (!visa) return <NotFoundPage />;
+  if (!visa) return notFound();
 
   const relatedPages = await getRelatedPages(slug);
 
@@ -119,7 +119,7 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
       <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <WhyChoose />
         <section>
-          <Testimonial />
+          <Testimonial data={visa.reviews} />
         </section>
       </div>
     </section>

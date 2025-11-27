@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -17,13 +17,17 @@ import ImageUploader from "@/components/admin/ImageUploader";
 import { useAuthStore } from "@/store/useAuthStore";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { X } from "lucide-react";
-
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import { Reviews } from "../../holidays/new/page";
+import { getReviewsByIds } from "../../holidays/new/page";
+import { deleteReview } from "../../holidays/new/page";
 interface Faq {
   question: string;
   answer: string;
 }
 
-interface Visa {
+export interface Visa {
+  country: string;
   title: string;
   slug: string;
   content: string;
@@ -32,7 +36,7 @@ interface Visa {
   metaTitle: string;
   metaDescription: string;
   keywords: string[];
-  country: string;
+  reviews?: string[];
   cost: number;
   visaType: string;
   bannerImage?: {
@@ -72,7 +76,9 @@ async function createVisa(values: Visa, accessToken: string) {
 
 export default function CreateVisaPage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
-
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const defaultValues: Visa = {
     country: "",
     title: "",
@@ -83,6 +89,7 @@ export default function CreateVisaPage() {
     metaTitle: "",
     metaDescription: "",
     keywords: [],
+    reviews: [],
     cost: 0,
     visaType: "DAC",
     faqs: [
@@ -117,6 +124,31 @@ export default function CreateVisaPage() {
     control: form.control,
     name: "faqs",
   });
+  const reviewsArray = useFieldArray({
+    control: form.control,
+    name: "reviews",
+  });
+
+  const handleReviewsCreated = async (id: string) => {
+    reviewsArray.append(id);
+    const newBatch = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) => [...prev, ...newBatch]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
 
   const onSubmit: SubmitHandler<Visa> = (values) => {
     mutation.mutate(values);
@@ -490,7 +522,71 @@ export default function CreateVisaPage() {
                 Add FAQ
               </Button>
             </div>
+            {/* Reviews */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
+              {reviewsArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  {/* REVIEW Content */}
+                  <div className="flex  items-center text-left gap-2">
+                    <span className="font-medium">
+                      {reviewsDetails[index]?.name || `Reviews ${index + 1}`}
+                    </span>
+                  </div>
 
+                  {/* Batch Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => reviewsArray.remove(index)}
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() =>
+                        handleReviewsEdit(form.getValues(`reviews.${index}`))
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={async () => {
+                        const res = await deleteReview(
+                          accessToken,
+                          form.getValues(`reviews.${index}`)
+                        );
+                        if (res) reviewsArray.remove(index);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <Button type="button" onClick={() => setShowReviewsModal(true)}>
+                + Add New Review
+              </Button>
+              {showReviewsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <CreateReviewsModal
+                    onReviewsCreated={handleReviewsCreated}
+                    onClose={() => {
+                      setShowReviewsModal(false);
+                      setEditReviewsId(null);
+                    }}
+                    onReviewsUpdated={handleReviewsUpdated}
+                    existingReviews={editReviewsId}
+                    type="package"
+                  />
+                </div>
+              )}
+            </div>
             <Button
               type="submit"
               className="w-full"
