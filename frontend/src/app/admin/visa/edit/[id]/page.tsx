@@ -132,14 +132,12 @@ export default function CreateVisaPage() {
     },
   });
 
-  const reviewsArray = useFieldArray({
-    control: form.control,
-    name: "reviews",
-  });
   const handleReviewsCreated = async (id: string) => {
-    reviewsArray.append(id);
-    const newBatch = await getReviewsByIds(accessToken, [id]);
-    setReviewsDetails((prev) => [...prev, ...newBatch]);
+    const existing = form.getValues("reviews") || [];
+    form.setValue("reviews", [...existing, id]); // update form array
+
+    const newReview = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) => [...prev, ...newReview]);
     setShowReviewsModal(false);
   };
 
@@ -156,7 +154,14 @@ export default function CreateVisaPage() {
     setShowReviewsModal(false);
     setEditReviewsId(null);
   };
+  const handleReviewsRemove = async (id: string, index: number) => {
+    await deleteReview(accessToken, id);
+    const updatedIds = form.getValues("reviews")?.filter((_, i) => i !== index);
+    const updatedDetails = reviewsDetails.filter((_, i) => i !== index);
 
+    form.setValue("reviews", updatedIds);
+    setReviewsDetails(updatedDetails);
+  };
   const onSubmit: SubmitHandler<Visa> = (values) => {
     mutation.mutate(values);
   };
@@ -531,45 +536,31 @@ export default function CreateVisaPage() {
             {/* Reviews */}
             <div>
               <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
-              {reviewsArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
-                  {/* REVIEW Content */}
-                  <div className="flex  items-center text-left gap-2">
-                    <span className="font-medium">
-                      {reviewsDetails[index]?.name || `Reviews ${index + 1}`}
-                    </span>
-                  </div>
 
-                  {/* Batch Actions */}
+              {reviewsDetails.map((review, index) => (
+                <div
+                  key={review._id}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{review.name}</span>
+
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="destructive"
-                      onClick={() => reviewsArray.remove(index)}
-                    >
-                      Remove
-                    </Button>
-                    <Button
-                      type="button"
                       variant="default"
-                      onClick={() =>
-                        handleReviewsEdit(form.getValues(`reviews.${index}`))
-                      }
+                      onClick={() => handleReviewsEdit(review._id as string)}
                     >
                       Edit
                     </Button>
+
                     <Button
                       type="button"
                       variant="destructive"
-                      onClick={async () => {
-                        const res = await deleteReview(
-                          accessToken,
-                          form.getValues(`reviews.${index}`)
-                        );
-                        if (res) reviewsArray.remove(index);
-                      }}
+                      onClick={() =>
+                        handleReviewsRemove(review._id as string, index)
+                      }
                     >
-                      Delete
+                      Remove
                     </Button>
                   </div>
                 </div>
@@ -578,6 +569,7 @@ export default function CreateVisaPage() {
               <Button type="button" onClick={() => setShowReviewsModal(true)}>
                 + Add New Review
               </Button>
+
               {showReviewsModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                   <CreateReviewsModal

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,12 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
+import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import {
+  deleteReview,
+  getReviewsByIds,
+  Reviews,
+} from "../../holidays/new/page";
 
 interface Image {
   url: string;
@@ -42,11 +49,12 @@ interface Plans {
 interface Highlight {
   title: string;
 }
-interface PackageFormValues {
+export interface CustomizedPackageValues {
   title: string;
   description?: string;
   slug: string;
   plans: Plans[];
+  reviews?: string[];
   destination: string;
   coverImage?: Image;
   gallery?: Image[];
@@ -75,7 +83,10 @@ interface Destination {
   };
   slug: string;
 }
-async function CreatePackage(values: PackageFormValues, accessToken: string) {
+async function CreatePackage(
+  values: CustomizedPackageValues,
+  accessToken: string
+) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage`,
     {
@@ -104,7 +115,10 @@ const getDestination = async () => {
 };
 export default function CreatePackagePage() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const defaultValues: PackageFormValues = {
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
+  const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
+  const defaultValues: CustomizedPackageValues = {
     title: "",
     description: "",
     metaTitle: "",
@@ -119,6 +133,7 @@ export default function CreatePackagePage() {
         price: 0,
       },
     ],
+    reviews: [],
     destination: "",
     duration: { days: 0, nights: 0 },
     highlight: [],
@@ -137,7 +152,7 @@ export default function CreatePackagePage() {
     queryKey: ["destination"],
     queryFn: getDestination,
   });
-  const form = useForm<PackageFormValues>({ defaultValues });
+  const form = useForm<CustomizedPackageValues>({ defaultValues });
 
   const coverImageArray = useFieldArray({
     control: form.control,
@@ -155,7 +170,7 @@ export default function CreatePackagePage() {
   });
 
   const mutation = useMutation({
-    mutationFn: (values: PackageFormValues) =>
+    mutationFn: (values: CustomizedPackageValues) =>
       CreatePackage(values, accessToken),
     onSuccess: () => {
       toast.success("Package Created successfully");
@@ -167,7 +182,38 @@ export default function CreatePackagePage() {
     },
   });
 
-  const onSubmit: SubmitHandler<PackageFormValues> = (values) => {
+  const handleReviewsCreated = async (id: string) => {
+    const existing = form.getValues("reviews") || [];
+    form.setValue("reviews", [...existing, id]); // update form array
+
+    const newReview = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) => [...prev, ...newReview]);
+    setShowReviewsModal(false);
+  };
+
+  const handleReviewsEdit = (id: string) => {
+    setEditReviewsId(id);
+    setShowReviewsModal(true);
+  };
+  const handleReviewsUpdated = async (id: string) => {
+    toast.success("Reviews updated successfully");
+    const updated = await getReviewsByIds(accessToken, [id]);
+    setReviewsDetails((prev) =>
+      prev.map((b) => (b._id === id ? updated[0] : b))
+    );
+    setShowReviewsModal(false);
+    setEditReviewsId(null);
+  };
+  const handleReviewsRemove = async (id: string, index: number) => {
+    await deleteReview(accessToken, id);
+    const updatedIds = form.getValues("reviews")?.filter((_, i) => i !== index);
+    const updatedDetails = reviewsDetails.filter((_, i) => i !== index);
+
+    form.setValue("reviews", updatedIds);
+    setReviewsDetails(updatedDetails);
+  };
+
+  const onSubmit: SubmitHandler<CustomizedPackageValues> = (values) => {
     mutation.mutate(values);
   };
 
@@ -563,6 +609,58 @@ export default function CreatePackagePage() {
                   }}
                 />
               </div>
+            </div>
+            {/* Reviews */}
+            <div>
+              <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
+
+              {reviewsDetails.map((review, index) => (
+                <div
+                  key={review._id}
+                  className="flex justify-between items-center mb-2"
+                >
+                  <span>{review.name}</span>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() => handleReviewsEdit(review._id as string)}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() =>
+                        handleReviewsRemove(review._id as string, index)
+                      }
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ))}
+
+              <Button type="button" onClick={() => setShowReviewsModal(true)}>
+                + Add New Review
+              </Button>
+
+              {showReviewsModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <CreateReviewsModal
+                    onReviewsCreated={handleReviewsCreated}
+                    onClose={() => {
+                      setShowReviewsModal(false);
+                      setEditReviewsId(null);
+                    }}
+                    onReviewsUpdated={handleReviewsUpdated}
+                    existingReviews={editReviewsId}
+                    type="package"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Status */}

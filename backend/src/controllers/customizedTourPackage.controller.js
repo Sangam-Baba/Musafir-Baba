@@ -121,6 +121,7 @@ const getCustomizedTourPackageBySlug = async (req, res) => {
       slug,
     })
       .populate("destination", "_id name country state city slug")
+      .populate("reviews")
       .lean();
     if (!customizedTourPackage) {
       return res

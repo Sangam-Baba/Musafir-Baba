@@ -119,7 +119,7 @@ async function VisaWebPage({ params }: { params: { slug: string } }) {
       <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <WhyChoose />
         <section>
-          <Testimonial data={visa.reviews} />
+          <Testimonial data={visa.reviews ?? []} />
         </section>
       </div>
     </section>

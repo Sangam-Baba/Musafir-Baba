@@ -1,4 +1,3 @@
-// app/holidays/customized-tour-packages/[state]/[pkgSlug]/CustomizedPackageClient.tsx
 "use client";
 
 import React from "react";
@@ -24,6 +23,7 @@ import PackageCard from "@/components/custom/PackageCard";
 import { Faqs } from "@/components/custom/Faqs";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
+import { Reviews } from "@/app/admin/holidays/new/page";
 interface Plan {
   _id: string;
   title: string;
@@ -64,6 +64,7 @@ interface Package {
   coverImage: CoverImage;
   gallery: CoverImage[];
   plans: Plan[];
+  reviews: Reviews[];
   duration: {
     days: number;
     nights: number;
@@ -372,7 +373,7 @@ export default function CustomizedPackageClient({
 
       <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
       <WhyChoose />
-      <Testimonial data={[]} />
+      <Testimonial data={pkg.reviews ?? []} />
     </section>
   );
 }

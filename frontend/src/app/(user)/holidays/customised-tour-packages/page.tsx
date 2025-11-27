@@ -120,8 +120,8 @@ async function CustomizedPackagePage() {
                 {/* Image + Price tag */}
                 <div className="relative h-56 w-full">
                   <Image
-                    src={pkg.coverImage.url}
-                    alt={pkg.coverImage.alt}
+                    src={pkg.coverImage?.url}
+                    alt={pkg.coverImage?.alt}
                     width={500}
                     height={500}
                     className="h-full w-full object-cover"
