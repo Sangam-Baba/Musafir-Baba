@@ -2,6 +2,7 @@ import BlogCard from "@/components/custom/BlogCard";
 import Hero from "@/components/custom/Hero";
 import { Metadata } from "next";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import PaginationClient from "@/components/common/PaginationClient";
 
 export const metadata: Metadata = {
   title: "Travel Blog - Guides, Tips & Travel Inspiration",
@@ -26,9 +27,9 @@ interface blog {
   metaDescription: string;
   slug: string;
 }
-async function getBlogs(category?: string) {
+async function getBlogs(page: number, category?: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=${category}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=${category}&page=${page}&limit=12`,
     {
       next: { revalidate: 60 }, // ISR: revalidate every 1 minute
     }
@@ -36,18 +37,20 @@ async function getBlogs(category?: string) {
 
   if (!res.ok) throw new Error("Failed to fetch blogs");
   const data = await res.json();
-  // console.log(data);
-  return data.data;
+  return data;
 }
 
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { category: string };
+  searchParams: { category: string; page: number };
 }) {
   const category = searchParams.category;
+  const page = Number(searchParams.page) || 1;
 
-  const blogs = await getBlogs(category);
+  const data = await getBlogs(page, category);
+  const blogs = data?.data;
+  const totalPages = data?.pages;
 
   return (
     <section className="w-full ">
@@ -67,6 +70,7 @@ export default async function BlogPage({
           />
         ))}
       </div>
+      <PaginationClient totalPages={totalPages} currentPage={page} />
     </section>
   );
 }

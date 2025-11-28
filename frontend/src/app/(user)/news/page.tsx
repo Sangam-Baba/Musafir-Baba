@@ -2,6 +2,7 @@ import BlogCard from "@/components/custom/BlogCard";
 import Hero from "@/components/custom/Hero";
 import { Metadata } from "next";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import PaginationClient from "@/components/common/PaginationClient";
 
 export const metadata: Metadata = {
   title: "Travel News & Visa Updates - Stay Informed, Travel Better",
@@ -29,19 +30,28 @@ export interface News {
   createdAt: string;
   updatedAt: string;
 }
-export async function getNews() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/`, {
-    next: { revalidate: 60 }, // ISR: revalidate every 1 minute
-  });
+export async function getNews(page: number) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/news/?page=${page}&limit=12`,
+    {
+      next: { revalidate: 60 },
+    }
+  );
 
   if (!res.ok) throw new Error("Failed to fetch News");
   const data = await res.json();
-  // console.log(data);
-  return data.data;
+  return data;
 }
 
-export default async function NewsPage() {
-  const news = await getNews();
+export default async function NewsPage({
+  searchParams,
+}: {
+  searchParams: { page: number };
+}) {
+  const page = Number(searchParams.page) || 1;
+  const data = await getNews(page);
+  const news = data?.data;
+  const totalPages = data?.pages;
 
   return (
     <section className="w-full ">
@@ -65,6 +75,7 @@ export default async function NewsPage() {
           />
         ))}
       </div>
+      <PaginationClient totalPages={totalPages} currentPage={page} />
     </section>
   );
 }

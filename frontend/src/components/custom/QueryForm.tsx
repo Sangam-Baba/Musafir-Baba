@@ -83,7 +83,7 @@ export default function QueryForm() {
   }
   return (
     <Card className="w-full mx-auto rounded-2xl shadow-lg p-1">
-      <CardContent className="space-y-6 pt-6">
+      <CardContent className="space-y-6 py-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <h4 className="text-2xl font-bold text-gray-900">Get a Free Quote</h4>

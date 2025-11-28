@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import Pagination from "@/components/common/Pagination";
 import { useRouter } from "next/navigation";
 import { Category } from "./page";
-import { Filter, FilterIcon } from "lucide-react";
+import { FilterIcon } from "lucide-react";
 
 interface PackageResponse {
   data: Package[];

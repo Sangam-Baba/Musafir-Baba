@@ -15,41 +15,42 @@ export function AccountIcon() {
   const auth = useAuthStore();
   const isAuthenticated = auth.isAuthenticated;
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          <CircleUserRound />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuGroup>
-          {!isAuthenticated && (
-            <DropdownMenuItem>
-              <p onClick={() => openDialog("login", undefined)}>Login</p>
-            </DropdownMenuItem>
-          )}
-          {!isAuthenticated && (
-            <DropdownMenuItem>
-              <p onClick={() => openDialog("register", undefined)}>Register</p>
-            </DropdownMenuItem>
-          )}
-          {isAuthenticated && (
-            <DropdownMenuItem>
-              <Link href="/auth/profile">Profile</Link>{" "}
-            </DropdownMenuItem>
-          )}
-          {isAuthenticated && (
-            <DropdownMenuItem>
-              <Link href="/auth/bookings">My Bookings</Link>{" "}
-            </DropdownMenuItem>
-          )}
-          {isAuthenticated && (
-            <DropdownMenuItem>
-              <Link href="/auth/logout">Logout</Link>{" "}
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div>
+      {isAuthenticated ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <CircleUserRound />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="start">
+            <DropdownMenuGroup>
+              {isAuthenticated && (
+                <DropdownMenuItem>
+                  <Link href="/auth/profile">Profile</Link>{" "}
+                </DropdownMenuItem>
+              )}
+              {isAuthenticated && (
+                <DropdownMenuItem>
+                  <Link href="/auth/bookings">My Bookings</Link>{" "}
+                </DropdownMenuItem>
+              )}
+              {isAuthenticated && (
+                <DropdownMenuItem>
+                  <Link href="/auth/logout">Logout</Link>{" "}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <p
+          className="cursor-pointer hover:underline "
+          onClick={() => openDialog("login", undefined)}
+        >
+          Login
+        </p>
+      )}
+    </div>
   );
 }

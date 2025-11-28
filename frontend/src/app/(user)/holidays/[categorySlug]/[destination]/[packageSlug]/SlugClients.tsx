@@ -411,8 +411,12 @@ function SlugClients({
           <QueryForm />
         </div>
       </div>
+
+      <ImageGallery title="Memories in Motion" data={pkg?.gallery ?? []} />
+      <WhyChoose />
+      <Testimonial data={pkg?.reviews ?? []} />
       <div className="w-full max-w-7xl mx-auto px-8  mt-4 flex flex-col items-center">
-        <h2 className="text-2xl font-bold">Nearby Tours</h2>
+        <h2 className="text-2xl font-bold">Related Packages</h2>
         <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
         {relatedGroupPackages && relatedGroupPackages.length > 0 && (
           <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
@@ -437,9 +441,6 @@ function SlugClients({
           </div>
         )}
       </div>
-      <ImageGallery title="Memories in Motion" data={pkg?.gallery ?? []} />
-      <WhyChoose />
-      <Testimonial data={pkg?.reviews ?? []} />
 
       <AuthDialog />
     </section>
