@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { Clock, MapPin } from "lucide-react";
 import { FaMoneyBill } from "react-icons/fa";
+import HomeVideoBanner from "./HomeVideoBanner";
 
 interface Batch {
   quad: number;
@@ -83,7 +84,8 @@ export async function SevenSection() {
 
         {/* Carousel */}
         <div className="w-full max-w-7xl flex justify-center px-8  lg:px-10">
-          <Carousel
+          <HomeVideoBanner />
+          {/* <Carousel
             className="w-full max-w-6xl "
             opts={{ loop: true }}
             // plugins={[Autoplay({ delay: 4000, stopOnFocusIn: true })]}
@@ -218,7 +220,7 @@ export async function SevenSection() {
 
             <CarouselPrevious className="bg-white/10 border border-white/20 hover:bg-white/20 text-white ml-2" />
             <CarouselNext className="bg-white/10 border border-white/20 hover:bg-white/20 text-white mr-2" />
-          </Carousel>
+          </Carousel> */}
         </div>
       </div>
     </section>

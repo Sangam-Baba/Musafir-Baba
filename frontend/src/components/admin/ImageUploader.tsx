@@ -4,15 +4,18 @@ import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { X } from "lucide-react";
 import MediaPicker from "../common/MediaList";
+import { Button } from "../ui/button";
 
 export interface UploadedFile {
   url: string;
-  public_id?: string;
-  resource_type?: string;
+  public_id: string;
+  resource_type?: "image" | "video" | "raw";
   format?: string;
   width?: number;
   height?: number;
-  pages?: number;
+  duration?: number; // for video
+  size?: number; // bytes
+  thumbnail_url?: string; // optional preview for video/pdf
 }
 
 const uploadToDb = async (accessToken: string, media: UploadedFile) => {
@@ -75,11 +78,12 @@ export default function ImageUploader({
         formData.append("api_key", sigData.apiKey);
         formData.append("timestamp", sigData.timestamp);
         formData.append("signature", sigData.signature);
+        formData.append("eager", sigData.eager);
         // formData.append("folder", "blogs"); // optional
 
         // 2. Upload directly to Cloudinary
         const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+          `https://api.cloudinary.com/v1_1/${sigData.cloudName}/auto/upload`,
           {
             method: "POST",
             body: formData,
@@ -94,6 +98,8 @@ export default function ImageUploader({
           width: json.width,
           height: json.height,
           pages: json.pages,
+          thumbnail_url:
+            json.resource_type === "video" ? json.eager?.[0]?.secure_url : null,
         };
         const res2 = await uploadToDb(token, uploaded);
         onUpload(uploaded);
@@ -123,7 +129,7 @@ export default function ImageUploader({
       <input
         type="file"
         multiple
-        accept="image/*,application/pdf"
+        accept="image/*,video/*,application/pdf"
         onChange={handleFileChange}
       />
       <button
@@ -142,22 +148,47 @@ export default function ImageUploader({
       </button>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {uploadedImages.map((img, idx) => (
-          <div key={idx} className="relative">
-            <Image
-              src={img.url}
-              alt="Uploaded"
-              className="rounded-md"
-              width={200}
-              height={200}
-            />
-            <button
+        {uploadedImages.map((file) => (
+          <div key={file.public_id}>
+            {file.resource_type === "image" && (
+              <Image
+                src={file.url}
+                width={200}
+                height={200}
+                alt={file.public_id}
+              />
+            )}
+
+            {file.resource_type === "video" && (
+              <div className="relative">
+                {file.thumbnail_url ? (
+                  <Image
+                    src={file.thumbnail_url!}
+                    width={200}
+                    height={200}
+                    alt="Video thumbnail"
+                    className="rounded"
+                  />
+                ) : (
+                  <video width={200} height={200} controls className="mt-2">
+                    <source src={file.url} />
+                  </video>
+                )}
+              </div>
+            )}
+
+            {file.resource_type === "raw" && (
+              <a href={file.url} target="_blank" className="text-blue-500">
+                📄 Download PDF
+              </a>
+            )}
+            <Button
               type="button"
-              onClick={handleRemove}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+              onClick={() => handleRemove()}
+              className="mt-2 px-2 py-1 bg-red-500 text-white rounded"
             >
-              <X size={16} />
-            </button>
+              <X className=" h-2 w-2" />
+            </Button>
           </div>
         ))}
       </div>

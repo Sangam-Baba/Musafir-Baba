@@ -31,6 +31,7 @@ import dashboardRoute from "./dashboard.routes.js";
 import destinationSeoRoute from "./destinationSeo.routes.js";
 import mediaRoutes from "./media.routes.js";
 import reviewRoutes from "./reviews.routes.js";
+import videoBannerRoutes from "./videoBanner.routes.js";
 
 const router = Router();
 
@@ -66,4 +67,5 @@ router.use("/dashboard", dashboardRoute);
 router.use("/destinationseo", destinationSeoRoute);
 router.use("/media", mediaRoutes);
 router.use("/reviews", reviewRoutes);
+router.use("/videobanner", videoBannerRoutes);
 export default router;
