@@ -106,6 +106,12 @@ const NAV_GROUPS = [
         permission: "about-us",
       },
       {
+        label: "Video Banner",
+        href: "/admin/video-banner",
+        icon: Users,
+        permission: "video-banner",
+      },
+      {
         label: "Footer Items",
         href: "/admin/footer",
         icon: ListChecks,
