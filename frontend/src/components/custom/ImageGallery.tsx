@@ -51,7 +51,7 @@ const images = [
   },
   {
     id: 6,
-    img: frame5,
+    url: frame5,
     alt: "",
   },
   {
@@ -88,7 +88,7 @@ export function ImageGallery({
     <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 flex flex-col items-center">
       {/* Heading */}
       <div className="flex flex-col gap-2 items-center py-4 text-center">
-        <h4 className="text-2xl md:text-3xl font-bold">{title}</h4>
+        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
         <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
         <p className="text-gray-600">{description}</p>
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,22 +7,39 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { UserRound, Mail, Phone } from "lucide-react";
+import { UserRound, Mail, Phone, MessageCircleCode } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-  whatsapp: boolean;
-  policy: boolean;
-  source: string;
-}
+const EnquiryFromSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().min(1, "Phone number is required"),
+  message: z.string().min(1, "Message is required"),
+  whatsapp: z.boolean().refine((val) => val === true, {
+    message: "Required",
+  }),
+  policy: z.boolean().refine((val) => val === true, {
+    message: "Required",
+  }),
+  source: z.string(),
+});
 
-const createContact = async (formData: FormData) => {
+type EnquiryFromType = z.infer<typeof EnquiryFromSchema>;
+const createContact = async (formData: EnquiryFromType) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/contact`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -36,156 +52,203 @@ const createContact = async (formData: FormData) => {
 export default function QueryForm() {
   const router = useRouter();
   const pathname = usePathname();
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-    whatsapp: false,
-    policy: false,
-    source: pathname,
-  });
 
+  const form = useForm<EnquiryFromType>({
+    resolver: zodResolver(EnquiryFromSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      message: "",
+      whatsapp: false,
+      policy: false,
+      source: pathname,
+    },
+  });
   const mutation = useMutation({
     mutationFn: createContact,
     onSuccess: () => {
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-        whatsapp: false,
-        policy: false,
-        source: pathname,
-      });
+      toast.success("Thank you for your enquiry!");
       router.push("/thank-you");
     },
     onError: (error: unknown) => {
-      toast.error("Failed to create Contact");
+      toast.error("Missing required fields");
       console.error(error);
     },
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData({
-      ...formData,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate(formData);
-  };
-
+  function onSubmit(values: EnquiryFromType) {
+    console.log(values);
+    mutation.mutate(values);
+  }
   return (
-    <Card className="w-full mx-auto  rounded-2xl">
-      <CardContent>
-        <div className="text-center mb-6 flex flex-col gap-2 items-center">
-          <h4 className="text-xl font-bold text-center  text-gray-800">
-            Get a Free Quote
-          </h4>
-          <p className="w-[10%] h-1 bg-[#FE5300] text-center"></p>
-          <p>Share your trip details — get a custom plan instantly</p>
+    <Card className="w-full mx-auto rounded-2xl shadow-lg p-1">
+      <CardContent className="space-y-6 pt-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h4 className="text-2xl font-bold text-gray-900">Get a Free Quote</h4>
+          <div className="w-14 h-1 bg-orange-500 mx-auto rounded-full" />
+          <p className="text-gray-600 text-sm">
+            Share your trip details — get a custom plan instantly
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
-            <UserRound className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
-            <input
-              placeholder="Name"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Name */}
+            <FormField
+              control={form.control}
               name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                      <UserRound className="w-5 h-5 text-orange-500" />
+                      <Input
+                        placeholder="John Doe"
+                        {...field}
+                        className="border-none p-0 shadow-none focus-visible:ring-0"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
-            <Mail className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
-            <input
-              placeholder="Email"
-              type="email"
+            {/* Email */}
+            <FormField
+              control={form.control}
               name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                      <Mail className="w-5 h-5 text-orange-500" />
+                      <Input
+                        placeholder="john@gmail.com"
+                        {...field}
+                        className="border-none p-0 shadow-none focus-visible:ring-0"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-1 focus-within:ring-orange-500 transition">
-            <Phone className="w-5 h-5 text-[#FE5300] flex-shrink-0" />
-            <input
-              placeholder="Phone No"
+            {/* Phone */}
+            <FormField
+              control={form.control}
               name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="ml-3 w-full border-none outline-none focus:ring-0 bg-transparent text-gray-700 placeholder-gray-400"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                      <Phone className="w-5 h-5 text-orange-500" />
+                      <Input
+                        placeholder="+91 234 567 8901"
+                        {...field}
+                        className="border-none p-0 shadow-none focus-visible:ring-0"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <Textarea
-            placeholder="Message"
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-700 placeholder-gray-400"
-          />
+            {/* Message */}
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Message</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                      <MessageCircleCode className="w-5 h-5 text-orange-500" />
+                      <Textarea
+                        placeholder="Write your travel plan or special requirements..."
+                        className="min-h-[50px] border-none p-0 shadow-none focus-visible:ring-0"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="whatsapp"
-              checked={formData.whatsapp}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, whatsapp: !!checked })
-              }
+            {/* WhatsApp Toggle */}
+            <FormField
+              control={form.control}
+              name="whatsapp"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <Label className="text-sm text-gray-700">
+                    Send me updates on{" "}
+                    <span className="text-green-600 font-semibold">
+                      WhatsApp
+                    </span>
+                  </Label>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Label htmlFor="whatsapp" className="text-sm text-gray-700">
-              Send me updates on{" "}
-              <span className="text-green-600 font-semibold">WhatsApp</span>
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="policy"
-              checked={formData.policy}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, policy: !!checked })
-              }
+
+            {/* Policy Agreement */}
+            <FormField
+              control={form.control}
+              name="policy"
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <Label className="text-sm text-gray-700 flex flex-wrap gap-1">
+                    I agree to
+                    <Link
+                      href="/terms-and-conditions"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Terms & Conditions
+                    </Link>
+                    and
+                    <Link
+                      href="/privacy-policy"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </Label>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Label
-              htmlFor="policy"
-              className="text-sm text-gray-700 flex items-center flex-nowrap gap-1"
+
+            {/* Submit */}
+            <Button
+              type="submit"
+              disabled={mutation.isPending}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-3 font-semibold"
             >
-              <span>I agree to MusafirBaba&apos;s</span>
-              <Link
-                href="/terms-and-conditions"
-                className="text-blue-600 hover:underline whitespace-nowrap"
-              >
-                T&amp;C
-              </Link>
-              <span>and</span>
-              <Link
-                href="/privacy-policy"
-                className="text-blue-600 hover:underline whitespace-nowrap"
-              >
-                Privacy Policy
-              </Link>
-            </Label>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={mutation.isPending}
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg py-2 transition"
-          >
-            {mutation.isPending ? "Sending..." : "Send enquiry"}
-          </Button>
-        </form>
+              {mutation.isPending ? "Sending..." : "Send Enquiry"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
