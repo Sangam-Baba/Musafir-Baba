@@ -1,7 +1,7 @@
 import React from "react";
 import SlugClients from "./SlugClients";
 import { Metadata } from "next";
-import { getPackageByDestinationSlug } from "../page";
+import { getPackageByCategorySlug } from "@/app/(user)/holidays/[categorySlug]/page";
 
 interface Destination {
   _id: string;
@@ -119,11 +119,7 @@ async function PackageDetails({
   params: { categorySlug: string; destination: string; packageSlug: string };
 }) {
   const { categorySlug, destination, packageSlug } = params;
-  const relatedGroupPackages = await getPackageByDestinationSlug(
-    categorySlug,
-    destination
-  );
-  // const packageData = await getSinglePackages(destination, packageSlug);
+  const relatedGroupPackages = await getPackageByCategorySlug(categorySlug);
   return (
     <SlugClients
       slug={packageSlug}

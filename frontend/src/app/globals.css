@@ -13,6 +13,39 @@
   text-decoration: underline;
 }
 
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  overflow-x: auto;
+  display: block;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  border: 1px solid #d1d5db; /* Tailwind gray-300 */
+  padding: 10px;
+  text-align: left;
+}
+
+.ProseMirror th {
+  background: #f3f4f6; /* gray-100 */
+  font-weight: 600;
+}
+
+.ProseMirror table tr:nth-child(even) {
+  background: #fafafa; /* striped table rows */
+}
+
+/* Resize handler (if resizable enabled) */
+.ProseMirror .column-resize-handle {
+  background: #3b82f6; /* blue-500 */
+  width: 4px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  cursor: col-resize;
+}
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

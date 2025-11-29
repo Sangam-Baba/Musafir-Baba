@@ -86,6 +86,10 @@ interface Package {
   coverImage: Image;
   gallery: Image[];
   batch: Batch[];
+  mainCategory: {
+    name: string;
+    slug: string;
+  };
   reviews?: Reviews[];
   duration: Duration;
   metaTitle?: string;
@@ -431,11 +435,10 @@ function SlugClients({
                   price: pkg.batch ? pkg.batch[0]?.quad : 9999,
                   duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
                   destination:
-                    pkg.destination.state.charAt(0).toUpperCase() +
-                    pkg.destination.state.slice(1),
+                    pkg.destination?.name ?? pkg.destination?.state ?? "",
                   batch: pkg?.batch ? pkg?.batch : [],
                 }}
-                url={`./${pkg.slug}`}
+                url={`/holidays/${pkg?.mainCategory?.slug}/${pkg?.destination?.slug}/${pkg.slug}`}
               />
             ))}
           </div>

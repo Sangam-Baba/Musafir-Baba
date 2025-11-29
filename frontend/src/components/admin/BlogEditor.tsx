@@ -7,6 +7,11 @@ import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
 import { useEffect } from "react";
+import { TableKit } from "@tiptap/extension-table";
+import { Table } from "@tiptap/extension-table";
+import TableRow from "@tiptap/extension-table-row";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
 
 interface BlogEditorProps {
   value?: string;
@@ -16,6 +21,12 @@ interface BlogEditorProps {
 export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   const editor = useEditor({
     extensions: [
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
       StarterKit.configure({
         codeBlock: {},
       }),
@@ -51,7 +62,6 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
     const url = prompt("Enter image URL");
     if (url) editor.chain().focus().setImage({ src: url }).run();
   };
-
   return (
     <div className="w-full border rounded-lg p-3 bg-white dark:bg-gray-900">
       {/* Toolbar */}
@@ -241,12 +251,137 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         >
           ↪ Redo
         </button>
+        {/* /* Table */}
+        <div className="relative group">
+          <button type="button" className="btn px-2 py-1 rounded bg-gray-200">
+            📊 Table
+          </button>
+
+          <div className="hidden group-hover:flex flex-col gap-2 flex-nowrap min-w-[200px] absolute bg-white dark:bg-gray-700 p-2 shadow rounded  z-50">
+            <button
+              type="button"
+              onClick={() =>
+                editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run()
+              }
+              className="dropdown-btn"
+            >
+              Insert Table
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().addColumnBefore().run()}
+            >
+              Add column before
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().addColumnAfter().run()}
+            >
+              Add column after
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+            >
+              Delete column
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().addRowBefore().run()}
+            >
+              Add row before
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().addRowAfter().run()}
+            >
+              Add row after
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().deleteRow().run()}
+            >
+              Delete row
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().deleteTable().run()}
+            >
+              Delete table
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().mergeCells().run()}
+            >
+              Merge cells
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().splitCell().run()}
+            >
+              Split cell
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
+            >
+              Toggle header column
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+            >
+              Toggle header row
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().toggleHeaderCell().run()}
+            >
+              Toggle header cell
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().mergeOrSplit().run()}
+            >
+              Merge or split
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() =>
+                editor.chain().focus().setCellAttribute("colspan", 2).run()
+              }
+            >
+              Set cell attribute
+            </button>
+            <button
+              className="dropdown-btn"
+              type="button"
+              onClick={() => editor.chain().focus().fixTables().run()}
+            >
+              Fix tables
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="prose max-w-none min-h-[200px] p-2 w-full"
+        className=" max-w-none min-h-[200px] p-2 w-full"
       />
     </div>
   );

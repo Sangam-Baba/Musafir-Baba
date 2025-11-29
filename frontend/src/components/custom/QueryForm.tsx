@@ -29,9 +29,7 @@ const EnquiryFromSchema = z.object({
   email: z.string().email("Invalid email"),
   phone: z.string().min(1, "Phone number is required"),
   message: z.string().min(1, "Message is required"),
-  whatsapp: z.boolean().refine((val) => val === true, {
-    message: "Required",
-  }),
+  whatsapp: z.boolean().optional(),
   policy: z.boolean().refine((val) => val === true, {
     message: "Required",
   }),
@@ -184,7 +182,7 @@ export default function QueryForm() {
             />
 
             {/* WhatsApp Toggle */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="whatsapp"
               render={({ field }) => (
@@ -204,7 +202,7 @@ export default function QueryForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             {/* Policy Agreement */}
             <FormField
@@ -224,7 +222,7 @@ export default function QueryForm() {
                       href="/terms-and-conditions"
                       className="text-blue-600 hover:underline"
                     >
-                      Terms & Conditions
+                      T & C
                     </Link>
                     and
                     <Link

@@ -75,7 +75,7 @@ export async function getPackageByCategorySlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 60 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch packages");

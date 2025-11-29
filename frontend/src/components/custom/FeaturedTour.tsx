@@ -58,7 +58,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
               size="lg"
               onClick={() => setActive(tab.slug)}
               className={` ${
-                active === tab.slug ? "bg-[#FE5300]" : "bg-gray-400"
+                active === tab.slug ? "bg-[#FE5300]" : "bg-[#7B3F00]"
               }`}
             >
               {tab.label}

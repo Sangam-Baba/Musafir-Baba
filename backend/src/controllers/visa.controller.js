@@ -111,8 +111,6 @@ const getRelatedPages = async (req, res) => {
     const visa = await Visa.findOne({ slug }).lean();
     if (!visa)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
-    if (!visa.keywords || visa.keywords.length === 0)
-      return res.status(200).json({ success: true, data: [] });
     const relatedVisa = await Visa.find({
       _id: { $ne: visa._id },
       isActive: "true",

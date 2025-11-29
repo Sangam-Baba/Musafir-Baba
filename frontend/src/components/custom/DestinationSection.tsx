@@ -76,7 +76,7 @@ export function DestinationSection() {
               size="lg"
               onClick={() => setActive("domestic")}
               className={`mt-4 ${
-                active === "domestic" ? "bg-[#FE5300]" : "bg-gray-400"
+                active === "domestic" ? "bg-[#FE5300]" : "bg-[#7B3F00]"
               }`}
             >
               Domestic Trips
@@ -85,7 +85,7 @@ export function DestinationSection() {
               size="lg"
               onClick={() => setActive("international")}
               className={`mt-4 ${
-                active === "international" ? "bg-[#FE5300]" : "bg-gray-400"
+                active === "international" ? "bg-[#FE5300]" : "bg-[#7B3F00]"
               }`}
             >
               <h3>International Trips</h3>
