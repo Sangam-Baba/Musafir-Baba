@@ -161,9 +161,7 @@ async function DestinationPage({
                 image: pkg.coverImage ? pkg.coverImage.url : "",
                 price: pkg.batch ? pkg.batch[0]?.quad : 9999,
                 duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                destination:
-                  pkg.destination.state.charAt(0).toUpperCase() +
-                  pkg.destination.state.slice(1),
+                destination: pkg.destination.name,
                 batch: pkg?.batch ? pkg?.batch : [],
               }}
               url={`/holidays/${categorySlug}/${destination}/${pkg.slug}`}
