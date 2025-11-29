@@ -96,7 +96,7 @@ export default function Header() {
 
           {/* Right side buttons */}
           <div className="flex items-center gap-3">
-            <Button className="hidden md:flex bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300] text-white">
+            <Button className="hidden md:flex  text-white">
               <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
                 Pay Now
               </Link>

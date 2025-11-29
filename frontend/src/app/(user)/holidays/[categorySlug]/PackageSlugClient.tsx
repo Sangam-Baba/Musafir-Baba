@@ -80,16 +80,9 @@ async function SingleCategoryPage({
         <Breadcrumb />
       </div>
 
-      {/* Show category details */}
-      {/* <div className="max-w-4xl mx-auto flex flex-col items-center text-center my-12">
-        <h1 className="text-3xl font-bold">{category?.name}</h1>
-        <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
-        <p className="mt-2 text-muted-foreground">{category?.description}</p>
-      </div> */}
-
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (
-        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
+        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-20">
           {packages.map((pkg) => (
             <PackageCard
               key={pkg._id}

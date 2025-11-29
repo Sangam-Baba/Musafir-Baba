@@ -51,7 +51,7 @@ export default function VideoBannerList({
               <TableHead className="w-[20%]">Title</TableHead>
               <TableHead className="w-[20%]">Related</TableHead>
               <TableHead className="w-[20%]">Linked Url</TableHead>
-              <TableHead className="w-[20%]">Visit</TableHead>
+              <TableHead className="w-[20%]">View Media</TableHead>
               <TableHead className="w-[25%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -74,7 +74,7 @@ export default function VideoBannerList({
                     className="text-blue-600 hover:underline inline-flex items-center gap-1"
                   >
                     <ExternalLink size={16} />
-                    Visit
+                    View
                   </a>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
@@ -114,7 +114,7 @@ export default function VideoBannerList({
                 className="text-blue-600 hover:underline inline-flex items-center gap-1 text-sm"
               >
                 <ExternalLink size={16} />
-                Visit
+                View
               </a>
               <div className="flex gap-2 pt-2">
                 <Button

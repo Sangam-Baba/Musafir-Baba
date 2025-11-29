@@ -35,17 +35,6 @@ export function Navbar() {
             <Link href="/news">News</Link>
             <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
           </li>
-          {/* <li className="font-semi-bold  text-[#FE5300]">
-            <Button
-              onClick={handleClick}
-              className="bg-[#87E87F] text-black hover:bg-[#87E87F] hover:text-black"
-            >
-              Plan My Trip
-            </Button>
-          </li> */}
-          {/* <li className="font-bold ">
-            <Button onClick={() => setTheme(theme === "light" ? "dark" : "light")}><SunMoon /></Button>
-          </li> */}
         </ul>
       </nav>
     </>

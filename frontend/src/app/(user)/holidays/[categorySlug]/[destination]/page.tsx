@@ -150,7 +150,7 @@ async function DestinationPage({
       </div>
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (
-        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
+        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-20">
           {packages.map((pkg: Package) => (
             <PackageCard
               key={pkg._id}

@@ -39,6 +39,7 @@ import {
   CircleQuestionMark,
   CookingPot,
   MapPinPenIcon,
+  Video,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -108,7 +109,7 @@ const NAV_GROUPS = [
       {
         label: "Video Banner",
         href: "/admin/video-banner",
-        icon: Users,
+        icon: Video,
         permission: "video-banner",
       },
       {

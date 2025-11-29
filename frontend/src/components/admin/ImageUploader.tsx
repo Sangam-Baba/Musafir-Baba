@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 
 export interface UploadedFile {
   url: string;
-  public_id: string;
+  public_id?: string;
   resource_type?: "image" | "video" | "raw";
   format?: string;
   width?: number;
@@ -148,18 +148,9 @@ export default function ImageUploader({
       </button>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {uploadedImages.map((file) => (
-          <div key={file.public_id}>
-            {file.resource_type === "image" && (
-              <Image
-                src={file.url}
-                width={200}
-                height={200}
-                alt={file.public_id}
-              />
-            )}
-
-            {file.resource_type === "video" && (
+        {uploadedImages.map((file, i) => (
+          <div key={i}>
+            {file.resource_type === "video" ? (
               <div className="relative">
                 {file.thumbnail_url ? (
                   <Image
@@ -175,13 +166,15 @@ export default function ImageUploader({
                   </video>
                 )}
               </div>
+            ) : (
+              <Image
+                src={file.url}
+                width={200}
+                height={200}
+                alt="Musafirbaba"
+              />
             )}
 
-            {file.resource_type === "raw" && (
-              <a href={file.url} target="_blank" className="text-blue-500">
-                📄 Download PDF
-              </a>
-            )}
             <Button
               type="button"
               onClick={() => handleRemove()}

@@ -138,17 +138,17 @@ async function getPackages() {
   return data?.data;
 }
 
-// async function getDestination() {
-//   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
-//     method: "GET",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//   });
-//   if (!res.ok) throw new Error("Failed to fetch posts");
-//   const data = await res.json();
-//   return data?.data ?? [];
-// }
+async function getDestination() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch posts");
+  const data = await res.json();
+  return data?.data ?? [];
+}
 
 const getAllWebPage = async () => {
   const res = await fetch(
@@ -184,7 +184,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const category = await getCategory();
   const categories = category?.data ?? [];
   const packages = await getPackages();
-  // const destinations = await getDestination();
+  const destinations = await getDestination();
   const webpages = await getAllWebPage();
   const bookingsPages = webpages.filter(
     (webpage: Webpage) => webpage.parent === "bookings"
@@ -239,6 +239,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: "https://musafirbaba.com/destinations",
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
       url: "https://musafirbaba.com/privacy-policy",
       lastModified: new Date(),
       changeFrequency: "monthly",
@@ -278,6 +284,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...uniqueDestinations.map((dest: Package) => ({
       url: `https://musafirbaba.com/holidays/${dest.mainCategory?.slug}/${dest.destination?.state}`,
       lastModified: new Date(dest.updatedAt),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    })),
+    ...destinations.map((cat: Destination) => ({
+      url: `https://musafirbaba.com/destinations/${cat.state}`,
+      lastModified: new Date(cat.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,
     })),

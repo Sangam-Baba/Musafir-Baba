@@ -8,12 +8,7 @@ export function QueryDailogBox() {
     <div className="hidden md:flex fixed top-100 -right-10 z-50 flex items-center gap-2 rotate-[270deg]">
       <Dialog>
         <DialogTrigger asChild>
-          <Button
-            className="bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300] text-black"
-            variant="outline"
-          >
-            Enquire Now
-          </Button>
+          <Button>Enquire Now</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px] md:max-w-[550px]">
           <QueryForm />

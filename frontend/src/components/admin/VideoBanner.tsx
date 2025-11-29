@@ -23,7 +23,7 @@ import ImageUploader, { UploadedFile } from "./ImageUploader";
 const formSchema = z.object({
   media: z.object({
     url: z.string(),
-    public_id: z.string(),
+    public_id: z.string().optional(),
     alt: z.string().optional(),
     resource_type: z.string().optional(),
     width: z.number().optional(),
@@ -269,55 +269,60 @@ function VideoBanner({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <FormControl>
-                  <select {...field} className="w-full rounded-md border p-2">
-                    <option value="">Select Type</option>
+          <div className="grid grid-cols-2 gap-5">
+            {/* Type */}
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <FormControl>
+                    <select {...field} className="w-full rounded-md border p-2">
+                      <option value="">Select Type</option>
 
-                    <option key="video" value="video">
-                      Video
-                    </option>
-                    <option key="image" value="image">
-                      Image
-                    </option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="related"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Related</FormLabel>
-                <FormControl>
-                  <select {...field} className="w-full rounded-md border p-2">
-                    <option value="">Select Related</option>
+                      <option key="video" value="video">
+                        Video
+                      </option>
+                      <option key="image" value="image">
+                        Image
+                      </option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Related */}
+            <FormField
+              control={form.control}
+              name="related"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Related</FormLabel>
+                  <FormControl>
+                    <select {...field} className="w-full rounded-md border p-2">
+                      <option value="">Select Related</option>
 
-                    <option key="tour" value="tour">
-                      Tour
-                    </option>
-                    <option key="visa" value="visa">
-                      Visa
-                    </option>
-                    <option key="about" value="about">
-                      About
-                    </option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      <option key="tour" value="tour">
+                        Tour
+                      </option>
+                      <option key="visa" value="visa">
+                        Visa
+                      </option>
+                      <option key="about" value="about">
+                        About
+                      </option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           {/* Buttons */}
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Button
               type="submit"
               disabled={mutation.isPending}
