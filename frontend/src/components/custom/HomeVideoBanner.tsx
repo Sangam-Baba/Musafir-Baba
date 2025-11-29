@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Carousel,
@@ -6,10 +7,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-// import Autoplay from "embla-carousel-autoplay";
-import { Card, CardContent } from "../ui/card";
+import Autoplay from "embla-carousel-autoplay";
 import { VideoBannerType } from "@/components/admin/VideoBannerList";
-import Image from "next/image";
 export const getAllMedia = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/videobanner`, {
     method: "GET",
@@ -21,31 +20,39 @@ export const getAllMedia = async () => {
   const data = await res.json();
   return data?.data;
 };
-async function HomeVideoBanner() {
-  const mediaVideo = await getAllMedia();
+function HomeVideoBanner({ data }: { data: VideoBannerType[] }) {
+  // const mediaVideo = await getAllMedia();
   return (
-    <div>
+    <div className="w-full max-w-7xl mx-auto">
       <Carousel
-        className="w-full max-w-7xl p-0 m-0"
         opts={{ loop: true }}
-        // plugins={[Autoplay({ delay: 4000, stopOnFocusIn: true })]}
+        plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
+        className="w-full"
       >
         <CarouselContent>
-          {mediaVideo?.map((item: VideoBannerType, index: number) => (
+          {data?.map((item: VideoBannerType, index: number) => (
             <CarouselItem key={index}>
-              <div className="p-0">
-                <Card className="w-full p-0 border-0 shadow-none">
-                  <CardContent className="flex items-center justify-center p-0 relative">
-                    <CarouselPrevious className="absolute left-0 z-10" />
-                    <div className="w-full overflow-hidden rounded-xl p-0">
-                      <video width={553} height={150} controls className="">
-                        <source src={item.media?.url} />
-                      </video>
-                    </div>
-                    <CarouselNext className="absolute right-0 z-10" />
-                  </CardContent>
-                </Card>
-              </div>
+              <a
+                href={item.link}
+                className="relative w-full overflow-hidden rounded-lg"
+              >
+                <video
+                  className="w-full h-full object-cover rounded-xl"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="none"
+                  controls={false}
+                  poster={item.media?.thumbnail_url}
+                  style={{ aspectRatio: "553/150" }} // KEY
+                >
+                  <source src={item.media?.url} />
+                </video>
+
+                <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 z-20" />
+                <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-20" />
+              </a>
             </CarouselItem>
           ))}
         </CarouselContent>

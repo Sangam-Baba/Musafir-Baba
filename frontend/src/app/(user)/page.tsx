@@ -54,7 +54,7 @@ const faqs = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <main className="">
       <section className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center">
@@ -92,6 +92,7 @@ export default function HomePage() {
       </section>
       <SecondSectionServer />
       <VisaHome />
+
       <SevenSection />
       <FeaturedTourSSG />
       <SectionFour />

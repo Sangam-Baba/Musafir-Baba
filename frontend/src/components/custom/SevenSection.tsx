@@ -1,90 +1,102 @@
-import { Button } from "../ui/button";
-import Image from "next/image";
-import bg from "../../../public/bg-2.png";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Link from "next/link";
-import { Clock, MapPin } from "lucide-react";
-import { FaMoneyBill } from "react-icons/fa";
+// import { Button } from "../ui/button";
+// import Image from "next/image";
+// import bg from "../../../public/bg-2.png";
+// import { Card, CardContent, CardHeader } from "@/components/ui/card";
+// import {
+//   Carousel,
+//   CarouselContent,
+//   CarouselItem,
+//   CarouselNext,
+//   CarouselPrevious,
+// } from "@/components/ui/carousel";
+// import Link from "next/link";
+// import { Clock, MapPin } from "lucide-react";
+// import { FaMoneyBill } from "react-icons/fa";
 import HomeVideoBanner from "./HomeVideoBanner";
 
-interface Batch {
-  quad: number;
-  _id: string;
-}
+// interface Batch {
+//   quad: number;
+//   _id: string;
+// }
 
-interface Image {
-  url: string;
-  public_id: string;
-  alt: string;
-  width?: number;
-  height?: number;
-}
-interface BestSeller {
-  _id: number;
-  title: string;
-  description: string;
-  coverImage: Image;
-  mainCategory: {
-    _id: string;
-    name: string;
-    slug: string;
-  };
-  destination: {
-    _id: string;
-    name: string;
-    country: string;
-    state: string;
-    city: string;
-  };
-  batch: Batch[];
-  slug: string;
-  gallery: Image[];
-  duration: {
-    days: number;
-    nights: number;
-  };
-}
-const getBestSeller = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/best-seller`,
-    {
-      next: { revalidate: 3600 },
-    }
-  );
-  if (!res.ok) throw new Error("Failed to fetch data");
+// interface Image {
+//   url: string;
+//   public_id: string;
+//   alt: string;
+//   width?: number;
+//   height?: number;
+// }
+// interface BestSeller {
+//   _id: number;
+//   title: string;
+//   description: string;
+//   coverImage: Image;
+//   mainCategory: {
+//     _id: string;
+//     name: string;
+//     slug: string;
+//   };
+//   destination: {
+//     _id: string;
+//     name: string;
+//     country: string;
+//     state: string;
+//     city: string;
+//   };
+//   batch: Batch[];
+//   slug: string;
+//   gallery: Image[];
+//   duration: {
+//     days: number;
+//     nights: number;
+//   };
+// }
+// const getBestSeller = async () => {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/best-seller`,
+//     {
+//       next: { revalidate: 3600 },
+//     }
+//   );
+//   if (!res.ok) throw new Error("Failed to fetch data");
+//   const data = await res.json();
+//   return data?.data || [];
+// };
+
+export const getAllMedia = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/videobanner`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch media");
   const data = await res.json();
-  return data?.data || [];
+  return data?.data;
 };
 export async function SevenSection() {
-  const bestSeller = await getBestSeller();
-
+  // const bestSeller = await getBestSeller();
+  const mediaVideo = await getAllMedia();
   return (
     <section
-      className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 my-12  relative bg-cover bg-center bg-no-repeat text-white"
-      style={{ backgroundImage: `url(${bg.src})` }}
+      className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8"
+      // style={{ backgroundImage: `url(${bg.src})` }}
     >
       {/* semi-transparent dark overlay */}
-      <div className="absolute inset-0 "></div>
+      {/* <div className="absolute inset-0 "></div> */}
 
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col gap-8 items-center">
         {/* Heading */}
         <div className="text-center space-y-4">
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-wide">
-            Hot Picks of the Season — Don’t Miss Out!
+          <h2 className="text-2xl md:text-3xl font-bold">
+            Hot Honeymoon Picks of the Season — Don’t Miss Out!
           </h2>
           <div className="mx-auto w-24 h-1 bg-[#FE5300] rounded-full"></div>
         </div>
 
         {/* Carousel */}
         <div className="w-full max-w-7xl flex justify-center px-8  lg:px-10">
-          <HomeVideoBanner />
+          <HomeVideoBanner data={mediaVideo} />
           {/* <Carousel
             className="w-full max-w-6xl "
             opts={{ loop: true }}
