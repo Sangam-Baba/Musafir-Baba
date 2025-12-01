@@ -7,10 +7,10 @@ const isAuthenticated = async (req, res, next) => {
   }
 
   try {
-    console.log(token);
+    // console.log(token);
     const decoded = await verifyAccess(token);
     req.user = decoded;
-    console.log(" verifyed user  ", req.user);
+    // console.log(" verifyed user  ", req.user);
     next();
   } catch (error) {
     console.log("authentication failed: ", error.message);

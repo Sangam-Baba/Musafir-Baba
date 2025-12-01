@@ -78,6 +78,10 @@ function UsersPage() {
   }
   const users = data?.data ?? [];
 
+  const filtered = users.filter(
+    (user) => user.email !== "admin@musafirbaba.com"
+  );
+
   const handleDelete = async (id: string) => {
     try {
       const res = await fetch(
@@ -156,7 +160,7 @@ function UsersPage() {
         </div>
       ) : (
         <UsersList
-          users={users.map((b) => ({
+          users={filtered.map((b) => ({
             _id: b._id,
             name: b.name,
             email: b.email,
