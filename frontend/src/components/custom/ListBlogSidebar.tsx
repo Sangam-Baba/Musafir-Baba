@@ -31,7 +31,7 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
     <Card className="mt-10 ">
       <div className="flex w-full justify-between gap-2 px-5">
         <div>
-          <h1 className="text-xl  font-bold">{title}</h1>
+          <h3 className="text-xl  font-bold">{title}</h3>
         </div>
       </div>
       <div className=" flex flex-col gap-4 px-2">

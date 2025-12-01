@@ -8,6 +8,7 @@ import { toast } from "sonner";
 export default function LogoutClient() {
   const router = useRouter();
   const params = useSearchParams();
+  const token = useAuthStore((s) => s.accessToken) as string;
 
   const redirect = params.get("redirect") || "/";
   const logout = useAuthStore((s) => s.logout);
@@ -15,7 +16,7 @@ export default function LogoutClient() {
   useEffect(() => {
     (async () => {
       try {
-        await logout();
+        await logout(token);
         toast.success("Logged out");
         router.replace(redirect);
       } catch (err) {
@@ -23,7 +24,7 @@ export default function LogoutClient() {
         router.replace(redirect);
       }
     })();
-  }, [logout, redirect, router]);
+  }, [logout, redirect, router, token]);
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">

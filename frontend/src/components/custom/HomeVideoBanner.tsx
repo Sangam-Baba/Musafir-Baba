@@ -27,7 +27,7 @@ function HomeVideoBanner({ data }: { data: VideoBannerType[] }) {
   }, []);
   return (
     <div ref={ref} className="w-full max-w-7xl mx-auto">
-      {!isVisible && (
+      {/* {!isVisible && (
         <div className="w-full h-[200px] bg-gray-400 aspect-w-553 aspect-h-200">
           <Image
             src={data?.[0]?.media?.thumbnail_url}
@@ -36,42 +36,42 @@ function HomeVideoBanner({ data }: { data: VideoBannerType[] }) {
             className="rounded-2xl w-full"
           />
         </div>
-      )}
-      {isVisible && (
-        <Carousel
-          opts={{ loop: true }}
-          plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
-          className="w-full"
-        >
-          <CarouselContent>
-            {data?.map((item: VideoBannerType, index: number) => (
-              <CarouselItem key={index}>
-                <a
-                  href={item.link}
-                  className="relative w-full overflow-hidden rounded-lg"
+      )} */}
+      {/* {isVisible && ( */}
+      <Carousel
+        opts={{ loop: true }}
+        plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
+        className="w-full"
+      >
+        <CarouselContent>
+          {data?.map((item: VideoBannerType, index: number) => (
+            <CarouselItem key={index}>
+              <a
+                href={item.link}
+                className="relative w-full overflow-hidden rounded-lg"
+              >
+                <video
+                  className="w-full h-full object-cover rounded-xl"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="none"
+                  controls={false}
+                  poster={item.media?.thumbnail_url}
+                  style={{ aspectRatio: "553/200" }} // KEY
                 >
-                  <video
-                    className="w-full h-full object-cover rounded-xl"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
-                    controls={false}
-                    poster={item.media?.thumbnail_url}
-                    style={{ aspectRatio: "553/200" }} // KEY
-                  >
-                    <source src={item.media?.url} />
-                  </video>
+                  <source src={item.media?.url} />
+                </video>
 
-                  <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 z-20" />
-                  <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-20" />
-                </a>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      )}
+                <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 z-20" />
+                <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-20" />
+              </a>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+      {/* )} */}
     </div>
   );
 }

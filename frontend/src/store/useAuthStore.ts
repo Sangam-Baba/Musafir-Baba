@@ -8,7 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   setAuth: (token: string, role: string, permissions?: string[]) => void;
   clearAuth: () => void;
-  logout: () => Promise<void>;
+  logout: (token: string) => Promise<void>;
   refreshAccessToken: () => Promise<void>;
 }
 
@@ -38,12 +38,15 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      logout: async () => {
+      logout: async (token: string) => {
         try {
           await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/logout`, {
             method: "POST",
             credentials: "include", // ⬅️ very important, sends HttpOnly cookie
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           });
           get().clearAuth();
         } catch (err) {

@@ -18,7 +18,7 @@ function TrandingNewsSidebar() {
   } = useQuery({ queryKey: ["trandingNews"], queryFn: getTrandingNews });
 
   if (isLoading) return <Loader size="lg" message="Loading tranding news..." />;
-  if (isError) return <h1>Failed to fetch trending news</h1>;
+  if (isError) return <h3>Failed to fetch trending news</h3>;
   return (
     <ListBlogSidebar
       blogs={blogs}

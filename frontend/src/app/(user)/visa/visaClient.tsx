@@ -139,7 +139,7 @@ function VisaClientPage() {
                   </div>
 
                   <CardTitle className="flex items-center text-2xl  gap-2">
-                    {visa.country}
+                    <h2>{visa.country}</h2>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

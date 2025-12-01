@@ -1,5 +1,6 @@
 import { Session } from "../models/AuthSession.js";
 export const validateSession = async (req, res, next) => {
+  console.log("validate session", req.user);
   const session = await Session.findOne({ sessionId: req.user?.sessionId });
 
   if (!session) {

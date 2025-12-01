@@ -326,7 +326,8 @@ const refresh = async (req, res) => {
     const { accessToken, refreshToken } = issueTokens(
       payload.sub,
       payload.role,
-      payload.permissions
+      payload.permissions,
+      payload.sessionId
     );
     const cookieOptions = {
       httpOnly: true,
