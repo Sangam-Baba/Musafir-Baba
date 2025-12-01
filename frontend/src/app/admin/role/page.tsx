@@ -7,23 +7,35 @@ import { useAuthStore } from "@/store/useAuthStore";
 import UsersList from "@/components/admin/UsersList";
 import CreateEditStaff from "@/components/auth/CreateEditStaff";
 import { Button } from "@/components/ui/button";
-interface User {
+export interface ListUserInterface {
   _id: string;
   name: string;
   email: string;
   role: string;
-  avatar: {
+  avatar?: {
     url: string;
     public_id: string;
     alt: string;
   };
-  isActive: boolean;
+  loginInfo?: {
+    lastLoginAt: string;
+    lastLogoutAt: string;
+    device: {
+      browser: string;
+      os: string;
+      device: string;
+    };
+    ip: string;
+    multipleDevices: boolean;
+    currentStatus: string;
+  };
+  isActive: string;
 }
 
 interface QueryResponse {
   success: boolean;
   message: string;
-  data: User[];
+  data: ListUserInterface[];
 }
 const getAllUsers = async (
   email: string,
@@ -40,7 +52,7 @@ const getAllUsers = async (
       },
     }
   );
-  if (!res.ok) throw new Error("Failed to fetch authors");
+  if (!res.ok) throw new Error("Failed to fetch users", { cause: res });
   const data = await res.json();
   return data;
 };
@@ -145,11 +157,13 @@ function UsersPage() {
       ) : (
         <UsersList
           users={users.map((b) => ({
-            id: b._id,
+            _id: b._id,
             name: b.name,
             email: b.email,
             role: b.role,
-            isActive: b.isActive,
+            loginInfo: b.loginInfo,
+            isActive:
+              b.loginInfo?.currentStatus === "Online" ? "Online" : "Offline",
           }))}
           onStatusChange={(id) => {
             setEditId(id);

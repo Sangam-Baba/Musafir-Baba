@@ -63,11 +63,11 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      console.log("Admin Login successfully:", data);
+      // console.log("Admin Login successfully:", data);
       toast.success("Admin Login successful!");
       // 👉 Redirect or reset form here
       const accessToken = data.accessToken;
-      console.log(accessToken);
+      // console.log(accessToken);
       setAuth(accessToken, data.role, data.permissions);
       form.reset();
       setTimeout(() => {

@@ -5,6 +5,9 @@ import sendEmail from "../services/email.service.js";
 import generateCryptoToken from "../utils/generateCryptoToken.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
 import crypto from "crypto";
+import { v4 as uuid } from "uuid";
+import { AuthLog } from "../models/AuthLog.js";
+import { Session } from "../models/AuthSession.js";
 import {
   signAccessToken,
   signRefreshToken,
@@ -13,10 +16,46 @@ import {
 } from "../utils/tokens.js";
 import { verifyEmailTemplate } from "../utils/verifyEmailTemplate.js";
 import { thankYouEmail } from "../utils/thankYouEmail.js";
-function issueTokens(userId, role, permissions) {
-  const accessToken = signAccessToken({ sub: userId, role, permissions });
-  const refreshToken = signRefreshToken({ sub: userId, role, permissions });
+import { UAParser } from "ua-parser-js";
+
+function issueTokens(userId, role, permissions, sessionId) {
+  const accessToken = signAccessToken({
+    sub: userId,
+    role,
+    permissions,
+    sessionId,
+  });
+  const refreshToken = signRefreshToken({
+    sub: userId,
+    role,
+    permissions,
+    sessionId,
+  });
   return { accessToken, refreshToken };
+}
+
+// const parseUserAgent = (ua = "") => {
+//   if (!ua) return "Unknown";
+
+//   const osMatch =
+//     ua.match(/Windows|Mac|Linux|Android|iPhone|iOS/i)?.[0] || "Unknown OS";
+
+//   const browserMatch =
+//     ua.match(/Chrome|Firefox|Safari|Edge|Opera/i)?.[0] || "Unknown Browser";
+
+//   return `${browserMatch} on ${osMatch}`;
+// };
+function parseUserAgent(ua = "") {
+  if (!ua) return "Unknown";
+
+  const parser = new UAParser(ua);
+  const result = parser.getResult();
+
+  return {
+    browser: `${result.browser.name} ${result.browser.version}`,
+    os: `${result.os.name} ${result.os.version}`,
+    device: result.device.type || "Desktop",
+  };
 }
 const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -89,10 +128,36 @@ const login = async (req, res) => {
         .status(401)
         .json({ success: false, message: "User Unauthorized" });
     }
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.socket.remoteAddress ||
+      req.ip;
+
+    const sessionId = uuid();
+    await AuthLog.create({
+      userId: user._id,
+      sessionId,
+      success: true,
+      eventType: "login",
+      ip: ip,
+      userAgent: req.headers["user-agent"],
+    });
+    // Create session record
+    await Session.create({
+      userId: user._id,
+      sessionId,
+      ip: ip,
+      userAgent: req.headers["user-agent"],
+      status: "active",
+      loginAt: new Date(),
+      lastSeen: new Date(),
+    });
+
     const { accessToken, refreshToken } = issueTokens(
       user._id,
       user.role,
-      user.permissions
+      user.permissions,
+      sessionId
     );
 
     const cookieOption = {
@@ -103,6 +168,7 @@ const login = async (req, res) => {
     };
 
     res.cookie("refreshToken", refreshToken, cookieOption);
+
     return res.status(200).json({
       success: true,
       message: "User Login Successfully",
@@ -317,6 +383,13 @@ const me = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
+    const { sessionId } = req.user;
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid session or already logged out",
+      });
+    }
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -324,6 +397,19 @@ const logout = async (req, res) => {
       path: "/",
     };
     res.clearCookie("refreshToken", cookieOptions);
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
+    await AuthLog.create({
+      userId: req?.user?.sub,
+      eventType: "logout",
+      sessionId,
+      ip: ip,
+      userAgent: req.headers["user-agent"],
+    });
+
+    await Session.updateOne(
+      { sessionId },
+      { status: "logout", logoutAt: new Date() }
+    );
     return res
       .status(200)
       .json({ success: true, message: "Logout successful" });
@@ -335,34 +421,70 @@ const logout = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const { email } = req.query;
-    if (email) {
-      const user = await User.find({ email });
-      if (!user) {
-        return res
-          .status(400)
-          .json({ success: false, message: "User not found" });
-      }
-      return res.status(200).json({ success: true, data: user });
-    }
-    if (req.query?.role) {
-      const user = await User.find({ role: req.query.role });
-      if (!user) {
-        return res
-          .status(400)
-          .json({ success: false, message: "User not found" });
-      }
-      return res.status(200).json({ success: true, data: user });
-    }
-    const users = await User.find();
-    if (!users) {
+    const query = {};
+    if (req.query.email) query.email = req.query.email;
+    if (req.query.role) query.role = req.query.role;
+
+    // Step 1: get users
+    const users = await User.find(query)
+      .select("-password -refresh_token -otp -otpExpire")
+      .lean();
+
+    if (!users.length) {
       return res
-        .status(400)
-        .json({ success: false, message: "Users not found" });
+        .status(404)
+        .json({ success: false, message: "No users found" });
     }
-    return res.status(200).json({ success: true, data: users });
+
+    const userIds = users.map((u) => u._id);
+
+    // Step 2: Lookup logs & sessions
+    const [logs, sessions] = await Promise.all([
+      AuthLog.find({ userId: { $in: userIds } })
+        .sort({ timestamp: -1 })
+        .lean(),
+      Session.find({ userId: { $in: userIds } })
+        .sort({ loginAt: -1 })
+        .lean(),
+    ]);
+    // Step 3: Map each user with latest session + logs
+    const result = users.map((user) => {
+      const userLogs = logs.filter(
+        (l) => String(l.userId) === String(user._id)
+      );
+      const userSessions = sessions.filter(
+        (s) => String(s.userId) === String(user._id)
+      );
+
+      const lastLogin =
+        userLogs.find(
+          (log) =>
+            log.eventType === "login" &&
+            !log.userAgent.includes("PostmanRuntime")
+        ) || userLogs.find((log) => log.eventType === "login");
+      const lastLogout = userLogs.find((log) => log.eventType === "logout");
+      const activeSession = userSessions.find((s) => s.status === "active");
+      // console.log("UA:", lastLogin);
+      return {
+        ...user,
+        loginInfo: {
+          lastLoginAt: lastLogin?.timestamp || null,
+          lastLogoutAt: lastLogout?.timestamp || null,
+          device: lastLogin ? parseUserAgent(lastLogin.userAgent) : "Unknown",
+          ip: lastLogin?.ip || null,
+          multipleDevices: userSessions.length > 1,
+          currentStatus: activeSession ? "Online" : "Offline",
+        },
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      count: result.length,
+      data: result,
+    });
   } catch (error) {
-    console.log("Get all users error:", error.message);
+    console.log("GetAllUsers error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

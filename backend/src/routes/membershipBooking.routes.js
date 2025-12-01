@@ -6,11 +6,13 @@ import {
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 const membershipBookingRoute = Router();
 
 membershipBookingRoute.post(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["user", "admin"]),
   createBooking
 );
@@ -18,6 +20,7 @@ membershipBookingRoute.post(
 membershipBookingRoute.get(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["user", "admin"]),
   getBookingsById
 );
@@ -25,6 +28,7 @@ membershipBookingRoute.get(
 membershipBookingRoute.patch(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["user", "admin"]),
   updateBooking
 );

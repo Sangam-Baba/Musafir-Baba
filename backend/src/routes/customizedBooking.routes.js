@@ -8,17 +8,20 @@ import {
 } from "../controllers/customizedBookings.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 const customizedBookingRoutes = Router();
 
 customizedBookingRoutes.post(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "user", "superadmin"]),
   createCutomizedBooking
 );
 customizedBookingRoutes.get(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getCustomizedBookings
 );

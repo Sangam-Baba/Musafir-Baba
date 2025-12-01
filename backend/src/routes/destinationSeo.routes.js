@@ -9,12 +9,14 @@ import {
 } from "../controllers/destinationSeo.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 
 const destinationSeoRoute = Router();
 
 destinationSeoRoute.post(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   createDestinationSeo
 );
@@ -22,6 +24,7 @@ destinationSeoRoute.post(
 destinationSeoRoute.get(
   "/id/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getDestinationSeoById
 );
@@ -31,6 +34,7 @@ destinationSeoRoute.get("/:category_slug/:destination_slug", getDestinationSeo);
 destinationSeoRoute.get(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getAllDestinationSeo
 );
@@ -38,6 +42,7 @@ destinationSeoRoute.get(
 destinationSeoRoute.patch(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   updateDestinationSeo
 );
@@ -45,6 +50,7 @@ destinationSeoRoute.patch(
 destinationSeoRoute.delete(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   deleteDestinationSeo
 );

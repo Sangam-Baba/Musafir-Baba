@@ -18,6 +18,7 @@ import { Router } from "express";
 import upload from "../middleware/multer.middleware.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 const authRouter = Router();
 
 authRouter.post("/register", register);
@@ -38,24 +39,28 @@ authRouter.patch("/reset-pasword/:token", resetPassword);
 authRouter.get(
   "/getAllUsers",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getAllUsers
 );
 authRouter.patch(
   "/changeRole/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   changeRole
 );
 authRouter.patch(
   "/blockUser/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   blockUser
 );
 authRouter.patch(
   "/update-admin/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   updateAdmin
 );

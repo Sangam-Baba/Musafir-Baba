@@ -1,46 +1,45 @@
-import { 
-  getCategoryBySlug, 
- getCategory, 
-  updateCategory, 
-  deleteCategory, 
-  createCategory ,
-  getCategoryById
+import {
+  getCategoryBySlug,
+  getCategory,
+  updateCategory,
+  deleteCategory,
+  createCategory,
+  getCategoryById,
 } from "../controllers/category.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
 import upload from "../middleware/multer.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 
 const categoryRoute = Router();
 
-categoryRoute.get('/id/:id', getCategoryById);
-categoryRoute.get('/:slug', getCategoryBySlug);
+categoryRoute.get("/id/:id", getCategoryById);
+categoryRoute.get("/:slug", getCategoryBySlug);
 
-
-
-categoryRoute.get(
-  '/',  
-  getCategory
-);
+categoryRoute.get("/", getCategory);
 
 categoryRoute.post(
-  '/', 
-  isAuthenticated, 
-  authorizedRoles(["admin","superadmin"]),
+  "/",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
   createCategory
 );
 
 categoryRoute.patch(
-  '/:slug', 
-  isAuthenticated, 
-  authorizedRoles(["admin","superadmin"]), 
+  "/:slug",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
   updateCategory
 );
 
 categoryRoute.delete(
-  '/:id', 
-  isAuthenticated, 
-  authorizedRoles(["admin", "superadmin"]), 
+  "/:id",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
   deleteCategory
 );
 

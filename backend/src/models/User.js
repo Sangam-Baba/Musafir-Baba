@@ -40,7 +40,8 @@ const UserSchema = new mongoose.Schema(
     otpExpire: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    lastLogin: Date,
+    // lastLogin: Date,
+    // lastLogout: Date,
     isActive: {
       type: Boolean,
       default: true,

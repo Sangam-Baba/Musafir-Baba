@@ -9,12 +9,14 @@ import {
 } from "../controllers/customizedTourBooking.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 
 const customizedTourBookingRoute = Router();
 
 customizedTourBookingRoute.post(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["user", "admin", "superadmin"]),
   createCustomizedTourBooking
 );
@@ -22,6 +24,7 @@ customizedTourBookingRoute.post(
 customizedTourBookingRoute.post(
   "/manual",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   createManualCustomizedTourBooking
 );
@@ -29,12 +32,14 @@ customizedTourBookingRoute.post(
 customizedTourBookingRoute.get(
   "/admin",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getAllCustomizedTourBooking
 );
 customizedTourBookingRoute.get(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["user", "admin", "superadmin"]),
   getCustomizedTourBookingById
 );
@@ -42,6 +47,7 @@ customizedTourBookingRoute.get(
 customizedTourBookingRoute.patch(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["superadmin", "admin"]),
   updateCustomizedTourBooking
 );
@@ -49,6 +55,7 @@ customizedTourBookingRoute.patch(
 customizedTourBookingRoute.delete(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["superadmin", "admin"]),
   deleteCustomizedTourBooking
 );

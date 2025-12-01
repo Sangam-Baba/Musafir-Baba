@@ -10,17 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ExternalLink } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-}
+import { ListUserInterface } from "@/app/admin/role/page";
+
 interface UsersTableProps {
-  users: User[];
+  users: ListUserInterface[];
   onStatusChange: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -39,14 +34,16 @@ export default function UsersList({
             <TableRow className="bg-muted/40">
               <TableHead className="w-[30%]">Name</TableHead>
               <TableHead className="w-[30%]">E-mail</TableHead>
-              <TableHead className="w-[20%] ">Edit</TableHead>
+              <TableHead className="w-[30%]">Last Login</TableHead>
+              <TableHead className="w-[30%]">Device</TableHead>
+              <TableHead className="w-[30%]">Status</TableHead>
               <TableHead className="w-[20%] text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((cat: User) => (
+            {users.map((cat: ListUserInterface) => (
               <motion.tr
-                key={cat.id}
+                key={cat._id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
@@ -54,10 +51,25 @@ export default function UsersList({
                 <TableCell className="font-medium">{cat.name}</TableCell>
                 <TableCell className="font-medium">{cat.email}</TableCell>
                 <TableCell className="font-medium">
+                  {new Date(
+                    cat?.loginInfo?.lastLoginAt ?? ""
+                  ).toLocaleTimeString()}
+                </TableCell>
+                <TableCell className="font-medium">
+                  {cat.loginInfo?.device?.device ?? "Not Found"}
+                </TableCell>
+                <TableCell
+                  className={`font-medium ${
+                    cat.isActive == "Online" ? "text-green-600" : "text-red-400"
+                  }`}
+                >
+                  {cat.isActive}
+                </TableCell>
+                <TableCell className="font-medium">
                   <Button
                     variant="default"
                     size="sm"
-                    onClick={() => onStatusChange(cat.id)}
+                    onClick={() => onStatusChange(cat._id)}
                   >
                     <Edit className="w-4 h-4 mr-1" /> Edit
                   </Button>
@@ -66,7 +78,7 @@ export default function UsersList({
                   <Button
                     variant={cat.isActive ? "destructive" : "default"}
                     size="sm"
-                    onClick={() => onDelete(cat.id)}
+                    onClick={() => onDelete(cat._id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />{" "}
                     {cat.isActive ? "Block" : "Unblock"}
@@ -80,8 +92,8 @@ export default function UsersList({
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
-        {users.map((cat: User) => (
-          <Card key={cat.id} className="shadow-md">
+        {users.map((cat: ListUserInterface) => (
+          <Card key={cat._id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
               <h3 className="font-semibold text-lg">{cat.name}</h3>
               <h3 className="font-semibold text-lg">{cat.email}</h3>
@@ -90,7 +102,7 @@ export default function UsersList({
                   variant="default"
                   size="sm"
                   className="flex-1 w-1/2"
-                  onClick={() => onStatusChange(cat.id)}
+                  onClick={() => onStatusChange(cat._id)}
                 >
                   <Edit className="w-4 h-4 mr-1" /> Edit
                 </Button>
@@ -98,7 +110,7 @@ export default function UsersList({
                   variant={cat.isActive ? "destructive" : "default"}
                   size="sm"
                   className="flex-1 w-1/2"
-                  onClick={() => onDelete(cat.id)}
+                  onClick={() => onDelete(cat._id)}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />{" "}
                   {cat.isActive ? "Block" : "Unblock"}

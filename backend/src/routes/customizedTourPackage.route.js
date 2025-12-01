@@ -10,6 +10,7 @@ import {
 } from "../controllers/customizedTourPackage.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 
 const customizedTourPackageRoute = Router();
 
@@ -26,12 +27,14 @@ customizedTourPackageRoute.get("/:id", getCustomizedTourPackageById);
 customizedTourPackageRoute.patch(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   updateCustomizedTourPackage
 );
 customizedTourPackageRoute.delete(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   deleteCustomizedTourPackage
 );

@@ -11,12 +11,14 @@ import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
 import upload from "../middleware/multer.middleware.js";
+import { validateSession } from "../middleware/session.middleware.js";
 
 const destinationRoutes = Router();
 
 destinationRoutes.post(
   "/",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   upload.fields([
     { name: "coverImage", maxCount: 1 },
@@ -31,12 +33,14 @@ destinationRoutes.get("/:id", getDestinationById);
 destinationRoutes.patch(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   updateDestination
 );
 destinationRoutes.delete(
   "/:id",
   isAuthenticated,
+  validateSession,
   authorizedRoles(["admin", "superadmin"]),
   deleteDestination
 );
