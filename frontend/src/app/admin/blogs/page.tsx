@@ -27,9 +27,12 @@ export default function BlogsPage() {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?limit=100`,
+        {
+          cache: "no-store",
+        }
+      );
       const data = await res.json();
 
       if (data.success) {

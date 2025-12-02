@@ -29,7 +29,7 @@ export default function NewsPage() {
     try {
       setLoading(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/news`, // adjust API route
+        `${process.env.NEXT_PUBLIC_BASE_URL}/news?limit=100`, // adjust API route
         { cache: "no-store" }
       );
       const data = await res.json();
