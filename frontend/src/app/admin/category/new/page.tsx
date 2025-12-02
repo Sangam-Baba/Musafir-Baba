@@ -24,6 +24,9 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
+  slug: z.string().min(2, {
+    message: "Slug must be at least 2 characters.",
+  }),
   description: z.string().min(2, {
     message: "Description must be at least 2 characters.",
   }),
@@ -79,6 +82,7 @@ export default function CreateCategory() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      slug: "",
       description: "",
       metaTitle: "",
       metaDescription: "",
@@ -129,6 +133,16 @@ export default function CreateCategory() {
         {form.formState.errors.name && (
           <p className="text-red-500 text-sm">
             {form.formState.errors.name.message}
+          </p>
+        )}
+        <input
+          {...form.register("slug")}
+          placeholder="Parmalink"
+          className="w-full border rounded p-2"
+        />
+        {form.formState.errors.slug && (
+          <p className="text-red-500 text-sm">
+            {form.formState.errors.slug.message}
           </p>
         )}
         <textarea
@@ -210,11 +224,21 @@ export default function CreateCategory() {
           placeholder="Meta Title"
           className="w-full border rounded p-2"
         />
+        {form.formState.errors.metaTitle && (
+          <p className="text-red-500 text-sm">
+            {form.formState.errors.metaTitle.message}
+          </p>
+        )}
         <input
           {...form.register("metaDescription")}
           placeholder="Meta Description"
           className="w-full border rounded p-2"
         />
+        {form.formState.errors.metaDescription && (
+          <p className="text-red-500 text-sm">
+            {form.formState.errors.metaDescription.message}
+          </p>
+        )}
 
         {/* keywords */}
         <div className="space-y-2">

@@ -13,6 +13,7 @@ import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
 import { Clock, User, Share2 } from "lucide-react";
+import { notFound } from "next/navigation";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -89,7 +90,7 @@ export default async function NewsDetailPage({
   params: { slug: string };
 }) {
   const { news, comments } = await getNews(params.slug);
-  if (!news) return <NotFoundPage />;
+  if (!news) return notFound();
   const readTime = readingTime(news.content || "");
   const schema = {
     "@context": "https://schema.org",
@@ -199,8 +200,8 @@ export default async function NewsDetailPage({
         </article>
         <div className="lg:w-3/9">
           <QueryForm />
-          <LatestNewsSidebar />
-          <TrandingNewsSidebar />
+          <LatestNewsSidebar currentId={news?._id} />
+          <TrandingNewsSidebar currentId={news?._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
         <Script id="blog-schema" type="application/ld+json">

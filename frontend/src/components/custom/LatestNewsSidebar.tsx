@@ -22,7 +22,7 @@ interface News {
   views: number;
 }
 
-function LatestNewsSidebar() {
+function LatestNewsSidebar({ currentId }: { currentId: string }) {
   const [blogs, setBlogs] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +35,10 @@ function LatestNewsSidebar() {
       const data = await res.json();
 
       if (data.success) {
-        setBlogs(data.data);
+        const filteredBlogs = data.data?.filter(
+          (blog: News) => blog._id !== currentId
+        );
+        setBlogs(filteredBlogs);
       } else {
         toast.error(data.message || "Failed to fetch news");
       }

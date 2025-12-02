@@ -10,7 +10,7 @@ const getTrandingNews = async () => {
   const data = await res.json();
   return data?.data;
 };
-function TrandingNewsSidebar() {
+function TrandingNewsSidebar({ currentId }: { currentId: string }) {
   const {
     data: blogs,
     isLoading,
@@ -21,7 +21,7 @@ function TrandingNewsSidebar() {
   if (isError) return <h3>Failed to fetch trending news</h3>;
   return (
     <ListBlogSidebar
-      blogs={blogs}
+      blogs={blogs.filter((blog: { _id: string }) => blog._id !== currentId)}
       title="Trending News"
       type="trending"
       url="news"

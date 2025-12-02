@@ -201,8 +201,8 @@ export default async function BlogDetailPage({
         <div className="lg:w-3/9">
           <QueryForm />
           <CategorySidebar />
-          <LatestBlogSidebar />
-          <TrandingBlogSidebar />
+          <LatestBlogSidebar currentId={blog._id} />
+          <TrandingBlogSidebar currentId={blog._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
         <Script id="blog-schema" type="application/ld+json">

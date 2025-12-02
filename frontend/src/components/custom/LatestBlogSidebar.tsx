@@ -22,7 +22,7 @@ interface Blog {
   views: number;
 }
 
-function LatestBlogSidebar() {
+function LatestBlogSidebar({ currentId }: { currentId: string }) {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +35,10 @@ function LatestBlogSidebar() {
       const data = await res.json();
 
       if (data.success) {
-        setBlogs(data.data);
+        const filteredBlogs = data.data?.filter(
+          (blog: Blog) => blog._id !== currentId
+        );
+        setBlogs(filteredBlogs);
       } else {
         toast.error(data.message || "Failed to fetch blogs");
       }

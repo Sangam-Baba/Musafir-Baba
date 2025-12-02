@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export const getCategory = async (): Promise<CategoryResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    next: { revalidate: 600 },
+    next: { revalidate: 120 },
   });
   if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();
@@ -38,7 +38,7 @@ const getPackages = async (page: number) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages?limit=12&page=${page}`,
     {
-      // next:{revalidate:6000}
+      next: { revalidate: 60 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch posts");

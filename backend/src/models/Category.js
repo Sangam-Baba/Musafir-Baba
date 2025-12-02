@@ -7,7 +7,7 @@ const categorySchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
-      maxlength: [50, "Category name cannot exceed 50 character"],
+      maxlength: [100, "Category name cannot exceed 100 character"],
     },
     description: {
       type: String,
@@ -44,19 +44,19 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-categorySchema.pre("save", function (next) {
-  if (this.isModified("name")) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
-  }
-  next();
-});
+// categorySchema.pre("save", function (next) {
+//   if (this.isModified("name")) {
+//     this.slug = slugify(this.name, { lower: true, strict: true });
+//   }
+//   next();
+// });
 
-categorySchema.pre("findOneAndUpdate", function (next) {
-  const update = this.getUpdate();
-  if (update.name) {
-    update.slug = slugify(update.name, { lower: true, strict: true });
-    this.setUpdate(update);
-  }
-  next();
-});
+// categorySchema.pre("findOneAndUpdate", function (next) {
+//   const update = this.getUpdate();
+//   if (update.name) {
+//     update.slug = slugify(update.name, { lower: true, strict: true });
+//     this.setUpdate(update);
+//   }
+//   next();
+// });
 export const Category = mongoose.model("Category", categorySchema);
