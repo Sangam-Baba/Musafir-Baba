@@ -1,10 +1,10 @@
 import { FeaturedTour } from "./FeaturedTour";
 
 const CATEGORY_SLUGS = [
-  { slug: "early-bird-2026", label: "Early Bird 2026" },
-  { slug: "weekend-getaway", label: "Weekend Trips" },
+  { slug: "early-bird", label: "Early Bird 2026" },
+  { slug: "weekend-getaways", label: "Weekend Trips" },
   { slug: "backpacking-trips", label: "Backpacking Trips" },
-  { slug: "religious-tour-package", label: "Religious Trips" },
+  { slug: "religious-tours", label: "Religious Trips" },
   { slug: "mountain-treks", label: "Mountain Treks" },
 ];
 

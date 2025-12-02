@@ -56,7 +56,7 @@ authRouter.patch(
   authorizedRoles(["admin", "superadmin"]),
   changeRole
 );
-authRouter.patch(
+authRouter.delete(
   "/blockUser/:id",
   isAuthenticated,
   validateSession,

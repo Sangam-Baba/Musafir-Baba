@@ -81,7 +81,7 @@ export default function UsersList({
                     onClick={() => onDelete(cat._id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />{" "}
-                    {cat.isActive ? "Block" : "Unblock"}
+                    {cat.isActive ? "Delete" : "Unblock"}
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -113,7 +113,7 @@ export default function UsersList({
                   onClick={() => onDelete(cat._id)}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />{" "}
-                  {cat.isActive ? "Block" : "Unblock"}
+                  {cat.isActive ? "Delete" : "Unblock"}
                 </Button>
               </div>
             </CardContent>

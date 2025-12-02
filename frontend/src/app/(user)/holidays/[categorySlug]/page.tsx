@@ -95,12 +95,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${category?.name} | Musafir Baba`;
-    const description = `${category?.description}`;
+    const title = `${category?.metaTitle || category?.name} | Musafir Baba`;
+    const description = `${category?.metaDescription || category?.description}`;
 
     return {
       title,
       description,
+      keywords: category?.keywords,
       alternates: {
         canonical: `https://musafirbaba.com/holidays/${categorySlug}`,
       },

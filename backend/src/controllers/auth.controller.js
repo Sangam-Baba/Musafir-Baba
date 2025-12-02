@@ -530,14 +530,15 @@ const blockUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not found" });
     }
-    user.isActive = !user.isActive;
-    await user.save();
+    const deleteUser = await User.findByIdAndDelete(id);
     return res
       .status(200)
-      .json({ success: true, message: "User blocked successfully" });
+      .json({ success: true, message: "User deleted successfully" });
   } catch (error) {
-    console.log("Block user error:", error.message);
-    return res.status(500).json({ success: false, message: "Server error" });
+    console.log("Delete user error:", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };
 

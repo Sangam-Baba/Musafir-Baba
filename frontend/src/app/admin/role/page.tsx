@@ -87,19 +87,19 @@ function UsersPage() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/auth/blockUser/${id}`,
         {
-          method: "PATCH",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      if (!res.ok) throw new Error("Failed to block user");
-      toast.success("User: Blocked successfully");
+      if (!res.ok) throw new Error("Failed to delete user");
+      toast.success("User: Deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["users"] });
     } catch (error) {
       console.log("error in deleting", error);
-      toast.error("Something went wrong while blocking user");
+      toast.error("Something went wrong while deleting");
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
