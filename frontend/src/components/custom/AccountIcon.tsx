@@ -44,12 +44,15 @@ export function AccountIcon() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <p
-          className="cursor-pointer hover:underline "
-          onClick={() => openDialog("login", undefined)}
-        >
-          Login
-        </p>
+        <div className="group">
+          <p
+            className="cursor-pointer font-semibold"
+            onClick={() => openDialog("login", undefined)}
+          >
+            Login
+          </p>
+          <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
+        </div>
       )}
     </div>
   );

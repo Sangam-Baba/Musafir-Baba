@@ -21,7 +21,7 @@ interface CoverImage {
   height: number;
   alt: string;
 }
-interface Package {
+export interface CustomizedPackageInterface {
   _id: string;
   title: string;
   slug: string;
@@ -41,7 +41,7 @@ interface Destination {
   name: string;
   slug: string;
 }
-async function getPackageByDestinationSlug(slug: string) {
+export async function getPackageByDestinationSlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage?destination=${slug}`,
     {
@@ -100,7 +100,7 @@ async function DestinationPage({
       {/* Show packages under this category */}
       {packages && packages.length > 0 && (
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 mt-10">
-          {packages.map((pkg: Package) => (
+          {packages.map((pkg: CustomizedPackageInterface) => (
             <Link
               key={pkg._id}
               className="cursor-pointer"

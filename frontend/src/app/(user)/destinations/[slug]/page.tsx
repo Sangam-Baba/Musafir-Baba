@@ -3,6 +3,10 @@ import Hero from "@/components/custom/Hero";
 import PackageCard from "@/components/custom/PackageCard";
 import { notFound } from "next/navigation";
 import React from "react";
+import {
+  getPackageByDestinationSlug,
+  CustomizedPackageInterface,
+} from "@/app/(user)/holidays/customised-tour-packages/[destination]/page";
 
 interface Destination {
   _id: string;
@@ -80,14 +84,14 @@ interface Package {
   slug: string;
   __v: number;
 }
-async function getPackageByDestinationSlug(slug: string) {
+async function getGroupPackageByDestinationSlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}`,
     {
       cache: "no-cache",
     }
   );
-  if (!res.ok) return notFound();
+  if (!res.ok) return [];
   const data = await res.json();
   return data?.data;
 }
@@ -98,7 +102,7 @@ export async function generateMetadata({
   params: { slug: string };
 }) {
   const { slug } = params;
-  const packages = await getPackageByDestinationSlug(slug);
+  const packages = await getGroupPackageByDestinationSlug(slug);
   if (!packages || packages.length === 0) return null;
   const meta = packages[0]?.destination;
   return {
@@ -114,8 +118,17 @@ export async function generateMetadata({
 }
 async function DestinationPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
-  const packages = await getPackageByDestinationSlug(slug);
-  if (!packages || packages.length === 0) return notFound();
+  const packages = await getGroupPackageByDestinationSlug(slug);
+  const customizedPkg = await getPackageByDestinationSlug(slug);
+  const newCustomizedPkg = customizedPkg.map(
+    (pkg: CustomizedPackageInterface) => ({
+      ...pkg,
+      mainCategory: { slug: "customised-tour-packages" },
+    })
+  );
+
+  const totalPackages = [...packages, ...newCustomizedPkg];
+  if (!totalPackages || totalPackages.length === 0) return notFound();
   return (
     <section>
       <Hero
@@ -137,9 +150,9 @@ async function DestinationPage({ params }: { params: { slug: string } }) {
         <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
       </div> */}
       {/* Show packages under this category */}
-      {packages && packages.length > 0 && (
+      {totalPackages && totalPackages.length > 0 && (
         <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
-          {packages.map((pkg: Package) => (
+          {totalPackages.map((pkg: Package) => (
             <PackageCard
               key={pkg._id}
               pkg={{
