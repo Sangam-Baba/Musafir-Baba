@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { X } from "lucide-react";
 import MediaPicker from "../common/MediaList";
 import { Button } from "../ui/button";
@@ -37,7 +37,7 @@ export default function ImageUploader({
   initialImage?: UploadedFile | null;
   onUpload: (img: UploadedFile | null) => void;
 }) {
-  const token = useAuthStore((state) => state.accessToken) as string;
+  const token = useAdminAuthStore((state) => state.accessToken) as string;
   const [files, setFiles] = useState<FileList | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>(
     initialImage ? [initialImage] : []
