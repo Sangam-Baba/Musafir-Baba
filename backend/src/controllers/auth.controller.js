@@ -18,16 +18,18 @@ import { verifyEmailTemplate } from "../utils/verifyEmailTemplate.js";
 import { thankYouEmail } from "../utils/thankYouEmail.js";
 import { UAParser } from "ua-parser-js";
 
-function issueTokens(userId, role, sessionId) {
+function issueTokens(userId, role, sessionId, name) {
   const accessToken = signAccessToken({
     sub: userId,
     role,
     sessionId,
+    name,
   });
   const refreshToken = signRefreshToken({
     sub: userId,
     role,
     sessionId,
+    name,
   });
   return { accessToken, refreshToken };
 }
@@ -142,8 +144,8 @@ const login = async (req, res) => {
     const { accessToken, refreshToken } = issueTokens(
       user._id,
       user.role,
-      // user.permissions,
-      sessionId
+      sessionId,
+      user.name
     );
 
     const cookieOption = {
@@ -160,7 +162,7 @@ const login = async (req, res) => {
       message: "User Login Successfully",
       accessToken,
       role: user.role,
-      // permissions: user.permissions,
+      name: user.name,
     });
   } catch (error) {
     console.log("Login failed ", error.message);
@@ -312,7 +314,7 @@ const refresh = async (req, res) => {
     const { accessToken, refreshToken } = issueTokens(
       payload.sub,
       payload.role,
-      // payload.permissions,
+      payload.name,
       payload.sessionId
     );
     const cookieOptions = {
@@ -327,7 +329,7 @@ const refresh = async (req, res) => {
     return res.json({
       accessToken,
       role: payload.role,
-      permissions: payload.permissions,
+      name: payload.name,
     });
   } catch (error) {
     console.log("Refresh token error:", error.message);

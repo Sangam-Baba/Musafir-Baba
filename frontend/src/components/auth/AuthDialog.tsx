@@ -109,7 +109,7 @@ export function AuthDialog() {
       return res.json();
     },
     onSuccess: (data) => {
-      setAuth(data.accessToken, data.role);
+      setAuth(data.accessToken, data.role, data.name);
       toast.success("Login successful!");
       closeDialog();
       router.push(redirectUrl || "/");

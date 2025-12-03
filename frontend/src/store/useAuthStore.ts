@@ -4,9 +4,9 @@ import { persist } from "zustand/middleware"; // optional if you want user info 
 interface AuthState {
   accessToken: string | null;
   role: string | null;
-  permissions?: string[];
+  name: string | null;
   isAuthenticated: boolean;
-  setAuth: (token: string, role: string, permissions?: string[]) => void;
+  setAuth: (token: string, role: string, name?: string) => void;
   clearAuth: () => void;
   logout: (token: string) => Promise<void>;
   refreshAccessToken: () => Promise<void>;
@@ -17,15 +17,16 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       accessToken: null,
       role: null,
+      name: null,
       permissions: [],
       isAuthenticated: false,
 
-      setAuth: (token, role, permissions) => {
+      setAuth: (token, role, name) => {
         set({
           accessToken: token,
           role: role,
           isAuthenticated: true,
-          permissions: permissions,
+          name: name,
         });
       },
 
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
           accessToken: null,
           role: null,
           isAuthenticated: false,
-          permissions: [],
+          name: null,
         });
       },
 
@@ -72,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
             accessToken: data.accessToken,
             isAuthenticated: true,
             role: data.role,
-            permissions: data.permissions,
+            name: data.name,
             // optionally also refresh user data here
           });
         } catch (err) {
@@ -87,7 +88,7 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         role: state.role,
         isAuthenticated: state.isAuthenticated,
-        permissions: state.permissions,
+        name: state.name,
       }),
     }
   )

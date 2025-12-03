@@ -6,10 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CircleUserRound } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
+import { SquareChevronDown } from "lucide-react";
 export function AccountIcon() {
   const openDialog = useAuthDialogStore((state) => state.openDialog);
   const auth = useAuthStore();
@@ -19,7 +19,9 @@ export function AccountIcon() {
       {isAuthenticated ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">Hi! Sangam</Button>
+            <Button variant="outline">
+              Hi! {auth?.name} <SquareChevronDown />
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuGroup>
