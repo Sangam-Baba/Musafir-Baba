@@ -19,9 +19,16 @@ export function AccountIcon() {
       {isAuthenticated ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              Hi! {auth?.name} <SquareChevronDown />
-            </Button>
+            <div className="group flex flex-col items-center cursor-pointer select-none">
+              <div className="flex items-center text-md font-semibold gap-1">
+                Hi, {auth?.name} <SquareChevronDown size={15} />
+              </div>
+
+              <p
+                className="rounded-xl h-0.5 bg-[#FE5300] w-full opacity-0 
+       group-hover:opacity-100 transition-all duration-300"
+              ></p>
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuGroup>
