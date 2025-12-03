@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 
@@ -52,7 +52,7 @@ async function JobPost(values: Job, accessToken: string) {
 }
 
 export default function CreateJob() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
 
   const defaultValues: Job = {
     title: "",

@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { useParams } from "next/navigation";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
@@ -63,7 +63,7 @@ async function updateAuthor(values: AuthorFormValues, accessToken: string) {
 }
 
 export default function UpdateAuthorPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const { id } = useParams() as { id: string };
 
   const defaultValues: AuthorFormValues = {

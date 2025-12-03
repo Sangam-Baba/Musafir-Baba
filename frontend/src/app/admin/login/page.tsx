@@ -4,7 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+// import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,7 @@ const formSchema = z
 
 // ✅ API call function
 async function loginUser(values: z.infer<typeof formSchema>) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -51,7 +52,7 @@ async function loginUser(values: z.infer<typeof formSchema>) {
 
 export default function LoginPage() {
   const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const setAuth = useAdminAuthStore((s) => s.setAuth);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,11 +64,9 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-      // console.log("Admin Login successfully:", data);
       toast.success("Admin Login successful!");
       // 👉 Redirect or reset form here
       const accessToken = data.accessToken;
-      // console.log(accessToken);
       setAuth(accessToken, data.role, data.permissions);
       form.reset();
       setTimeout(() => {

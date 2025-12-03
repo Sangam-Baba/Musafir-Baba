@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import dynamic from "next/dynamic";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ const updateNews = async (values: FormValues, token: string, id: string) => {
 
 export default function EditNews() {
   const { slug } = useParams() as { slug: string };
-  const token = useAuthStore((state) => state.accessToken) ?? "";
+  const token = useAdminAuthStore((state) => state.accessToken) ?? "";
 
   const { data: news, isLoading } = useQuery({
     queryKey: ["news", slug],

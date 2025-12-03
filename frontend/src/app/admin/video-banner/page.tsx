@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import VideoBannerList from "@/components/admin/VideoBannerList";
@@ -35,8 +35,10 @@ const deleteMedia = async (accessToken: string, id: string) => {
   return res.json();
 };
 function MediaVideoBanner() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = React.useState(false);
   const [editId, setEditId] = React.useState<string | null>(null);

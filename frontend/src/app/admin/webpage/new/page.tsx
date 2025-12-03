@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
@@ -57,7 +57,7 @@ const createPage = async (values: WebpageFormData, token: string) => {
 };
 
 export default function CreateWebpage() {
-  const token = useAuthStore((state) => state.accessToken) ?? "";
+  const token = useAdminAuthStore((state) => state.accessToken) ?? "";
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);

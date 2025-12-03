@@ -2,13 +2,12 @@
 
 import React, { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Resolver } from "react-hook-form";
 import { z } from "zod";
 import {
   Form,
@@ -150,12 +149,11 @@ const getDestination = async () => {
 
 // ✅ Component
 export default function Page({ params }: { params: { id: string } }) {
-  const router = useRouter();
   const id = params.id as string;
-  const { accessToken } = useAuthStore();
+  const { accessToken } = useAdminAuthStore();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as Resolver<FormData>,
     defaultValues: {
       title: "",
       destination: "",

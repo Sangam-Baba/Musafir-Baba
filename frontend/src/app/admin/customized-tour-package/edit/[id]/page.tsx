@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { Textarea } from "@/components/ui/textarea";
 import { useParams } from "next/navigation";
@@ -125,7 +125,7 @@ const getDestination = async () => {
 };
 export default function CreatePackagePage() {
   const { id } = useParams() as { id: string };
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);

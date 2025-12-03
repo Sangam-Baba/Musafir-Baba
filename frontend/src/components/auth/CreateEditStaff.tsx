@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -33,18 +33,31 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const createStaff = async (values: FormValues, accessToken: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/register-admin`,
-    {
+const createStaff = async (
+  values: FormValues,
+  accessToken: string,
+  role: string
+) => {
+  let res;
+  if (role === "admin") {
+    res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authprization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(values),
-    }
-  );
+    });
+  } else {
+    res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authprization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(values),
+    });
+  }
   if (!res.ok) throw new Error("Registration failed");
   return res.json();
 };
@@ -52,32 +65,49 @@ const createStaff = async (values: FormValues, accessToken: string) => {
 const updateStaff = async (
   values: FormValues,
   accessToken: string,
-  id: string
+  id: string,
+  role: string
 ) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/update-admin/${id}`,
-    {
+  let res;
+  if (role === "admin") {
+    res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(values),
-    }
-  );
-  if (!res.ok) throw new Error("Update failed");
-  return res.json();
-};
-const getStaff = async (accessToken: string, id: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/admin/${id}`,
-    {
+    });
+  } else {
+    res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/${id}`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-    }
-  );
+      body: JSON.stringify(values),
+    });
+  }
+  if (!res.ok) throw new Error("Update failed");
+  return res.json();
+};
+const getStaff = async (accessToken: string, id: string, role: string) => {
+  let res;
+  if (role === "admin") {
+    res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  } else {
+    res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  }
   if (!res.ok) throw new Error("Failed to fetch staff");
   const data = await res.json();
   return data?.data;
@@ -85,11 +115,13 @@ const getStaff = async (accessToken: string, id: string) => {
 function CreateEditStaff({
   id,
   onClose,
+  role,
 }: {
   id?: string | null;
   onClose: () => void;
+  role: "admin" | "user";
 }) {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as Resolver<FormValues>,
     defaultValues: {
@@ -107,7 +139,7 @@ function CreateEditStaff({
     error,
   } = useQuery({
     queryKey: ["staff", id],
-    queryFn: () => getStaff(accessToken, id as string),
+    queryFn: () => getStaff(accessToken, id as string, role),
     retry: 2,
     enabled: id !== null,
   });
@@ -123,8 +155,8 @@ function CreateEditStaff({
   const mutate = useMutation({
     mutationFn: (values: FormValues) =>
       id
-        ? updateStaff(values, accessToken, id)
-        : createStaff(values, accessToken),
+        ? updateStaff(values, accessToken, id, role)
+        : createStaff(values, accessToken, role),
     onSuccess: () => {
       onClose();
     },
@@ -170,7 +202,7 @@ function CreateEditStaff({
     },
   ];
   return (
-    <div className="flex flex-col max-w-2xl items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
+    <div className="flex flex-col max-w-2xl min-w-xl items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
       {isError && <p>{(error as Error).message}</p>}
       {isLoading ? (
         <p>Loading...</p>
@@ -229,54 +261,58 @@ function CreateEditStaff({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="permissions"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assign Permissions</FormLabel>
-                  <FormControl>
-                    <div className="flex flex-col space-y-2">
-                      {newData.map((item, i) => (
-                        <div key={i}>
-                          <h1 className="text-gray-600">{item.label}</h1>
-                          <div className="flex flex-wrap space-y-2 gap-2 mt-2">
-                            {item.values?.map((cat: string, i: number) => (
-                              <label
-                                key={i}
-                                className="flex items-center space-x-2"
-                              >
-                                <input
-                                  type="checkbox"
-                                  value={cat}
-                                  checked={field.value?.includes(cat)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      field.onChange([
-                                        ...(field.value || []),
-                                        cat,
-                                      ]);
-                                    } else {
-                                      field.onChange(
-                                        field.value?.filter((id) => id !== cat)
-                                      );
-                                    }
-                                  }}
-                                />
-                                <span>
-                                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                                </span>
-                              </label>
-                            ))}
+            {role === "admin" && (
+              <FormField
+                control={form.control}
+                name="permissions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Assign Permissions</FormLabel>
+                    <FormControl>
+                      <div className="flex flex-col space-y-2">
+                        {newData.map((item, i) => (
+                          <div key={i}>
+                            <h1 className="text-gray-600">{item.label}</h1>
+                            <div className="flex flex-wrap space-y-2 gap-2 mt-2">
+                              {item.values?.map((cat: string, i: number) => (
+                                <label
+                                  key={i}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    value={cat}
+                                    checked={field.value?.includes(cat)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        field.onChange([
+                                          ...(field.value || []),
+                                          cat,
+                                        ]);
+                                      } else {
+                                        field.onChange(
+                                          field.value?.filter(
+                                            (id) => id !== cat
+                                          )
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <span>
+                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <div className="grid grid-cols-2 gap-4 px-4">
               <Button className="bg-[#FE5300] hover:bg-[#FE5300]" type="submit">
                 Submit

@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/store/useAuthStore";
+// import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
 
@@ -12,7 +13,7 @@ export default function AdminProtected({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { accessToken, refreshAccessToken, clearAuth } = useAuthStore();
+  const { accessToken, refreshAccessToken, clearAuth } = useAdminAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function AdminProtected({
         // Step 1: If no token in store, try refresh
         if (!token) {
           await refreshAccessToken();
-          token = useAuthStore.getState().accessToken;
+          token = useAdminAuthStore.getState().accessToken;
         }
 
         // Step 2: If still no token → logout & redirect
@@ -41,7 +42,7 @@ export default function AdminProtected({
 
         // Step 3: Verify token with /auth/me
         const meRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/me`,
           {
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include",
@@ -63,7 +64,7 @@ export default function AdminProtected({
         // Step 4: If unauthorized, try one refresh + retry
         if (meRes.status === 401) {
           await refreshAccessToken();
-          const newToken = useAuthStore.getState().accessToken;
+          const newToken = useAdminAuthStore.getState().accessToken;
 
           if (!newToken) {
             clearAuth();

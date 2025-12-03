@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner"; // or any toast library
 import { Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import DestinationList from "@/components/admin/DestinationList";
 
 interface Destination {
@@ -17,8 +17,10 @@ interface Destination {
 }
 
 export default function DestinationPage() {
-  const token = useAuthStore((state) => state.accessToken);
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const token = useAdminAuthStore((state) => state.accessToken);
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const [destination, setDestinations] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();

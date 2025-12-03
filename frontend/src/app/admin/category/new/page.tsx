@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
 import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
@@ -76,7 +76,8 @@ const getPackages = async () => {
   return data?.data.packages;
 };
 export default function CreateCategory() {
-  const accessToken: string = useAuthStore((state) => state.accessToken) || "";
+  const accessToken: string =
+    useAdminAuthStore((state) => state.accessToken) || "";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import PackagesList from "@/components/admin/PackagesList";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 interface Batch {
   startDate: string;
   endDate: string;
@@ -91,8 +91,10 @@ const getAllPackages = async () => {
 };
 function PackagePage() {
   const router = useRouter();
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["packages"],
     queryFn: getAllPackages,

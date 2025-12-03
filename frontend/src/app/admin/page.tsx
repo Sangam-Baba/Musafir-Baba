@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+// import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader } from "@/components/custom/loader";
 import Link from "next/link";
@@ -110,8 +111,10 @@ const getLatestActivity = async (accessToken: string) => {
   return data?.data ?? {};
 };
 function AdminDashBoard() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const [start, setStart] = React.useState<string>("");
   const [end, setEnd] = React.useState<string>("");
 

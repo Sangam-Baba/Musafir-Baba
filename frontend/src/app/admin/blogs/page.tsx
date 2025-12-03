@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ListTable from "@/components/admin/ListTable";
 import { toast } from "sonner"; // or any toast library
 import { Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 interface Blog {
   _id: string;
@@ -18,8 +18,10 @@ interface Blog {
 }
 
 export default function BlogsPage() {
-  const token = useAuthStore((state) => state.accessToken);
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const token = useAdminAuthStore((state) => state.accessToken);
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();

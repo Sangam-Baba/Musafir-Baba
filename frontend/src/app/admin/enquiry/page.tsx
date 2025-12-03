@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader } from "@/components/custom/loader";
 import EnquiryList from "@/components/admin/EnquriyList";
 import { exportToCSV } from "@/utils/exportToCSV";
@@ -33,8 +33,10 @@ interface QueryResponse {
   data: Enquiry[];
 }
 function EnquiryPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
     queryKey: ["enquiry"],
     queryFn: () => getAllEnquiry(accessToken),

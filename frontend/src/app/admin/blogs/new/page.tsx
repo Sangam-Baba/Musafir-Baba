@@ -5,7 +5,7 @@ import { useForm, Resolver } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
@@ -13,7 +13,6 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
 });
 import ImageUploader from "@/components/admin/ImageUploader";
 import React from "react";
-import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -98,7 +97,7 @@ const createBlog = async (
 };
 
 export default function CreateBlog() {
-  const token = useAuthStore((state) => state.accessToken) ?? "";
+  const token = useAdminAuthStore((state) => state.accessToken) ?? "";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as Resolver<z.infer<typeof formSchema>>,

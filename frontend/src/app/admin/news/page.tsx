@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ListTable from "@/components/admin/ListTable";
 import { toast } from "sonner"; // or any toast library
 import { Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 interface News {
   _id: string;
@@ -18,8 +18,10 @@ interface News {
 }
 
 export default function NewsPage() {
-  const token = useAuthStore((state) => state.accessToken);
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const token = useAdminAuthStore((state) => state.accessToken);
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();

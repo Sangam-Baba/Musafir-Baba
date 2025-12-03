@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { X } from "lucide-react";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
@@ -75,7 +75,7 @@ async function createVisa(values: Visa, accessToken: string) {
 }
 
 export default function CreateVisaPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);

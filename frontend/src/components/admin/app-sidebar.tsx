@@ -44,7 +44,7 @@ import {
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
 import { FaChevronCircleDown } from "react-icons/fa";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 const NAV_GROUPS = [
   {
@@ -189,7 +189,7 @@ const NAV_GROUPS = [
 ];
 
 export function AdminSidebar() {
-  const permissions = useAuthStore((s) => s.permissions) as string[];
+  const permissions = useAdminAuthStore((s) => s.permissions) as string[];
   const pathname = usePathname();
 
   const filteredNavGroups = NAV_GROUPS.map((group) => ({

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import CategoryList from "@/components/admin/CategoryList";
 
 interface Category {
@@ -18,8 +18,10 @@ interface Category {
 }
 
 export default function CategoryPage() {
-  const token = useAuthStore((state) => state.accessToken);
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const token = useAdminAuthStore((state) => state.accessToken);
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const [category, setCategory] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();

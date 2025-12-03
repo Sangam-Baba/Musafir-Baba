@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 interface AuthorFormValues {
   name: string;
@@ -48,7 +48,7 @@ async function registerAuthor(values: AuthorFormValues, accessToken: string) {
 }
 
 export default function RegisterAuthor() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
 
   const defaultValues: AuthorFormValues = {
     name: "",

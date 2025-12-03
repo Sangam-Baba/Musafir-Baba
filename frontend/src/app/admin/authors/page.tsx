@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import AuthorsList from "@/components/admin/AuthorsList";
 interface Author {
   _id: string;
@@ -32,8 +32,10 @@ const getAllAuthors = async () => {
   return data;
 };
 function AuthorsPage() {
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken);
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const router = useRouter();
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
     queryKey: ["authors"],

@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { useParams } from "next/navigation";
 import { Loader } from "@/components/custom/loader";
 import { useEffect } from "react";
@@ -57,7 +57,7 @@ async function getVisa(id: string, accessToken: string) {
   return data?.data;
 }
 export default function CreateVisaPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const { id } = useParams() as { id: string };
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);

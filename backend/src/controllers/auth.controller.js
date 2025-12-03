@@ -18,34 +18,20 @@ import { verifyEmailTemplate } from "../utils/verifyEmailTemplate.js";
 import { thankYouEmail } from "../utils/thankYouEmail.js";
 import { UAParser } from "ua-parser-js";
 
-function issueTokens(userId, role, permissions, sessionId) {
+function issueTokens(userId, role, sessionId) {
   const accessToken = signAccessToken({
     sub: userId,
     role,
-    permissions,
     sessionId,
   });
   const refreshToken = signRefreshToken({
     sub: userId,
     role,
-    permissions,
     sessionId,
   });
   return { accessToken, refreshToken };
 }
-
-// const parseUserAgent = (ua = "") => {
-//   if (!ua) return "Unknown";
-
-//   const osMatch =
-//     ua.match(/Windows|Mac|Linux|Android|iPhone|iOS/i)?.[0] || "Unknown OS";
-
-//   const browserMatch =
-//     ua.match(/Chrome|Firefox|Safari|Edge|Opera/i)?.[0] || "Unknown Browser";
-
-//   return `${browserMatch} on ${osMatch}`;
-// };
-function parseUserAgent(ua = "") {
+export function parseUserAgent(ua = "") {
   if (!ua) return "Unknown";
 
   const parser = new UAParser(ua);
@@ -156,7 +142,7 @@ const login = async (req, res) => {
     const { accessToken, refreshToken } = issueTokens(
       user._id,
       user.role,
-      user.permissions,
+      // user.permissions,
       sessionId
     );
 
@@ -167,14 +153,14 @@ const login = async (req, res) => {
       path: "/",
     };
 
-    res.cookie("refreshToken", refreshToken, cookieOption);
+    res.cookie("userRefreshToken", refreshToken, cookieOption);
 
     return res.status(200).json({
       success: true,
       message: "User Login Successfully",
       accessToken,
       role: user.role,
-      permissions: user.permissions,
+      // permissions: user.permissions,
     });
   } catch (error) {
     console.log("Login failed ", error.message);
@@ -313,7 +299,7 @@ const resetPassword = async (req, res) => {
 
 const refresh = async (req, res) => {
   try {
-    const token = req.cookies?.refreshToken;
+    const token = req.cookies?.userRefreshToken;
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -326,7 +312,7 @@ const refresh = async (req, res) => {
     const { accessToken, refreshToken } = issueTokens(
       payload.sub,
       payload.role,
-      payload.permissions,
+      // payload.permissions,
       payload.sessionId
     );
     const cookieOptions = {
@@ -336,7 +322,7 @@ const refresh = async (req, res) => {
       path: "/",
     };
 
-    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("userRefreshToken", refreshToken, cookieOptions);
 
     return res.json({
       accessToken,
@@ -397,7 +383,7 @@ const logout = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
     };
-    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("userRefreshToken", cookieOptions);
     const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
     await AuthLog.create({
       userId: req?.user?.sub,

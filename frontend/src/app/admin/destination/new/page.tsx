@@ -1,10 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
 import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
@@ -107,10 +107,11 @@ const create = async (values: z.infer<typeof formSchema>, token: string) => {
 };
 
 export default function CreateDestination() {
-  const accessToken: string = useAuthStore((state) => state.accessToken) || "";
+  const accessToken: string =
+    useAdminAuthStore((state) => state.accessToken) || "";
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as Resolver<z.infer<typeof formSchema>>,
     defaultValues: {
       name: "",
       description: "",

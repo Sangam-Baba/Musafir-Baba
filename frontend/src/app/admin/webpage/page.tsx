@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -33,8 +33,10 @@ const getAllWebPage = async (accessToken: string) => {
   return data;
 };
 function WebPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const router = useRouter();
 
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({

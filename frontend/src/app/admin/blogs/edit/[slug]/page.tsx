@@ -7,12 +7,11 @@ import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
 import dynamic from "next/dynamic";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/custom/loader";
-import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
@@ -101,7 +100,7 @@ const updateBlog = async (values: FormValues, token: string, id: string) => {
 
 export default function EditBlog() {
   const { slug } = useParams() as { slug: string };
-  const token = useAuthStore((state) => state.accessToken) ?? "";
+  const token = useAdminAuthStore((state) => state.accessToken) ?? "";
 
   const { data: blog, isLoading } = useQuery({
     queryKey: ["blog", slug],

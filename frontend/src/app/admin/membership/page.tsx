@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import MembershipList from "@/components/admin/MembershipList";
 interface Membership {
   _id: string;
@@ -30,8 +30,10 @@ const getAllMemberships = async (accessToken: string) => {
   return data;
 };
 function MembershipPage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const router = useRouter();
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
     queryKey: ["membership"],

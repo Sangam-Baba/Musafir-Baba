@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/custom/loader";
 import { useRouter } from "next/navigation";
 import JobList from "@/components/admin/JobList";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 
 interface Job {
@@ -24,8 +24,10 @@ const getAllJobs = async () => {
 };
 function CareerPage() {
   const router = useRouter();
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const { data, isLoading, isError } = useQuery({
     queryKey: ["jobs"],
     queryFn: getAllJobs,

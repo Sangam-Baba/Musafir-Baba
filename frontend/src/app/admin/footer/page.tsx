@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import FooterList from "@/components/admin/FooterList";
 interface Footer {
   _id: string;
@@ -33,8 +33,10 @@ const getAllFooters = async (token: string) => {
   return data;
 };
 function FooterPage() {
-  const token = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const token = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
   const router = useRouter();
   const { data, isLoading, isError, error } = useQuery<QueryResponse>({
     queryKey: ["authors"],

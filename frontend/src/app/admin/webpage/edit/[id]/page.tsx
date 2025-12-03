@@ -3,7 +3,7 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
@@ -21,30 +21,6 @@ import { Reviews } from "../../../holidays/new/page";
 import { deleteReview } from "../../../holidays/new/page";
 import { getReviewsByIds } from "../../../holidays/new/page";
 import { WebpageFormData } from "../../new/page";
-
-// interface FormData {
-//   title: string;
-//   content: string;
-//   slug: string;
-//   parent: string;
-//   metaTitle?: string;
-//   metaDescription?: string;
-//   keywords?: string[];
-//   schemaType?: string;
-//   coverImage?: {
-//     url?: string;
-//     public_id?: string;
-//     alt?: string;
-//     width?: number;
-//     height?: number;
-//   };
-//   status: string;
-//   excerpt?: string;
-//   faqs?: {
-//     question: string;
-//     answer: string;
-//   }[];
-// }
 
 const getWebpage = async (id: string) => {
   const res = await fetch(
@@ -72,7 +48,7 @@ const updatePage = async (
 };
 
 export default function UpdateWebpage() {
-  const token = useAuthStore((state) => state.accessToken) ?? "";
+  const token = useAdminAuthStore((state) => state.accessToken) ?? "";
   const { id } = useParams();
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);

@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
@@ -186,7 +186,7 @@ export const deleteReview = async (accessToken: string, id: string) => {
   return res.json();
 };
 export default function CreatePackagePage() {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
   const [batchDetails, setBatchDetails] = useState<Batch[]>([]);

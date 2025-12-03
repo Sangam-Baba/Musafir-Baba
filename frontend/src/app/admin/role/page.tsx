@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import UsersList from "@/components/admin/UsersList";
 import CreateEditStaff from "@/components/auth/CreateEditStaff";
 import { Button } from "@/components/ui/button";
@@ -42,16 +42,30 @@ const getAllUsers = async (
   accessToken: string,
   role: string
 ) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/getAllUsers/?email=${email}&role=${role}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
+  let res;
+  if (role === "admin") {
+    res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/admin/?email=${email}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  } else {
+    res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/auth/getAllUsers/?email=${email}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+  }
   if (!res.ok) throw new Error("Failed to fetch users", { cause: res });
   const data = await res.json();
   return data;
@@ -63,8 +77,10 @@ function UsersPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const permissions = useAuthStore((state) => state.permissions) as string[];
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const permissions = useAdminAuthStore(
+    (state) => state.permissions
+  ) as string[];
 
   const { data, isLoading, isError, error, refetch } = useQuery<QueryResponse>({
     queryKey: ["users", searchEmail, searchRole],
@@ -84,17 +100,25 @@ function UsersPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/blockUser/${id}`,
-        {
+      let res;
+      if (searchRole === "admin") {
+        res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-        }
-      );
-      if (!res.ok) throw new Error("Failed to delete user");
+        });
+      } else {
+        res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      }
+      if (!res.ok) throw new Error(`Failed to delete ${searchRole} `);
       toast.success("User: Deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["users"] });
     } catch (error) {
@@ -148,6 +172,7 @@ function UsersPage() {
                   setIsOpen(false);
                 }}
                 id={editId}
+                role={searchRole as "admin" | "user"}
               />
             </div>
           )}
