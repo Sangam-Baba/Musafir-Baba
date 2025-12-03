@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { UploadedFile } from "../admin/ImageUploader";
 
 export default function MediaPicker({
@@ -13,7 +13,7 @@ export default function MediaPicker({
   onClose: () => void;
   onSelect: (media: UploadedFile) => void;
 }) {
-  const accessToken = useAuthStore((s) => s.accessToken) as string;
+  const accessToken = useAdminAuthStore((s) => s.accessToken) as string;
 
   const { data: media, isLoading } = useQuery({
     queryKey: ["media-picker"],

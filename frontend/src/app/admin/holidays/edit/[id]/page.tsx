@@ -301,6 +301,7 @@ export default function CreatePackagePage() {
         ...pkg,
         destination: pkg.destination?._id.toString() || "",
         batch: batchIds,
+        keywords: pkg.keywords.map((k: string) => k.trim()).join(", "),
         reviews: reviewsIds,
       });
       if (batchIds.length > 0) {
@@ -991,8 +992,15 @@ export default function CreatePackagePage() {
                   <FormControl>
                     <Input
                       type="text"
+                      value={
+                        Array.isArray(field.value)
+                          ? field.value.join(", ")
+                          : field.value || ""
+                      }
                       onChange={(e) =>
-                        field.onChange(e.target.value.split(","))
+                        field.onChange(
+                          e.target.value.split(",").map((item) => item.trim())
+                        )
                       }
                       placeholder="Enter SEO Meta Keywords"
                     />

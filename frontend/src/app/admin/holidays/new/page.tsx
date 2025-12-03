@@ -937,7 +937,9 @@ export default function CreatePackagePage() {
                     <Input
                       type="text"
                       onChange={(e) =>
-                        field.onChange(e.target.value.split(","))
+                        field.onChange(
+                          e.target.value.split(",").map((item) => item.trim())
+                        )
                       }
                       placeholder="Enter SEO Meta Keywords"
                     />

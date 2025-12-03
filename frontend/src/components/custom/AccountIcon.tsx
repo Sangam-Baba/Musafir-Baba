@@ -19,9 +19,7 @@ export function AccountIcon() {
       {isAuthenticated ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <CircleUserRound />
-            </Button>
+            <Button variant="outline">Hi! Sangam</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuGroup>

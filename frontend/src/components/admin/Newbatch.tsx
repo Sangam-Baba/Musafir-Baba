@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 interface Batch {
   name: string;
@@ -71,7 +71,7 @@ export const CreateBatchModal = ({
   onClose: () => void;
   existingBatch: string | null;
 }) => {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
 
   const [form, setForm] = useState<Batch>({
     name: "",

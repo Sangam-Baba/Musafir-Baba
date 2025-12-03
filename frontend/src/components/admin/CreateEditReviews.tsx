@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Reviews } from "@/app/admin/holidays/new/page";
 import { Textarea } from "../ui/textarea";
 
@@ -61,7 +61,7 @@ export const CreateReviewsModal = ({
   existingReviews: string | null;
   type?: string;
 }) => {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
 
   const [form, setForm] = useState<Reviews>({
     name: "",

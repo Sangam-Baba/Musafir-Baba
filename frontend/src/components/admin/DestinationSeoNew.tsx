@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import type { Resolver } from "react-hook-form";
 import {
@@ -116,7 +116,7 @@ function DestinationSeoNew({
   onClose: () => void;
   onSuccess?: () => void;
 }) {
-  const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
