@@ -9,7 +9,18 @@ export const metadata: Metadata = {
     canonical: "https://musafirbaba.com/visa",
   },
 };
+const getVisa = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`, {
+    next: {
+      revalidate: 60,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch visas");
+  const data = await res.json();
+  return data?.data; // []
+};
 
-export default function VisaMainPage() {
-  return <VisaClientPage />;
+export default async function VisaMainPage() {
+  const visa = await getVisa();
+  return <VisaClientPage visa={visa} />;
 }

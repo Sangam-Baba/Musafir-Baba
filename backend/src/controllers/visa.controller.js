@@ -23,6 +23,9 @@ const getAllVisa = async (req, res) => {
     if (req.query?.country)
       filter.country = { $regex: req.query.country, $options: "i" };
     if (req.query?.isActive) filter.isActive = req.query.isActive;
+    if (req.query?.minPrice) filter.cost = { $gte: req.query.minPrice };
+    if (req.query?.maxPrice) filter.cost = { $lte: req.query.maxPrice };
+    if (req.query?.visaType) filter.visaType = req.query.visaType;
     const visa = await Visa.find(filter)
       .sort({ createdAt: -1 })
       .select("-content -faqs ")
