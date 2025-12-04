@@ -34,13 +34,10 @@ export const getCategory = async (): Promise<CategoryResponse> => {
   if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();
 };
-const getPackages = async (page: number) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?limit=12&page=${page}`,
-    {
-      next: { revalidate: 60 },
-    }
-  );
+const getPackages = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages`, {
+    next: { revalidate: 120 },
+  });
   if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();
 };
@@ -50,7 +47,7 @@ export default async function PackagesPage({
   searchParams: { page: number };
 }) {
   const page = searchParams.page || 1;
-  const data = await getPackages(page);
+  const data = await getPackages();
   const categorydata = await getCategory();
   const categories = categorydata?.data ?? [];
 
