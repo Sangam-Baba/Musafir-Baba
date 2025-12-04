@@ -5,8 +5,6 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import PackageCard from "@/components/custom/PackageCard";
 import { Package } from "./[categorySlug]/PackageSlugClient";
 import { notFound } from "next/navigation";
-// import Pagination from "@/components/common/Pagination";
-// import { useRouter } from "next/navigation";
 import { Category } from "./page";
 import { FilterIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -159,6 +157,7 @@ export default function PackagesClient({
               type="number"
               name="duration"
               onChange={handleChange}
+              value={filter.duration}
               min={1}
               max={10}
               className="cursor-pointer"

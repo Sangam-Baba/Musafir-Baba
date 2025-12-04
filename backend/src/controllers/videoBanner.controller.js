@@ -76,7 +76,7 @@ const deleteVideoBanner = async (req, res) => {
 
 const getAllVideoBanner = async (req, res) => {
   try {
-    const videoBanner = await VideoBanner.find({}).sort({ createdAt: -1 });
+    const videoBanner = await VideoBanner.find({}).sort({ createdAt: 1 });
     res.status(200).json({
       success: true,
       message: "Video Banner fetched successfully",

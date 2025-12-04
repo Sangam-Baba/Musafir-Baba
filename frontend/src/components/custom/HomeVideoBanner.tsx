@@ -45,10 +45,10 @@ function HomeVideoBanner({ data }: { data: VideoBannerType[] }) {
       >
         <CarouselContent>
           {data?.map((item: VideoBannerType, index: number) => (
-            <CarouselItem key={index}>
+            <CarouselItem key={index} className="relative">
               <a
                 href={item.link}
-                className="relative w-full overflow-hidden rounded-lg"
+                className=" w-full overflow-hidden rounded-lg"
               >
                 <video
                   className="w-full h-full object-cover rounded-xl"
@@ -63,10 +63,9 @@ function HomeVideoBanner({ data }: { data: VideoBannerType[] }) {
                 >
                   <source src={item.media?.url} />
                 </video>
-
-                <CarouselPrevious className="absolute left-3 top-1/2 -translate-y-1/2 z-20" />
-                <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-20" />
               </a>
+              <CarouselPrevious className="absolute left-7 top-1/2 -translate-y-1/2 z-20" />
+              <CarouselNext className="absolute right-3 top-1/2 -translate-y-1/2 z-20" />
             </CarouselItem>
           ))}
         </CarouselContent>

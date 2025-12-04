@@ -41,12 +41,7 @@ const getPackages = async () => {
   if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();
 };
-export default async function PackagesPage({
-  searchParams,
-}: {
-  searchParams: { page: number };
-}) {
-  const page = searchParams.page || 1;
+export default async function PackagesPage() {
   const data = await getPackages();
   const categorydata = await getCategory();
   const categories = categorydata?.data ?? [];
