@@ -1,12 +1,13 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
-import PackageCard from "@/components/custom/PackageCard";
 import { notFound } from "next/navigation";
 import React from "react";
 import {
   getPackageByDestinationSlug,
   CustomizedPackageInterface,
 } from "@/app/(user)/holidays/customised-tour-packages/[destination]/page";
+import { getCategory } from "@/app/(user)/holidays/page";
+import MixedPackagesClient from "../../holidays/PackagesClient";
 
 interface Destination {
   _id: string;
@@ -103,6 +104,7 @@ export async function generateMetadata({
 }) {
   const { slug } = params;
   const packages = await getGroupPackageByDestinationSlug(slug);
+
   if (!packages || packages.length === 0) return null;
   const meta = packages[0]?.destination;
   return {
@@ -123,11 +125,20 @@ async function DestinationPage({ params }: { params: { slug: string } }) {
   const newCustomizedPkg = customizedPkg.map(
     (pkg: CustomizedPackageInterface) => ({
       ...pkg,
+      price: pkg.plans[0].price,
       mainCategory: { slug: "customised-tour-packages" },
     })
   );
+  const newGroupPkg = packages.map((pkg: Package) => ({
+    ...pkg,
+    price: pkg.batch[0].quad,
+  }));
 
-  const totalPackages = [...packages, ...newCustomizedPkg];
+  const categorydata = await getCategory();
+  const categories = categorydata?.data ?? [];
+
+  const totalCategory = [...categories];
+  const totalPackages = [...newGroupPkg, ...newCustomizedPkg];
   if (!totalPackages || totalPackages.length === 0) return notFound();
   return (
     <section>
@@ -143,35 +154,8 @@ async function DestinationPage({ params }: { params: { slug: string } }) {
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
         <Breadcrumb />
       </div>
-      {/* <div className="w-full flex flex-col items-center justify-center mt-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-center">{`Explore Packages in ${
-          slug.charAt(0).toUpperCase() + slug.slice(1)
-        }`}</h1>
-        <div className="w-20 h-1 bg-[#FE5300] mt-2"></div>
-      </div> */}
       {/* Show packages under this category */}
-      {totalPackages && totalPackages.length > 0 && (
-        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
-          {totalPackages.map((pkg: Package) => (
-            <PackageCard
-              key={pkg._id}
-              pkg={{
-                id: pkg._id,
-                name: pkg.title,
-                slug: pkg.slug,
-                image: pkg.coverImage ? pkg.coverImage.url : "",
-                price: pkg.batch ? pkg.batch[0]?.quad : 9999,
-                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                destination:
-                  pkg.destination.state.charAt(0).toUpperCase() +
-                  pkg.destination.state.slice(1),
-                batch: pkg?.batch ? pkg?.batch : [],
-              }}
-              url={`/holidays/${pkg.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
-            />
-          ))}
-        </div>
-      )}
+      <MixedPackagesClient data={totalPackages} category={totalCategory} />
     </section>
   );
 }

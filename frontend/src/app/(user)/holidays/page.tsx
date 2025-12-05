@@ -1,6 +1,11 @@
-import PackagesClient from "./PackagesClient";
+import MixedPackagesClient from "./PackagesClient";
 import { Metadata } from "next";
 import Script from "next/script";
+import { getAllCustomizedPackages } from "./customised-tour-packages/page";
+import { Package } from "./[categorySlug]/PackageSlugClient";
+import { CustomizedPackageInterface } from "./customised-tour-packages/[destination]/page";
+import Hero from "@/components/custom/Hero";
+import Breadcrumb from "@/components/common/Breadcrumb";
 
 export interface Category {
   _id: string;
@@ -43,6 +48,7 @@ const getPackages = async () => {
 };
 export default async function PackagesPage() {
   const data = await getPackages();
+  const customizedPkgs = await getAllCustomizedPackages();
   const categorydata = await getCategory();
   const categories = categorydata?.data ?? [];
 
@@ -106,14 +112,35 @@ export default async function PackagesPage() {
       },
     },
   };
-
+  const finalCustomizedPkgs = customizedPkgs.map(
+    (pkg: CustomizedPackageInterface) => ({
+      ...pkg,
+      mainCategory: { slug: "customised-tour-packages" },
+      price: pkg.plans[0].price,
+    })
+  );
+  const finalGroupPkgs = data?.data.map((pkg: Package) => ({
+    ...pkg,
+    price: pkg.batch[0].quad,
+  }));
+  const totalPkgs = [...finalCustomizedPkgs, ...finalGroupPkgs];
   return (
-    <>
-      <PackagesClient data={data} category={totalCategory} />
+    <div>
+      <Hero
+        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1761815676/tour_package_k5ijnt.webp"
+        title="Holidays"
+        align="center"
+        height="lg"
+        overlayOpacity={100}
+      />
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <Breadcrumb />
+      </div>
+      <MixedPackagesClient data={totalPkgs} category={totalCategory} />
       {/* JSON-LD Schema */}
       <Script id="json-schema" type="application/ld+json">
         {JSON.stringify(schema)}
       </Script>
-    </>
+    </div>
   );
 }

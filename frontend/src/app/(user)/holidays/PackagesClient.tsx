@@ -1,12 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Hero from "@/components/custom/Hero";
-import Breadcrumb from "@/components/common/Breadcrumb";
 import PackageCard from "@/components/custom/PackageCard";
 import { Package } from "./[categorySlug]/PackageSlugClient";
 import { notFound } from "next/navigation";
 import { Category } from "./page";
-import { FilterIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,47 +18,62 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface PackageResponse {
-  data: Package[];
-  total: number;
-  page: number;
-  pages: number;
+interface CombinedInterface extends Package {
+  price?: number;
 }
 
-export default function PackagesClient({
+export default function MixedPackagesClient({
   data,
   category,
 }: {
-  data: PackageResponse;
+  data: CombinedInterface[];
   category: Category[];
 }) {
   const [filter, setFilter] = useState({
     search: "",
     category: "",
+    sort: "",
     price: 50000,
     duration: 10,
   });
-  const [filteredPkgs, setFilteredPkgs] = useState<Package[]>(data?.data ?? []);
+  const [filteredPkgs, setFilteredPkgs] = useState<CombinedInterface[]>(
+    data ?? []
+  );
 
   useEffect(() => {
-    const result = data?.data?.filter((pkg: Package) => {
-      return (
-        (pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+    const result = data
+      ?.filter((pkg: CombinedInterface) => {
+        const matchesSearch =
+          pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
           pkg.destination?.state
             ?.toLowerCase()
             .includes(filter.search.toLowerCase()) ||
           pkg.destination?.country
-            .toLowerCase()
-            .includes(filter.search.toLowerCase())) &&
-        pkg.mainCategory.slug
-          ?.toLowerCase()
-          .includes(filter.category.toLowerCase()) &&
-        pkg.batch[0].quad <= filter.price &&
-        pkg.duration?.days <= filter.duration
+            ?.toLowerCase()
+            .includes(filter.search.toLowerCase());
+
+        const matchesCategory = filter.category
+          ? pkg.mainCategory.slug?.toLowerCase() ===
+            filter.category.toLowerCase()
+          : true;
+
+        const matchesPrice = (pkg.price ?? 0) <= filter.price;
+
+        const matchesDuration = pkg.duration?.days <= filter.duration;
+
+        return (
+          matchesSearch && matchesCategory && matchesPrice && matchesDuration
+        );
+      })
+      .sort((a, b) =>
+        filter.sort === "asc"
+          ? (a.price ?? 0) - (b.price ?? 0)
+          : (b.price ?? 0) - (a.price ?? 0)
       );
-    });
+
     setFilteredPkgs(result);
-  }, [filter, data?.data]);
+  }, [filter, data]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilter((prev) => ({
@@ -69,29 +81,37 @@ export default function PackagesClient({
       [name]: name === "price" || name === "duration" ? Number(value) : value,
     }));
   };
-  if (data?.data?.length === 0) return notFound();
+  if (data?.length === 0) return notFound();
 
   return (
     <section>
-      <Hero
-        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1761815676/tour_package_k5ijnt.webp"
-        title="Holidays"
-        align="center"
-        height="lg"
-        overlayOpacity={100}
-      />
-      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-        <Breadcrumb />
-      </div>
       <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-end my-8">
         {/* filter */}
-        <div className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border md:border-none rounded-xl shadow-sm">
-          {/* Icon */}
-          <div className="flex items-center gap-2">
-            <FilterIcon size={22} className="text-[#FE5300]" />
-            <span className="font-semibold text-gray-700 md:hidden">
-              Filters
-            </span>
+        <div className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border md:border-md border-[#FE5300] rounded-xl shadow-sm">
+          {/* Visa Type Dropdown */}
+          <div className="w-full md:max-w-[150px]">
+            <Select
+              value={filter.sort}
+              onValueChange={(value) =>
+                setFilter((prev) => ({ ...prev, sort: value }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Sort ↑ ↓" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Sort By</SelectLabel>
+
+                  <SelectItem key={1} value="desc">
+                    High to Low
+                  </SelectItem>
+                  <SelectItem key={2} value="asc">
+                    Low to High
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Country Search */}
@@ -129,12 +149,13 @@ export default function PackagesClient({
           </div>
 
           {/* Price Slider */}
-          <div className="flex flex-col w-full md:max-w-[250px]">
-            <Label className="text-gray-500 text-sm">
-              Budget:{" "}
+          <div className="flex flex-col w-full md:max-w-[200px]">
+            <Label className="text-black-500 text-sm whitespace-nowrap">
+              Budget:
               <span className="font-semibold text-[#FE5300]">
                 ₹{filter.price.toLocaleString()}
               </span>
+              per person
             </Label>
             <Input
               type="range"
@@ -142,25 +163,26 @@ export default function PackagesClient({
               onChange={handleChange}
               min={0}
               max={50000}
-              className="cursor-pointer"
+              className="cursor-pointer accent-[#FE5300]"
             />
           </div>
           {/* Duration Slider */}
-          <div className="flex flex-col w-full md:max-w-[50px]">
-            <Label className="text-gray-500 text-sm">
-              Days:{" "}
+          <div className="flex flex-col w-full md:max-w-[150px]">
+            <Label className="text-black-500 text-sm">
+              Duration:{" "}
               <span className="font-semibold text-[#FE5300]">
                 {filter.duration.toLocaleString()}
               </span>
+              Days
             </Label>
             <Input
-              type="number"
+              type="range"
               name="duration"
               onChange={handleChange}
               value={filter.duration}
               min={1}
               max={10}
-              className="cursor-pointer"
+              className="cursor-pointer accent-[#FE5300]"
             />
           </div>
 
@@ -171,11 +193,12 @@ export default function PackagesClient({
               const reset = {
                 search: "",
                 category: "",
+                sort: "",
                 price: 50000,
                 duration: 10,
               };
               setFilter(reset);
-              setFilteredPkgs(data?.data);
+              setFilteredPkgs(data);
             }}
             className="
       w-full md:w-auto 
@@ -193,7 +216,7 @@ export default function PackagesClient({
       {/* Show packages under this category */}
       {filteredPkgs && filteredPkgs.length > 0 ? (
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
-          {filteredPkgs?.map((pkg: Package) => (
+          {filteredPkgs?.map((pkg: CombinedInterface) => (
             <PackageCard
               key={pkg._id}
               pkg={{
@@ -201,8 +224,10 @@ export default function PackagesClient({
                 name: pkg.title,
                 slug: pkg.slug,
                 image: pkg.coverImage?.url ?? "/Hero1.jpg",
-                price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
-                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                price: pkg?.price ?? 9999,
+                duration: pkg.duration?.nights
+                  ? `${pkg.duration?.nights ?? 0}N/${pkg.duration.days}D`
+                  : `${pkg.duration.days}D`,
                 destination: pkg.destination?.name ?? "",
                 batch: pkg?.batch ? pkg?.batch : [],
               }}

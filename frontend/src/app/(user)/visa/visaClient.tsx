@@ -148,7 +148,7 @@ function VisaClientPage({ visa }: { visa: Visa[] }) {
               onChange={handleChange}
               min={0}
               max={35000}
-              className="cursor-pointer"
+              className="cursor-pointer accent-[#FE5300]"
             />
           </div>
 

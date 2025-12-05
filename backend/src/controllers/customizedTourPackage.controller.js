@@ -1,6 +1,7 @@
 import { CustomizedTourPackage } from "../models/CustomizedTourPackage.js";
 import mongoose from "mongoose";
 import { Destination } from "../models/Destination.js";
+
 const createCustomizedTourPackage = async (req, res) => {
   try {
     const { title, slug, plans, destination } = req.body;
@@ -62,6 +63,7 @@ const getAllCustomizedTourPackages = async (req, res) => {
           { country: req.query.destination },
           { state: req.query.destination },
           { city: req.query.destination },
+          { slug: req.query.destination },
         ],
       }).select("_id");
       if (!dest) {

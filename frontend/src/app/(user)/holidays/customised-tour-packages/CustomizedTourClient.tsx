@@ -1,6 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import PackageCard from "@/components/custom/PackageCard";
+import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, MapPin } from "lucide-react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,71 +16,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Batch {
-  _id: string;
-  startDate: string;
-  endDate: string;
-  quad: number;
-  triple: number;
-  double: number;
-  child: number;
-  quadDiscount: number;
-  tripleDiscount: number;
-  doubleDiscount: number;
-  childDiscount: number;
-}
-interface CoverImage {
-  url: string;
-  public_id: string;
-  width: number;
-  height: number;
-  alt: string;
-}
-export interface Package {
-  _id: string;
-  title: string;
-  slug: string;
-  coverImage: CoverImage;
-  mainCategory: Category;
-  batch: Batch[];
-  duration: {
-    days: number;
-    nights: number;
-  };
-  destination: Destination;
-  isFeatured: boolean;
-  status: "draft" | "published";
-}
-interface Destination {
-  _id: string;
-  country: string;
-  state: string;
-  name: string;
-  slug: string;
-}
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-  coverImage: CoverImage;
-  description: string;
-}
-
-function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
+import { CustomizedPackageInterface } from "./page";
+function CustomizedTourClient({
+  allPkgs,
+}: {
+  allPkgs: CustomizedPackageInterface[];
+}) {
+  // const { packagesData } = pkg;
   const [filter, setFilter] = useState({
     search: "",
     sort: "",
     price: 50000,
     duration: 10,
   });
-  const [filteredPkgs, setFilteredPkgs] = useState<Package[]>(
-    packagesData ?? []
-  );
+  const [filteredPkgs, setFilteredPkgs] = useState<
+    CustomizedPackageInterface[]
+  >(allPkgs ?? []);
 
   useEffect(() => {
-    const result = packagesData
-      .filter((pkg: Package) => {
+    const result = allPkgs
+      ?.filter((pkg: CustomizedPackageInterface) => {
         return (
           (pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
             pkg.destination?.state
@@ -86,17 +44,17 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
             pkg.destination?.country
               .toLowerCase()
               .includes(filter.search.toLowerCase())) &&
-          pkg.batch[0].quad <= filter.price &&
+          pkg.plans[0].price <= filter.price &&
           pkg.duration?.days <= filter.duration
         );
       })
       .sort((a, b) =>
         filter.sort === "asc"
-          ? (a.batch[0].quad ?? 0) - (b.batch[0].quad ?? 0)
-          : (b.batch[0].quad ?? 0) - (a.batch[0].quad ?? 0)
+          ? (a.plans[0].price ?? 0) - (b.plans[0].price ?? 0)
+          : (b.plans[0].price ?? 0) - (a.plans[0].price ?? 0)
       );
     setFilteredPkgs(result);
-  }, [filter, packagesData]);
+  }, [filter, allPkgs]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilter((prev) => ({
@@ -104,10 +62,8 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
       [name]: name === "price" || name === "duration" ? Number(value) : value,
     }));
   };
-  const packages = packagesData ?? [];
-
   return (
-    <section className="w-full">
+    <section className="w-full mb-12">
       {/* FIlter */}
       <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-end my-8">
         {/* filter */}
@@ -196,7 +152,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
                 duration: 10,
               };
               setFilter(reset);
-              setFilteredPkgs(packages);
+              setFilteredPkgs(allPkgs);
             }}
             className="
       w-full md:w-auto 
@@ -211,34 +167,64 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
         </div>
       </div>
       {/* Show packages under this category */}
-      {packages && filteredPkgs.length > 0 ? (
-        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-20">
-          {filteredPkgs.map((pkg) => (
-            <PackageCard
+      {filteredPkgs && filteredPkgs.length > 0 && (
+        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
+          {filteredPkgs.map((pkg: CustomizedPackageInterface) => (
+            <Link
               key={pkg._id}
-              pkg={{
-                id: pkg._id,
-                name: pkg.title,
-                slug: pkg.slug,
-                image: pkg.coverImage?.url ?? "",
-                price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
-                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                destination: pkg.destination?.name ?? "",
-                batch: pkg?.batch ? pkg?.batch : [],
-              }}
-              url={`/holidays/${pkg?.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
-            />
+              href={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
+              className="cursor-pointer"
+            >
+              <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
+                {/* Image + Price tag */}
+                <div className="relative h-56 w-full">
+                  <Image
+                    src={pkg.coverImage?.url}
+                    alt={pkg.coverImage?.alt}
+                    width={500}
+                    height={500}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute top-3 right-3 bg-[#FE5300] text-white px-3 py-1 rounded-full font-semibold text-sm shadow">
+                    ₹{pkg.plans[0].price.toLocaleString("en-IN")}/- onwards
+                  </div>
+                </div>
+
+                <CardContent className="p-4 space-y-3">
+                  {/* Title */}
+                  <h3 className="font-semibold text-lg line-clamp-1">
+                    {pkg.title}
+                  </h3>
+
+                  {/* Duration & Location */}
+                  <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                      {pkg.duration?.nights ? (
+                        <span>
+                          {pkg.duration?.nights}N/{pkg.duration?.days}D,
+                        </span>
+                      ) : (
+                        <span>{pkg.duration?.days}D</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4 text-blue-600" />
+                      <span>{pkg.destination?.name}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-600 mt-2 line-clamp-1">
+                    Any Date of your choice
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
-        </div>
-      ) : (
-        <div className="w-full flex flex-col items-center justify-center my-20">
-          <h1 className="text-3xl md:text-4xl font-bold text-center">
-            No Packages Found
-          </h1>
         </div>
       )}
     </section>
   );
 }
 
-export default GroupPkgClient;
+export default CustomizedTourClient;

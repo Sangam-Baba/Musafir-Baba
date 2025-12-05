@@ -1,7 +1,10 @@
 import { Metadata } from "next";
-import SingleCategoryPage from "./PackageSlugClient";
+import GroupPkgClient from "./PackageSlugClient";
 import Script from "next/script";
 import { notFound } from "next/navigation";
+import Hero from "@/components/custom/Hero";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import img1 from "../../../../../public/Hero1.jpg";
 
 interface Props {
   params: { categorySlug: string };
@@ -184,7 +187,20 @@ export default async function Page({ params }: Props) {
   };
   return (
     <>
-      <SingleCategoryPage categoryData={category} packagesData={packages} />
+      <section className="w-full mb-12">
+        <Hero
+          image={packages[0]?.coverImage?.url || img1.src}
+          title={category?.name}
+          description={category?.description}
+          align="center"
+          height="lg"
+          overlayOpacity={100}
+        />
+        <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+          <Breadcrumb />
+        </div>
+      </section>
+      <GroupPkgClient packagesData={packages} />
       <Script id="json-schema" type="application/ld+json">
         {JSON.stringify(schema)}
       </Script>

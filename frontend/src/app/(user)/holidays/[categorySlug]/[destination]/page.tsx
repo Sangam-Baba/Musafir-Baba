@@ -1,40 +1,9 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
-import PackageCard from "@/components/custom/PackageCard";
 import { notFound } from "next/navigation";
 import React from "react";
+import GroupPkgClient from "../PackageSlugClient";
 
-interface Destination {
-  _id: string;
-  name: string;
-  country: string;
-  state: string;
-  city?: string;
-  description: string;
-  coverImage: coverImage;
-  metaTitle: string;
-  metaDescription: string;
-  keywords: string[];
-  slug: string;
-}
-interface Batch {
-  _id: string;
-  quad: number;
-  triple: number;
-  double: number;
-  child: number;
-  startDate: string;
-  endDate: string;
-  quadDiscount: number;
-  tripleDiscount: number;
-  doubleDiscount: number;
-  childDiscount: number;
-}
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-}
 export interface Duration {
   days: number;
   nights: number;
@@ -47,39 +16,7 @@ export interface Itinerary {
   title: string;
   description: string;
 }
-interface coverImage {
-  url: string;
-  public_id: string;
-  alt: string;
-  width?: number;
-  height?: number;
-}
-interface Package {
-  _id: string;
-  title: string;
-  description: string;
-  destination: Destination;
-  mainCategory: Category;
-  coverImage: coverImage;
-  gallery: string[];
-  batch: Batch[];
-  duration: Duration;
-  metaTitle?: string;
-  metaDescription?: string;
-  keywords: string[];
-  maxPeople?: number;
-  highlights: string[];
-  inclusions: string[];
-  exclusions: string[];
-  itinerary: Itinerary[];
-  faqs: Faqs[];
-  isFeatured: boolean;
-  status: "draft" | "published";
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
-  slug: string;
-  __v: number;
-}
+
 export async function getPackageByDestinationSlug(
   categorySlug: string,
   slug: string
@@ -149,26 +86,7 @@ async function DestinationPage({
         <Breadcrumb />
       </div>
       {/* Show packages under this category */}
-      {packages && packages.length > 0 && (
-        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-20">
-          {packages.map((pkg: Package) => (
-            <PackageCard
-              key={pkg._id}
-              pkg={{
-                id: pkg._id,
-                name: pkg.title,
-                slug: pkg.slug,
-                image: pkg.coverImage ? pkg.coverImage.url : "",
-                price: pkg.batch ? pkg.batch[0]?.quad : 9999,
-                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                destination: pkg.destination.name,
-                batch: pkg?.batch ? pkg?.batch : [],
-              }}
-              url={`/holidays/${categorySlug}/${destination}/${pkg.slug}`}
-            />
-          ))}
-        </div>
-      )}
+      <GroupPkgClient packagesData={packages} />
     </section>
   );
 }
