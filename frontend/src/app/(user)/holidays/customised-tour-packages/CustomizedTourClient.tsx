@@ -167,7 +167,7 @@ function CustomizedTourClient({
         </div>
       </div>
       {/* Show packages under this category */}
-      {filteredPkgs && filteredPkgs.length > 0 && (
+      {filteredPkgs && filteredPkgs.length > 0 ? (
         <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
           {filteredPkgs.map((pkg: CustomizedPackageInterface) => (
             <Link
@@ -221,6 +221,10 @@ function CustomizedTourClient({
               </Card>
             </Link>
           ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center text-3xl font-bold ">
+          No packages found
         </div>
       )}
     </section>

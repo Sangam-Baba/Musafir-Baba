@@ -54,7 +54,7 @@ export default function Header() {
           <span className="mx-1">|</span>
 
           <a
-            href="tel:+919217082447"
+            href="tel:+919355663591"
             className="flex items-center gap-1 text-inherit"
           >
             Visa: +91 9217082447
