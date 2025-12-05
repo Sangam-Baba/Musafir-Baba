@@ -4,6 +4,7 @@ import { Card } from "../ui/card";
 import Link from "next/link";
 import "react-lite-youtube-embed/dist/LiteYouTubeEmbed.css";
 import LiteYouTubeEmbed from "react-lite-youtube-embed";
+import { Check } from "lucide-react";
 
 function VideoSection() {
   return (
@@ -14,7 +15,14 @@ function VideoSection() {
       }}
     >
       <div className="absolute inset-0 bg-[#251203]/90 "></div>
-      <section className="max-w-7xl mx-auto py-16 px-4  py-16 relative z-50">
+      <section className="max-w-7xl mx-auto py-16 px-4 items-center justify-center  py-16 relative z-50">
+        <div className="flex flex-col gap-2 items-center mb-8 text-center">
+          <h3 className="text-2xl md:text-3xl  font-bold text-white ">
+            {`About MusafirBaba - India's Trusted Travel Partner`}
+          </h3>
+          <div className="w-16 h-1 bg-[#FE5300] rounded-full mb-4"></div>
+          <p>Trusted for holidays, visas, and end-to-end travel support</p>
+        </div>
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-13 items-center">
           <div className="lg:col-span-4 group cursor-pointer">
@@ -35,22 +43,13 @@ function VideoSection() {
 
           <div className="lg:col-span-3 flex flex-col gap-2">
             <div>
-              <h3 className="text-2xl md:text-3xl  font-bold text-white ">
-                About MusafirBaba
-              </h3>
-              <div className="w-16 h-1 bg-[#FE5300] rounded-full mb-4"></div>
               <p className="text-white leading-relaxed text-sm md:text-base">
-                MusafirBaba is a modern travel planning company built on one
-                simple promise - to make travel easy, transparent, and truly
-                personalised. From weekend getaways and international holidays
-                to group tours and custom itineraries, we design every trip with
-                care, precision, and real local expertise. Over the years, we’ve
-                helped thousands of travellers explore new places with
-                confidence through our expert visa assistance, curated tour
-                packages, and reliable support at every step. Whether you’re
-                travelling solo, with family, or visiting India from abroad, our
-                team ensures a smooth experience-right from planning and
-                documentation to bookings and on-trip guidance.{" "}
+                At MusafirBaba, we curate meaningful travel experiences — not
+                just packages. Our team blends local expertise with global
+                exposure to create tailored holidays, smooth visa assistance,
+                and stress-free planning. Whether it’s a family vacation, your
+                dream honeymoon, or your first international trip, we ensure
+                comfort, clarity, and unforgettable memories.{" "}
                 <Link href="/about-us" className="text-[#FE5300]">
                   Read More...
                 </Link>
@@ -59,44 +58,60 @@ function VideoSection() {
 
             {/* CTA Button */}
             {/* <div>
-            <button className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-              <Link href="/about-us">Learn More About Us</Link>
-            </button>
-          </div> */}
+              <button className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <Link href="/about-us">Learn More About Us</Link>
+              </button>
+            </div> */}
 
             {/* Features List */}
-            {/* <div className="flex flex-col gap-3 pt-2 border-t border-slate-200">
-            <div className="flex gap-3 items-start">
-              <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
-              <p className="text-sm text-slate-700">
-                Tailor-made itineraries for every travel style
-              </p>
+            <div className="flex flex-col gap-3 pt-2 border-t border-slate-200">
+              <div className="flex gap-2 items-start">
+                <Check
+                  strokeWidth={3}
+                  className="text-orange-500 flex-shrink-0 font-bold"
+                />
+
+                <p className="text-sm ">
+                  Tailor-made itineraries for every travel style
+                </p>
+              </div>
+              <div className="flex gap-2 items-start">
+                <Check
+                  strokeWidth={3}
+                  className="text-orange-500 flex-shrink-0"
+                />
+                <p className="text-sm">
+                  Expert visa assistance with fast processing
+                </p>
+              </div>
+              <div className="flex gap-2 items-start">
+                <Check
+                  strokeWidth={3}
+                  className="text-orange-500 flex-shrink-0"
+                />
+                <p className="text-sm">
+                  Reliable support before and during your trip
+                </p>
+              </div>
+              <div className="flex gap-2 items-start">
+                <Check
+                  strokeWidth={3}
+                  className="text-orange-500 flex-shrink-0"
+                />
+                <p className="text-sm ">
+                  Trusted by thousands of travellers across India
+                </p>
+              </div>
+              <div className="flex gap-2 items-start">
+                <Check
+                  strokeWidth={3}
+                  className="text-orange-500 flex-shrink-0"
+                />
+                <p className="text-sm ">
+                  Simple, transparent, and customer-first approach
+                </p>
+              </div>
             </div>
-            <div className="flex gap-3 items-start">
-              <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
-              <p className="text-sm text-slate-700">
-                Expert visa assistance with fast processing
-              </p>
-            </div>
-            <div className="flex gap-3 items-start">
-              <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
-              <p className="text-sm text-slate-700">
-                Reliable support before and during your trip
-              </p>
-            </div>
-            <div className="flex gap-3 items-start">
-              <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
-              <p className="text-sm text-slate-700">
-                Trusted by thousands of travellers across India
-              </p>
-            </div>
-            <div className="flex gap-3 items-start">
-              <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
-              <p className="text-sm text-slate-700">
-                Simple, transparent, and customer-first approach
-              </p>
-            </div>
-          </div> */}
           </div>
         </div>
       </section>

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import PackagesList from "@/components/admin/PackagesList";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { Input } from "@/components/ui/input";
 interface Batch {
   startDate: string;
   endDate: string;
@@ -90,6 +91,8 @@ const getAllPackages = async () => {
   return data?.data;
 };
 function PackagePage() {
+  const [filter, setFilter] = React.useState({ search: "" });
+
   const router = useRouter();
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
@@ -100,9 +103,21 @@ function PackagePage() {
     queryFn: getAllPackages,
     enabled: permissions.includes("holidays"),
   });
-  if (isLoading) return <Loader size="lg" message="Loading packages..." />;
-  if (isError) return <h1>{error.message}</h1>;
-  const packages = data ?? [];
+
+  const packages = React.useMemo(() => data ?? [], [data]);
+
+  const [filteredPackages, setFilteredPackages] = React.useState(packages);
+  useEffect(() => {
+    const result = packages.filter((pkg: Package) => {
+      return (
+        pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+        pkg.destination?.state
+          ?.toLowerCase()
+          .includes(filter.search.toLowerCase())
+      );
+    });
+    setFilteredPackages(result);
+  }, [filter, packages]);
   const handleEdit = (id: string) => {
     router.push(`/admin/holidays/edit/${id}`);
   };
@@ -131,10 +146,23 @@ function PackagePage() {
 
   if (!permissions.includes("holidays"))
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
+
+  if (isLoading) return <Loader size="lg" message="Loading packages..." />;
+  if (isError) return <h1>{error.message}</h1>;
+
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">All Packages</h1>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between  ">
+          <Input
+            type="text"
+            placeholder="Search by name or destination"
+            className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-[300px]"
+            value={filter.search}
+            onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+          />
+        </div>
         <button
           onClick={() => router.push("/admin/holidays/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
@@ -150,8 +178,8 @@ function PackagePage() {
       ) : (
         <PackagesList
           packages={
-            Array.isArray(packages)
-              ? packages.map((b: Package) => ({
+            Array.isArray(filteredPackages)
+              ? filteredPackages.map((b: Package) => ({
                   id: b._id as string,
                   name: b.title as string,
                   location:

@@ -6,6 +6,8 @@ import ListTable from "@/components/admin/ListTable";
 import { toast } from "sonner"; // or any toast library
 import { Loader2 } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 
 interface Blog {
   _id: string;
@@ -17,42 +19,53 @@ interface Blog {
   excerpt: string;
 }
 
+const getBlogs = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?limit=100`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to get blogs");
+  const data = await res.json();
+  return data?.data;
+};
+
 export default function BlogsPage() {
+  const [filter, setFilter] = useState({
+    search: "",
+  });
   const token = useAdminAuthStore((state) => state.accessToken);
   const permissions = useAdminAuthStore(
     (state) => state.permissions
   ) as string[];
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?limit=100`,
-        {
-          cache: "no-store",
-        }
-      );
-      const data = await res.json();
-
-      if (data.success) {
-        setBlogs(data.data);
-      } else {
-        toast.error(data.message || "Failed to fetch blogs");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong fetching blogs");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: blogs,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["blogs"],
+    queryFn: getBlogs,
+    enabled: permissions.includes("blogs"),
+  });
+  const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>(blogs);
 
   useEffect(() => {
-    fetchBlogs();
-  }, []);
+    if (blogs) {
+      const result = blogs?.filter((pkg: Blog) => {
+        return (
+          pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+          pkg.excerpt?.toLowerCase().includes(filter.search.toLowerCase())
+        );
+      });
+      setFilteredBlogs(result);
+    }
+  }, [filter, blogs]);
+  const router = useRouter();
 
   const handleEdit = (slug: string) => {
     router.push(`/admin/blogs/edit/${slug}`);
@@ -76,7 +89,6 @@ export default function BlogsPage() {
 
       if (data.success) {
         toast.success("Blog deleted successfully");
-        fetchBlogs(); // refetch after delete
       } else {
         toast.error(data.message || "Failed to delete blog");
       }
@@ -89,9 +101,18 @@ export default function BlogsPage() {
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   }
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Blogs</h1>
+        <div>
+          <Input
+            type="text"
+            placeholder="Search..."
+            className="border border-gray-300 rounded-md px-2 py-1"
+            value={filter.search}
+            onChange={(e) => setFilter({ search: e.target.value })}
+          />
+        </div>
         <button
           onClick={() => router.push("/admin/blogs/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
@@ -100,19 +121,23 @@ export default function BlogsPage() {
         </button>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
+      ) : isError ? (
+        <p>{(error as Error).message}</p>
       ) : (
         <ListTable
-          blogs={blogs.map((b) => ({
-            slug: b.slug,
-            id: b._id,
-            title: b.title,
-            description: b.excerpt,
-            url: `/blog/${b.slug}`, // or absolute link if needed
-          }))}
+          blogs={
+            filteredBlogs?.map((b) => ({
+              slug: b.slug,
+              id: b._id,
+              title: b.title,
+              description: b.excerpt,
+              url: `/blog/${b.slug}`, // or absolute link if needed
+            })) ?? []
+          }
           onEdit={handleEdit}
           onDelete={handleDelete}
         />

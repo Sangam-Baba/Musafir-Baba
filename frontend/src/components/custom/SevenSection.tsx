@@ -89,9 +89,13 @@ export async function SevenSection() {
         {/* Heading */}
         <div className="text-center space-y-4">
           <h2 className="text-2xl md:text-3xl font-bold">
-            Hot Honeymoon Picks of the Season — Don’t Miss Out!
+            Hot Honeymoon Packages of the Season — Don’t Miss Out!
           </h2>
           <div className="mx-auto w-24 h-1 bg-[#FE5300] rounded-full"></div>
+          <p className="text-gray-600">
+            From beaches to mountains, explore our top romantic getaways this
+            season.
+          </p>
         </div>
 
         {/* Carousel */}

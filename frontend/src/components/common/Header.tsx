@@ -17,6 +17,11 @@ import logo from "../../../public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
@@ -43,22 +48,35 @@ export default function Header() {
           </Link>
         </div>
         <div className="flex gap-2 items-center text-sm font-medium">
-          <a
-            href="tel:+919289602447"
-            className="flex items-center gap-1 text-inherit"
-          >
-            <Phone fill="white" className="w-4 h-4" />
-            Tour: +91 92896 02447
-          </a>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <a
+                href="tel:+919289602447"
+                className="flex items-center gap-1 text-inherit"
+              >
+                <Phone fill="white" className="w-4 h-4" />
+                Tour: +91 92896 02447
+              </a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Talk to our travel experts</p>
+            </TooltipContent>
+          </Tooltip>
 
           <span className="mx-1">|</span>
-
-          <a
-            href="tel:+919355663591"
-            className="flex items-center gap-1 text-inherit"
-          >
-            Visa: +91 9217082447
-          </a>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <a
+                href="tel:+919355663591"
+                className="flex items-center gap-1 text-inherit"
+              >
+                Visa: +91 9217082447
+              </a>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Talk to our visa experts</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 

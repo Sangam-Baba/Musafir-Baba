@@ -6,18 +6,18 @@ import Footer from "@/components/common/Footer";
 import Script from "next/script";
 import WhatsAppButton from "@/components/common/WhatsappButton";
 export const metadata: Metadata = {
-  title: "MusafirBaba - Best Travel Agency in Delhi | Holidays | Visa",
+  title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
   description:
-    "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services. Book your tour now in just 60 seconds.",
+    "Most trusted travel agency in India for holidays, tour packages, and visa services. Expert guidance for hassle-free travel.",
   keywords:
     "Travel Agency, Tour Packages, Visa Services, Delhi, India, Holidays, Visa, Bookings",
   alternates: {
     canonical: "https://musafirbaba.com/",
   },
   openGraph: {
-    title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
+    title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
     description:
-      "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services. Book your tour now in just 60 seconds.",
+      "Most trusted travel agency in India for holidays, tour packages, and visa services. Expert guidance for hassle-free travel.",
     url: "https://musafirbaba.com/",
     siteName: "MusafirBaba",
     images: [
@@ -32,15 +32,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Musafirbaba - Best Travel Agency in Delhi | Holidays | Visa",
+    title: "Musafirbaba - Best Travel Agency in India | Holidays | Visa",
     description:
-      "Looking for the best travel agency in Delhi? MusafirBaba offers exclusive holidays & trusted visa services.",
+      "Most trusted travel agency in India for holidays, tour packages, and visa services. Expert guidance for hassle-free travel.",
     images: ["https://musafirbaba.com/homebanner.webp"], // recommended 1200x630
     creator: "@", // optional
   },
   icons: {
-    icon: "../favicon.ico", // default
-    shortcut: "../favicon.ico", // for older browsers
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
   verification: {
     google: "8Ft_waDuE7XSNxKBK_Qeng07HW9LwdunSYzZeCclHHY",
