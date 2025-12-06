@@ -184,7 +184,10 @@ const loginAdmin = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain:
+        process.env.NODE_ENV === "production" ? "musafirbaba.com" : undefined,
       path: "/",
+      maxAge: 60 * 60 * 24 * 7, // recommended
     };
 
     res.cookie("adminRefreshToken", refreshToken, cookieOption);
@@ -226,7 +229,10 @@ const refresh = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain:
+        process.env.NODE_ENV === "production" ? "musafirbaba.com" : undefined,
       path: "/",
+      maxAge: 60 * 60 * 24 * 7,
     };
 
     res.cookie("adminRefreshToken", refreshToken, cookieOptions);

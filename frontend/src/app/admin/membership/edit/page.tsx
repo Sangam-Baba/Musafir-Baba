@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function BookingIndexPage() {
+export default function MembershipEditPage() {
   redirect("/admin/membership");
 }
