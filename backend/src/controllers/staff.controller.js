@@ -185,7 +185,7 @@ const loginAdmin = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain:
-        process.env.NODE_ENV === "production" ? "musafirbaba.com" : undefined,
+        process.env.NODE_ENV === "production" ? ".musafirbaba.com" : undefined,
       path: "/",
       maxAge: 60 * 60 * 24 * 7, // recommended
     };
@@ -230,7 +230,7 @@ const refresh = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain:
-        process.env.NODE_ENV === "production" ? "musafirbaba.com" : undefined,
+        process.env.NODE_ENV === "production" ? ".musafirbaba.com" : undefined,
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     };
