@@ -260,9 +260,11 @@ const logout = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      domain:
+        process.env.NODE_ENV === "production" ? ".musafirbaba.com" : undefined,
       path: "/",
     };
-    res.clearCookie("adminRefreshToken", cookieOptions);
+    res.clearCookie("admin_refresh_token", cookieOptions);
     const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
     await AuthLog.create({
       userId: req?.user?.sub,
