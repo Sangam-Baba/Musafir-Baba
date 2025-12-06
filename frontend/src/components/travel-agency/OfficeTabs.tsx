@@ -1,14 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { Button } from "../ui/button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import { CarouselDots } from "../ui/carousel-indicators";
 import Image from "next/image";
 
 interface OfficesInterface {
