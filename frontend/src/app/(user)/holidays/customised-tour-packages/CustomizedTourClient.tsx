@@ -26,8 +26,8 @@ function CustomizedTourClient({
   const [filter, setFilter] = useState({
     search: "",
     sort: "",
-    price: 50000,
-    duration: 10,
+    price: 500000,
+    duration: 25,
   });
   const [filteredPkgs, setFilteredPkgs] = useState<
     CustomizedPackageInterface[]
@@ -116,8 +116,9 @@ function CustomizedTourClient({
               type="range"
               name="price"
               onChange={handleChange}
+              value={filter.price}
               min={0}
-              max={50000}
+              max={500000}
               className="cursor-pointer accent-[#FE5300]"
             />
           </div>
@@ -136,7 +137,7 @@ function CustomizedTourClient({
               value={filter.duration}
               onChange={handleChange}
               min={1}
-              max={10}
+              max={25}
               className="cursor-pointer accent-[#FE5300]"
             />
           </div>
@@ -148,8 +149,8 @@ function CustomizedTourClient({
               const reset = {
                 search: "",
                 sort: "",
-                price: 50000,
-                duration: 10,
+                price: 500000,
+                duration: 25,
               };
               setFilter(reset);
               setFilteredPkgs(allPkgs);

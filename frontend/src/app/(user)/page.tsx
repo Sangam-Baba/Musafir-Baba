@@ -78,7 +78,7 @@ export default async function HomePage() {
                 just
               </span>
               <br />
-              <span>60 seconds</span>
+              <span> 60 seconds</span>
             </h1>
             <p className="hidden md:block text-sm md:text-md xl:text-lg mt-1 font-poppins ">
               Get curated tours & seamless visa assistance - all in one place

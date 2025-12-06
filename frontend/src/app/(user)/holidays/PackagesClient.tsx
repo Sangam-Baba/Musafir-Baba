@@ -33,8 +33,8 @@ export default function MixedPackagesClient({
     search: "",
     category: "",
     sort: "",
-    price: 50000,
-    duration: 10,
+    price: 500000,
+    duration: 25,
   });
   const [filteredPkgs, setFilteredPkgs] = useState<CombinedInterface[]>(
     data ?? []
@@ -161,8 +161,9 @@ export default function MixedPackagesClient({
               type="range"
               name="price"
               onChange={handleChange}
-              min={0}
-              max={50000}
+              value={filter.price}
+              min={100}
+              max={500000}
               className="cursor-pointer accent-[#FE5300]"
             />
           </div>
@@ -181,7 +182,7 @@ export default function MixedPackagesClient({
               onChange={handleChange}
               value={filter.duration}
               min={1}
-              max={10}
+              max={25}
               className="cursor-pointer accent-[#FE5300]"
             />
           </div>
@@ -194,8 +195,8 @@ export default function MixedPackagesClient({
                 search: "",
                 category: "",
                 sort: "",
-                price: 50000,
-                duration: 10,
+                price: 500000,
+                duration: 25,
               };
               setFilter(reset);
               setFilteredPkgs(data);
