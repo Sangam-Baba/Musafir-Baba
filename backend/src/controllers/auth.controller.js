@@ -158,7 +158,7 @@ const login = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     };
 
-    res.cookie("userRefreshToken", refreshToken, cookieOption);
+    res.cookie("user_refresh_token", refreshToken, cookieOption);
 
     return res.status(200).json({
       success: true,
@@ -304,7 +304,7 @@ const resetPassword = async (req, res) => {
 
 const refresh = async (req, res) => {
   try {
-    const token = req.cookies?.userRefreshToken;
+    const token = req.cookies?.user_refresh_token;
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -330,7 +330,7 @@ const refresh = async (req, res) => {
       maxAge: 60 * 60 * 24 * 7,
     };
 
-    res.cookie("userRefreshToken", refreshToken, cookieOptions);
+    res.cookie("user_refresh_token", refreshToken, cookieOptions);
 
     return res.json({
       accessToken,

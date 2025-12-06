@@ -190,7 +190,7 @@ const loginAdmin = async (req, res) => {
       maxAge: 60 * 60 * 24 * 7, // recommended
     };
 
-    res.cookie("adminRefreshToken", refreshToken, cookieOption);
+    res.cookie("admin_refresh_token", refreshToken, cookieOption);
 
     return res.status(200).json({
       success: true,
@@ -209,7 +209,7 @@ const loginAdmin = async (req, res) => {
 
 const refresh = async (req, res) => {
   try {
-    const token = req.cookies?.adminRefreshToken;
+    const token = req.cookies?.admin_refresh_token;
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -235,7 +235,7 @@ const refresh = async (req, res) => {
       maxAge: 60 * 60 * 24 * 7,
     };
 
-    res.cookie("adminRefreshToken", refreshToken, cookieOptions);
+    res.cookie("admin_refresh_token", refreshToken, cookieOptions);
 
     return res.json({
       accessToken,
