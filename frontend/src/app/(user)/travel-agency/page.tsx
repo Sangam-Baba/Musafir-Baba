@@ -4,7 +4,7 @@ import Hero from "@/components/custom/Hero";
 import QueryForm from "@/components/custom/QueryForm";
 import VisaHome from "@/components/custom/VisaHome";
 import WhyChoose from "@/components/custom/WhyChoose";
-import { Card } from "@/components/ui/card";
+import { OfficeTabs } from "@/components/travel-agency/OfficeTabs";
 import {
   Carousel,
   CarouselContent,
@@ -14,8 +14,17 @@ import { CarouselDots } from "@/components/ui/carousel-indicators";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+const getOffices = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
+  );
+  if (!res.ok) throw new Error("Failed to fetch visas");
+  const data = await res.json();
+  return data?.data;
+};
 
-function page() {
+async function page() {
+  const offices = await getOffices();
   const coreData = [
     {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431452/ebqgvy2uruu6cxnehxat.png",
@@ -76,8 +85,8 @@ function page() {
   return (
     <div>
       <Hero
-        image="/Hero1.jpg"
-        title="Travel Agency Services in India – Tours, Visas & Holiday Packages"
+        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1765003780/dda7b162262041.5a8af0c73f8bd_aazzhr.jpg"
+        title="Travel Agency Services in India"
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
@@ -206,36 +215,16 @@ function page() {
         </div>
 
         {/* Cities We Serve */}
-        {/* <div>
+        <div>
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold">Cities We Serve</h2>
             <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
             <p>Travel Agency Services in Major Cities</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 px-6 md:px-16">
-            {citiesData.map((item, index) => (
-              <div
-                key={index}
-                className="p-6 w-[300px] border border-[#FE5300] rounded-xl shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="w-20 h-20 flex items-center justify-center">
-                    <Image
-                      src={item.img}
-                      width={500}
-                      height={500}
-                      alt={item.title}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <h3 className="text-lg md:text-xl font-bold text-gray-800">
-                    {item.title}
-                  </h3>
-                </div>
-              </div>
-            ))}
+            <OfficeTabs offices={offices} />
           </div>
-        </div> */}
+        </div>
 
         {/* Visa */}
         <div>

@@ -348,6 +348,7 @@ export default function CreateWebpage() {
           </option>
           <option value="noparent">No-Parent</option>
           <option value="bookings">Bookings</option>
+          <option value="travel-agency">Travel Agency</option>
         </select>
 
         <select
