@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 // routes admin can access without login
 const PUBLIC_ADMIN_ROUTES = ["/admin/login", "/admin/role"];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only run logic for admin routes
