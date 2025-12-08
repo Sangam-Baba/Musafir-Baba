@@ -35,6 +35,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/holidays/weekend-getaway",
+        destination: "/holidays/weekend-getaways",
+        permanent: true,
+      },
+      {
         source: "/about",
         destination: "/about-us",
         permanent: true,

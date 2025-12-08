@@ -997,11 +997,14 @@ export default function CreatePackagePage() {
                           ? field.value.join(", ")
                           : field.value || ""
                       }
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value.split(",").map((item) => item.trim())
-                        )
-                      }
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={(e) => {
+                        const arr = e.target.value
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter(Boolean);
+                        field.onChange(arr);
+                      }}
                       placeholder="Enter SEO Meta Keywords"
                     />
                   </FormControl>

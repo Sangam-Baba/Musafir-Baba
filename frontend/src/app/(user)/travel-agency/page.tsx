@@ -1,8 +1,8 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { Metadata } from "next";
 import { Faqs } from "@/components/custom/Faqs";
 import Hero from "@/components/custom/Hero";
 import QueryForm from "@/components/custom/QueryForm";
-import VisaHome from "@/components/custom/VisaHome";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { OfficeTabs } from "@/components/travel-agency/OfficeTabs";
 import {
@@ -20,6 +20,8 @@ import VisaMainCard from "@/components/custom/VisaMainCard";
 import { getPackageByCategorySlug } from "../holidays/[categorySlug]/page";
 import PackageCard from "@/components/custom/PackageCard";
 import { Package } from "@/app/(user)/holidays/[categorySlug]/PackageSlugClient";
+import Link from "next/link";
+import { Testimonial } from "@/components/custom/Testimonial";
 const getOffices = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
@@ -29,6 +31,21 @@ const getOffices = async () => {
   return data?.data;
 };
 
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Best Travel Agency in India for Tours & Visas | Musafir Baba",
+    description:
+      "Looking for the best travel agency in India? MusafirBaba offers customised tour packages, India & international holidays, and fast visa services you can trust.",
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/travel-agency`,
+    },
+    keywords: [
+      "Travel Agency in India",
+      "Best Travel Agency in India",
+      "Travel Agency",
+    ],
+  };
+}
 async function page() {
   const offices = await getOffices();
   const visas = await getVisa();
@@ -42,28 +59,29 @@ async function page() {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431452/ebqgvy2uruu6cxnehxat.png",
       title: "International Holiday Packages",
       description:
-        "Tailor-made packages for Singapore Dubai Bali Maldives Thailand Vietnam",
+        "Tailor-made packages for Singapore, Dubai, Bali, Maldives, Thailand, and Vietnam.",
     },
     {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760432099/hzm68uopd8a6d1gjot3q.png",
       title: "Visa Services for 40+ Countries",
       description:
-        "We specialise in fast and reliable visa processing for Singapore Dubai Japan Visa Schengen Visa Malaysia eVisa  Maldives Thailand Vietnam",
+        "We specialise in fast and reliable visa processing for 40+ countries like Singapore, Dubai, Japan etc.",
     },
     {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431753/vugxrcdlva6dfxebpxei.png",
-      title: "Domestic Travel Packages",
+      title: "Personalised Domestic Travel Packages",
       description:
-        "Popular Indian destinations: Singapore Dubai Bali Maldives Thailand Vietnam",
+        "Get personalised holiday packages for popular Indian destinations like Goa, Kerala, Himachal etc.",
     },
     {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431651/m6zefmw04p1ynuyxhm1l.png",
-      title: "Flights & Hotels",
-      description: "Get the best deals on flight tickets and hand-picked stays",
+      title: "Affordable Flights & Hotels",
+      description:
+        "Get the best deals on flight tickets and hand-picked stays across the globe for your holiday.",
     },
     {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760433740/olszjeekr4hae6wcjtig.png",
-      title: "Corporate & Group Travel",
+      title: "Corporate & Group Travel Solutions",
       description:
         "Complete MICE solutions including hotel bookings, event coordination and logistics.",
     },
@@ -98,13 +116,13 @@ async function page() {
     <div>
       <Hero
         image="https://res.cloudinary.com/dmmsemrty/image/upload/v1765003780/dda7b162262041.5a8af0c73f8bd_aazzhr.jpg"
-        title="Travel Agency Services in India"
+        title="Best Travel Agency in India for Complete Tour & Visa Solutions"
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-20">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-10 md:space-y-30 space-y-20">
         <div className="flex flex-col md:flex-row gap-10">
           <div className="w-full md:w-3/5 space-y-10">
             <p>
@@ -155,12 +173,13 @@ async function page() {
         </div>
 
         {/* Core Services */}
-        <div className="py-12 bg-white">
-          <div className="text-center mb-10">
+        <div className=" bg-white">
+          <div className="text-center mb-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">
               Our Core Travel Services
             </h2>
             <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
+            <p>Everything you need for a smooth and memorable journey</p>
           </div>
 
           <div className="hidden md:flex flex-wrap justify-center gap-8 px-6 md:px-16">
@@ -231,7 +250,7 @@ async function page() {
           <div className="text-center mb-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">Cities We Serve</h2>
             <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
-            <p>Travel Agency Services in Major Cities</p>
+            <p>Local expertise, available wherever you are</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 px-6 md:px-16">
             <OfficeTabs offices={offices} />
@@ -243,7 +262,7 @@ async function page() {
           <div className="text-center mb-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">Popular Visas</h2>
             <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
-            <p>Travel Agency Services in Major Cities</p>
+            <p>Hassle-free visa support for global destinations</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
             {filteredVisas.length === 0 && (
@@ -254,6 +273,12 @@ async function page() {
               return <VisaMainCard key={visa.id} visa={visa} />;
             })}
           </div>
+          <Link
+            href="/visa"
+            className="w-[120px] mx-auto bg-primary text-white py-2 px-4 rounded-md font-semibold text-center block mt-10"
+          >
+            Apply Now
+          </Link>
         </div>
 
         {/* Packages */}
@@ -262,7 +287,7 @@ async function page() {
           <div className="text-center mb-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">Popular Packages</h2>
             <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
-            <p>Travel Agency Services in Major Cities</p>
+            <p>Handpicked trips loved by our travellers</p>
           </div>
 
           <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
@@ -283,8 +308,14 @@ async function page() {
               />
             ))}
           </div>
+          <Link
+            href="/holidays"
+            className="w-[120px] mx-auto bg-primary text-white py-2 px-4 rounded-md font-semibold text-center block mt-10"
+          >
+            Book Now
+          </Link>
         </div>
-
+        <Testimonial data={[]} />
         <WhyChoose />
         <Faqs faqs={faqs} />
       </div>

@@ -48,30 +48,34 @@ export function OfficeTabs({ offices }: { offices: OfficesInterface[] }) {
               key={index}
               className={`${
                 active === item.slug ? "block" : "hidden"
-              }   border border-[#FE5300] rounded-xl shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer`}
+              }   border border-[#FE5300] rounded-xl shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer overflow-hidden`}
             >
               <Link
                 href={`/travel-agency/${item.slug}`}
-                className="flex flex-col md:flex-row items-center  gap-4"
+                className="flex flex-col md:flex-row gap-4"
               >
-                <div className="w-full md:w-1/2 flex items-center justify-center">
+                <div className="w-full md:w-1/2 flex justify-center">
                   <Image
                     src={item.coverImage?.url}
                     width={500}
                     height={500}
                     alt={item.title}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover "
                   />
                 </div>
-                <div className="flex flex-col w-full md:w-1/2 gap-2 justify-start p-4">
-                  <h3 className="text-lg md:text-xl font-bold text-gray-800">
-                    {item.slug.charAt(0).toUpperCase() + item.slug.slice(1)}
-                  </h3>
+                <div className="flex flex-col w-full md:w-1/2 md:gap-5 gap-2 justify-start p-4">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-semibold text-gray-800">
+                      {item.slug.charAt(0).toUpperCase() + item.slug.slice(1)}
+                    </h3>
+                    <p className="w-[10%] h-1 bg-[#FE5300] rounded-full mt-1"></p>
+                  </div>
+
                   <p>{item.excerpt}</p>
-                  <p className="flex gap-2">
+                  <p className="flex gap-2 font-semibold">
                     <Mail color="#FE5300" /> care@musafirbaba.com
                   </p>
-                  <p className="flex gap-2">
+                  <p className="flex gap-2 font-semibold">
                     <Phone color="#FE5300" /> +91 92896 02447
                   </p>
                 </div>

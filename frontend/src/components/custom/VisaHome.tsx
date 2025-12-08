@@ -1,5 +1,5 @@
 import React from "react";
-import { Visa } from "@/app/(user)/visa/visaClient";
+import { VisaInterface } from "@/app/(user)/visa/visaClient";
 import {
   Carousel,
   CarouselContent,
@@ -24,7 +24,7 @@ const getVisa = async (search: string) => {
   return data?.data; // []
 };
 async function VisaHome() {
-  const visa: Visa[] = await getVisa("");
+  const visa: VisaInterface[] = await getVisa("");
   const finalVisa = [
     "UAE",
     "Schengen",
