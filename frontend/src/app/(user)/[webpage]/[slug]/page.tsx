@@ -18,10 +18,10 @@ export const getWebPageBySlug = async (slug: string) => {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ webpage: string }>;
+  params: Promise<{ webpage: string; slug: string }>;
 }): Promise<Metadata> {
-  const { webpage } = await params;
-  const page = await getWebPageBySlug(webpage);
+  const { webpage, slug } = await params;
+  const page = await getWebPageBySlug(slug);
 
   if (!page) return notFound();
 
@@ -41,9 +41,13 @@ export async function generateMetadata({
   };
 }
 
-async function page({ params }: { params: Promise<{ webpage: string }> }) {
-  const { webpage } = await params;
-  return <MainWebPage slug={webpage} />;
+async function page({
+  params,
+}: {
+  params: Promise<{ webpage: string; slug: string }>;
+}) {
+  const { webpage, slug } = await params;
+  return <MainWebPage slug={slug} />;
 }
 
 export default page;

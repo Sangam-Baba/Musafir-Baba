@@ -50,7 +50,7 @@ const webPageSchema = new mongoose.Schema(
     ],
     parent: {
       type: String,
-      enum: ["bookings", "visa", "noparent", "travel-agency"],
+      enum: ["bookings", "visa", "noparent", "travel-agency", "chardham"],
       default: "visa",
     },
   },
