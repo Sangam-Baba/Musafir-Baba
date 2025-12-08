@@ -1,5 +1,7 @@
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 
-export default function AuthorEditPage() {
+export default function AboutUsEditPage() {
   redirect("/admin/authors");
+  return null;
 }

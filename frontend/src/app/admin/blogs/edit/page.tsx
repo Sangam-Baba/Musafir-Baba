@@ -1,5 +1,7 @@
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 
-export default function BookingIndexPage() {
-  redirect("/admin/blogs"); 
+export default function AboutUsEditPage() {
+  redirect("/admin/blogs");
+  return null;
 }

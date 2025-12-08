@@ -1,5 +1,7 @@
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 
-export default function MembershipEditPage() {
+export default function AboutUsEditPage() {
   redirect("/admin/membership");
+  return null;
 }
