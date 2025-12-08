@@ -94,20 +94,25 @@ const getSinglePackages = async (
 export async function generateMetadata({
   params,
 }: {
-  params: { categorySlug: string; destination: string; packageSlug: string };
+  params: Promise<{
+    categorySlug: string;
+    destination: string;
+    packageSlug: string;
+  }>;
 }): Promise<Metadata> {
-  const page = await getSinglePackages(params.destination, params.packageSlug);
+  const { categorySlug, destination, packageSlug } = await params;
+  const page = await getSinglePackages(destination, packageSlug);
   return {
     title: page?.metaTitle || page.title,
     description: page?.metaDescription,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/${params.categorySlug}/${params.destination}/${page.slug}`,
+      canonical: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
     },
     keywords: page.keywords,
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `https://musafirbaba.com/holidays/${params.categorySlug}/${params.destination}/${page.slug}`,
+      url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
       type: "website",
     },
   };
@@ -116,9 +121,13 @@ export async function generateMetadata({
 async function PackageDetails({
   params,
 }: {
-  params: { categorySlug: string; destination: string; packageSlug: string };
+  params: Promise<{
+    categorySlug: string;
+    destination: string;
+    packageSlug: string;
+  }>;
 }) {
-  const { categorySlug, destination, packageSlug } = params;
+  const { categorySlug, destination, packageSlug } = await params;
   const relatedGroupPackages = await getPackageByCategorySlug(categorySlug);
   return (
     <SlugClients

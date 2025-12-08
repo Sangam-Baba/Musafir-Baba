@@ -7,7 +7,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import img1 from "../../../../../public/Hero1.jpg";
 
 interface Props {
-  params: { categorySlug: string };
+  params: Promise<{ categorySlug: string }>;
 }
 interface Batch {
   _id: string;
@@ -86,7 +86,7 @@ export async function getPackageByCategorySlug(slug: string) {
   return data?.data;
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { categorySlug } = params;
+  const { categorySlug } = await params;
   try {
     const res = await getCategoryBySlug(categorySlug);
     const { category } = res?.data ?? {};
@@ -137,10 +137,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 }
-export default async function Page({ params }: Props) {
-  const res = await getCategoryBySlug(params.categorySlug);
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ categorySlug: string }>;
+}) {
+  const { categorySlug } = await params;
+  const res = await getCategoryBySlug(categorySlug);
   const { category } = res?.data;
-  const packages = await getPackageByCategorySlug(params.categorySlug);
+  const packages = await getPackageByCategorySlug(categorySlug);
   if (!category) return notFound();
   // const packages = category?.packages ?? [];
 
@@ -150,7 +155,7 @@ export default async function Page({ params }: Props) {
     "@type": "ItemList",
     name: `${category?.name} Travel Packages`,
     description: category?.description,
-    url: `https://musafirbaba.com/holidays/${params.categorySlug}`,
+    url: `https://musafirbaba.com/holidays/${categorySlug}`,
     numberOfItems: packages.length,
     itemListElement: packages.map((pkg: Package, index: number) => ({
       "@type": "TouristTrip",

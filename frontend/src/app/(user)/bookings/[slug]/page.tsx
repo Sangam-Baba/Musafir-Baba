@@ -34,9 +34,10 @@ const getWebPageBySlug = async (slug: string) => {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const res = await getWebPageBySlug(params.slug);
+  const { slug } = await params;
+  const res = await getWebPageBySlug(slug);
   const page = res?.data;
   if (!page)
     return {
@@ -58,9 +59,14 @@ export async function generateMetadata({
     },
   };
 }
-async function BookingsWebPage({ params }: { params: { slug: string } }) {
-  const res = await getWebPageBySlug(params.slug);
-  if (!res.data || params.slug === "bookings") return notFound();
+async function BookingsWebPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const res = await getWebPageBySlug(slug);
+  if (!res.data || slug === "bookings") return notFound();
   const visa = res?.data;
   return (
     <section className="">
@@ -101,7 +107,7 @@ async function BookingsWebPage({ params }: { params: { slug: string } }) {
         </article>
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start">
           <QueryForm />
-          <RelatedPages slug={params.slug} parent="visa" />
+          <RelatedPages slug={slug} parent="visa" />
         </aside>
       </div>
       <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">

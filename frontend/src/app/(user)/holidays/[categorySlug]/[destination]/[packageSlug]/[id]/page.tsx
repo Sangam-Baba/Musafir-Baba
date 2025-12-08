@@ -2,11 +2,11 @@ import BookingClient from "@/components/custom/BookingClient";
 import { notFound } from "next/navigation";
 
 type Params = {
-  params: { destination: string; packageSlug: string; id: string };
+  params: Promise<{ destination: string; packageSlug: string; id: string }>;
 };
 
 export default async function Page({ params }: Params) {
-  const { destination, packageSlug } = params;
+  const { destination, packageSlug } = await params;
   const decodedCountry = decodeURIComponent(destination || "");
 
   // fetch package server-side (SSR)

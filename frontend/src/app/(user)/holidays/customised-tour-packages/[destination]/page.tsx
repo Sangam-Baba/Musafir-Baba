@@ -54,7 +54,7 @@ export async function generateMetadata({
 }: {
   params: { destination: string };
 }) {
-  const { destination } = params;
+  const { destination } = await params;
   return {
     title: `MusafirBaba | Customised Packages in ${
       destination.charAt(0).toUpperCase() + destination.slice(1)
@@ -69,7 +69,7 @@ async function DestinationPage({
 }: {
   params: { destination: string };
 }) {
-  const { destination } = params;
+  const { destination } = await params;
   const packages = await getPackageByDestinationSlug(destination);
   if (!packages || packages.length === 0) return notFound();
   return (

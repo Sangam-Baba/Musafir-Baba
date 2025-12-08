@@ -49,9 +49,9 @@ async function getDestinationMeta(
 export async function generateMetadata({
   params,
 }: {
-  params: { categorySlug: string; destination: string };
+  params: Promise<{ categorySlug: string; destination: string }>;
 }) {
-  const { categorySlug, destination } = params;
+  const { categorySlug, destination } = await params;
   const pkgData = await getPackageByDestinationSlug(categorySlug, destination);
   const meta = await getDestinationMeta(categorySlug, destination);
   return {
@@ -59,16 +59,16 @@ export async function generateMetadata({
     description: meta?.metaDescription || pkgData[0]?.destination?.description,
     keywords: meta?.keywords || pkgData[0]?.destination?.keywords,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/${params.categorySlug}/${params.destination}`,
+      canonical: `https://musafirbaba.com/holidays/${categorySlug}/${destination}`,
     },
   };
 }
 async function DestinationPage({
   params,
 }: {
-  params: { categorySlug: string; destination: string };
+  params: Promise<{ categorySlug: string; destination: string }>;
 }) {
-  const { categorySlug, destination } = params;
+  const { categorySlug, destination } = await params;
   const packages = await getPackageByDestinationSlug(categorySlug, destination);
   if (!packages || packages.length === 0) return notFound();
   return (

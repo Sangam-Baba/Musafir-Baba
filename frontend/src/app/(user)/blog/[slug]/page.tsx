@@ -29,9 +29,10 @@ async function getBlog(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { blog } = await getBlog(params.slug);
+  const { slug } = await params;
+  const { blog } = await getBlog(slug);
 
   if (!blog) {
     return {
@@ -87,9 +88,10 @@ export async function generateMetadata({
 export default async function BlogDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { blog, comments } = await getBlog(params.slug);
+  const { slug } = await params;
+  const { blog, comments } = await getBlog(slug);
   if (!blog) return <NotFoundPage />;
   const readTime = readingTime(blog.content || "");
   const schema = {

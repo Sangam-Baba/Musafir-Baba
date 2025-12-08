@@ -100,9 +100,9 @@ async function getGroupPackageByDestinationSlug(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { slug } = params;
+  const { slug } = await params;
   const packages = await getGroupPackageByDestinationSlug(slug);
 
   if (!packages || packages.length === 0) return null;
@@ -118,8 +118,12 @@ export async function generateMetadata({
     },
   };
 }
-async function DestinationPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+async function DestinationPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const packages = await getGroupPackageByDestinationSlug(slug);
   const customizedPkg = await getPackageByDestinationSlug(slug);
   const newCustomizedPkg = customizedPkg.map(

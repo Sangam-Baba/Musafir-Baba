@@ -29,7 +29,8 @@ export async function generateMetadata({
 }: {
   params: { pkgSlug: string };
 }) {
-  const pkg = await getCustomizedPackage(params.pkgSlug);
+  const { pkgSlug } = await params;
+  const pkg = await getCustomizedPackage(pkgSlug);
 
   if (!pkg) {
     return {
@@ -68,8 +69,9 @@ export default async function Page({
 }: {
   params: { pkgSlug: string };
 }) {
-  const pkg = await getCustomizedPackage(params.pkgSlug);
-  const relatedPackages = await getRelatedPackages(params.pkgSlug);
+  const { pkgSlug } = await params;
+  const pkg = await getCustomizedPackage(pkgSlug);
+  const relatedPackages = await getRelatedPackages(pkgSlug);
 
   if (!pkg) {
     return notFound();

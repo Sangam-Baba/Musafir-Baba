@@ -31,9 +31,10 @@ const getVisaBySlug = async (slug: string) => {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const page = await getVisaBySlug(params.slug);
+  const { slug } = await params;
+  const page = await getVisaBySlug(slug);
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
@@ -58,8 +59,8 @@ const getRelatedPages = async (slug: string) => {
   const data = await res.json();
   return data;
 };
-async function VisaWebPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const visa = await getVisaBySlug(slug);
   if (!visa) return notFound();
 

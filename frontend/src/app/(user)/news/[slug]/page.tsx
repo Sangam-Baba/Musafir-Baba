@@ -29,9 +29,10 @@ async function getNews(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { news } = await getNews(params.slug);
+  const { slug } = await params;
+  const { news } = await getNews(slug);
 
   if (!news) {
     return {
@@ -87,9 +88,10 @@ export async function generateMetadata({
 export default async function NewsDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const { news, comments } = await getNews(params.slug);
+  const { slug } = await params;
+  const { news, comments } = await getNews(slug);
   if (!news) return notFound();
   const readTime = readingTime(news.content || "");
   const schema = {
