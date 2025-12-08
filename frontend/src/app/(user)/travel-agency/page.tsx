@@ -14,6 +14,12 @@ import { CarouselDots } from "@/components/ui/carousel-indicators";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { getVisa } from "../visa/page";
+import { VisaInterface } from "../visa/visaClient";
+import VisaMainCard from "@/components/custom/VisaMainCard";
+import { getPackageByCategorySlug } from "../holidays/[categorySlug]/page";
+import PackageCard from "@/components/custom/PackageCard";
+import { Package } from "@/app/(user)/holidays/[categorySlug]/PackageSlugClient";
 const getOffices = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
@@ -25,6 +31,12 @@ const getOffices = async () => {
 
 async function page() {
   const offices = await getOffices();
+  const visas = await getVisa();
+  const packages = await getPackageByCategorySlug("honeymoon-packages");
+  const shownVisas = ["Singapore", "Japan", "UK", "Schengen"];
+  const filteredVisas = visas.filter((visa: VisaInterface) =>
+    shownVisas.includes(visa.country)
+  );
   const coreData = [
     {
       img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431452/ebqgvy2uruu6cxnehxat.png",
@@ -92,7 +104,7 @@ async function page() {
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-10">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-10 space-y-20">
         <div className="flex flex-col md:flex-row gap-10">
           <div className="w-full md:w-3/5 space-y-10">
             <p>
@@ -216,7 +228,7 @@ async function page() {
 
         {/* Cities We Serve */}
         <div>
-          <div className="text-center mb-10">
+          <div className="text-center mb-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold">Cities We Serve</h2>
             <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
             <p>Travel Agency Services in Major Cities</p>
@@ -228,10 +240,51 @@ async function page() {
 
         {/* Visa */}
         <div>
-          <VisaHome />
+          <div className="text-center mb-10 space-y-2">
+            <h2 className="text-2xl md:text-3xl font-bold">Popular Visas</h2>
+            <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
+            <p>Travel Agency Services in Major Cities</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
+            {filteredVisas.length === 0 && (
+              <h1 className="text-2xl font-bold">No Visas found</h1>
+            )}
+
+            {filteredVisas.map((visa: VisaInterface) => {
+              return <VisaMainCard key={visa.id} visa={visa} />;
+            })}
+          </div>
         </div>
+
         {/* Packages */}
-        <div></div>
+
+        <div>
+          <div className="text-center mb-10 space-y-2">
+            <h2 className="text-2xl md:text-3xl font-bold">Popular Packages</h2>
+            <div className="mx-auto w-20 h-1 bg-[#FE5300] rounded-full mt-3"></div>
+            <p>Travel Agency Services in Major Cities</p>
+          </div>
+
+          <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
+            {packages?.slice(0, 4).map((pkg: Package) => (
+              <PackageCard
+                key={pkg._id}
+                pkg={{
+                  id: pkg._id,
+                  name: pkg.title,
+                  slug: pkg.slug,
+                  image: pkg.coverImage?.url ?? "",
+                  price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
+                  duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                  destination: pkg.destination?.name ?? "",
+                  batch: pkg?.batch ? pkg?.batch : [],
+                }}
+                url={`/holidays/${pkg?.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
+              />
+            ))}
+          </div>
+        </div>
+
         <WhyChoose />
         <Faqs faqs={faqs} />
       </div>

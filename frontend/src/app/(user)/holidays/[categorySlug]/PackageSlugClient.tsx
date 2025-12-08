@@ -68,8 +68,8 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
   const [filter, setFilter] = useState({
     search: "",
     sort: "",
-    price: 50000,
-    duration: 10,
+    price: 500000,
+    duration: 25,
   });
   const [filteredPkgs, setFilteredPkgs] = useState<Package[]>(
     packagesData ?? []
@@ -160,8 +160,9 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
               type="range"
               name="price"
               onChange={handleChange}
+              value={filter.price}
               min={0}
-              max={50000}
+              max={500000}
               className="cursor-pointer accent-[#FE5300]"
             />
           </div>
@@ -180,7 +181,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
               value={filter.duration}
               onChange={handleChange}
               min={1}
-              max={10}
+              max={25}
               className="cursor-pointer accent-[#FE5300]"
             />
           </div>
@@ -192,8 +193,8 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
               const reset = {
                 search: "",
                 sort: "",
-                price: 50000,
-                duration: 10,
+                price: 500000,
+                duration: 25,
               };
               setFilter(reset);
               setFilteredPkgs(packages);

@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/select";
 import { FilterIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
-export interface Visa {
+import VisaMainCard from "@/components/custom/VisaMainCard";
+export interface VisaInterface {
   id: string;
   country: string;
   coverImage?: {
@@ -47,14 +48,14 @@ export interface Visa {
   };
 }
 
-function VisaClientPage({ visa }: { visa: Visa[] }) {
+function VisaClientPage({ visa }: { visa: VisaInterface[] }) {
   const [search, setSearch] = React.useState({
     country: "",
     visaType: "",
     minPrice: 0,
     maxPrice: 35000,
   });
-  const [filteredVisas, setFilteredVisas] = useState<Visa[]>(visa);
+  const [filteredVisas, setFilteredVisas] = useState<VisaInterface[]>(visa);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,7 +67,7 @@ function VisaClientPage({ visa }: { visa: Visa[] }) {
   };
 
   useEffect(() => {
-    const res = visa?.filter((visa: Visa) => {
+    const res = visa?.filter((visa: VisaInterface) => {
       return (
         visa.country.toLowerCase().includes(search.country.toLowerCase()) &&
         visa.visaType.toLowerCase().includes(search.visaType.toLowerCase()) &&
@@ -146,6 +147,7 @@ function VisaClientPage({ visa }: { visa: Visa[] }) {
               type="range"
               name="maxPrice"
               onChange={handleChange}
+              value={search.maxPrice}
               min={0}
               max={35000}
               className="cursor-pointer accent-[#FE5300]"
@@ -182,51 +184,8 @@ function VisaClientPage({ visa }: { visa: Visa[] }) {
             <h1 className="text-2xl font-bold">No Visas found</h1>
           )}
 
-          {filteredVisas.map((visa: Visa) => {
-            return (
-              <Card
-                key={visa.id}
-                className=" shadow-lg h-full shadow-gray-500/50 hover:shadow-[#FF5300]/50 "
-              >
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-2">
-                    <Image
-                      src={visa.coverImage?.url ? visa.coverImage.url : ""}
-                      alt={visa.coverImage?.alt ? visa.coverImage.alt : ""}
-                      width={300}
-                      height={200}
-                      className="outline rounded-md object-cover w-20 h-15"
-                    />
-                    <VisaTypesDialog type={visa.visaType} />
-                  </div>
-
-                  <CardTitle className="flex items-center text-2xl  gap-2">
-                    <h2>{visa.country}</h2>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 font-semibold">
-                    Get your visa in {visa.duration}
-                  </p>
-                  <p className="text-gray-600 font-semibold">
-                    {visa.visaProcessed}+ Visa Processed
-                  </p>
-                </CardContent>
-                <CardFooter className="flex items-center justify-between border-t  ">
-                  <p className="text-sm  text-gray-600">
-                    <span className="text-[#FF5300] font-bold text-lg">
-                      ₹{visa.cost}
-                    </span>
-                    + Service Fee
-                  </p>
-                  <p className="font-bold text-blue-600">
-                    <Link href={`/visa/${visa.slug}`}>
-                      Apply Now <span className="font-bold">{`>`}</span>
-                    </Link>
-                  </p>
-                </CardFooter>
-              </Card>
-            );
+          {filteredVisas.map((visa: VisaInterface) => {
+            return <VisaMainCard key={visa.id} visa={visa} />;
           })}
         </div>
       </div>

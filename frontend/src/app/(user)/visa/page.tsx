@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     canonical: "https://musafirbaba.com/visa",
   },
 };
-const getVisa = async () => {
+export const getVisa = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`, {
     next: {
       revalidate: 60,
