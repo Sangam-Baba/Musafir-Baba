@@ -230,13 +230,12 @@ export default function UpdateWebpage() {
               });
             }}
           />
-          {form.watch("coverImage") && (
-            <input
-              {...form.register("coverImage.alt")}
-              placeholder="Cover Image Alt"
-              className="w-full border rounded p-2"
-            />
-          )}
+
+          <input
+            {...form.register("coverImage.alt")}
+            placeholder="Cover Image Alt"
+            className="w-full border rounded p-2"
+          />
         </div>
         {/* keywords */}
         <div className="space-y-2">
