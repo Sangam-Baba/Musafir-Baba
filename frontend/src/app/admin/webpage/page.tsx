@@ -12,7 +12,11 @@ interface WebPage {
   _id: string;
   slug: string;
   status: string;
-  parent: string;
+  parent?: {
+    title: string;
+    slug: string;
+    _id: string;
+  };
 }
 interface QueryResponse {
   data: WebPage[];
@@ -95,10 +99,13 @@ function WebPage() {
             id: b._id,
             title: b.title,
             status: b.status === "published" ? "Published" : "Draft",
-            parent: `${b.parent.charAt(0).toUpperCase() + b.parent.slice(1)}`,
-            url: `${
-              b.parent === "noparent" ? `/${b.slug}` : `/${b.parent}/${b.slug}`
-            }`,
+            parent: b.parent
+              ? `${
+                  b?.parent?.title.charAt(0).toUpperCase() +
+                  b.parent.title.slice(1, 10)
+                }`
+              : "No Parent",
+            url: b.parent ? `/${b?.parent?.slug}/${b.slug}` : `/${b.slug}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

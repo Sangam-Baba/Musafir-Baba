@@ -186,7 +186,6 @@ const loginAdmin = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // recommended
     };
 
     res.cookie("admin_refresh_token", refreshToken, cookieOption);
@@ -230,7 +229,6 @@ const refresh = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
     };
 
     res.cookie("admin_refresh_token", refreshToken, cookieOptions);

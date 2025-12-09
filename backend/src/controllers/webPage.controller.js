@@ -14,7 +14,9 @@ const createWebPage = async (req, res) => {
     res.status(201).json({ success: true, data: webpage });
   } catch (error) {
     console.log("WebPage creation failed", error.message);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
@@ -26,6 +28,7 @@ const getWebPage = async (req, res) => {
     if (req.query?.status) filter.status = req.query.status;
     const webpage = await WebPage.find(filter)
       .sort({ createdAt: -1 })
+      .populate("parent", "title slug")
       .select("-content -faqs")
       .lean();
     res.status(200).json({ success: true, data: webpage });
@@ -150,6 +153,20 @@ const getRelatedPages = async (req, res) => {
   }
 };
 
+const getAllParents = async (req, res) => {
+  try {
+    const parents = await WebPage.find({ isParent: true })
+      .select("title slug")
+      .lean();
+    res.status(200).json({ success: true, data: parents });
+  } catch (error) {
+    console.log("Parents getting failed", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
+  }
+};
+
 export {
   createWebPage,
   getWebPage,
@@ -158,4 +175,5 @@ export {
   deleteWebPage,
   getWebPageById,
   getRelatedPages,
+  getAllParents,
 };

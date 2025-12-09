@@ -154,7 +154,6 @@ const login = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
-      maxAge: 24 * 60 * 60 * 1000,
     };
 
     res.cookie("user_refresh_token", refreshToken, cookieOption);
@@ -325,7 +324,6 @@ const refresh = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
     };
 
     res.cookie("user_refresh_token", refreshToken, cookieOptions);

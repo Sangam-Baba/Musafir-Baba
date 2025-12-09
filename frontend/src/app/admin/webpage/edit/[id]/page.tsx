@@ -21,6 +21,7 @@ import { Reviews } from "../../../holidays/new/page";
 import { deleteReview } from "../../../holidays/new/page";
 import { getReviewsByIds } from "../../../holidays/new/page";
 import { WebpageFormData } from "../../new/page";
+import { getParents } from "../../new/page";
 
 const getWebpage = async (id: string) => {
   const res = await fetch(
@@ -62,12 +63,16 @@ export default function UpdateWebpage() {
     queryKey: ["webpage", id],
     queryFn: () => getWebpage(id as string),
   });
+  const { data: allparents, isLoading: isAllParentsLoading } = useQuery({
+    queryKey: ["all-parents"],
+    queryFn: () => getParents(token),
+  });
 
   const defaultValues: WebpageFormData = {
     title: "",
     content: "",
     slug: "",
-    parent: "visa",
+    isParent: false,
     metaTitle: "",
     metaDescription: "",
     keywords: [],
@@ -360,24 +365,47 @@ export default function UpdateWebpage() {
           )}
         </div>
         <select
-          {...form.register("parent")}
+          {...form.register("parent", { setValueAs: (v) => v || undefined })}
           className="w-full border rounded p-2"
         >
-          <option value="" disabled>
-            Select Parent
-          </option>
-          <option value="noparent">No-Parent</option>
-          <option value="bookings">Bookings</option>
-          <option value="travel-agency">Travel Agency</option>
+          <option value="">Select Parent</option>
+          {allparents?.map(
+            (parent: { title: string; _id: string }, i: number) => (
+              <option key={i} value={parent._id}>
+                {parent.title}
+              </option>
+            )
+          )}
         </select>
 
-        <select
-          {...form.register("status")}
-          className="w-full border rounded p-2"
-        >
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
+        <div className="grid md:grid-cols-2 gap-5 ">
+          <div>
+            <label className="text-md font-semibold mb-2" htmlFor="isParent">
+              IsParent
+            </label>
+            <select
+              {...form.register("isParent", {
+                setValueAs: (value) => value === "true",
+              })}
+              className="w-full border rounded p-2"
+            >
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-md font-semibold mb-2" htmlFor="status">
+              Status
+            </label>
+            <select
+              {...form.register("status")}
+              className="w-full border rounded p-2"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+        </div>
 
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? "Updating..." : "Update Page"}

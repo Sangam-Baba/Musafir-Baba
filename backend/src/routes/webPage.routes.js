@@ -6,6 +6,7 @@ import {
   updateWebPage,
   deleteWebPage,
   getRelatedPages,
+  getAllParents,
 } from "../controllers/webPage.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -22,6 +23,13 @@ webPageRoute.post(
   createWebPage
 );
 webPageRoute.get("/", getWebPage);
+webPageRoute.get(
+  "/all-parents",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getAllParents
+);
 webPageRoute.get("/:slug", getWebPageBySlug);
 webPageRoute.get("/id/:id", getWebPageById);
 webPageRoute.get("/related/:slug", getRelatedPages);

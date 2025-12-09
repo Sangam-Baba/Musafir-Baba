@@ -19,7 +19,7 @@ const createMedia = async (req, res) => {
 
 const getAllMedia = async (req, res) => {
   try {
-    const allMedia = await Media.find();
+    const allMedia = await Media.find().sort({ createdAt: -1 }).lean();
     res.status(200).json({ success: true, data: allMedia });
   } catch (error) {
     console.log("All Media getting failed", error.message);

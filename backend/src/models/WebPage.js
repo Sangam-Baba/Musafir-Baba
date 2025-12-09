@@ -49,9 +49,12 @@ const webPageSchema = new mongoose.Schema(
       },
     ],
     parent: {
-      type: String,
-      enum: ["bookings", "visa", "noparent", "travel-agency", "chardham"],
-      default: "visa",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WebPage",
+    },
+    isParent: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

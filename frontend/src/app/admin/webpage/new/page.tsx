@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -22,7 +22,8 @@ export interface WebpageFormData {
   title: string;
   content: string;
   slug: string;
-  parent: string;
+  parent?: string;
+  isParent: boolean;
   metaTitle?: string;
   metaDescription?: string;
   keywords?: string[];
@@ -52,8 +53,37 @@ const createPage = async (values: WebpageFormData, token: string) => {
     },
     body: JSON.stringify(values),
   });
-  if (!res.ok) throw new Error("Failed to create page");
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+
+    throw new Error(
+      errorData.error || errorData.message || "Failed to create page"
+    );
+  }
+
   return res.json();
+};
+
+export const getParents = async (token: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/all-parents`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+
+    throw new Error(
+      errorData.error || errorData.message || "Failed to get parents"
+    );
+  }
+  const data = await res.json();
+
+  return data?.data;
 };
 
 export default function CreateWebpage() {
@@ -67,7 +97,7 @@ export default function CreateWebpage() {
     title: "",
     content: "",
     slug: "",
-    parent: "visa",
+    isParent: false,
     metaTitle: "",
     metaDescription: "",
     keywords: [],
@@ -83,7 +113,10 @@ export default function CreateWebpage() {
   });
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
-
+  const { data: allparents, isLoading } = useQuery({
+    queryKey: ["all-parents"],
+    queryFn: () => getParents(token),
+  });
   const mutation = useMutation({
     mutationFn: (values: WebpageFormData) => createPage(values, token),
     onSuccess: () => {
@@ -340,33 +373,57 @@ export default function CreateWebpage() {
           )}
         </div>
         <select
-          {...form.register("parent")}
+          {...form.register("parent", { setValueAs: (v) => v || undefined })}
           className="w-full border rounded p-2"
         >
-          <option value="" disabled>
-            Select Parent
-          </option>
-          <option value="noparent">No-Parent</option>
-          <option value="bookings">Bookings</option>
-          <option value="travel-agency">Travel Agency</option>
-          <option value="chardham">Chardham</option>
+          <option value="">Select Parent</option>
+          {allparents?.map(
+            (parent: { title: string; _id: string }, i: number) => (
+              <option key={i} value={parent._id}>
+                {parent.title}
+              </option>
+            )
+          )}
         </select>
-
-        <select
-          {...form.register("status")}
-          className="w-full border rounded p-2"
-        >
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
+        <div className="grid md:grid-cols-2 gap-5 ">
+          <div>
+            <label className="text-md font-semibold mb-2" htmlFor="isParent">
+              IsParent
+            </label>
+            <select
+              {...form.register("isParent", {
+                setValueAs: (value) => value === "true",
+              })}
+              className="w-full border rounded p-2"
+            >
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-md font-semibold mb-2" htmlFor="status">
+              Status
+            </label>
+            <select
+              {...form.register("status")}
+              className="w-full border rounded p-2"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+        </div>
 
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? "Creating..." : "Create Page"}
         </Button>
       </form>
       {mutation.isError && (
-        <p className="text-red-500 text-sm">Something went wrong</p>
+        <p className="text-red-500 text-sm">
+          {(mutation.error as Error).message}
+        </p>
       )}
+
       {mutation.isSuccess && (
         <p className="text-green-500 text-sm">Page created successfully!</p>
       )}
