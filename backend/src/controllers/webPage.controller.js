@@ -24,7 +24,14 @@ const getWebPage = async (req, res) => {
   try {
     const { filter = {} } = req.query;
     if (req.query?.title) filter.title = req.query.title;
-    if (req.query?.parent) filter.parent = req.query.parent;
+    if (req.query?.parent) {
+      const parent = await WebPage.findOne({ slug: req.query.parent }).lean();
+      if (!parent)
+        return res
+          .status(404)
+          .json({ success: false, message: "Invalid Slug" });
+      filter.parent = parent._id;
+    }
     if (req.query?.status) filter.status = req.query.status;
     const webpage = await WebPage.find(filter)
       .sort({ createdAt: -1 })
@@ -43,8 +50,15 @@ const getWebPageBySlug = async (req, res) => {
     const { slug } = req.params;
     if (!slug)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
-    const webpage = await WebPage.findOne({ slug }).populate("reviews").lean();
+    const webpage = await WebPage.findOne({ slug })
+      .populate("reviews")
+      .populate("parent", "title slug")
+      .lean();
     if (!webpage)
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    if (req.query?.parent && webpage.parent.slug !== req.query.parent)
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    if (webpage?.parent && !req.query?.parent)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
     res.status(200).json({ success: true, data: webpage });
   } catch (error) {

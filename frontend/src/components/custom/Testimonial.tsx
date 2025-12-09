@@ -48,7 +48,7 @@ const testi = [
   },
 ];
 
-interface TestiProps {
+export interface TestiProps {
   _id?: string;
   name: string;
   comment: string;

@@ -1,7 +1,6 @@
 import Hero from "@/components/custom/Hero";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { Metadata } from "next";
 import {
   Accordion,
   AccordionContent,
@@ -14,12 +13,26 @@ import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
 import { getWebPageBySlug } from "@/app/(user)/[webpage]/page";
+import { TestiProps } from "@/components/custom/Testimonial";
 
 interface Faq {
   question: string;
   answer: string;
 }
-
+interface WebpageInterface {
+  title: string;
+  content: string;
+  slug: string;
+  coverImage?: {
+    url?: string;
+    public_id?: string;
+    alt?: string;
+    width?: number;
+    height?: number;
+  };
+  faqs?: Faq[];
+  reviews?: TestiProps[];
+}
 // const getRelatedPages = async (slug: string) => {
 //   const res = await fetch(
 //     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/related/${slug}`
@@ -28,9 +41,9 @@ interface Faq {
 //   const data = await res.json();
 //   return data;
 // };
-async function MainWebPage({ slug }: { slug: string }) {
-  const visa = await getWebPageBySlug(slug);
-  if (!visa) return notFound();
+async function MainWebPage({ page }: { page: WebpageInterface }) {
+  // const visa = await getWebPageBySlug(slug);
+  // if (!visa) return notFound();
 
   //   const relatedPages = await getRelatedPages(webpage);
 
@@ -39,8 +52,8 @@ async function MainWebPage({ slug }: { slug: string }) {
   return (
     <section className="">
       <Hero
-        image={visa?.coverImage?.url || "/Hero1.jpg"}
-        title={visa.title}
+        image={page?.coverImage?.url || "/Hero1.jpg"}
+        title={page?.title || " "}
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
@@ -52,13 +65,13 @@ async function MainWebPage({ slug }: { slug: string }) {
             <h1 className="text-3xl md:text-4xl font-bold"></h1>
           </header> */}
           <section className="prose prose-lg max-w-none">
-            <BlogContent html={visa.content} />
+            <BlogContent html={page.content} />
           </section>
           <section>
             <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>
             <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
             <Accordion type="single" collapsible className="w-full">
-              {visa.faqs.map((faq: Faq, i: number) => (
+              {page?.faqs?.map((faq: Faq, i: number) => (
                 <AccordionItem
                   value={`faq-${i}`}
                   key={i}
@@ -88,7 +101,7 @@ async function MainWebPage({ slug }: { slug: string }) {
       <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">
         <WhyChoose />
         <section>
-          <Testimonial data={visa.reviews ?? []} />
+          <Testimonial data={page.reviews ?? []} />
         </section>
       </div>
     </section>

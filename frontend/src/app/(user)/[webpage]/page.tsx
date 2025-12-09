@@ -23,8 +23,6 @@ export async function generateMetadata({
   const { webpage } = await params;
   const page = await getWebPageBySlug(webpage);
 
-  if (!page) return notFound();
-
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
@@ -43,7 +41,8 @@ export async function generateMetadata({
 
 async function page({ params }: { params: Promise<{ webpage: string }> }) {
   const { webpage } = await params;
-  return <MainWebPage slug={webpage} />;
+  const page = await getWebPageBySlug(webpage);
+  return <MainWebPage page={page} />;
 }
 
 export default page;

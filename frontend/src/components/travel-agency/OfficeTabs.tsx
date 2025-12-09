@@ -43,7 +43,7 @@ export function OfficeTabs({ offices }: { offices: OfficesInterface[] }) {
 
         {/* Offices */}
         <div>
-          {offices.map((item, index: number) => (
+          {offices.reverse().map((item, index: number) => (
             <div
               key={index}
               className={`${
@@ -56,7 +56,7 @@ export function OfficeTabs({ offices }: { offices: OfficesInterface[] }) {
               >
                 <div className="w-full md:w-1/2 flex justify-center">
                   <Image
-                    src={item.coverImage?.url}
+                    src={item.coverImage?.url || "/Hero2.jpg"}
                     width={500}
                     height={500}
                     alt={item.title}

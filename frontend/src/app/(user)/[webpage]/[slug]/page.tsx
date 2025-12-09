@@ -2,9 +2,9 @@ import MainWebPage from "@/components/custom/MainWebpage";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-export const getWebPageBySlug = async (slug: string) => {
+export const getChildWebPageBySlug = async (slug: string, parent: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${slug}?parent=${parent}`,
     {
       next: { revalidate: 120 },
     }
@@ -21,9 +21,7 @@ export async function generateMetadata({
   params: Promise<{ webpage: string; slug: string }>;
 }): Promise<Metadata> {
   const { webpage, slug } = await params;
-  const page = await getWebPageBySlug(slug);
-
-  if (!page) return notFound();
+  const page = await getChildWebPageBySlug(slug, webpage);
 
   return {
     title: page.metaTitle || page.title,
@@ -47,7 +45,10 @@ async function page({
   params: Promise<{ webpage: string; slug: string }>;
 }) {
   const { webpage, slug } = await params;
-  return <MainWebPage slug={slug} />;
+  const page = await getChildWebPageBySlug(slug, webpage);
+
+  if (!page) return notFound();
+  return <MainWebPage page={page} />;
 }
 
 export default page;

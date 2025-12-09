@@ -22,11 +22,12 @@ import PackageCard from "@/components/custom/PackageCard";
 import { Package } from "@/app/(user)/holidays/[categorySlug]/PackageSlugClient";
 import Link from "next/link";
 import { Testimonial } from "@/components/custom/Testimonial";
+import { notFound } from "next/navigation";
 const getOffices = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
   );
-  if (!res.ok) throw new Error("Failed to fetch visas");
+  if (!res.ok) notFound();
   const data = await res.json();
   return data?.data;
 };
@@ -269,8 +270,8 @@ async function page() {
               <h1 className="text-2xl font-bold">No Visas found</h1>
             )}
 
-            {filteredVisas.map((visa: VisaInterface) => {
-              return <VisaMainCard key={visa.id} visa={visa} />;
+            {filteredVisas.map((visa: VisaInterface, i: number) => {
+              return <VisaMainCard key={i} visa={visa} />;
             })}
           </div>
           <Link
