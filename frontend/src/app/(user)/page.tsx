@@ -103,7 +103,7 @@ export default async function HomePage() {
       <Testimonial data={[]} />
       <ImageGallery
         title="Memories in Motion"
-        description="Picture Perfect Moments with the Best Travel Agency in Delhi"
+        description="Picture Perfect Moments with the Best Travel Agency in India"
       />
       <HomeBooking />
       <BlogsHome />

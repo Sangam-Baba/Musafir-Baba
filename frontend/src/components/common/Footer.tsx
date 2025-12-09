@@ -32,7 +32,7 @@ function Footer() {
           <p>
             {" "}
             MusafirBaba, a trusted name in the tour and travel industry in
-            Delhi. We offer expertly crafted customised tour packages, group
+            India. We offer expertly crafted customised tour packages, group
             bike tours, international trips, family vacations, weekend getaways,
             honeymoon packages and corporate trips along with visa assistance
             and bus/train/flight bookings etc.
@@ -90,7 +90,7 @@ function Footer() {
               <Phone size={20} color="#FE5300" className="w-[5%] h-5  " />
               <div className="md:flex justify-start w-[90%] gap-2">
                 <p>
-                  <span className="font-bold">Visa:</span>+91 93556 63591
+                  <span className="font-bold">Visa:</span>+91 9217082447
                 </p>
               </div>
             </div>
@@ -160,7 +160,7 @@ function Footer() {
               />
               <p>
                 MusafirBaba, a trusted name in the tour and travel industry in
-                Delhi. We offer expertly crafted customised tour packages, group
+                India. We offer expertly crafted customised tour packages, group
                 bike tours, international trips, family vacations, weekend
                 getaways, honeymoon packages and corporate trips along with visa
                 assistance and bus/train/flight bookings etc.
@@ -215,7 +215,7 @@ function Footer() {
                 <div className="flex items-start gap-3">
                   <Phone color="#FE5300" className="mt-1 shrink-0" />
                   <p className="text-sm">
-                    Tour: +91 92896 02447 | Visa: +91 93556 63591
+                    Tour: +91 92896 02447 | Visa: +91 9217082447
                   </p>
                 </div>
                 <div className="flex items-start gap-3">

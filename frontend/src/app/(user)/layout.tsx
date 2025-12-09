@@ -9,16 +9,20 @@ export const metadata: Metadata = {
   title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
   description:
     "Most trusted travel agency in India for holidays, tour packages, and visa services. Expert guidance for hassle-free travel.",
-  keywords:
-    "Travel Agency, Tour Packages, Visa Services, Delhi, India, Holidays, Visa, Bookings",
+  keywords: [
+    "Best Travel Agency in India",
+    "India Tour Packages",
+    "Holiday Packages India",
+    "International Tour Packages",
+  ],
   alternates: {
-    canonical: "https://musafirbaba.com/",
+    canonical: "https://musafirbaba.com",
   },
   openGraph: {
     title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
     description:
       "Most trusted travel agency in India for holidays, tour packages, and visa services. Expert guidance for hassle-free travel.",
-    url: "https://musafirbaba.com/",
+    url: "https://musafirbaba.com",
     siteName: "MusafirBaba",
     images: [
       {

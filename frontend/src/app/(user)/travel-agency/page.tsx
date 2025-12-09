@@ -23,6 +23,8 @@ import { Package } from "@/app/(user)/holidays/[categorySlug]/PackageSlugClient"
 import Link from "next/link";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
+import { getWebPageBySlug } from "../[webpage]/page";
+import { BlogContent } from "@/components/custom/BlogContent";
 const getOffices = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
@@ -33,12 +35,13 @@ const getOffices = async () => {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
+  const page = await getWebPageBySlug("travel-agency");
+  const data = {
     title: "Best Travel Agency in India for Tours & Visas | Musafir Baba",
     description:
       "Looking for the best travel agency in India? MusafirBaba offers customised tour packages, India & international holidays, and fast visa services you can trust.",
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/travel-agency`,
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/travel-agency`, //new URL(`/${page.slug}`, "https://musafirbaba.com").toString(),
     },
     keywords: [
       "Travel Agency in India",
@@ -46,8 +49,24 @@ export async function generateMetadata(): Promise<Metadata> {
       "Travel Agency",
     ],
   };
+  if (!page) return data;
+  return {
+    title: page.metaTitle || page.title,
+    description: page.metaDescription,
+    keywords: page.keywords,
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+    },
+    openGraph: {
+      title: page.metaTitle || page.title,
+      description: page.metaDescription,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+      type: "website",
+    },
+  };
 }
 async function page() {
+  const page = await getWebPageBySlug("travel-agency");
   const offices = await getOffices();
   const visas = await getVisa();
   const packages = await getPackageByCategorySlug("honeymoon-packages");
@@ -116,8 +135,14 @@ async function page() {
   return (
     <div>
       <Hero
-        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1765003780/dda7b162262041.5a8af0c73f8bd_aazzhr.jpg"
-        title="Best Travel Agency in India for Complete Tour & Visa Solutions"
+        image={
+          page?.coverImage.url ||
+          "https://res.cloudinary.com/dmmsemrty/image/upload/v1765003780/dda7b162262041.5a8af0c73f8bd_aazzhr.jpg"
+        }
+        title={
+          page?.title ||
+          "Best Travel Agency in India for Complete Tour & Visa Solutions"
+        }
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
@@ -127,14 +152,7 @@ async function page() {
         <div className="flex flex-col md:flex-row gap-10">
           <div className="w-full md:w-3/5 space-y-10">
             <p>
-              Welcome to MusafirBaba, the best travel agency in India, known for
-              its one of India’s most trusted names in travel planning. We help
-              travellers across India with visa assistance, customised tour
-              packages, flight bookings, hotel reservations, and end-to-end
-              travel management — all under one roof. Whether you are planning
-              your next holiday from Delhi, Mumbai, Bangalore, Noida, or any
-              other city, our expert team ensures transparent pricing, smooth
-              processing, and complete travel support.
+              <BlogContent html={page.content} />
             </p>
             <div>
               <h2 className="text-2xl md:text-3xl font-bold">

@@ -16,7 +16,7 @@ export default function SectionFour() {
           </h2>
           <div className="bg-[#FE5300] w-12 h-1"></div>
           <p className="text-sm md:text-base leading-relaxed text-gray-700">
-            As the best travel agency in Delhi, we offer customizable Delhi tour
+            As the best travel agency in India, we offer customizable Delhi tour
             packages. Experience Delhi like never before with our customizable
             Delhi Darshan tours.
             <br />

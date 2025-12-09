@@ -15,6 +15,7 @@ interface OfficesInterface {
   excerpt: string;
   title: string;
   slug: string;
+  createdAt: string;
 }
 
 export function OfficeTabs({ offices }: { offices: OfficesInterface[] }) {
@@ -43,7 +44,7 @@ export function OfficeTabs({ offices }: { offices: OfficesInterface[] }) {
 
         {/* Offices */}
         <div>
-          {offices.reverse().map((item, index: number) => (
+          {offices.map((item, index: number) => (
             <div
               key={index}
               className={`${
