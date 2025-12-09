@@ -16,12 +16,12 @@ export async function generateMetadata({
     description: page.metaDescription,
     keywords: page.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+      canonical: `https://musafirbaba.com/travel-agency/${page.slug}`,
     },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+      url: `https://musafirbaba.com/travel-agency/${page.slug}`,
       type: "website",
     },
   };

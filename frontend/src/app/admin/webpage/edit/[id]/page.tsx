@@ -287,19 +287,23 @@ export default function UpdateWebpage() {
         <div>
           <Label>FAQs</Label>
           {faqsArray.fields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
-              <Input
-                {...form.register(`faqs.${index}.question`)}
-                placeholder="Question"
-              />
-              <Input
-                {...form.register(`faqs.${index}.answer`)}
-                placeholder="Answer"
-              />
+            <div key={field.id} className="flex">
+              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+                <Input
+                  {...form.register(`faqs.${index}.question`)}
+                  placeholder="Question"
+                />
+                <Input
+                  {...form.register(`faqs.${index}.answer`)}
+                  placeholder="Answer"
+                />
+              </div>
+
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => faqsArray.remove(index)}
+                className="w-[80px] ml-2"
               >
                 Remove
               </Button>
@@ -309,7 +313,7 @@ export default function UpdateWebpage() {
             type="button"
             onClick={() => faqsArray.append({ question: "", answer: "" })}
           >
-            Add FAQ
+            + FAQ
           </Button>
         </div>
         {/* Reviews */}

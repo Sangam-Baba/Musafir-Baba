@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       "Looking for the best travel agency in India? MusafirBaba offers customised tour packages, India & international holidays, and fast visa services you can trust.",
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/travel-agency`, //new URL(`/${page.slug}`, "https://musafirbaba.com").toString(),
+      canonical: `https://musafirbaba.com/travel-agency`, //new URL(`/${page.slug}`, "https://musafirbaba.com").toString(),
     },
     keywords: [
       "Travel Agency in India",
@@ -55,12 +55,12 @@ export async function generateMetadata(): Promise<Metadata> {
     description: page.metaDescription,
     keywords: page.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+      canonical: `https://musafirbaba.com/${page.slug}`,
     },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+      url: `https://musafirbaba.com/${page.slug}`,
       type: "website",
     },
   };

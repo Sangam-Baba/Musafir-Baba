@@ -51,7 +51,7 @@ function VideoSection() {
                 dream honeymoon, or your first international trip, we ensure
                 comfort, clarity, and unforgettable memories.{" "}
                 <Link href="/about-us" className="text-[#FE5300]">
-                  Read More...
+                  ...Read More
                 </Link>
               </p>
             </div>

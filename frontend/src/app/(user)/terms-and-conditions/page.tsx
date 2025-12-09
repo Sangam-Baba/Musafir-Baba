@@ -31,13 +31,13 @@ export async function generateMetadata(): Promise<Metadata> {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/terms-and-conditions`,
+      canonical: `https://musafirbaba.com/terms-and-conditions`,
     },
     keywords: page.keywords,
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/terms-and-conditions`,
+      url: `https://musafirbaba.com/terms-and-conditions`,
       type: "website",
     },
   };

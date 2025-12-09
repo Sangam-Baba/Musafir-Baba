@@ -236,13 +236,12 @@ export default function CreateWebpage() {
               });
             }}
           />
-          {form.watch("coverImage") && (
-            <input
-              {...form.register("coverImage.alt")}
-              placeholder="Cover Image Alt"
-              className="w-full border rounded p-2"
-            />
-          )}
+
+          <input
+            {...form.register("coverImage.alt")}
+            placeholder="Cover Image Alt"
+            className="w-full border rounded p-2"
+          />
         </div>
 
         <div className="space-y-2">
@@ -294,19 +293,23 @@ export default function CreateWebpage() {
         <div>
           <Label>FAQs</Label>
           {faqsArray.fields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
-              <Input
-                {...form.register(`faqs.${index}.question`)}
-                placeholder="Question"
-              />
-              <Input
-                {...form.register(`faqs.${index}.answer`)}
-                placeholder="Answer"
-              />
+            <div key={field.id} className="flex">
+              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+                <Input
+                  {...form.register(`faqs.${index}.question`)}
+                  placeholder="Question"
+                />
+                <Input
+                  {...form.register(`faqs.${index}.answer`)}
+                  placeholder="Answer"
+                />
+              </div>
+
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => faqsArray.remove(index)}
+                className="w-[80px] ml-2"
               >
                 Remove
               </Button>
@@ -316,7 +319,7 @@ export default function CreateWebpage() {
             type="button"
             onClick={() => faqsArray.append({ question: "", answer: "" })}
           >
-            Add FAQ
+            + FAQ
           </Button>
         </div>
 
