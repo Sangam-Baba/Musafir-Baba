@@ -34,7 +34,7 @@ const getWebPage = async (req, res) => {
     }
     if (req.query?.status) filter.status = req.query.status;
     const webpage = await WebPage.find(filter)
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1 })
       .populate("parent", "title slug")
       .select("-content -faqs")
       .lean();

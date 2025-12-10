@@ -15,7 +15,7 @@ interface Footer {
 
 const getFooter = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
-    next: { revalidate: 86400 },
+    next: { revalidate: 120 },
   });
   if (!res.ok) throw new Error("Failed to fetch footer");
   const data = await res.json();

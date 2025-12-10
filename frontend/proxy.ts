@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // routes admin can access without login
-const PUBLIC_ADMIN_ROUTES = ["/admin/login", "/admin/role"];
+const PUBLIC_ADMIN_ROUTES = ["/admin/login"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

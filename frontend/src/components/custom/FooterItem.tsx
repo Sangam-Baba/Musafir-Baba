@@ -8,7 +8,7 @@ const getFooter = async (title: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
     {
-      next: { revalidate: 86400 },
+      next: { revalidate: 120 },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch footer");

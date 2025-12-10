@@ -14,6 +14,7 @@ import VideoSection from "@/components/custom/VideoSection";
 import WhyChoose from "@/components/custom/WhyChoose";
 import Image from "next/image";
 import SecondSectionServer from "@/components/custom/SecondSectionServer";
+import LoginAutoOpen from "@/components/User/LoginAutoOpen";
 
 const faqs = [
   {
@@ -54,7 +55,13 @@ const faqs = [
   },
 ];
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth: string }>;
+}) {
+  const { auth } = (await searchParams) || null;
+  // console.log("auth", auth);
   return (
     <main className="">
       <section className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center">
@@ -92,7 +99,6 @@ export default async function HomePage() {
       </section>
       <SecondSectionServer />
       <VisaHome />
-
       <SevenSection />
       <FeaturedTourSSG />
       <SectionFour />
@@ -108,6 +114,7 @@ export default async function HomePage() {
       <HomeBooking />
       <BlogsHome />
       <Faqs faqs={faqs} />
+      <LoginAutoOpen auth={auth} />
     </main>
   );
 }
