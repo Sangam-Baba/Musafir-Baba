@@ -55,13 +55,12 @@ export function OfficeTabs({ offices }: { offices: OfficesInterface[] }) {
                 href={`/travel-agency/${item.slug}`}
                 className="flex flex-col md:flex-row gap-4"
               >
-                <div className="w-full md:w-1/2 flex justify-center">
+                <div className="w-full md:w-1/2 flex relative aspect-[16/9]">
                   <Image
                     src={item.coverImage?.url || "/Hero2.jpg"}
-                    width={500}
-                    height={500}
+                    fill
                     alt={item.title}
-                    className="w-full h-full object-cover "
+                    className=" object-cover "
                   />
                 </div>
                 <div className="flex flex-col w-full md:w-1/2 md:gap-5 gap-2 justify-start p-4">

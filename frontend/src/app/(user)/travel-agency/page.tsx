@@ -68,6 +68,10 @@ export async function generateMetadata(): Promise<Metadata> {
 async function page() {
   const page = await getWebPageBySlug("travel-agency");
   const offices = await getOffices();
+  const sortedOffices = offices.sort(
+    (a: any, b: any) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
   const visas = await getVisa();
   const packages = await getPackageByCategorySlug("honeymoon-packages");
   const shownVisas = ["Singapore", "Japan", "UK", "Schengen"];
@@ -272,7 +276,7 @@ async function page() {
             <p>Local expertise, available wherever you are</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 px-6 md:px-16">
-            <OfficeTabs offices={offices} />
+            <OfficeTabs offices={sortedOffices} />
           </div>
         </div>
 

@@ -88,10 +88,11 @@ export default function UpdateWebpage() {
   });
 
   useEffect(() => {
-    if (webpage) {
+    if (webpage && allparents) {
       const reviewsIds = webpage.reviews?.map((r: string) => r) || [];
       form.reset({
         ...webpage,
+        parent: webpage.parent,
         reviews: reviewsIds,
       });
       if (reviewsIds.length > 0) {
@@ -105,7 +106,7 @@ export default function UpdateWebpage() {
           .catch((err) => console.error("Failed to fetch review info:", err));
       }
     }
-  }, [webpage, form, token]);
+  }, [webpage, form, token, allparents]);
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
 
@@ -159,7 +160,6 @@ export default function UpdateWebpage() {
   }
   if (isLoading) return <Loader size={"lg"} />;
   if (isError) return <p>Something went wrong</p>;
-
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Edit Page</h1>
@@ -369,6 +369,7 @@ export default function UpdateWebpage() {
         </div>
         <select
           {...form.register("parent", { setValueAs: (v) => v || undefined })}
+          value={form.watch("parent") || undefined}
           className="w-full border rounded p-2"
         >
           <option value="">Select Parent</option>

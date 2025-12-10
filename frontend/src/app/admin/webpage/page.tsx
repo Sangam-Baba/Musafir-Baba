@@ -43,7 +43,7 @@ function WebPage() {
   ) as string[];
   const router = useRouter();
 
-  const { data, isLoading, isError, error } = useQuery<QueryResponse>({
+  const { data, isLoading, isError, error, refetch } = useQuery<QueryResponse>({
     queryKey: ["webpage"],
     queryFn: () => getAllWebPage(accessToken),
     retry: 2,
@@ -68,7 +68,7 @@ function WebPage() {
       );
       if (!res.ok) throw new Error("Failed to delete webpage");
       toast.success("Webpage: Deleted successfully");
-      router.refresh();
+      refetch();
     } catch (error) {
       console.log("error in deleting", error);
       toast.error("Failed to delete webpage");

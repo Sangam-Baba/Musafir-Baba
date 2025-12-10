@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Hero from "@/components/custom/Hero";
-import React from "react";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
 import {

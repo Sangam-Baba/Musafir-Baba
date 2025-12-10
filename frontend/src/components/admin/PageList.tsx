@@ -1,17 +1,24 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 interface WebPage {
-    title: string;
-    id: string;
-    status: string
-    parent: string
-    url: string
-  }
+  title: string;
+  id: string;
+  status: string;
+  parent: string;
+  url: string;
+}
 
 interface WebpageTableProps {
   webpages: WebPage[];
@@ -19,8 +26,11 @@ interface WebpageTableProps {
   onDelete: (id: string) => void;
 }
 
-export default function PageListt({ webpages , onEdit, onDelete }: WebpageTableProps ) {
-
+export default function PageListt({
+  webpages,
+  onEdit,
+  onDelete,
+}: WebpageTableProps) {
   return (
     <div className="w-full">
       {/* Desktop Table */}
@@ -43,9 +53,9 @@ export default function PageListt({ webpages , onEdit, onDelete }: WebpageTableP
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
-                <TableCell className="font-medium">{cat.title}</TableCell>       
-                <TableCell className="font-medium">{cat.parent}</TableCell>     
-                <TableCell className="font-medium">{cat.status}</TableCell>        
+                <TableCell className="font-medium">{cat.title}</TableCell>
+                <TableCell className="font-medium">{cat.parent}</TableCell>
+                <TableCell className="font-medium">{cat.status}</TableCell>
                 <TableCell>
                   <a
                     href={cat.url}
@@ -70,7 +80,7 @@ export default function PageListt({ webpages , onEdit, onDelete }: WebpageTableP
                     size="sm"
                     onClick={() => onDelete(cat.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -84,9 +94,9 @@ export default function PageListt({ webpages , onEdit, onDelete }: WebpageTableP
         {webpages.map((cat: WebPage) => (
           <Card key={cat.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{cat.title}</h3>  
-              <h3 className="font-semibold text-lg">{cat.parent}</h3>   
-              <h3 className="font-semibold text-lg">{cat.status}</h3>           
+              <h3 className="font-semibold text-lg">{cat.title}</h3>
+              <h3 className="font-semibold text-lg">{cat.parent}</h3>
+              <h3 className="font-semibold text-lg">{cat.status}</h3>
               <a
                 href={cat.url}
                 target="_blank"
@@ -111,7 +121,7 @@ export default function PageListt({ webpages , onEdit, onDelete }: WebpageTableP
                   className="flex-1"
                   onClick={() => onDelete(cat.id)}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  <Trash2 className="w-4 h-4 mr-1" />
                 </Button>
               </div>
             </CardContent>
@@ -119,5 +129,5 @@ export default function PageListt({ webpages , onEdit, onDelete }: WebpageTableP
         ))}
       </div>
     </div>
-  )
+  );
 }
