@@ -1,15 +1,22 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 interface Category {
-  id: string
-  name: string
-  slug: string
-  url: string
+  id: string;
+  name: string;
+  slug: string;
+  url: string;
 }
 interface CategoryTableProps {
   categories: Category[];
@@ -17,8 +24,11 @@ interface CategoryTableProps {
   onDelete: (id: string) => void;
 }
 
-export default function CategoryList({ categories , onEdit, onDelete }: CategoryTableProps ) {
-
+export default function CategoryList({
+  categories,
+  onEdit,
+  onDelete,
+}: CategoryTableProps) {
   return (
     <div className="w-full">
       {/* Desktop Table */}
@@ -26,7 +36,7 @@ export default function CategoryList({ categories , onEdit, onDelete }: Category
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="w-[20%]">Name</TableHead>
+              <TableHead className="w-[60%]">Name</TableHead>
               <TableHead className="w-[20%]">URL</TableHead>
               <TableHead className="w-[25%] text-right">Actions</TableHead>
             </TableRow>
@@ -39,7 +49,7 @@ export default function CategoryList({ categories , onEdit, onDelete }: Category
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
-                <TableCell className="font-medium">{cat.name}</TableCell>               
+                <TableCell className="font-medium">{cat.name}</TableCell>
                 <TableCell>
                   <a
                     href={cat.url}
@@ -64,7 +74,7 @@ export default function CategoryList({ categories , onEdit, onDelete }: Category
                     size="sm"
                     onClick={() => onDelete(cat.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -78,7 +88,7 @@ export default function CategoryList({ categories , onEdit, onDelete }: Category
         {categories.map((cat) => (
           <Card key={cat.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{cat.name}</h3>             
+              <h3 className="font-semibold text-lg">{cat.name}</h3>
               <a
                 href={cat.url}
                 target="_blank"
@@ -111,5 +121,5 @@ export default function CategoryList({ categories , onEdit, onDelete }: Category
         ))}
       </div>
     </div>
-  )
+  );
 }

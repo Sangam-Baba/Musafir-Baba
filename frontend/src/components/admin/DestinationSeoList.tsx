@@ -100,7 +100,7 @@ export default function DestinationSeoList({
                     size="sm"
                     onClick={() => onDelete(cat._id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>

@@ -31,7 +31,7 @@ function VisaPage() {
     (state) => state.permissions
   ) as string[];
   const router = useRouter();
-  const { data, isLoading, isError, error } = useQuery<QueryResponse>({
+  const { data, isLoading, isError, error, refetch } = useQuery<QueryResponse>({
     queryKey: ["visa"],
     queryFn: getAllVisa,
     retry: 2,
@@ -61,7 +61,7 @@ function VisaPage() {
       );
       if (!res.ok) throw new Error("Failed to delete visa");
       toast.success("Visa: Deleted successfully");
-      router.refresh();
+      refetch();
     } catch (error) {
       console.log("error in deleting", error);
       toast.error("Something went wrong while deleting visa");

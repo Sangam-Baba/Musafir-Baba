@@ -1,17 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 interface Destination {
-  id: string
-  name: string
-  country: string
-  state: string
-  url: string
+  id: string;
+  name: string;
+  country: string;
+  state: string;
+  url: string;
 }
 interface DestinationTableProps {
   destinations: Destination[];
@@ -19,8 +26,11 @@ interface DestinationTableProps {
   onDelete: (id: string) => void;
 }
 
-export default function DestinationList({ destinations , onEdit, onDelete }: DestinationTableProps ) {
-
+export default function DestinationList({
+  destinations,
+  onEdit,
+  onDelete,
+}: DestinationTableProps) {
   return (
     <div className="w-full">
       {/* Desktop Table */}
@@ -45,11 +55,11 @@ export default function DestinationList({ destinations , onEdit, onDelete }: Des
               >
                 <TableCell className="font-medium">{dest.name}</TableCell>
                 <TableCell className="truncate max-w-[250px]">
-                  {dest.country}
+                  {dest.country.charAt(0).toUpperCase() + dest.country.slice(1)}
                 </TableCell>
                 <TableCell className="truncate max-w-[250px]">
-                  {dest.state}
-                </TableCell>                
+                  {dest.state.charAt(0).toUpperCase() + dest.state.slice(1)}
+                </TableCell>
                 <TableCell>
                   <a
                     href={dest.url}
@@ -74,7 +84,7 @@ export default function DestinationList({ destinations , onEdit, onDelete }: Des
                     size="sm"
                     onClick={() => onDelete(dest.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -94,7 +104,7 @@ export default function DestinationList({ destinations , onEdit, onDelete }: Des
               </p>
               <p className="text-sm text-muted-foreground line-clamp-3">
                 {dest.state}
-              </p>              
+              </p>
               <a
                 href={dest.url}
                 target="_blank"
@@ -127,5 +137,5 @@ export default function DestinationList({ destinations , onEdit, onDelete }: Des
         ))}
       </div>
     </div>
-  )
+  );
 }

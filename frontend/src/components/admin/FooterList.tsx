@@ -1,18 +1,25 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2} from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 interface Footer {
-  id: string
-  title: string
-  content: Content[]
+  id: string;
+  title: string;
+  content: Content[];
 }
 interface Content {
-  text: string
-  url: string
+  text: string;
+  url: string;
 }
 interface FooterTableProps {
   footers: Footer[];
@@ -20,8 +27,11 @@ interface FooterTableProps {
   onDelete: (id: string) => void;
 }
 
-export default function FootersList({ footers , onEdit, onDelete }: FooterTableProps ) {
-
+export default function FootersList({
+  footers,
+  onEdit,
+  onDelete,
+}: FooterTableProps) {
   return (
     <div className="w-full">
       {/* Desktop Table */}
@@ -42,8 +52,12 @@ export default function FootersList({ footers , onEdit, onDelete }: FooterTableP
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
-                <TableCell className="font-medium">{cat.title}</TableCell>       
-                <TableCell className="font-medium">{cat.content.map((content: Content) => content.text).join(", ")}</TableCell>           
+                <TableCell className="font-medium">{cat.title}</TableCell>
+                <TableCell className="font-medium">
+                  {cat.content
+                    .map((content: Content) => content.text)
+                    .join(", ")}
+                </TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button
                     variant="outline"
@@ -57,7 +71,7 @@ export default function FootersList({ footers , onEdit, onDelete }: FooterTableP
                     size="sm"
                     onClick={() => onDelete(cat.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -71,8 +85,10 @@ export default function FootersList({ footers , onEdit, onDelete }: FooterTableP
         {footers.map((cat: Footer) => (
           <Card key={cat.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{cat.title}</h3>  
-              <h3 className="font-semibold text-lg">{cat.content.map((content: Content) => content.text).join(", ")}</h3>            
+              <h3 className="font-semibold text-lg">{cat.title}</h3>
+              <h3 className="font-semibold text-lg">
+                {cat.content.map((content: Content) => content.text).join(", ")}
+              </h3>
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
@@ -88,7 +104,7 @@ export default function FootersList({ footers , onEdit, onDelete }: FooterTableP
                   className="flex-1"
                   onClick={() => onDelete(cat.id)}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  <Trash2 className="w-4 h-4 mr-1" />
                 </Button>
               </div>
             </CardContent>
@@ -96,5 +112,5 @@ export default function FootersList({ footers , onEdit, onDelete }: FooterTableP
         ))}
       </div>
     </div>
-  )
+  );
 }

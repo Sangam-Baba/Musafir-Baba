@@ -53,7 +53,9 @@ export default function MembershipList({
                 className="border-b"
               >
                 <TableCell className="font-medium">{cat.name}</TableCell>
-                <TableCell className="font-medium">{cat.price}</TableCell>
+                <TableCell className="font-medium">
+                  Rs. {cat.price.toLocaleString()}
+                </TableCell>
                 <TableCell className="font-medium">{cat.duration}</TableCell>
                 <TableCell>
                   <a
@@ -79,7 +81,7 @@ export default function MembershipList({
                     size="sm"
                     onClick={() => onDelete(cat.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -94,7 +96,9 @@ export default function MembershipList({
           <Card key={cat.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
               <h3 className="font-semibold text-lg">{cat.name}</h3>
-              <h3 className="font-semibold text-lg">{cat.price}</h3>
+              <h3 className="font-semibold text-lg">
+                Rs. {cat.price.toLocaleString()}
+              </h3>
               <h3 className="font-semibold text-lg">{cat.duration}</h3>
               <a
                 href={cat.url}

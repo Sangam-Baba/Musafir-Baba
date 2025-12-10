@@ -51,9 +51,13 @@ export default function UsersList({
                 <TableCell className="font-medium">{cat.name}</TableCell>
                 <TableCell className="font-medium">{cat.email}</TableCell>
                 <TableCell className="font-medium">
-                  {new Date(
-                    cat?.loginInfo?.lastLoginAt ?? ""
-                  ).toLocaleTimeString()}
+                  {new Date(cat?.loginInfo?.lastLoginAt ?? "").toLocaleString(
+                    "en-IN",
+                    {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }
+                  )}
                 </TableCell>
                 <TableCell className="font-medium">
                   {cat.loginInfo?.device?.device ?? "Not Found"}
@@ -80,8 +84,7 @@ export default function UsersList({
                     size="sm"
                     onClick={() => onDelete(cat._id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" />{" "}
-                    {cat.isActive ? "Delete" : "Unblock"}
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -112,8 +115,8 @@ export default function UsersList({
                   className="flex-1 w-1/2"
                   onClick={() => onDelete(cat._id)}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />{" "}
-                  {cat.isActive ? "Delete" : "Unblock"}
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete
                 </Button>
               </div>
             </CardContent>

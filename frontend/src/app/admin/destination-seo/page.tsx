@@ -59,6 +59,8 @@ function DestinationSeoMain() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this destination seo?"))
+      return;
     try {
       await deleteDestinationSeo(accessToken, id);
       await queryClient.invalidateQueries({ queryKey: ["all-destinationSeo"] });

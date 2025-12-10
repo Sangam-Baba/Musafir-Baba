@@ -60,7 +60,7 @@ export default function NewsPage() {
 
   // ✅ Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this news?")) return;
+    if (!confirm("Are you sure you want to delete this news?")) return null;
 
     try {
       const res = await fetch(

@@ -35,10 +35,10 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="w-[20%]">Title</TableHead>
+              <TableHead className="w-[35%]">Title</TableHead>
               <TableHead className="w-[35%]">Excerpt</TableHead>
-              <TableHead className="w-[20%]">URL</TableHead>
-              <TableHead className="w-[25%] text-right">Actions</TableHead>
+              <TableHead className="w-[10%]">URL</TableHead>
+              <TableHead className="w-[15%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -49,7 +49,9 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
-                <TableCell className="font-medium">{blog.title}</TableCell>
+                <TableCell className="font-medium">
+                  {blog.title.slice(0, 80)}
+                </TableCell>
                 <TableCell className="truncate max-w-[250px]">
                   {blog.description}
                 </TableCell>
@@ -77,7 +79,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                     size="sm"
                     onClick={() => onDelete(blog.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -91,7 +93,9 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
         {blogs.map((blog) => (
           <Card key={blog.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{blog.title}</h3>
+              <h3 className="font-semibold text-lg">
+                {blog.title.slice(0, 50)}
+              </h3>
               <p className="text-sm text-muted-foreground line-clamp-3">
                 {blog.description}
               </p>
@@ -119,7 +123,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                   className="flex-1"
                   onClick={() => onDelete(blog.id)}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  <Trash2 className="w-4 h-4 mr-1" />
                 </Button>
               </div>
             </CardContent>

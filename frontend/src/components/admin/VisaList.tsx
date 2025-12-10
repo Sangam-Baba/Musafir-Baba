@@ -1,16 +1,23 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
-interface Visa{
-    id: string;
-    country: string;
-    cost: number;
-    url:string;
-    visaType: string;
+interface Visa {
+  id: string;
+  country: string;
+  cost: number;
+  url: string;
+  visaType: string;
 }
 
 interface AuthorsTableProps {
@@ -19,8 +26,11 @@ interface AuthorsTableProps {
   onDelete: (id: string) => void;
 }
 
-export default function AuthorsList({ visa , onEdit, onDelete }: AuthorsTableProps ) {
-
+export default function AuthorsList({
+  visa,
+  onEdit,
+  onDelete,
+}: AuthorsTableProps) {
   return (
     <div className="w-full">
       {/* Desktop Table */}
@@ -43,9 +53,9 @@ export default function AuthorsList({ visa , onEdit, onDelete }: AuthorsTablePro
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
-                <TableCell className="font-medium">{cat.country}</TableCell>       
-                <TableCell className="font-medium">{cat.cost}</TableCell>     
-                <TableCell className="font-medium">{cat.visaType}</TableCell>        
+                <TableCell className="font-medium">{cat.country}</TableCell>
+                <TableCell className="font-medium">{cat.cost}</TableCell>
+                <TableCell className="font-medium">{cat.visaType}</TableCell>
                 <TableCell>
                   <a
                     href={cat.url}
@@ -70,7 +80,7 @@ export default function AuthorsList({ visa , onEdit, onDelete }: AuthorsTablePro
                     size="sm"
                     onClick={() => onDelete(cat.id)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    <Trash2 className="w-4 h-4 mr-1" />
                   </Button>
                 </TableCell>
               </motion.tr>
@@ -84,9 +94,9 @@ export default function AuthorsList({ visa , onEdit, onDelete }: AuthorsTablePro
         {visa.map((cat: Visa) => (
           <Card key={cat.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{cat.country}</h3>  
-              <h3 className="font-semibold text-lg">{cat.cost}</h3>   
-              <h3 className="font-semibold text-lg">{cat.visaType}</h3>           
+              <h3 className="font-semibold text-lg">{cat.country}</h3>
+              <h3 className="font-semibold text-lg">{cat.cost}</h3>
+              <h3 className="font-semibold text-lg">{cat.visaType}</h3>
               <a
                 href={cat.url}
                 target="_blank"
@@ -111,7 +121,7 @@ export default function AuthorsList({ visa , onEdit, onDelete }: AuthorsTablePro
                   className="flex-1"
                   onClick={() => onDelete(cat.id)}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  <Trash2 className="w-4 h-4 mr-1" />
                 </Button>
               </div>
             </CardContent>
@@ -119,5 +129,5 @@ export default function AuthorsList({ visa , onEdit, onDelete }: AuthorsTablePro
         ))}
       </div>
     </div>
-  )
+  );
 }
