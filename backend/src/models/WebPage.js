@@ -81,29 +81,42 @@ webPageSchema.post("findOneAndUpdate", async function (doc) {
   if (!doc) return;
 
   const update = this.getUpdate();
-  if (!update.slug) return; // slug not changed → skip
+  if (!update.slug && !update.parent) return; // slug not changed → skip
 
   // After slug change, refresh fullSlug for this page & children
   await doc.updateFullSlugRecursively();
 });
 
 webPageSchema.methods.updateFullSlugRecursively = async function () {
-  const parent = this.parent
+  // Build its own fullSlug
+  let parent = this.parent
     ? await this.model("WebPage").findById(this.parent)
     : null;
 
-  // Generate fullSlug for current page
   this.fullSlug = parent ? `${parent.fullSlug}/${this.slug}` : this.slug;
-  await this.save({ validateBeforeSave: false });
+  await this.save();
 
-  // Find children
+  // Update all children
   const children = await this.model("WebPage").find({ parent: this._id });
 
-  // Update each child recursively
   for (const child of children) {
     await child.updateFullSlugRecursively();
   }
 };
+
+webPageSchema.post("findOneAndUpdate", async function (doc) {
+  if (!doc) return;
+
+  const update = this.getUpdate();
+  const updatedFields = update.$set || update;
+
+  const slugChanged = Boolean(updatedFields.slug);
+  const parentChanged = Boolean(updatedFields.parent);
+
+  if (!slugChanged && !parentChanged) return;
+
+  await doc.updateFullSlugRecursively();
+});
 
 webPageSchema.pre("save", function (next) {
   this.slug = slugify(this.slug, { lower: true, strict: true });

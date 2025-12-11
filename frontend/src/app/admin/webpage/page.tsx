@@ -102,8 +102,8 @@ function WebPage() {
             status: b.status === "published" ? "Published" : "Draft",
             parent: b.parent
               ? `${
-                  b?.parent?.title.charAt(0).toUpperCase() +
-                  b.parent.title.slice(1, 10)
+                  b?.parent?.slug.charAt(0).toUpperCase() +
+                  b.parent.slug.slice(1)
                 }`
               : "No Parent",
             url: `/${b.fullSlug}`,

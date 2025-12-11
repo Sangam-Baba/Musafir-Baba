@@ -22,7 +22,7 @@
 
 // async function runMigration() {
 //   await mongoose.connect(
-//     "xyz"
+//     ""
 //   );
 
 //   console.log("🔄 Fetching root pages...");
