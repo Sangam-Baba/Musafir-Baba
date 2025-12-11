@@ -61,6 +61,7 @@ export default function ImageUploaderClient({
         formData.append("api_key", sigData.apiKey);
         formData.append("timestamp", sigData.timestamp);
         formData.append("signature", sigData.signature);
+        formData.append("eager", sigData.eager);
         // formData.append("folder", "blogs"); // optional
 
         // 2. Upload directly to Cloudinary

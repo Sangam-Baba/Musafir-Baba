@@ -573,27 +573,29 @@ const updateAdmin = async (req, res) => {
     if (!id) {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
-    const admin = await User.findById(id);
-    if (!admin) {
+    const user = await User.findById(id);
+    if (!user) {
       return res
         .status(404)
-        .json({ success: false, message: "Admin not found" });
+        .json({ success: false, message: "user not found" });
     }
-    if (req.body?.password) {
-      const hashedpassword = await bcrypt.hash(req.body.password, 10);
-      req.body.password = hashedpassword;
-    }
-    const updatedAdmin = await User.findByIdAndUpdate(id, req.body, {
+    // if (req.body?.password) {
+    //   const hashedpassword = await bcrypt.hash(req.body.password, 10);
+    //   req.body.password = hashedpassword;
+    // }
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
       new: true,
     }).select("name email phone permissions");
     res.status(200).json({
       success: true,
-      message: "Admin updated successfully",
-      data: updatedAdmin,
+      message: "User updated successfully",
+      data: updatedUser,
     });
   } catch (error) {
-    console.log("update admin error:", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.log("update user error:", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };
 

@@ -65,10 +65,10 @@ authRouter.delete(
   blockUser
 );
 authRouter.patch(
-  "/update-admin/:id",
+  "/update/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["user", "admin", "superadmin"]),
   updateAdmin
 );
 export default authRouter;

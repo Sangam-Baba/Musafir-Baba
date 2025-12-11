@@ -15,23 +15,34 @@ const UserSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
+    alternatePhone: {
+      type: String,
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
     },
     role: {
       type: String,
-      enum: ["user", "admin", "superadmin"],
+      enum: ["user"],
       default: "user",
     },
-    permissions: [String],
     isVerified: {
       type: Boolean,
       default: false,
     },
     avatar: {
-      type: String,
+      url: String,
+      public_id: String,
+      width: Number,
+      height: Number,
     },
+    address: String,
+    country: String,
+    state: String,
+    zipcode: String,
+    city: String,
     refresh_token: {
       type: String,
       default: "",
@@ -40,8 +51,6 @@ const UserSchema = new mongoose.Schema(
     otpExpire: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    // lastLogin: Date,
-    // lastLogout: Date,
     isActive: {
       type: Boolean,
       default: true,

@@ -3,11 +3,15 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
+import EditProfile from "@/components/User/EditProfile";
+import { Loader } from "@/components/custom/loader";
+import { Edit } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserInterface {
+  _id: string;
   name: string;
   email: string;
   role: string;
@@ -18,6 +22,12 @@ interface UserInterface {
     public_id: string;
     alt: string;
   };
+  country: string;
+  state: string;
+  city: string;
+  zipcode: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const getProfile = async (token: string) => {
@@ -39,7 +49,7 @@ const getProfile = async (token: string) => {
 
 export default function UserProfilePage() {
   const token = useAuthStore((state) => state.accessToken) as string;
-
+  const [openModel, setOpenModel] = React.useState(false);
   const { data, isLoading, error } = useQuery({
     queryKey: ["user-profile"],
     queryFn: () => getProfile(token),
@@ -47,15 +57,7 @@ export default function UserProfilePage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="max-w-3xl mx-auto mt-10">
-        <Skeleton className="h-10 w-40 mb-5" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-60 w-full rounded-xl" />
-          <Skeleton className="h-60 w-full rounded-xl" />
-        </div>
-      </div>
-    );
+    return <Skeleton className="w-full h-full" />;
   }
 
   if (error) {
@@ -79,7 +81,7 @@ export default function UserProfilePage() {
             <CardTitle>User Profile</CardTitle>
           </CardHeader> */}
           <CardContent className="flex flex-col md:flex-row  items-center justify-around ">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center gap-4">
               <Image
                 src={user?.avatar?.url || "/avatar.png"}
                 alt={user?.avatar?.alt || "Avatar"}
@@ -87,6 +89,19 @@ export default function UserProfilePage() {
                 height={150}
                 className="rounded-full"
               />
+              <Edit
+                size={15}
+                onClick={() => setOpenModel(true)}
+                className="cursor-pointer"
+              />
+              {openModel && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <EditProfile
+                    id={user?._id}
+                    onClose={() => setOpenModel(false)}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -102,11 +117,35 @@ export default function UserProfilePage() {
                 <span className="font-medium">Address:</span>{" "}
                 {user.address || "Not added"}
               </p>
+              <div className="grid grid-cols-2">
+                <span className="font-medium">
+                  {user?.country
+                    ? "Country: " +
+                      user.country.charAt(0).toUpperCase() +
+                      user.country.slice(1)
+                    : ""}
+                </span>
+                <span className="font-medium">
+                  {user.state
+                    ? "State: " +
+                      user.state.charAt(0).toUpperCase() +
+                      user.state.slice(1)
+                    : ""}
+                </span>
+              </div>
+              <div className="grid grid-cols-2">
+                <span className="font-medium">
+                  {" "}
+                  {user.zipcode ? "Zipcode: " + user.zipcode : ""}
+                </span>
+                <span className="font-medium">
+                  {" "}
+                  {user?.city ? "City: " + user.city : ""}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
-
-        {/* PROFESSIONAL PROFILE */}
       </div>
     </div>
   );

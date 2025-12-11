@@ -5,6 +5,11 @@ import { getSignature } from "./../services/cloudinarySignature.js";
 
 const uploadRoutes = Router();
 
-uploadRoutes.get("/signature", isAuthenticated, authorizedRoles(["admin", "superadmin"]), getSignature);
+uploadRoutes.get(
+  "/signature",
+  isAuthenticated,
+  authorizedRoles(["admin", "superadmin", "user"]),
+  getSignature
+);
 
 export default uploadRoutes;
