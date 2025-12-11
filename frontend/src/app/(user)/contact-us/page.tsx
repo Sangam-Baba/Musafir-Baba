@@ -6,17 +6,10 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
-const getWebPageBySlug = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/contact-us`
-  );
-  if (!res.ok) throw new Error("Failed to fetch visas");
-  const data = await res.json();
-  return data?.data;
-};
+import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
 
 export async function generateMetadata() {
-  const data = await getWebPageBySlug();
+  const data = await getWebPageBySlug("contact-us");
   return {
     title: data?.metaTitle,
     description: data?.metsDescription,
@@ -33,7 +26,7 @@ export async function generateMetadata() {
   };
 }
 async function VisaWebPage() {
-  const visa = await getWebPageBySlug();
+  const visa = await getWebPageBySlug("contact-us");
 
   return (
     <section className="">

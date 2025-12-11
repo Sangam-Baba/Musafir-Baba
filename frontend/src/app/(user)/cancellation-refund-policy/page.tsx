@@ -9,23 +9,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
 
 interface Faq {
   question: string;
   answer: string;
 }
-const getWebPageBySlug = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/cancellation-refund-policy`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) throw new Error("Failed to fetch refund-and-cancellation");
-  const data = await res.json();
-  return data?.data;
-};
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getWebPageBySlug();
+  const page = await getWebPageBySlug("cancellation-refund-policy");
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
@@ -42,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 async function BookingsWebPage() {
-  const visa = await getWebPageBySlug();
+  const visa = await getWebPageBySlug("cancellation-refund-policy");
 
   return (
     <section className="">

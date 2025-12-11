@@ -12,22 +12,15 @@ import {
 import MembershipCard from "@/components/custom/MembershipCard";
 // import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
 
 interface Faq {
   question: string;
   answer: string;
 }
-const getWebPageBySlug = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/membership`
-  );
-  if (!res.ok) throw new Error("Failed to fetch visas");
-  const data = await res.json();
-  return data?.data;
-};
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getWebPageBySlug();
+  const page = await getWebPageBySlug("membership");
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
@@ -45,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function VisaWebPage() {
-  const visa = await getWebPageBySlug();
+  const visa = await getWebPageBySlug("membership");
 
   return (
     <section className="">
