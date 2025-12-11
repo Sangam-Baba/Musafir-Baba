@@ -12,21 +12,14 @@ import {
 import RelatedPages from "@/components/custom/RelatedPages";
 import HomeBooking from "@/components/custom/HomeBooking";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
 interface Faq {
   question: string;
   answer: string;
 }
-const getWebPageBySlug = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/bookings`
-  );
-  if (!res.ok) throw new Error("Failed to fetch visas");
-  const data = await res.json();
-  return data?.data;
-};
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getWebPageBySlug();
+  const page = await getWebPageBySlug("bookings");
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,
@@ -44,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 async function BookingsWebPage() {
   const slug = "bookings";
-  const visa = await getWebPageBySlug();
+  const visa = await getWebPageBySlug("bookings");
 
   return (
     <section className="">

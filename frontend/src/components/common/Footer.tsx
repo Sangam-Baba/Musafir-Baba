@@ -90,7 +90,7 @@ function Footer() {
               <Phone size={20} color="#FE5300" className="w-[5%] h-5  " />
               <div className="md:flex justify-start w-[90%] gap-2">
                 <p>
-                  <span className="font-bold">Visa:</span>+91 9217082447
+                  <span className="font-bold">Visa:</span>+91 92170 82447
                 </p>
               </div>
             </div>
@@ -215,7 +215,7 @@ function Footer() {
                 <div className="flex items-start gap-3">
                   <Phone color="#FE5300" className="mt-1 shrink-0" />
                   <p className="text-sm">
-                    Tour: +91 92896 02447 | Visa: +91 9217082447
+                    Tour: +91 92896 02447 | Visa: +91 92170 82447
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
