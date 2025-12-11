@@ -1,7 +1,7 @@
 import MainWebPage from "@/components/custom/MainWebpage";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getChildWebPageBySlug } from "@/app/(user)/[webpage]/[slug]/page";
+import { getChildWebPageBySlug } from "@/app/(user)/webpage/[slug]/page";
 
 export async function generateMetadata({
   params,

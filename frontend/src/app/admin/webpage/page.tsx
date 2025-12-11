@@ -17,6 +17,7 @@ interface WebPage {
     slug: string;
     _id: string;
   };
+  fullSlug: string;
 }
 interface QueryResponse {
   data: WebPage[];
@@ -105,7 +106,7 @@ function WebPage() {
                   b.parent.title.slice(1, 10)
                 }`
               : "No Parent",
-            url: b.parent ? `/${b?.parent?.slug}/${b.slug}` : `/${b.slug}`,
+            url: `/${b.fullSlug}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

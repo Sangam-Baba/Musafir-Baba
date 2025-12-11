@@ -30,7 +30,6 @@ webPageRoute.get(
   authorizedRoles(["admin", "superadmin"]),
   getAllParents
 );
-webPageRoute.get("/:slug", getWebPageBySlug);
 webPageRoute.get("/id/:id", getWebPageById);
 webPageRoute.get("/related/:slug", getRelatedPages);
 webPageRoute.patch(
@@ -47,5 +46,5 @@ webPageRoute.delete(
   authorizedRoles(["admin", "superadmin"]),
   deleteWebPage
 );
-
+webPageRoute.get("/slug", getWebPageBySlug);
 export default webPageRoute;

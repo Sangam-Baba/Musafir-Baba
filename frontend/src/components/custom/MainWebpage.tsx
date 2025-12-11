@@ -12,7 +12,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
-import { getWebPageBySlug } from "@/app/(user)/[webpage]/page";
+import { getWebPageBySlug } from "@/app/(user)/webpage/page";
 import { TestiProps } from "@/components/custom/Testimonial";
 
 interface Faq {
@@ -42,13 +42,6 @@ interface WebpageInterface {
 //   return data;
 // };
 async function MainWebPage({ page }: { page: WebpageInterface }) {
-  // const visa = await getWebPageBySlug(slug);
-  // if (!visa) return notFound();
-
-  //   const relatedPages = await getRelatedPages(webpage);
-
-  //   const relatedPageArray = relatedPages?.data ?? [];
-
   return (
     <section className="">
       <Hero

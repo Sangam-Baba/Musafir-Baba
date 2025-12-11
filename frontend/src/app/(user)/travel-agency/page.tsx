@@ -23,7 +23,7 @@ import { Package } from "@/app/(user)/holidays/[categorySlug]/PackageSlugClient"
 import Link from "next/link";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
-import { getWebPageBySlug } from "../[webpage]/page";
+import { getWebPageBySlug } from "../webpage/page";
 import { BlogContent } from "@/components/custom/BlogContent";
 const getOffices = async () => {
   const res = await fetch(

@@ -47,19 +47,27 @@ const getWebPage = async (req, res) => {
 
 const getWebPageBySlug = async (req, res) => {
   try {
-    const { slug } = req.params;
-    if (!slug)
-      return res.status(404).json({ success: false, message: "Invalid Slug" });
-    const webpage = await WebPage.findOne({ slug })
+    const fullSlug = req.query?.slug;
+    if (!fullSlug)
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid Slug h" });
+    const webpage = await WebPage.findOne({ fullSlug: fullSlug })
       .populate("reviews")
       .populate("parent", "title slug")
       .lean();
     if (!webpage)
-      return res.status(404).json({ success: false, message: "Invalid Slug" });
-    if (req.query?.parent && webpage.parent.slug !== req.query.parent)
-      return res.status(404).json({ success: false, message: "Invalid Slug" });
-    if (webpage?.parent && !req.query?.parent)
-      return res.status(404).json({ success: false, message: "Invalid Slug" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid Slug h1" });
+    // if (req.query?.parent && webpage.parent.slug !== req.query.parent)
+    //   return res
+    //     .status(404)
+    //     .json({ success: false, message: "Invalid Slug h2" });
+    // if (webpage?.parent && !req.query?.parent)
+    //   return res
+    //     .status(404)
+    //     .json({ success: false, message: "Invalid Slug h3" });
     res.status(200).json({ success: true, data: webpage });
   } catch (error) {
     console.log("WebPage getting by slug failed", error.message);
