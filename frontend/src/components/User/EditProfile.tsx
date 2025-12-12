@@ -138,7 +138,7 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
   }, [profile, form]);
   // 2. Define a submit handler.
   function onSubmit(values: FormData) {
-    console.log(values);
+    // console.log(values);
     mutate.mutate(values);
   }
 

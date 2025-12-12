@@ -113,7 +113,7 @@ const createManualCustomizedTourBooking = async (req, res) => {
 };
 const getCustomizedTourBookingById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params || req.user?.sub;
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
@@ -226,6 +226,34 @@ const getAllCustomizedTourBooking = async (req, res) => {
   }
 };
 
+const getMyCustomizedTourBooking = async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    console.log("userId", userId);
+    const bookings = await CustomizedTourBooking.find({ userId: userId })
+      .populate("packageId", "title")
+      .lean();
+
+    console.log("bookings", bookings);
+    if (!bookings) {
+      return res.status(404).json({
+        success: false,
+        message: "Customized tour bookings not found error",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Customized tour bookings fetched successfully",
+      data: bookings,
+    });
+  } catch (error) {
+    console.log("Error getting customized tour booking", error.message);
+    res.status(500).json({ success: false, message: "Server Errror" });
+  }
+};
+
 export {
   createCustomizedTourBooking,
   getCustomizedTourBookingById,
@@ -233,4 +261,5 @@ export {
   updateCustomizedTourBooking,
   getAllCustomizedTourBooking,
   createManualCustomizedTourBooking,
+  getMyCustomizedTourBooking,
 };

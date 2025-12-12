@@ -111,7 +111,7 @@ const createManualBooking = async (req, res) => {
 };
 const getMyBookings = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.sub;
     if (!userId)
       return res.status(401).json({ success: false, error: "Unauthorized" });
 
@@ -128,7 +128,7 @@ const getMyBookings = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate({ path: "package", select: "title price" })
+        .populate({ path: "packageId", select: "title price" })
         .lean()
         .exec(),
     ]);
@@ -141,7 +141,9 @@ const getMyBookings = async (req, res) => {
     });
   } catch (error) {
     console.log("get my booking failed ", error.message);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
   }
 };
 

@@ -6,6 +6,7 @@ import {
   deleteCustomizedTourBooking,
   getAllCustomizedTourBooking,
   createManualCustomizedTourBooking,
+  getMyCustomizedTourBooking,
 } from "../controllers/customizedTourBooking.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -37,10 +38,17 @@ customizedTourBookingRoute.get(
   getAllCustomizedTourBooking
 );
 customizedTourBookingRoute.get(
+  "/my",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["user"]),
+  getMyCustomizedTourBooking
+);
+customizedTourBookingRoute.get(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["user", "admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"]),
   getCustomizedTourBookingById
 );
 

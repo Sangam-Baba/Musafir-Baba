@@ -311,12 +311,12 @@ const refresh = async (req, res) => {
     }
 
     const payload = verifyRefresh(token);
-
+    console.log("payload: ", payload);
     const { accessToken, refreshToken } = issueTokens(
       payload.sub,
       payload.role,
-      payload.name,
-      payload.sessionId
+      payload.sessionId,
+      payload.name
     );
     const cookieOptions = {
       httpOnly: true,

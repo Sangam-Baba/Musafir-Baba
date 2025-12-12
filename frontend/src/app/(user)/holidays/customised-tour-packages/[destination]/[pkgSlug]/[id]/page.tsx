@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { Calendar, Check, MapPin, Users, Zap } from "lucide-react";
 import { useCustomizedBookingStore } from "@/store/useCutomizedBookingStore";
+import { useParams } from "next/navigation";
 
 interface Image {
   url: string;
@@ -81,7 +82,8 @@ const getUser = async (accessToken: string) => {
   const data = await res.json();
   return data?.data;
 };
-export default function CheckoutButton({ params }: { params: { id: string } }) {
+export default function CheckoutButton() {
+  const params = useParams();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState({
@@ -100,7 +102,7 @@ export default function CheckoutButton({ params }: { params: { id: string } }) {
     service_provider: "",
   });
   const accessToken = useAuthStore((s) => s.accessToken) as string;
-  const pkgId = params.id;
+  const pkgId = params.id as string;
   const formData = useCustomizedBookingStore((s) => s.formData);
 
   const {

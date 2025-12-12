@@ -46,7 +46,7 @@ interface BookingBase {
   updatedAt?: string;
 }
 
-interface GroupBooking extends BookingBase {
+export interface GroupBooking extends BookingBase {
   batchId: {
     _id: string;
     startDate: string;
@@ -64,7 +64,7 @@ interface GroupBooking extends BookingBase {
     email: string;
   };
 }
-interface CustomizedBooking extends BookingBase {
+export interface CustomizedBooking extends BookingBase {
   date?: string;
   noOfPeople?: number;
   plan?: string;
@@ -75,7 +75,7 @@ interface CustomizedBooking extends BookingBase {
   };
 }
 
-interface GroupApiresponse {
+export interface GroupApiresponse {
   meta: {
     page: number;
     limit: number;
@@ -84,7 +84,7 @@ interface GroupApiresponse {
   };
   data: GroupBooking[];
 }
-interface CustomizedApiresponse {
+export interface CustomizedApiresponse {
   meta: {
     page: number;
     limit: number;
@@ -132,7 +132,7 @@ const getCustomizedBookings = async (
   return res.json();
 };
 
-const formatDate = (dateString?: string) => {
+export const formatDate = (dateString?: string) => {
   if (!dateString) return "-";
   const d = new Date(dateString);
   if (isNaN(d.getTime())) return dateString;
@@ -143,7 +143,7 @@ const formatDate = (dateString?: string) => {
   });
 };
 
-const getStatusColor = (status?: string) => {
+export const getStatusColor = (status?: string) => {
   const statusLower = String(status ?? "").toLowerCase();
   if (
     statusLower === "confirmed" ||

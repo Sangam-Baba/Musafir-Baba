@@ -29,8 +29,8 @@ import {
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/user", icon: Home },
   { label: "Profile", href: "/user/profile", icon: User },
-  { label: "Booking History", href: "/user/bookings", icon: Clock },
-  { label: "Transaction History", href: "/user/transactions", icon: History },
+  { label: "Booking History", href: "/user/bookings", icon: History },
+  // { label: "Transaction History", href: "/user/transactions", icon: History },
   { label: "Membership", href: "/user/membership", icon: HandCoins },
   { label: "Documents", href: "/user/documents", icon: FileText },
   { label: "Wishlist", href: "/user/wishlist", icon: Heart },
