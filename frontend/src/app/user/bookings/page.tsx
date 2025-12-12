@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, ExternalLink } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getStatusColor } from "@/app/admin/bookings/page";
@@ -167,9 +167,7 @@ function page() {
                     <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
                       S/N
                     </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Guest
-                    </TableHead>
+
                     <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
                       Package
                     </TableHead>
@@ -194,6 +192,9 @@ function page() {
                     <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">
                       Amount
                     </TableHead>
+                    <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">
+                      Details
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -205,17 +206,6 @@ function page() {
                     >
                       <TableCell className="text-slate-700 dark:text-slate-300 font-medium">
                         {index + 1}
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <p className="font-medium text-slate-900 dark:text-white">
-                            {booking.user?.name}
-                          </p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {booking.user?.email}
-                          </p>
-                        </div>
                       </TableCell>
 
                       <TableCell className="text-slate-700 dark:text-slate-300">
@@ -266,6 +256,10 @@ function page() {
 
                       <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
                         Rs.{Number(booking.totalPrice ?? 0).toFixed(2)}
+                      </TableCell>
+
+                      <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
+                        <ExternalLink color="#3333f3ff" />
                       </TableCell>
                     </TableRow>
                   ))}

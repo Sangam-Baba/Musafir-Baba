@@ -53,12 +53,12 @@ export function AccountIcon() {
       ) : (
         <div className="group">
           <p
-            className="cursor-pointer font-semibold"
+            className="cursor-pointer font-semibold border-2 border-[#FE5300] px-4 py-1 rounded-md hover:bg-[#FE5300] hover:text-white transition-all duration-300"
             onClick={() => openDialog("login", undefined)}
           >
             Login
           </p>
-          <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
+          {/* <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p> */}
         </div>
       )}
     </div>
