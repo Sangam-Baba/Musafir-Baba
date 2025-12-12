@@ -104,10 +104,12 @@ export default function UserProfilePage() {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-5">
               <div>
-                <p className="text-lg font-semibold">{user?.name}</p>
-                <p className="text-sm text-gray-800">{user?.email}</p>
+                <p className="md:text-2xl text-xl font-semibold">
+                  {user?.name}
+                </p>
+                <p className="text-md text-gray-800">{user?.email}</p>
               </div>
               <p>
                 <span className="font-medium">Phone:</span>{" "}
@@ -118,30 +120,32 @@ export default function UserProfilePage() {
                 {user.address || "Not added"}
               </p>
               <div className="grid grid-cols-2">
-                <span className="font-medium">
-                  {user?.country
-                    ? "Country: " +
-                      user.country.charAt(0).toUpperCase() +
-                      user.country.slice(1)
-                    : ""}
-                </span>
-                <span className="font-medium">
-                  {user.state
-                    ? "State: " +
-                      user.state.charAt(0).toUpperCase() +
-                      user.state.slice(1)
-                    : ""}
-                </span>
+                {user.country && (
+                  <p>
+                    <span className="font-medium">Country:</span>{" "}
+                    {user.country.charAt(0).toUpperCase() +
+                      user.country.slice(1)}
+                  </p>
+                )}
+
+                {user.state && (
+                  <p>
+                    <span className="font-medium">State:</span>{" "}
+                    {user.state.charAt(0).toUpperCase() + user.state.slice(1)}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2">
-                <span className="font-medium">
-                  {" "}
-                  {user.zipcode ? "Zipcode: " + user.zipcode : ""}
-                </span>
-                <span className="font-medium">
-                  {" "}
-                  {user?.city ? "City: " + user.city : ""}
-                </span>
+                {user?.zipcode && (
+                  <p>
+                    <span className="font-medium">Zipcode:</span> {user.zipcode}
+                  </p>
+                )}
+                {user?.city && (
+                  <p>
+                    <span className="font-medium">City:</span> {user.city}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

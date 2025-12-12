@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,20 +20,22 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useEffect } from "react";
 import ImageUploaderClient from "../custom/ImageUploaderClient";
+import countryCodes from "country-codes-list";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const formSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Username must be at least 2 characters.",
-    })
-    .optional(),
-  phone: z
-    .string()
-    .min(10, {
-      message: "Please enter a valid phone number.",
-    })
-    .optional(),
+  name: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
+  phone: z.string().min(10, {
+    message: "Please enter a valid phone number.",
+  }),
   alternatePhone: z
     .string()
     .min(10, {
@@ -52,7 +55,9 @@ const formSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zipcode: z.string().optional(),
-  country: z.string().optional(),
+  country: z.string().min(2, {
+    message: "Country must be at least 2 characters.",
+  }),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -125,7 +130,10 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
 
   useEffect(() => {
     if (profile) {
-      form.reset(profile);
+      form.reset({
+        ...profile,
+        country: profile.country,
+      });
     }
   }, [profile, form]);
   // 2. Define a submit handler.
@@ -133,68 +141,75 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
     console.log(values);
     mutate.mutate(values);
   }
+
+  // Create country list
+  const countryList = countryCodes.customList(
+    "countryNameEn",
+    "{countryNameEn} ({countryCallingCode})"
+  );
+  const countryOptions = Object.entries(countryList).map(
+    ([country, label]) => ({
+      label,
+      value: country,
+      dialCode: countryCodes.customList(
+        "countryCallingCode",
+        "+{countryCallingCode}"
+      )[country],
+    })
+  );
   return (
-    <div className="flex flex-col max-w-4xl max-h-[90vh] items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md overflow-y-auto">
+    <div className="flex flex-col max-w-6xl max-h-[90vh] items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md overflow-y-auto">
       <h1 className="text-3xl font-semibold mb-6">Edit Profile</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* name */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {/* phone */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+91 995 995 995" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="alternatePhone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Emergency Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+91 995 995 995" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <FormField
+                control={form.control}
+                name="avatar"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Avatar</FormLabel>
+                    <FormControl>
+                      <ImageUploaderClient onUpload={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="flex flex-col gap-4">
+              {/* name */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Address */}
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Enter your address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
-          {/* Address */}
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Enter your address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
           {/* Country and State */}
           <div className="grid grid-cols-2 gap-4">
             <FormField
@@ -204,7 +219,23 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
                 <FormItem>
                   <FormLabel>Country</FormLabel>
                   <FormControl>
-                    <Input placeholder="India" {...field} />
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countryOptions.map((country) => (
+                          <SelectItem key={country.value} value={country.label}>
+                            {country.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -218,6 +249,43 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
                   <FormLabel>State</FormLabel>
                   <FormControl>
                     <Input placeholder="Maharashtra" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          {/* phone */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="+91 995 995 995"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="alternatePhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Emergency Phone</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="+91 995 995 995"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -253,20 +321,8 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
               )}
             />
           </div>
-          <FormField
-            control={form.control}
-            name="avatar"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Avatar</FormLabel>
-                <FormControl>
-                  <ImageUploaderClient onUpload={field.onChange} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-2 gap-4 mx-auto max-w-xl">
             <Button type="submit">Submit</Button>
             <Button
               type="button"
