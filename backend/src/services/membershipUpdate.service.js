@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import MembershipBooking from "../models/MembershipBooking.js";
+import { MembershipBooking } from "../models/membershipBooking.js";
 
 export const startMembershipExpiryCron = () => {
   // Runs every day at 00:00 (server time)

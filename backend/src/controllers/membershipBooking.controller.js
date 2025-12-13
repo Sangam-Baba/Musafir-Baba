@@ -21,7 +21,7 @@ const createBooking = async (req, res) => {
     const startDate = new Date();
     let endDate = new Date(startDate);
     if (duration == "quaterly") {
-      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setMonth(endDate.getMonth() + 3);
     }
     if (duration == "half-yearly") {
       endDate.setMonth(endDate.getMonth() + 6);
