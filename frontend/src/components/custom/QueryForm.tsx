@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 const EnquiryFromSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
-  phone: z.string().min(1, "Phone number is required"),
+  phone: z.string().min(10, "Phone number is required"),
   message: z.string().min(1, "Message is required"),
   whatsapp: z.boolean().optional(),
   policy: z.boolean().refine((val) => val === true, {

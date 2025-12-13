@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Loader } from "@/components/custom/loader";
 import {
   Table,
@@ -26,6 +26,8 @@ import { getStatusColor } from "@/app/admin/bookings/page";
 import { formatDate } from "@/app/admin/bookings/page";
 import { GroupBooking } from "@/app/admin/bookings/page";
 import { CustomizedBooking } from "@/app/admin/bookings/page";
+import GroupBookingDetails from "@/components/User/GroupBookingDetails";
+import CustomizedBookingDetails from "@/components/User/CustomizedBookingDetails";
 
 const getMyBookings = async (accessToken: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/booking`, {
@@ -58,7 +60,10 @@ const getMyCustomizedBookings = async (token: string) => {
 
 function page() {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openGroupModal, setOpenGroupModal] = useState(false);
+  const [openCustomizedModal, setOpenCustomizedModal] = useState(false);
+  const [selectedId, setSelectedId] = useState("");
 
   const {
     data: groupData,
@@ -259,7 +264,15 @@ function page() {
                       </TableCell>
 
                       <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
-                        <ExternalLink color="#3333f3ff" />
+                        <ExternalLink
+                          onClick={() => {
+                            if (booking.type === "group")
+                              setOpenGroupModal(true);
+                            else setOpenCustomizedModal(true);
+                            setSelectedId(booking._id);
+                          }}
+                          color="#3333f3ff"
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -269,22 +282,30 @@ function page() {
           )}
         </CardContent>
       </Card>
-
-      {/* <div>
-        {isCustomizedLoading || isGroupLoading ? (
-          <Loader />
-        ) : (
-          <Pagination
-            currentPage={page}
-            totalPages={Math.max(
-              1,
-              Math.ceil((bookingStats.total || 0) / limit)
-            )}
-            onPageChange={handlePageChange}
-            pageSize={limit}
+      {openGroupModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 mx-auto flex items-center justify-center">
+          <GroupBookingDetails
+            group={
+              groupBookings.filter(
+                (item: GroupBooking) => item._id == selectedId
+              )[0]
+            }
+            onClose={() => setOpenGroupModal(false)}
           />
-        )}
-      </div> */}
+        </div>
+      )}
+      {openCustomizedModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 mx-auto flex items-center justify-center">
+          <CustomizedBookingDetails
+            customized={
+              customizedBookings.filter(
+                (item: CustomizedBooking) => item._id == selectedId
+              )[0]
+            }
+            onClose={() => setOpenCustomizedModal(false)}
+          />
+        </div>
+      )}
     </main>
   );
 }

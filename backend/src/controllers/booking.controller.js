@@ -129,6 +129,7 @@ const getMyBookings = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .populate({ path: "packageId", select: "title price" })
+        .populate({ path: "batchId", select: "quad startDate endDate status" })
         .lean()
         .exec(),
     ]);
