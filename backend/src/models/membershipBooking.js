@@ -36,8 +36,11 @@ const membershipBookingSchema = new mongoose.Schema(
     },
     membershipStatus: {
       type: String,
-      enum: ["Active", "Cancelled"],
+      enum: ["Active", "Cancelled", "Expired"],
       default: "Cancelled",
+    },
+    expiredAt: {
+      type: Date,
     },
   },
   { timestamps: true }

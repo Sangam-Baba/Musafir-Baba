@@ -2,6 +2,7 @@ import {
   createBooking,
   getBookingsById,
   updateBooking,
+  getMyBookings,
 } from "../controllers/membershipBooking.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -15,6 +16,14 @@ membershipBookingRoute.post(
   validateSession,
   authorizedRoles(["user", "admin"]),
   createBooking
+);
+
+membershipBookingRoute.get(
+  "/my",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["user"]),
+  getMyBookings
 );
 
 membershipBookingRoute.get(

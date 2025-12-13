@@ -116,4 +116,24 @@ const updateBooking = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-export { createBooking, getBookingsById, updateBooking };
+
+const getMyBookings = async (req, res) => {
+  try {
+    const userId = req.user.sub;
+
+    const bookings = await MembershipBooking.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("membershipId")
+      .populate("userId")
+      .lean();
+    res.status(200).json({
+      success: true,
+      message: "Bookings fetched successfully",
+      data: bookings,
+    });
+  } catch (error) {
+    console.log("Error getting user membership booking", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+export { createBooking, getBookingsById, updateBooking, getMyBookings };
