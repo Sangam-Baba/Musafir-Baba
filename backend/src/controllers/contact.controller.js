@@ -1,13 +1,20 @@
 import { ContactEnquiry } from "../models/ContactInquiry.js";
 import sendEmail from "../services/email.service.js";
+import { EnquiryOtp } from "../models/OtpEnquiry.js";
 
 const createContact = async (req, res) => {
   try {
-    const { name, phone } = req.body;
-    if (!name || !phone) {
+    const { name, phone, email } = req.body;
+    if (!name || !phone || !email) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
+    }
+    const isVerified = await EnquiryOtp.findOne({ email, verified: true });
+    if (!isVerified) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please verify your email" });
     }
     const contact = await ContactEnquiry.create({ ...req.body, name, phone });
     const subject = "New Contact Enquiry: " + name;
@@ -24,6 +31,7 @@ const createContact = async (req, res) => {
     if (!emailResponse || emailResponse.error !== null) {
       console.error("Email sending failed:", emailResponse.error);
     }
+    await EnquiryOtp.findOneAndDelete({ email });
     res.status(201).json({
       success: true,
       message: "Contact created successfully",

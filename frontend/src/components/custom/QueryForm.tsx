@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,9 +48,40 @@ const createContact = async (formData: EnquiryFromType) => {
   return res.json();
 };
 
+const createOtp = async (email: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/enquiry-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "OTP verification failed");
+  }
+  return res.json();
+};
+
+const verifyOtp = async (email: string, otp: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/enquiry-otp/verify-otp`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, otp }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "OTP verification failed");
+  }
+  return res.json();
+};
 export default function QueryForm() {
   const router = useRouter();
   const pathname = usePathname();
+  const [otp, setOtp] = useState("");
+  const [openOtp, setOpenOtp] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(true);
 
   const form = useForm<EnquiryFromType>({
     resolver: zodResolver(EnquiryFromSchema),
@@ -75,6 +107,27 @@ export default function QueryForm() {
     },
   });
 
+  const handleCreateOtp = async (email: string) => {
+    try {
+      await createOtp(email);
+      toast.success("OTP sent successfully");
+      setOpenOtp(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not send OTP");
+    }
+  };
+
+  const handleVerifyOtp = async (email: string, otp: string) => {
+    try {
+      await verifyOtp(email, otp);
+      toast.success("OTP verified successfully");
+      setIsDisabled(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not verify OTP");
+    }
+  };
   function onSubmit(values: EnquiryFromType) {
     console.log(values);
     mutation.mutate(values);
@@ -104,6 +157,7 @@ export default function QueryForm() {
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <UserRound className="w-5 h-5 text-orange-500" />
                       <Input
+                        disabled={isDisabled}
                         placeholder="John Doe"
                         {...field}
                         className="border-none p-0 shadow-none focus-visible:ring-0"
@@ -114,28 +168,61 @@ export default function QueryForm() {
                 </FormItem>
               )}
             />
+            <div className="flex gap-2 items-center">
+              {/* Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                        <Mail className="w-5 h-5 text-orange-500" />
+                        <Input
+                          placeholder="john@gmail.com"
+                          {...field}
+                          className="border-none p-0 shadow-none focus-visible:ring-0"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="button"
+                // disabled={!form.getValues("email")}
+                onClick={() => handleCreateOtp(form.getValues("email"))}
+                className="w-[20%] mt-5"
+              >
+                Get OTP
+              </Button>
+            </div>
+            {/* Otp */}
+            {openOtp && (
+              <div className="flex items-center gap-2">
+                <div className="w-[80%] space-y-2">
+                  <FormLabel>Enter OTP</FormLabel>
+                  <Input
+                    type="text"
+                    value={otp}
+                    placeholder="******"
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                </div>
 
-            {/* Email */}
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                      <Mail className="w-5 h-5 text-orange-500" />
-                      <Input
-                        placeholder="john@gmail.com"
-                        {...field}
-                        className="border-none p-0 shadow-none focus-visible:ring-0"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <Button
+                  type="button"
+                  onClick={() => handleVerifyOtp(form.getValues("email"), otp)}
+                  className={`w-[20%] mt-5 ${
+                    isDisabled ? "bg-gray-400" : "bg-green-500"
+                  }`}
+                >
+                  Varify OTP
+                </Button>
+              </div>
+            )}
 
             {/* Phone */}
             <FormField
@@ -148,6 +235,7 @@ export default function QueryForm() {
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <Phone className="w-5 h-5 text-orange-500" />
                       <Input
+                        disabled={isDisabled}
                         placeholder="+91 234 567 8901"
                         {...field}
                         className="border-none p-0 shadow-none focus-visible:ring-0"
@@ -170,6 +258,7 @@ export default function QueryForm() {
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <MessageCircleCode className="w-5 h-5 text-orange-500" />
                       <Textarea
+                        disabled={isDisabled}
                         placeholder="Write your travel plan or special requirements..."
                         className="min-h-[50px] border-none p-0 shadow-none focus-visible:ring-0"
                         {...field}
@@ -181,29 +270,6 @@ export default function QueryForm() {
               )}
             />
 
-            {/* WhatsApp Toggle */}
-            {/* <FormField
-              control={form.control}
-              name="whatsapp"
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-2 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <Label className="text-sm text-gray-700">
-                    Send me updates on{" "}
-                    <span className="text-green-600 font-semibold">
-                      WhatsApp
-                    </span>
-                  </Label>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
-
             {/* Policy Agreement */}
             <FormField
               control={form.control}
@@ -212,6 +278,7 @@ export default function QueryForm() {
                 <FormItem className="flex items-center gap-2 space-y-0">
                   <FormControl>
                     <Checkbox
+                      disabled={isDisabled}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -240,7 +307,7 @@ export default function QueryForm() {
             {/* Submit */}
             <Button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || isDisabled}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-3 font-semibold"
             >
               {mutation.isPending ? "Sending..." : "Send Enquiry"}
