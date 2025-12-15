@@ -26,6 +26,7 @@ import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { Reviews } from "../../new/page";
 import { deleteReview } from "../../new/page";
 import { getReviewsByIds } from "../../new/page";
+import { X } from "lucide-react";
 interface Image {
   url: string;
   alt: string;
@@ -301,7 +302,6 @@ export default function CreatePackagePage() {
         ...pkg,
         destination: pkg.destination?._id.toString() || "",
         batch: batchIds,
-        keywords: pkg.keywords.map((k: string) => k.trim()).join(", "),
         reviews: reviewsIds,
       });
       if (batchIds.length > 0) {
@@ -989,25 +989,46 @@ export default function CreatePackagePage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Target Keywords (comma separated)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      value={
-                        Array.isArray(field.value)
-                          ? field.value.join(", ")
-                          : field.value || ""
-                      }
-                      onChange={(e) => field.onChange(e.target.value)}
-                      onBlur={(e) => {
-                        const arr = e.target.value
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean);
-                        field.onChange(arr);
-                      }}
-                      placeholder="Enter SEO Meta Keywords"
-                    />
-                  </FormControl>
+                  <div className="flex flex-wrap gap-2 border rounded p-2">
+                    {form.watch("keywords")?.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+                      >
+                        {kw}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newKeywords = form
+                              .getValues("keywords")
+                              ?.filter((_, idx) => idx !== i);
+                            form.setValue("keywords", newKeywords);
+                          }}
+                          className="text-gray-600 hover:text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                    <FormControl className="flex-1 min-w-[120px]">
+                      <Input
+                        type="text"
+                        className="border-none shadow-none focus-visible:ring-0 w-full"
+                        onBlur={(e) => {
+                          const arr = e.target.value
+                            .split(",")
+                            .map((item) => item.trim())
+                            .filter(Boolean);
+                          form.setValue("keywords", [
+                            ...(form.getValues("keywords") || []),
+                            ...arr,
+                          ]);
+                          e.target.value = "";
+                        }}
+                        placeholder="Enter SEO Meta Keywords"
+                      />
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

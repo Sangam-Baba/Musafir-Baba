@@ -25,6 +25,7 @@ import { Reviews } from "@/app/admin/holidays/new/page";
 import { deleteReview } from "@/app/admin/holidays/new/page";
 import { getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { Visa } from "../../new/page";
+import { Label } from "@/components/ui/label";
 
 async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
@@ -457,10 +458,9 @@ export default function CreateVisaPage() {
                 )}
               />
             </div>
+            {/* keywords */}
             <div className="space-y-2">
-              <FormLabel className="block text-sm font-medium">
-                Keywords
-              </FormLabel>
+              <Label className="block text-sm font-medium">Keywords</Label>
               <div className="flex flex-wrap gap-2 border rounded p-2">
                 {form.watch("keywords")?.map((kw, i) => (
                   <span
@@ -478,7 +478,7 @@ export default function CreateVisaPage() {
                       }}
                       className="text-gray-600 hover:text-red-500"
                     >
-                      <X className="w-4 h-4" />
+                      <X size={14} />
                     </button>
                   </span>
                 ))}
@@ -487,17 +487,17 @@ export default function CreateVisaPage() {
                   type=" text"
                   className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
                   placeholder="Type keyword and press Enter"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault();
-                      const value = e.currentTarget.value.trim();
-                      if (value) {
-                        const current = form.getValues("keywords") || [];
-                        if (!current.includes(value)) {
-                          form.setValue("keywords", [...current, value]);
-                        }
-                        e.currentTarget.value = "";
-                      }
+                  onBlur={(e) => {
+                    const arr = e.target.value
+                      .split(",")
+                      .map((v) => v.trim())
+                      .filter(Boolean);
+                    if (arr.length > 0) {
+                      form.setValue("keywords", [
+                        ...(form.getValues("keywords") || []),
+                        ...arr,
+                      ]);
+                      e.target.value = "";
                     }
                   }}
                 />

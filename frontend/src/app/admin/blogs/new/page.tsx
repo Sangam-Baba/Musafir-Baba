@@ -13,6 +13,8 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
 });
 import ImageUploader from "@/components/admin/ImageUploader";
 import React from "react";
+import { X } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -26,16 +28,7 @@ const formSchema = z.object({
   metaDescription: z
     .string()
     .min(2, { message: "Meta description is required." }),
-  keywords: z.preprocess(
-    (val) =>
-      typeof val === "string"
-        ? val
-            .split(",")
-            .map((k) => k.trim())
-            .filter(Boolean)
-        : [],
-    z.array(z.string())
-  ),
+  keywords: z.array(z.string()),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
     url: z.string().url(),
@@ -239,11 +232,51 @@ export default function CreateBlog() {
           placeholder="Excerpt"
           className="w-full border rounded p-2"
         />
-        <input
-          {...form.register("keywords")}
-          placeholder="Keywords (comma separated)"
-          className="w-full border rounded p-2"
-        />
+        {/* keywords */}
+        <div className="space-y-2">
+          <Label className="block text-sm font-medium">Keywords</Label>
+          <div className="flex flex-wrap gap-2 border rounded p-2">
+            {form.watch("keywords")?.map((kw, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+              >
+                {kw}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newKeywords = form
+                      .getValues("keywords")
+                      ?.filter((_, idx) => idx !== i);
+                    form.setValue("keywords", newKeywords);
+                  }}
+                  className="text-gray-600 hover:text-red-500"
+                >
+                  <X size={14} />
+                </button>
+              </span>
+            ))}
+
+            <input
+              type=" text"
+              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+              placeholder="Type keyword and press Enter"
+              onBlur={(e) => {
+                const arr = e.target.value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                if (arr.length > 0) {
+                  form.setValue("keywords", [
+                    ...(form.getValues("keywords") || []),
+                    ...arr,
+                  ]);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </div>
+        </div>
 
         <div className="space-y-2">
           <ImageUploader
