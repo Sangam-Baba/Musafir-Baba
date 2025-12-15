@@ -105,7 +105,7 @@ export default function QueryForm() {
     defaultValues: {
       name: "",
       email: "",
-      countryCode: "India +91",
+      countryCode: "IN +91",
       phone: "",
       message: "",
       whatsapp: false,
@@ -157,15 +157,16 @@ export default function QueryForm() {
   // Create country list
   const countryList = countryCodes.customList(
     "countryNameEn",
-    "{countryNameEn} +{countryCallingCode}"
+    "{countryCode} +{countryCallingCode}"
   );
-
+  console.log("countryList :", countryList);
   const countryOptions = Object.entries(countryList).map(
-    ([countryKey, label]) => ({
-      label,
-      value: countryList[countryKey],
+    ([countryKey, value]) => ({
+      label: `${countryKey} ${value}`,
+      value,
     })
   );
+  console.log("countryOptions :", countryOptions);
   return (
     <Card className="w-full mx-auto rounded-2xl shadow-lg p-1">
       <CardContent className="space-y-6 py-6">
@@ -266,39 +267,56 @@ export default function QueryForm() {
             <FormField
               control={form.control}
               name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                      <Phone className="w-5 h-5 text-orange-500" />
-                      <Select
-                        defaultValue={form.getValues("countryCode")}
-                        onValueChange={(value) => {
-                          form.setValue("countryCode", value);
-                        }}
-                      >
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Code" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {countryOptions.map((item) => (
-                            <SelectItem key={item.value} value={item.value}>
-                              {item.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        placeholder="734 567 8901"
-                        {...field}
-                        className="border-none p-0 shadow-none focus-visible:ring-0"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const selectedCountry = countryOptions.find(
+                  (c) => c.value === form.watch("countryCode")
+                );
+
+                return (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                        <Phone className="w-5 h-5 text-orange-500" />
+
+                        {/* Country Code Select */}
+                        <Select
+                          value={form.watch("countryCode")}
+                          onValueChange={(value) => {
+                            form.setValue("countryCode", value);
+                          }}
+                        >
+                          <SelectTrigger className="w-[130px]">
+                            {/* 👇 show VALUE after selection */}
+                            {selectedCountry?.value || "Code"}
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {countryOptions.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {/* 👇 dropdown shows LABEL */}
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {/* Phone Input */}
+                        <Input
+                          placeholder="7345678901"
+                          {...field}
+                          className="border-none p-0 shadow-none focus-visible:ring-0"
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            field.onChange(value);
+                          }}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             {/* Message */}
