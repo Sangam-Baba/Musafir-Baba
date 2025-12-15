@@ -44,7 +44,10 @@ const createContact = async (formData: EnquiryFromType) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),
   });
-  if (!res.ok) throw new Error("Failed to create contact");
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Enquiry creation failed");
+  }
   return res.json();
 };
 
@@ -102,7 +105,7 @@ export default function QueryForm() {
       router.push("/thank-you");
     },
     onError: (error: unknown) => {
-      toast.error("Missing required fields");
+      toast.error(error instanceof Error ? error.message : "Enquiry failed");
       console.error(error);
     },
   });
@@ -157,7 +160,6 @@ export default function QueryForm() {
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <UserRound className="w-5 h-5 text-orange-500" />
                       <Input
-                        disabled={isDisabled}
                         placeholder="John Doe"
                         {...field}
                         className="border-none p-0 shadow-none focus-visible:ring-0"
@@ -216,10 +218,12 @@ export default function QueryForm() {
                   type="button"
                   onClick={() => handleVerifyOtp(form.getValues("email"), otp)}
                   className={`w-[20%] mt-5 ${
-                    isDisabled ? "bg-gray-400" : "bg-green-500"
+                    isDisabled
+                      ? "bg-gray-400 hover:bg-gray-400"
+                      : "bg-green-500 hover:bg-green-600"
                   }`}
                 >
-                  Varify OTP
+                  {isDisabled && "Disabled"} Varify OTP
                 </Button>
               </div>
             )}
@@ -235,7 +239,6 @@ export default function QueryForm() {
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <Phone className="w-5 h-5 text-orange-500" />
                       <Input
-                        disabled={isDisabled}
                         placeholder="+91 234 567 8901"
                         {...field}
                         className="border-none p-0 shadow-none focus-visible:ring-0"
@@ -255,10 +258,9 @@ export default function QueryForm() {
                 <FormItem>
                   <FormLabel>Message</FormLabel>
                   <FormControl>
-                    <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                    <div className="flex  gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <MessageCircleCode className="w-5 h-5 text-orange-500" />
                       <Textarea
-                        disabled={isDisabled}
                         placeholder="Write your travel plan or special requirements..."
                         className="min-h-[50px] border-none p-0 shadow-none focus-visible:ring-0"
                         {...field}
@@ -278,7 +280,6 @@ export default function QueryForm() {
                 <FormItem className="flex items-center gap-2 space-y-0">
                   <FormControl>
                     <Checkbox
-                      disabled={isDisabled}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -289,7 +290,7 @@ export default function QueryForm() {
                       href="/terms-and-conditions"
                       className="text-blue-600 hover:underline"
                     >
-                      T & C
+                      T&C
                     </Link>
                     and
                     <Link
@@ -307,7 +308,7 @@ export default function QueryForm() {
             {/* Submit */}
             <Button
               type="submit"
-              disabled={mutation.isPending || isDisabled}
+              disabled={mutation.isPending}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-3 font-semibold"
             >
               {mutation.isPending ? "Sending..." : "Send Enquiry"}
