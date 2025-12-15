@@ -8,12 +8,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { UserRound, Mail, Phone, MessageCircleCode } from "lucide-react";
+import {
+  UserRound,
+  Mail,
+  Phone,
+  MessageCircleCode,
+  CircleCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   Form,
@@ -24,11 +30,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import countryCodes from "country-codes-list";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const EnquiryFromSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
-  phone: z.string().min(10, "Phone number is required"),
+  countryCode: z.string().default("+91"),
+  phone: z.string().min(9, "Phone number is required"),
   message: z.string().min(1, "Message is required"),
   whatsapp: z.boolean().optional(),
   policy: z.boolean().refine((val) => val === true, {
@@ -82,15 +97,15 @@ const verifyOtp = async (email: string, otp: string) => {
 export default function QueryForm() {
   const router = useRouter();
   const pathname = usePathname();
-  const [otp, setOtp] = useState("");
   const [openOtp, setOpenOtp] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   const form = useForm<EnquiryFromType>({
-    resolver: zodResolver(EnquiryFromSchema),
+    resolver: zodResolver(EnquiryFromSchema) as Resolver<EnquiryFromType>,
     defaultValues: {
       name: "",
       email: "",
+      countryCode: "India +91",
       phone: "",
       message: "",
       whatsapp: false,
@@ -125,16 +140,32 @@ export default function QueryForm() {
     try {
       await verifyOtp(email, otp);
       toast.success("OTP verified successfully");
-      setIsDisabled(false);
+      setIsVerified(true);
     } catch (error) {
       console.error(error);
       toast.error("Could not verify OTP");
     }
   };
   function onSubmit(values: EnquiryFromType) {
-    console.log(values);
-    mutation.mutate(values);
+    console.log(`${values.countryCode}${values.phone}`);
+    mutation.mutate({
+      ...values,
+      phone: `${values.countryCode}${values.phone}`,
+    });
   }
+
+  // Create country list
+  const countryList = countryCodes.customList(
+    "countryNameEn",
+    "{countryNameEn} +{countryCallingCode}"
+  );
+
+  const countryOptions = Object.entries(countryList).map(
+    ([countryKey, label]) => ({
+      label,
+      value: countryList[countryKey],
+    })
+  );
   return (
     <Card className="w-full mx-auto rounded-2xl shadow-lg p-1">
       <CardContent className="space-y-6 py-6">
@@ -206,25 +237,28 @@ export default function QueryForm() {
               <div className="flex items-center gap-2">
                 <div className="w-[80%] space-y-2">
                   <FormLabel>Enter OTP</FormLabel>
-                  <Input
-                    type="text"
-                    value={otp}
-                    placeholder="******"
-                    onChange={(e) => setOtp(e.target.value)}
-                  />
+                  <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                    <Input
+                      type="text"
+                      placeholder="******"
+                      className="border-none p-0 shadow-none focus-visible:ring-0"
+                      onChange={(e) => {
+                        if (e.target.value.length === 6) {
+                          handleVerifyOtp(
+                            form.getValues("email"),
+                            e.target.value
+                          );
+                        }
+                      }}
+                    />
+                    {isVerified && (
+                      <CircleCheck
+                        strokeWidth={3}
+                        className="w-5 h-5 text-green-500"
+                      />
+                    )}
+                  </div>
                 </div>
-
-                <Button
-                  type="button"
-                  onClick={() => handleVerifyOtp(form.getValues("email"), otp)}
-                  className={`w-[20%] mt-5 ${
-                    isDisabled
-                      ? "bg-gray-400 hover:bg-gray-400"
-                      : "bg-green-500 hover:bg-green-600"
-                  }`}
-                >
-                  {isDisabled && "Disabled"} Varify OTP
-                </Button>
               </div>
             )}
 
@@ -238,8 +272,25 @@ export default function QueryForm() {
                   <FormControl>
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                       <Phone className="w-5 h-5 text-orange-500" />
+                      <Select
+                        defaultValue={form.getValues("countryCode")}
+                        onValueChange={(value) => {
+                          form.setValue("countryCode", value);
+                        }}
+                      >
+                        <SelectTrigger className="w-[100px]">
+                          <SelectValue placeholder="Code" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countryOptions.map((item) => (
+                            <SelectItem key={item.value} value={item.value}>
+                              {item.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <Input
-                        placeholder="+91 234 567 8901"
+                        placeholder="734 567 8901"
                         {...field}
                         className="border-none p-0 shadow-none focus-visible:ring-0"
                       />
