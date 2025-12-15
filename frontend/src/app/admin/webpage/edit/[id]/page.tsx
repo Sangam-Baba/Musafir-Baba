@@ -264,19 +264,19 @@ export default function UpdateWebpage() {
 
             <input
               type=" text"
-              placeholder="Type keyword and press Enter or comma"
               className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === ",") {
-                  e.preventDefault();
-                  const value = e.currentTarget.value.trim();
-                  if (value) {
-                    const current = form.getValues("keywords") || [];
-                    if (!current.includes(value)) {
-                      form.setValue("keywords", [...current, value]);
-                    }
-                    e.currentTarget.value = "";
-                  }
+              placeholder="Type keyword and press Enter"
+              onBlur={(e) => {
+                const arr = e.target.value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                if (arr.length > 0) {
+                  form.setValue("keywords", [
+                    ...(form.getValues("keywords") || []),
+                    ...arr,
+                  ]);
+                  e.target.value = "";
                 }
               }}
             />

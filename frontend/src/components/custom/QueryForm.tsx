@@ -278,7 +278,7 @@ export default function QueryForm() {
                           form.setValue("countryCode", value);
                         }}
                       >
-                        <SelectTrigger className="w-[100px]">
+                        <SelectTrigger className="w-[120px]">
                           <SelectValue placeholder="Code" />
                         </SelectTrigger>
                         <SelectContent>
