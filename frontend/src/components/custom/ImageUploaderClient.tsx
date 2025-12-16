@@ -17,9 +17,11 @@ export interface UploadedFile {
 export default function ImageUploaderClient({
   initialImage,
   onUpload,
+  type,
 }: {
   initialImage?: UploadedFile | null;
   onUpload: (img: UploadedFile | null) => void;
+  type: string;
 }) {
   const token = useAuthStore((state) => state.accessToken) as string;
   const [files, setFiles] = useState<FileList | null>(null);
@@ -64,14 +66,15 @@ export default function ImageUploaderClient({
         formData.append("eager", sigData.eager);
         // formData.append("folder", "blogs"); // optional
 
+        let cloudinaryUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`;
+        if (type === "pdf") {
+          cloudinaryUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/raw/upload`;
+        }
         // 2. Upload directly to Cloudinary
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+        const res = await fetch(cloudinaryUrl, {
+          method: "POST",
+          body: formData,
+        });
         const json = await res.json();
         const uploaded = {
           url: json.secure_url,
@@ -121,24 +124,46 @@ export default function ImageUploaderClient({
       </button>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {uploadedImages.map((img, idx) => (
-          <div key={idx} className="relative">
-            <Image
-              src={img.url}
-              alt="Uploaded"
-              className="rounded-md"
-              width={200}
-              height={200}
-            />
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        ))}
+        {type === "image" &&
+          uploadedImages.map((img, idx) => (
+            <div key={idx} className="relative">
+              <Image
+                src={img.url}
+                alt="Uploaded"
+                className="rounded-md"
+                width={200}
+                height={200}
+              />
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
+        {type === "pdf" &&
+          uploadedImages.some((img) => img?.url) &&
+          uploadedImages.map((img, idx) => (
+            <div key={idx} className="relative">
+              <a
+                href={img.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline inline-flex items-center gap-1"
+              >
+                View
+              </a>
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
       </div>
     </div>
   );

@@ -147,7 +147,7 @@ export default function QueryForm() {
     }
   };
   function onSubmit(values: EnquiryFromType) {
-    console.log(`${values.countryCode}${values.phone}`);
+    // console.log(`${values.countryCode}${values.phone}`);
     mutation.mutate({
       ...values,
       phone: `${values.countryCode}${values.phone}`,
@@ -159,14 +159,14 @@ export default function QueryForm() {
     "countryNameEn",
     "{countryCode} +{countryCallingCode}"
   );
-  console.log("countryList :", countryList);
+  // console.log("countryList :", countryList);
   const countryOptions = Object.entries(countryList).map(
     ([countryKey, value]) => ({
       label: `${countryKey} ${value}`,
       value,
     })
   );
-  console.log("countryOptions :", countryOptions);
+  // console.log("countryOptions :", countryOptions);
   return (
     <Card className="w-full mx-auto rounded-2xl shadow-lg p-1">
       <CardContent className="space-y-6 py-6">

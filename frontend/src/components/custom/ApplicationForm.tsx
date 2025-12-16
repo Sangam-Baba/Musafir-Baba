@@ -250,6 +250,7 @@ export default function ApplicationForm() {
                   </label>
 
                   <ImageUploaderClient
+                    type="pdf"
                     onUpload={(img) => {
                       if (!img) return;
                       setFormData((prev) => ({

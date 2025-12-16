@@ -34,6 +34,7 @@ import mediaRoutes from "./media.routes.js";
 import reviewRoutes from "./reviews.routes.js";
 import videoBannerRoutes from "./videoBanner.routes.js";
 import otpRoutes from "./enquiryOtp.routes.js";
+import documentRoutes from "./document.routes.js";
 
 const router = Router();
 
@@ -72,4 +73,5 @@ router.use("/media", mediaRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/videobanner", videoBannerRoutes);
 router.use("/enquiry-otp", otpRoutes);
+router.use("/document", documentRoutes);
 export default router;

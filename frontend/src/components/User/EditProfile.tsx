@@ -205,7 +205,10 @@ function EditProfile({ id, onClose }: { id: string; onClose: () => void }) {
                       <FormItem>
                         <FormLabel>Profile Picture</FormLabel>
                         <FormControl>
-                          <ImageUploaderClient onUpload={field.onChange} />
+                          <ImageUploaderClient
+                            type="image"
+                            onUpload={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
