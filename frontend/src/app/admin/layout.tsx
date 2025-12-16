@@ -25,7 +25,7 @@ export default function AdminLayout({
             {/* Sidebar */}
             {!isLoginPage && <AppSidebar />}
 
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1 overflow-x-hidden">
               {!isLoginPage && (
                 <header className="flex items-center h-14 px-4 border-b bg-white dark:bg-slate-950">
                   <SidebarTrigger />

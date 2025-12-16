@@ -27,14 +27,14 @@ export default function UserLayout({
             {/* Sidebar */}
             <UserSidebar />
 
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1 overflow-x-hidden">
               {/* {!isLoginPage && ( */}
               <header className="flex items-center h-14 px-4 border-b  dark:bg-slate-950">
                 <SidebarTrigger />
               </header>
               {/* )} */}
               {/* Page Content */}
-              <main className="flex-1  p-6">{children}</main>
+              <main className="flex-1  p-6 ">{children}</main>
             </div>
           </div>
         </SidebarProvider>

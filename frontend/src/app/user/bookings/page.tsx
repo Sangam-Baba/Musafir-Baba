@@ -19,7 +19,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Search, Filter, ExternalLink } from "lucide-react";
+import {
+  Search,
+  Filter,
+  ExternalLink,
+  IndianRupee,
+  TrendingUp,
+  CheckCircle2,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getStatusColor } from "@/app/admin/bookings/page";
@@ -111,6 +118,18 @@ function page() {
     () => [...mappedGroup, ...mappedCustom],
     [mappedGroup, mappedCustom]
   );
+
+  // Calculate statistics
+  const totalSpent =
+    bookings?.reduce(
+      (acc: number, booking) =>
+        acc + (booking.paymentInfo.status === "completed" ? booking.amount : 0),
+      0
+    ) || 0;
+
+  const completedBookings =
+    bookings?.filter((item) => item.paymentInfo.status === "completed")
+      .length || 0;
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
       <div className="mb-8 flex items-center justify-between gap-4">
@@ -122,6 +141,58 @@ function page() {
             Manage and track all tour bookings
           </p>
         </div>
+      </div>
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Card className="border-2">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Spent
+                </p>
+                <p className="text-2xl font-bold">
+                  ₹{totalSpent.toLocaleString()}
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <IndianRupee className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total Bookings
+                </p>
+                <p className="text-2xl font-bold">{bookings?.length || 0}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-chart-2/10 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-chart-2" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Completed
+                </p>
+                <p className="text-2xl font-bold">{completedBookings}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-chart-3/10 flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6 text-chart-3" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">

@@ -184,7 +184,7 @@ function SlugClients({
   return (
     <section>
       <div className="relative">
-        <div className="absolute z-20 w-full flex justify-center bottom-25 px-4">
+        <div className="absolute z-20 w-full flex justify-center md:bottom-25 bottom-2 px-4">
           <ItineryDialog
             title={pkg.title}
             description={pkg.description.slice(0, 50)}

@@ -13,6 +13,7 @@ import {
   XCircle,
   IndianRupee,
 } from "lucide-react";
+import MembershipCard from "@/components/custom/MembershipCard";
 
 interface MembershipBookingsInterface {
   _id: string;
@@ -58,20 +59,6 @@ function MembershipPage() {
     (item: MembershipBookingsInterface) => item.membershipStatus === "Active"
   );
 
-  // Calculate statistics
-  const totalSpent =
-    bookings?.reduce(
-      (acc: number, booking: MembershipBookingsInterface) =>
-        acc + (booking.paymentInfo.status === "completed" ? booking.amount : 0),
-      0
-    ) || 0;
-
-  const completedBookings =
-    bookings?.filter(
-      (item: MembershipBookingsInterface) =>
-        item.paymentInfo.status === "completed"
-    ).length || 0;
-
   const daysRemaining = activeMembership
     ? Math.ceil(
         (new Date(activeMembership.endDate).getTime() - new Date().getTime()) /
@@ -92,80 +79,9 @@ function MembershipPage() {
           </p>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-2">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total Spent
-                  </p>
-                  <p className="text-2xl font-bold">
-                    ₹{totalSpent.toLocaleString()}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <IndianRupee className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total Bookings
-                  </p>
-                  <p className="text-2xl font-bold">{bookings?.length || 0}</p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-chart-2/10 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-chart-2" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Completed
-                  </p>
-                  <p className="text-2xl font-bold">{completedBookings}</p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-chart-3/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-chart-3" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Days Remaining
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {activeMembership ? daysRemaining : "—"}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-full bg-chart-4/10 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-chart-4" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Active Membership Card */}
         {activeMembership ? (
-          <Card className="border-2 overflow-hidden">
+          <Card className="border-2 overflow-hidden pt-0">
             <div className="bg-gradient-to-r from-primary to-primary/80 p-6 text-primary-foreground">
               <div className="flex items-center gap-3 mb-2">
                 <Crown className="h-8 w-8" />
@@ -283,6 +199,9 @@ function MembershipPage() {
               </CardContent>
             </Card>
           )}
+        </div>
+        <div>
+          <MembershipCard />
         </div>
       </div>
     </div>
