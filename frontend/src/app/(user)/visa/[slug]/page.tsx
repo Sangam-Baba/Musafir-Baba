@@ -73,6 +73,7 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
       <Hero
         image={visa?.bannerImage?.url || visa.coverImage.url}
         title={visa.title}
+        height="lg"
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">

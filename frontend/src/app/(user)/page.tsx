@@ -54,6 +54,41 @@ const faqs = [
       "Yes, we provide 24/7 customer support throughout your journey via phone, WhatsApp, and email to ensure a hassle-free travel experience.You can reach us at +91 92896 02447",
   },
 ];
+const testi = [
+  {
+    id: 1,
+    name: "Poonom Ranjan",
+    location: "Traveler",
+    comment: `Musafirbaba provided excellent service in a highly professional manner. They went above and beyond to assist me, and I want to give a special shoutout to Anu, my tour manager.`,
+  },
+  {
+    id: 2,
+    name: "Anupam Ray",
+    location: "Traveler",
+    comment: `I loved booking through Musafirbaba. I have recommended them to so many people! Great deals, easy to get things organised, had a great experience.`,
+  },
+  {
+    id: 3,
+    name: "Rohit Singh",
+    location: "Traveler",
+    comment:
+      "Booking with Musafir Baba was the best decision for our family trip. Everything was perfectly organized — from comfortable stays to local guides who truly knew the hidden gems.",
+  },
+  {
+    id: 4,
+    name: "Shubham Sharma",
+    location: "Traveler",
+    comment:
+      "I was amazed at how easy Musafir Baba made the entire process. The itinerary was well-balanced, giving me enough time to explore and relax. It felt like I had a personal travel partner by my side throughout the journey.",
+  },
+  {
+    id: 5,
+    name: "Dr. Ritu Mishra",
+    location: "Traveler",
+    comment:
+      "The team at Musafir Baba is incredibly professional yet so friendly. They were always available for any questions, and every little detail was taken care of. I’ll definitely be planning my next trip with them again!",
+  },
+];
 
 export default async function HomePage({
   searchParams,
@@ -106,7 +141,7 @@ export default async function HomePage({
       <DestinationSection />
       <VideoSection />
       <WhyChoose />
-      <Testimonial data={[]} />
+      <Testimonial data={testi} />
       <ImageGallery
         title="Memories in Motion"
         description="Picture Perfect Moments with the Best Travel Agency in India"

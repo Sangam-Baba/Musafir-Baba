@@ -46,9 +46,7 @@ export default function Hero({
   const overlay = Math.min(100, Math.max(0, overlayOpacity));
 
   return (
-    <section
-      className={`relative w-full ${heightToClasses[height]}  ${className}`}
-    >
+    <section className={`relative w-full aspect-[3/1]  ${className}`}>
       {/* Background image */}
       <div className="absolute inset-0">
         <Image
@@ -85,7 +83,7 @@ export default function Hero({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-white text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-center"
+            className="text-white text-xl sm:text-2xl md:text-5xl font-bold tracking-tight text-center"
           >
             {title}
           </motion.h1>

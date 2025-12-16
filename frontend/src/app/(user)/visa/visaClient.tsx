@@ -81,7 +81,12 @@ function VisaClientPage({ visa }: { visa: VisaInterface[] }) {
   return (
     <section>
       <div className="">
-        <Hero image="/Heroimg.jpg" title="Visa" overlayOpacity={100} />
+        <Hero
+          image="/Heroimg.jpg"
+          title="Visa"
+          overlayOpacity={100}
+          height="lg"
+        />
       </div>
 
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">

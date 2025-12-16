@@ -277,7 +277,7 @@ export default function QueryForm() {
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                        <Phone className="w-5 h-5 text-orange-500" />
+                        <Phone className="w-7 h-5 text-orange-500" />
 
                         {/* Country Code Select */}
                         <Select
@@ -286,7 +286,7 @@ export default function QueryForm() {
                             form.setValue("countryCode", value);
                           }}
                         >
-                          <SelectTrigger className="w-[130px]">
+                          <SelectTrigger className="w-[130px] focus-visible:ring-0 focus-visible:ring-offset-0 border-none shadow-none">
                             {/* 👇 show VALUE after selection */}
                             {selectedCountry?.value || "Code"}
                           </SelectTrigger>

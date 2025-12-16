@@ -12,7 +12,6 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
-import { getWebPageBySlug } from "@/app/(user)/webpage/page";
 import { TestiProps } from "@/components/custom/Testimonial";
 
 interface Faq {
@@ -45,8 +44,9 @@ async function MainWebPage({ page }: { page: WebpageInterface }) {
   return (
     <section className="">
       <Hero
-        image={page?.coverImage?.url || "/Hero1.jpg"}
+        image={page?.coverImage?.url || "/Hero2.jpg"}
         title={page?.title || " "}
+        height="lg"
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
