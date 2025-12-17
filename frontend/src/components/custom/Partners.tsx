@@ -38,7 +38,8 @@ function Partners() {
           </h2>
           <p className="w-20 h-1 bg-[#FE5300] text-center"></p>
           <p className=" text-center">
-            Fast, reliable visa assistance for top travel destinations.
+            We are proud to have worked with some of the best companies in the
+            industry
           </p>
         </div>
         <div className="hidden md:grid md:grid-cols-4 gap-6 mt-8 px-4">

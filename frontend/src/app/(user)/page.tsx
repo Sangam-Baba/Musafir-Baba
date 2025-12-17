@@ -148,8 +148,8 @@ export default async function HomePage({
         description="Picture Perfect Moments with the Best Travel Agency in India"
       />
       <HomeBooking />
-      <BlogsHome />
       <Partners />
+      <BlogsHome />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
     </main>

@@ -40,7 +40,7 @@ function SearchBanner() {
       <MapPin className="text-[#FE5300] shrink-0" />
 
       <Select onValueChange={(value) => router.push(`/destinations/${value}`)}>
-        <SelectTrigger className="w-full text-gray-800">
+        <SelectTrigger className="w-full text-gray-800 focus:outline-none border-none shadow-none">
           <SelectValue placeholder="Select Location" className="" />
         </SelectTrigger>
         <SelectContent>

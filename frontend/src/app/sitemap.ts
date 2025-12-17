@@ -94,6 +94,8 @@ interface Webpage {
   slug: string;
   status: string;
   parent: string;
+  fullSlug: string;
+  updatedAt: string;
 }
 interface Visa {
   _id: string;
@@ -293,14 +295,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     })),
-    ...noParentPages.map((page: Destination) => ({
-      url: `https://musafirbaba.com/${page?.slug}`,
-      lastModified: new Date(page.updatedAt),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    })),
-    ...bookingsPages.map((page: Destination) => ({
-      url: `https://musafirbaba.com/bookings/${page?.slug}`,
+    ...webpages.map((page: Webpage) => ({
+      url: `https://musafirbaba.com/${page?.fullSlug}`,
       lastModified: new Date(page.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,
