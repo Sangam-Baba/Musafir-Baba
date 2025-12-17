@@ -59,7 +59,7 @@ export default function Hero({
         />
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent"
           style={{ opacity: overlay / 100 }}
         />
       </div>
@@ -76,7 +76,7 @@ export default function Hero({
       >
         <div
           className={`px-4 md:px-8 ${
-            align === "center" ? "w-full max-w-6xl" : "max-w-2xl"
+            align === "center" ? "w-full max-w-5xl" : "max-w-2xl"
           }`}
         >
           <motion.h1
@@ -93,7 +93,7 @@ export default function Hero({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base  text-center "
+              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base  text-center hidden md:block"
             >
               {description}
             </motion.p>

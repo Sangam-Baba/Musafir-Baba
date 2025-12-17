@@ -15,6 +15,7 @@ import WhyChoose from "@/components/custom/WhyChoose";
 import Image from "next/image";
 import SecondSectionServer from "@/components/custom/SecondSectionServer";
 import LoginAutoOpen from "@/components/User/LoginAutoOpen";
+import Partners from "@/components/custom/Partners";
 
 const faqs = [
   {
@@ -148,6 +149,7 @@ export default async function HomePage({
       />
       <HomeBooking />
       <BlogsHome />
+      <Partners />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
     </main>

@@ -31,6 +31,7 @@ interface WebpageInterface {
   };
   faqs?: Faq[];
   reviews?: TestiProps[];
+  excerpt: string;
 }
 // const getRelatedPages = async (slug: string) => {
 //   const res = await fetch(
@@ -47,6 +48,7 @@ async function MainWebPage({ page }: { page: WebpageInterface }) {
         image={page?.coverImage?.url || "/Hero2.jpg"}
         title={page?.title || " "}
         height="lg"
+        description={page.excerpt}
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
