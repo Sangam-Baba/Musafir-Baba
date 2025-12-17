@@ -137,7 +137,7 @@ const getPackages = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 100,
+      limit = 200,
       destination,
       minDays,
       maxDays,

@@ -35,6 +35,7 @@ import reviewRoutes from "./reviews.routes.js";
 import videoBannerRoutes from "./videoBanner.routes.js";
 import otpRoutes from "./enquiryOtp.routes.js";
 import documentRoutes from "./document.routes.js";
+import coupanRoutes from "./coupan.routes.js";
 
 const router = Router();
 
@@ -74,4 +75,5 @@ router.use("/reviews", reviewRoutes);
 router.use("/videobanner", videoBannerRoutes);
 router.use("/enquiry-otp", otpRoutes);
 router.use("/document", documentRoutes);
+router.use("/coupan", coupanRoutes);
 export default router;
