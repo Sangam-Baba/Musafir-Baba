@@ -6,6 +6,7 @@ import {
   getAllBatch,
   getBatchById,
   getBatchByIds,
+  duplicateBatch,
 } from "../controllers/batch.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -19,6 +20,13 @@ batchRoutes.post(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   createBatch
+);
+batchRoutes.post(
+  "/duplicate/:id",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  duplicateBatch
 );
 batchRoutes.get(
   "/",

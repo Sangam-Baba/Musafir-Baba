@@ -21,17 +21,16 @@ export default function AdminLayout({
     <RootProvider>
       <AdminProtected>
         <SidebarProvider>
-          <div className="flex w-full min-h-screen bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+          <div className="flex w-full min-h-screen bg-gray-50 text-slate-900">
             {/* Sidebar */}
             {!isLoginPage && <AppSidebar />}
 
-            <div className="flex flex-col flex-1 overflow-x-hidden">
+            <div className="flex flex-col flex-1">
               {!isLoginPage && (
-                <header className="flex items-center h-14 px-4 border-b bg-white dark:bg-slate-950">
+                <header className="flex items-center h-14 px-4 border-b bg-white">
                   <SidebarTrigger />
                 </header>
               )}
-
               {/* Page Content */}
               <main className="flex-1  p-6">{children}</main>
             </div>

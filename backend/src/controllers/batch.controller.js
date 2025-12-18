@@ -153,6 +153,35 @@ const getBatchByIds = async (req, res) => {
   }
 };
 
+const duplicateBatch = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid Id" });
+    }
+    const batch = await Batch.findById(id);
+    if (!batch) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Batch not found" });
+    }
+    const newBatch = await Batch.create({
+      ...batch.toObject(),
+      _id: undefined,
+      name: `${batch.name} (Copy)`,
+      createdAt: undefined,
+      updatedAt: undefined,
+    });
+    res.status(200).json({
+      success: true,
+      message: "Batch duplicated successfully",
+      data: newBatch,
+    });
+  } catch (error) {
+    console.log("Duplicate batch creation failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 export {
   createBatch,
   updateBatch,
@@ -160,4 +189,5 @@ export {
   deleteBatch,
   getBatchById,
   getBatchByIds,
+  duplicateBatch,
 };

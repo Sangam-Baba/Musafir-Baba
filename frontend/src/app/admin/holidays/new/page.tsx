@@ -21,6 +21,7 @@ import { CreateBatchModal } from "@/components/admin/Newbatch";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { X } from "lucide-react";
+import { access } from "fs";
 
 interface Image {
   url: string;
@@ -158,6 +159,22 @@ export const getBatchByIds = async (accessToken: string, ids: string[]) => {
     body: JSON.stringify({ ids }),
   });
   if (!res.ok) throw new Error("Failed to get batch");
+  const data = await res.json();
+  return data?.data;
+};
+
+export const duplicateBatch = async (accessToken: string, id: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/batch/duplicate/${id}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to duplicate batch");
   const data = await res.json();
   return data?.data;
 };
@@ -299,6 +316,13 @@ export default function CreatePackagePage() {
     setEditBatchId(null);
   };
 
+  const handleBatchDuplicate = async (id: string) => {
+    const res = await duplicateBatch(accessToken, id);
+    batchArray.append(res._id);
+    const newBatch = await getBatchByIds(accessToken, [res._id]);
+    setBatchDetails((prev) => [...prev, ...newBatch]);
+    setShowBatchModal(false);
+  };
   const handleReviewsCreated = async (id: string) => {
     reviewsArray.append(id);
     const newBatch = await getReviewsByIds(accessToken, [id]);
@@ -404,10 +428,12 @@ export default function CreatePackagePage() {
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="destructive"
-                      onClick={() => batchArray.remove(index)}
+                      variant="default"
+                      onClick={() =>
+                        handleBatchDuplicate(form.getValues(`batch.${index}`))
+                      }
                     >
-                      Remove
+                      Duplicate
                     </Button>
                     <Button
                       type="button"

@@ -27,6 +27,7 @@ import { Reviews } from "../../new/page";
 import { deleteReview } from "../../new/page";
 import { getReviewsByIds } from "../../new/page";
 import { X } from "lucide-react";
+import { duplicateBatch } from "../../new/page";
 interface Image {
   url: string;
   alt: string;
@@ -273,6 +274,14 @@ export default function CreatePackagePage() {
     setShowBatchModal(false);
     setEditBatchId(null);
   };
+
+  const handleBatchDuplicate = async (id: string) => {
+    const res = await duplicateBatch(accessToken, id);
+    batchArray.append(res._id);
+    const newBatch = await getBatchByIds(accessToken, [res._id]);
+    setBatchDetails((prev) => [...prev, ...newBatch]);
+    setShowBatchModal(false);
+  };
   const handleReviewsCreated = async (id: string) => {
     reviewsArray.append(id);
     const newBatch = await getReviewsByIds(accessToken, [id]);
@@ -447,15 +456,12 @@ export default function CreatePackagePage() {
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="destructive"
+                      variant="default"
                       onClick={() => {
-                        batchArray.remove(index);
-                        setBatchDetails((prev) =>
-                          prev.filter((_, i) => i !== index)
-                        );
+                        handleBatchDuplicate(form.getValues(`batch.${index}`));
                       }}
                     >
-                      Remove
+                      Duplicate
                     </Button>
                     <Button
                       type="button"
