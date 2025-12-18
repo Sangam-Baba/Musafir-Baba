@@ -1,8 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { Calendar, DollarSign, IndianRupee, Tag, X } from "lucide-react";
 
 interface Batch {
   name: string;
@@ -156,132 +158,213 @@ export const CreateBatchModal = ({
 
   return (
     <div
-      className="bg-white rounded-xl shadow-2xl w-[420px] max-h-[90vh] overflow-y-auto p-6"
+      className="bg-background rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-border"
       onClick={(e) => e.stopPropagation()}
     >
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-        {existingBatch ? "Update Batch" : "Create Batch"}
-      </h2>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        {/* Basic Info */}
-        <div className="space-y-2">
-          <label className="text-gray-600 font-medium">Batch Name</label>
-          <input
-            type="text"
-            placeholder="Enter batch name"
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-gray-600 font-medium">Start Date</label>
-            <input
-              type="date"
-              value={form.startDate}
-              onChange={(e) => handleChange("startDate", e.target.value)}
-              className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-              required
-            />
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Tag className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <label className="text-gray-600 font-medium">End Date</label>
-            <input
-              type="date"
-              value={form.endDate}
-              onChange={(e) => handleChange("endDate", e.target.value)}
-              className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-              required
-            />
+            <h2 className="text-xl font-semibold text-foreground">
+              {existingBatch ? "Update Batch" : "Create New Batch"}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {existingBatch
+                ? "Modify batch details and pricing"
+                : "Set up a new batch with pricing details"}
+            </p>
           </div>
         </div>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Price Section */}
-        <div className="border-t pt-4 mt-2">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
-            Pricing Details
-          </h3>
+      <div className="overflow-y-auto flex-1 px-6 py-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Tag className="w-4 h-4 text-muted-foreground" />
+                Batch Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Summer 2024 Batch"
+                value={form.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                required
+              />
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              ["Quad", "quad", "quadDiscount"],
-              ["Triple", "triple", "tripleDiscount"],
-              ["Double", "double", "doubleDiscount"],
-              ["Child", "child", "childDiscount"],
-            ].map(([label, priceKey, fakePriceKey]) => (
-              <div key={label} className="col-span-2 grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-gray-600 text-sm">{label} Price</label>
-                  <input
-                    type="number"
-                    value={form[priceKey as keyof Batch]}
-                    onChange={(e) =>
-                      handleChange(priceKey as keyof Batch, e.target.value)
-                    }
-                    className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-gray-600 text-sm">{label} Fake</label>
-                  <input
-                    type="number"
-                    value={form[fakePriceKey as keyof Batch]}
-                    onChange={(e) =>
-                      handleChange(fakePriceKey as keyof Batch, e.target.value)
-                    }
-                    className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => handleChange("startDate", e.target.value)}
+                  className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
+                />
               </div>
-            ))}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => handleChange("endDate", e.target.value)}
+                  className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
+                />
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Status */}
-        <div className="mt-2">
-          <label className="text-gray-600 font-medium">Batch Status</label>
-          <select
-            value={form.status}
-            onChange={(e) => handleChange("status", e.target.value)}
-            className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-          >
-            <option value="upcoming">Upcoming</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="rescheduled">Rescheduled</option>
-          </select>
-        </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2">
+              <IndianRupee className="w-5 h-5 text-primary" />
+              <h3 className="text-base font-semibold text-foreground">
+                Pricing Configuration
+              </h3>
+            </div>
 
-        {/* Buttons */}
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={mutation.isPending}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition disabled:opacity-50"
-          >
-            {mutation.isPending
-              ? existingBatch
-                ? "Updating..."
-                : "Creating..."
-              : existingBatch
-              ? "Update Batch"
-              : "Create Batch"}
-          </button>
-        </div>
-      </form>
+            <div className="space-y-3">
+              {[
+                {
+                  label: "Quad",
+                  priceKey: "quad",
+                  discountKey: "quadDiscount",
+                },
+                {
+                  label: "Triple",
+                  priceKey: "triple",
+                  discountKey: "tripleDiscount",
+                },
+                {
+                  label: "Double",
+                  priceKey: "double",
+                  discountKey: "doubleDiscount",
+                },
+                {
+                  label: "Child",
+                  priceKey: "child",
+                  discountKey: "childDiscount",
+                },
+              ].map(({ label, priceKey, discountKey }) => (
+                <div
+                  key={label}
+                  className="bg-muted/30 rounded-lg p-4 border border-border"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-foreground">
+                      {label} Occupancy
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Regular Price
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          value={form[priceKey as keyof Batch]}
+                          onChange={(e) =>
+                            handleChange(
+                              priceKey as keyof Batch,
+                              e.target.value
+                            )
+                          }
+                          className="w-full pl-7 pr-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-muted-foreground">
+                        Display Price
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          value={form[discountKey as keyof Batch]}
+                          onChange={(e) =>
+                            handleChange(
+                              discountKey as keyof Batch,
+                              e.target.value
+                            )
+                          }
+                          className="w-full pl-7 pr-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Batch Status
+            </label>
+            <select
+              value={form.status}
+              onChange={(e) => handleChange("status", e.target.value)}
+              className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all appearance-none cursor-pointer"
+            >
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="rescheduled">Rescheduled</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/30">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-sm font-medium text-foreground bg-background border border-input rounded-md hover:bg-muted transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          disabled={mutation.isPending}
+          className="px-5 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {mutation.isPending
+            ? existingBatch
+              ? "Updating..."
+              : "Creating..."
+            : existingBatch
+            ? "Update Batch"
+            : "Create Batch"}
+        </button>
+      </div>
     </div>
   );
 };
