@@ -83,4 +83,71 @@ const getCoupanById = async (req, res) => {
   }
 };
 
-export { createCoupan, getAllCoupan, updateCoupan, getCoupanById };
+const validateCoupan = async (req, res) => {
+  try {
+    const { id, amount, itemId, itemType } = req.body;
+    if (!id || !itemId || !itemType || !amount) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+    const coupan = await Coupan.findById(id);
+    if (!coupan || !coupan.isActive) {
+      return res.status(404).json({ success: false, message: "Invalid Id" });
+    }
+    if (
+      new Date().getTime() > new Date(coupan.validTill).getTime() ||
+      new Date().getTime() < new Date(coupan.validFrom).getTime()
+    ) {
+      return res.status(400).json({ success: false, message: "Code Expired" });
+    }
+    if (coupan.applicableItems.length > 0) {
+      const applicableItems = coupan.applicableItems.some(
+        (item) =>
+          item.itemId.toString() === itemId.toString() &&
+          item.itemType === itemType
+      );
+      if (!applicableItems) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Package not applicable" });
+      }
+    }
+    if (amount < coupan.minAmount) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Package not applicable" });
+    }
+    let discount = 0;
+    if (coupan.type === "PERCENTAGE") {
+      discount = (amount * coupan.value) / 100;
+    } else {
+      discount = coupan.value;
+    }
+    discount = Math.min(discount, coupan.maxDiscount);
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully applied coupon",
+      data: {
+        discount,
+        code: coupan.code,
+        finalAmount: amount - discount,
+        _id: coupan._id,
+      },
+    });
+  } catch (error) {
+    console.log("Error in validating coupan", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
+  }
+};
+
+export {
+  createCoupan,
+  getAllCoupan,
+  updateCoupan,
+  getCoupanById,
+  validateCoupan,
+};

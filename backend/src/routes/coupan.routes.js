@@ -4,6 +4,7 @@ import {
   updateCoupan,
   getAllCoupan,
   getCoupanById,
+  validateCoupan,
 } from "../controllers/coupan.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -17,6 +18,14 @@ coupanRoutes.post(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   createCoupan
+);
+
+coupanRoutes.post(
+  "/validate",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["user", "admin", "superadmin"]),
+  validateCoupan
 );
 
 coupanRoutes.get(

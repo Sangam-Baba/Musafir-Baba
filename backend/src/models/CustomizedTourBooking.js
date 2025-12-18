@@ -44,6 +44,10 @@ const customizedTourBookingSchema = new mongoose.Schema(
         default: "Pending",
       },
     },
+    coupanId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupan",
+    },
   },
   { timestamps: true }
 );

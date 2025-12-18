@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -43,6 +43,7 @@ interface FormData {
   totalPrice: number;
   plan: string;
   packageId: string;
+  coupanId?: string;
 }
 const createBooking = async (accessToken: string, formData: FormData) => {
   const res = await fetch(
@@ -82,10 +83,53 @@ const getUser = async (accessToken: string) => {
   const data = await res.json();
   return data?.data;
 };
+
+const getAllOffers = async (accessToken: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/coupan`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch offers");
+  const data = await res.json();
+  return data?.data;
+};
+
+const validateCoupan = async (
+  accessToken: string,
+  value: {
+    id: string;
+    amount: number;
+    itemId: string;
+    itemType: "CUSTOM_PACKAGE";
+  }
+) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/coupan/validate`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(value),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || err.message || "Failed to validate coupan");
+  }
+  const data = await res.json();
+  return data;
+};
 export default function CheckoutButton() {
   const params = useParams();
   const formRef = useRef<HTMLFormElement | null>(null);
   const [loading, setLoading] = useState(false);
+  const [finalAmount, setFinalAmount] = useState(0);
+  const [appliedCouponId, setAppliedCouponId] = useState<string | null>(null);
   const [paymentData, setPaymentData] = useState({
     key: "",
     txnid: "",
@@ -123,6 +167,13 @@ export default function CheckoutButton() {
     staleTime: 1000 * 60,
   });
 
+  const { data: offers } = useQuery({
+    queryKey: ["offers"],
+    queryFn: () => getAllOffers(accessToken),
+    enabled: !!accessToken,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const mutation = useMutation({
     mutationFn: (formData: FormData) => createBooking(accessToken, formData),
     onSuccess: (res) => {
@@ -133,21 +184,20 @@ export default function CheckoutButton() {
     },
   });
 
-  if (isLoading) return <Loader size="lg" message="Loading booking..." />;
-  if (isError) {
-    const msg = (error as Error)?.message ?? "Failed to load booking";
-    toast.error(msg);
-    return <h1 className="text-red-600">{msg}</h1>;
-  }
-
-  //   const booking = bookingResp?.data;
   const booking = formData;
-  const price = formData.totalPrice ?? 0;
-  const amountInPaise = Math.round(price * 100);
+  useEffect(() => {
+    if (booking) {
+      setFinalAmount(booking.totalPrice);
+    }
+  }, [booking]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(formData);
+    mutation.mutate({
+      ...formData,
+      totalPrice: finalAmount,
+      coupanId: appliedCouponId ?? undefined,
+    });
   };
   const handlePayment = async (bookingData: BookingApiResponse) => {
     setLoading(true);
@@ -162,11 +212,11 @@ export default function CheckoutButton() {
         },
         body: JSON.stringify({
           txnid,
-          amount: bookingData?.totalPrice?.toFixed(2),
+          amount: finalAmount ?? bookingData?.totalPrice?.toFixed(2),
           productinfo:
             bookingData?.packageId?.title ?? "Customized Travel Package",
           firstname: bookingData?.userId?.name ?? "Guest",
-          email: bookingData?.userId?.email ?? "abhi@example.com",
+          email: bookingData?.userId?.email ?? "user@gamil.com",
           phone: "9876543210",
           udf1: bookingData?._id,
           surl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success-customized-tour`,
@@ -189,6 +239,45 @@ export default function CheckoutButton() {
     }
   };
 
+  const handleCoupanValidation = async (values: {
+    id: string;
+    amount: number;
+    itemId: string;
+    itemType: "CUSTOM_PACKAGE";
+  }) => {
+    try {
+      const res = await validateCoupan(accessToken, values);
+
+      toast.success(res.message);
+
+      setFinalAmount(res.data.finalAmount);
+      setAppliedCouponId(res.data._id);
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setFinalAmount(booking.totalPrice);
+    setAppliedCouponId(null);
+
+    // useCustomizedBookingStore
+    //   .getState()
+    //   .setFormData({
+    //     ...formData,
+    //     coupanId: undefined,
+    //     totalPrice: booking.totalPrice,
+    //   });
+
+    toast.success("Coupon removed");
+  };
+
+  if (isLoading) return <Loader size="lg" message="Loading booking..." />;
+  if (isError) {
+    const msg = (error as Error)?.message ?? "Failed to load booking";
+    toast.error(msg);
+    return <h1 className="text-red-600">{msg}</h1>;
+  }
   return (
     <section className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-12 px-4 md:px-8">
       <div className="max-w-7xl mx-auto mb-12">
@@ -281,7 +370,7 @@ export default function CheckoutButton() {
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Package Price</span>
                     <span className="font-semibold text-foreground">
-                      ₹{(amountInPaise / 100).toFixed(2)}
+                      ₹{formData.totalPrice}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -297,7 +386,7 @@ export default function CheckoutButton() {
                     Total Amount
                   </p>
                   <p className="text-3xl font-bold text-primary">
-                    ₹{(amountInPaise / 100).toFixed(2)}
+                    ₹{finalAmount}
                   </p>
                 </div>
 
@@ -338,7 +427,71 @@ export default function CheckoutButton() {
                     </span>
                   )}
                 </Button>
+                <div className="pt-4 border-t-2 space-y-4">
+                  <div>
+                    <p className="text-xl font-semibold ">Coupons & Offers</p>
+                  </div>
+                  <div>
+                    {offers?.map(
+                      (offer: {
+                        _id: string;
+                        code: string;
+                        description: string;
+                        value: number;
+                        type: string;
+                      }) => {
+                        const isApplied = appliedCouponId === offer._id;
 
+                        return (
+                          <div
+                            key={offer._id}
+                            className={`flex justify-between gap-5 border-2 rounded-lg p-4 ${
+                              isApplied
+                                ? "border-green-500 bg-green-50"
+                                : "border-[#FE5300]"
+                            }`}
+                          >
+                            <div>
+                              <p className="font-semibold">{offer.code}</p>
+                              <p className="text-muted-foreground text-sm">
+                                {offer.description}
+                              </p>
+                            </div>
+
+                            <div className="text-right">
+                              <p className="text-muted-foreground">
+                                ₹{offer.value}
+                              </p>
+
+                              {isApplied ? (
+                                <p
+                                  onClick={handleRemoveCoupon}
+                                  className="text-red-600 cursor-pointer font-semibold"
+                                >
+                                  Remove
+                                </p>
+                              ) : (
+                                <p
+                                  onClick={() =>
+                                    handleCoupanValidation({
+                                      id: offer._id,
+                                      amount: booking.totalPrice,
+                                      itemId: pkgId,
+                                      itemType: "CUSTOM_PACKAGE",
+                                    })
+                                  }
+                                  className="text-green-600 cursor-pointer font-semibold"
+                                >
+                                  Apply
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
                 <div className="pt-4 border-t border-border/50">
                   <p className="text-xs text-muted-foreground text-center">
                     ✓ Secure payment powered by PayU

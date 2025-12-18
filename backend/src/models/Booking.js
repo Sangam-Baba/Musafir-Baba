@@ -80,6 +80,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    coupanId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Coupan",
+    },
   },
   { timestamps: true }
 );
