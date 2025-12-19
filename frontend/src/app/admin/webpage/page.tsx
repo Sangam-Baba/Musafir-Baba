@@ -1,11 +1,13 @@
 "use client";
-import React from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import PageList from "@/components/admin/PageList";
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
 interface WebPage {
   title: string;
   content: string;
@@ -42,6 +44,10 @@ function WebPage() {
   const permissions = useAdminAuthStore(
     (state) => state.permissions
   ) as string[];
+  const [filter, setFilter] = useState({
+    search: "",
+  });
+  const [filteredWebpages, setFilteredWebpages] = useState<WebPage[]>([]);
   const router = useRouter();
 
   const { data, isLoading, isError, error, refetch } = useQuery<QueryResponse>({
@@ -50,6 +56,15 @@ function WebPage() {
     retry: 2,
   });
   const webpages = data?.data ?? [];
+
+  useEffect(() => {
+    if (webpages) {
+      const result = webpages?.filter((pkg: WebPage) => {
+        return pkg.title.toLowerCase().includes(filter.search.toLowerCase());
+      });
+      setFilteredWebpages(result);
+    }
+  }, [filter, webpages]);
 
   const handleEdit = (id: string) => {
     router.push(`/admin/webpage/edit/${id}`);
@@ -82,6 +97,15 @@ function WebPage() {
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">All WebPages</h1>
+        <div>
+          <Input
+            type="text"
+            placeholder="Search..."
+            className="border border-gray-300 rounded-md px-2 py-1"
+            value={filter.search}
+            onChange={(e) => setFilter({ search: e.target.value })}
+          />
+        </div>
         <button
           onClick={() => router.push("/admin/webpage/new")}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
@@ -96,7 +120,7 @@ function WebPage() {
         </div>
       ) : (
         <PageList
-          webpages={webpages.map((b) => ({
+          webpages={filteredWebpages.map((b) => ({
             id: b._id,
             title: b.title,
             status: b.status === "published" ? "Published" : "Draft",
