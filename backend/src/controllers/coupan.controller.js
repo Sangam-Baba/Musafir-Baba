@@ -54,7 +54,11 @@ const updateCoupan = async (req, res) => {
 
 const getAllCoupan = async (req, res) => {
   try {
-    const allActiveCoupan = await Coupan.find({ isActive: true });
+    const allActiveCoupan = await Coupan.find({ isActive: true })
+      .select(
+        "-isActive -usedCount -createdAt -updatedAt -perUserLimit -validFrom -validTill"
+      )
+      .lean();
     res.status(200).json({
       success: true,
       data: allActiveCoupan,

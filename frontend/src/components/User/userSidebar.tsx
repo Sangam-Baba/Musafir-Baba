@@ -34,7 +34,7 @@ const NAV_ITEMS = [
   { label: "Membership", href: "/user/membership", icon: HandCoins },
   { label: "Documents", href: "/user/documents", icon: FileText },
   { label: "Wishlist", href: "/user/wishlist", icon: Heart },
-  { label: "Offers", href: "/user/offers", icon: TicketPercent },
+  { label: "Offers", href: "/user/my-offers", icon: TicketPercent },
   { label: "Wallet", href: "/user/wallet", icon: Wallet },
 ];
 
