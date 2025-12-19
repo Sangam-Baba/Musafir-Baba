@@ -40,6 +40,7 @@ import {
   CookingPot,
   MapPinPenIcon,
   Video,
+  IndianRupee,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -177,6 +178,12 @@ const NAV_GROUPS = [
         href: "/admin/role",
         icon: Settings,
         permission: "role",
+      },
+      {
+        label: "Coupons",
+        href: "/admin/coupon",
+        icon: IndianRupee,
+        permission: "coupon",
       },
       {
         label: "Membership",

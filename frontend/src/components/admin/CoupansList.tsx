@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
-import { CoupansInterface } from "@/app/admin/coupan/page";
+import { CoupansInterface } from "@/app/admin/coupon/page";
 export interface DestinationSeo {
   _id: string;
   code: string;
@@ -48,7 +48,7 @@ export default function CoupansList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {allCoupans.map((cat: CoupansInterface) => (
+            {allCoupans?.map((cat: CoupansInterface) => (
               <motion.tr
                 key={cat._id}
                 initial={{ opacity: 0, y: 5 }}
@@ -86,7 +86,7 @@ export default function CoupansList({
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
-        {allCoupans.map((cat: CoupansInterface) => (
+        {allCoupans?.map((cat: CoupansInterface) => (
           <Card key={cat._id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
               <h3 className="font-semibold text-lg">{cat.code}</h3>

@@ -3,10 +3,7 @@
 import React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
-import DestinationSeoList from "@/components/admin/DestinationSeoList";
-import { DestinationSeo } from "@/components/admin/DestinationSeoList";
 import { Loader2 } from "lucide-react";
-import DestinationSeoNew from "@/components/admin/DestinationSeoNew";
 import { toast } from "sonner";
 import { CreateEditCoupan } from "@/components/admin/CreateEditCoupan";
 import CoupansList from "@/components/admin/CoupansList";
@@ -61,7 +58,7 @@ function CoupanCode() {
   const { data: allCoupans, isLoading } = useQuery({
     queryKey: ["all-coupans"],
     queryFn: () => getAllCoupans(accessToken),
-    // enabled: permissions.includes("destination-seo"),
+    enabled: permissions.includes("coupon"),
   });
 
   const handleEdit = (id: string) => {
@@ -81,8 +78,8 @@ function CoupanCode() {
     }
   };
 
-  //   if (!permissions.includes("destination-seo"))
-  //     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
+  if (!permissions.includes("coupon"))
+    return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">

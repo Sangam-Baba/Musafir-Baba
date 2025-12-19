@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { format, parseISO, isAfter } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useGroupBookingStore } from "@/store/useBookingStore";
 
 interface Batch {
   _id: string;
@@ -46,13 +47,6 @@ interface Package {
 const formSchema = z.object({
   packageId: z.string(),
   batchId: z.string(),
-  address: z
-    .object({
-      city: z.string().optional(),
-      state: z.string().optional(),
-      zipcode: z.string().optional(),
-    })
-    .optional(),
   travellers: z.object({
     quad: z.number().nonnegative(),
     triple: z.number().nonnegative(),
@@ -62,19 +56,6 @@ const formSchema = z.object({
   totalPrice: z.number().min(0),
 });
 type BookingFormValues = z.infer<typeof formSchema>;
-
-async function bookPkgApi(values: BookingFormValues, accessToken: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/booking`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(values),
-  });
-  if (!res.ok) throw new Error("Booking failed");
-  return res.json();
-}
 
 function groupBatchesByMonth(batches: Batch[]) {
   const now = new Date();
@@ -95,6 +76,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   // console.log("Getting package: ", pkg);
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
+  const setGroup = useGroupBookingStore((state) => state.setGroup);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [travellers, setTravellers] = useState({
     quad: 0,
@@ -114,15 +96,15 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: (payload: BookingFormValues) =>
-      bookPkgApi(payload, accessToken || ""),
-    onSuccess: (res) => {
-      toast.success("Booking created");
-      router.push(`/payment/${res.data._id}`);
-    },
-    onError: (err) => toast.error(err.message || "Booking failed"),
-  });
+  // const mutation = useMutation({
+  //   mutationFn: (payload: BookingFormValues) =>
+  //     bookPkgApi(payload, accessToken || ""),
+  //   onSuccess: (res) => {
+  //     toast.success("Booking created");
+  //     router.push(`/payment/${res.data._id}`);
+  //   },
+  //   onError: (err) => toast.error(err.message || "Booking failed"),
+  // });
 
   const totalPrice = useMemo(() => {
     if (!selectedBatch) return 0;
@@ -150,8 +132,10 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   };
 
   const onSubmit = (values: BookingFormValues) => {
-    if (mutation.isPending) return;
-    mutation.mutate(values);
+    // if (mutation.isPending) return;
+    // mutation.mutate(values);
+    setGroup(values);
+    router.push(`/payment/${values.packageId}`);
   };
 
   return (
@@ -296,8 +280,9 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
           {/* </div> */}
         </div>
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
-          {mutation.isPending ? "Processing..." : "Book Now"}
+        <Button type="submit" className="w-full">
+          {/* {mutation.isPending ? "Processing..." : "Book Now"} */}
+          Book Now
         </Button>
       </form>
     </div>

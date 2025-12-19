@@ -71,7 +71,7 @@ const getPackage = async (id: string) => {
   return data?.data;
 };
 
-const getUser = async (accessToken: string) => {
+export const getUser = async (accessToken: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
     method: "GET",
     headers: {
@@ -84,7 +84,7 @@ const getUser = async (accessToken: string) => {
   return data?.data;
 };
 
-const getAllOffers = async (accessToken: string) => {
+export const getAllOffers = async (accessToken: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/coupan`, {
     method: "GET",
     headers: {
@@ -97,13 +97,13 @@ const getAllOffers = async (accessToken: string) => {
   return data?.data;
 };
 
-const validateCoupan = async (
+export const validateCoupan = async (
   accessToken: string,
   value: {
     id: string;
     amount: number;
     itemId: string;
-    itemType: "CUSTOM_PACKAGE";
+    itemType: string;
   }
 ) => {
   const res = await fetch(
@@ -260,15 +260,6 @@ export default function CheckoutButton() {
   const handleRemoveCoupon = () => {
     setFinalAmount(booking.totalPrice);
     setAppliedCouponId(null);
-
-    // useCustomizedBookingStore
-    //   .getState()
-    //   .setFormData({
-    //     ...formData,
-    //     coupanId: undefined,
-    //     totalPrice: booking.totalPrice,
-    //   });
-
     toast.success("Coupon removed");
   };
 

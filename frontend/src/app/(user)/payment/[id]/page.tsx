@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -17,38 +17,54 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
+import { getGroupPackageById } from "../../holidays/[categorySlug]/[destination]/[packageSlug]/[id]/page";
+import { useGroupBookingStore } from "@/store/useBookingStore";
+import { validateCoupan } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
+import { getAllOffers } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
+import { getUser } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
+import { Batch } from "@/app/sitemap";
 
-type BookingApiResponse = {
-  data: {
+interface BookingApiResponse {
+  _id: string;
+  totalPrice: number;
+
+  travellers: {
+    quad: number;
+    triple: number;
+    double: number;
+    child: number;
+  };
+  packageId: {
     _id: string;
-    totalPrice: number;
-
-    travellers: {
-      quad: number;
-      triple: number;
-      double: number;
-      child: number;
-    };
-    packageId: {
-      _id: string;
-      title: string;
-      coverImage: {
-        url: string;
-      };
-    };
-    user: {
-      _id: string;
-      name: string;
-      email: string;
-    };
-    batchId: {
-      _id: string;
-      startDate: string;
-      endDate: string;
+    title: string;
+    coverImage: {
+      url: string;
     };
   };
-};
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  batchId: {
+    _id: string;
+    startDate: string;
+    endDate: string;
+  };
+}
 
+interface GroupBookingInterface {
+  packageId: string;
+  batchId: string;
+  travellers: {
+    quad: number;
+    triple: number;
+    double: number;
+    child: number;
+  };
+  totalPrice: number;
+  coupanId?: string;
+}
 async function getBooking(bookingId: string, accessToken: string | null) {
   if (!bookingId) throw new Error("Missing booking id");
 
@@ -71,7 +87,22 @@ async function getBooking(bookingId: string, accessToken: string | null) {
   return (await res.json()) as BookingApiResponse;
 }
 
-export default function CheckoutButton() {
+async function createGroupBooking(
+  values: GroupBookingInterface,
+  accessToken: string
+) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/booking`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(values),
+  });
+  if (!res.ok) throw new Error("Booking failed");
+  return res.json();
+}
+export default function CheckoutPage() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState({
@@ -89,35 +120,82 @@ export default function CheckoutButton() {
     udf1: "",
     service_provider: "",
   });
-  const accessToken = useAuthStore((s) => s.accessToken ?? null);
+  const accessToken = useAuthStore((s) => s.accessToken) as string;
   const { id } = useParams(); // ✅ directly extract id
-  const bookingId = String(id ?? ""); // safe conversion
+  const pkgId = String(id ?? ""); // safe conversion
+  const booking = useGroupBookingStore((s) => s.formData);
+  const [finalAmount, setFinalAmount] = useState(0);
+  const [appliedCouponId, setAppliedCouponId] = useState<string | null>(null);
+  const [originalAmount, setOriginalAmount] = useState(0);
+  const [batch, setBatch] = useState<Batch | null>(null);
 
+  //Group Package
   const {
-    data: bookingResp,
+    data: pkg,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["booking", bookingId],
-    queryFn: () => getBooking(bookingId, accessToken),
-    enabled: Boolean(bookingId && accessToken),
+    queryKey: ["group-pkg"],
+    queryFn: () => getGroupPackageById(pkgId),
+    enabled: Boolean(pkgId && accessToken),
+    staleTime: 1000 * 60 * 2,
+  });
+  const Package = pkg?.data;
+
+  //User
+  const { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => getUser(accessToken),
+    enabled: !!accessToken,
     staleTime: 1000 * 60,
   });
 
-  if (isLoading) return <Loader size="lg" message="Loading booking..." />;
+  //Offers
+  const { data: offers } = useQuery({
+    queryKey: ["offers"],
+    queryFn: () => getAllOffers(accessToken),
+    enabled: !!accessToken,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  if (isError) {
-    const msg = (error as Error)?.message ?? "Failed to load booking";
-    toast.error(msg);
-    return <h1 className="text-red-600">{msg}</h1>;
-  }
+  useEffect(() => {
+    if (booking && Package) {
+      const selectedBatch = Package.batch.find(
+        (batch: Batch) => batch._id === booking.batchId
+      );
+      setBatch(selectedBatch);
+      const price =
+        booking.travellers.quad * selectedBatch.quad +
+        booking.travellers.triple * selectedBatch.triple +
+        booking.travellers.double * selectedBatch.double +
+        booking.travellers.child * selectedBatch.child;
+      setOriginalAmount(price);
+      setFinalAmount(price);
+    }
+  }, [booking, Package]);
 
-  const booking = bookingResp?.data;
-  const price = booking?.totalPrice ?? 0;
-  const amountInPaise = Math.round(price * 100);
+  const mutation = useMutation({
+    mutationFn: (formData: GroupBookingInterface) =>
+      createGroupBooking(formData, accessToken),
+    onSuccess: (res) => {
+      handlePayment(res?.data);
+    },
+    onError: (error) => {
+      toast.error((error as Error)?.message ?? "Failed to book package");
+    },
+  });
 
-  const handlePayment = async () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate({
+      ...booking,
+      totalPrice: finalAmount,
+      coupanId: appliedCouponId ?? undefined,
+    });
+  };
+
+  const handlePayment = async (bookingData: BookingApiResponse) => {
     setLoading(true);
 
     try {
@@ -130,12 +208,12 @@ export default function CheckoutButton() {
         },
         body: JSON.stringify({
           txnid,
-          amount: price.toFixed(2),
-          productinfo: booking?.packageId?.title ?? "Travel Package",
-          firstname: booking?.user?.name ?? "Guest",
-          email: booking?.user?.email ?? "abhi@example.com",
+          amount: bookingData?.totalPrice?.toFixed(2),
+          productinfo: bookingData?.packageId?.title ?? "Travel Package",
+          firstname: bookingData?.user?.name ?? "Guest",
+          email: bookingData?.user?.email ?? "abhi@example.com",
           phone: "9876543210",
-          udf1: booking?._id,
+          udf1: bookingData?._id,
           surl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/success`,
           furl: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/failure`,
         }),
@@ -156,6 +234,37 @@ export default function CheckoutButton() {
     }
   };
 
+  const handleCoupanValidation = async (values: {
+    id: string;
+    amount: number;
+    itemId: string;
+    itemType: "GROUP_PACKAGE";
+  }) => {
+    try {
+      const res = await validateCoupan(accessToken, values);
+
+      toast.success(res.message);
+
+      setFinalAmount(res.data.finalAmount);
+      setAppliedCouponId(res.data._id);
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setFinalAmount(originalAmount);
+    setAppliedCouponId(null);
+    toast.success("Coupon removed");
+  };
+
+  if (isLoading) return <Loader size="lg" message="Loading packages..." />;
+
+  if (isError) {
+    const msg = (error as Error)?.message ?? "Failed to load pkgs";
+    toast.error(msg);
+    return <h1 className="text-red-600">{msg}</h1>;
+  }
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-8 md:py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -183,10 +292,10 @@ export default function CheckoutButton() {
             {/* Package Details Card */}
             <Card className="overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow pt-0">
               <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                {booking?.packageId?.coverImage?.url ? (
+                {Package?.coverImage?.url ? (
                   <Image
-                    src={booking.packageId.coverImage.url || "/placeholder.svg"}
-                    alt={booking.packageId.title}
+                    src={Package.coverImage.url || "/placeholder.svg"}
+                    alt={Package.title}
                     width={500}
                     height={500}
                     className="w-full h-full object-cover"
@@ -197,7 +306,7 @@ export default function CheckoutButton() {
               </div>
               <CardContent className="p-6">
                 <h2 className="text-2xl font-bold text-foreground mb-2">
-                  {booking?.packageId?.title ?? "Travel Package"}
+                  {Package.title ?? "Travel Package"}
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
                   <div className="flex items-start gap-3">
@@ -207,10 +316,10 @@ export default function CheckoutButton() {
                         Travel Dates
                       </p>
                       <p className="text-sm font-semibold text-foreground mt-1">
-                        {booking?.batchId?.startDate.split("T")[0]}
+                        {batch?.startDate.split("T")[0]}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        to {booking?.batchId?.endDate.split("T")[0]}
+                        to {batch?.endDate.split("T")[0]}
                       </p>
                     </div>
                   </div>
@@ -256,13 +365,13 @@ export default function CheckoutButton() {
                   <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <span className="text-sm text-muted-foreground">Name</span>
                     <span className="font-semibold text-foreground">
-                      {booking?.user?.name ?? "Guest"}
+                      {user?.name ?? "Guest"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <span className="text-sm text-muted-foreground">Email</span>
                     <span className="font-semibold text-foreground">
-                      {booking?.user?.email ?? "abhi@example.com"}
+                      {user?.email ?? "guest@gmail.com"}
                     </span>
                   </div>
                 </div>
@@ -283,10 +392,10 @@ export default function CheckoutButton() {
                 <div className="space-y-3 mb-6 pb-6 border-b border-border/50">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">
-                      {booking?.packageId?.title ?? "Travel Package"}
+                      {Package.title ?? "Travel Package"}
                     </span>
                     <span className="font-semibold text-foreground">
-                      ₹{price.toFixed(2)}
+                      ₹{originalAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -296,7 +405,7 @@ export default function CheckoutButton() {
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-foreground">Total</span>
                     <span className="text-2xl font-bold text-primary">
-                      ₹{(amountInPaise / 100).toFixed(2)}
+                      ₹{finalAmount.toFixed(2)}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -306,7 +415,7 @@ export default function CheckoutButton() {
 
                 {/* CTA Button */}
                 <Button
-                  onClick={handlePayment}
+                  onClick={handleSubmit}
                   disabled={loading}
                   size="lg"
                   className="w-full mb-4 bg-[#FE5300] hover:bg-[#FE5300]/90 text-primary-foreground font-semibold py-6"
@@ -317,15 +426,81 @@ export default function CheckoutButton() {
                       Processing...
                     </span>
                   ) : (
-                    `Pay ₹${(amountInPaise / 100).toFixed(2)}`
+                    `Pay ₹${finalAmount.toFixed(2)}`
                   )}
                 </Button>
+
+                <div className="pt-4 border-t-2 space-y-4">
+                  <div>
+                    <p className="text-xl font-semibold ">Coupons & Offers</p>
+                  </div>
+                  <div className="space-y-2">
+                    {offers?.map(
+                      (offer: {
+                        _id: string;
+                        code: string;
+                        description: string;
+                        value: number;
+                        type: string;
+                      }) => {
+                        const isApplied = appliedCouponId === offer._id;
+
+                        return (
+                          <div
+                            key={offer._id}
+                            className={`flex justify-between gap-5 border-2 rounded-lg p-4 ${
+                              isApplied
+                                ? "border-green-500 bg-green-50"
+                                : "border-[#FE5300]"
+                            }`}
+                          >
+                            <div>
+                              <p className="font-semibold">{offer.code}</p>
+                              <p className="text-muted-foreground text-sm">
+                                {offer.description}
+                              </p>
+                            </div>
+
+                            <div className="text-right">
+                              <p className="text-muted-foreground">
+                                ₹{offer.value}
+                              </p>
+
+                              {isApplied ? (
+                                <p
+                                  onClick={handleRemoveCoupon}
+                                  className="text-red-600 cursor-pointer font-semibold"
+                                >
+                                  Remove
+                                </p>
+                              ) : (
+                                <p
+                                  onClick={() =>
+                                    handleCoupanValidation({
+                                      id: offer._id,
+                                      amount: finalAmount,
+                                      itemId: pkgId,
+                                      itemType: "GROUP_PACKAGE",
+                                    })
+                                  }
+                                  className="text-green-600 cursor-pointer font-semibold"
+                                >
+                                  Apply
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
 
                 {/* Trust Indicators */}
                 <div className="space-y-2 pt-4 border-t border-border/50">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Lock className="w-4 h-4 text-primary" />
-                    <span>Secure SSL encrypted payment</span>
+                    <span>Secure payment powered by PayU</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <ShieldCheck className="w-4 h-4 text-primary" />

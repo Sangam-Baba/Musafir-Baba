@@ -293,6 +293,22 @@ export const CreateEditCoupan = ({
               )}
             />
           </div>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enjoy discount on your order"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           {/* Minimum Amount and Maximum Discount */}
           <div className="grid grid-cols-2 gap-5 items-center">
             <FormField

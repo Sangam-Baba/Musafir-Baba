@@ -96,6 +96,7 @@ const getPackageById = async (req, res) => {
     }
     const pkg = await Package.findById({ _id: id, status: "published" })
       .populate("destination", "_id name country state city slug coverImage")
+      .populate("batch")
       .lean();
 
     if (!pkg) {

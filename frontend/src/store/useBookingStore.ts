@@ -1,25 +1,50 @@
 import { create } from "zustand";
-interface BookingState {
-    adults: number;
-    children: number;
-    infants: number;
-    price: number;
-    date:string;
-    setDate: (date: string) => void;
-    setPrice: (price: number) => void;
-    setAdults: (adults: number) => void;
-    setChildren: (children: number) => void;
-    setInfants: (infants: number) => void;
+import { persist } from "zustand/middleware";
+interface GroupState {
+  batchId: string;
+  packageId: string;
+  travellers: {
+    quad: number;
+    triple: number;
+    double: number;
+    child: number;
+  };
 }
-export const useBookingStore = create<BookingState>((set, get) => ({
-    adults: 0,
-    children: 0,
-    infants: 0,
-    price: 0,
-    date: "",
-    setDate: (date) => set({ date }),
-    setPrice: (price) => set({ price }),
-    setAdults: (adults) => set({ adults }),
-    setChildren: (children) => set({ children }),
-    setInfants: (infants) => set({ infants }),
-}));
+interface BookingState {
+  formData: GroupState;
+  setGroup: (data: GroupState) => void;
+  resetGroup: () => void;
+}
+export const useGroupBookingStore = create<BookingState>()(
+  persist(
+    (set) => ({
+      formData: {
+        batchId: "",
+        packageId: "",
+        travellers: {
+          quad: 0,
+          triple: 0,
+          double: 0,
+          child: 0,
+        },
+      },
+      setGroup: (data) => set({ formData: data }),
+      resetGroup: () =>
+        set({
+          formData: {
+            batchId: "",
+            packageId: "",
+            travellers: {
+              quad: 0,
+              triple: 0,
+              double: 0,
+              child: 0,
+            },
+          },
+        }),
+    }),
+    {
+      name: "group-booking-storage",
+    }
+  )
+);
