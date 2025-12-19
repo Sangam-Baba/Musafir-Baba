@@ -1,24 +1,114 @@
 "use client";
 
+import type React from "react";
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
-import { useEffect } from "react";
-import { TableKit } from "@tiptap/extension-table";
+import { useEffect, useState } from "react";
 import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
-
+import {
+  Bold,
+  Italic,
+  UnderlineIcon,
+  Strikethrough,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  List,
+  ListOrdered,
+  Quote,
+  Code2,
+  ImageIcon,
+  Link2,
+  Unlink,
+  Undo,
+  Redo,
+  TableIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ButtonExtension } from "@/components/tiptap/ButtonExtension";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
 interface BlogEditorProps {
   value?: string;
   onChange: (content: string) => void;
 }
 
+function ToolbarButton({
+  onClick,
+  isActive,
+  icon: Icon,
+  tooltip,
+  disabled,
+}: {
+  onClick: () => void;
+  isActive?: boolean;
+  icon: React.ElementType;
+  tooltip: string;
+  disabled?: boolean;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant={isActive ? "default" : "ghost"}
+          size="sm"
+          onClick={onClick}
+          disabled={disabled}
+          className="h-8 w-8 p-0"
+        >
+          <Icon className="h-4 w-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
+  const [imageUrl, setImageUrl] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [buttonDialogOpen, setButtonDialogOpen] = useState(false);
+  const [buttonText, setButtonText] = useState("");
+  const [buttonHref, setButtonHref] = useState("");
+
   const editor = useEditor({
     extensions: [
       Table.configure({
@@ -36,11 +126,12 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
+      ButtonExtension,
     ],
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-md xl:prose-lg focus:outline-none max-w-none",
+          "prose prose-sm sm:prose lg:prose-lg max-w-none focus:outline-none px-8 py-6 min-h-[400px]",
       },
     },
     content: value,
@@ -62,327 +153,333 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
     const url = prompt("Enter image URL");
     if (url) editor.chain().focus().setImage({ src: url }).run();
   };
+
+  const addLink = () => {
+    const url = prompt("Enter link URL");
+    if (url) editor.chain().focus().setLink({ href: url }).run();
+  };
+
+  const handleInsertButton = () => {
+    if (buttonText && buttonHref && editor) {
+      editor
+        .chain()
+        .focus()
+        .setButton({ text: buttonText, href: buttonHref })
+        .run();
+      setButtonText("");
+      setButtonHref("");
+      setButtonDialogOpen(false);
+    }
+  };
   return (
-    <div className="w-full border rounded-lg p-3 bg-white dark:bg-gray-900">
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 border-b p-2 mt-0 mb-2 sticky top-1 bg-gray-800 dark:bg-gray-900 z-50 rounded-lg">
-        {/* Text formatting */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("bold") ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Bold
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("italic") ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Italic
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("underline")
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          U
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("strike") ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Strike
-        </button>
-
-        {/* Headings */}
-        <button
-          type="button"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
-          className={`px-2 py-1 rounded ${
-            editor.isActive("heading", { level: 1 })
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          H1
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          className={`px-2 py-1 rounded ${
-            editor.isActive("heading", { level: 2 })
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          H2
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
-          className={`px-2 py-1 rounded ${
-            editor.isActive("heading", { level: 3 })
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          H3
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 4 }).run()
-          }
-          className={`px-2 py-1 rounded ${
-            editor.isActive("heading", { level: 4 })
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          H4
-        </button>
-
-        {/* Lists */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("bulletList")
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          • List
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("orderedList")
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          1. List
-        </button>
-
-        {/* Quote & code */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("blockquote")
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          ❝ Quote
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`px-2 py-1 rounded ${
-            editor.isActive("codeBlock")
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200"
-          }`}
-        >
-          {"</> Code"}
-        </button>
-
-        {/* Image */}
-        <button
-          type="button"
-          onClick={addImage}
-          className="px-2 py-1 rounded bg-gray-200"
-        >
-          🖼 Image
-        </button>
-
-        {/* Links */}
-        <button
-          type="button"
-          onClick={() => {
-            const url = prompt("Enter link URL");
-            if (url) editor.chain().focus().setLink({ href: url }).run();
-          }}
-          className="px-2 py-1 rounded bg-gray-200"
-        >
-          🔗 Link
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().unsetLink().run()}
-          className="px-2 py-1 rounded bg-gray-200"
-        >
-          ❌ Unlink
-        </button>
-
-        {/* Undo/Redo */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().undo().run()}
-          className="px-2 py-1 rounded bg-gray-200"
-        >
-          ↩ Undo
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().redo().run()}
-          className="px-2 py-1 rounded bg-gray-200"
-        >
-          ↪ Redo
-        </button>
-        {/* /* Table */}
-        <div className="relative group">
-          <button type="button" className="btn px-2 py-1 rounded bg-gray-200">
-            📊 Table
-          </button>
-
-          <div className="hidden group-hover:flex flex-col gap-2 flex-nowrap min-w-[200px] absolute bg-white dark:bg-gray-700 p-2 shadow rounded  z-50">
-            <button
-              type="button"
-              onClick={() =>
-                editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run()
-              }
-              className="dropdown-btn"
-            >
-              Insert Table
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().addColumnBefore().run()}
-            >
-              Add column before
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().addColumnAfter().run()}
-            >
-              Add column after
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().deleteColumn().run()}
-            >
-              Delete column
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().addRowBefore().run()}
-            >
-              Add row before
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().addRowAfter().run()}
-            >
-              Add row after
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().deleteRow().run()}
-            >
-              Delete row
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().deleteTable().run()}
-            >
-              Delete table
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().mergeCells().run()}
-            >
-              Merge cells
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().splitCell().run()}
-            >
-              Split cell
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
-            >
-              Toggle header column
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
-            >
-              Toggle header row
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().toggleHeaderCell().run()}
-            >
-              Toggle header cell
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().mergeOrSplit().run()}
-            >
-              Merge or split
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() =>
-                editor.chain().focus().setCellAttribute("colspan", 2).run()
-              }
-            >
-              Set cell attribute
-            </button>
-            <button
-              className="dropdown-btn"
-              type="button"
-              onClick={() => editor.chain().focus().fixTables().run()}
-            >
-              Fix tables
-            </button>
+    <TooltipProvider>
+      <div className="w-full border rounded-lg bg-background shadow-sm">
+        <div className="flex sticky top-1 items-center gap-1 border-b bg-gray-400 z-20 p-2 flex-wrap">
+          {/* Text formatting group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              isActive={editor.isActive("bold")}
+              icon={Bold}
+              tooltip="Bold (Ctrl+B)"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              isActive={editor.isActive("italic")}
+              icon={Italic}
+              tooltip="Italic (Ctrl+I)"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              isActive={editor.isActive("underline")}
+              icon={UnderlineIcon}
+              tooltip="Underline (Ctrl+U)"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              isActive={editor.isActive("strike")}
+              icon={Strikethrough}
+              tooltip="Strikethrough"
+            />
           </div>
-        </div>
-      </div>
 
-      {/* Editor Content */}
-      <EditorContent
-        editor={editor}
-        className=" max-w-none min-h-[200px] p-2 w-full"
-      />
-    </div>
+          <Separator orientation="vertical" className="h-8" />
+
+          {/* Headings group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 1 })}
+              icon={Heading1}
+              tooltip="Heading 1"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 2 })}
+              icon={Heading2}
+              tooltip="Heading 2"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 3 })}
+              icon={Heading3}
+              tooltip="Heading 3"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 4 }).run()
+              }
+              isActive={editor.isActive("heading", { level: 4 })}
+              icon={Heading4}
+              tooltip="Heading 4"
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-8" />
+
+          {/* Text alignment group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              isActive={editor.isActive({ textAlign: "left" })}
+              icon={AlignLeft}
+              tooltip="Align Left"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().setTextAlign("center").run()
+              }
+              isActive={editor.isActive({ textAlign: "center" })}
+              icon={AlignCenter}
+              tooltip="Align Center"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().setTextAlign("right").run()}
+              isActive={editor.isActive({ textAlign: "right" })}
+              icon={AlignRight}
+              tooltip="Align Right"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().setTextAlign("justify").run()
+              }
+              isActive={editor.isActive({ textAlign: "justify" })}
+              icon={AlignJustify}
+              tooltip="Justify"
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-8" color="#FE5300" />
+
+          {/* Lists group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              isActive={editor.isActive("bulletList")}
+              icon={List}
+              tooltip="Bullet List"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              isActive={editor.isActive("orderedList")}
+              icon={ListOrdered}
+              tooltip="Numbered List"
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-8" />
+
+          {/* Insert elements group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              isActive={editor.isActive("blockquote")}
+              icon={Quote}
+              tooltip="Quote"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              isActive={editor.isActive("codeBlock")}
+              icon={Code2}
+              tooltip="Code Block"
+            />
+            <ToolbarButton
+              onClick={addImage}
+              icon={ImageIcon}
+              tooltip="Insert Image"
+            />
+            <ToolbarButton
+              onClick={addLink}
+              isActive={editor.isActive("link")}
+              icon={Link2}
+              tooltip="Insert Link"
+            />
+            {editor.isActive("link") && (
+              <ToolbarButton
+                onClick={() => editor.chain().focus().unsetLink().run()}
+                icon={Unlink}
+                tooltip="Remove Link"
+              />
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <TableIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem
+                  onClick={() =>
+                    editor
+                      .chain()
+                      .focus()
+                      .insertTable({ rows: 3, cols: 3 })
+                      .run()
+                  }
+                >
+                  Insert Table
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addColumnBefore().run()}
+                >
+                  Add Column Before
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addColumnAfter().run()}
+                >
+                  Add Column After
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteColumn().run()}
+                >
+                  Delete Column
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addRowBefore().run()}
+                >
+                  Add Row Before
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addRowAfter().run()}
+                >
+                  Add Row After
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteRow().run()}
+                >
+                  Delete Row
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().mergeCells().run()}
+                >
+                  Merge Cells
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().splitCell().run()}
+                >
+                  Split Cell
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteTable().run()}
+                  className="text-destructive"
+                >
+                  Delete Table
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <Separator orientation="vertical" className="h-8" color="#FE5300" />
+
+          {/* History group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().undo().run()}
+              icon={Undo}
+              tooltip="Undo (Ctrl+Z)"
+              disabled={!editor.can().undo()}
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().redo().run()}
+              icon={Redo}
+              tooltip="Redo (Ctrl+Y)"
+              disabled={!editor.can().redo()}
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-8" color="#FE5300" />
+
+          {/* Button */}
+          <ToolbarButton
+            onClick={() => setButtonDialogOpen(true)}
+            icon={Link2}
+            tooltip="Insert Button"
+          />
+        </div>
+
+        <EditorContent editor={editor} className="prose-editor" />
+        {/* Dialog for button insertion */}
+        <Dialog open={buttonDialogOpen} onOpenChange={setButtonDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="bg-[#FE5300]">Insert Button</DialogTitle>
+              <DialogDescription>
+                Add a clickable button with a link to your content.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="button-text">Button Text</Label>
+                <Input
+                  id="button-text"
+                  placeholder="Click here"
+                  value={buttonText}
+                  onChange={(e) => setButtonText(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="button-href">Button Link (URL)</Label>
+                <Input
+                  id="button-href"
+                  placeholder="https://example.com"
+                  value={buttonHref}
+                  onChange={(e) => setButtonHref(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setButtonDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleInsertButton}
+                disabled={!buttonText || !buttonHref}
+              >
+                Insert Button
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </TooltipProvider>
   );
 }

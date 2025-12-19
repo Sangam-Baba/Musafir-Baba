@@ -71,7 +71,7 @@ const getNewsBySlug = async (req, res) => {
     if (!slug)
       return res.status(400).json({ success: false, message: "Invalid Slug" });
 
-    const news = await News.findOne({ slug })
+    const news = await News.findOne({ slug: slug, status: "published" })
       .populate("author", "name slug")
       .lean();
 

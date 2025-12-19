@@ -72,7 +72,7 @@ const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const blog = await Blog.findOne({ slug })
+    const blog = await Blog.findOne({ slug: slug, status: "published" })
       .populate("category", "name slug")
       .populate("author", "name slug")
       .lean();
@@ -244,7 +244,10 @@ const blogLike = async (req, res) => {
 
 const trandingBlogs = async (req, res) => {
   try {
-    const bolgs = await Blog.find().sort({ views: -1 }).limit(5).lean();
+    const bolgs = await Blog.find({ status: "published" })
+      .sort({ views: -1 })
+      .limit(5)
+      .lean();
     res.status(200).json({
       success: true,
       message: "Blogs fetch successfully",

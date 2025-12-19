@@ -52,7 +52,10 @@ const getWebPageBySlug = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Invalid Slug h" });
-    const webpage = await WebPage.findOne({ fullSlug: fullSlug })
+    const webpage = await WebPage.findOne({
+      fullSlug: fullSlug,
+      status: "published",
+    })
       .populate("reviews")
       .populate("parent", "title slug")
       .lean();
