@@ -2,6 +2,28 @@
 @import "tw-animate-css";
 @plugin '@tailwindcss/typography';
 
+/* Added button styling for editor buttons */
+.prose .editor-button {
+  display: flex;
+  padding: 0.625rem 1.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  cursor: pointer;
+  width: fit-content;
+  margin: auto;
+}
+
+.prose .editor-button:hover {
+  opacity: 0.8;
+}
+.prose a.editor-button {
+  color: var(--color-primary-foreground) !important;
+  text-decoration: none !important;
+}
 .prose a {
   color: #1d4ed8;
   text-decoration: none;
@@ -47,22 +69,6 @@
   cursor: col-resize;
 }
 
-/* Added button styling for editor buttons */
-.prose-editor .ProseMirror .editor-button {
-  display: inline-block;
-  padding: 0.625rem 1.5rem;
-  background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  text-decoration: none;
-  transition: opacity 0.2s;
-  cursor: pointer;
-}
-
-.prose-editor .ProseMirror .editor-button:hover {
-  opacity: 0.9;
-}
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

@@ -44,14 +44,21 @@ function VideoSection() {
           <div className="lg:col-span-3 flex flex-col gap-2">
             <div>
               <p className="text-white leading-relaxed text-sm md:text-base">
-                At MusafirBaba, we curate meaningful travel experiences — not
-                just packages. Our team blends local expertise with global
-                exposure to create tailored holidays, smooth visa assistance,
-                and stress-free planning. Whether it’s a family vacation, your
-                dream honeymoon, or your first international trip, we ensure
-                comfort, clarity, and unforgettable memories.{" "}
+                As the{" "}
+                <a
+                  className="text-blue-400 hover:underline"
+                  href="https://musafirbaba.com/travel-agency"
+                >
+                  best travel agency in India
+                </a>
+                , we curate meaningful travel experiences - not just packages.
+                Our team blends local expertise with global exposure to create
+                tailored holidays, smooth visa assistance, and stress-free
+                planning. Whether it’s a family vacation, your dream honeymoon,
+                or your first international trip, we ensure comfort, clarity,
+                and unforgettable memories.{" "}
                 <Link href="/about-us" className="text-[#FE5300]">
-                  ...Read More
+                  ...read more
                 </Link>
               </p>
             </div>

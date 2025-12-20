@@ -36,6 +36,7 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  MousePointer2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -428,7 +429,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
           {/* Button */}
           <ToolbarButton
             onClick={() => setButtonDialogOpen(true)}
-            icon={Link2}
+            icon={MousePointer2}
             tooltip="Insert Button"
           />
         </div>
@@ -438,7 +439,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         <Dialog open={buttonDialogOpen} onOpenChange={setButtonDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="bg-[#FE5300]">Insert Button</DialogTitle>
+              <DialogTitle>Insert Button</DialogTitle>
               <DialogDescription>
                 Add a clickable button with a link to your content.
               </DialogDescription>
