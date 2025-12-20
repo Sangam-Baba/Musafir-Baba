@@ -34,12 +34,7 @@ export function AccountIcon() {
             <DropdownMenuGroup>
               {isAuthenticated && (
                 <DropdownMenuItem>
-                  <Link href="/auth/profile">Profile</Link>{" "}
-                </DropdownMenuItem>
-              )}
-              {isAuthenticated && (
-                <DropdownMenuItem>
-                  <Link href="/auth/bookings">My Bookings</Link>{" "}
+                  <Link href="/user">Dashboard</Link>{" "}
                 </DropdownMenuItem>
               )}
               {isAuthenticated && (
