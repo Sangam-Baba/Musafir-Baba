@@ -61,6 +61,11 @@ interface Package {
       height?: number;
     };
   };
+  mainCategory: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
   metaTitle: string;
   metaDescription: string;
   keywords: string[];
@@ -186,8 +191,10 @@ function PackagePage() {
                     (b.destination?.state.charAt(0).toUpperCase() as string) +
                     b.destination?.state.slice(1),
                   slug: b.slug as string,
-                  price: b.batch?.length ? b.batch[0].quad : 0,
-                  url: `/${b.destination?.country}/${b.destination?.state}/${b.slug}`,
+                  price: b.batch?.length
+                    ? b.batch[0].quad.toLocaleString()
+                    : "0",
+                  url: `/holidays/${b.mainCategory?.slug}/${b.destination?.state}/${b.slug}`,
                   status: b.status === "published" ? "Published" : "Draft",
                 }))
               : []

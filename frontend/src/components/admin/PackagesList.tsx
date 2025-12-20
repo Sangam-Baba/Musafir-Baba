@@ -18,7 +18,7 @@ interface Package {
   slug: string;
   url: string;
   location: string;
-  price: number;
+  price: string;
   status: string;
 }
 interface PackageTableProps {
@@ -60,7 +60,7 @@ export default function AuthorsList({
                 <TableCell className="font-medium">{length - i}</TableCell>
                 <TableCell className="font-medium">{cat.name}</TableCell>
                 <TableCell className="font-medium">{cat.location}</TableCell>
-                <TableCell className="font-medium">{cat.price}</TableCell>
+                <TableCell className="font-medium">Rs. {cat.price}</TableCell>
                 <TableCell>
                   <a
                     href={cat.url}
