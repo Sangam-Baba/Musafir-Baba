@@ -24,6 +24,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -46,7 +47,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 type VerifyOtpValues = z.infer<typeof verifyOtpSchema>;
 type AuthFormValues = LoginValues | RegisterValues | VerifyOtpValues;
 
-async function verifyOtp(values: z.infer<typeof verifyOtpSchema>) {
+export async function verifyOtp(values: z.infer<typeof verifyOtpSchema>) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verifyOtp`,
     {
@@ -310,6 +311,12 @@ export function AuthDialog() {
                 </button>
               </p>
             )}
+            <Link
+              href="/auth/forget-password"
+              className="text-blue-600 hover:underline"
+            >
+              Forgot password?
+            </Link>
           </div>
         )}
       </DialogContent>

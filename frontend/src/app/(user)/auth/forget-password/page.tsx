@@ -20,9 +20,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 export const dynamic = "force-dynamic";
+import { verifyOtp } from "@/components/auth/AuthDialog";
+import { useState } from "react";
 
 // ✅ Zod Schema
-const formSchema = z
+const emailSchema = z
   .object({
     email: z.string().email({
       message: "Please enter a valid email address.",
@@ -30,8 +32,21 @@ const formSchema = z
   })
   .required();
 
+const otpSchema = z.object({
+  otp: z.string().min(6, {
+    message: "Please enter a valid otp.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+});
+
+type EmailFormValues = z.infer<typeof emailSchema>;
+type OtpFormValues = z.infer<typeof otpSchema>;
+type FormData = EmailFormValues | OtpFormValues;
+
 // ✅ API call function
-async function resetUser(values: z.infer<typeof formSchema>) {
+async function resetUser(values: EmailFormValues) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgotPassword`,
     {
@@ -49,26 +64,20 @@ async function resetUser(values: z.infer<typeof formSchema>) {
   return res.json();
 }
 
-export default function LoginPage() {
+export default function forgetPassword() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-    },
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const form = useForm<FormData>({
+    resolver: zodResolver(isEmailVerified ? otpSchema : emailSchema),
+    defaultValues: isEmailVerified ? { otp: "", email: "" } : { email: "" },
   });
 
   // ✅ Use Mutation instead of useQuery
   const mutation = useMutation({
-    mutationFn: resetUser,
+    mutationFn: (values: EmailFormValues) => resetUser(values),
     onSuccess: () => {
-      console.log("Reset Link send to your email successful!");
-      toast.success("Reset Link send to your email successful!");
-      // 👉 Redirect or reset form here
-      form.reset();
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
+      toast.success("Enter OTP send to your email successful!");
+      setIsEmailVerified(true);
     },
     onError: (error) => {
       console.error("Reset failed:", error);
@@ -77,8 +86,23 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    mutation.mutate(values);
+  const otpMutation = useMutation({
+    mutationFn: (values: OtpFormValues) => verifyOtp(values),
+    onSuccess: () => {
+      toast.success("Email verified successful!");
+    },
+    onError: (error) => {
+      console.error("Reset failed:", error);
+      toast.error(error.message);
+    },
+  });
+
+  function onSubmit(values: FormData) {
+    if (isEmailVerified) {
+      otpMutation.mutate(values as OtpFormValues);
+    } else {
+      mutation.mutate(values as EmailFormValues);
+    }
   }
 
   return (
@@ -106,13 +130,29 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
+            {/* otp */}
+            {isEmailVerified && (
+              <FormField
+                control={form.control}
+                name="otp"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>OTP</FormLabel>
+                    <FormControl>
+                      <Input type="otp" placeholder="******" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <Button
               type="submit"
               className="w-full"
               disabled={mutation.isPending}
             >
-              {mutation.isPending ? "Sending..." : "Send Reset Link"}
+              {mutation.isPending ? "Sending..." : "Get OTP"}
             </Button>
           </form>
         </Form>
@@ -124,7 +164,7 @@ export default function LoginPage() {
         )}
         {mutation.isSuccess && (
           <p className="mt-3 text-center text-sm text-green-600">
-            Reset Link send to your email
+            OTP send to your email successful!
           </p>
         )}
 

@@ -1,6 +1,6 @@
-import { ChevronRight } from "lucide-react";
 import { SettingDialog } from "@/components/User/SettingDailog";
 import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
+import { UpdatePasswordDialog } from "@/components/User/UpdatePassword";
 
 async function page() {
   const privacy = await getWebPageBySlug("privacy-policy");
@@ -21,9 +21,8 @@ async function page() {
           />
         </div>
 
-        <div className="flex w-full  justify-between border-1 hover:bg-gray-100 rounded-lg px-4 py-3 max-w-md">
-          <p>Change Password</p>
-          <ChevronRight />
+        <div className="w-full ">
+          <UpdatePasswordDialog title="Update Password" />
         </div>
       </div>
     </div>

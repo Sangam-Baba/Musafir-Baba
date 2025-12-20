@@ -59,7 +59,7 @@ const register = async (req, res) => {
     }
 
     const hashedpassword = await bcrypt.hash(password, 10);
-    const otp = Math.floor(Math.random() * 1000000);
+    const otp = Math.floor(100000 + Math.random() * 900000);
 
     // const { token, hashedToken } = generateCryptoToken();
 
@@ -236,12 +236,10 @@ const forgotPassword = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const { token, hashedToken } = generateCryptoToken();
-
-    const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
+    const otp = Math.floor(100000 + Math.random() * 900000);
 
     const subject = "MusafirBaba - Password Reset";
-    const emailBody = `Click this link to reset your password: ${resetUrl}`;
+    const emailBody = `Enter this otp to reset your password: ${otp}`;
 
     const emailResponse = await sendEmail(email, subject, emailBody);
 
@@ -252,13 +250,13 @@ const forgotPassword = async (req, res) => {
         .json({ success: false, message: "Could not send verification email" });
     }
 
-    user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+    user.otp = otp;
+    user.otpExpire = Date.now() + 60 * 60 * 1000;
     await user.save({ validateBeforeSave: false });
 
     return res
       .status(200)
-      .json({ success: true, message: "Password reset link sent to email" });
+      .json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
     console.log("Forgot password error:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
@@ -533,40 +531,6 @@ const blockUser = async (req, res) => {
   }
 };
 
-const registerAdmin = async (req, res) => {
-  try {
-    const { name, email, password, phone } = req.body;
-    if (!name || !email || !password || !phone) {
-      return res
-        .status(400)
-        .json({ success: false, message: "All fields are required" });
-    }
-    const exist = await User.findOne({ email });
-    if (exist) {
-      return res
-        .status(409)
-        .json({ success: false, message: "User Already exist" });
-    }
-    const hashedpassword = await bcrypt.hash(password, 10);
-    const user = new User({
-      name,
-      email,
-      password: hashedpassword,
-      phone,
-      role: "admin",
-      isVerified: true,
-      permissions: req.body?.permissions ?? [],
-    });
-    await user.save();
-    return res
-      .status(201)
-      .json({ success: true, message: "User Registerrd Successfully" });
-  } catch (error) {
-    console.log("Registration failed", error.message);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-};
-
 const updateAdmin = async (req, res) => {
   try {
     const { id } = req.params;
@@ -623,6 +587,39 @@ const getAdminById = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+const userUpdatePassword = async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordCorrect) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Old password is incorrect" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.log("update password error:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 export {
   register,
   login,
@@ -635,7 +632,7 @@ export {
   getAllUsers,
   changeRole,
   blockUser,
-  registerAdmin,
   updateAdmin,
   getAdminById,
+  userUpdatePassword,
 };

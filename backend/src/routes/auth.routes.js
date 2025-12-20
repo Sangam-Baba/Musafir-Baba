@@ -1,8 +1,8 @@
 import {
   register,
-  registerAdmin,
   login,
   verifyOtp,
+  userUpdatePassword,
   forgotPassword,
   resetPassword,
   me,
@@ -22,12 +22,19 @@ import { validateSession } from "../middleware/session.middleware.js";
 const authRouter = Router();
 
 authRouter.post("/register", register);
-authRouter.post("/register-admin", registerAdmin);
 authRouter.post("/login", login);
 authRouter.post("/verifyOtp", verifyOtp);
 authRouter.post("/forgotPassword", forgotPassword);
 authRouter.post("/refresh", refresh);
 authRouter.get("/me", me);
+
+authRouter.patch(
+  "/update-password",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["user", "admin", "superadmin"]),
+  userUpdatePassword
+);
 
 authRouter.post(
   "/logout",
