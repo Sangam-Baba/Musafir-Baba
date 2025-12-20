@@ -33,9 +33,9 @@ const NAV_ITEMS = [
   // { label: "Transaction History", href: "/user/transactions", icon: History },
   { label: "Membership", href: "/user/membership", icon: HandCoins },
   { label: "Documents", href: "/user/documents", icon: FileText },
-  { label: "Wishlist", href: "/user/wishlist", icon: Heart },
+  // { label: "Wishlist", href: "/user/wishlist", icon: Heart },
   { label: "Offers", href: "/user/my-offers", icon: TicketPercent },
-  { label: "Wallet", href: "/user/wallet", icon: Wallet },
+  // { label: "Wallet", href: "/user/wallet", icon: Wallet },
 ];
 
 export function UserSidebar() {

@@ -278,13 +278,6 @@ function SidebarTrigger({
         <PanelLeftIcon />
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
-      <Link
-        href="/admin/logout?redirect=/admin/login"
-        className="flex items-center gap-2"
-      >
-        <span className="text-sm">Logout</span>
-        <LogOutIcon />
-      </Link>
     </div>
   );
 }

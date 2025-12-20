@@ -10,6 +10,7 @@ import { RootProvider } from "@/providers/root-provider";
 import AdminProtected from "@/components/admin/AdminProtected";
 import UserProtected from "@/components/User/UserProtected";
 import { usePathname } from "next/navigation";
+import { SettingDropdown } from "@/components/User/Setting";
 
 export default function UserLayout({
   children,
@@ -31,6 +32,7 @@ export default function UserLayout({
               {/* {!isLoginPage && ( */}
               <header className="flex items-center h-14 px-4 border-b  dark:bg-slate-950">
                 <SidebarTrigger />
+                <SettingDropdown />
               </header>
               {/* )} */}
               {/* Page Content */}
