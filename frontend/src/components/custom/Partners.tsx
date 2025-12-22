@@ -28,6 +28,16 @@ function Partners() {
       image:
         "https://res.cloudinary.com/dmmsemrty/image/upload/v1765969134/easemytrip-logo-png_seeklogo-517976_iy4r6z.png",
     },
+        {
+      name: "Go",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766408666/1_pmcv8t.png",
+    },
+        {
+      name: "indigo",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766408666/2_zou3l6.png",
+    },
   ];
   return (
     <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16 py-8">
@@ -42,7 +52,7 @@ function Partners() {
             industry
           </p>
         </div>
-        <div className="hidden md:grid md:grid-cols-4 gap-6 mt-8 px-4">
+        <div className="hidden md:grid md:grid-cols-6 gap-6 mt-8 px-4">
           {partners.map((partner, i) => (
             <div
               key={i} // ✅ stable key
