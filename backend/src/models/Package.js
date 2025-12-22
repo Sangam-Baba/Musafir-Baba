@@ -85,6 +85,17 @@ const packageSchema = new mongoose.Schema(
       public_id: String,
       alt: String,
     },
+    addOns: [
+      {
+        title: { type: String },
+        items: [
+          {
+            title: { type: String },
+            price: { type: Number },
+          },
+        ],
+      },
+    ],
     isBestSeller: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "draft" },

@@ -9,7 +9,6 @@ import {
   refresh,
   logout,
   getAllUsers,
-  changeRole,
   blockUser,
   updateAdmin,
   getAdminById,
@@ -59,13 +58,7 @@ authRouter.get(
   authorizedRoles(["admin", "superadmin"]),
   getAdminById
 );
-authRouter.patch(
-  "/changeRole/:id",
-  isAuthenticated,
-  validateSession,
-  authorizedRoles(["admin", "superadmin"]),
-  changeRole
-);
+
 authRouter.delete(
   "/:id",
   isAuthenticated,

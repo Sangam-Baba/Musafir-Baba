@@ -516,32 +516,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-const changeRole = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { role } = req.body;
-    if (!id) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User id not found" });
-    }
-    const user = await User.findById(id);
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
-    }
-    user.role = role || "user";
-    await user.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "Role changed successfully" });
-  } catch (error) {
-    console.log("Change role error:", error.message);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
-};
-
 const blockUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -667,7 +641,6 @@ export {
   me,
   logout,
   getAllUsers,
-  changeRole,
   blockUser,
   updateAdmin,
   getAdminById,
