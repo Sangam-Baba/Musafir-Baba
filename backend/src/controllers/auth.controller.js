@@ -263,15 +263,52 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+const verifyOtpForReset = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and Otp is required" });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+    if (user.otp !== otp || user.otpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: "Invalid Otp" });
+    }
+    const resetPasswordToken = jwt.sign({ email }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "30m",
+    });
+
+    user.resetPasswordToken = resetPasswordToken;
+    user.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+    return res.status(200).json({
+      success: true,
+      message: "Otp verified for reset password",
+      resetPasswordToken,
+    });
+  } catch (error) {
+    console.log("Otp Not verify for reset password", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 const resetPassword = async (req, res) => {
   try {
-    const { token } = req.params;
-    const { password } = req.body;
+    const { password, resetPasswordToken } = req.body;
 
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
+    if (!password || !resetPasswordToken) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Password and token is required" });
+    }
     const user = await User.findOne({
-      resetPasswordToken: hashedToken,
+      resetPasswordToken: resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() },
     });
 
@@ -635,4 +672,5 @@ export {
   updateAdmin,
   getAdminById,
   userUpdatePassword,
+  verifyOtpForReset,
 };

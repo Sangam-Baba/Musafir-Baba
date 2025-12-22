@@ -13,6 +13,7 @@ import {
   blockUser,
   updateAdmin,
   getAdminById,
+  verifyOtpForReset,
 } from "../controllers/auth.controller.js";
 import { Router } from "express";
 import upload from "../middleware/multer.middleware.js";
@@ -24,6 +25,7 @@ const authRouter = Router();
 authRouter.post("/register", register);
 authRouter.post("/login", login);
 authRouter.post("/verifyOtp", verifyOtp);
+authRouter.post("/verifyOtpForReset", verifyOtpForReset);
 authRouter.post("/forgotPassword", forgotPassword);
 authRouter.post("/refresh", refresh);
 authRouter.get("/me", me);
@@ -43,7 +45,7 @@ authRouter.post(
   authorizedRoles(["user"]),
   logout
 );
-authRouter.patch("/reset-pasword/:token", resetPassword);
+authRouter.patch("/reset-password", resetPassword);
 authRouter.get(
   "/getAllUsers",
   isAuthenticated,

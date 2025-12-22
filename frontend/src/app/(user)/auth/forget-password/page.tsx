@@ -41,9 +41,25 @@ const otpSchema = z.object({
   }),
 });
 
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(6, {
+      message: "Password must be at least 6 characters.",
+    }),
+    confirmPassword: z.string().min(6, {
+      message: "Password must be at least 6 characters.",
+    }),
+    resetPasswordToken: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 type EmailFormValues = z.infer<typeof emailSchema>;
 type OtpFormValues = z.infer<typeof otpSchema>;
-type FormData = EmailFormValues | OtpFormValues;
+type FormData = EmailFormValues | OtpFormValues | ResetPasswordFormValues;
 
 // ✅ API call function
 async function resetUser(values: EmailFormValues) {
@@ -64,12 +80,62 @@ async function resetUser(values: EmailFormValues) {
   return res.json();
 }
 
+async function resetUserWithOtp(values: OtpFormValues) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verifyOtpForReset`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    }
+  );
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Reset OTP verification failed");
+  }
+
+  return res.json();
+}
+async function resetPasswaord(values: ResetPasswordFormValues) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    }
+  );
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Reset Password failed");
+  }
+  return res.json().then((data) => {
+    toast.success("Password reset successful!");
+    return data;
+  });
+}
 export default function forgetPassword() {
   const router = useRouter();
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
   const form = useForm<FormData>({
-    resolver: zodResolver(isEmailVerified ? otpSchema : emailSchema),
-    defaultValues: isEmailVerified ? { otp: "", email: "" } : { email: "" },
+    resolver: zodResolver(
+      isEmailVerified
+        ? isOtpVerified
+          ? resetPasswordSchema
+          : otpSchema
+        : emailSchema
+    ),
+    defaultValues: isEmailVerified
+      ? isOtpVerified
+        ? {
+            password: "",
+            resetPasswordToken: "",
+            confirmPassword: "",
+          }
+        : { email: "", otp: "" }
+      : { email: "" },
   });
 
   // ✅ Use Mutation instead of useQuery
@@ -87,19 +153,35 @@ export default function forgetPassword() {
   });
 
   const otpMutation = useMutation({
-    mutationFn: (values: OtpFormValues) => verifyOtp(values),
-    onSuccess: () => {
-      toast.success("Email verified successful!");
+    mutationFn: (values: OtpFormValues) => resetUserWithOtp(values),
+    onSuccess: (res) => {
+      toast.success("OTP verified successful!");
+      setIsOtpVerified(true);
+      form.setValue("resetPasswordToken", res.resetPasswordToken);
     },
     onError: (error) => {
-      console.error("Reset failed:", error);
+      console.error("OTP verification failed:", error);
+      toast.error(error.message);
+    },
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: (values: ResetPasswordFormValues) => resetPasswaord(values),
+    onSuccess: () => {
+      toast.success("Password reset successful! Please log in.");
+      router.replace("/?auth=login");
+    },
+    onError: (error) => {
+      console.error("Password reset failed:", error);
       toast.error(error.message);
     },
   });
 
   function onSubmit(values: FormData) {
-    if (isEmailVerified) {
+    if (isEmailVerified && !isOtpVerified) {
       otpMutation.mutate(values as OtpFormValues);
+    } else if (isEmailVerified && isOtpVerified) {
+      resetMutation.mutate(values as ResetPasswordFormValues);
     } else {
       mutation.mutate(values as EmailFormValues);
     }
@@ -113,25 +195,27 @@ export default function forgetPassword() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Email */}
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!isOtpVerified && !isEmailVerified && (
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             {/* otp */}
-            {isEmailVerified && (
+            {isEmailVerified && !isOtpVerified && (
               <FormField
                 control={form.control}
                 name="otp"
@@ -147,12 +231,56 @@ export default function forgetPassword() {
               />
             )}
 
+            {isOtpVerified && (
+              <div>
+                {/* Password */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Confirm Password */}
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
             <Button
               type="submit"
               className="w-full"
               disabled={mutation.isPending}
             >
-              {mutation.isPending ? "Sending..." : "Get OTP"}
+              {isEmailVerified
+                ? isOtpVerified
+                  ? "Reset Password"
+                  : "Verify OTP"
+                : "Get OTP"}
             </Button>
           </form>
         </Form>
