@@ -16,6 +16,9 @@ import Image from "next/image";
 import SecondSectionServer from "@/components/custom/SecondSectionServer";
 import LoginAutoOpen from "@/components/User/LoginAutoOpen";
 import Partners from "@/components/custom/Partners";
+import Script from "next/script";
+import { getOrganizationSchema } from "@/lib/schema/organization.schema";
+import { getLocalSchema } from "@/lib/schema/local.schema";
 
 const faqs = [
   {
@@ -97,7 +100,9 @@ export default async function HomePage({
   searchParams: Promise<{ auth: string }>;
 }) {
   const { auth } = (await searchParams) || null;
-  // console.log("auth", auth);
+
+  const organizationSchema = getOrganizationSchema();
+  const localBusinessSchema = getLocalSchema();
   return (
     <main className="">
       <section className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center">
@@ -152,6 +157,21 @@ export default async function HomePage({
       <BlogsHome />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
+
+      <Script
+        id="organization-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationSchema),
+        }}
+      />
+      <Script
+        id="local-business-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(localBusinessSchema),
+        }}
+      />
     </main>
   );
 }

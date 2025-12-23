@@ -1,6 +1,9 @@
 import { Metadata } from "next";
 import MainWebPage from "@/components/custom/MainWebpage";
 import { notFound } from "next/navigation";
+import { getWebPageSchema } from "@/lib/schema/webpage.schema";
+import Script from "next/script";
+import { getFAQSchema } from "@/lib/schema/faq.schema";
 
 export const getWebPageBySlug = async (slug: string) => {
   const res = await fetch(
@@ -44,8 +47,24 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const fullSlug = slug.join("/");
   console.log("fullslug", fullSlug);
   const page = await getWebPageBySlug(fullSlug);
+  const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
+  const faqSchema = getFAQSchema(page.faq);
 
-  return <MainWebPage page={page} />;
+  return (
+    <>
+      <MainWebPage page={page} />
+      <Script
+        key="webpage-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
+      />
+      <Script
+        key="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+    </>
+  );
 }
 
 export default AllWebPage;
