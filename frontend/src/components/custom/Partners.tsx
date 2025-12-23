@@ -14,9 +14,9 @@ function Partners() {
         "https://res.cloudinary.com/dmmsemrty/image/upload/v1765970989/vfs_ec9739.jpg",
     },
     {
-      name: "Riya",
+      name: "Paytem",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1765970989/riya_j10png.jpg",
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766466823/download_2_kx6up9.png",
     },
     {
       name: "MMT",
@@ -27,6 +27,46 @@ function Partners() {
       name: "EMT",
       image:
         "https://res.cloudinary.com/dmmsemrty/image/upload/v1765969134/easemytrip-logo-png_seeklogo-517976_iy4r6z.png",
+    },
+    {
+      name: "Goibibo",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766408666/1_pmcv8t.png",
+    },
+    {
+      name: "indigo",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766408666/2_zou3l6.png",
+    },
+    {
+      name: "Pay U",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467352/new-payu-logo_ihxrmq.svg",
+    },
+    {
+      name: "Red Bus",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766466823/redbus_r6yq2r.png",
+    },
+    {
+      name: "Air India",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467352/ai-large-default_dmageq.svg",
+    },
+    {
+      name: "Spicejet",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467542/spicejett_wvlra2.png",
+    },
+    {
+      name: "akasha airlines",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467352/akasha_tjdowv.svg",
+    },
+    {
+      name: "vistara",
+      image:
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766466823/vistara_joh8r1.png",
     },
   ];
   return (
@@ -42,10 +82,10 @@ function Partners() {
             industry
           </p>
         </div>
-        <div className="hidden md:grid md:grid-cols-4 gap-6 mt-8 px-4">
+        <div className="hidden md:grid md:grid-cols-6 gap-6 mt-8 px-4">
           {partners.map((partner, i) => (
             <div
-              key={i} // ✅ stable key
+              key={i}
               className="w-full flex items-center overflow-hidden rounded-lg "
             >
               <Image

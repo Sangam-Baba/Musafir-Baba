@@ -30,6 +30,13 @@ interface Image {
   width?: number;
   height?: number;
 }
+// interface AddOns {
+//   title: string;
+//   items: {
+//     title: string;
+//     price: number;
+//   }[];
+// }
 interface Faq {
   question: string;
   answer: string;
@@ -81,6 +88,7 @@ interface PackageFormValues {
   inclusions?: string[];
   exclusions?: string[];
   itinerary?: Itinerary[];
+  // addOns?: AddOns[];
   itineraryDownload?: Image;
   faqs?: Faq[];
   isFeatured?: boolean;
@@ -256,6 +264,7 @@ export default function CreatePackagePage() {
   });
   const form = useForm<PackageFormValues>({ defaultValues });
 
+  // const addOnsArray = useFieldArray({ control: form.control, name: "addOns" });
   const batchArray = useFieldArray({ control: form.control, name: "batch" });
   const reviewsArray = useFieldArray({
     control: form.control,
@@ -917,6 +926,79 @@ export default function CreatePackagePage() {
                 Add Itinerary Step
               </Button>
             </div>
+
+            {/* Add Ons
+            <div>
+              <FormLabel className="mb-2 text-lg">Add Ons</FormLabel>
+              {addOnsArray.fields.map((field, index) => (
+                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+                  <Input
+                    {...form.register(`addOns.${index}.title`)}
+                    placeholder="By Helicoptore"
+                  />
+                  <div>
+                    {field.items.map((item, itemIndex) => (
+                      <div
+                        key={itemIndex}
+                        className="flex items-center gap-2 mb-2"
+                      >
+                        <Input
+                          {...form.register(
+                            `addOns.${index}.items.${itemIndex}.title`
+                          )}
+                          placeholder="Item Title"
+                        />
+                        <Input
+                          {...form.register(
+                            `addOns.${index}.items.${itemIndex}.price`
+                          )}
+                          placeholder="Item Price"
+                          type="number"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() =>
+                            addOnsArray.fields[index].items.splice(itemIndex, 1)
+                          }
+                        >
+                          X
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="default"
+                          onClick={() =>
+                            addOnsArray.fields[index].items.push({
+                              title: "",
+                              price: 0,
+                            })
+                          }
+                        >
+                          +
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Input
+                    {...form.register(`faqs.${index}.answer`)}
+                    placeholder="Answer"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => faqsArray.remove(index)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() => faqsArray.append({ question: "", answer: "" })}
+              >
+                Add FAQ
+              </Button>
+            </div> */}
 
             <FormField
               control={form.control}

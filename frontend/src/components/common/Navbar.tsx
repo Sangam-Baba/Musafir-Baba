@@ -1,7 +1,3 @@
-"use client";
-
-import * as React from "react";
-
 import Link from "next/link";
 
 export function Navbar() {
@@ -32,7 +28,7 @@ export function Navbar() {
             <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
           </li>
           <li className="font-semibold group  text-black">
-            <Link href="/news">News</Link>
+            <Link href="/blog">Blog</Link>
             <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
           </li>
         </ul>
