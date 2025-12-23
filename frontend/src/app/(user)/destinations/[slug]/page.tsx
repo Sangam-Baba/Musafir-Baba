@@ -8,6 +8,9 @@ import {
 } from "@/app/(user)/holidays/customised-tour-packages/[destination]/page";
 import { getCategory } from "@/app/(user)/holidays/page";
 import MixedPackagesClient from "../../holidays/PackagesClient";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import Script from "next/script";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
 
 interface Destination {
   _id: string;
@@ -144,6 +147,14 @@ async function DestinationPage({
   const totalCategory = [...categories];
   const totalPackages = [...newGroupPkg, ...newCustomizedPkg];
   if (!totalPackages || totalPackages.length === 0) return notFound();
+  const breadcrumbSchema = getBreadcrumbSchema("destinations/" + slug);
+  const collectionSchema = getCollectionSchema(
+    "Explore Packages in " + slug,
+    `https://musafirbaba.com/destinations/${slug}`,
+    packages.map((pkg: Package) => ({
+      url: `https://musafirbaba.com/holidays/${pkg.mainCategory.slug}/${slug}/${pkg.slug}`,
+    }))
+  );
   return (
     <section>
       <Hero
@@ -160,6 +171,16 @@ async function DestinationPage({
       </div>
       {/* Show packages under this category */}
       <MixedPackagesClient data={totalPackages} category={totalCategory} />
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        key="package-collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
     </section>
   );
 }

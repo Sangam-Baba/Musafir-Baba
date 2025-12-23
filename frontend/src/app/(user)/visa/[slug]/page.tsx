@@ -1,5 +1,4 @@
 import Hero from "@/components/custom/Hero";
-import React from "react";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
 import { Metadata } from "next";
@@ -14,6 +13,10 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
+import { getWebPageSchema } from "@/lib/schema/webpage.schema";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getFAQSchema } from "@/lib/schema/faq.schema";
+import Script from "next/script";
 
 interface Faq {
   question: string;
@@ -68,6 +71,9 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
 
   const relatedPageArray = relatedPages?.data ?? [];
 
+  const faqSchema = getFAQSchema(visa?.faqs ?? []);
+  const breadcrumbSchema = getBreadcrumbSchema("visa/" + slug);
+  const webpageSchema = getWebPageSchema(visa.title, "visa/" + slug);
   return (
     <section className="">
       <Hero
@@ -125,6 +131,21 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
           <Testimonial data={visa.reviews ?? []} />
         </section>
       </div>
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        key="visa-webpage-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
+      />
+      <Script
+        key="faqs-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
     </section>
   );
 }

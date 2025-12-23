@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
-import React from "react";
 import { Metadata } from "next";
 import DestinationPageClient from "./pageClient";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import Script from "next/script";
 export interface DestinationInterface {
   _id: string;
   name: string;
@@ -35,7 +37,29 @@ const getAllDestinations = async () => {
 };
 async function page() {
   const destinations = (await getAllDestinations()) as DestinationInterface[];
-  return <DestinationPageClient destinations={destinations} />;
+  const breadcrumbSchema = getBreadcrumbSchema("destinations");
+  const collectionSchema = getCollectionSchema(
+    "destinations",
+    "https://musafirbaba.com/destinations",
+    destinations.map((destination: DestinationInterface) => ({
+      url: `https://musafirbaba.com/destinations/${destination.state}`,
+    }))
+  );
+  return (
+    <>
+      <DestinationPageClient destinations={destinations} />
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        key="destinations-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+    </>
+  );
 }
 
 export default page;

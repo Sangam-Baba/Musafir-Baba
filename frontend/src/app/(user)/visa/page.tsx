@@ -1,5 +1,8 @@
 import { Metadata } from "next";
 import VisaClientPage from "./visaClient";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Visa Services You Can Trust | Expert Guidance | Musafirbaba",
@@ -22,5 +25,28 @@ export const getVisa = async () => {
 
 export default async function VisaMainPage() {
   const visa = await getVisa();
-  return <VisaClientPage visa={visa} />;
+  const breadcrumb = getBreadcrumbSchema("visa");
+  const collection = getCollectionSchema(
+    "Visa",
+    "https://musafirbaba.com/visa",
+    visa.map((visa: { slug: string }) => ({
+      url: `https://musafirbaba.com/visa/${visa.slug}`,
+    }))
+  );
+
+  return (
+    <>
+      <VisaClientPage visa={visa} />
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <Script
+        key="visa-collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collection) }}
+      />
+    </>
+  );
 }
