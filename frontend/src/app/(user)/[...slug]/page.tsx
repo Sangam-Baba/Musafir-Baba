@@ -48,7 +48,7 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   console.log("fullslug", fullSlug);
   const page = await getWebPageBySlug(fullSlug);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
-  const faqSchema = getFAQSchema(page.faq);
+  const faqSchema = getFAQSchema(page.faqs ? page.faqs : []);
 
   return (
     <>
