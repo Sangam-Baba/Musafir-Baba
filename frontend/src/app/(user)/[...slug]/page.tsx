@@ -51,7 +51,7 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);
   const breadcrumbSchema = getBreadcrumbSchema(page.fullSlug);
-  console.log("breadcrumb shema:", breadcrumbSchema);
+
   return (
     <>
       <MainWebPage page={page} />

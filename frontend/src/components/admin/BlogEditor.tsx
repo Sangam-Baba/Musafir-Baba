@@ -321,13 +321,12 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
               icon={Link2}
               tooltip="Insert Link"
             />
-            {editor.isActive("link") && (
-              <ToolbarButton
-                onClick={() => editor.chain().focus().unsetLink().run()}
-                icon={Unlink}
-                tooltip="Remove Link"
-              />
-            )}
+
+            <ToolbarButton
+              onClick={() => editor.chain().focus().unsetLink().run()}
+              icon={Unlink}
+              tooltip="Remove Link"
+            />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

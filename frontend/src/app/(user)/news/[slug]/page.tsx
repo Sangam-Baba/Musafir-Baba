@@ -14,6 +14,8 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
 import { Clock, User, Share2 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getNewsSchema } from "@/lib/schema/news.schema";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -94,6 +96,17 @@ export default async function NewsDetailPage({
   const { news, comments } = await getNews(slug);
   if (!news) return notFound();
   const readTime = readingTime(news.content || "");
+
+  const breadcrumbSchema = getBreadcrumbSchema("news/" + slug);
+  const newsSchema = getNewsSchema(
+    news.title,
+    news.description,
+    news.slug,
+    news.coverImage?.url || "",
+    news.createdAt,
+    news.updatedAt || news.createdAt,
+    news.author?.name || "Musafir Baba"
+  );
   const schema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -206,9 +219,17 @@ export default async function NewsDetailPage({
           <TrandingNewsSidebar currentId={news?._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
-        <Script id="blog-schema" type="application/ld+json">
-          {JSON.stringify(schema)}
-        </Script>
+        <Script
+          id="news-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+
+        <Script
+          id="breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
       </div>
     </div>
   );

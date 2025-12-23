@@ -19,6 +19,7 @@ import Partners from "@/components/custom/Partners";
 import Script from "next/script";
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
 import { getLocalSchema } from "@/lib/schema/local.schema";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 
 const faqs = [
   {
@@ -103,6 +104,7 @@ export default async function HomePage({
 
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalSchema();
+  const breadcrumbSchema = getBreadcrumbSchema("/");
   return (
     <main className="">
       <section className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center">
@@ -171,6 +173,11 @@ export default async function HomePage({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(localBusinessSchema),
         }}
+      />
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
     </main>
   );

@@ -14,6 +14,8 @@ import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
 import { Clock, Share2, User } from "lucide-react";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getBlogSchema } from "@/lib/schema/blog.schema";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -94,31 +96,17 @@ export default async function BlogDetailPage({
   const { blog, comments } = await getBlog(slug);
   if (!blog) return <NotFoundPage />;
   const readTime = readingTime(blog.content || "");
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: blog.title,
-    description: blog.metaDescription || blog.excerpt,
-    image: blog.coverImage?.url || "https://musafirbaba.com/logo.svg",
-    datePublished: blog.createdAt,
-    dateModified: blog.updatedAt || blog.createdAt,
-    author: {
-      "@type": "Person",
-      name: blog.author?.name || "Musafir Baba",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Musafir Baba",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://musafirbaba.com/logo.svg",
-      },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://musafirbaba.com/blog/${blog.slug}`,
-    },
-  };
+
+  const breadcrumbSchema = getBreadcrumbSchema("blog/" + blog.slug);
+  const blogSchema = getBlogSchema(
+    blog.title,
+    blog.description,
+    blog.slug,
+    blog.coverImage?.url,
+    blog.createdAt,
+    blog.updatedAt,
+    blog.author?.name
+  );
 
   return (
     <div>
@@ -207,9 +195,17 @@ export default async function BlogDetailPage({
           <TrandingBlogSidebar currentId={blog._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
-        <Script id="blog-schema" type="application/ld+json">
-          {JSON.stringify(schema)}
-        </Script>
+        <Script
+          id="blog-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+        />
+
+        <Script
+          id="breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
       </div>
     </div>
   );
