@@ -3,6 +3,8 @@ import Hero from "@/components/custom/Hero";
 import { Metadata } from "next";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import PaginationClient from "@/components/common/PaginationClient";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
 
 export const metadata: Metadata = {
   title: "Travel Blog - Guides, Tips & Travel Inspiration",
@@ -52,6 +54,15 @@ export default async function BlogPage({
   const blogs = data?.data;
   const totalPages = data?.pages;
 
+  const breadcrumb = getBreadcrumbSchema("blog");
+  const collectionSchema = getCollectionSchema(
+    "Blog",
+    "https://musafirbaba.com/blog",
+    blogs.map((blog: blog) => ({
+      url: `https://musafirbaba.com/blog/${blog.slug}`,
+    }))
+  );
+
   return (
     <section className="w-full ">
       <Hero image="/Heroimg.jpg" title="Blog" overlayOpacity={100} />
@@ -71,6 +82,16 @@ export default async function BlogPage({
         ))}
       </div>
       <PaginationClient totalPages={totalPages} currentPage={page} />
+      <script
+        key="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
     </section>
   );
 }
