@@ -54,7 +54,6 @@ export const metadata: Metadata = {
 import { RootProvider } from "@/providers/root-provider";
 import GTMProvider from "@/providers/GTMProvider";
 import { AuthDialog } from "@/components/auth/AuthDialog";
-import BreadcrumbSEO from "@/components/common/BreadcrumbSEO";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import PlanMyTrip from "@/components/common/Plan-My-Trip";
 import { Poppins } from "next/font/google";
@@ -117,14 +116,12 @@ export default function RootLayout({
         <RootProvider>
           <Header />
           <main className="flex-grow">
-            <BreadcrumbSEO />
             {children}
             <PlanMyTrip />
             <QueryDailogBox />
             <WhatsAppButton />
             <MobileBottom />
           </main>
-
           <AuthDialog />
           <Footer />
           <Toaster />

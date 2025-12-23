@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import Script from "next/script";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 
 export const getWebPageBySlug = async (slug: string) => {
   const res = await fetch(
@@ -45,11 +46,12 @@ export async function generateMetadata({
 async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = (await params) || [];
   const fullSlug = slug.join("/");
-  console.log("fullslug", fullSlug);
+
   const page = await getWebPageBySlug(fullSlug);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
-  const faqSchema = getFAQSchema(page.faqs ? page.faqs : []);
-
+  const faqSchema = getFAQSchema(page.faqs ?? []);
+  const breadcrumbSchema = getBreadcrumbSchema(page.fullSlug);
+  console.log("breadcrumb shema:", breadcrumbSchema);
   return (
     <>
       <MainWebPage page={page} />
@@ -62,6 +64,11 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
         key="faq-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
     </>
   );
