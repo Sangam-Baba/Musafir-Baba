@@ -83,7 +83,6 @@ function Partners() {
           </p>
         </div>
         <div className="hidden md:grid md:grid-cols-6 gap-6 mt-8 px-4">
-        <div className="hidden md:grid md:grid-cols-6 gap-6 mt-8 px-4">
           {partners.map((partner, i) => (
             <div
               key={i}
