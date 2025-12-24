@@ -13,7 +13,6 @@ import {
 import { CarouselDots } from "@/components/ui/carousel-indicators";
 import { Check } from "lucide-react";
 import Image from "next/image";
-import React from "react";
 import { getVisa } from "../visa/page";
 import { VisaInterface } from "../visa/visaClient";
 import VisaMainCard from "@/components/custom/VisaMainCard";
@@ -25,6 +24,9 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
 import { getWebPageBySlug } from "../[...slug]/page";
 import { BlogContent } from "@/components/custom/BlogContent";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getWebPageSchema } from "@/lib/schema/webpage.schema";
+import Script from "next/script";
 const getOffices = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
@@ -136,6 +138,11 @@ async function page() {
         "Absolutely. Visa assistance is available even if you don’t book a package.",
     },
   ];
+  const breadcrumbSchema = getBreadcrumbSchema("travel-agency");
+  const webpageSchema = getWebPageSchema(
+    "Travel Agency",
+    "https://musafirbaba.com/travel-agency"
+  );
   return (
     <div>
       <Hero
@@ -343,6 +350,18 @@ async function page() {
         <WhyChoose />
         <Faqs faqs={faqs} />
       </div>
+      <Script
+        id="breadcrumb"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {page.schemaType.includes("Webpage") && (
+        <Script
+          id="webpage-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
+        />
+      )}
     </div>
   );
 }

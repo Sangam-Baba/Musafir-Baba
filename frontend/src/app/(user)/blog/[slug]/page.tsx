@@ -203,15 +203,13 @@ export default async function BlogDetailPage({
           />
         )}
 
-        {blog.schemaType.includes("Breadcrumb") && (
-          <Script
-            id="breadcrumb-schema"
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(breadcrumbSchema),
-            }}
-          />
-        )}
+        <Script
+          id="breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbSchema),
+          }}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Hero from "@/components/custom/Hero";
-import React from "react";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
 import {
@@ -13,6 +12,9 @@ import MembershipCard from "@/components/custom/MembershipCard";
 // import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
+import { getWebPageSchema } from "@/lib/schema/webpage.schema";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import Script from "next/script";
 
 interface Faq {
   question: string;
@@ -40,6 +42,8 @@ export async function generateMetadata(): Promise<Metadata> {
 async function VisaWebPage() {
   const visa = await getWebPageBySlug("membership");
 
+  const breadcrumbSchema = getBreadcrumbSchema("Membership");
+  const webpageSchema = getWebPageSchema("Membership", "membership");
   return (
     <section className="">
       <div className="w-full flex relative">
@@ -91,6 +95,18 @@ async function VisaWebPage() {
           </Accordion>
         </section>
       </div>
+      <Script
+        id="breadcrumb"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {visa?.schemaType.includes("Webpage") && (
+        <Script
+          id="breadcrumb"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
     </section>
   );
 }

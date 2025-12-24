@@ -168,6 +168,8 @@ export default function CreateVisaPage() {
     mutation.mutate(values);
   };
 
+  const schemaTypes = ["FAQ", "Webpage", "Review"];
+
   if (isLoading) return <Loader size="lg" message="Loading Visa..." />;
   if (isError) return <h1>{(error as Error).message}</h1>;
 
@@ -255,37 +257,7 @@ export default function CreateVisaPage() {
                   </FormItem>
                 )}
               />
-              {/* Schema Type */}
-              <FormField
-                control={form.control}
-                name="schemaType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema Type</FormLabel>
-                    <FormControl>
-                      <select
-                        className="w-full rounded-md border border-gray-300 p-2"
-                        value={field.value || []}
-                        onChange={(e) => {
-                          const value = Array.from(
-                            e.target.selectedOptions,
-                            (option) => option.value
-                          );
-                          field.onChange(value);
-                        }}
-                        multiple
-                      >
-                        {schemaTypes.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               {/* About */}
               <FormField
                 control={form.control}
@@ -359,6 +331,58 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
+            {/* Schema Type */}
+            <FormField
+              control={form.control}
+              name="schemaType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Schema Type</FormLabel>
+                  <FormControl>
+                    <select
+                      className="w-full rounded-md border border-gray-300 p-2"
+                      value={field.value || []}
+                      onChange={(e) => {
+                        const value = Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value
+                        );
+                        field.onChange(value);
+                      }}
+                      multiple
+                    >
+                      {schemaTypes.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex gap-2">
+              {form.watch("schemaType")?.map((option) => (
+                <p
+                  key={option}
+                  className="bg-gray-100 rounded-lg  p-2 w-[150px]"
+                >
+                  {option}
+                  <X
+                    className="float-right cursor-pointer hover:text-red-500"
+                    onClick={() =>
+                      form.setValue(
+                        "schemaType",
+                        form
+                          .getValues("schemaType")
+                          ?.filter((item) => item !== option)
+                      )
+                    }
+                  />
+                </p>
+              ))}
+            </div>
 
             {/* Role */}
             <FormField

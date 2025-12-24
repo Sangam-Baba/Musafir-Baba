@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/custom/loader";
 import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { schemaTypes } from "@/lib/schemaTypes";
 
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
@@ -155,6 +154,8 @@ export default function EditNews() {
 
   const onSubmit = (data: FormValues) => mutation.mutate(data);
 
+  const schemaTypes = ["News", "FAQ"];
+
   if (isLoading) return <Loader size="lg" message="Loading blog..." />;
 
   return (
@@ -224,6 +225,26 @@ export default function EditNews() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="flex gap-2">
+          {form.watch("schemaType") ??
+            [].map((option) => (
+              <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
+                {option}
+                <X
+                  className="float-right cursor-pointer hover:text-red-500"
+                  onClick={() =>
+                    form.setValue(
+                      "schemaType",
+                      form
+                        .getValues("schemaType")
+                        ?.filter((item) => item !== option)
+                    )
+                  }
+                />
+              </p>
+            ))}
         </div>
         {/* keywords */}
         <div className="space-y-2">

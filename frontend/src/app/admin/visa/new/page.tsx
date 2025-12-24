@@ -166,6 +166,8 @@ export default function CreateVisaPage() {
     mutation.mutate(values);
   };
 
+  const schemaTypes = ["FAQ", "Webpage", "Review"];
+
   return (
     <div className="w-full min-h-screen  bg-gray-50 px-4">
       <div className="w-full max-w-7xl mx-auto rounded-2xl bg-white p-6 shadow-md">
@@ -327,7 +329,7 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
-            {/* Schema Type */}
+            {/* Schema */}
             <FormField
               control={form.control}
               name="schemaType"
@@ -358,6 +360,27 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
+            <div className="flex gap-2">
+              {form.watch("schemaType")?.map((option) => (
+                <p
+                  key={option}
+                  className="bg-gray-100 rounded-lg  p-2 w-[150px]"
+                >
+                  {option}
+                  <X
+                    className="float-right cursor-pointer hover:text-red-500"
+                    onClick={() =>
+                      form.setValue(
+                        "schemaType",
+                        form
+                          .getValues("schemaType")
+                          ?.filter((item) => item !== option)
+                      )
+                    }
+                  />
+                </p>
+              ))}
+            </div>
 
             {/* Role */}
             <FormField

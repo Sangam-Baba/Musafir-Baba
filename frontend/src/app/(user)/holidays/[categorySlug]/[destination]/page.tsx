@@ -73,6 +73,7 @@ async function DestinationPage({
   const { categorySlug, destination } = await params;
   const packages = await getPackageByDestinationSlug(categorySlug, destination);
   if (!packages || packages.length === 0) return notFound();
+  const meta = await getDestinationMeta(categorySlug, destination);
 
   const breadcrumbSchema = getBreadcrumbSchema(
     "holidays/" + categorySlug + "/" + destination
@@ -105,11 +106,13 @@ async function DestinationPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <Script
-        id="collection-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
-      />
+      {meta.schemaType.includes("Collection") && (
+        <Script
+          id="collection-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+        />
+      )}
     </section>
   );
 }

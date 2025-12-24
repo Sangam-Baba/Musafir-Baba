@@ -384,6 +384,8 @@ export default function CreatePackagePage() {
     return <Loader size="lg" message="Loading destinations..." />;
   if (isError) return <h1>{error.message}</h1>;
   if (isErrorPackage) return <h1>{errorPackage.message}</h1>;
+
+  const schemaTypes = ["Collection", "Product", "FAQ", "Review"];
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-5xl rounded-2xl bg-white p-6 shadow-md">
@@ -1022,6 +1024,27 @@ export default function CreatePackagePage() {
                 </FormItem>
               )}
             />
+            <div className="flex gap-2">
+              {form.watch("schemaType")?.map((option) => (
+                <p
+                  key={option}
+                  className="bg-gray-100 rounded-lg  p-2 w-[150px]"
+                >
+                  {option}
+                  <X
+                    className="float-right cursor-pointer hover:text-red-500"
+                    onClick={() =>
+                      form.setValue(
+                        "schemaType",
+                        form
+                          .getValues("schemaType")
+                          ?.filter((item) => item !== option)
+                      )
+                    }
+                  />
+                </p>
+              ))}
+            </div>
 
             <FormField
               control={form.control}

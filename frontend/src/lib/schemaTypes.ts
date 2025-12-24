@@ -7,5 +7,4 @@ export const schemaTypes = [
   "Product",
   "Organization",
   "Review",
-  "Breadcrumb",
 ];

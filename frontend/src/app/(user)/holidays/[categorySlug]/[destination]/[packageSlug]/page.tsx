@@ -61,6 +61,7 @@ export interface Package {
   duration: Duration;
   metaTitle?: string;
   metaDescription?: string;
+  schemaType?: string[];
   keywords?: string[];
   maxPeople?: number;
   highlights: string[];
@@ -167,16 +168,20 @@ async function PackageDetails({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <Script
-        id="collection-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
-      />
-      <Script
-        id="product-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
+      {page.schemaType?.includes("FAQ") && (
+        <Script
+          id="collection-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+        />
+      )}
+      {page.schemaType?.includes("Product") && (
+        <Script
+          id="product-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        />
+      )}
     </>
   );
 }

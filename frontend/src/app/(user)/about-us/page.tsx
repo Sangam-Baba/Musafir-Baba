@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import AboutUsPageClient from "./pageClient";
 import BlogsHome from "@/components/custom/BlogsHome";
 import { Testimonial } from "@/components/custom/Testimonial";
+import { getWebPageSchema } from "@/lib/schema/webpage.schema";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import Script from "next/script";
 
 interface ImageType {
   url: string;
@@ -21,6 +24,7 @@ interface FormValues {
   _id: string;
   title: string;
   description: string;
+  schemaType: string[];
   upperImage: ImageType[];
   lowerImage: ImageType[];
   coverImage: ImageType;
@@ -46,6 +50,7 @@ const getWebPageBySlug = async () => {
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getWebPageBySlug();
   const about = page || {};
+
   return {
     title: about?.metaTitle || page?.title,
     description: about?.metaDescription,
@@ -64,12 +69,25 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function AboutUsPage() {
   const data = await getWebPageBySlug();
+  const schema = getWebPageSchema("About Us", "about-us");
+  const breadcrumb = getBreadcrumbSchema("about-us");
   return (
     <div>
       <AboutUsPageClient about={data} />
       {/* Testimonials and Blogs */}
       <Testimonial data={[]} />
       <BlogsHome />
+
+      <Script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      {data.schemaType.includes("Webpage") && (
+        <Script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      )}
     </div>
   );
 }

@@ -131,13 +131,13 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
           <Testimonial data={visa.reviews ?? []} />
         </section>
       </div>
-      {visa.schemaType.includes("Breadcrumb") && (
-        <Script
-          key="breadcrumb-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-        />
-      )}
+
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+
       {visa.schemaType.includes("Webpage") && (
         <Script
           key="visa-webpage-schema"
@@ -145,7 +145,7 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
         />
       )}
-      {visa.schemaType.includes("Faq") && (
+      {visa.schemaType.includes("FAQ") && (
         <Script
           key="faqs-schema"
           type="application/ld+json"
