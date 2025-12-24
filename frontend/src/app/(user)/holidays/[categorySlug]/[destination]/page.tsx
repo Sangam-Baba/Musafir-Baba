@@ -106,13 +106,13 @@ async function DestinationPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      {meta.schemaType.includes("Collection") && (
-        <Script
-          id="collection-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
-        />
-      )}
+      {/* {meta.schemaType.includes("Collection") && ( */}
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      {/* )} */}
     </section>
   );
 }
