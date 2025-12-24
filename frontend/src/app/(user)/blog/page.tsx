@@ -82,11 +82,13 @@ export default async function BlogPage({
         ))}
       </div>
       <PaginationClient totalPages={totalPages} currentPage={page} />
+
       <script
         key="collection-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
+
       <script
         key="breadcrumb-schema"
         type="application/ld+json"

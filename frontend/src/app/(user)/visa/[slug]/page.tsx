@@ -131,21 +131,27 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
           <Testimonial data={visa.reviews ?? []} />
         </section>
       </div>
-      <Script
-        key="breadcrumb-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      <Script
-        key="visa-webpage-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
-      />
-      <Script
-        key="faqs-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      {visa.schemaType.includes("Breadcrumb") && (
+        <Script
+          key="breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      {visa.schemaType.includes("Webpage") && (
+        <Script
+          key="visa-webpage-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
+        />
+      )}
+      {visa.schemaType.includes("Faq") && (
+        <Script
+          key="faqs-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
     </section>
   );
 }

@@ -219,17 +219,23 @@ export default async function NewsDetailPage({
           <TrandingNewsSidebar currentId={news?._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
-        <Script
-          id="news-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
+        {news.schemaType.includes("News") && (
+          <Script
+            id="news-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(newsSchema) }}
+          />
+        )}
 
-        <Script
-          id="breadcrumb-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-        />
+        {news.schemaType.includes("Breadcrumb") && (
+          <Script
+            id="breadcrumb-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(breadcrumbSchema),
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -55,21 +55,27 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   return (
     <>
       <MainWebPage page={page} />
-      <Script
-        key="webpage-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
-      />
-      <Script
-        key="faq-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <Script
-        key="breadcrumb-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+      {page.schemaType.includes("Webpage") && (
+        <Script
+          key="webpage-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
+        />
+      )}
+      {page.schemaType.includes("Faq") && (
+        <Script
+          key="faq-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      {page.schemaType.includes("Breadcrumb") && (
+        <Script
+          key="breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
     </>
   );
 }
