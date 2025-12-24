@@ -41,12 +41,12 @@ function Partners() {
     {
       name: "Pay U",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467352/new-payu-logo_ihxrmq.svg",
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766574772/pay_u_ypbpf9.png",
     },
     {
       name: "Red Bus",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766466823/redbus_r6yq2r.png",
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766574588/red_bgv024.png",
     },
     {
       name: "Air India",
@@ -66,7 +66,7 @@ function Partners() {
     {
       name: "vistara",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766466823/vistara_joh8r1.png",
+        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766574803/vis_1_wkfaqo.png",
     },
   ];
   return (
