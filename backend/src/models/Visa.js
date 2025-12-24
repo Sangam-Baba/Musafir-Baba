@@ -21,6 +21,22 @@ const visaSchema = new mongoose.Schema(
     },
     metaTitle: String,
     metaDescription: String,
+    schemaType: [
+      {
+        type: String,
+        enum: [
+          "Collection",
+          "FAQ",
+          "Blog",
+          "News",
+          "Webpage",
+          "Product",
+          "Organization",
+          "Review",
+          "Breadcrumb",
+        ],
+      },
+    ],
     keywords: {
       type: [String],
     },
@@ -74,7 +90,6 @@ const visaSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    schemaType: String,
     childUrl: {
       type: String,
     },

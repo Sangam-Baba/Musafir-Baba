@@ -11,6 +11,7 @@ import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 interface Destination {
   name: string;
@@ -76,6 +77,7 @@ const formSchema = z.object({
   metaDescription: z
     .string()
     .min(2, { message: "Meta Description must be at least 2 characters." }),
+  schemaType: z.array(z.string()).optional(),
   keywords: z
     .preprocess(
       (val) =>
@@ -177,6 +179,7 @@ export default function EditDestination() {
       city: "",
       metaTitle: "",
       metaDescription: "",
+      schemaType: [],
       keywords: [],
       popularAttractions: [],
       thingsToDo: [],
@@ -299,6 +302,20 @@ export default function EditDestination() {
             {form.formState.errors.metaDescription.message}
           </p>
         )}
+        <div>
+          <label className="font-semibold">Schema Type</label>
+          <select
+            multiple
+            {...form.register("schemaType")}
+            className="w-full border rounded-lg p-2"
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
         <label className="block font-medium mb-2">Keywords</label>
         <input
           {...form.register("keywords")}

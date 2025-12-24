@@ -61,9 +61,22 @@ const packageSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
-    schemaType: {
-      type: String,
-    },
+    schemaType: [
+      {
+        type: String,
+        enum: [
+          "Collection",
+          "FAQ",
+          "Blog",
+          "News",
+          "Webpage",
+          "Product",
+          "Organization",
+          "Review",
+          "Breadcrumb",
+        ],
+      },
+    ],
     maxPeople: Number,
     highlights: [String],
     inclusions: [String],

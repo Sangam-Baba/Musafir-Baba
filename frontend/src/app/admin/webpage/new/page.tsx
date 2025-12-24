@@ -17,6 +17,7 @@ import { X } from "lucide-react";
 import { getReviewsByIds, Reviews } from "../../holidays/new/page";
 import { deleteReview } from "../../holidays/new/page";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 export interface WebpageFormData {
   title: string;
@@ -28,7 +29,7 @@ export interface WebpageFormData {
   metaDescription?: string;
   keywords?: string[];
   reviews?: string[];
-  schemaType?: string;
+  schemaType?: string[];
   coverImage?: {
     url?: string;
     public_id?: string;
@@ -102,7 +103,7 @@ export default function CreateWebpage() {
     metaDescription: "",
     keywords: [],
     reviews: [],
-    schemaType: "",
+    schemaType: [],
     status: "published",
     excerpt: "",
     faqs: [],
@@ -217,11 +218,20 @@ export default function CreateWebpage() {
           placeholder="Excerpt"
           className="w-full border rounded p-2"
         />
-        <input
-          {...form.register("schemaType")}
-          placeholder="Schema Type"
-          className="w-full border rounded p-2"
-        />
+        <div>
+          <label className="font-semibold">Schema Type</label>
+          <select
+            multiple
+            {...form.register("schemaType")}
+            className="w-full border rounded-lg p-2"
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="space-y-2">
           <ImageUploader

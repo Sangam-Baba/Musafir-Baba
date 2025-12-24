@@ -15,6 +15,7 @@ import ImageUploader from "@/components/admin/ImageUploader";
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -27,9 +28,9 @@ const formSchema = z.object({
   metaDescription: z
     .string()
     .min(2, { message: "Meta description is required." }),
+  schemaType: z.array(z.string()).optional(),
   keywords: z.array(z.string()),
   canonicalUrl: z.string().optional(),
-  schemaType: z.string().optional(),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
     url: z.string().url(),
@@ -84,7 +85,7 @@ export default function CreateNews() {
       metaDescription: "",
       keywords: [],
       canonicalUrl: "",
-      schemaType: "",
+      schemaType: [],
       tags: [],
       coverImage: {
         url: "",
@@ -194,16 +195,20 @@ export default function CreateNews() {
           placeholder="Excerpt"
           className="w-full border rounded p-2"
         />
-        <input
-          {...form.register("canonicalUrl")}
-          placeholder="Canonical URL"
-          className="w-full border rounded p-2"
-        />
-        <input
-          {...form.register("schemaType")}
-          placeholder="Schema Type"
-          className="w-full border rounded p-2"
-        />
+        <div>
+          <label className="font-semibold">Schema Type</label>
+          <select
+            multiple
+            {...form.register("schemaType")}
+            className="w-full border rounded-lg p-2"
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
         {/* keywords */}
         <div className="space-y-2">
           <Label className="block text-sm font-medium">Keywords</Label>

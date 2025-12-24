@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Loader } from "@/components/custom/loader";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 interface Category {
   _id: string;
@@ -37,6 +38,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Meta description is required." }),
   keywords: z.array(z.string()).optional(),
+  schemaType: z.array(z.string()).optional(),
   destinationId: z.string().min(2, { message: "Destination is required." }),
   categoryId: z.string().min(2, { message: "Category is required." }),
 });
@@ -125,6 +127,7 @@ function DestinationSeoNew({
       metaTitle: "",
       metaDescription: "",
       keywords: [],
+      schemaType: [],
       destinationId: "",
       categoryId: "",
     },
@@ -142,6 +145,7 @@ function DestinationSeoNew({
         metaTitle: destinationSeo.metaTitle,
         metaDescription: destinationSeo.metaDescription,
         keywords: destinationSeo.keywords || [],
+        schemaType: destinationSeo.schemaType || [],
         destinationId: destinationSeo.destinationId,
         categoryId: destinationSeo.categoryId,
       });
@@ -263,6 +267,35 @@ function DestinationSeoNew({
                 <FormLabel>Meta Description</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Meta description" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="schemaType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Schema Type</FormLabel>
+                <FormControl>
+                  <select
+                    multiple
+                    value={field.value || []}
+                    onChange={(e) => {
+                      const value = Array.from(
+                        e.target.selectedOptions,
+                        (option) => option.value
+                      );
+                      field.onChange(value);
+                    }}
+                  >
+                    {schemaTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

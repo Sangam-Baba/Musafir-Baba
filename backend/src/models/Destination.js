@@ -35,7 +35,22 @@ const destinationSchema = new mongoose.Schema(
     metaDescription: String,
     keywords: [String],
     canonicalUrl: String,
-    schemaType: String,
+    schemaType: [
+      {
+        type: String,
+        enum: [
+          "Collection",
+          "FAQ",
+          "Blog",
+          "News",
+          "Webpage",
+          "Product",
+          "Organization",
+          "Review",
+          "Breadcrumb",
+        ],
+      },
+    ],
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
   { timestamps: true }

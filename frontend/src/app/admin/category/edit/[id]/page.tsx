@@ -13,6 +13,7 @@ import { Loader } from "@/components/custom/loader";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { X } from "lucide-react";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 interface Category {
   _id: string;
@@ -48,6 +49,7 @@ const formSchema = z.object({
   metaDescription: z.string().min(2, {
     message: "Meta description must be at least 2 characters.",
   }),
+  schemaType: z.array(z.string()).optional(),
   keywords: z.string().array().optional(),
   coverImage: z
     .object({
@@ -120,6 +122,7 @@ export default function CreateCategory() {
       description: "",
       metaTitle: "",
       metaDescription: "",
+      schemaType: [],
       keywords: [],
       packages: [],
       isActive: true,
@@ -287,6 +290,20 @@ export default function CreateCategory() {
             {form.formState.errors.metaDescription.message}
           </p>
         )}
+        <div>
+          <label className="font-semibold">Schema Type</label>
+          <select
+            multiple
+            {...form.register("schemaType")}
+            className="w-full border rounded-lg p-2"
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* keywords */}
         <div className="space-y-2">

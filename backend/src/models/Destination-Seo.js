@@ -20,6 +20,22 @@ const destinationSeoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    schemaType: [
+      {
+        type: String,
+        enum: [
+          "Collection",
+          "FAQ",
+          "Blog",
+          "News",
+          "Webpage",
+          "Product",
+          "Organization",
+          "Review",
+          "Breadcrumb",
+        ],
+      },
+    ],
     keywords: [String],
   },
   { timestamps: true }

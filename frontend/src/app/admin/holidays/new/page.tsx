@@ -22,6 +22,7 @@ import BlogEditor from "@/components/admin/BlogEditor";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { X } from "lucide-react";
 import { access } from "fs";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 interface Image {
   url: string;
@@ -82,6 +83,7 @@ interface PackageFormValues {
   duration: { days: number; nights: number };
   metaTitle?: string;
   metaDescription?: string;
+  schemaType?: string[];
   keywords?: string[];
   maxPeople?: number;
   highlights?: string[];
@@ -224,6 +226,7 @@ export default function CreatePackagePage() {
     description: "",
     metaTitle: "",
     metaDescription: "",
+    schemaType: [],
     status: "draft",
     keywords: [],
     gallery: [],
@@ -1030,6 +1033,37 @@ export default function CreatePackagePage() {
                       placeholder="Enter SEO Meta Description"
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Schema Type */}
+            <FormField
+              control={form.control}
+              name="schemaType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Schema Type</FormLabel>
+                  <FormControl>
+                    <select
+                      multiple
+                      value={field.value || []}
+                      onChange={(e) => {
+                        const values = Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value
+                        );
+                        field.onChange(values);
+                      }}
+                      className="w-full p-2 border rounded"
+                    >
+                      {schemaTypes.map((schema) => (
+                        <option key={schema} value={schema}>
+                          {schema}
+                        </option>
+                      ))}
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

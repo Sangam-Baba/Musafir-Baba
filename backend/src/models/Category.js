@@ -25,6 +25,22 @@ const categorySchema = new mongoose.Schema(
     metaDescription: {
       type: String,
     },
+    schemaType: [
+      {
+        type: String,
+        enum: [
+          "Collection",
+          "FAQ",
+          "Blog",
+          "News",
+          "Webpage",
+          "Product",
+          "Organization",
+          "Review",
+          "Breadcrumb",
+        ],
+      },
+    ],
     keywords: [String],
     packages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Package" }],
     coverImage: {

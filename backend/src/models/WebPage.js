@@ -30,7 +30,22 @@ const webPageSchema = new mongoose.Schema(
     metaTitle: String,
     metaDescription: String,
     excerpt: String,
-    schemaType: String,
+    schemaType: [
+      {
+        type: String,
+        enum: [
+          "Collection",
+          "FAQ",
+          "Blog",
+          "News",
+          "Webpage",
+          "Product",
+          "Organization",
+          "Review",
+          "Breadcrumb",
+        ],
+      },
+    ],
     keywords: {
       type: [String],
       index: true,

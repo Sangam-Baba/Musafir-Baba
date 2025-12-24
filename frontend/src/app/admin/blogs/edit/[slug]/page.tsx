@@ -14,6 +14,7 @@ import { Loader } from "@/components/custom/loader";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
@@ -31,6 +32,7 @@ const formSchema = z.object({
   metaDescription: z
     .string()
     .min(2, { message: "Meta description is required." }),
+  schemaType: z.array(z.string()).optional(),
   keywords: z.array(z.string()),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
@@ -134,6 +136,7 @@ export default function EditBlog() {
       author: "",
       metaTitle: "",
       metaDescription: "",
+      schemaType: [],
       keywords: [],
       tags: [],
       coverImage: { url: "", public_id: "", alt: "" },
@@ -153,6 +156,7 @@ export default function EditBlog() {
         author: blog.author?._id ?? "",
         metaTitle: blog.metaTitle,
         metaDescription: blog.metaDescription,
+        schemaType: blog.schemaType,
         keywords: blog.keywords,
         tags: blog.tags,
         coverImage: blog.coverImage,
@@ -249,6 +253,20 @@ export default function EditBlog() {
           placeholder="Excerpt"
           className="w-full border rounded p-2"
         />
+        <div>
+          <label className="font-semibold">Schema Type</label>
+          <select
+            multiple
+            {...form.register("schemaType")}
+            className="w-full border rounded-lg p-2"
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
         {/* keywords */}
         <div className="space-y-2">
           <Label className="block text-sm font-medium">Keywords</Label>

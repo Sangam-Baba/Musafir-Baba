@@ -22,6 +22,7 @@ import { Reviews } from "../../holidays/new/page";
 import { getReviewsByIds } from "../../holidays/new/page";
 import { deleteReview } from "../../holidays/new/page";
 import { Label } from "@/components/ui/label";
+import { schemaTypes } from "@/lib/schemaTypes";
 interface Faq {
   question: string;
   answer: string;
@@ -33,7 +34,7 @@ export interface Visa {
   slug: string;
   content: string;
   excerpt: string;
-  schemaType: string;
+  schemaType?: string[];
   metaTitle: string;
   metaDescription: string;
   keywords: string[];
@@ -86,7 +87,7 @@ export default function CreateVisaPage() {
     slug: "",
     content: "",
     excerpt: "",
-    schemaType: "",
+    schemaType: [],
     metaTitle: "",
     metaDescription: "",
     keywords: [],
@@ -326,7 +327,7 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
-            {/* meta description */}
+            {/* Schema Type */}
             <FormField
               control={form.control}
               name="schemaType"
@@ -334,7 +335,24 @@ export default function CreateVisaPage() {
                 <FormItem>
                   <FormLabel>Schema Type</FormLabel>
                   <FormControl>
-                    <Input type="text" placeholder="Article, Blog" {...field} />
+                    <select
+                      className="w-full rounded-md border border-gray-300 p-2"
+                      value={field.value || []}
+                      onChange={(e) => {
+                        const value = Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value
+                        );
+                        field.onChange(value);
+                      }}
+                      multiple
+                    >
+                      {schemaTypes.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

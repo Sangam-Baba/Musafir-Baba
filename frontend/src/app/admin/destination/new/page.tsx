@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
 import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 import { Button } from "@/components/ui/button";
+import { schemaTypes } from "@/lib/schemaTypes";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -52,6 +53,7 @@ const formSchema = z.object({
   metaDescription: z.string().min(2, {
     message: "Meta Description must be at least 2 characters.",
   }),
+  schemaType: z.array(z.string()).optional(),
   keywords: z
     .preprocess(
       (val) =>
@@ -121,6 +123,7 @@ export default function CreateDestination() {
       gallery: [],
       metaTitle: "",
       metaDescription: "",
+      schemaType: [],
       keywords: [],
       popularAttractions: [],
       thingsToDo: [],
@@ -236,6 +239,20 @@ export default function CreateDestination() {
             {form.formState.errors.metaDescription.message}
           </p>
         )}
+        <div>
+          <label className="font-semibold">Schema Type</label>
+          <select
+            multiple
+            {...form.register("schemaType")}
+            className="w-full border rounded-lg p-2"
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
         <input
           {...form.register("keywords")}
           placeholder="Keywords (comma separated)"
