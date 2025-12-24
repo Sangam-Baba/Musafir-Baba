@@ -82,12 +82,12 @@ async function AboutUsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
-      {data.schemaType.includes("Webpage") && (
-        <Script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      )}
+      {/* {data.schemaType.includes("Webpage") && ( */}
+      <Script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      {/* )} */}
     </div>
   );
 }
