@@ -1,8 +1,10 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
 import { notFound } from "next/navigation";
-import React from "react";
 import GroupPkgClient from "../PackageSlugClient";
+import Script from "next/script";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
 
 export interface Duration {
   days: number;
@@ -71,6 +73,17 @@ async function DestinationPage({
   const { categorySlug, destination } = await params;
   const packages = await getPackageByDestinationSlug(categorySlug, destination);
   if (!packages || packages.length === 0) return notFound();
+
+  const breadcrumbSchema = getBreadcrumbSchema(
+    "holidays/" + categorySlug + "/" + destination
+  );
+  const collectionSchema = getCollectionSchema(
+    "Travel Packages for " + packages[0]?.destination?.name,
+    "https://musafirbaba.com/holidays/" + categorySlug + "/" + destination,
+    packages.map((pkg: { slug: string }) => ({
+      url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${pkg.slug}`,
+    }))
+  );
   return (
     <section>
       <Hero
@@ -87,6 +100,16 @@ async function DestinationPage({
       </div>
       {/* Show packages under this category */}
       <GroupPkgClient packagesData={packages} />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
     </section>
   );
 }

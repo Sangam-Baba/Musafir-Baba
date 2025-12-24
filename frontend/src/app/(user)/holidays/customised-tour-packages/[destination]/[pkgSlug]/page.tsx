@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation";
 import CustomizedPackageClient from "./pageClient";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import { getFAQSchema } from "@/lib/schema/faq.schema";
+import { getProductSchema } from "@/lib/schema/product.schema";
+import Script from "next/script";
 async function getCustomizedPackage(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/slug/${slug}`,
@@ -77,7 +82,53 @@ export default async function Page({
     return notFound();
   }
 
+  const breadcrumbSchema = getBreadcrumbSchema(
+    "customised-tour-packages/" + pkg.destination.state + "/" + pkgSlug
+  );
+
+  const productSchema = getProductSchema(
+    pkg.title,
+    pkg.description,
+    pkg?.plan?.price,
+    "https://musafirbaba.com/holidays/customised-tour-packages/" +
+      pkg.destination.state +
+      "/" +
+      pkgSlug
+  );
+  const faqSchema = getFAQSchema(pkg.faqs ?? []);
+  const collectionSchema = getCollectionSchema(
+    pkg.title,
+    `https://musafirbaba.com/holidays/customised-tour-packages/${pkg.destination}/${pkgSlug}`,
+    relatedPackages.map(
+      (pkg: { slug: string; destination: { state: string } }) => ({
+        url: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg.destination.state}/${pkg.slug}`,
+      })
+    )
+  );
+
   return (
-    <CustomizedPackageClient pkg={pkg} relatedPackages={relatedPackages} />
+    <>
+      <CustomizedPackageClient pkg={pkg} relatedPackages={relatedPackages} />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        id="product-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+    </>
   );
 }

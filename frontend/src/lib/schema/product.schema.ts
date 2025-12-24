@@ -1,14 +1,9 @@
-export const getProductSchema = ({
-  name,
-  description,
-  price,
-  url,
-}: {
-  name: string;
-  description: string;
-  price: string;
-  url: string;
-}) => ({
+export const getProductSchema = (
+  name: string,
+  description: string,
+  price: string,
+  url: string
+) => ({
   "@context": "https://schema.org",
   "@type": "Product",
   name,

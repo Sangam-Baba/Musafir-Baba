@@ -3,6 +3,9 @@ import Hero from "@/components/custom/Hero";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { getCategoryBySlug } from "../[categorySlug]/page";
 import CustomizedTourClient from "./CustomizedTourClient";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import Script from "next/script";
 interface Plan {
   title: string;
   include: string;
@@ -83,6 +86,15 @@ async function CustomizedPackagePage() {
   const AllPackages = await getAllCustomizedPackages();
   const res = await getCategoryBySlug("customised-tour-packages");
   const { category } = res?.data ?? {};
+
+  const breadcrumbSchema = getBreadcrumbSchema("customised-tour-packages");
+  const collectionSchema = getCollectionSchema(
+    "Customised Tour Packages",
+    "https://musafirbaba.com/holidays/customised-tour-packages",
+    AllPackages.map((pkg: CustomizedPackageInterface) => ({
+      url: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`,
+    }))
+  );
   return (
     <section className="w-full mb-12">
       <Hero
@@ -99,6 +111,16 @@ async function CustomizedPackagePage() {
 
       {/* Show packages under this category */}
       <CustomizedTourClient allPkgs={AllPackages} />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
     </section>
   );
 }

@@ -2,6 +2,11 @@ import React from "react";
 import SlugClients from "./SlugClients";
 import { Metadata } from "next";
 import { getPackageByCategorySlug } from "@/app/(user)/holidays/[categorySlug]/page";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import { getProductSchema } from "@/lib/schema/product.schema";
+import { getFAQSchema } from "@/lib/schema/faq.schema";
+import Script from "next/script";
 
 interface Destination {
   _id: string;
@@ -129,14 +134,50 @@ async function PackageDetails({
 }) {
   const { categorySlug, destination, packageSlug } = await params;
   const relatedGroupPackages = await getPackageByCategorySlug(categorySlug);
+  const page = await getSinglePackages(destination, packageSlug);
+  const breadcrumbSchema = getBreadcrumbSchema(
+    "holidays/" + categorySlug + "/" + destination + "/" + packageSlug
+  );
+  const collectionSchema = getCollectionSchema(
+    "Travel Packages for " + relatedGroupPackages[0]?.destination?.name,
+    "https://musafirbaba.com/holidays/" + categorySlug + "/" + destination,
+    relatedGroupPackages.map((pkg: Package) => ({
+      url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${pkg.slug}`,
+    }))
+  );
+  const productSchema = getProductSchema(
+    page.title,
+    page.description,
+    page.batch[0].quad.toLocaleString(),
+    `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`
+  );
+  const faqSchema = getFAQSchema(page.faqs ?? []);
+
   return (
-    <SlugClients
-      slug={packageSlug}
-      state={destination}
-      relatedGroupPackages={relatedGroupPackages.filter(
-        (p: Package) => p.slug !== packageSlug
-      )}
-    />
+    <>
+      <SlugClients
+        slug={packageSlug}
+        state={destination}
+        relatedGroupPackages={relatedGroupPackages.filter(
+          (p: Package) => p.slug !== packageSlug
+        )}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <Script
+        id="product-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+    </>
   );
 }
 

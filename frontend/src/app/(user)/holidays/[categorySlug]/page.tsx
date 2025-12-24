@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import Hero from "@/components/custom/Hero";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import img1 from "../../../../../public/Hero1.jpg";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
 
 interface Props {
   params: Promise<{ categorySlug: string }>;
@@ -150,46 +152,15 @@ export default async function Page({
   // const packages = category?.packages ?? [];
 
   // ✅ Build JSON-LD Schema
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: `${category?.name} Travel Packages`,
-    description: category?.description,
-    url: `https://musafirbaba.com/holidays/${categorySlug}`,
-    numberOfItems: packages.length,
-    itemListElement: packages.map((pkg: Package, index: number) => ({
-      "@type": "TouristTrip",
-      position: index + 1,
-      name: pkg.title,
-      description: pkg.description || pkg.metaDescription || "",
-      image: pkg.coverImage?.url,
-      url: `https://musafirbaba.com/${pkg.destination?.country}/${pkg.destination?.state}/${pkg.slug}`,
-      tourType: "GroupTour",
-      itinerary: pkg.itinerary?.map((day: Itinerary, i: number) => ({
-        "@type": "TouristAttraction",
-        position: i + 1,
-        name: day.title,
-        description: day.description,
-      })),
-      offers: {
-        "@type": "Offer",
-        price: pkg.batch?.[0]?.quad || 9999,
-        priceCurrency: "INR",
-        availability: "https://schema.org/InStock",
-        url: `https://musafirbaba.com/${pkg.destination?.country}/${pkg.destination?.state}/${pkg.slug}`,
-      },
-      location: {
-        "@type": "Place",
-        name: pkg.destination?.name,
-        address: {
-          "@type": "PostalAddress",
-          addressCountry: pkg.destination?.country,
-          addressRegion: pkg.destination?.state,
-          addressLocality: pkg.destination?.city,
-        },
-      },
-    })),
-  };
+
+  const breadcrumbSchema = getBreadcrumbSchema("holidays/" + categorySlug);
+  const collectionSchema = getCollectionSchema(
+    "Travel Packages for " + category?.name,
+    "https://musafirbaba.com/holidays/" + categorySlug,
+    packages.map((pkg: Package) => ({
+      url: `https://musafirbaba.com/holidays/${categorySlug}/${pkg?.destination?.state}/${pkg.slug}`,
+    }))
+  );
   return (
     <>
       <section className="w-full mb-12">
@@ -206,9 +177,16 @@ export default async function Page({
         </div>
       </section>
       <GroupPkgClient packagesData={packages} />
-      <Script id="json-schema" type="application/ld+json">
-        {JSON.stringify(schema)}
-      </Script>
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        id="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
     </>
   );
 }
