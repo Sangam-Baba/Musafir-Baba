@@ -94,6 +94,53 @@ const testi = [
       "The team at Musafir Baba is incredibly professional yet so friendly. They were always available for any questions, and every little detail was taken care of. I’ll definitely be planning my next trip with them again!",
   },
 ];
+const images = [
+  {
+    id: 1,
+    url: "/frame1.webp",
+    alt: "",
+  },
+  {
+    id: 2,
+    url: "/frame2.jpg",
+    alt: "",
+  },
+  {
+    id: 3,
+    url: "/frame3.jpg",
+    alt: "",
+  },
+  {
+    id: 4,
+    url: "/frame4.webp",
+    alt: "",
+  },
+  {
+    id: 5,
+    url: "/frame5.jpg",
+    alt: "",
+  },
+  {
+    id: 6,
+    url: "/frame6.jpg",
+    alt: "",
+  },
+  {
+    id: 7,
+    url: "/frame7.jpg",
+    alt: "",
+  },
+  {
+    id: 8,
+    url: "/frame8.webp",
+    alt: "",
+  },
+  {
+    id: 9,
+    url: "/frame9.jpg",
+    alt: "",
+  },
+];
 
 export default async function HomePage({
   searchParams,
@@ -153,6 +200,7 @@ export default async function HomePage({
       <ImageGallery
         title="Memories in Motion"
         description="Picture Perfect Moments with the Best Travel Agency in India"
+        data={images}
       />
       <HomeBooking />
       <Partners />

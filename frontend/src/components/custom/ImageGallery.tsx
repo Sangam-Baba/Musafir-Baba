@@ -11,66 +11,10 @@ import {
 } from "@/components/ui/carousel";
 import Image from "next/image";
 
-import frame1 from "../../../public/frame1.webp";
-import frame2 from "../../../public/frame2.jpg";
-import frame3 from "../../../public/frame3.jpg";
-import frame4 from "../../../public/frame4.webp";
-import frame5 from "../../../public/frame5.jpg";
-import frame6 from "../../../public/frame6.jpg";
-import frame7 from "../../../public/frame7.jpg";
-import frame8 from "../../../public/frame8.webp";
-import { coverImage } from "@/app/(user)/news/page";
-const images = [
-  {
-    id: 1,
-    url: frame5,
-    public_id: "",
-    width: 0,
-    height: 0,
-    alt: "",
-  },
-  {
-    id: 2,
-    url: frame1,
-    alt: "",
-  },
-  {
-    id: 3,
-    url: frame2,
-    alt: "",
-  },
-  {
-    id: 4,
-    url: frame3,
-    alt: "",
-  },
-  {
-    id: 5,
-    url: frame4,
-    alt: "",
-  },
-  {
-    id: 6,
-    url: frame5,
-    alt: "",
-  },
-  {
-    id: 7,
-    url: frame6,
-    alt: "",
-  },
-  {
-    id: 8,
-    url: frame7,
-    alt: "",
-  },
-  {
-    id: 9,
-    url: frame8,
-    alt: "",
-  },
-];
-
+interface GalleryInterface {
+  url: string;
+  alt: string;
+}
 export function ImageGallery({
   title,
   description,
@@ -78,12 +22,13 @@ export function ImageGallery({
 }: {
   title: string;
   description?: string;
-  data?: coverImage[];
+  data?: GalleryInterface[];
 }) {
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
-  const finalImages = data ? (data?.length > 0 ? data : images) : images;
+  if (!data || data.length === 0) return null;
+  const finalImages = data;
   return (
     <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 flex flex-col items-center">
       {/* Heading */}
@@ -116,7 +61,7 @@ export function ImageGallery({
                   <Image
                     width={550}
                     height={550}
-                    src={item.url as string}
+                    src={item.url}
                     alt={item.alt}
                     className="w-full h-80 object-cover"
                   />

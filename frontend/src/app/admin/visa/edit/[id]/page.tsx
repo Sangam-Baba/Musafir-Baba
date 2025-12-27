@@ -26,7 +26,6 @@ import { deleteReview } from "@/app/admin/holidays/new/page";
 import { getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { Visa } from "../../new/page";
 import { Label } from "@/components/ui/label";
-import { schemaTypes } from "@/lib/schemaTypes";
 
 async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
