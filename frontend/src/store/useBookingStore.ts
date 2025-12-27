@@ -9,6 +9,7 @@ interface GroupState {
     double: number;
     child: number;
   };
+  addOns?: { title: string; price: number; noOfPeople: number }[];
 }
 interface BookingState {
   formData: GroupState;
@@ -27,6 +28,7 @@ export const useGroupBookingStore = create<BookingState>()(
           double: 0,
           child: 0,
         },
+        addOns: [],
       },
       setGroup: (data) => set({ formData: data }),
       resetGroup: () =>
@@ -40,6 +42,7 @@ export const useGroupBookingStore = create<BookingState>()(
               double: 0,
               child: 0,
             },
+            addOns: [],
           },
         }),
     }),

@@ -55,14 +55,14 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   return (
     <>
       <MainWebPage page={page} />
-      {page.schemaType.includes("Webpage") && (
+      {page.schemaType?.includes("Webpage") && (
         <Script
           key="webpage-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
         />
       )}
-      {page.schemaType.includes("FAQ") && (
+      {page.schemaType?.includes("FAQ") && (
         <Script
           key="faq-schema"
           type="application/ld+json"

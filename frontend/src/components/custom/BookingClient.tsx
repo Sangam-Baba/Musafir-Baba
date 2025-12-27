@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -23,6 +23,9 @@ import {
 import { format, parseISO, isAfter } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useGroupBookingStore } from "@/store/useBookingStore";
+import { AddOns } from "@/app/admin/holidays/new/page";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 interface Batch {
   _id: string;
@@ -41,6 +44,7 @@ interface Package {
   _id: string;
   title: string;
   description: string;
+  addOns: AddOns[];
   batch: Batch[];
 }
 
@@ -54,6 +58,15 @@ const formSchema = z.object({
     child: z.number().nonnegative(),
   }),
   totalPrice: z.number().min(0),
+  addOns: z
+    .array(
+      z.object({
+        title: z.string(),
+        price: z.number(),
+        noOfPeople: z.number(),
+      })
+    )
+    .optional(),
 });
 type BookingFormValues = z.infer<typeof formSchema>;
 
@@ -85,6 +98,9 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     child: 0,
   });
   const [price, setPrice] = useState(0);
+  const [addOns, setAddOns] = useState<
+    { title: string; price: number; noOfPeople: number }[]
+  >([]);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(formSchema),
@@ -96,26 +112,25 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     },
   });
 
-  // const mutation = useMutation({
-  //   mutationFn: (payload: BookingFormValues) =>
-  //     bookPkgApi(payload, accessToken || ""),
-  //   onSuccess: (res) => {
-  //     toast.success("Booking created");
-  //     router.push(`/payment/${res.data._id}`);
-  //   },
-  //   onError: (err) => toast.error(err.message || "Booking failed"),
-  // });
-
   const totalPrice = useMemo(() => {
     if (!selectedBatch) return 0;
-    const price =
+
+    const basePrice =
       travellers.quad * selectedBatch.quad +
       travellers.triple * selectedBatch.triple +
       travellers.double * selectedBatch.double +
       travellers.child * selectedBatch.child;
-    setPrice(price);
-    return price;
-  }, [travellers, selectedBatch]);
+
+    const addOnPrice = addOns.reduce(
+      (sum, a) => sum + a.price * a.noOfPeople,
+      0
+    );
+
+    const total = basePrice + addOnPrice;
+    setPrice(total);
+    return total;
+  }, [travellers, selectedBatch, addOns]);
+
   const totalPriceWithTax = Math.ceil(totalPrice * 1.05);
 
   const batchesByMonth = useMemo(
@@ -132,14 +147,36 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   };
 
   const onSubmit = (values: BookingFormValues) => {
-    // if (mutation.isPending) return;
-    // mutation.mutate(values);
     setGroup(values);
     router.push(`/payment/${values.packageId}`);
   };
+  useEffect(() => {
+    form.setValue("addOns", addOns);
+  }, [addOns, form]);
+
+  const handleAddOn = (
+    addon: { title: string; price: number },
+    people: number
+  ) => {
+    setAddOns((prev) => {
+      const existing = prev.find((a) => a.title === addon.title);
+
+      if (existing) {
+        return prev.map((a) =>
+          a.title === addon.title ? { ...a, noOfPeople: people } : a
+        );
+      }
+
+      return [...prev, { ...addon, noOfPeople: people }];
+    });
+  };
+
+  const handleRemoveAddOn = (title: string) => {
+    setAddOns((prev) => prev.filter((a) => a.title !== title));
+  };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6 space-y-4">
       <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2>
 
       {/* Batches Accordion */}
@@ -243,6 +280,74 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
         </DialogContent>
       </Dialog>
 
+      {/* Add Ons */}
+      <div className="space-y-4">
+        <p className="font-semibold text-xl">Special Add On</p>
+
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue={pkg.addOns[0].title}
+          className="w-full border rounded-lg p-4"
+        >
+          {pkg.addOns.map((items) => (
+            <AccordionItem key={items.title} value={items.title}>
+              <AccordionTrigger>{items.title}</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2">
+                  {items.items?.map((b, i) => {
+                    const selected = addOns.find((a) => a.title === b.title);
+                    const [people, setPeople] = useState(1);
+
+                    return (
+                      <div
+                        key={i}
+                        className="flex flex-wrap gap-4 justify-between p-3 border rounded-lg"
+                      >
+                        <p className="font-medium">{b.title}</p>
+                        <p>₹{b.price.toLocaleString()}</p>
+
+                        <div className="flex items-center gap-2">
+                          <Label>No. of People</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={people}
+                            onChange={(e) => setPeople(Number(e.target.value))}
+                            className="w-20"
+                          />
+                        </div>
+
+                        {!selected ? (
+                          <Button
+                            onClick={() =>
+                              handleAddOn(
+                                { title: b.title, price: b.price },
+                                people
+                              )
+                            }
+                            className="w-20"
+                          >
+                            Add
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleRemoveAddOn(b.title)}
+                            className="w-20"
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
         <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
           <div>
