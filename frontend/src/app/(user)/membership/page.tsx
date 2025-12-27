@@ -100,7 +100,7 @@ async function VisaWebPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      {visa?.schemaType.includes("Webpage") && (
+      {visa?.schemaType?.includes("Webpage") && (
         <Script
           id="breadcrumb"
           type="application/ld+json"
