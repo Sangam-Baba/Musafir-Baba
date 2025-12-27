@@ -355,7 +355,7 @@ async function page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      {page.schemaType.includes("Webpage") && (
+      {page.schemaType?.includes("Webpage") && (
         <Script
           id="webpage-schema"
           type="application/ld+json"
