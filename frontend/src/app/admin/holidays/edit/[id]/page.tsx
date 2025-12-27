@@ -23,12 +23,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
-import { Reviews } from "../../new/page";
+import { AddOns, Reviews } from "../../new/page";
 import { deleteReview } from "../../new/page";
 import { getReviewsByIds } from "../../new/page";
 import { X } from "lucide-react";
 import { duplicateBatch } from "../../new/page";
 import { schemaTypes } from "@/lib/schemaTypes";
+import { AddOnItems } from "../../new/AddOnItems";
 interface Image {
   url: string;
   alt: string;
@@ -69,6 +70,7 @@ interface PackageFormValues {
   destination: string;
   mainCategory: string;
   otherCategory: string[];
+  addOns?: AddOns[];
   coverImage: Image;
   gallery?: Image[];
   duration: { days: number; nights: number };
@@ -340,6 +342,7 @@ export default function CreatePackagePage() {
       }
     }
   }, [pkg, form, accessToken]);
+  const addOnsArray = useFieldArray({ control: form.control, name: "addOns" });
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
@@ -955,6 +958,33 @@ export default function CreatePackagePage() {
                 }
               >
                 Add Itinerary Step
+              </Button>
+            </div>
+
+            {/* Add Ons */}
+            <div>
+              <label className="mb-2 block text-lg font-medium">Add Ons</label>
+
+              {addOnsArray.fields.map((field, index) => (
+                <AddOnItems
+                  key={field.id}
+                  index={index}
+                  form={form}
+                  removeAddOn={() => addOnsArray.remove(index)}
+                />
+              ))}
+
+              <Button
+                type="button"
+                variant="default"
+                onClick={() =>
+                  addOnsArray.append({
+                    title: "",
+                    items: [{ title: "", price: 0 }],
+                  })
+                }
+              >
+                + Add
               </Button>
             </div>
 
