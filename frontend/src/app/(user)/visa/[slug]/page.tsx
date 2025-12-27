@@ -138,14 +138,14 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
-      {visa.schemaType.includes("Webpage") && (
+      {visa.schemaType?.includes("Webpage") && (
         <Script
           key="visa-webpage-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
         />
       )}
-      {visa.schemaType.includes("FAQ") && (
+      {visa.schemaType?.includes("FAQ") && (
         <Script
           key="faqs-schema"
           type="application/ld+json"

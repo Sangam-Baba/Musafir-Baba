@@ -189,8 +189,8 @@ function VisaClientPage({ visa }: { visa: VisaInterface[] }) {
             <h1 className="text-2xl font-bold">No Visas found</h1>
           )}
 
-          {filteredVisas.map((visa: VisaInterface) => {
-            return <VisaMainCard key={visa.id} visa={visa} />;
+          {filteredVisas.map((visa: VisaInterface, i: number) => {
+            return <VisaMainCard key={i} visa={visa} />;
           })}
         </div>
       </div>
