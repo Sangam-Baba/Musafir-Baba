@@ -46,7 +46,9 @@ export default function Hero({
   const overlay = Math.min(100, Math.max(0, overlayOpacity));
 
   return (
-    <section className={`relative w-full aspect-[3/1]  ${className}`}>
+    <section
+      className={`relative w-full aspect-3/1 flex justify-center  ${className}`}
+    >
       {/* Background image */}
       <div className="absolute inset-0">
         <Image
@@ -66,7 +68,7 @@ export default function Hero({
 
       {/* Content */}
       <div
-        className={`relative z-10 h-full flex items-center ${
+        className={`absolute md:mt-25   z-10 h-full flex items-center ${
           align === "left"
             ? "justify-start text-left"
             : align === "right"

@@ -184,7 +184,7 @@ function SlugClients({
   return (
     <section>
       <div className="relative">
-        <div className="absolute z-20 w-full flex justify-center md:bottom-25 bottom-2 px-4">
+        <div className="absolute z-20 w-full flex justify-center md:bottom-20 bottom-2 px-4">
           <ItineryDialog
             title={pkg.title}
             description={pkg.description.slice(0, 50)}
@@ -232,7 +232,9 @@ function SlugClients({
                   size="lg"
                   onClick={() => setActive(tab.key)}
                   className={`mt-4 ${
-                    active === tab.key ? "bg-[#FE5300]" : "bg-gray-400"
+                    active === tab.key
+                      ? "bg-[#FE5300]"
+                      : "bg-white text-black border border-[#FE5300]"
                   }`}
                 >
                   {tab.label}
@@ -254,7 +256,9 @@ function SlugClients({
               {active === "highlights" && (
                 <ul className="list-disc list-inside">
                   {pkg.highlights.map((h, i) => (
-                    <li key={i}>{h}</li>
+                    <li className="mb-2 text-lg" key={i}>
+                      {h}
+                    </li>
                   ))}
                 </ul>
               )}
@@ -383,7 +387,7 @@ function SlugClients({
           </div>
         </section>
         <div className="w-full md:w-1/3 px-4 py-16 ">
-          <Card className="mb-4 shadow-lg">
+          <Card className="mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
             <CardHeader className="flex flex-col justify-between  ">
               <p>
                 Starting from{" "}
@@ -392,7 +396,7 @@ function SlugClients({
                 </span>
               </p>
               <CardTitle className="text-4xl font-semibold tracking-tight text-[#FE5300]">
-                ₹ {price}{" "}
+                ₹ {price.toLocaleString()}{" "}
               </CardTitle>
               <span className="text-sm text-muted-foreground">per person</span>
             </CardHeader>

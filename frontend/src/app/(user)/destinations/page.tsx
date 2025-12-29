@@ -29,7 +29,7 @@ export function generateMetadata(): Metadata {
 
 const getAllDestinations = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
-    next: { revalidate: 120 },
+    next: { revalidate: 60 },
   });
   if (!res.ok) return notFound();
   const data = await res.json();

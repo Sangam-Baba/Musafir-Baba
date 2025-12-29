@@ -17,6 +17,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -26,6 +27,14 @@ import { useGroupBookingStore } from "@/store/useBookingStore";
 import { AddOns } from "@/app/admin/holidays/new/page";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {
+  ArrowRight,
+  Badge,
+  Calendar,
+  CheckCircle2,
+  Minus,
+  Plus,
+} from "lucide-react";
 
 interface Batch {
   _id: string;
@@ -185,100 +194,176 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
       <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2>
 
       {/* Batches Accordion */}
-      <Accordion
-        type="single"
-        collapsible
-        defaultValue={Object.keys(batchesByMonth)[0]}
-        className="w-full border rounded-lg p-4"
-      >
-        {Object.entries(batchesByMonth).map(([month, list]) => (
-          <AccordionItem key={month} value={month}>
-            <AccordionTrigger>{month}</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2">
-                {list.map((b, i) => {
-                  const start = format(parseISO(b.startDate), "dd MMM yyyy");
-                  const end = format(parseISO(b.endDate), "dd MMM yyyy");
-                  return (
-                    <div
-                      key={i}
-                      onClick={() => setSelectedBatch(b)}
-                      className="flex justify-between p-3 border rounded-lg cursor-pointer hover:bg-blue-50"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {start} – {end}
-                        </p>
-                        <p className="text-green-600 text-sm">Open</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">Starting Price</p>
-                        <p className="font-semibold text-[#FE5300]">
-                          ₹{b.quad.toLocaleString()}
-                        </p>
-                        <span className="font-semibold line-through">
-                          ₹{b.quadDiscount.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-primary" />
+          <h2 className="text-xl font-semibold">Select Travel Dates</h2>
+        </div>
 
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue={Object.keys(batchesByMonth)[0]}
+          className="w-full space-y-3"
+        >
+          {Object.entries(batchesByMonth).map(([month, list]) => (
+            <AccordionItem
+              key={month}
+              value={month}
+              className="border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+            >
+              <AccordionTrigger className="hover:no-underline py-4">
+                <span className="text-lg font-medium">{month}</span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-4">
+                <div className="grid gap-3">
+                  {list.map((b) => {
+                    const start = format(parseISO(b.startDate), "EEE, dd MMM");
+                    const end = format(parseISO(b.endDate), "EEE, dd MMM");
+                    const isSelected = confirmedBatch?._id === b._id;
+
+                    return (
+                      <div
+                        key={b._id}
+                        onClick={() => setSelectedBatch(b)}
+                        className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-inner"
+                            : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-lg">
+                              {start}
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-semibold text-lg">{end}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              // variant="outline"
+                              className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20"
+                            >
+                              Available
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Free Cancellation before departure
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 sm:mt-0 text-left sm:text-right">
+                          <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
+                            From
+                          </p>
+                          <div className="flex items-baseline justify-start sm:justify-end gap-2">
+                            <p className="text-2xl font-bold text-primary">
+                              ₹{b.quad.toLocaleString()}
+                            </p>
+                            <span className="text-sm text-muted-foreground line-through">
+                              ₹{b.quadDiscount.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {isSelected && (
+                          <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-primary fill-background shadow-sm rounded-full" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </section>
       <Dialog
         open={!!selectedBatch}
         onOpenChange={() => setSelectedBatch(null)}
       >
-        <DialogContent>
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Select Travellers</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              Configure Travellers
+            </DialogTitle>
+            <DialogDescription>
+              Select the number of travellers based on room occupancy.
+            </DialogDescription>
           </DialogHeader>
+
           {selectedBatch && (
-            <div className="space-y-4">
-              {(["quad", "triple", "double", "child"] as const).map((type) => (
-                <div key={type} className="flex  justify-between items-center">
-                  <span className="capitalize">{type}</span>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        setTravellers((t) => ({
-                          ...t,
-                          [type]: Math.max(0, t[type] - 1),
-                        }))
-                      }
+            <div className="space-y-6 pt-4">
+              <div className="grid gap-4">
+                {(["quad", "triple", "double", "child"] as const).map(
+                  (type) => (
+                    <div
+                      key={type}
+                      className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl border border-border/50"
                     >
-                      -
-                    </Button>
-                    <span>{travellers[type]}</span>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        setTravellers((t) => ({ ...t, [type]: t[type] + 1 }))
-                      }
-                    >
-                      +
-                    </Button>
-                  </div>
-                  <p className="text-md text-[#FE5300] font-semibold">
-                    ₹{selectedBatch[type]}
-                  </p>
-                </div>
-              ))}
-              <div className="flex justify-between border-t pt-2">
-                <span className="font-medium">Total</span>
-                <span className="font-semibold">
-                  ₹{totalPrice.toLocaleString()}
-                </span>
+                      <div className="space-y-1">
+                        <span className="capitalize font-bold text-lg">
+                          {type} Occupancy
+                        </span>
+                        <p className="text-primary font-semibold">
+                          ₹{selectedBatch[type].toLocaleString()} / pax
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 bg-background p-1 rounded-lg border shadow-sm">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-md"
+                          onClick={() =>
+                            setTravellers((t) => ({
+                              ...t,
+                              [type]: Math.max(0, t[type] - 1),
+                            }))
+                          }
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <span className="text-lg font-bold min-w-[20px] text-center">
+                          {travellers[type]}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-md"
+                          onClick={() =>
+                            setTravellers((t) => ({
+                              ...t,
+                              [type]: t[type] + 1,
+                            }))
+                          }
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
-              <Button className="w-full" onClick={confirmSelection}>
-                Confirm
+
+              <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-muted-foreground">
+                    Running Total
+                  </span>
+                  <span className="text-2xl font-black text-primary">
+                    ₹{totalPrice.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                className="w-full h-12 text-lg font-bold rounded-xl"
+                onClick={confirmSelection}
+              >
+                Confirm Selection
               </Button>
             </div>
           )}
@@ -376,18 +461,6 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
               </p>
             </div>
           </div>
-
-          {/* <div className="flex justify-between">
-            <p className="text-md font-semibold">Package Price INR </p>
-            <p>{price}</p>
-          </div> */}
-          {/* <div className="flex justify-between">
-            <p>GST (5%)</p>
-            <p className="text-sm text-gray-500">
-              {" "}
-              {Math.floor(price * 0.05)}{" "}
-            </p>
-          </div> */}
           <div className="flex justify-between">
             <p className="text-md font-semibold">Total Price</p>
             <p className="text-md font-semibold">
