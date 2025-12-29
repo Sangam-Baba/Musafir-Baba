@@ -84,6 +84,7 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Coupan",
     },
+    addOns: [{ title: String, price: Number, noOfPeople: Number }],
   },
   { timestamps: true }
 );

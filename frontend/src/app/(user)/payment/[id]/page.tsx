@@ -64,6 +64,7 @@ interface GroupBookingInterface {
   };
   totalPrice: number;
   coupanId?: string;
+  addOns?: { title: string; price: number; noOfPeople: number }[];
 }
 async function getBooking(bookingId: string, accessToken: string | null) {
   if (!bookingId) throw new Error("Missing booking id");
@@ -124,9 +125,10 @@ export default function CheckoutPage() {
   const { id } = useParams(); // ✅ directly extract id
   const pkgId = String(id ?? ""); // safe conversion
   const booking = useGroupBookingStore((s) => s.formData);
-  const [finalAmount, setFinalAmount] = useState(0);
   const [appliedCouponId, setAppliedCouponId] = useState<string | null>(null);
-  const [originalAmount, setOriginalAmount] = useState(0);
+  const [baseAmount, setBaseAmount] = useState(0);
+  const [addOnAmount, setAddOnAmount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
   const [batch, setBatch] = useState<Batch | null>(null);
 
   //Group Package
@@ -165,13 +167,20 @@ export default function CheckoutPage() {
         (batch: Batch) => batch._id === booking.batchId
       );
       setBatch(selectedBatch);
-      const price =
+      const base =
         booking.travellers.quad * selectedBatch.quad +
         booking.travellers.triple * selectedBatch.triple +
         booking.travellers.double * selectedBatch.double +
         booking.travellers.child * selectedBatch.child;
-      setOriginalAmount(price);
-      setFinalAmount(price);
+
+      const addOnsTotal =
+        booking.addOns?.reduce(
+          (total, addOn) => total + addOn.price * addOn.noOfPeople,
+          0
+        ) ?? 0;
+      setBaseAmount(base);
+      setAddOnAmount(addOnsTotal);
+      setFinalAmount(base + addOnsTotal);
     }
   }, [booking, Package]);
 
@@ -192,6 +201,7 @@ export default function CheckoutPage() {
       ...booking,
       totalPrice: finalAmount,
       coupanId: appliedCouponId ?? undefined,
+      addOns: booking?.addOns ?? undefined,
     });
   };
 
@@ -234,26 +244,35 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleCoupanValidation = async (values: {
+  const handleCoupanValidation = async ({
+    id,
+    amount,
+    itemId,
+    itemType,
+  }: {
     id: string;
     amount: number;
     itemId: string;
     itemType: "GROUP_PACKAGE";
   }) => {
     try {
-      const res = await validateCoupan(accessToken, values);
+      const res = await validateCoupan(accessToken, {
+        id,
+        amount,
+        itemId,
+        itemType,
+      });
 
-      toast.success(res.message);
-
-      setFinalAmount(res.data.finalAmount);
-      setAppliedCouponId(res.data._id);
-    } catch (error) {
-      toast.error((error as Error).message);
+      setAppliedCouponId(id);
+      setFinalAmount(res.finalAmount);
+      toast.success("Coupon applied successfully");
+    } catch (err: any) {
+      toast.error(err?.message || "Invalid coupon");
     }
   };
 
   const handleRemoveCoupon = () => {
-    setFinalAmount(originalAmount);
+    setFinalAmount(baseAmount + addOnAmount);
     setAppliedCouponId(null);
     toast.success("Coupon removed");
   };
@@ -395,7 +414,7 @@ export default function CheckoutPage() {
                       {Package.title ?? "Travel Package"}
                     </span>
                     <span className="font-semibold text-foreground">
-                      ₹{originalAmount.toFixed(2)}
+                      ₹{baseAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>

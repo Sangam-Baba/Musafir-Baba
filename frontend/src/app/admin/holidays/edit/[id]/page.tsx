@@ -263,7 +263,7 @@ export default function CreatePackagePage() {
   });
   const handleBatchCreated = async (id: string) => {
     const newBatch = await getBatchByIds(accessToken, [id]);
-    batchArray.append(id);
+    form.setValue("batch", [...form.getValues("batch"), id]);
     setBatchDetails((prev) => [...prev, newBatch[0]]);
     setShowBatchModal(false);
   };
@@ -282,7 +282,7 @@ export default function CreatePackagePage() {
 
   const handleBatchDuplicate = async (id: string) => {
     const res = await duplicateBatch(accessToken, id);
-    batchArray.append(res._id);
+    form.setValue("batch", [...form.getValues("batch"), res._id]);
     const newBatch = await getBatchByIds(accessToken, [res._id]);
     setBatchDetails((prev) => [...prev, ...newBatch]);
     setShowBatchModal(false);
@@ -307,10 +307,10 @@ export default function CreatePackagePage() {
     setShowReviewsModal(false);
     setEditReviewsId(null);
   };
-  const batchArray = useFieldArray({ control: form.control, name: "batch" });
+  // const batchArray = useFieldArray({ control: form.control, name: "batch" });
   useEffect(() => {
     if (pkg) {
-      const batchIds = pkg.batch?.map((b: string) => b) || [];
+      const batchIds = pkg.batch?.map((b: Batch) => b._id) || [];
       const reviewsIds = pkg.reviews?.map((b: string) => b) || [];
       form.reset({
         ...pkg,
@@ -442,19 +442,19 @@ export default function CreatePackagePage() {
             {/* Batch Dynamic */}
             <div>
               <FormLabel className="mb-2 text-lg">Batch *</FormLabel>
-              {batchArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+              {batchDetails.map((field, index) => (
+                <div key={field._id} className="grid grid-cols-2 gap-2 mb-2">
                   {/* Batch Content */}
                   <div className="flex  items-center text-left gap-2">
                     <span className="font-medium">
-                      {batchDetails[index]?.name || `Batch ${index + 1}`}
+                      {field?.name || `Batch ${index + 1}`}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {batchDetails[index]?.startDate
+                      {field?.startDate
                         ? `${new Date(
-                            batchDetails[index].startDate
+                            field.startDate
                           ).toLocaleDateString()} → ${new Date(
-                            batchDetails[index].endDate
+                            field.endDate
                           ).toLocaleDateString()}`
                         : "No date info"}
                     </span>
@@ -466,7 +466,7 @@ export default function CreatePackagePage() {
                       type="button"
                       variant="default"
                       onClick={() => {
-                        handleBatchDuplicate(form.getValues(`batch.${index}`));
+                        handleBatchDuplicate(field._id);
                       }}
                     >
                       Duplicate
@@ -474,9 +474,7 @@ export default function CreatePackagePage() {
                     <Button
                       type="button"
                       variant="default"
-                      onClick={() =>
-                        handleBatchEdit(form.getValues(`batch.${index}`))
-                      }
+                      onClick={() => handleBatchEdit(field._id)}
                     >
                       Edit
                     </Button>
@@ -484,12 +482,17 @@ export default function CreatePackagePage() {
                       type="button"
                       variant="destructive"
                       onClick={async () => {
-                        const batchId = form.getValues(`batch.${index}`);
-                        const res = await deleteBatch(accessToken, batchId);
+                        // const batchId = form.getValues(`batch.${index}`);
+                        const res = await deleteBatch(accessToken, field._id);
                         if (res) {
-                          batchArray.remove(index);
+                          form.setValue(
+                            "batch",
+                            form
+                              .getValues("batch")
+                              .filter((id, i) => id !== field._id)
+                          );
                           setBatchDetails((prev) =>
-                            prev.filter((_, i) => i !== index)
+                            prev.filter((item, i) => item._id !== field._id)
                           );
                         }
                       }}

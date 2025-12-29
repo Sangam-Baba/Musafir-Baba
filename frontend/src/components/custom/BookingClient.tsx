@@ -86,21 +86,22 @@ function groupBatchesByMonth(batches: Batch[]) {
 }
 
 export default function BookingClient({ pkg }: { pkg: Package }) {
-  // console.log("Getting package: ", pkg);
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const setGroup = useGroupBookingStore((state) => state.setGroup);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+  const [confirmedBatch, setConfirmedBatch] = useState<Batch | null>(null);
   const [travellers, setTravellers] = useState({
     quad: 0,
     triple: 0,
     double: 0,
     child: 0,
   });
-  const [price, setPrice] = useState(0);
+  // const [price, setPrice] = useState(0);
   const [addOns, setAddOns] = useState<
     { title: string; price: number; noOfPeople: number }[]
   >([]);
+  const [addOnPeople, setAddOnPeople] = useState<Record<string, number>>({});
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(formSchema),
@@ -113,25 +114,23 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   });
 
   const totalPrice = useMemo(() => {
-    if (!selectedBatch) return 0;
+    if (!confirmedBatch) return 0;
 
     const basePrice =
-      travellers.quad * selectedBatch.quad +
-      travellers.triple * selectedBatch.triple +
-      travellers.double * selectedBatch.double +
-      travellers.child * selectedBatch.child;
+      travellers.quad * confirmedBatch.quad +
+      travellers.triple * confirmedBatch.triple +
+      travellers.double * confirmedBatch.double +
+      travellers.child * confirmedBatch.child;
 
     const addOnPrice = addOns.reduce(
       (sum, a) => sum + a.price * a.noOfPeople,
       0
     );
 
-    const total = basePrice + addOnPrice;
-    setPrice(total);
-    return total;
-  }, [travellers, selectedBatch, addOns]);
+    return basePrice + addOnPrice;
+  }, [travellers, confirmedBatch, addOns]);
 
-  const totalPriceWithTax = Math.ceil(totalPrice * 1.05);
+  // const totalPriceWithTax = Math.ceil(totalPrice * 1.05);
 
   const batchesByMonth = useMemo(
     () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
@@ -140,10 +139,12 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
   const confirmSelection = () => {
     if (!selectedBatch) return;
+
+    setConfirmedBatch(selectedBatch); // ✅ save batch
     form.setValue("travellers", travellers);
-    form.setValue("totalPrice", totalPriceWithTax);
     form.setValue("batchId", selectedBatch._id);
-    setSelectedBatch(null);
+
+    setSelectedBatch(null); // only closes dialog
   };
 
   const onSubmit = (values: BookingFormValues) => {
@@ -153,6 +154,10 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   useEffect(() => {
     form.setValue("addOns", addOns);
   }, [addOns, form]);
+
+  useEffect(() => {
+    form.setValue("totalPrice", totalPrice);
+  }, [totalPrice, form]);
 
   const handleAddOn = (
     addon: { title: string; price: number },
@@ -298,7 +303,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                   <div className="space-y-2">
                     {items.items?.map((b, i) => {
                       const selected = addOns.find((a) => a.title === b.title);
-                      const [people, setPeople] = useState(1);
+                      // const [people, setPeople] = useState(1);
 
                       return (
                         <div
@@ -313,11 +318,13 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                             <Input
                               type="number"
                               min={1}
-                              value={people}
+                              value={addOnPeople[b.title] || 1}
                               onChange={(e) =>
-                                setPeople(Number(e.target.value))
+                                setAddOnPeople((p) => ({
+                                  ...p,
+                                  [b.title]: Number(e.target.value),
+                                }))
                               }
-                              className="w-20"
                             />
                           </div>
 
@@ -326,7 +333,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                               onClick={() =>
                                 handleAddOn(
                                   { title: b.title, price: b.price },
-                                  people
+                                  addOnPeople[b.title] || 1
                                 )
                               }
                               className="w-20"
@@ -357,7 +364,9 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
           <div>
             <div className="flex justify-between">
               <p className="text-md font-semibold"> Travel Date </p>
-              <p>{selectedBatch?.startDate}</p>
+              <p>
+                <p>{confirmedBatch?.startDate.split("T")[0]}</p>
+              </p>
             </div>
             <div className="flex justify-between">
               <p>Travellers</p>
@@ -368,19 +377,19 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
             </div>
           </div>
 
-          <div className="flex justify-between">
+          {/* <div className="flex justify-between">
             <p className="text-md font-semibold">Package Price INR </p>
             <p>{price}</p>
-          </div>
-          <div className="flex justify-between">
+          </div> */}
+          {/* <div className="flex justify-between">
             <p>GST (5%)</p>
             <p className="text-sm text-gray-500">
               {" "}
               {Math.floor(price * 0.05)}{" "}
             </p>
-          </div>
+          </div> */}
           <div className="flex justify-between">
-            <p className="text-md font-semibold">Total Price (Incl. GST) </p>
+            <p className="text-md font-semibold">Total Price</p>
             <p className="text-md font-semibold">
               {" "}
               ₹{form.watch("totalPrice")}
