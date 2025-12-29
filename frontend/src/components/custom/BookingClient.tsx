@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -281,73 +281,77 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
       </Dialog>
 
       {/* Add Ons */}
-      <div className="space-y-4">
-        <p className="font-semibold text-xl">Special Add On</p>
+      {pkg.addOns?.length > 0 && (
+        <div className="space-y-4">
+          <p className="font-semibold text-xl">Special Add On</p>
 
-        <Accordion
-          type="single"
-          collapsible
-          defaultValue={pkg.addOns[0].title}
-          className="w-full border rounded-lg p-4"
-        >
-          {pkg.addOns.map((items) => (
-            <AccordionItem key={items.title} value={items.title}>
-              <AccordionTrigger>{items.title}</AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-2">
-                  {items.items?.map((b, i) => {
-                    const selected = addOns.find((a) => a.title === b.title);
-                    const [people, setPeople] = useState(1);
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue={pkg.addOns[0].title}
+            className="w-full border rounded-lg p-4"
+          >
+            {pkg.addOns?.map((items) => (
+              <AccordionItem key={items.title} value={items.title}>
+                <AccordionTrigger>{items.title}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2">
+                    {items.items?.map((b, i) => {
+                      const selected = addOns.find((a) => a.title === b.title);
+                      const [people, setPeople] = useState(1);
 
-                    return (
-                      <div
-                        key={i}
-                        className="flex flex-wrap gap-4 justify-between p-3 border rounded-lg"
-                      >
-                        <p className="font-medium">{b.title}</p>
-                        <p>₹{b.price.toLocaleString()}</p>
+                      return (
+                        <div
+                          key={i}
+                          className="flex flex-wrap gap-4 justify-between p-3 border rounded-lg"
+                        >
+                          <p className="font-medium">{b.title}</p>
+                          <p>₹{b.price.toLocaleString()}</p>
 
-                        <div className="flex items-center gap-2">
-                          <Label>No. of People</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            value={people}
-                            onChange={(e) => setPeople(Number(e.target.value))}
-                            className="w-20"
-                          />
+                          <div className="flex items-center gap-2">
+                            <Label>No. of People</Label>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={people}
+                              onChange={(e) =>
+                                setPeople(Number(e.target.value))
+                              }
+                              className="w-20"
+                            />
+                          </div>
+
+                          {!selected ? (
+                            <Button
+                              onClick={() =>
+                                handleAddOn(
+                                  { title: b.title, price: b.price },
+                                  people
+                                )
+                              }
+                              className="w-20"
+                            >
+                              Add
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="destructive"
+                              onClick={() => handleRemoveAddOn(b.title)}
+                              className="w-20"
+                            >
+                              Remove
+                            </Button>
+                          )}
                         </div>
-
-                        {!selected ? (
-                          <Button
-                            onClick={() =>
-                              handleAddOn(
-                                { title: b.title, price: b.price },
-                                people
-                              )
-                            }
-                            className="w-20"
-                          >
-                            Add
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="destructive"
-                            onClick={() => handleRemoveAddOn(b.title)}
-                            className="w-20"
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
+                      );
+                    })}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      )}
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
         <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
           <div>
