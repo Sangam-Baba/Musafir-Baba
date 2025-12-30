@@ -22,6 +22,7 @@ import { deleteReview } from "../../../holidays/new/page";
 import { getReviewsByIds } from "../../../holidays/new/page";
 import { WebpageFormData } from "../../new/page";
 import { getParents } from "../../new/page";
+import SmallEditor from "@/components/admin/SmallEditor";
 
 const getWebpage = async (id: string) => {
   const res = await fetch(
@@ -314,27 +315,31 @@ export default function UpdateWebpage() {
         </div>
         {/* Faqs */}
         <div>
-          <Label>FAQs</Label>
+          <Label className="block text-sm font-medium mb-2">FAQs</Label>
           {faqsArray.fields.map((field, index) => (
             <div key={field.id} className="flex">
-              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+              <div className="grid  gap-2 mb-2 w-full">
                 <Input
                   {...form.register(`faqs.${index}.question`)}
                   placeholder="Question"
                 />
-                <Input
-                  {...form.register(`faqs.${index}.answer`)}
-                  placeholder="Answer"
-                />
+                <div className="border rounded p-2">
+                  <SmallEditor
+                    value={form.getValues(`faqs.${index}.answer`)}
+                    onChange={(val) =>
+                      form.setValue(`faqs.${index}.answer`, val)
+                    }
+                  />
+                </div>
               </div>
 
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => faqsArray.remove(index)}
-                className="w-[80px] ml-2"
+                className="w-10 ml-2"
               >
-                Remove
+                X
               </Button>
             </div>
           ))}

@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { BlogContent } from "./BlogContent";
 
 type Faq = {
   id: string | number;
@@ -49,7 +50,9 @@ export function Faqs({ faqs }: FaqsProps) {
                   <p>{faq.question}</p>
                 </AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-4 text-justify">
-                  <p>{faq.answer}</p>
+                  <section className="prose prose-lg max-w-none">
+                    <BlogContent html={faq.answer} />
+                  </section>
                 </AccordionContent>
               </AccordionItem>
             ))}

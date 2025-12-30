@@ -106,7 +106,9 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
                 >
                   <AccordionTrigger>{faq.question}</AccordionTrigger>
                   <AccordionContent className="text-justify">
-                    {faq.answer}
+                    <section className="prose prose-lg max-w-none">
+                      <BlogContent html={faq.answer} />
+                    </section>
                   </AccordionContent>
                 </AccordionItem>
               ))}

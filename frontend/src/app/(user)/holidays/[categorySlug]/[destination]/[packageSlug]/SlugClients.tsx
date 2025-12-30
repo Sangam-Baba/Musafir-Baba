@@ -375,7 +375,9 @@ function SlugClients({
 
                         <AccordionContent className="px-6 pb-4 pt-0">
                           <div className="ml-11 space-y-3 text-gray-600 leading-relaxed">
-                            {faq.answer}
+                            <section className="prose prose-lg max-w-none">
+                              <BlogContent html={faq.answer} />
+                            </section>
                           </div>
                         </AccordionContent>
                       </AccordionItem>

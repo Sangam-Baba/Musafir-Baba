@@ -17,6 +17,7 @@ import { X } from "lucide-react";
 import { getReviewsByIds, Reviews } from "../../holidays/new/page";
 import { deleteReview } from "../../holidays/new/page";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
+import SmallEditor from "@/components/admin/SmallEditor";
 
 export interface WebpageFormData {
   title: string;
@@ -320,25 +321,33 @@ export default function CreateWebpage() {
 
         {/* Faqs */}
         <div>
-          <Label>FAQs</Label>
+          <Label className="block text-sm font-medium mb-2">FAQs</Label>
           {faqsArray.fields.map((field, index) => (
             <div key={field.id} className="flex">
-              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+              <div className="grid gap-2 mb-2 w-full">
                 <Input
                   {...form.register(`faqs.${index}.question`)}
                   placeholder="Question"
                 />
-                <Input
+                <div className="border rounded p-2">
+                  <SmallEditor
+                    value={form.getValues(`faqs.${index}.answer`)}
+                    onChange={(val) =>
+                      form.setValue(`faqs.${index}.answer`, val)
+                    }
+                  />
+                </div>
+                {/* <Input
                   {...form.register(`faqs.${index}.answer`)}
                   placeholder="Answer"
-                />
+                /> */}
               </div>
 
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => faqsArray.remove(index)}
-                className="w-[80px] ml-2"
+                className="w-20 ml-2"
               >
                 Remove
               </Button>

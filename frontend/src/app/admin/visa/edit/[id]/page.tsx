@@ -26,6 +26,7 @@ import { deleteReview } from "@/app/admin/holidays/new/page";
 import { getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { Visa } from "../../new/page";
 import { Label } from "@/components/ui/label";
+import SmallEditor from "@/components/admin/SmallEditor";
 
 async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
@@ -545,21 +546,27 @@ export default function CreateVisaPage() {
             <div>
               <FormLabel className="mb-2 text-lg">FAQs</FormLabel>
               {faqsArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
-                  <Input
-                    {...form.register(`faqs.${index}.question`)}
-                    placeholder="Question"
-                  />
-                  <Input
-                    {...form.register(`faqs.${index}.answer`)}
-                    placeholder="Answer"
-                  />
+                <div key={field.id} className="flex gap-2">
+                  <div key={field.id} className="grid gap-2 mb-2">
+                    <Input
+                      {...form.register(`faqs.${index}.question`)}
+                      placeholder="Question"
+                    />
+                    <div className="border rounded p-2">
+                      <SmallEditor
+                        value={form.getValues(`faqs.${index}.answer`)}
+                        onChange={(val) =>
+                          form.setValue(`faqs.${index}.answer`, val)
+                        }
+                      />
+                    </div>
+                  </div>
                   <Button
                     type="button"
                     variant="destructive"
                     onClick={() => faqsArray.remove(index)}
                   >
-                    Remove
+                    X
                   </Button>
                 </div>
               ))}
