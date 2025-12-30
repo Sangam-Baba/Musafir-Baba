@@ -195,7 +195,7 @@ export default async function BlogDetailPage({
           <TrandingBlogSidebar currentId={blog._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
-        {blog.schemaType.includes("Blog") && (
+        {blog.schemaType?.includes("Blog") && (
           <Script
             id="blog-schema"
             type="application/ld+json"

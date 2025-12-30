@@ -219,7 +219,7 @@ export default async function NewsDetailPage({
           <TrandingNewsSidebar currentId={news?._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
-        {news.schemaType.includes("News") && (
+        {news.schemaType?.includes("News") && (
           <Script
             id="news-schema"
             type="application/ld+json"
