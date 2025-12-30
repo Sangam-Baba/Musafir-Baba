@@ -7,6 +7,7 @@ import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import { getProductSchema } from "@/lib/schema/product.schema";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import Script from "next/script";
+import { notFound } from "next/navigation";
 
 interface Destination {
   _id: string;
@@ -80,10 +81,11 @@ export interface Package {
 
 const getSinglePackages = async (
   state: string,
-  slug: string
+  slug: string,
+  mainCategory?: string
 ): Promise<Package> => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${state}&slug=${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${state}&slug=${slug}&category=${mainCategory}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -91,10 +93,10 @@ const getSinglePackages = async (
     }
   );
   if (!res.ok) {
-    throw new Error("Failed to fetch Package");
+    return notFound();
   }
   const data = await res.json();
-  return data?.data[0] ?? {};
+  return data?.data[0] ?? notFound();
 };
 
 export async function generateMetadata({
@@ -107,7 +109,7 @@ export async function generateMetadata({
   }>;
 }): Promise<Metadata> {
   const { categorySlug, destination, packageSlug } = await params;
-  const page = await getSinglePackages(destination, packageSlug);
+  const page = await getSinglePackages(destination, packageSlug, categorySlug);
   return {
     title: page?.metaTitle || page.title,
     description: page?.metaDescription,
@@ -135,7 +137,8 @@ async function PackageDetails({
 }) {
   const { categorySlug, destination, packageSlug } = await params;
   const relatedGroupPackages = await getPackageByCategorySlug(categorySlug);
-  const page = await getSinglePackages(destination, packageSlug);
+  const page = await getSinglePackages(destination, packageSlug, categorySlug);
+  if (!page) return notFound();
   const breadcrumbSchema = getBreadcrumbSchema(
     "holidays/" + categorySlug + "/" + destination + "/" + packageSlug
   );
@@ -149,7 +152,7 @@ async function PackageDetails({
   const productSchema = getProductSchema(
     page.title,
     page.description,
-    page.batch[0].quad.toLocaleString(),
+    page.batch[0].quad?.toLocaleString() ?? "9,999",
     `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`
   );
   const faqSchema = getFAQSchema(page.faqs ?? []);
