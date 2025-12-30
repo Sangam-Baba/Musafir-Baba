@@ -11,6 +11,8 @@ import {
   // CarouselPrevious,
 } from "@/components/ui/carousel";
 import { CarouselDots } from "../ui/carousel-indicators";
+import { Star } from "lucide-react";
+import StarRating from "./Star";
 
 export interface TestiProps {
   _id?: string;
@@ -52,10 +54,14 @@ export function Testimonial({ data }: { data: TestiProps[] }) {
                       <p className="text-gray-700 text-sm md:text-base leading-relaxed ">
                         “{item.comment}”
                       </p>
-                      <div className="mt-4">
+                      <div className="mt-4 space-y-2">
                         <p className="text-lg font-semibold text-[#FE5300]">
                           {item.name}
                         </p>
+
+                        {item.rating && (
+                          <StarRating rating={item.rating || 4.5} />
+                        )}
                         <p className="text-sm text-gray-500">{item.location}</p>
                       </div>
                     </CardContent>

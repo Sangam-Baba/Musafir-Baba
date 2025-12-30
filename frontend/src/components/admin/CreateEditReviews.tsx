@@ -118,7 +118,7 @@ export const CreateReviewsModal = ({
     e.preventDefault();
     mutation.mutate();
   };
-
+  const rating = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
   return (
     <div
       className="bg-white rounded-xl shadow-2xl w-[420px] max-h-[90vh] overflow-y-auto p-6"
@@ -164,12 +164,23 @@ export const CreateReviewsModal = ({
           </div>
           <div>
             <label className="text-gray-600 font-medium">Rating(1-5)</label>
-            <input
+            <select
+              value={form.rating}
+              onChange={(e) => handleChange("rating", e.target.value)}
+              className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
+            >
+              {rating.map((item, index) => (
+                <option key={index} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+            {/* <input
               type="number"
               value={form.rating}
               onChange={(e) => handleChange("rating", e.target.value)}
               className="border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-md p-2 w-full"
-            />
+            /> */}
           </div>
         </div>
 
