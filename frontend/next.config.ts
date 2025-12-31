@@ -30,6 +30,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source:
+          "/holidays/group-tour-packages/sikkim/darjeeling-gangtok-pelling-and-north-sikkim-expedition",
+        destination:
+          "/holidays/group-tour-packages/sikkim/darjeeling-gangtok-pelling-north-sikkim-trip",
+        permanent: true,
+      },
+      {
         source: "/customized-tour-package/delhi-tour-packages",
         destination: "/holidays/customised-tour-packages/delhi",
         permanent: true,

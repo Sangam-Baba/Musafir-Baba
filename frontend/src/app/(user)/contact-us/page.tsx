@@ -33,7 +33,7 @@ async function VisaWebPage() {
   return (
     <section className="">
       <Hero
-        image={visa?.coverImage?.url || "/Hero1.jpg"}
+        image={visa?.coverImage?.url || "/Hero2.jpg"}
         title={visa.title}
         overlayOpacity={100}
       />

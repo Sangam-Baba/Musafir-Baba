@@ -22,7 +22,7 @@ async function getNews(slug: string) {
     cache: "no-cache",
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data?.data;
 }

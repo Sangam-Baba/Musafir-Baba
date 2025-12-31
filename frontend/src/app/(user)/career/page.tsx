@@ -16,6 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description: data?.description,
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/career`,
       type: "website",
+      images:
+        data?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }
