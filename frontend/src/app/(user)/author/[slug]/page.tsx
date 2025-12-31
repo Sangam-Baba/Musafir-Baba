@@ -53,10 +53,17 @@ export async function generateMetadata({
   const { slug: author } = await params;
   const authorData = await getAuthor(author);
   return {
-    title: `${authorData.name} | Musafir Baba`,
-    description: `${authorData.about} | Musafir Baba`,
-    alternates: {
+    titription: `${authorData.about} | Musafir Baba`,
+    altele: `${authorData.name} | Musafir Baba`,
+    descrnates: {
       canonical: `https://musafirbaba.com/author/${author}`,
+    },
+    openGraph: {
+      title: `${authorData.name} | Musafir Baba`,
+      description: `${authorData.about} | Musafir Baba`,
+      url: `https://musafirbaba.com/author/${author}`,
+      type: "website",
+      images: authorData.coverImage?.url || "https://musafirbaba.com/logo.svg",
     },
   };
 }

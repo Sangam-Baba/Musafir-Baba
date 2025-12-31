@@ -54,7 +54,7 @@ export async function getPackageByDestinationSlug(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { destination: string };
+  params: Promise<{ destination: string }>;
 }) {
   const { destination } = await params;
   return {
@@ -64,6 +64,20 @@ export async function generateMetadata({
     description: `Customised Packages in ${
       destination.charAt(0).toUpperCase() + destination.slice(1)
     }`,
+    alternates: {
+      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}`,
+    },
+    openGraph: {
+      title: `MusafirBaba | Customised Packages in ${
+        destination.charAt(0).toUpperCase() + destination.slice(1)
+      }`,
+      description: `Customised Packages in ${
+        destination.charAt(0).toUpperCase() + destination.slice(1)
+      }`,
+      url: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}`,
+      type: "website",
+      images: "https://musafirbaba.com/homebanner.webp",
+    },
   };
 }
 async function DestinationPage({

@@ -22,6 +22,8 @@ export async function generateMetadata() {
       description: data?.description,
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
       type: "website",
+      images:
+        data?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }

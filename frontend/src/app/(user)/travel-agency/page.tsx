@@ -50,6 +50,14 @@ export async function generateMetadata(): Promise<Metadata> {
       "Best Travel Agency in India",
       "Travel Agency",
     ],
+    openGraph: {
+      title: "Best Travel Agency in India for Tours & Visas | Musafir Baba",
+      description:
+        "Looking for the best travel agency in India? MusafirBaba offers customised tour packages, India & international holidays, and fast visa services you can trust.",
+      url: `https://musafirbaba.com/travel-agency`,
+      type: "website",
+      images: "https://musafirbaba.com/homebanner.webp",
+    },
   };
   if (!page) return data;
   return {
@@ -64,6 +72,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: page.metaDescription,
       url: `https://musafirbaba.com/${page.slug}`,
       type: "website",
+      images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }

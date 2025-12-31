@@ -24,6 +24,15 @@ export function generateMetadata(): Metadata {
     alternates: {
       canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/destinations`,
     },
+    openGraph: {
+      title:
+        "Top Travel Destinations Worldwide for Every Kind of Traveller | Musafir Baba",
+      description:
+        "Explore the best travel destinations across India and the world. Find curated places to visit, top attractions, ideal seasons, and trip ideas for every traveller. | Musafir Baba",
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/destinations`,
+      type: "website",
+      images: "https://musafirbaba.com/homebanner.webp",
+    },
   };
 }
 

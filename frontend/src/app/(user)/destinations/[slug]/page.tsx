@@ -119,6 +119,15 @@ export async function generateMetadata({
     alternates: {
       canonical: `https://musafirbaba.com/destinations/${slug}`,
     },
+    openGraph: {
+      title: meta?.metaTitle || packages[0]?.destination?.name,
+      description:
+        meta?.metaDescription || packages[0]?.destination?.description,
+      url: `https://musafirbaba.com/destinations/${slug}`,
+      type: "website",
+      images:
+        meta?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+    },
   };
 }
 async function DestinationPage({

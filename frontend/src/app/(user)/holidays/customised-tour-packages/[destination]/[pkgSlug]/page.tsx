@@ -32,7 +32,7 @@ async function getRelatedPackages(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { pkgSlug: string };
+  params: Promise<{ pkgSlug: string }>;
 }) {
   const { pkgSlug } = await params;
   const pkg = await getCustomizedPackage(pkgSlug);
@@ -41,6 +41,13 @@ export async function generateMetadata({
     return {
       title: "Package Not Found | Musafir Baba",
       description: "This customised tour package does not exist.",
+      alternates: {
+        canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${pkgSlug}`,
+      },
+      openGraph: {
+        title: "Package Not Found | Musafir Baba",
+        description: "This customised tour package does not exist.",
+      },
     };
   }
 
@@ -54,12 +61,17 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg.destination}/${params.pkgSlug}`,
+      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg.destination}/${pkgSlug}`,
     },
     openGraph: {
       title,
       description,
-      images: [{ url: pkg?.coverImage?.url || "/logo.svg" }],
+      images: [
+        {
+          url:
+            pkg?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",

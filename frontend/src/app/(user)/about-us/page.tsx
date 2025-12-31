@@ -63,6 +63,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description: about?.metaDescription,
       url: `https://musafirbaba.com/about-us`,
       type: "website",
+      images:
+        about?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }

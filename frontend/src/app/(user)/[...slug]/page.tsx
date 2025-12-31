@@ -40,6 +40,7 @@ export async function generateMetadata({
       description: page.metaDescription,
       url: `https://musafirbaba.com/${fullSlug}`,
       type: "website",
+      images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }

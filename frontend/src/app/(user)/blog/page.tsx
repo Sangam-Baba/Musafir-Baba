@@ -13,6 +13,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://musafirbaba.com/blog",
   },
+  openGraph: {
+    title: "Travel Blog - Guides, Tips & Travel Inspiration",
+    description:
+      "Travel Blog - Guides, Tips & Travel Inspiration!Discover travel secrets on our blog! Get complete guides, visa assistance, amazing tours, money-saving tips, and inspiration for incredible adventures.",
+    url: "https://musafirbaba.com/blog",
+    type: "website",
+    images: "https://musafirbaba.com/homebanner.webp",
+  },
 };
 interface coverImage {
   url: string;

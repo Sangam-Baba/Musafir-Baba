@@ -50,6 +50,7 @@ export async function generateMetadata({
       description: page.metaDescription,
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
       type: "website",
+      images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }

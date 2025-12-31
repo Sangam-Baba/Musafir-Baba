@@ -122,6 +122,7 @@ export async function generateMetadata({
       description: page.metaDescription,
       url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
       type: "website",
+      images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }

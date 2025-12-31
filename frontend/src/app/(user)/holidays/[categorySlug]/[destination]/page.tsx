@@ -63,6 +63,15 @@ export async function generateMetadata({
     alternates: {
       canonical: `https://musafirbaba.com/holidays/${categorySlug}/${destination}`,
     },
+    openGraph: {
+      title: meta?.metaTitle || pkgData[0]?.destination?.name,
+      description:
+        meta?.metaDescription || pkgData[0]?.destination?.description,
+      url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}`,
+      type: "website",
+      images:
+        meta?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+    },
   };
 }
 async function DestinationPage({
