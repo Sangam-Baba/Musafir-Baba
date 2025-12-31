@@ -48,9 +48,9 @@ async function getNews(author: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const author = params.slug;
+  const { slug: author } = await params;
   const authorData = await getAuthor(author);
   return {
     title: `${authorData.name} | Musafir Baba`,
@@ -64,9 +64,9 @@ export async function generateMetadata({
 export default async function AuthorPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const author = params.slug;
+  const { slug: author } = await params;
 
   const blogs = await getBlogs(author);
   const news = await getNews(author);

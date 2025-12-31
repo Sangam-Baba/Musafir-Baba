@@ -48,10 +48,11 @@ export async function getNews(page: number) {
 export default async function NewsPage({
   searchParams,
 }: {
-  searchParams: { page: number };
+  searchParams: Promise<{ page: string }>;
 }) {
-  const page = Number(searchParams.page) || 1;
-  const data = await getNews(page);
+  const { page = "1" } = (await searchParams) ?? "1";
+  const currPage = Number(page);
+  const data = await getNews(currPage);
   const news = data?.data;
   const totalPages = data?.pages;
 
@@ -86,7 +87,7 @@ export default async function NewsPage({
           />
         ))}
       </div>
-      <PaginationClient totalPages={totalPages} currentPage={page} />
+      <PaginationClient totalPages={totalPages} currentPage={currPage} />
       <script
         key="collection-schema"
         type="application/ld+json"

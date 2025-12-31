@@ -45,12 +45,12 @@ async function getBlogs(page: number, category?: string) {
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: { category: string; page: number };
+  searchParams: Promise<{ category: string; page: number }>;
 }) {
-  const category = searchParams.category;
-  const page = Number(searchParams.page) || 1;
-
-  const data = await getBlogs(page, category);
+  const { category } = await searchParams;
+  const { page } = (await searchParams) || 1;
+  const CurrPage = Number(page);
+  const data = await getBlogs(CurrPage, category);
   const blogs = data?.data;
   const totalPages = data?.pages;
 
@@ -81,7 +81,7 @@ export default async function BlogPage({
           />
         ))}
       </div>
-      <PaginationClient totalPages={totalPages} currentPage={page} />
+      <PaginationClient totalPages={totalPages} currentPage={CurrPage} />
 
       <script
         key="collection-schema"
