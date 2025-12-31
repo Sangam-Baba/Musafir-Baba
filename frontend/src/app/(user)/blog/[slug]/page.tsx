@@ -16,13 +16,14 @@ import { readingTime } from "@/utils/readingTime";
 import { Clock, Share2, User } from "lucide-react";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
+import { notFound } from "next/navigation";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
     cache: "no-cache", // ISR: revalidate every 1 min
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data?.data;
 }
