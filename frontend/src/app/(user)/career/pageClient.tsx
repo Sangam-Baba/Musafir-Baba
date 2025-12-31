@@ -10,6 +10,7 @@ import ApplicationForm from "@/components/custom/ApplicationForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { notFound } from "next/navigation";
 
 interface Job {
   _id: string;
@@ -25,9 +26,15 @@ interface Job {
 
   responsibilities: { name: string }[];
 }
-const getWebPageBySlug = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/career`);
-  if (!res.ok) throw new Error("Failed to fetch career");
+export const getWebPageBySlug = async (slug: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}`,
+    {
+      next: { revalidate: 120 },
+    }
+  );
+
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data?.data;
 };
@@ -70,7 +77,7 @@ function CareerClientPage() {
     error,
   } = useQuery({
     queryKey: ["visa", slug],
-    queryFn: getWebPageBySlug,
+    queryFn: () => getWebPageBySlug("career"),
   });
 
   const { data } = useQuery({
