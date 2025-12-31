@@ -32,6 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: page.metaDescription,
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings`,
       type: "website",
+      images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }
