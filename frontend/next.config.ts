@@ -5,12 +5,20 @@ const nextConfig: NextConfig = {
   // browsersListForSwc: true,
   productionBrowserSourceMaps: false,
   images: {
-    minimumCacheTTL: 31536000, // 1 year
+    minimumCacheTTL: 31536000, // 1 year (good)
+    formats: ["image/avif", "image/webp"],
+
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "cdn.musafirbaba.com",
+        pathname: "/**",
+      },
+
+      // 🔁 TEMPORARY — keep until full migration done
+      {
+        protocol: "https",
         hostname: "res.cloudinary.com",
-        port: "",
         pathname: "/**",
       },
     ],
