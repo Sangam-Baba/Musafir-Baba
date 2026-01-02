@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Loader } from "@/components/custom/loader";
 import { schemaTypes } from "@/lib/schemaTypes";
+import { Textarea } from "../ui/textarea";
 
 interface Category {
   _id: string;
@@ -38,6 +39,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Meta description is required." }),
   keywords: z.array(z.string()).optional(),
+  excerpt: z.string().optional(),
   schemaType: z.array(z.string()).optional(),
   destinationId: z.string().min(2, { message: "Destination is required." }),
   categoryId: z.string().min(2, { message: "Category is required." }),
@@ -126,6 +128,7 @@ function DestinationSeoNew({
     defaultValues: {
       metaTitle: "",
       metaDescription: "",
+      excerpt: "",
       keywords: [],
       schemaType: [],
       destinationId: "",
@@ -133,7 +136,11 @@ function DestinationSeoNew({
     },
   });
 
-  const { data: destinationSeo, isLoading: destinationSeoLoading } = useQuery({
+  const {
+    data: destinationSeo,
+    isLoading: destinationSeoLoading,
+    isError: destinationSeoError,
+  } = useQuery({
     queryKey: ["destinationSeo", id],
     queryFn: () => getDestinationSeo(accessToken, id as string),
     enabled: !!id,
@@ -148,16 +155,25 @@ function DestinationSeoNew({
         schemaType: destinationSeo.schemaType || [],
         destinationId: destinationSeo.destinationId,
         categoryId: destinationSeo.categoryId,
+        excerpt: destinationSeo.excerpt,
       });
     }
   }, [destinationSeo, form]);
 
-  const { data: Category, isLoading: categoryLoading } = useQuery({
+  const {
+    data: Category,
+    isLoading: categoryLoading,
+    isError: categoryError,
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: () => getCategories(accessToken),
   });
 
-  const { data: Destination, isLoading: destinationLoading } = useQuery({
+  const {
+    data: Destination,
+    isLoading: destinationLoading,
+    isError: destinationError,
+  } = useQuery({
     queryKey: ["destinations", form.watch("categoryId")],
     queryFn: () => getDestinations(accessToken, form.watch("categoryId")),
     enabled: !!form.watch("categoryId"),
@@ -187,6 +203,8 @@ function DestinationSeoNew({
 
   if (destinationSeoLoading || categoryLoading || destinationLoading)
     return <Loader size="lg" />;
+  if (destinationError || categoryError || destinationSeoError)
+    return <p>Something went wrong</p>;
 
   return (
     <div className="flex flex-col max-w-4xl items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
@@ -205,7 +223,11 @@ function DestinationSeoNew({
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
-                    <select {...field} className="w-full rounded-md border p-2">
+                    <select
+                      {...field}
+                      value={field.value || ""}
+                      className="w-full rounded-md border p-2"
+                    >
                       <option value="">Select Category</option>
                       {Category?.map((cat: Category) => (
                         <option key={cat._id} value={cat._id}>
@@ -267,6 +289,19 @@ function DestinationSeoNew({
                 <FormLabel>Meta Description</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Meta description" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="excerpt"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Excerpt</FormLabel>
+                <FormControl>
+                  <Textarea {...field} placeholder="Excerpt..." />
                 </FormControl>
                 <FormMessage />
               </FormItem>

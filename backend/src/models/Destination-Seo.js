@@ -20,6 +20,9 @@ const destinationSeoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    excerpt: {
+      type: String,
+    },
     schemaType: [
       {
         type: String,

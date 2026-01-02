@@ -25,6 +25,7 @@ export interface DestinationSeo {
     state: string;
   };
   metaTitle: string;
+  excerpt?: string;
   metaDescription: string;
   keywords: string[];
   url: string;
@@ -49,6 +50,7 @@ export default function DestinationSeoList({
             <TableRow className="bg-muted/40">
               <TableHead className="w-[20%]">Title</TableHead>
               <TableHead className="w-[20%]">Description</TableHead>
+              <TableHead className="w-[20%]">Excerpt</TableHead>
               <TableHead className="w-[20%]">Keywords</TableHead>
               <TableHead className="w-[20%]">Category</TableHead>
               <TableHead className="w-[20%]">Destination</TableHead>
@@ -66,6 +68,9 @@ export default function DestinationSeoList({
                 <TableCell className="font-medium">{cat.metaTitle}</TableCell>
                 <TableCell className="font-medium ">
                   {cat.metaDescription.slice(0, 50)}
+                </TableCell>
+                <TableCell className="font-medium ">
+                  {cat.excerpt?.slice(0, 20)}
                 </TableCell>
                 <TableCell className="font-medium">
                   {cat.keywords.join(", ")}
@@ -116,6 +121,7 @@ export default function DestinationSeoList({
             <CardContent className="p-4 space-y-2">
               <h3 className="font-semibold text-lg">{cat.metaTitle}</h3>
               <h3 className="font-semibold text-lg">{cat.metaDescription}</h3>
+              <h3 className="font-semibold text-lg">{cat.excerpt}</h3>
               <h3 className="font-semibold text-lg">
                 {cat.keywords.join(", ")}
               </h3>

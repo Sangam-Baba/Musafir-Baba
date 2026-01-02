@@ -115,6 +115,7 @@ function DestinationSeoMain() {
             categoryId: b.categoryId,
             metaTitle: b.metaTitle,
             metaDescription: b.metaDescription,
+            excerpt: b.excerpt ?? "",
             keywords: b.keywords,
             url: `/holidays/${b.categoryId.slug}/${b.destinationId.state}`,
           }))}
