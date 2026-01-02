@@ -21,6 +21,7 @@ import { X } from "lucide-react";
 import { Loader } from "@/components/custom/loader";
 import { schemaTypes } from "@/lib/schemaTypes";
 import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
 
 interface Category {
   _id: string;
@@ -339,12 +340,12 @@ function DestinationSeoNew({
 
           {/* Keywords input */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium">Keywords</label>
+            <Label className="block text-sm font-medium">Keywords</Label>
             <div className="flex flex-wrap gap-2 border rounded p-2">
               {form.watch("keywords")?.map((kw, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1 bg-gray-200 px-2 py-1 rounded-full text-sm"
+                  className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
                 >
                   {kw}
                   <button
@@ -363,20 +364,20 @@ function DestinationSeoNew({
               ))}
 
               <input
-                type="text"
+                type=" text"
                 className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
-                placeholder="Press Enter to add keyword"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === ",") {
-                    e.preventDefault();
-                    const value = e.currentTarget.value.trim();
-                    if (value) {
-                      const current = form.getValues("keywords") || [];
-                      if (!current.includes(value)) {
-                        form.setValue("keywords", [...current, value]);
-                      }
-                      e.currentTarget.value = "";
-                    }
+                placeholder="Type keyword and press Enter"
+                onBlur={(e) => {
+                  const arr = e.target.value
+                    .split(",")
+                    .map((v) => v.trim())
+                    .filter(Boolean);
+                  if (arr.length > 0) {
+                    form.setValue("keywords", [
+                      ...(form.getValues("keywords") || []),
+                      ...arr,
+                    ]);
+                    e.target.value = "";
                   }
                 }}
               />
