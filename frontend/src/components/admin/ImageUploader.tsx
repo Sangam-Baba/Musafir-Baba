@@ -9,6 +9,8 @@ import { Button } from "../ui/button";
 export interface UploadedFile {
   url: string;
   public_id?: string;
+  key?: string;
+  type?: "image" | "video" | "pdf";
   resource_type?: "image" | "video" | "raw";
   format?: string;
   width?: number;
@@ -59,59 +61,127 @@ export default function ImageUploader({
     if (!files) return;
     setUploading(true);
 
-    try {
-      // 1. Get signature from backend
-      const data = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/upload/signature`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const sigData = await data.json();
-      const formUploads = Array.from(files).map(async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("api_key", sigData.apiKey);
-        formData.append("timestamp", sigData.timestamp);
-        formData.append("signature", sigData.signature);
-        formData.append("eager", sigData.eager);
-        // formData.append("folder", "blogs"); // optional
+    // try {
+    //   // 1. Get signature from backend
+    //   const data = await fetch(
+    //     `${process.env.NEXT_PUBLIC_BASE_URL}/upload/signature`,
+    //     {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //     }
+    //   );
+    //   const sigData = await data.json();
+    //   const formUploads = Array.from(files).map(async (file) => {
+    //     const formData = new FormData();
+    //     formData.append("file", file);
+    //     formData.append("api_key", sigData.apiKey);
+    //     formData.append("timestamp", sigData.timestamp);
+    //     formData.append("signature", sigData.signature);
+    //     formData.append("eager", sigData.eager);
+    //     // formData.append("folder", "blogs"); // optional
 
-        // 2. Upload directly to Cloudinary
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sigData.cloudName}/auto/upload`,
+    //     // 2. Upload directly to Cloudinary
+    //     const res = await fetch(
+    //       `https://api.cloudinary.com/v1_1/${sigData.cloudName}/auto/upload`,
+    //       {
+    //         method: "POST",
+    //         body: formData,
+    //       }
+    //     );
+    //     const json = await res.json();
+    //     const uploaded = {
+    //       url: json.secure_url,
+    //       public_id: json.public_id,
+    //       resource_type: json.resource_type,
+    //       format: json.format,
+    //       width: json.width,
+    //       height: json.height,
+    //       pages: json.pages,
+    //       thumbnail_url:
+    //         json.resource_type === "video" ? json.eager?.[0]?.secure_url : null,
+    //     };
+    //     const res2 = await uploadToDb(token, uploaded);
+    //     onUpload(uploaded);
+    //     return uploaded;
+    //   });
+
+    //   const results = await Promise.all(formUploads);
+
+    //   // 3. Save to local state (later send to your DB with blog data)
+    //   setUploadedImages(results);
+
+    //   onUpload(results[0] ?? null);
+    // }
+    try {
+      const uploads = Array.from(files).map(async (file) => {
+        const folder = file.type.startsWith("image")
+          ? "images"
+          : file.type.startsWith("video")
+          ? "videos"
+          : "docs";
+
+        /* 1️⃣ Ask backend for presigned URL */
+        const presignRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/upload/cloudflare-url`,
           {
             method: "POST",
-            body: formData,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileType: file.type, // ✅ Already sending this
+              folder,
+            }),
           }
         );
-        const json = await res.json();
-        const uploaded = {
-          url: json.secure_url,
-          public_id: json.public_id,
-          resource_type: json.resource_type,
-          format: json.format,
-          width: json.width,
-          height: json.height,
-          pages: json.pages,
-          thumbnail_url:
-            json.resource_type === "video" ? json.eager?.[0]?.secure_url : null,
+
+        if (!presignRes.ok) {
+          throw new Error("Failed to get presigned URL");
+        }
+
+        const { uploadUrl, fileUrl, key } = await presignRes.json();
+
+        /* 2️⃣ Upload directly to Cloudflare R2 */
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error("Upload error:", errorText);
+          throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        }
+
+        const uploaded: UploadedFile = {
+          url: fileUrl,
+          key,
+          type:
+            folder === "docs"
+              ? "pdf"
+              : (folder.slice(0, -1) as "image" | "video"),
+          format: file.type.split("/")[1],
+          size: file.size,
         };
-        const res2 = await uploadToDb(token, uploaded);
-        onUpload(uploaded);
+
+        /* 3️⃣ Save media to DB */
+        await uploadToDb(token, uploaded);
+
         return uploaded;
       });
 
-      const results = await Promise.all(formUploads);
-
-      // 3. Save to local state (later send to your DB with blog data)
+      const results = await Promise.all(uploads);
       setUploadedImages(results);
-
       onUpload(results[0] ?? null);
+      setFiles(null);
     } catch (err) {
       console.error("Upload failed", err);
     } finally {
