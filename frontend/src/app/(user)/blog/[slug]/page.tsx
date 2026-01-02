@@ -196,13 +196,13 @@ export default async function BlogDetailPage({
           <TrandingBlogSidebar currentId={blog._id} />
         </div>
         {/* ✅ JSON-LD Schema */}
-        {blog.schemaType?.includes("Blog") && (
-          <Script
-            id="blog-schema"
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
-          />
-        )}
+        {/* {blog.schemaType?.includes("Blog") && ( */}
+        <Script
+          id="blog-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+        />
+        {/* )} */}
 
         <Script
           id="breadcrumb-schema"
