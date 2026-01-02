@@ -6,7 +6,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const data = await getWebPageBySlug("career");
   return {
     title: data?.metaTitle,
-    description: data?.metsDescription,
+    description: data?.metaDescription,
     keywords: data?.keywords,
     alternates: {
       canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/career`,

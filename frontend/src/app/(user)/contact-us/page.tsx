@@ -12,7 +12,7 @@ export async function generateMetadata() {
   const data = await getWebPageBySlug("contact-us");
   return {
     title: data?.metaTitle,
-    description: data?.metsDescription,
+    description: data?.metaDescription,
     keywords: data?.keywords,
     alternates: {
       canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,

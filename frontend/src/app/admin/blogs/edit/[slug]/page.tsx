@@ -189,7 +189,7 @@ export default function EditBlog() {
   const schemaTypes = ["Blog", "FAQ"];
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Update Blog</h1>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <input
@@ -269,22 +269,23 @@ export default function EditBlog() {
           </select>
         </div>
         <div className="flex gap-2">
-          {form.watch("schemaType")?.map((option) => (
-            <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
-              {option}
-              <X
-                className="float-right cursor-pointer hover:text-red-500"
-                onClick={() =>
-                  form.setValue(
-                    "schemaType",
-                    form
-                      .getValues("schemaType")
-                      ?.filter((item) => item !== option)
-                  )
-                }
-              />
-            </p>
-          ))}
+          {form.watch("schemaType") ??
+            [].map((option) => (
+              <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
+                {option}
+                <X
+                  className="float-right cursor-pointer hover:text-red-500"
+                  onClick={() =>
+                    form.setValue(
+                      "schemaType",
+                      form
+                        .getValues("schemaType")
+                        ?.filter((item) => item !== option)
+                    )
+                  }
+                />
+              </p>
+            ))}
         </div>
         {/* keywords */}
         <div className="space-y-2">

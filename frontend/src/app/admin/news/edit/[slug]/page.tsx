@@ -325,7 +325,7 @@ export default function EditNews() {
         </select>
 
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Updating..." : "Update Blog"}
+          {mutation.isPending ? "Updating..." : "Update News"}
         </Button>
       </form>
       {mutation.isError && (
