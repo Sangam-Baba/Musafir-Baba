@@ -228,23 +228,22 @@ export default function UpdateWebpage() {
           </select>
         </div>
         <div className="flex gap-2">
-          {form.watch("schemaType") ??
-            [].map((option) => (
-              <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
-                {option}
-                <X
-                  className="float-right cursor-pointer hover:text-red-500"
-                  onClick={() =>
-                    form.setValue(
-                      "schemaType",
-                      form
-                        .getValues("schemaType")
-                        ?.filter((item) => item !== option)
-                    )
-                  }
-                />
-              </p>
-            ))}
+          {form.watch("schemaType")?.map((option) => (
+            <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
+              {option}
+              <X
+                className="float-right cursor-pointer hover:text-red-500"
+                onClick={() =>
+                  form.setValue(
+                    "schemaType",
+                    form
+                      .getValues("schemaType")
+                      ?.filter((item) => item !== option)
+                  )
+                }
+              />
+            </p>
+          ))}
         </div>
 
         <div className="space-y-2">
