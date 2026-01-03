@@ -11,6 +11,7 @@ import MixedPackagesClient from "../../holidays/PackagesClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import ReadMore from "@/components/common/ReadMore";
 
 interface Destination {
   _id: string;
@@ -19,6 +20,7 @@ interface Destination {
   state: string;
   city?: string;
   description: string;
+  content?: string;
   coverImage: coverImage;
   metaTitle: string;
   metaDescription: string;
@@ -92,41 +94,44 @@ async function getGroupPackageByDestinationSlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 60 },
     }
   );
-  if (!res.ok) return [];
+  if (!res.ok) return null;
   const data = await res.json();
   return data?.data;
 }
 
+const getDestinationBySlug = async (slug: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/destination/slug/${slug}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch destination");
+  const data = await res.json();
+  return data?.data;
+};
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const packages = await getGroupPackageByDestinationSlug(slug);
-
-  if (!packages || packages.length === 0) return null;
-  const meta = packages[0]?.destination;
+  const destination = await getDestinationBySlug(slug);
   return {
-    title: `${
-      meta?.metaTitle || packages[0]?.destination?.name
-    } | Musafir Baba`,
-    description: meta?.metaDescription || packages[0]?.destination?.description,
-    keywords: meta?.keywords || packages[0]?.destination?.keywords,
+    title: `${destination?.metaTitle}`,
+    description: destination?.metaDescription,
+    keywords: destination?.keywords,
     alternates: {
       canonical: `https://musafirbaba.com/destinations/${slug}`,
     },
     openGraph: {
-      title: meta?.metaTitle || packages[0]?.destination?.name,
-      description:
-        meta?.metaDescription || packages[0]?.destination?.description,
+      title: destination?.metaTitle,
+      description: destination?.metaDescription,
       url: `https://musafirbaba.com/destinations/${slug}`,
       type: "website",
       images:
-        meta?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+        destination?.coverImage?.url ||
+        "https://musafirbaba.com/homebanner.webp",
     },
   };
 }
@@ -136,6 +141,7 @@ async function DestinationPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const destination = await getDestinationBySlug(slug);
   const packages = await getGroupPackageByDestinationSlug(slug);
   const customizedPkg = await getPackageByDestinationSlug(slug);
   const newCustomizedPkg = customizedPkg.map(
@@ -155,7 +161,7 @@ async function DestinationPage({
 
   const totalCategory = [...categories];
   const totalPackages = [...newGroupPkg, ...newCustomizedPkg];
-  if (!totalPackages || totalPackages.length === 0) return notFound();
+  // if (!totalPackages || totalPackages.length === 0) return notFound();
   const breadcrumbSchema = getBreadcrumbSchema("destinations/" + slug);
   const collectionSchema = getCollectionSchema(
     "Explore Packages in " + slug,
@@ -167,7 +173,7 @@ async function DestinationPage({
   return (
     <section>
       <Hero
-        image={packages[0]?.destination?.coverImage?.url || "/Hero1.jpg"}
+        image={destination?.coverImage?.url || "/Hero1.jpg"}
         title={`Explore Packages in ${
           slug.charAt(0).toUpperCase() + slug.slice(1)
         }`}
@@ -178,8 +184,20 @@ async function DestinationPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
         <Breadcrumb />
       </div>
-      {/* Show packages under this category */}
-      <MixedPackagesClient data={totalPackages} category={totalCategory} />
+      {destination?.content && (
+        <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+          <ReadMore content={destination?.content} />
+        </div>
+      )}
+      {totalPackages.length === 0 ? (
+        <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+          <p className="text-2xl font-semibold text-gray-800 text-center">
+            No packages found for this destination
+          </p>
+        </div>
+      ) : (
+        <MixedPackagesClient data={totalPackages} category={totalCategory} />
+      )}
       <Script
         key="breadcrumb-schema"
         type="application/ld+json"

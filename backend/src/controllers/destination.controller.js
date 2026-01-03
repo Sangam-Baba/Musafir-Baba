@@ -110,6 +110,31 @@ const getDestinationById = async (req, res) => {
   }
 };
 
+const getDestinationBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    if (!slug) {
+      return res.status(400).json({ success: false, error: "Invalid Slug" });
+    }
+
+    const destination = await Destination.findOne({
+      slug: slug,
+      status: "published",
+    });
+    res.status(200).json({
+      success: true,
+      data: destination,
+    });
+  } catch (error) {
+    console.log("Destination getting by slug Failed ", error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 const updateDestination = async (req, res) => {
   try {
     const { id } = req.params;
@@ -242,4 +267,5 @@ export {
   deleteDestination,
   getOnlyDestination,
   getDestinationByCategoryId,
+  getDestinationBySlug,
 };

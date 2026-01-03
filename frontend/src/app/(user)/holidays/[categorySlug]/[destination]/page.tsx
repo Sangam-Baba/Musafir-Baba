@@ -5,6 +5,7 @@ import GroupPkgClient from "../PackageSlugClient";
 import Script from "next/script";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import ReadMore from "@/components/common/ReadMore";
 
 export interface Duration {
   days: number;
@@ -57,7 +58,7 @@ export async function generateMetadata({
   const pkgData = await getPackageByDestinationSlug(categorySlug, destination);
   const meta = await getDestinationMeta(categorySlug, destination);
   return {
-    title: `${meta?.metaTitle || pkgData[0]?.destination?.name} | Musafir Baba`,
+    title: `${meta?.metaTitle || pkgData[0]?.destination?.name}`,
     description: meta?.metaDescription || pkgData[0]?.destination?.description,
     keywords: meta?.keywords || pkgData[0]?.destination?.keywords,
     alternates: {
@@ -101,6 +102,7 @@ async function DestinationPage({
         title={`Explore Packages in ${
           destination.charAt(0).toUpperCase() + destination.slice(1)
         }`}
+        description={meta?.excerpt}
         height="lg"
         align="center"
         overlayOpacity={100}
@@ -108,6 +110,14 @@ async function DestinationPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
         <Breadcrumb />
       </div>
+
+      {/* SHow description */}
+      {meta?.content && (
+        <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+          <ReadMore content={meta?.content} />
+        </div>
+      )}
+
       {/* Show packages under this category */}
       <GroupPkgClient packagesData={packages} />
       <Script
