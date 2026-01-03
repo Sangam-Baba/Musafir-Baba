@@ -23,6 +23,7 @@ interface Package {
   _id: string;
   title: string;
   slug: string;
+  mainCategory: { name: string; slug: string };
   coverImage?: { url: string };
   duration: { days: number; nights: number };
   destination: { country: string; state: string };
@@ -112,7 +113,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                           pkg.destination.state.charAt(0).toUpperCase() +
                           pkg.destination.state.slice(1),
                       }}
-                      url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
+                      url={`/holidays/${pkg.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
                     />
                   ))}
                 </div>
