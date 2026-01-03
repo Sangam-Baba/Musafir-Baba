@@ -39,7 +39,7 @@ const createDestination = async (req, res) => {
 
 const getAllDestination = async (req, res) => {
   try {
-    const { search, country, state } = req.query;
+    const { search, country, state, status } = req.query;
     const page = Math.max(parseInt(req.query.page || "1"), 1);
     const limit = Math.min(parseInt(req.query.limit || "100"), 100);
     const skip = (page - 1) * limit;
@@ -49,6 +49,7 @@ const getAllDestination = async (req, res) => {
     if (search) filter.name = { $regex: search, $options: "i" };
     if (state) filter.state = state;
     if (country) filter.country = country;
+    if (status) filter.status = status;
 
     const destination = await Destination.find(filter)
       .skip(skip)

@@ -67,30 +67,35 @@ function DestinationPageClient({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mt-6">
           {filteredDestinations.map(
             (destination: DestinationInterface, i: number) => (
-              <Link key={i} href={`/destinations/${destination.state}`}>
+              <Link
+                key={i}
+                href={`/destinations/${destination.state}`}
+                className="block" // Add this to make Link block-level
+              >
                 <Card
-                  className=" pt-0
-            group overflow-hidden rounded-2xl border 
+                  className="pt-0 group overflow-hidden rounded-2xl border 
             shadow-md hover:shadow-xl 
             transition-all duration-500
-            hover:-translate-y-1 cursor-pointer
-          "
+            hover:-translate-y-1 cursor-pointer"
                 >
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden pointer-events-none">
+                    {" "}
+                    {/* Add pointer-events-none */}
                     <Image
                       src={destination?.coverImage?.url ?? "/Heroimg.jpg"}
                       alt={destination?.coverImage?.alt ?? "Destination image"}
                       width={200}
                       height={500}
-                      className="
-                w-full h-32 object-cover 
+                      className="w-full h-32 object-cover 
                 transition-transform duration-700
-                group-hover:scale-110
-              "
+                group-hover:scale-110"
+                      draggable={false} // Prevent image drag interfering with click
                     />
                   </div>
 
-                  <CardContent className="">
+                  <CardContent className="pointer-events-none">
+                    {" "}
+                    {/* Add pointer-events-none */}
                     <p className="text-sm font-semibold text-center tracking-wide">
                       {destination?.name}
                     </p>

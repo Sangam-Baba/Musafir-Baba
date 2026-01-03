@@ -97,7 +97,7 @@ export default function Header() {
 
           {/* LOGO */}
           <div className="flex items-center">
-            <Link href="/">
+            <Link href="/" className="block">
               <Image
                 src={logo}
                 alt="Musafir Baba Logo"
