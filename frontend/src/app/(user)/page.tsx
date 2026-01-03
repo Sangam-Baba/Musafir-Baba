@@ -135,11 +135,6 @@ const images = [
     url: "/frame8.webp",
     alt: "",
   },
-  {
-    id: 9,
-    url: "/frame9.jpg",
-    alt: "",
-  },
 ];
 
 export default async function HomePage({
