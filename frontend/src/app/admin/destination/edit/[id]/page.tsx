@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { schemaTypes } from "@/lib/schemaTypes";
+import BlogEditor from "@/components/admin/BlogEditor";
 
 interface Destination {
   name: string;
@@ -51,6 +52,7 @@ const formSchema = z.object({
     .min(2, { message: "Country must be at least 2 characters." }),
   state: z.string().min(2, { message: "State must be at least 2 characters." }),
   city: z.string().min(2, { message: "City must be at least 2 characters." }),
+  content: z.string().optional(),
   coverImage: z
     .object({
       url: z.string().url(),
@@ -174,6 +176,7 @@ export default function EditDestination() {
     defaultValues: {
       name: "",
       description: "",
+      content: "",
       country: "",
       state: "",
       city: "",
@@ -235,6 +238,15 @@ export default function EditDestination() {
           placeholder="Description"
           className="w-full border rounded p-2"
         />
+        <div className="space-y-2">
+          <label htmlFor="content">Content</label>
+          <div className="border rounded p-2">
+            <BlogEditor
+              value={form.getValues("content")}
+              onChange={(val) => form.setValue("content", val)}
+            />
+          </div>
+        </div>
         <label className="block font-medium mb-2">Country Name</label>
         <input
           {...form.register("country")}
@@ -325,7 +337,7 @@ export default function EditDestination() {
 
         <div className="space-y-2">
           <ImageUploader
-            initialImage={form.watch("coverImage")}
+            initialImage={form.getValues("coverImage")}
             onUpload={(img) =>
               form.setValue(
                 "coverImage",
@@ -339,16 +351,6 @@ export default function EditDestination() {
                     }
                   : undefined
               )
-            }
-          />
-
-          <CloudinaryMediaLibrary
-            onSelect={(img) =>
-              form.setValue("coverImage", {
-                url: img.url,
-                public_id: img.public_id,
-                alt: form.getValues("name") || "Cover Image",
-              })
             }
           />
         </div>

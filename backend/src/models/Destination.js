@@ -8,6 +8,7 @@ const destinationSchema = new mongoose.Schema(
     state: { type: String, index: true },
     city: { type: String },
     description: { type: String },
+    content: { type: String },
     coverImage: {
       alt: String,
       url: String,

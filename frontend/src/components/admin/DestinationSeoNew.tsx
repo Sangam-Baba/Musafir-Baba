@@ -22,6 +22,7 @@ import { Loader } from "@/components/custom/loader";
 import { schemaTypes } from "@/lib/schemaTypes";
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
+import BlogEditor from "./BlogEditor";
 
 interface Category {
   _id: string;
@@ -41,6 +42,7 @@ const formSchema = z.object({
     .min(2, { message: "Meta description is required." }),
   keywords: z.array(z.string()).optional(),
   excerpt: z.string().optional(),
+  content: z.string().optional(),
   schemaType: z.array(z.string()).optional(),
   destinationId: z.string().min(2, { message: "Destination is required." }),
   categoryId: z.string().min(2, { message: "Category is required." }),
@@ -130,6 +132,7 @@ function DestinationSeoNew({
       metaTitle: "",
       metaDescription: "",
       excerpt: "",
+      content: "",
       keywords: [],
       schemaType: [],
       destinationId: "",
@@ -157,6 +160,7 @@ function DestinationSeoNew({
         destinationId: destinationSeo.destinationId,
         categoryId: destinationSeo.categoryId,
         excerpt: destinationSeo.excerpt,
+        content: destinationSeo.content,
       });
     }
   }, [destinationSeo, form]);
@@ -208,7 +212,7 @@ function DestinationSeoNew({
     return <p>Something went wrong</p>;
 
   return (
-    <div className="flex flex-col max-w-4xl items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
+    <div className="flex flex-col max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">
         {id ? "Update" : "Create"} Destination Meta
       </h2>
@@ -308,6 +312,15 @@ function DestinationSeoNew({
               </FormItem>
             )}
           />
+          <div className="space-y-2">
+            <label htmlFor="content">Content</label>
+            <div className="border rounded p-2">
+              <BlogEditor
+                value={form.getValues("content")}
+                onChange={(val) => form.setValue("content", val)}
+              />
+            </div>
+          </div>
           <FormField
             control={form.control}
             name="schemaType"
@@ -385,7 +398,7 @@ function DestinationSeoNew({
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
             <Button
               type="submit"
               disabled={mutation.isPending}

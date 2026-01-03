@@ -10,6 +10,7 @@ import ImageUploader from "@/components/admin/ImageUploader";
 import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 import { Button } from "@/components/ui/button";
 import { schemaTypes } from "@/lib/schemaTypes";
+import BlogEditor from "@/components/admin/BlogEditor";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -18,6 +19,7 @@ const formSchema = z.object({
   description: z.string().min(2, {
     message: "Description must be at least 2 characters.",
   }),
+  content: z.string().optional(),
   country: z.string().min(2, {
     message: "Country must be at least 2 characters.",
   }),
@@ -117,6 +119,7 @@ export default function CreateDestination() {
     defaultValues: {
       name: "",
       description: "",
+      content: "",
       country: "",
       state: "",
       city: "",
@@ -157,88 +160,123 @@ export default function CreateDestination() {
         onSubmit={form.handleSubmit((values) => onSubmit(values))}
         className="space-y-6"
       >
-        <input
-          {...form.register("name")}
-          placeholder="Name"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.name && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.name.message}
-          </p>
-        )}
-        <textarea
-          {...form.register("description")}
-          placeholder="Description"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.description && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.description.message}
-          </p>
-        )}
-        <input
-          {...form.register("country")}
-          placeholder="Country"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.country && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.country.message}
-          </p>
-        )}
-        <input
-          {...form.register("state")}
-          placeholder="State"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.state && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.state.message}
-          </p>
-        )}
-        <input
-          {...form.register("city")}
-          placeholder="City"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.city && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.city.message}
-          </p>
-        )}
+        <div className="space-y-2">
+          <label htmlFor="name">Name</label>
+          <input
+            {...form.register("name")}
+            placeholder="Name"
+            className="w-full border rounded p-2"
+          />
 
-        <input
-          {...form.register("popularAttractions")}
-          placeholder="Popular Attractions (comma separated)"
-          className="w-full border rounded p-2"
-        />
-        <input
-          {...form.register("thingsToDo")}
-          placeholder="Things to do (comma separated)"
-          className="w-full border rounded p-2"
-        />
-
-        <input
-          {...form.register("metaTitle")}
-          placeholder="Meta Title"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.metaTitle && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.metaTitle.message}
-          </p>
-        )}
-        <textarea
-          {...form.register("metaDescription")}
-          placeholder="Meta Description"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.metaDescription && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.metaDescription.message}
-          </p>
-        )}
+          {form.formState.errors.name && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.name.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="description">Description</label>
+          <textarea
+            {...form.register("description")}
+            placeholder="Description"
+            className="w-full border rounded p-2"
+          />
+          {form.formState.errors.description && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.description.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="content">Content</label>
+          <div className="border rounded p-2">
+            <BlogEditor
+              value={form.getValues("content")}
+              onChange={(val) => form.setValue("content", val)}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="country">Country</label>
+          <input
+            {...form.register("country")}
+            placeholder="Country"
+            className="w-full border rounded p-2"
+          />
+          {form.formState.errors.country && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.country.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="state">State</label>
+          <input
+            {...form.register("state")}
+            placeholder="State"
+            className="w-full border rounded p-2"
+          />
+          {form.formState.errors.state && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.state.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="city">City</label>
+          <input
+            {...form.register("city")}
+            placeholder="City"
+            className="w-full border rounded p-2"
+          />
+          {form.formState.errors.city && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.city.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="popularAttractions">Popular Attractions</label>
+          <input
+            {...form.register("popularAttractions")}
+            placeholder="Popular Attractions (comma separated)"
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="thingsToDo">Things To Do</label>
+          <input
+            {...form.register("thingsToDo")}
+            placeholder="Things to do (comma separated)"
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="description">Meta Title</label>
+          <input
+            {...form.register("metaTitle")}
+            placeholder="Meta Title"
+            className="w-full border rounded p-2"
+          />
+          {form.formState.errors.metaTitle && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.metaTitle.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="description">Meta Description</label>
+          <textarea
+            {...form.register("metaDescription")}
+            placeholder="Meta Description"
+            className="w-full border rounded p-2"
+          />
+          {form.formState.errors.metaDescription && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.metaDescription.message}
+            </p>
+          )}
+        </div>
         <div>
           <label className="font-semibold">Schema Type</label>
           <select
@@ -253,12 +291,14 @@ export default function CreateDestination() {
             ))}
           </select>
         </div>
-        <input
-          {...form.register("keywords")}
-          placeholder="Keywords (comma separated)"
-          className="w-full border rounded p-2"
-        />
-
+        <div className="space-y-2">
+          <label htmlFor="keywords">Keywords</label>
+          <input
+            {...form.register("keywords")}
+            placeholder="Keywords (comma separated)"
+            className="w-full border rounded p-2"
+          />
+        </div>
         <div className="space-y-2">
           <ImageUploader
             onUpload={(img) =>
@@ -276,16 +316,6 @@ export default function CreateDestination() {
               )
             }
           />
-
-          <CloudinaryMediaLibrary
-            onSelect={(img) =>
-              form.setValue("coverImage", {
-                url: img.url,
-                public_id: img.public_id,
-                alt: form.getValues("name") || "Cover Image",
-              })
-            }
-          />
           {form.formState.errors.coverImage && (
             <p className="text-red-500 text-sm">
               {form.formState.errors.coverImage.message}
@@ -297,7 +327,6 @@ export default function CreateDestination() {
           placeholder="Cover Image Alt"
           className="w-full border rounded p-2"
         />
-
         <select
           {...form.register("status")}
           className="w-full border rounded p-2"
@@ -306,7 +335,6 @@ export default function CreateDestination() {
           <option value="published">Published</option>
           <option value="archived">Archived</option>
         </select>
-
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? "Creating..." : "Create Destination"}
         </Button>
