@@ -68,7 +68,7 @@ function DestinationPageClient({
           {filteredDestinations.map(
             (destination: DestinationInterface, i: number) => (
               <Link
-                key={i}
+                key={destination._id}
                 href={`/destinations/${destination.state}`}
                 className="block" // Add this to make Link block-level
               >
@@ -86,9 +86,7 @@ function DestinationPageClient({
                       alt={destination?.coverImage?.alt ?? "Destination image"}
                       width={200}
                       height={500}
-                      className="w-full h-32 object-cover 
-                transition-transform duration-700
-                group-hover:scale-110"
+                      className="w-full h-32 object-cover"
                       draggable={false} // Prevent image drag interfering with click
                     />
                   </div>
