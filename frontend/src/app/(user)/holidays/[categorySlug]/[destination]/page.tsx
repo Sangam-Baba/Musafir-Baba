@@ -42,7 +42,7 @@ export async function getDestinationMeta(
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/destinationseo/${categorySlug}/${destinationSlug}`,
     {
-      next: { revalidate: 86400 },
+      next: { revalidate: 60 },
     }
   );
   if (!res.ok) return null;
