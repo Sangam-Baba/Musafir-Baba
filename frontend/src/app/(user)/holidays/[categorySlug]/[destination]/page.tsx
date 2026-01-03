@@ -35,7 +35,7 @@ export async function getPackageByDestinationSlug(
   return data?.data;
 }
 
-async function getDestinationMeta(
+export async function getDestinationMeta(
   categorySlug: string,
   destinationSlug: string
 ) {

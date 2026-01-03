@@ -5,16 +5,16 @@ import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getProductSchema } from "@/lib/schema/product.schema";
 import Script from "next/script";
-async function getCustomizedPackage(slug: string) {
+async function getCustomizedPackage(slug: string, destination?: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/slug/${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/?slug=${slug}&destination=${destination}`,
     {
       next: { revalidate: 60 },
     }
   );
   if (!res.ok) return null;
   const data = await res.json();
-  return data?.data;
+  return data?.data[0];
 }
 
 async function getRelatedPackages(slug: string) {
@@ -51,7 +51,7 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${pkg.metaTitle || pkg.title} | Musafir Baba`;
+  const title = `${pkg.metaTitle || pkg.title}`;
   const description =
     pkg.metaDescription ||
     pkg.description ||
@@ -84,10 +84,10 @@ export async function generateMetadata({
 export default async function Page({
   params,
 }: {
-  params: { pkgSlug: string };
+  params: Promise<{ pkgSlug: string; destination: string }>;
 }) {
-  const { pkgSlug } = await params;
-  const pkg = await getCustomizedPackage(pkgSlug);
+  const { pkgSlug, destination } = await params;
+  const pkg = await getCustomizedPackage(pkgSlug, destination);
   const relatedPackages = await getRelatedPackages(pkgSlug);
 
   if (!pkg) {

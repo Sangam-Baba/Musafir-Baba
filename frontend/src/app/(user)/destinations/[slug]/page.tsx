@@ -177,6 +177,7 @@ async function DestinationPage({
         title={`Explore Packages in ${
           slug.charAt(0).toUpperCase() + slug.slice(1)
         }`}
+        description={destination?.description}
         height="lg"
         align="center"
         overlayOpacity={100}

@@ -55,7 +55,7 @@ function PackagePage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["customizedpackage"],
     queryFn: () => getAllPackages(accessToken),
-    enabled: permissions.includes("customized-package"),
+    enabled: permissions.includes("customized-tour-package"),
   });
   if (isLoading) return <Loader size="lg" message="Loading packages..." />;
   if (isError) return <h1>{error.message}</h1>;
@@ -86,7 +86,7 @@ function PackagePage() {
     }
   };
 
-  if (!permissions.includes("customized-package"))
+  if (!permissions.includes("customized-tour-package"))
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
@@ -114,7 +114,7 @@ function PackagePage() {
                   location:
                     (b.destination?.state?.charAt(0).toUpperCase() as string) +
                     b.destination?.state?.slice(1),
-                  price: b.plans[0]?.price,
+                  price: b.plans[0]?.price?.toLocaleString("en-US"),
                   url: `/customized-tour-package/${b.slug}`,
                   slug: b.slug as string,
                   status: b.status === "published" ? "Published" : "Draft",

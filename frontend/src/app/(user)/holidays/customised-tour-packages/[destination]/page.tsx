@@ -5,6 +5,7 @@ import CustomizedTourClient from "../CustomizedTourClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
+import { getDestinationMeta } from "../../[categorySlug]/[destination]/page";
 
 interface Plan {
   title: string;
@@ -43,7 +44,7 @@ export async function getPackageByDestinationSlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage?destination=${slug}`,
     {
-      cache: "no-cache",
+      next: { revalidate: 60 },
     }
   );
   if (res.status === 404) return notFound();
@@ -57,26 +58,36 @@ export async function generateMetadata({
   params: Promise<{ destination: string }>;
 }) {
   const { destination } = await params;
+  const meta = await getDestinationMeta(
+    "customised-tour-packages",
+    destination
+  );
   return {
-    title: `MusafirBaba | Customised Packages in ${
-      destination.charAt(0).toUpperCase() + destination.slice(1)
-    }`,
-    description: `Customised Packages in ${
-      destination.charAt(0).toUpperCase() + destination.slice(1)
-    }`,
+    title: meta?.metaTitle || `Customised Packages in ${destination}`,
+    description:
+      meta?.metaDescription ||
+      `Customised Packages in ${
+        destination.charAt(0).toUpperCase() + destination.slice(1)
+      }`,
     alternates: {
       canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}`,
     },
+    keywords: meta?.keywords,
     openGraph: {
-      title: `MusafirBaba | Customised Packages in ${
-        destination.charAt(0).toUpperCase() + destination.slice(1)
-      }`,
-      description: `Customised Packages in ${
-        destination.charAt(0).toUpperCase() + destination.slice(1)
-      }`,
+      title:
+        meta?.metaTitle ||
+        `MusafirBaba | Customised Packages in ${
+          destination.charAt(0).toUpperCase() + destination.slice(1)
+        }`,
+      description:
+        meta?.metaDescription ||
+        `Customised Packages in ${
+          destination.charAt(0).toUpperCase() + destination.slice(1)
+        }`,
       url: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}`,
       type: "website",
-      images: "https://musafirbaba.com/homebanner.webp",
+      images:
+        meta?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
   };
 }
