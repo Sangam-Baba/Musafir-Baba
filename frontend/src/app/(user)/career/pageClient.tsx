@@ -1,9 +1,6 @@
 "use client";
 import Hero from "@/components/custom/Hero";
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { Loader } from "@/components/custom/loader";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import ApplicationForm from "@/components/custom/ApplicationForm";
@@ -41,57 +38,31 @@ export const getWebPageBySlug = async (slug: string) => {
 
 const img = [
   {
-    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760079570/pexels-divinetechygirl-1181533_cwxb50.jpg",
+    url: "https://cdn.musafirbaba.com/images/pexels-divinetechygirl-1181533_cwxb50.jpg",
     alt: "Musafirbaba Career",
   },
   {
-    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760079553/pexels-olly-3760072_fylajk.jpg",
+    url: "https://cdn.musafirbaba.com/images/pexels-olly-3760072_fylajk.jpg",
     alt: "Musafirbaba Career",
   },
   {
-    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760079549/pexels-luis-sevilla-252657-34221054_b2jnbz.jpg",
+    url: "https://cdn.musafirbaba.com/images/pexels-luis-sevilla-252657-34221054_b2jnbz.jpg",
     alt: "Musafirbaba Career",
   },
   {
-    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760079549/pexels-olly-3756679_h03wqu.jpg",
+    url: "https://cdn.musafirbaba.com/images/pexels-olly-3756679_h03wqu.jpg",
     alt: "Musafirbaba Career",
   },
   {
-    url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760165609/pexels-cottonbro-4065137_no5f8g.jpg",
+    url: "https://cdn.musafirbaba.com/images/pexels-cottonbro-4065137_no5f8g.jpg",
     alt: "Musafirbaba Career",
   },
 ];
-const getAllJobs = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/job`);
-  if (!res.ok) throw new Error("Failed to fetch jobs");
-  const data = await res.json();
-  return data;
-};
-function CareerClientPage() {
-  const slug = "contact-us";
-
-  const {
-    data: visa,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["visa", slug],
-    queryFn: () => getWebPageBySlug("career"),
-  });
-
-  const { data } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: getAllJobs,
-  });
-
-  const jobs = data?.data ?? [];
-  if (isLoading) return <Loader size="lg" message="Loading Career..." />;
-  if (isError) return <h1>{(error as Error).message}</h1>;
+function CareerClientPage({ career, jobs }: { career: any; jobs: any }) {
   return (
     <section className="">
       <Hero
-        image={visa?.coverImage?.url || "/Hero1.jpg"}
+        image={career?.coverImage?.url || "/Hero1.jpg"}
         title="Career"
         overlayOpacity={100}
       />
@@ -101,7 +72,7 @@ function CareerClientPage() {
       <div className=" mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-5 items-center">
         <article className="w-full  flex flex-col items-center">
           <div className="prose prose-lg max-w-none  text-center">
-            <BlogContent html={visa.content} />
+            <BlogContent html={career.content} />
           </div>
 
           <div className="grid grid-cols-1  md:grid-cols-5 gap-4 mt-20">

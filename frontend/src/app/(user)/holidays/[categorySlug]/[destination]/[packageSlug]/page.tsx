@@ -8,6 +8,7 @@ import { getProductSchema } from "@/lib/schema/product.schema";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import Script from "next/script";
 import { notFound } from "next/navigation";
+import { Reviews } from "@/app/admin/holidays/new/page";
 
 interface Destination {
   _id: string;
@@ -20,6 +21,7 @@ interface Destination {
   slug: string;
 }
 interface Batch {
+  _id: string;
   startDate: string;
   endDate: string;
   quad: number;
@@ -51,11 +53,12 @@ interface Image {
   width?: number;
   height?: number;
 }
-export interface Package {
+export interface GroupPackageInterface {
   _id: string;
   title: string;
   description: string;
   destination: Destination;
+  mainCategory: { name: string; slug: string };
   coverImage: Image;
   gallery: Image[];
   batch: Batch[];
@@ -63,6 +66,7 @@ export interface Package {
   metaTitle?: string;
   metaDescription?: string;
   schemaType?: string[];
+  reviews?: Reviews[];
   keywords?: string[];
   maxPeople?: number;
   highlights: string[];
@@ -83,7 +87,7 @@ const getSinglePackages = async (
   state: string,
   slug: string,
   mainCategory?: string
-): Promise<Package> => {
+): Promise<GroupPackageInterface> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${state}&slug=${slug}&category=${mainCategory}`,
     {
@@ -146,7 +150,7 @@ async function PackageDetails({
   const collectionSchema = getCollectionSchema(
     "Travel Packages for " + relatedGroupPackages[0]?.destination?.name,
     "https://musafirbaba.com/holidays/" + categorySlug + "/" + destination,
-    relatedGroupPackages.map((pkg: Package) => ({
+    relatedGroupPackages.map((pkg: GroupPackageInterface) => ({
       url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${pkg.slug}`,
     }))
   );
@@ -161,10 +165,9 @@ async function PackageDetails({
   return (
     <>
       <SlugClients
-        slug={packageSlug}
-        state={destination}
+        pkg={page}
         relatedGroupPackages={relatedGroupPackages.filter(
-          (p: Package) => p.slug !== packageSlug
+          (p: GroupPackageInterface) => p.slug !== packageSlug
         )}
       />
       <Script

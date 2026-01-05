@@ -83,7 +83,7 @@ export async function getPackageByCategorySlug(slug: string) {
       next: { revalidate: 60 },
     }
   );
-  if (!res.ok) throw new Error("Failed to fetch packages");
+  if (!res.ok) return null;
   const data = await res.json();
   return data?.data;
 }

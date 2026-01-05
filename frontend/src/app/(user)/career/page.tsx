@@ -2,6 +2,13 @@ import CareerClientPage from "./pageClient";
 import { Metadata } from "next";
 import { getWebPageBySlug } from "../[...slug]/page";
 
+const getAllJobs = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/job`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.data ?? [];
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getWebPageBySlug("career");
   return {
@@ -22,6 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function CareerPage() {
-  return <CareerClientPage />;
+export default async function CareerPage() {
+  const data = await getWebPageBySlug("career");
+  const allJob = await getAllJobs();
+  return <CareerClientPage career={data} jobs={allJob} />;
 }

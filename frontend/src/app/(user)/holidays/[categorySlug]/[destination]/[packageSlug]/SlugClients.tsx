@@ -5,10 +5,7 @@ import React, { useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ImageGallery } from "@/components/custom/ImageGallery";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { notFound, usePathname } from "next/navigation";
-import { Loader } from "@/components/custom/loader";
+import { usePathname } from "next/navigation";
 import {
   Accordion,
   AccordionContent,
@@ -26,8 +23,8 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
-import { Reviews } from "@/app/admin/holidays/new/page";
 import PackageCard from "@/components/custom/PackageCard";
+import { GroupPackageInterface } from "./page";
 type TabKey =
   | "description"
   | "highlights"
@@ -35,29 +32,6 @@ type TabKey =
   | "includeexclude"
   | "faqs";
 
-interface Destination {
-  _id: string;
-  name: string;
-  country: string;
-  state: string;
-  city?: string;
-  description: string;
-  coverImage: string;
-  slug: string;
-}
-interface Batch {
-  startDate: string;
-  endDate: string;
-  quad: number;
-  triple: number;
-  double: number;
-  child: number;
-  quadDiscount: number;
-  doubleDiscount: number;
-  tripleDiscount: number;
-  childDiscount: number;
-  _id: string;
-}
 export interface Duration {
   days: number;
   nights: number;
@@ -71,83 +45,16 @@ export interface Itinerary {
   description: string;
 }
 
-interface Image {
-  url: string;
-  public_id: string;
-  alt: string;
-  width?: number;
-  height?: number;
-}
-interface Package {
-  _id: string;
-  title: string;
-  description: string;
-  destination: Destination;
-  coverImage: Image;
-  gallery: Image[];
-  batch: Batch[];
-  mainCategory: {
-    name: string;
-    slug: string;
-  };
-  reviews?: Reviews[];
-  duration: Duration;
-  metaTitle?: string;
-  metaDescription?: string;
-  keywords?: string[];
-  maxPeople?: number;
-  highlights: string[];
-  inclusions: string[];
-  exclusions: string[];
-  itinerary: Itinerary[];
-  itineraryDownload?: Image;
-  faqs: Faqs[];
-  isFeatured: boolean;
-  status: "draft" | "published";
-  createdAt: string;
-  updatedAt: string;
-  slug: string;
-  __v: number;
-}
-interface QueryResponse {
-  success: boolean;
-  data: Package[];
-  total: number;
-  page: number;
-  totalPages: number;
-}
-
-const getSinglePackages = async (
-  state: string,
-  slug: string
-): Promise<QueryResponse> => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${state}&slug=${slug}`,
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    }
-  );
-  if (!res.ok) {
-    throw new Error("Failed to fetch Package");
-  }
-  return res.json();
-};
-
 function SlugClients({
-  slug,
-  state,
+  pkg,
   relatedGroupPackages,
 }: {
-  slug: string;
-  state: string;
-  relatedGroupPackages: Package[];
+  pkg: GroupPackageInterface;
+  relatedGroupPackages: GroupPackageInterface[];
 }) {
   const [openItem, setOpenItem] = useState<string | undefined>(undefined);
   const auth = useAuthStore();
   const pathName = usePathname();
-  const StateName = state;
   const router = useRouter();
 
   const [active, setActive] = useState<TabKey>("description");
@@ -160,24 +67,6 @@ function SlugClients({
     { key: "faqs", label: "FAQs" },
   ];
 
-  const { data, isLoading, isError } = useQuery<QueryResponse>({
-    queryKey: ["package", state, slug],
-    queryFn: () => getSinglePackages(StateName, slug),
-    retry: 2,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  if (isLoading) return <Loader size="lg" message="Loading package..." />;
-  if (isError) {
-    toast.error(`No package found for ${StateName}`);
-    return notFound();
-  }
-
-  const pkg = data?.data[0];
-
-  if (!pkg) {
-    return notFound();
-  }
   const price = pkg.batch?.length ? pkg?.batch[0].quad : 3999;
   const dicountedPrice = pkg.batch?.length ? pkg?.batch[0].quadDiscount : 5999;
 
@@ -430,23 +319,25 @@ function SlugClients({
         <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
         {relatedGroupPackages && relatedGroupPackages.length > 0 && (
           <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
-            {relatedGroupPackages.slice(0, 4).map((pkg: Package) => (
-              <PackageCard
-                key={pkg._id}
-                pkg={{
-                  id: pkg._id,
-                  name: pkg.title,
-                  slug: pkg.slug,
-                  image: pkg.coverImage ? pkg.coverImage.url : "",
-                  price: pkg.batch ? pkg.batch[0]?.quad : 9999,
-                  duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                  destination:
-                    pkg.destination?.name ?? pkg.destination?.state ?? "",
-                  batch: pkg?.batch ? pkg?.batch : [],
-                }}
-                url={`/holidays/${pkg?.mainCategory?.slug}/${pkg?.destination?.slug}/${pkg.slug}`}
-              />
-            ))}
+            {relatedGroupPackages
+              .slice(0, 4)
+              .map((pkg: GroupPackageInterface) => (
+                <PackageCard
+                  key={pkg._id}
+                  pkg={{
+                    id: pkg._id,
+                    name: pkg.title,
+                    slug: pkg.slug,
+                    image: pkg.coverImage ? pkg.coverImage.url : "",
+                    price: pkg.batch ? pkg.batch[0]?.quad : 9999,
+                    duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                    destination:
+                      pkg.destination?.name ?? pkg.destination?.state ?? "",
+                    batch: pkg?.batch ? pkg?.batch : [],
+                  }}
+                  url={`/holidays/${pkg?.mainCategory?.slug}/${pkg?.destination?.slug}/${pkg.slug}`}
+                />
+              ))}
           </div>
         )}
       </div>
