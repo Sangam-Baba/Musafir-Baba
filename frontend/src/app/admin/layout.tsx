@@ -8,6 +8,8 @@ import { AdminSidebar as AppSidebar } from "@/components/admin/app-sidebar";
 import { RootProvider } from "@/providers/root-provider";
 import AdminProtected from "@/components/admin/AdminProtected";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { LogOut } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -29,6 +31,13 @@ export default function AdminLayout({
               {!isLoginPage && (
                 <header className="flex items-center h-14 px-4 border-b bg-white">
                   <SidebarTrigger />
+                  <Link
+                    href="/admin/logout"
+                    className="flex gap-2 hover:text-red-600"
+                  >
+                    Logout
+                    <LogOut />
+                  </Link>
                 </header>
               )}
               {/* Page Content */}

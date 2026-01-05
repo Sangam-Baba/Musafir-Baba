@@ -157,7 +157,7 @@ export default function UpdateWebpage() {
     setReviewsDetails(updatedDetails);
   };
   function onSubmit(values: WebpageFormData) {
-    mutation.mutate(values);
+    mutation.mutate({ ...values });
   }
 
   const schemaTypes = ["FAQ", "Webpage", "Review"];
@@ -401,34 +401,38 @@ export default function UpdateWebpage() {
             </div>
           )}
         </div>
-        <select
-          {...form.register("parent", { setValueAs: (v) => v || undefined })}
-          value={form.watch("parent") || undefined}
-          className="w-full border rounded p-2"
-        >
-          <option value="">Select Parent</option>
-          {allparents?.map(
-            (parent: { title: string; _id: string }, i: number) => (
-              <option key={i} value={parent._id}>
-                {parent.title}
-              </option>
-            )
-          )}
-        </select>
 
-        <div className="grid md:grid-cols-2 gap-5 ">
+        <div className="grid md:grid-cols-3 items-center gap-2">
+          <div className="space-x-4">
+            <label className="text-md font-semibold " htmlFor="isParent">
+              Is Parent
+            </label>
+            <input
+              type="checkbox"
+              {...form.register("isParent")}
+              checked={form.watch("isParent")}
+              onChange={(e) => form.setValue("isParent", e.target.checked)}
+            />
+          </div>
           <div>
-            <label className="text-md font-semibold mb-2" htmlFor="isParent">
-              IsParent
+            <label className="text-md font-semibold mb-2" htmlFor="status">
+              My Parent
             </label>
             <select
-              {...form.register("isParent", {
-                setValueAs: (value) => value === "true",
+              {...form.register("parent", {
+                setValueAs: (v) => v || undefined,
               })}
+              value={form.watch("parent") || undefined}
               className="w-full border rounded p-2"
             >
-              <option value="true">True</option>
-              <option value="false">False</option>
+              <option value="">Select Parent</option>
+              {allparents?.map(
+                (parent: { title: string; _id: string }, i: number) => (
+                  <option key={i} value={parent._id}>
+                    {parent.title}
+                  </option>
+                )
+              )}
             </select>
           </div>
           <div>

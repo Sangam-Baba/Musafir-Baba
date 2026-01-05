@@ -26,15 +26,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // swcMinify: true,
-  // browserslist: {
-  //   production: [">0.3%", "not dead", "not op_mini all", "not IE 11"],
-  //   development: [
-  //     "last 1 chrome version",
-  //     "last 1 firefox version",
-  //     "last 1 safari version",
-  //   ],
-  // },
   async redirects() {
     return [
       {
