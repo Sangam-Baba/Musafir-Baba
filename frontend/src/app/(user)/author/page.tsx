@@ -20,22 +20,23 @@ const getAllAuthor = async () => {
   const data = await res.json();
   return data?.data;
 };
-// export async function generateMetadata() {
-//   return {
-//     titription: `${authorData.about} | Musafir Baba`,
-//     altele: `${authorData.name} | Musafir Baba`,
-//     descrnates: {
-//       canonical: `https://musafirbaba.com/author/${author}`,
-//     },
-//     openGraph: {
-//       title: `${authorData.name} | Musafir Baba`,
-//       description: `${authorData.about} | Musafir Baba`,
-//       url: `https://musafirbaba.com/author/${author}`,
-//       type: "website",
-//       images: authorData.coverImage?.url || "https://musafirbaba.com/logo.svg",
-//     },
-//   };
-// }
+export async function generateMetadata() {
+  return {
+    title: "Meet Our Authors: MusafirBaba's Editorial Team",
+    description:
+      "Here is the team of seasoned content writers at MusafirBaba with years of experience and expertise in Travel and Tourism along with visa and immigration domains.",
+    alternates: {
+      canonical: `https://musafirbaba.com/author`,
+    },
+    openGraph: {
+      title: null,
+      description: null,
+      url: `https://musafirbaba.com/author`,
+      type: "website",
+      images: null,
+    },
+  };
+}
 
 export default async function BookingIndexPage() {
   const allAuthor = await getAllAuthor();
