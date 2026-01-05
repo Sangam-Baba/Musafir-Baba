@@ -5,6 +5,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import PaginationClient from "@/components/common/PaginationClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Travel Blog - Guides, Tips & Travel Inspiration",
@@ -91,13 +92,13 @@ export default async function BlogPage({
       </div>
       <PaginationClient totalPages={totalPages} currentPage={CurrPage} />
 
-      <script
+      <Script
         key="collection-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
 
-      <script
+      <Script
         key="breadcrumb-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}

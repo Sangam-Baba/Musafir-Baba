@@ -301,7 +301,7 @@ function Footer() {
       {/* LowerFooter */}
       <div className="text-center py-4 border-t border-gray-200 px-4">
         <p>
-          Copyright © 2020 - 2025 | Musafirbaba Travels Pvt. Ltd. | All Rights
+          Copyright © 2020 - 2026 | Musafirbaba Travels Pvt. Ltd. | All Rights
           Reserved.
         </p>
       </div>

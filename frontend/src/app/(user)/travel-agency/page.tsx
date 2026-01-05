@@ -91,31 +91,31 @@ async function page() {
   );
   const coreData = [
     {
-      img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431452/ebqgvy2uruu6cxnehxat.png",
+      img: "https://cdn.musafirbaba.com/images/ebqgvy2uruu6cxnehxat.png",
       title: "International Holiday Packages",
       description:
         "Tailor-made packages for Singapore, Dubai, Bali, Maldives, Thailand, and Vietnam.",
     },
     {
-      img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760432099/hzm68uopd8a6d1gjot3q.png",
+      img: "https://cdn.musafirbaba.com/images/hzm68uopd8a6d1gjot3q.png",
       title: "Visa Services for 40+ Countries",
       description:
         "We specialise in fast and reliable visa processing for 40+ countries like Singapore, Dubai, Japan etc.",
     },
     {
-      img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431753/vugxrcdlva6dfxebpxei.png",
+      img: "https://cdn.musafirbaba.com/images/gg4dolyznz9jcbxc7vst.png",
       title: "Personalised Domestic Travel Packages",
       description:
         "Get personalised holiday packages for popular Indian destinations like Goa, Kerala, Himachal etc.",
     },
     {
-      img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760431651/m6zefmw04p1ynuyxhm1l.png",
+      img: "https://cdn.musafirbaba.com/images/m6zefmw04p1ynuyxhm1l.png",
       title: "Affordable Flights & Hotels",
       description:
         "Get the best deals on flight tickets and hand-picked stays across the globe for your holiday.",
     },
     {
-      img: "https://res.cloudinary.com/dmmsemrty/image/upload/v1760433740/olszjeekr4hae6wcjtig.png",
+      img: "https://cdn.musafirbaba.com/images/olszjeekr4hae6wcjtig.png",
       title: "Corporate & Group Travel Solutions",
       description:
         "Complete MICE solutions including hotel bookings, event coordination and logistics.",

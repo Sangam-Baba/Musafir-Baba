@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import Script from "next/script";
+import { getCollectionSchema } from "@/lib/schema/collection.schema";
 
 interface AuthoreInterface {
   name: string;
@@ -35,14 +39,26 @@ const getAllAuthor = async () => {
 
 export default async function BookingIndexPage() {
   const allAuthor = await getAllAuthor();
-  console.log("All AUthore", allAuthor);
+  const breadcrumbSchema = getBreadcrumbSchema("author");
+  const collectionSchema = getCollectionSchema(
+    "Author",
+    "https://musafirbaba.com/author",
+    allAuthor.map((blog: AuthoreInterface) => ({
+      url: `https://musafirbaba.com/author/${blog.slug}`,
+    }))
+  );
   return (
     <div className="mt-10 mx-auto max-w-7xl px-5">
+      {/* Breadcrumb */}
+      <div className="w-full md:max-w-7xl mx-auto  mt-5">
+        <Breadcrumb />
+      </div>
       <div>
         <h1 className="font-semibold text-xl md:text-2xl">
           MusafirBaba Authors
         </h1>
       </div>
+
       {allAuthor?.length > 0 ? (
         allAuthor.map((author: AuthoreInterface, i: number) => {
           return (
@@ -82,6 +98,16 @@ export default async function BookingIndexPage() {
           <p>Sorry No Author Found</p>
         </div>
       )}
+      <Script
+        key="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <Script
+        key="collection-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
     </div>
   );
 }

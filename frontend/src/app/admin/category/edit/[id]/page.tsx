@@ -135,7 +135,7 @@ export default function CreateCategory() {
     isError: isErrorCategory,
     error: errorCategory,
   } = useQuery({
-    queryKey: ["category"],
+    queryKey: ["category", id],
     queryFn: () => getCategory(id),
   });
   useEffect(() => {
