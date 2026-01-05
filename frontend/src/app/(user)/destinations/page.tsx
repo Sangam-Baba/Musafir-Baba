@@ -16,8 +16,7 @@ export interface DestinationInterface {
 }
 export function generateMetadata(): Metadata {
   return {
-    title:
-      "Top Travel Destinations Worldwide for Every Kind of Traveller | Musafir Baba",
+    title: "Top Travel Destinations Worldwide for Every Traveller",
     description:
       "Explore the best travel destinations across India and the world. Find curated places to visit, top attractions, ideal seasons, and trip ideas for every traveller. | Musafir Baba",
     keywords: "Destinations",

@@ -25,8 +25,7 @@ interface CategoryResponse {
 }
 
 export const metadata: Metadata = {
-  title:
-    "Affordable Holiday Tour Packages - Domestic & International | Book Now",
+  title: "Affordable Holiday Tour Packages - Domestic & International",
   description:
     "Explore incredible tour package without breaking the bank. Our affordable tour packages cover domestic and international trips. Easy booking and 24/7 support included.",
   alternates: {

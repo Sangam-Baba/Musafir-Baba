@@ -14,6 +14,7 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { X } from "lucide-react";
 import { schemaTypes } from "@/lib/schemaTypes";
+import { Label } from "@/components/ui/label";
 
 interface Category {
   _id: string;
@@ -305,9 +306,9 @@ export default function CreateCategory() {
           </select>
         </div>
 
-        {/* keywords */}
+        {/* Keywords */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium">Keywords</label>
+          <Label className="block text-sm font-medium">Keywords</Label>
           <div className="flex flex-wrap gap-2 border rounded p-2">
             {form.watch("keywords")?.map((kw, i) => (
               <span
@@ -334,17 +335,17 @@ export default function CreateCategory() {
               type=" text"
               className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
               placeholder="Type keyword and press Enter"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === ",") {
-                  e.preventDefault();
-                  const value = e.currentTarget.value.trim();
-                  if (value) {
-                    const current = form.getValues("keywords") || [];
-                    if (!current.includes(value)) {
-                      form.setValue("keywords", [...current, value]);
-                    }
-                    e.currentTarget.value = "";
-                  }
+              onBlur={(e) => {
+                const arr = e.target.value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                if (arr.length > 0) {
+                  form.setValue("keywords", [
+                    ...(form.getValues("keywords") || []),
+                    ...arr,
+                  ]);
+                  e.target.value = "";
                 }
               }}
             />

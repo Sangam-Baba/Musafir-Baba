@@ -11,6 +11,8 @@ import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 import { Button } from "@/components/ui/button";
 import { schemaTypes } from "@/lib/schemaTypes";
 import BlogEditor from "@/components/admin/BlogEditor";
+import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -57,40 +59,13 @@ const formSchema = z.object({
   }),
   schemaType: z.array(z.string()).optional(),
   keywords: z
-    .preprocess(
-      (val) =>
-        typeof val === "string"
-          ? val
-              .split(",")
-              .map((k) => k.trim())
-              .filter(Boolean)
-          : [],
-      z.array(z.string())
-    )
+    .array(z.string())
+
     .optional(),
-  popularAttractions: z
-    .preprocess(
-      (val) =>
-        typeof val === "string"
-          ? val
-              .split(",")
-              .map((k) => k.trim())
-              .filter(Boolean)
-          : [],
-      z.array(z.string())
-    )
-    .optional(),
+  popularAttractions: z.array(z.string()).optional(),
   thingsToDo: z
-    .preprocess(
-      (val) =>
-        typeof val === "string"
-          ? val
-              .split(",")
-              .map((k) => k.trim())
-              .filter(Boolean)
-          : [],
-      z.array(z.string())
-    )
+    .array(z.string())
+
     .optional(),
   status: z.enum(["draft", "published", "archived"]),
 });
@@ -235,21 +210,97 @@ export default function CreateDestination() {
             </p>
           )}
         </div>
+        {/* PopularAttractions */}
         <div className="space-y-2">
-          <label htmlFor="popularAttractions">Popular Attractions</label>
-          <input
-            {...form.register("popularAttractions")}
-            placeholder="Popular Attractions (comma separated)"
-            className="w-full border rounded p-2"
-          />
+          <Label className="block text-sm font-medium">
+            Popular Attraction
+          </Label>
+          <div className="flex flex-wrap gap-2 border rounded p-2">
+            {form.watch("popularAttractions")?.map((kw, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+              >
+                {kw}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newKeywords = form
+                      .getValues("popularAttractions")
+                      ?.filter((_, idx) => idx !== i);
+                    form.setValue("popularAttractions", newKeywords);
+                  }}
+                  className="text-gray-600 hover:text-red-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </span>
+            ))}
+
+            <input
+              type=" text"
+              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+              placeholder="Type keyword and press Enter"
+              onBlur={(e) => {
+                const arr = e.target.value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                if (arr.length > 0) {
+                  form.setValue("popularAttractions", [
+                    ...(form.getValues("popularAttractions") || []),
+                    ...arr,
+                  ]);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </div>
         </div>
+        {/* Things to DO */}
         <div className="space-y-2">
-          <label htmlFor="thingsToDo">Things To Do</label>
-          <input
-            {...form.register("thingsToDo")}
-            placeholder="Things to do (comma separated)"
-            className="w-full border rounded p-2"
-          />
+          <Label className="block text-sm font-medium">Things to Do</Label>
+          <div className="flex flex-wrap gap-2 border rounded p-2">
+            {form.watch("thingsToDo")?.map((kw, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+              >
+                {kw}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newKeywords = form
+                      .getValues("thingsToDo")
+                      ?.filter((_, idx) => idx !== i);
+                    form.setValue("thingsToDo", newKeywords);
+                  }}
+                  className="text-gray-600 hover:text-red-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </span>
+            ))}
+
+            <input
+              type=" text"
+              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+              placeholder="Type keyword and press Enter"
+              onBlur={(e) => {
+                const arr = e.target.value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                if (arr.length > 0) {
+                  form.setValue("thingsToDo", [
+                    ...(form.getValues("thingsToDo") || []),
+                    ...arr,
+                  ]);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <label htmlFor="description">Meta Title</label>
@@ -291,13 +342,50 @@ export default function CreateDestination() {
             ))}
           </select>
         </div>
+        {/* keywords */}
         <div className="space-y-2">
-          <label htmlFor="keywords">Keywords</label>
-          <input
-            {...form.register("keywords")}
-            placeholder="Keywords (comma separated)"
-            className="w-full border rounded p-2"
-          />
+          <Label className="block text-sm font-medium">Keywords</Label>
+          <div className="flex flex-wrap gap-2 border rounded p-2">
+            {form.watch("keywords")?.map((kw, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+              >
+                {kw}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newKeywords = form
+                      .getValues("keywords")
+                      ?.filter((_, idx) => idx !== i);
+                    form.setValue("keywords", newKeywords);
+                  }}
+                  className="text-gray-600 hover:text-red-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </span>
+            ))}
+
+            <input
+              type=" text"
+              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+              placeholder="Type keyword and press Enter"
+              onBlur={(e) => {
+                const arr = e.target.value
+                  .split(",")
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                if (arr.length > 0) {
+                  form.setValue("keywords", [
+                    ...(form.getValues("keywords") || []),
+                    ...arr,
+                  ]);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <ImageUploader
