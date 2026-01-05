@@ -1,25 +1,17 @@
 export function fixInternalLinkRel(html: string) {
-  return html.replace(
-    /<a([^>]+)href="([^"]+)"([^>]*)>/gi,
-    (match, before, href, after) => {
-      const isInternal = href.startsWith("https://musafirbaba.com");
+  return html.replace(/<a\s+[^>]*href="([^"]+)"[^>]*>/gi, (anchor, href) => {
+    const isInternal = href.startsWith("https://musafirbaba.com");
 
-      if (!isInternal) return match;
+    if (!isInternal) return anchor;
 
-      // remove nofollow / ugc / sponsored from internal links
-      const cleaned = after.replace(
-        /\srel="([^"]*)"/i,
-        (relMatch: any, relValue: any) => {
-          const filtered = relValue
-            .split(" ")
-            .filter((r: any) => r !== "nofollow")
-            .join(" ");
+    // remove only nofollow
+    return anchor.replace(/\srel="([^"]*)"/i, (_, relValue) => {
+      const cleaned = relValue
+        .split(" ")
+        .filter((r: string) => r !== "nofollow")
+        .join(" ");
 
-          return filtered ? ` rel="${filtered}"` : "";
-        }
-      );
-
-      return `<a${before}href="${href}"${cleaned}>`;
-    }
-  );
+      return cleaned ? ` rel="${cleaned}"` : "";
+    });
+  });
 }
