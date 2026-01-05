@@ -148,7 +148,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                                       .toUpperCase() +
                                     pkg.destination.state.slice(1),
                                 }}
-                                url={`/holidays/${tab.slug}/${pkg.destination.state}/${pkg.slug}`}
+                                url={`/holidays/${pkg.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
                               />
                             </div>
                           </CarouselItem>
