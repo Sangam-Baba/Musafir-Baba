@@ -1,12 +1,14 @@
+import { fixInternalLinkRel } from "@/utils/removeNoFollow";
+
 interface BlogContentProps {
-  html: string
+  html: string;
 }
 
 export function BlogContent({ html }: BlogContentProps) {
   return (
     <div
       className="prose dark:prose-invert max-w-none"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: fixInternalLinkRel(html) }}
     />
-  )
+  );
 }

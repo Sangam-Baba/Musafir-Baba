@@ -110,6 +110,24 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   const [buttonText, setButtonText] = useState("");
   const [buttonHref, setButtonHref] = useState("");
 
+  const CustomLink = Link.extend({
+    addAttributes() {
+      return {
+        ...this.parent?.(),
+        rel: {
+          default: null,
+          renderHTML: (attributes) => {
+            if (!attributes.rel) return {};
+            return { rel: attributes.rel };
+          },
+        },
+        target: {
+          default: "_blank",
+        },
+      };
+    },
+  });
+
   const editor = useEditor({
     extensions: [
       Table.configure({
@@ -121,7 +139,9 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
       StarterKit.configure({
         codeBlock: {},
       }),
-      Link.configure({ openOnClick: false }),
+      CustomLink.configure({
+        openOnClick: false,
+      }),
       Image,
       Underline,
       TextAlign.configure({
@@ -157,7 +177,13 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
 
   const addLink = () => {
     const url = prompt("Enter link URL");
-    if (url) editor.chain().focus().setLink({ href: url }).run();
+    let rel = "noopener noreferrer nofollow";
+    if (url) {
+      if (url.startsWith("https://musafirbaba.com")) {
+        rel = "noopener noreferrer";
+      }
+      editor.chain().focus().setLink({ href: url, rel: rel }).run();
+    }
   };
 
   const handleInsertButton = () => {
