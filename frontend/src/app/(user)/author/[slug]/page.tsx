@@ -34,6 +34,7 @@ async function getAuthor(author: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/authors/${author}`
   );
+  if (!res.ok) return null;
   const data = await res.json();
   return data?.data;
 }
@@ -53,14 +54,14 @@ export async function generateMetadata({
   const { slug: author } = await params;
   const authorData = await getAuthor(author);
   return {
-    titription: `${authorData.about} | Musafir Baba`,
-    altele: `${authorData.name} | Musafir Baba`,
-    descrnates: {
+    title: `${authorData.name}`,
+    description: `${authorData.about}`,
+    alternates: {
       canonical: `https://musafirbaba.com/author/${author}`,
     },
     openGraph: {
-      title: `${authorData.name} | Musafir Baba`,
-      description: `${authorData.about} | Musafir Baba`,
+      title: `${authorData.name}`,
+      description: `${authorData.about}`,
       url: `https://musafirbaba.com/author/${author}`,
       type: "website",
       images: authorData.coverImage?.url || "https://musafirbaba.com/logo.svg",
@@ -90,7 +91,7 @@ export default async function AuthorPage({
             alt="MusafirBaba author image"
             width={200}
             height={200}
-            className="rounded-xl object-cover shadow-sm"
+            className="rounded-xl object-cover"
           />
         </div>
 

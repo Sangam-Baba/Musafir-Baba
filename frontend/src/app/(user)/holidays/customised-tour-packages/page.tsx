@@ -135,7 +135,7 @@ async function CustomizedPackagePage() {
   return (
     <section className="w-full mb-12">
       <Hero
-        image={category?.coverImage?.url || "/Hero1.jpg"}
+        image={category?.coverImage?.url || "/Hero2.jpg"}
         title={category?.name}
         description={category?.description}
         align="center"
