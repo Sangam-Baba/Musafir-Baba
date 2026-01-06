@@ -12,7 +12,7 @@ export function proxy(req: NextRequest) {
     "/holidays/customised-tour-packages/[object%20Object]/jama-masjid-chandni-chowk",
     "/holidays/customised-tour-packages/[object%20Object]/delhi-tour-packages",
     "/holidays/customised-tour-packages/[object%20Object]/raj-ghat",
-    "/holidays/customised-tour-packages/[object%20Object]/red-fort",
+    "/holidays/customised-tour-packages/delhi/red-fort",
   ];
 
   if (goneUrls.includes(pathname)) {
