@@ -7,6 +7,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import img1 from "../../../../../public/Hero1.jpg";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import ReadMore from "@/components/common/ReadMore";
 
 interface Props {
   params: Promise<{ categorySlug: string }>;
@@ -165,7 +166,7 @@ export default async function Page({
     <>
       <section className="w-full mb-12">
         <Hero
-          image={packages[0]?.coverImage?.url || img1.src}
+          image={category?.coverImage?.url || img1.src}
           title={category?.name}
           description={category?.description}
           align="center"
@@ -176,7 +177,14 @@ export default async function Page({
           <Breadcrumb />
         </div>
       </section>
+      {/* SHow description */}
+      {category?.content && (
+        <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+          <ReadMore content={category?.content} />
+        </div>
+      )}
       <GroupPkgClient packagesData={packages} />
+
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"

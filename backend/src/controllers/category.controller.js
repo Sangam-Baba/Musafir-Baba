@@ -1,6 +1,4 @@
 import { Category } from "../models/Category.js";
-import { uploadToCloudinary } from "../services/fileUpload.service.js";
-import { Package } from "../models/Package.js";
 import mongoose from "mongoose";
 import { Destination } from "../models/Destination.js";
 const createCategory = async (req, res) => {
@@ -52,11 +50,7 @@ const getCategoryById = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ success: false, message: "Invalid" });
 
-    const category = await Category.findById({ _id: id })
-      .select(
-        "name slug description coverImage packages isActive metaTitle metaDescription keywords"
-      )
-      .lean();
+    const category = await Category.findById({ _id: id }).lean();
 
     if (!category) {
       return res.status(404).json({

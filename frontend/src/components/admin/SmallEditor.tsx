@@ -8,7 +8,7 @@ import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
@@ -72,9 +72,6 @@ function ToolbarButton({
 }
 
 export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
-  const [imageUrl, setImageUrl] = useState("");
-  const [linkUrl, setLinkUrl] = useState("");
-
   const editor = useEditor({
     extensions: [
       Table.configure({
@@ -117,7 +114,13 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
 
   const addLink = () => {
     const url = prompt("Enter link URL");
-    if (url) editor.chain().focus().setLink({ href: url }).run();
+    let rel = "noopener noreferrer nofollow";
+    if (url) {
+      if (url.startsWith("https://musafirbaba.com")) {
+        rel = "noopener noreferrer";
+      }
+      editor.chain().focus().setLink({ href: url, rel: rel }).run();
+    }
   };
 
   return (

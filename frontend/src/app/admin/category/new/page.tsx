@@ -13,6 +13,7 @@ import { Loader } from "@/components/custom/loader";
 import { X } from "lucide-react";
 import { schemaTypes } from "@/lib/schemaTypes";
 import { Label } from "@/components/ui/label";
+import BlogEditor from "@/components/admin/BlogEditor";
 
 interface Package {
   _id: string;
@@ -32,6 +33,7 @@ const formSchema = z.object({
   description: z.string().min(2, {
     message: "Description must be at least 2 characters.",
   }),
+  content: z.string().optional(),
   metaTitle: z.string().min(2, {
     message: "Meta title must be at least 2 characters.",
   }),
@@ -88,6 +90,7 @@ export default function CreateCategory() {
       name: "",
       slug: "",
       description: "",
+      content: "",
       metaTitle: "",
       metaDescription: "",
       schemaType: [],
@@ -119,7 +122,6 @@ export default function CreateCategory() {
   });
   function onSubmit(values: z.infer<typeof formSchema>) {
     mutation.mutate(values);
-    console.log(values);
   }
   if (isLoading) return <Loader size="lg" message="Loading..." />;
   if (isError) return <p>Error: {error?.message}</p>;
@@ -160,6 +162,12 @@ export default function CreateCategory() {
             {form.formState.errors.description.message}
           </p>
         )}
+        <div className="border rounded p-2">
+          <BlogEditor
+            value={form.getValues("content")}
+            onChange={(val) => form.setValue("content", val)}
+          />
+        </div>
 
         <Controller
           name="packages"
@@ -196,16 +204,6 @@ export default function CreateCategory() {
                 public_id: img?.public_id,
                 width: img?.width,
                 height: img?.height,
-                alt: form.getValues("name") || "Cover Image",
-              })
-            }
-          />
-
-          <CloudinaryMediaLibrary
-            onSelect={(img) =>
-              form.setValue("coverImage", {
-                url: img.url,
-                public_id: img.public_id,
                 alt: form.getValues("name") || "Cover Image",
               })
             }
