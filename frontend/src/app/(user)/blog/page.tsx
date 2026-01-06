@@ -6,6 +6,7 @@ import PaginationClient from "@/components/common/PaginationClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
+import ReadMore from "@/components/common/ReadMore";
 
 export const metadata: Metadata = {
   title: "Travel Blog - Guides, Tips & Travel Inspiration",
@@ -71,12 +72,179 @@ export default async function BlogPage({
       url: `https://musafirbaba.com/blog/${blog.slug}`,
     }))
   );
+  const content = `<h2>Travel Blog – Expert Guides, Destination Insights &amp; Smart Travel Tips</h2>
 
+<p>
+  Travel is not just about reaching a destination—it’s about making informed
+  decisions, planning smartly, and experiencing places the right way.
+  The MusafirBaba Travel Blog is designed for travelers who want
+  <strong>clarity, confidence, and credible information</strong> before they pack their bags.
+</p>
+
+<p>
+  Whether you’re planning a weekend getaway, a family holiday, a honeymoon,
+  or an international trip, our blog brings together
+  <strong>real travel insights, destination knowledge, and up-to-date travel news</strong>
+  to help you travel better.
+</p>
+
+<h3>Why Follow the MusafirBaba Travel Blog?</h3>
+
+<p>
+  With years of hands-on experience in planning domestic and international tours,
+  our travel experts understand the
+  <strong>real questions travelers face</strong>—from choosing the right season to
+  understanding visa rules, budgeting wisely, and avoiding common mistakes.
+</p>
+
+<p>This blog is built to:</p>
+
+<ul>
+  <li>Simplify trip planning</li>
+  <li>Provide practical, experience-backed advice</li>
+  <li>Cover destinations beyond surface-level recommendations</li>
+  <li>Keep travelers informed about policy changes and travel trends</li>
+</ul>
+
+<p>
+  Our content is written by travel professionals who work closely with destinations,
+  suppliers, and real travelers every day.
+</p>
+
+<h3>What You’ll Find on Our Travel Blog</h3>
+
+<h4>Destination Guides</h4>
+
+<p>
+  Explore detailed guides covering India and international destinations. These include:
+</p>
+
+<ul>
+  <li>Best places to visit</li>
+  <li>Ideal trip durations</li>
+  <li>Seasonal travel advice</li>
+  <li>Culture, food, and local experiences</li>
+</ul>
+
+<p>
+  Each guide is written to help you decide where to go and how to plan,
+  not just what to see.
+</p>
+
+<h4>Travel News &amp; Updates</h4>
+
+<p>
+  Travel rules change frequently—especially visas, entry regulations,
+  airline policies, and tourism advisories.
+  Our blog keeps you updated with:
+</p>
+
+<ul>
+  <li>Visa rule changes</li>
+  <li>Tourism policy announcements</li>
+  <li>Airline and airport updates</li>
+  <li>Festival and event travel alerts</li>
+</ul>
+
+<p>
+  This is especially useful for international travelers and pilgrims planning
+  time-sensitive journeys.
+</p>
+
+<h4>Smart Travel Tips</h4>
+
+<p>
+  From saving money to traveling responsibly, we cover practical tips such as:
+</p>
+
+<ul>
+  <li>Budget planning for trips</li>
+  <li>Packing essentials</li>
+  <li>Avoiding tourist traps</li>
+  <li>Choosing the right accommodation and transport</li>
+</ul>
+
+<p>
+  These insights come from real planning scenarios handled by our travel experts.
+</p>
+
+<h4>Travel Inspiration &amp; Experiences</h4>
+
+<p>
+  Some journeys are about discovery and emotion. Our blog also features:
+</p>
+
+<ul>
+  <li>Offbeat destinations</li>
+  <li>Seasonal travel inspiration</li>
+  <li>Nature, culture, and adventure stories</li>
+  <li>Wellness, slow travel, and spiritual journeys</li>
+</ul>
+
+<p>
+  This content helps travelers discover ideas they may not have considered earlier.
+</p>
+
+<h3>Who Is This Blog For?</h3>
+
+<p>The MusafirBaba blog is ideal for:</p>
+
+<ul>
+  <li>First-time travelers looking for guidance</li>
+  <li>Families planning safe and comfortable trips</li>
+  <li>Couples searching for meaningful honeymoon destinations</li>
+  <li>Backpackers and explorers</li>
+  <li>Pilgrims and spiritual travelers</li>
+  <li>International tourists seeking India-focused insights</li>
+</ul>
+
+<p>
+  Whether you travel occasionally or frequently, the blog adapts to your planning needs.
+</p>
+
+<h3>How Our Blog Supports Better Trip Planning</h3>
+
+<p>
+  We don’t believe in generic advice. Every article is structured to help you:
+</p>
+
+<ul>
+  <li>Compare destinations</li>
+  <li>Understand travel feasibility</li>
+  <li>Plan durations correctly</li>
+  <li>Align budgets with expectations</li>
+</ul>
+
+<p>
+  Many of our blog posts also connect directly to destination pages and tour categories,
+  allowing readers to move naturally from research to planning.
+</p>
+
+<h3>Trust, Accuracy &amp; Experience</h3>
+
+<p>All information shared on this blog is:</p>
+
+<ul>
+  <li>Based on real travel planning experience</li>
+  <li>Updated regularly to reflect current conditions</li>
+  <li>Written in simple, easy-to-understand language</li>
+  <li>Designed to answer genuine traveler questions</li>
+</ul>
+
+<p>
+  We avoid exaggerated claims and focus on honest, useful travel knowledge.
+</p>
+`;
   return (
     <section className="w-full ">
       <Hero image="/Heroimg.jpg" title="Blog" overlayOpacity={100} />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
+      </div>
+      {/* SHow description */}
+
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+        <ReadMore content={content} />
       </div>
       <div className="container max-w-7xl mx-auto py-10 px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {blogs.map((blog: blog) => (
@@ -90,6 +258,7 @@ export default async function BlogPage({
           />
         ))}
       </div>
+
       <PaginationClient totalPages={totalPages} currentPage={CurrPage} />
 
       <Script

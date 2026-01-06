@@ -16,6 +16,7 @@ export default function Breadcrumb() {
     return { name, href };
   });
 
+  // console.log("Breadcrumb: ", breadcrumbs);
   return (
     <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-2">
       <ol className="flex items-center flex-wrap">
@@ -28,7 +29,7 @@ export default function Breadcrumb() {
           </Link>
         </li>
 
-        {breadcrumbs.map((bc, i) => (
+        {breadcrumbs.map((bc, i: number) => (
           <li key={bc.href} className="flex items-center">
             <ChevronRightIcon size={13} color="#FE5300" />
             {i === breadcrumbs.length - 1 ? (
@@ -36,7 +37,7 @@ export default function Breadcrumb() {
             ) : (
               <Link
                 href={bc.href}
-                className="text-gray-800 hover:text-blue-600 cursor-pointer text-md  hover:underline"
+                className="text-gray-800 hover:text-blue-600 cursor-pointer text-md pointer-events-auto hover:underline"
               >
                 {bc.name}
               </Link>
