@@ -30,7 +30,7 @@ function DestinationPageClient({
     setFilteredDestinations(filtered);
   }, [filter, destinations]);
 
-  const content = `<h2>Travel Destinations – Discover The Best Places To Visit In India &amp; Abroad</h2>
+  const content = `
 
 <p>
   Choosing the right destination is the foundation of every great journey.

@@ -72,8 +72,7 @@ export default async function BlogPage({
       url: `https://musafirbaba.com/blog/${blog.slug}`,
     }))
   );
-  const content = `<h2>Travel Blog – Expert Guides, Destination Insights &amp; Smart Travel Tips</h2>
-
+  const content = `
 <p>
   Travel is not just about reaching a destination—it’s about making informed
   decisions, planning smartly, and experiencing places the right way.
