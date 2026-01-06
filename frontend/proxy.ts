@@ -7,18 +7,6 @@ const PUBLIC_ADMIN_ROUTES = ["/admin/login"];
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const goneUrls = [
-    "/holidays/customised-tour-packages/[object%20Object]/qutub-minar",
-    "/holidays/customised-tour-packages/[object%20Object]/jama-masjid-chandni-chowk",
-    "/holidays/customised-tour-packages/[object%20Object]/delhi-tour-packages",
-    "/holidays/customised-tour-packages/[object%20Object]/raj-ghat",
-    "/holidays/customised-tour-packages/delhi/red-fort",
-  ];
-
-  if (goneUrls.includes(pathname)) {
-    return new NextResponse(null, { status: 410 });
-  }
-
   // Only run logic for admin routes
   if (!pathname.startsWith("/admin")) return NextResponse.next();
 
@@ -40,5 +28,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/holidays/customised-tour-packages/:path*"],
+  matcher: ["/admin/:path*"],
 };
