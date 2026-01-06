@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
       },
       {
         source:
+          "/blog/3834-pilgrims-in-40-days-winter-char-dham-yatra-puts-uttarakhand-in-the-spotlight",
+        destination:
+          "/news/3834-pilgrims-in-40-days-winter-char-dham-yatra-puts-uttarakhand-in-the-spotlight",
+        permanent: true,
+      },
+      {
+        source:
           "/blog/bengaluru-jumps-into-worlds-top-30-how-indias-tech-capital-hit-rank-29",
         destination:
           "/news/bengaluru-jumps-into-worlds-top-30-how-indias-tech-capital-hit-rank-29",
