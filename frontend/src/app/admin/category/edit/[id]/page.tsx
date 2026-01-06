@@ -21,7 +21,10 @@ interface Category {
   _id: string;
   name: string;
   description: string;
-  coverImage: string;
+  coverImage: {
+    url: string;
+    alt: string;
+  };
   slug: string;
   isActive: boolean;
   packages: string[];
@@ -56,7 +59,7 @@ const formSchema = z.object({
   keywords: z.string().array().optional(),
   coverImage: z
     .object({
-      url: z.string().url().optional(),
+      url: z.string().url(),
       public_id: z.string().optional(),
       width: z.number().optional(),
       height: z.number().optional(),
@@ -250,15 +253,17 @@ export default function CreateCategory() {
         />
         <div className="space-y-2">
           <ImageUploader
-            onUpload={(img) =>
-              form.setValue("coverImage", {
+            initialImage={form.getValues("coverImage")}
+            onUpload={(img) => {
+              if (!img) return;
+              return form.setValue("coverImage", {
                 url: img?.url,
                 public_id: img?.public_id,
                 width: img?.width,
                 height: img?.height,
                 alt: form.getValues("name") || "Cover Image",
-              })
-            }
+              });
+            }}
           />
         </div>
         {form.watch("coverImage.url") && (
