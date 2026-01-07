@@ -122,6 +122,7 @@ async function DestinationPage({
         title={`Explore Customised Packages in ${
           destination.charAt(0).toUpperCase() + destination.slice(1)
         }`}
+        description={meta?.excerpt}
         height="lg"
         align="center"
         overlayOpacity={100}

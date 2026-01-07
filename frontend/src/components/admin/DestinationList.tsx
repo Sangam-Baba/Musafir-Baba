@@ -38,6 +38,7 @@ export default function DestinationList({
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
             <TableRow className="bg-muted/40">
+              <TableHead className="w-[5%]">Sr.no</TableHead>
               <TableHead className="w-[20%]">Name</TableHead>
               <TableHead className="w-[35%]">Country</TableHead>
               <TableHead className="w-[35%]">State</TableHead>
@@ -46,13 +47,16 @@ export default function DestinationList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {destinations.map((dest) => (
+            {destinations.map((dest, i: number) => (
               <motion.tr
                 key={dest.id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
+                <TableCell className="font-medium">
+                  {destinations.length - i}
+                </TableCell>
                 <TableCell className="font-medium">{dest.name}</TableCell>
                 <TableCell className="truncate max-w-[250px]">
                   {dest.country.charAt(0).toUpperCase() + dest.country.slice(1)}
@@ -95,9 +99,10 @@ export default function DestinationList({
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
-        {destinations.map((dest) => (
+        {destinations.map((dest, i: number) => (
           <Card key={dest.id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
+              <p className="text-sm ">{destinations.length - i}</p>
               <h3 className="font-semibold text-lg">{dest.name}</h3>
               <p className="text-sm text-muted-foreground line-clamp-3">
                 {dest.country}

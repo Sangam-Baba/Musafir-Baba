@@ -258,11 +258,11 @@ function DestinationSeoNew({
                         className="w-full rounded-md border p-2"
                       >
                         <option value="">Select Destination</option>
-                        {Destination?.map((d: Destination) => (
+                        {Destination?.map((d: Destination) => {
                           <option key={d._id} value={d._id}>
                             {d.state}
-                          </option>
-                        ))}
+                          </option>;
+                        })}
                       </select>
                     </FormControl>
                     <FormMessage />

@@ -48,6 +48,7 @@ export default function DestinationSeoList({
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
             <TableRow className="bg-muted/40">
+              <TableHead className="w-[5%]">Sr.no</TableHead>
               <TableHead className="w-[20%]">Title</TableHead>
               <TableHead className="w-[20%]">Description</TableHead>
               <TableHead className="w-[20%]">Excerpt</TableHead>
@@ -58,13 +59,16 @@ export default function DestinationSeoList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {destinationSeo.map((cat: DestinationSeo) => (
+            {destinationSeo.map((cat: DestinationSeo, i: number) => (
               <motion.tr
                 key={cat._id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="border-b"
               >
+                <TableCell className="font-medium">
+                  {destinationSeo.length - i}
+                </TableCell>
                 <TableCell className="font-medium">{cat.metaTitle}</TableCell>
                 <TableCell className="font-medium ">
                   {cat.metaDescription.slice(0, 50)}
@@ -116,19 +120,18 @@ export default function DestinationSeoList({
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
-        {destinationSeo.map((cat: DestinationSeo) => (
+        {destinationSeo.map((cat: DestinationSeo, i: number) => (
           <Card key={cat._id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
+              <h3 className="font-semibold text-sm">
+                {destinationSeo.length - i}
+              </h3>
               <h3 className="font-semibold text-lg">{cat.metaTitle}</h3>
-              <h3 className="font-semibold text-lg">{cat.metaDescription}</h3>
-              <h3 className="font-semibold text-lg">{cat.excerpt}</h3>
-              <h3 className="font-semibold text-lg">
-                {cat.keywords.join(", ")}
-              </h3>
-              <h3 className="font-semibold text-lg">{cat.categoryId.name}</h3>
-              <h3 className="font-semibold text-lg">
-                {cat.destinationId.state}
-              </h3>
+              <h3 className=" text-lg">{cat.metaDescription}</h3>
+              <h3 className=" text-lg">{cat.excerpt}</h3>
+              <h3 className="text-lg">{cat.keywords.join(", ")} </h3>
+              <h3 className=" text-lg">{cat.categoryId.name}</h3>
+              <h3 className=" text-lg">{cat.destinationId.state}</h3>
               <a
                 href={cat.url}
                 target="_blank"
