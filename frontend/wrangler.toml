@@ -5,3 +5,7 @@ pages_build_output_dir = ".open-next"
 
 [vars]
 NODE_ENV = "production"
+
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "musafirmedia"
