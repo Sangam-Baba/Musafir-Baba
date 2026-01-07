@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
       },
       {
         source:
+          "/blog/varanasi-transformation-cleaner-ghats-tourism-surge-and-local-impact",
+        destination:
+          "/news/varanasi-transformation-cleaner-ghats-tourism-surge-and-local-impact",
+        permanent: true,
+      },
+      {
+        source:
           "/blog/3834-pilgrims-in-40-days-winter-char-dham-yatra-puts-uttarakhand-in-the-spotlight",
         destination:
           "/news/3834-pilgrims-in-40-days-winter-char-dham-yatra-puts-uttarakhand-in-the-spotlight",

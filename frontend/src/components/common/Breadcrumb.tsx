@@ -16,7 +16,6 @@ export default function Breadcrumb() {
     return { name, href };
   });
 
-  // console.log("Breadcrumb: ", breadcrumbs);
   return (
     <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-2">
       <ol className="flex items-center flex-wrap">
@@ -29,21 +28,31 @@ export default function Breadcrumb() {
           </Link>
         </li>
 
-        {breadcrumbs.map((bc, i: number) => (
-          <li key={bc.href} className="flex items-center">
-            <ChevronRightIcon size={13} color="#FE5300" />
-            {i === breadcrumbs.length - 1 ? (
-              <span className="text-gray-800 text-md ">{bc.name} </span>
-            ) : (
-              <Link
-                href={bc.href}
-                className="text-gray-800 hover:text-blue-600 cursor-pointer text-md pointer-events-auto hover:underline"
-              >
-                {bc.name}
-              </Link>
-            )}
-          </li>
-        ))}
+        {breadcrumbs.map((bc, i: number) => {
+          const isLast = i === breadcrumbs.length - 1;
+          return (
+            <li
+              key={`${bc.href}-${i}`}
+              className="flex items-center gap-1 z-10"
+            >
+              <ChevronRightIcon
+                size={13}
+                color="#FE5300"
+                className="pointer-events-none"
+              />
+              {i === breadcrumbs.length - 1 ? (
+                <span className="text-gray-800 text-md ">{bc.name} </span>
+              ) : (
+                <Link
+                  href={bc.href}
+                  className="text-gray-800 hover:text-blue-600 cursor-pointer text-md hover:underline"
+                >
+                  {bc.name}
+                </Link>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );

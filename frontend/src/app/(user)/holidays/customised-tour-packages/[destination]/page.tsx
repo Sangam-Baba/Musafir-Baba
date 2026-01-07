@@ -6,6 +6,7 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
 import { getDestinationMeta } from "../../[categorySlug]/[destination]/page";
+import ReadMore from "@/components/common/ReadMore";
 
 interface Plan {
   title: string;
@@ -98,6 +99,10 @@ async function DestinationPage({
 }) {
   const { destination } = await params;
   const packages = await getPackageByDestinationSlug(destination);
+  const meta = await getDestinationMeta(
+    "customised-tour-packages",
+    destination
+  );
   if (!packages || packages.length === 0) return notFound();
 
   const breadcrumbSchema = getBreadcrumbSchema(
@@ -124,6 +129,12 @@ async function DestinationPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
         <Breadcrumb />
       </div>
+      {/* SHow description */}
+      {meta?.content && (
+        <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+          <ReadMore content={meta?.content} />
+        </div>
+      )}
 
       {/* Show packages under this category */}
       <CustomizedTourClient allPkgs={packages} />
