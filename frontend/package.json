@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "opennextjs-cloudflare build",
+    "preview": "wrangler pages dev .open-next --compatibility-date=2024-11-01",
     "start": "next start",
     "lint": "eslint"
   },
@@ -63,6 +64,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@opennextjs/cloudflare": "^1.14.8",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
@@ -76,7 +78,8 @@
     "sass": "^1.97.0",
     "tailwindcss": "^4.1.17",
     "tw-animate-css": "^1.3.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.54.0"
   },
   "browserslist": {
     "production": [
