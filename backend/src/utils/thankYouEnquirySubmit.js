@@ -10,7 +10,7 @@ export const thankYouEnquirySubmit = (name) => `
   <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;color:#333;">
     <!-- Header -->
     <div style="background-color:#87e87f;padding:20px;text-align:center;border-bottom:3px solid #fff;">
-      <img src="https://cdn.musafirbaba.com/images/logo_eoh3ey_ab47fx.png" alt="MusafirBaba Logo" style="max-width:180px;height:auto;" />
+      <img src="https://cdn.musafirbaba.com/images/logo.png" alt="MusafirBaba Logo" style="max-width:280px;height:auto;" />
     </div>
 
     <!-- Hero Section -->
@@ -23,9 +23,9 @@ export const thankYouEnquirySubmit = (name) => `
       <div style="padding:50px 40px;text-align:center;">
       <p style="font-size:20px;font-weight:600;margin-bottom:30px;"> Dear, ${name}</p>
         <h1 style="font-size:32px;font-weight:700;margin-bottom:30px;color:#FE5300;">
-          Thank you for Enquiring with us
+          Thanks for connecting MusafirBaba!  
         </h1>
-
+        <p>We have received your enquiry. One of our travel experts will reach out to you shortly.</p> <p>Meanwhile, you can explore our website for more information and updates.</p>
         <!-- Sign-off -->
         <div style="text-align:left;font-size:14px;line-height:1.8;color:#333;">
           <div style="margin-bottom:5px;">Thank you,</div>

@@ -9,7 +9,7 @@ export const thankYouEmail = (name) => `
   <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;color:#333;">
     <!-- Header -->
     <div style="background-color:#87e87f;padding:20px;text-align:center;border-bottom:3px solid #fff;">
-      <img src="https://cdn.musafirbaba.com/images/logo_eoh3ey_ab47fx.png" alt="MusafirBaba Logo" style="max-width:180px;height:auto;" />
+      <img src="https://cdn.musafirbaba.com/images/logo.png" alt="MusafirBaba Logo" style="max-width:180px;height:auto;" />
     </div>
 
     <!-- Hero Section -->

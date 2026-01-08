@@ -9,12 +9,12 @@ export const verifyEmailTemplate = (name, otp) => `
   <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;color:#333;">
     <!-- Header -->
     <div style="background-color:#87e87f;padding:20px;text-align:center;border-bottom:3px solid #fff;">
-      <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761737089/logo_eoh3ey_ab47fx.png" alt="MusafirBaba Logo" style="max-width:180px;height:auto;" />
+      <img src="https://cdn.musafirbaba.com/images/logo.png" alt="MusafirBaba Logo" style="max-width:280px;height:auto;" />
     </div>
 
     <!-- Hero Section -->
     <div style="background:#87e87f;padding:60px 20px;text-align:center;">
-      <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761729585/verify-email-musafir-baba_sanwav.png" alt="Verify Email Illustration" style="max-width:300px;height:auto;" />
+      <img src="https://cdn.musafirbaba.com/images/verify-email-musafir-baba_sanwav.png" alt="Verify Email Illustration" style="max-width:300px;height:auto;" />
     </div>
 
     <!-- Main Container -->
@@ -94,22 +94,22 @@ export const verifyEmailTemplate = (name, otp) => `
   <tr>
     <td style="padding:0 8px;">
       <a href="https://in.linkedin.com/company/musafirbaba">
-        <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761732014/linkedin_l5gfr5.png" alt="LinkedIn" style="width:30px;height:30px;display:block;" />
+        <img src="https://cdn.musafirbaba.com/images/linkedin_l5gfr5.png" alt="LinkedIn" style="width:30px;height:30px;display:block;" />
       </a>
     </td>
     <td style="padding:0 8px;">
       <a href="https://x.com/itsmusafirbaba">
-        <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761732014/twitter_hs5c2t.png" alt="Twitter" style="width:30px;height:30px;display:block;" />
+        <img src="https://cdn.musafirbaba.com/images/twitter_hs5c2t.png" alt="Twitter" style="width:30px;height:30px;display:block;" />
       </a>
     </td>
     <td style="padding:0 8px;">
       <a href="https://www.instagram.com/hello_musafirbaba">
-        <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761732015/instagram_p9vxol.png" alt="Instagram" style="width:30px;height:30px;display:block;" />
+        <img src="https://cdn.musafirbaba.com/images/instagram_p9vxol.png" alt="Instagram" style="width:30px;height:30px;display:block;" />
       </a>
     </td>
     <td style="padding:0 8px;">
       <a href="https://www.facebook.com/hellomusafirbaba">
-        <img src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761732015/facebook_ednwce.png" alt="Facebook" style="width:30px;height:30px;display:block;" />
+        <img src="https://cdn.musafirbaba.com/images/facebook_ednwce.png" alt="Facebook" style="width:30px;height:30px;display:block;" />
       </a>
     </td>
   </tr>
