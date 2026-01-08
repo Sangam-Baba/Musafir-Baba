@@ -34,11 +34,13 @@ const verifyOtp = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Missing required fields" });
     }
-    const enquiryOtp = await EnquiryOtp.findOne({ email });
+    const enquiryOtp = await EnquiryOtp.findOne({ email })
+      .sort({ createdAt: -1 })
+      .lean();
     if (!enquiryOtp) {
       return res.status(404).json({ success: false, message: "OTP not found" });
     }
-    if (enquiryOtp.otp !== otp || enquiryOtp.otpExpiry < Date.now()) {
+    if (enquiryOtp.otp != otp || enquiryOtp.otpExpiry.getTime() < Date.now()) {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
     await EnquiryOtp.findByIdAndUpdate(enquiryOtp._id, { verified: true });

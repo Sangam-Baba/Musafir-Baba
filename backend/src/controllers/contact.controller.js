@@ -1,7 +1,7 @@
 import { ContactEnquiry } from "../models/ContactInquiry.js";
 import sendEmail from "../services/email.service.js";
 import { EnquiryOtp } from "../models/OtpEnquiry.js";
-
+import { thankYouEnquirySubmit } from "../utils/thankYouEnquirySubmit.js";
 const createContact = async (req, res) => {
   try {
     const { name, phone, email } = req.body;

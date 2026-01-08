@@ -1,5 +1,4 @@
 import { MoveRightIcon } from "lucide-react";
-import React from "react";
 import Link from "next/link";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";

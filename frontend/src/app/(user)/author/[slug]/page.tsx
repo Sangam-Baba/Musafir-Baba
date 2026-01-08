@@ -136,7 +136,7 @@ export default async function AuthorPage({
         {news.map((blog: blog) => (
           <BlogCard
             key={blog._id}
-            type="blog"
+            type="news"
             title={blog.title}
             coverImage={blog.coverImage.url}
             description={blog.metaDescription}

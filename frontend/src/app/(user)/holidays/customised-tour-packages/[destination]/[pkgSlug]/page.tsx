@@ -32,9 +32,9 @@ async function getRelatedPackages(slug: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ pkgSlug: string }>;
+  params: Promise<{ pkgSlug: string; destination: string }>;
 }) {
-  const { pkgSlug } = await params;
+  const { pkgSlug, destination } = await params;
   const pkg = await getCustomizedPackage(pkgSlug);
 
   if (!pkg) {
@@ -61,7 +61,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg.destination}/${pkgSlug}`,
+      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}/${pkgSlug}`,
     },
     openGraph: {
       title,
