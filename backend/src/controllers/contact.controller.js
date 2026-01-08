@@ -24,11 +24,24 @@ const createContact = async (req, res) => {
       .split("/")
       .join(" - ")}`;
     const emailResponse = await sendEmail(
-      "care@musafirbaba.com",
+      "info@musafirbaba.com",
       subject,
       emailBody
     );
-    if (!emailResponse || emailResponse.error !== null) {
+
+    const clientSubject = "Thank you for reaching out to us.";
+    const clientEmailBody = thankYouEnquirySubmit(name);
+    const clientEmailResponse = await sendEmail(
+      email,
+      clientSubject,
+      clientEmailBody
+    );
+    if (
+      !emailResponse ||
+      emailResponse.error !== null ||
+      !clientEmailResponse ||
+      clientEmailResponse.error !== null
+    ) {
       console.error("Email sending failed:", emailResponse.error);
     }
     await EnquiryOtp.findOneAndDelete({ email });

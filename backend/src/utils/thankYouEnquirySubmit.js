@@ -1,10 +1,11 @@
-export const thankYouEmail = (name) => `
+export const thankYouEnquirySubmit = (name) => `
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Email Address - MusafirBaba</title>
+    <title>Thank You - MusafirBaba</title>
   </head>
   <body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;color:#333;">
     <!-- Header -->
@@ -14,7 +15,7 @@ export const thankYouEmail = (name) => `
 
     <!-- Hero Section -->
     <div style="background:#87e87f;padding:60px 20px;text-align:center;">
-      <img src="https://cdn.musafirbaba.com/images/image__1_-removebg-preview_w38ntb.png" alt="Thank You Musafirbaba" style="max-width:300px;height:auto;" />
+      <img src="https://cdn.musafirbaba.com/images/vector-for-sangam-3_ubl8gh.png" alt="Thank You Musafirbaba" style="max-width:500px;height:auto;" />
     </div>
 
     <!-- Main Container -->
@@ -22,12 +23,8 @@ export const thankYouEmail = (name) => `
       <div style="padding:50px 40px;text-align:center;">
       <p style="font-size:20px;font-weight:600;margin-bottom:30px;"> Dear, ${name}</p>
         <h1 style="font-size:32px;font-weight:700;margin-bottom:30px;color:#FE5300;">
-          Thank you for Registring with us
+          Thank you for Enquiring with us
         </h1>
-
-        <p style="font-size:14px;line-height:1.6;text-align:left;margin-bottom:30px;color:#555;">
-         Now you can use all features of MusafirBaba.com
-        </p>
 
         <!-- Sign-off -->
         <div style="text-align:left;font-size:14px;line-height:1.8;color:#333;">
@@ -39,7 +36,7 @@ export const thankYouEmail = (name) => `
       <!-- Footer -->
       <div style="background-color:#f0f0f0;padding:40px;text-align:center;font-size:13px;line-height:1.8;color:#666;">
         <div style="margin-bottom:25px;">
-          You are receiving this email because you registered at MusafirBaba.com. If this doesn’t apply to you, please ignore this message.
+          You are receiving this email because you enquired at MusafirBaba.com. If this doesn’t apply to you, please ignore this message.
         </div>
 
         <!-- Footer Links -->

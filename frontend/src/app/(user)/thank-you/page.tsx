@@ -25,7 +25,7 @@ export default function ThankYouPage() {
       </div>
       {/* Background Image */}
       <Image
-        src="https://res.cloudinary.com/dmmsemrty/image/upload/v1761897633/vector-for-sangam-3_ubl8gh.png"
+        src="https://cdn.musafirbaba.com/images/vector-for-sangam-3_ubl8gh.png"
         alt="Thank You Musafirbaba"
         width={1000}
         height={1000}
