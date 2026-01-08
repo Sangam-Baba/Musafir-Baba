@@ -1,5 +1,41 @@
+
+
+User-agent: Mediapartners-Google
+Allow: *
+
+
+User-agent: GPTBot
+Allow: *
+
+User-agent: Google-Extended
+Allow: *
+
+User-agent: PerplexityBot
+Allow: *
+
+User-agent: OAI-SearchBot/1.0
+Allow: *
+
+User-agent: anthropic-ai
+Allow: *
+
+User-agent: FacebookBot
+Allow: *
+
+User-agent: Amazonbot
+Allow: *
+
+User-agent: Applebot
+Allow: *
+
+User-agent: CCBot
+Allow: *
+
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /user
 Disallow: /membership/
+Disallow: /payment
+Disallow: /thankyou
 Sitemap: https://musafirbaba.com/sitemap.xml

@@ -1,8 +1,6 @@
-
+import { redirect } from "next/navigation";
 function page() {
-  return (
-    <div>page</div>
-  )
+  redirect("/");
 }
 
-export default page
+export default page;
