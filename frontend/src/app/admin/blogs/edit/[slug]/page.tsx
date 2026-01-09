@@ -189,7 +189,7 @@ export default function EditBlog() {
 
   if (isLoading) return <Loader size="lg" message="Loading blog..." />;
 
-  const schemaTypes = ["Blog", "FAQ"];
+  const schemaTypes = ["Blog"];
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">

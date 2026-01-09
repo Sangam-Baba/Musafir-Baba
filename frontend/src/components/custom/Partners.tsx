@@ -10,63 +10,54 @@ function Partners() {
   const partners = [
     {
       name: "VFS",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1765970989/vfs_ec9739.jpg",
+      image: "https://cdn.musafirbaba.com/images/vfs_ec9739.jpg",
     },
     {
       name: "Paytem",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766466823/download_2_kx6up9.png",
+      image: "https://cdn.musafirbaba.com/images/download_2_kx6up9.png",
     },
     {
       name: "MMT",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1765970989/mmt_bzhgxl.png",
+      image: "https://cdn.musafirbaba.com/images/mmt_bzhgxl.png",
     },
     {
       name: "EMT",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1765969134/easemytrip-logo-png_seeklogo-517976_iy4r6z.png",
+        "https://cdn.musafirbaba.com/images/easemytrip-logo-png_seeklogo-517976_iy4r6z.png",
     },
     {
       name: "Goibibo",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766408666/1_pmcv8t.png",
+      image: "https://cdn.musafirbaba.com/images/1_pmcv8t.png",
     },
     {
       name: "indigo",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766408666/2_zou3l6.png",
+      image: "https://cdn.musafirbaba.com/images/2_zou3l6.png",
     },
     {
       name: "Pay U",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766574772/pay_u_ypbpf9.png",
+      image: "https://cdn.musafirbaba.com/images/pay_u_ypbpf9.png",
     },
     {
       name: "Red Bus",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766574588/red_bgv024.png",
+      image: "https://cdn.musafirbaba.com/images/red_bgv024.png",
     },
     {
       name: "Air India",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467352/ai-large-default_dmageq.svg",
+        "https://cdn.musafirbaba.com/images/1767961958311-ai-large-default_dmageq.webp",
     },
     {
       name: "Spicejet",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467542/spicejett_wvlra2.png",
+      image: "https://cdn.musafirbaba.com/images/spicejett_wvlra2.png",
     },
     {
       name: "akasha airlines",
       image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766467352/akasha_tjdowv.svg",
+        "https://cdn.musafirbaba.com/images/1767961958252-akasha_tjdowv.webp",
     },
     {
       name: "vistara",
-      image:
-        "https://res.cloudinary.com/dmmsemrty/image/upload/v1766574803/vis_1_wkfaqo.png",
+      image: "https://cdn.musafirbaba.com/images/vis_1_wkfaqo.png",
     },
   ];
   return (

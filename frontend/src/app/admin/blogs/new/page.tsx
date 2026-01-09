@@ -160,7 +160,7 @@ export default function CreateBlog() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     mutation.mutate(values);
   }
-  const schemaTypes = ["Blog", "FAQ"];
+  const schemaTypes = ["Blog"];
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Create Blog</h1>

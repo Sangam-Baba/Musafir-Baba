@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ImageUploader from "@/components/admin/ImageUploader"; // ✅ your existing uploader
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
+import { useParams } from "next/navigation";
 
 interface Image {
   url: string;
@@ -74,8 +75,9 @@ const getAboutUs = async (id: string) => {
 };
 
 // ----------------- MAIN COMPONENT -----------------
-function CreateAboutUsPage({ params }: { params: { id: string } }) {
-  const id = params.id;
+function CreateAboutUsPage() {
+  const params = useParams();
+  const id = params.id as string;
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
 
   const defaultValues: FormValues = {

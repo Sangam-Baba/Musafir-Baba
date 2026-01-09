@@ -180,6 +180,7 @@ function CreateEditStaff({
         "about-us",
         "news",
         "blogs",
+        "gallery",
         "video-banner",
         "footer",
         "career",

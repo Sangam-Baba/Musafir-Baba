@@ -1,13 +1,12 @@
 import { Resend } from "resend";
 import dotenv from "dotenv";
 dotenv.config();
-console.log(process.env.Resend_API);
 const resend = new Resend(process.env.Resend_API);
 
 const sendEmail = async (email, subject, htmlBody) => {
   try {
     const data = await resend.emails.send({
-      from: "info@musafirbaba.com",
+      from: "MusafirBaba <info@musafirbaba.com>",
       to: email,
       subject: subject,
       html: htmlBody,

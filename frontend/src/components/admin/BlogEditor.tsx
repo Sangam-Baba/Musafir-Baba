@@ -64,6 +64,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import MediaPicker from "../common/MediaList";
 interface BlogEditorProps {
   value?: string;
   onChange: (content: string) => void;
@@ -109,6 +110,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   const [buttonDialogOpen, setButtonDialogOpen] = useState(false);
   const [buttonText, setButtonText] = useState("");
   const [buttonHref, setButtonHref] = useState("");
+  const [mediaOpen, setMediaOpen] = useState(false);
 
   const CustomLink = Link.extend({
     addAttributes() {
@@ -171,8 +173,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   if (!editor) return null;
 
   const addImage = () => {
-    const url = prompt("Enter image URL");
-    if (url) editor.chain().focus().setImage({ src: url }).run();
+    setMediaOpen(true);
   };
 
   const addLink = () => {
@@ -505,6 +506,16 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <MediaPicker
+          open={mediaOpen}
+          onClose={() => setMediaOpen(false)}
+          onSelect={(img) => {
+            const alt = prompt("Enter image alt text") || "Image";
+            editor.chain().focus().setImage({ src: img.url, alt }).run();
+            setMediaOpen(false);
+          }}
+        />
       </div>
     </TooltipProvider>
   );

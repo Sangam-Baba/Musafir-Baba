@@ -133,7 +133,7 @@ export default function CreateNews() {
     mutation.mutate(values);
   }
 
-  const schemaTypes = ["News", "FAQ"];
+  const schemaTypes = ["News"];
   return (
     <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6">Create News</h1>

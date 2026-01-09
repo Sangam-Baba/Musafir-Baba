@@ -157,7 +157,7 @@ export default function EditNews() {
 
   const onSubmit = (data: FormValues) => mutation.mutate(data);
 
-  const schemaTypes = ["News", "FAQ"];
+  const schemaTypes = ["News"];
 
   if (isLoading) return <Loader size="lg" message="Loading blog..." />;
 

@@ -9,7 +9,7 @@ function SectionFive() {
         <div className="md:w-1/2  hidden md:flex ">
           <Image
             className="object-cover w-full h-full  rounded-xl "
-            src="https://res.cloudinary.com/dmmsemrty/image/upload/v1759216769/vector_with_white_bg_cqwssa.jpg"
+            src="https://cdn.musafirbaba.com/images/vector_with_white_bg_cqwssa.jpg"
             width={500}
             height={510}
             alt="h1"

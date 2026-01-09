@@ -41,6 +41,7 @@ import {
   MapPinPenIcon,
   Video,
   IndianRupee,
+  Images,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -100,6 +101,12 @@ const NAV_GROUPS = [
         href: "/admin/career",
         icon: Briefcase,
         permission: "career",
+      },
+      {
+        label: "Gallery",
+        href: "/admin/gallery",
+        icon: Images,
+        permission: "gallery",
       },
       {
         label: "About Us",

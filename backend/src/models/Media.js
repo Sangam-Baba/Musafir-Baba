@@ -10,7 +10,7 @@ const mediaSchema = new mongoose.Schema(
     resource_type: String,
     width: Number,
     height: Number,
-    pages: Number, // for PDFs
+    pages: Number,
     folder: String,
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
