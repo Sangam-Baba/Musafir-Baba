@@ -38,4 +38,5 @@ Disallow: /user
 Disallow: /membership/
 Disallow: /payment
 Disallow: /thankyou
+Disallow: /author
 Sitemap: https://musafirbaba.com/sitemap.xml

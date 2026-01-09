@@ -27,6 +27,7 @@ export interface WebpageFormData {
   isParent: boolean;
   metaTitle?: string;
   metaDescription?: string;
+  canonicalUrl?: string;
   keywords?: string[];
   reviews?: string[];
   schemaType?: string[];
@@ -101,6 +102,7 @@ export default function CreateWebpage() {
     isParent: false,
     metaTitle: "",
     metaDescription: "",
+    canonicalUrl: "",
     keywords: [],
     reviews: [],
     schemaType: [],
@@ -218,6 +220,11 @@ export default function CreateWebpage() {
         <textarea
           {...form.register("excerpt")}
           placeholder="Excerpt"
+          className="w-full border rounded p-2"
+        />
+        <input
+          {...form.register("canonicalUrl")}
+          placeholder="Canonical URL"
           className="w-full border rounded p-2"
         />
         <div>

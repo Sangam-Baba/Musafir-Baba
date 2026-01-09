@@ -76,6 +76,7 @@ export default function UpdateWebpage() {
     isParent: false,
     metaTitle: "",
     metaDescription: "",
+    canonicalUrl: "",
     keywords: [],
     reviews: [],
     schemaType: [],
@@ -211,6 +212,11 @@ export default function UpdateWebpage() {
         <textarea
           {...form.register("excerpt")}
           placeholder="Excerpt"
+          className="w-full border rounded p-2"
+        />
+        <input
+          {...form.register("canonicalUrl")}
+          placeholder="Canonical URL"
           className="w-full border rounded p-2"
         />
         <div>

@@ -77,6 +77,7 @@ interface PackageFormValues {
   duration: { days: number; nights: number };
   metaTitle: string;
   metaDescription: string;
+  canonicalUrl?: string;
   schemaType: string[];
   keywords?: string[];
   maxPeople?: number;
@@ -203,6 +204,7 @@ export default function CreatePackagePage() {
     description: "",
     metaTitle: "",
     metaDescription: "",
+    canonicalUrl: "",
     schemaType: [],
     status: "draft",
     keywords: [],
@@ -1025,6 +1027,24 @@ export default function CreatePackagePage() {
                     <Input
                       type="text"
                       placeholder="Enter SEO Meta Description"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Canoniuval URL */}
+            <FormField
+              control={form.control}
+              name="canonicalUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Canonical URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Enter Canonical URL"
                       {...field}
                     />
                   </FormControl>

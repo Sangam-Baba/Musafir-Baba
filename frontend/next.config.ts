@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/blog/schengen-joint-visa-centre-relocates-in-delhi",
+        destination: "/news/schengen-joint-visa-centre-relocates-in-delhi",
+        permanent: true,
+      },
+      {
         source:
           "/blog/4000-crore-push-meghalaya-bets-big-on-240-tourism-projects",
         destination:

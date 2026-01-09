@@ -82,12 +82,6 @@ interface Destination {
   };
   updatedAt: string;
 }
-interface Author {
-  _id: string;
-  name: string;
-  slug: string;
-  updatedAt: string;
-}
 interface Webpage {
   _id: string;
   title: string;
@@ -174,12 +168,6 @@ const getAllVisa = async () => {
   return data?.data ?? [];
 };
 
-const getAllAuthors = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`);
-  if (!res.ok) throw new Error("Failed to fetch Authors");
-  const data = await res.json();
-  return data?.data ?? [];
-};
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogs = await getBlogs();
   const news = await getNews();
@@ -188,15 +176,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const packages = await getPackages();
   const destinations = await getDestination();
   const webpages = await getAllWebPage();
-  const bookingsPages = webpages.filter(
-    (webpage: Webpage) => webpage.parent === "bookings"
-  );
-  const noParentPages = webpages.filter(
-    (webpage: Webpage) => webpage.parent === "noparent"
-  );
-  const visas = await getAllVisa();
 
-  const authors = await getAllAuthors();
+  const visas = await getAllVisa();
 
   const uniqueDestinations = [];
 
@@ -306,12 +287,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(page.updatedAt),
       changeFrequency: "weekly",
       priority: 0.7,
-    })),
-    ...authors.map((author: Author) => ({
-      url: `https://musafirbaba.com/author/${author?.slug}`,
-      lastModified: new Date(author.updatedAt),
-      changeFrequency: "monthly",
-      priority: 0.5,
     })),
   ];
 }

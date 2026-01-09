@@ -29,6 +29,7 @@ const webPageSchema = new mongoose.Schema(
     ],
     metaTitle: String,
     metaDescription: String,
+    canonicalUrl: String,
     excerpt: String,
     schemaType: [
       {
@@ -106,9 +107,15 @@ webPageSchema.methods.updateFullSlugRecursively = async function () {
     ? await this.model("WebPage").findById(this.parent)
     : null;
 
+  const oldFullSlug = this.fullSlug;
+
   this.fullSlug = parent ? `${parent.fullSlug}/${this.slug}` : this.slug;
   await this.save();
 
+  if (!this.canonicalUrl || this.canonicalUrl === `/${oldFullSlug}`) {
+    this.canonicalUrl = `/${this.fullSlug}`;
+  }
+  await this.save({ validateBeforeSave: false });
   // Update all children
   const children = await this.model("WebPage").find({ parent: this._id });
 
@@ -133,17 +140,18 @@ webPageSchema.post("findOneAndUpdate", async function (doc) {
 
 webPageSchema.pre("save", function (next) {
   this.slug = slugify(this.slug, { lower: true, strict: true });
+  if (!this.canonicalUrl) this.canonicalUrl = `/${this.fullSlug}`;
   next();
 });
-webPageSchema.pre("findOneAndUpdate", function (next) {
+
+webPageSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  if (update.slug) {
-    update.slug = slugify(update.slug || update.title, {
-      lower: true,
-      strict: true,
-    });
-    this.setUpdate(update);
-  }
+
+  const finalSlug = update.slug
+    ? slugify(update.slug, { lower: true, strict: true })
+    : existindDoc.slug;
+  update.slug = finalSlug;
+  this.setUpdate(update);
   next();
 });
 

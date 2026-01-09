@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
+import { Category } from "./Category.js";
+import { Destination } from "./Destination.js";
 
 const packageSchema = new mongoose.Schema(
   {
@@ -126,15 +128,67 @@ packageSchema.pre("save", function (next) {
   next();
 });
 
-packageSchema.pre("findOneAndUpdate", function (next) {
-  const update = this.getUpdate();
-  if (update.slug) {
-    update.slug = slugify(update.slug || update.title, {
-      lower: true,
-      strict: true,
-    });
-    this.setUpdate(update);
+packageSchema.pre("save", async function (next) {
+  if (!this.mainCategory || !this.destination || !this.slug) {
+    return next();
   }
+
+  const [category, destination] = await Promise.all([
+    Category.findById(this.mainCategory).select("slug"),
+    Destination.findById(this.destination).select("slug"),
+  ]);
+
+  if (!category || !destination) return next();
+
+  this.canonicalUrl = `/holidays/${category.slug}/${destination.slug}/${this.slug}`;
+
+  next();
+});
+
+packageSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  const existing = await this.model.findOne(this.getQuery()).lean();
+
+  // 🔹 Compute final slug
+  const finalSlug = update.slug
+    ? slugify(update.slug, { lower: true, strict: true })
+    : existing.slug;
+
+  // 🔹 Detect structure changes
+  const categoryChanged =
+    update.mainCategory &&
+    update.mainCategory.toString() !== existing.mainCategory?.toString();
+
+  const destinationChanged =
+    update.destination &&
+    update.destination.toString() !== existing.destination?.toString();
+
+  const slugChanged = finalSlug !== existing.slug;
+
+  // 🔹 Detect manual canonical edit
+  const canonicalEdited =
+    update.canonicalUrl && update.canonicalUrl !== existing.canonicalUrl;
+
+  // 🔹 Auto-generate canonical if needed
+  if (
+    (categoryChanged || destinationChanged || slugChanged) &&
+    !canonicalEdited
+  ) {
+    const categoryId = update.mainCategory ?? existing.mainCategory;
+    const destinationId = update.destination ?? existing.destination;
+
+    const [category, destination] = await Promise.all([
+      Category.findById(categoryId).select("slug"),
+      Destination.findById(destinationId).select("slug"),
+    ]);
+
+    if (category && destination) {
+      update.canonicalUrl = `/holidays/${category.slug}/${destination.slug}/${finalSlug}`;
+    }
+  }
+
+  update.slug = finalSlug;
+  this.setUpdate(update);
   next();
 });
 
