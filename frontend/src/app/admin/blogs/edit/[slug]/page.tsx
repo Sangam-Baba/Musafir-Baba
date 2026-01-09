@@ -32,6 +32,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Meta description is required." }),
   schemaType: z.array(z.string()).optional(),
+  canonicalUrl: z.string().optional(),
   keywords: z.array(z.string()),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
@@ -135,6 +136,7 @@ export default function EditBlog() {
       author: "",
       metaTitle: "",
       metaDescription: "",
+      canonicalUrl: "",
       schemaType: [],
       keywords: [],
       tags: [],
@@ -155,6 +157,7 @@ export default function EditBlog() {
         author: blog.author?._id ?? "",
         metaTitle: blog.metaTitle,
         metaDescription: blog.metaDescription,
+        canonicalUrl: blog.canonicalUrl,
         schemaType: blog.schemaType,
         keywords: blog.keywords,
         tags: blog.tags,
@@ -254,6 +257,11 @@ export default function EditBlog() {
           placeholder="Excerpt"
           className="w-full border rounded p-2"
         />
+        <input
+          {...form.register("canonicalUrl")}
+          placeholder="Canonical Url"
+          className="w-full border rounded p-2"
+        />
         <div>
           <label className="font-semibold">Schema Type</label>
           <select
@@ -270,8 +278,11 @@ export default function EditBlog() {
         </div>
         <div className="flex gap-2">
           {form.watch("schemaType") ??
-            [].map((option) => (
-              <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
+            [].map((option, i: number) => (
+              <p
+                key={option + i}
+                className="bg-gray-100 rounded-lg p-2 w-[150px]"
+              >
                 {option}
                 <X
                   className="float-right cursor-pointer hover:text-red-500"

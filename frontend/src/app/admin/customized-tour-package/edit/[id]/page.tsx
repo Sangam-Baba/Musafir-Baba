@@ -28,47 +28,6 @@ import { getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { CustomizedPackageValues } from "@/app/admin/customized-tour-package/new/page";
 import SmallEditor from "@/components/admin/SmallEditor";
 
-// interface Image {
-//   url: string;
-//   alt: string;
-//   public_id?: string;
-//   width?: number;
-//   height?: number;
-// }
-// interface Faq {
-//   question: string;
-//   answer: string;
-// }
-// interface Itinerary {
-//   title: string;
-//   description: string;
-// }
-// interface Plans {
-//   title: string;
-//   include: string;
-//   price: number;
-// }
-// interface Highlight {
-//   title: string;
-// }
-// interface PackageFormValues {
-//   title: string;
-//   description?: string;
-//   slug: string;
-//   plans: Plans[];
-//   destination: string;
-//   coverImage?: Image;
-//   gallery?: Image[];
-//   duration: { days: number; nights: number };
-//   metaTitle?: string;
-//   metaDescription?: string;
-//   keywords?: string[];
-//   highlight?: Highlight[];
-//   itinerary?: Itinerary[];
-//   faqs?: Faq[];
-//   status: "draft" | "published";
-// }
-
 interface Destination {
   _id: string;
   name: string;
@@ -135,6 +94,7 @@ export default function CreatePackagePage() {
     description: "",
     metaTitle: "",
     metaDescription: "",
+    canonicalUrl: "",
     keywords: [],
     reviews: [],
     plans: [
@@ -600,6 +560,23 @@ export default function CreatePackagePage() {
                     <Input
                       type="text"
                       placeholder="Enter SEO Meta Description"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="canonicalUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Canonical URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Enter Canonical URL"
                       {...field}
                     />
                   </FormControl>

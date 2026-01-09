@@ -105,19 +105,25 @@ newsSchema.pre("save", function (next) {
   next();
 });
 
-newsSchema.pre("findOneAndUpdate", function (next) {
+newsSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  if (update.slug) {
-    update.slug = slugify(update.slug || update.title, {
-      lower: true,
-      strict: true,
-    });
-    this.setUpdate(update);
+  const existindDoc = await this.model.findOne(this.getQuery()).lean();
+
+  const finalSlug = update.slug
+    ? slugify(update.slug, { lower: true, strict: true })
+    : existindDoc.slug;
+
+  const changeCanonical =
+    update.canonicalUrl && update.canonicalUrl !== existindDoc.canonicalUrl;
+  const changeSlug = update.slug && update.slug !== existindDoc.slug;
+  if (!changeCanonical || changeSlug) {
+    update.canonicalUrl = `/news/${finalSlug}`;
   }
+  update.slug = finalSlug;
+  this.setUpdate(update);
   next();
 });
 
-newsSchema.index({ title: "text", content: "text" }); // full-text
-newsSchema.index({ tags: 1 }); // fast filtering
-
+newsSchema.index({ title: "text", content: "text" });
+newsSchema.index({ tags: 1 });
 export const News = mongoose.model("News", newsSchema);

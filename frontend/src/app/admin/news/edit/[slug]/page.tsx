@@ -31,6 +31,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Meta description is required." }),
   schemaType: z.array(z.string()).optional(),
+  canonicalUrl: z.string().optional(),
   keywords: z.array(z.string()),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
@@ -106,6 +107,7 @@ export default function EditNews() {
       author: "",
       metaTitle: "",
       metaDescription: "",
+      canonicalUrl: "",
       schemaType: [],
       keywords: [],
       tags: [],
@@ -125,6 +127,7 @@ export default function EditNews() {
         author: news.author?._id ?? "",
         metaTitle: news.metaTitle,
         metaDescription: news.metaDescription,
+        canonicalUrl: news.canonicalUrl,
         schemaType: news.schemaType,
         keywords: news.keywords,
         tags: news.tags,
@@ -210,6 +213,11 @@ export default function EditNews() {
         <textarea
           {...form.register("excerpt")}
           placeholder="Excerpt"
+          className="w-full border rounded p-2"
+        />
+        <input
+          {...form.register("canonicalUrl")}
+          placeholder="Canonical Url"
           className="w-full border rounded p-2"
         />
         <div>

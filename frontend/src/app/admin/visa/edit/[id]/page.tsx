@@ -74,6 +74,7 @@ export default function CreateVisaPage() {
     schemaType: [],
     metaTitle: "",
     metaDescription: "",
+    canonicalUrl: "",
     keywords: [],
     cost: 0,
     visaType: "DAC",
@@ -316,8 +317,21 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
-
-            {/* meta description */}
+            {/* metaTitle */}
+            <FormField
+              control={form.control}
+              name="canonicalUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Canonical Url</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Canonical Url" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* excerpt*/}
             <FormField
               control={form.control}
               name="excerpt"

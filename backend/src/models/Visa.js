@@ -21,6 +21,7 @@ const visaSchema = new mongoose.Schema(
     },
     metaTitle: String,
     metaDescription: String,
+    canonicalUrl: String,
     schemaType: [
       {
         type: String,
@@ -101,18 +102,24 @@ visaSchema.pre("save", function (next) {
   if (this.isModified("slug")) {
     this.slug = slugify(this.slug || this.title, { lower: true, strict: true });
   }
+  if (!this.canonicalUrl) this.canonicalUrl = `/visa/${this.slug}`;
   next();
 });
 
 visaSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate();
-  if (update.slug) {
-    update.slug = slugify(update.slug || update.title, {
-      lower: true,
-      strict: true,
-    });
-    this.setUpdate(update);
+  const existindDoc = this.model.findOne(this.getQuery()).lean();
+  const finalSlug = update.slug
+    ? slugify(update.slug || update.title, { lower: true, strict: true })
+    : existindDoc.slug;
+
+  const changeCanonical =
+    update.canonicalUrl && update.canonicalUrl !== existindDoc.canonicalUrl;
+  const changeSlug = update.slug && update.slug !== existindDoc.slug;
+  if (!changeCanonical || changeSlug) {
+    update.canonicalUrl = `/visa/${finalSlug}`;
   }
+  this.setUpdate(update);
   next();
 });
 

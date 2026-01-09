@@ -38,6 +38,7 @@ export interface Visa {
   schemaType?: string[];
   metaTitle: string;
   metaDescription: string;
+  canonicalUrl?: string;
   keywords: string[];
   reviews?: string[];
   cost: number;
@@ -91,6 +92,7 @@ export default function CreateVisaPage() {
     schemaType: [],
     metaTitle: "",
     metaDescription: "",
+    canonicalUrl: "",
     keywords: [],
     reviews: [],
     cost: 0,
@@ -325,6 +327,20 @@ export default function CreateVisaPage() {
                   <FormLabel>Excerpt</FormLabel>
                   <FormControl>
                     <Input type="text" placeholder="Thailand" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* canonical url */}
+            <FormField
+              control={form.control}
+              name="canonicalUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Canonical URL</FormLabel>
+                  <FormControl>
+                    <Input type="text" placeholder="Canonical URL" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

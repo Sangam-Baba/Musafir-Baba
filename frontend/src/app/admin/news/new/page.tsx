@@ -196,6 +196,11 @@ export default function CreateNews() {
           placeholder="Excerpt"
           className="w-full border rounded p-2"
         />
+        <input
+          {...form.register("canonicalUrl")}
+          placeholder="Canonical URL"
+          className="w-full border rounded p-2"
+        />
         <div>
           <label className="font-semibold">Schema Type</label>
           <select

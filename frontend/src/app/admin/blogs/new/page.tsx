@@ -28,6 +28,7 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Meta description is required." }),
   schemaType: z.array(z.string()).optional(),
+  canonicalUrl: z.string().optional(),
   keywords: z.array(z.string()),
   tags: z.array(z.string()).optional(),
   coverImage: z.object({
@@ -101,6 +102,7 @@ export default function CreateBlog() {
       author: "",
       metaTitle: "",
       metaDescription: "",
+      canonicalUrl: "",
       schemaType: [],
       keywords: [],
       tags: [],
@@ -231,6 +233,11 @@ export default function CreateBlog() {
         <textarea
           {...form.register("excerpt")}
           placeholder="Excerpt"
+          className="w-full border rounded p-2"
+        />
+        <input
+          {...form.register("canonicalUrl")}
+          placeholder="Canonical Url"
           className="w-full border rounded p-2"
         />
         <div>
