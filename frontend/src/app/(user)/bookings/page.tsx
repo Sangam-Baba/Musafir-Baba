@@ -25,12 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
     description: page.metaDescription,
     keywords: page.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings`,
+      canonical: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/bookings`,
     },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/bookings`,
+      url: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/bookings`,
       type: "website",
       images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },

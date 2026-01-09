@@ -107,7 +107,8 @@ customizedTourPackageSchema.pre("findOneAndUpdate", async function (next) {
     update.destination.toString() !== existindDoc.destination.toString();
 
   if (!changeCanonical && (changeSlug || chnageDestination)) {
-    const destination = await Destination.findById(existindDoc.destination)
+    const destinationId = update.destination ?? existindDoc.destination;
+    const destination = await Destination.findById(destinationId)
       .select("state")
       .lean();
 

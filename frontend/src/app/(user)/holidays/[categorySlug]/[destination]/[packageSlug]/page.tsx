@@ -65,6 +65,7 @@ export interface GroupPackageInterface {
   duration: Duration;
   metaTitle?: string;
   metaDescription?: string;
+  canonicalUrl?: string;
   schemaType?: string[];
   reviews?: Reviews[];
   keywords?: string[];
@@ -118,13 +119,17 @@ export async function generateMetadata({
     title: page?.metaTitle || page.title,
     description: page?.metaDescription,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
+      canonical: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
     },
     keywords: page.keywords,
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
+      url:
+        `https://musafirbaba.com${page.canonicalUrl}` ||
+        `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
       type: "website",
       images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },

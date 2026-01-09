@@ -15,12 +15,16 @@ export async function generateMetadata() {
     description: data?.metaDescription,
     keywords: data?.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
+      canonical: data?.canonicalUrl
+        ? `https://musafirbaba.com${data.canonicalUrl}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
     },
     openGraph: {
       title: data?.title,
       description: data?.description,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
+      url: data?.canonicalUrl
+        ? `https://musafirbaba.com${data.canonicalUrl}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/contact-us`,
       type: "website",
       images:
         data?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",

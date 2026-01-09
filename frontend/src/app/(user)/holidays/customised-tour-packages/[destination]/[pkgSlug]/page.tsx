@@ -61,11 +61,16 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}/${pkgSlug}`,
+      canonical: pkg?.canonicalUrl
+        ? `https://musafirbaba.com${pkg.canonicalUrl}`
+        : `https://musafirbaba.com/holidays/customised-tour-packages/${destination}/${pkgSlug}`,
     },
     openGraph: {
       title,
       description,
+      url: pkg?.canonicalUrl
+        ? `https://musafirbaba.com${pkg.canonicalUrl}`
+        : `https://musafirbaba.com/holidays/customised-tour-packages/${destination}/${pkgSlug}`,
       images: [
         {
           url:

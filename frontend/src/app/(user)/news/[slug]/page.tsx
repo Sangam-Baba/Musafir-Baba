@@ -51,7 +51,9 @@ export async function generateMetadata({
     "Read this travel blog on Musafir Baba.";
   const image =
     news.coverImage?.url || "https://musafirbaba.com/default-og.jpg";
-  const url = `https://musafirbaba.com/news/${news.slug}`;
+  const url = news?.canonicalUrl
+    ? `https://musafirbaba.com${news.canonicalUrl}`
+    : `https://musafirbaba.com/news/${news.slug}`;
 
   return {
     title,

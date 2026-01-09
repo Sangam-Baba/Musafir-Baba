@@ -30,6 +30,7 @@ interface FormValues {
   coverImage: ImageType;
   metaTitle: string;
   metaDescription: string;
+  canonicalUrl?: string;
   keywords: string[];
   h2title: string;
   h2description: string;
@@ -56,7 +57,9 @@ export async function generateMetadata(): Promise<Metadata> {
     description: about?.metaDescription,
     keywords: about?.keywords,
     alternates: {
-      canonical: `https://musafirbaba.com/about-us`,
+      canonical: about?.canonicalUrl
+        ? `https://musafirbaba.com${about.canonicalUrl}`
+        : `https://musafirbaba.com/about-us`,
     },
     openGraph: {
       title: about?.metaTitle || page?.title,

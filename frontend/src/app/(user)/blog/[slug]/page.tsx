@@ -52,7 +52,9 @@ export async function generateMetadata({
     "Read this travel blog on Musafir Baba.";
   const image =
     blog.coverImage?.url || "https://musafirbaba.com/default-og.jpg";
-  const url = `https://musafirbaba.com/blog/${blog.slug}`;
+  const url = blog?.canonicalUrl
+    ? `https://musafirbaba.com${blog.canonicalUrl}`
+    : `https://musafirbaba.com/blog/${blog.slug}`;
 
   return {
     title,

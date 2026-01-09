@@ -33,12 +33,16 @@ export async function generateMetadata({
     description: page.metaDescription,
     keywords: page.keywords,
     alternates: {
-      canonical: `https://musafirbaba.com/${fullSlug}`,
+      canonical: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `https://musafirbaba.com/${fullSlug}`,
     },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `https://musafirbaba.com/${fullSlug}`,
+      url: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `https://musafirbaba.com/${fullSlug}`,
       type: "website",
       images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },

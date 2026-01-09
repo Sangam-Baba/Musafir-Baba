@@ -65,12 +65,16 @@ export async function generateMetadata(): Promise<Metadata> {
     description: page.metaDescription,
     keywords: page.keywords,
     alternates: {
-      canonical: `https://musafirbaba.com/${page.slug}`,
+      canonical: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `https://musafirbaba.com/${page.slug}`,
     },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `https://musafirbaba.com/${page.slug}`,
+      url:
+        `https://musafirbaba.com${page.canonicalUrl}` ||
+        `https://musafirbaba.com/${page.slug}`,
       type: "website",
       images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
@@ -357,7 +361,7 @@ async function page() {
         </div>
         <Testimonial data={[]} />
         <WhyChoose />
-        <Faqs faqs={faqs} />
+        <Faqs faqs={page?.faqs.length > 0 ? page.faqs : faqs} />
       </div>
       <Script
         id="breadcrumb"

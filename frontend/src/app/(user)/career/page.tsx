@@ -16,7 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
     description: data?.metaDescription,
     keywords: data?.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/career`,
+      canonical: data?.canonicalUrl
+        ? `https://musafirbaba.com${data.canonicalUrl}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/career`,
     },
     openGraph: {
       title: data?.title,

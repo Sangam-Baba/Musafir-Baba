@@ -43,12 +43,16 @@ export async function generateMetadata({
     description: page.metaDescription,
     keywords: page.keywords,
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
+      canonical: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
     },
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
+      url:
+        `https://musafirbaba.com${page.canonicalUrl}` ||
+        `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
       type: "website",
       images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
