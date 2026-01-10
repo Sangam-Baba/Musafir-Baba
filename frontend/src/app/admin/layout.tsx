@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 
 import React from "react";
+import { Toaster } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar as AppSidebar } from "@/components/admin/app-sidebar";
 import { RootProvider } from "@/providers/root-provider";
@@ -42,6 +43,7 @@ export default function AdminLayout({
               )}
               {/* Page Content */}
               <main className="flex-1  p-6">{children}</main>
+              <Toaster position="top-right" richColors />
             </div>
           </div>
         </SidebarProvider>

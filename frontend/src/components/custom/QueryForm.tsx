@@ -202,13 +202,13 @@ export default function QueryForm() {
                 </FormItem>
               )}
             />
-            <div className="flex gap-2 items-center">
+            <div className="grid grid-cols-4 gap-2 items-center">
               {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem className="w-full">
+                  <FormItem className="col-span-3">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
@@ -228,7 +228,7 @@ export default function QueryForm() {
                 type="button"
                 // disabled={!form.getValues("email")}
                 onClick={() => handleCreateOtp(form.getValues("email"))}
-                className="w-[20%] mt-5"
+                className="col-span-1 h-13 mt-5"
               >
                 Get OTP
               </Button>

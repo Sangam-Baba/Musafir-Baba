@@ -1,15 +1,29 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import ImageUploader, { UploadedFile } from "@/components/admin/ImageUploader";
 import Image from "next/image";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Trash } from "lucide-react";
+
 const allMedia = async (accessToken: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/media`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   const json = await res.json();
   return json.data;
+};
+const deleteMedia = async (accessToken: string, id: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/media/${id}`, {
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to delete media");
+  return res.json();
 };
 
 function page() {
@@ -20,6 +34,18 @@ function page() {
     queryKey: ["media-gallery", Upload],
     queryFn: () => allMedia(accessToken),
     enabled: true,
+  });
+
+  const mutation = useMutation({
+    mutationFn: (id: string) => deleteMedia(accessToken, id),
+    onSuccess: () => {
+      setUpload(!Upload);
+      toast.success("Media deleted successfully");
+    },
+    onError(error) {
+      console.log(error);
+      toast.error("Failed to delete media");
+    },
   });
   return (
     <div className="max-w-7xl mx-auto">
@@ -33,7 +59,7 @@ function page() {
         {media?.map((item: UploadedFile, i: number) => (
           <div
             key={i}
-            className="border rounded cursor-pointer hover:ring-2 ring-blue-500 p-1"
+            className="relative group border rounded cursor-pointer hover:ring-2 ring-blue-500 p-1"
             //   onClick={() => {
             //     onSelect(item);
             //     onClose();
@@ -54,6 +80,13 @@ function page() {
                 className="w-full h-32 object-cover rounded"
               />
             )}
+
+            <button
+              className="hidden text-red-500 group-hover:block absolute top-2 right-2"
+              onClick={() => mutation.mutate(item._id as string)}
+            >
+              <Trash />
+            </button>
           </div>
         ))}
       </div>
