@@ -511,8 +511,11 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
           open={mediaOpen}
           onClose={() => setMediaOpen(false)}
           onSelect={(img) => {
-            const alt = prompt("Enter image alt text") || "Image";
-            editor.chain().focus().setImage({ src: img.url, alt }).run();
+            editor
+              .chain()
+              .focus()
+              .setImage({ src: img.url, alt: img.alt, title: img.title })
+              .run();
             setMediaOpen(false);
           }}
         />

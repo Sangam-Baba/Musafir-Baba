@@ -5,6 +5,9 @@ const mediaSchema = new mongoose.Schema(
     url: {
       type: String,
     },
+    alt: String,
+    title: String,
+    description: String,
     public_id: { type: String },
     format: String,
     resource_type: String,
