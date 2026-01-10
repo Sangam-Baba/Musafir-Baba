@@ -153,7 +153,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     form.setValue("travellers", travellers);
     form.setValue("batchId", selectedBatch._id);
 
-    setSelectedBatch(null); // only closes dialog
+    // setSelectedBatch(null); // only closes dialog
   };
 
   const onSubmit = (values: BookingFormValues) => {
@@ -248,7 +248,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                               Available
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              Free Cancellation before departure
+                              Industry Best Price
                             </span>
                           </div>
                         </div>
@@ -333,12 +333,13 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 rounded-md"
-                          onClick={() =>
+                          onClick={() => {
                             setTravellers((t) => ({
                               ...t,
                               [type]: t[type] + 1,
-                            }))
-                          }
+                            }));
+                            confirmSelection();
+                          }}
                         >
                           <Plus className="w-4 h-4" />
                         </Button>
@@ -361,7 +362,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
               <Button
                 className="w-full h-12 text-lg font-bold rounded-xl"
-                onClick={confirmSelection}
+                onClick={() => setSelectedBatch(null)}
               >
                 Confirm Selection
               </Button>
