@@ -262,7 +262,7 @@ export default function UpdateWebpage() {
                 public_id: img ? img.public_id : "",
                 width: img ? img.width : 1200,
                 height: img ? img.height : 400,
-                alt: form.getValues("title") || "Cover Image",
+                alt: img?.alt || "Cover Image",
               });
             }}
           />

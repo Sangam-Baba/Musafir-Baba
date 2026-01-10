@@ -269,7 +269,7 @@ export default function CreateWebpage() {
                 public_id: img ? img.public_id : "",
                 width: img ? img.width : 0,
                 height: img ? img.height : 0,
-                alt: form.getValues("title") || "Cover Image",
+                alt: img?.alt || "Cover Image",
               });
             }}
           />

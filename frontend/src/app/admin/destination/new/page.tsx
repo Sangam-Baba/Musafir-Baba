@@ -7,7 +7,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
-import CloudinaryMediaLibrary from "@/components/admin/CloudinaryMediaLibrary";
 import { Button } from "@/components/ui/button";
 import { schemaTypes } from "@/lib/schemaTypes";
 import BlogEditor from "@/components/admin/BlogEditor";
@@ -398,7 +397,7 @@ export default function CreateDestination() {
                       public_id: img.public_id,
                       width: img.width,
                       height: img.height,
-                      alt: form.getValues("name") || "Cover Image",
+                      alt: img.alt ?? form.getValues("name"),
                     }
                   : undefined
               )

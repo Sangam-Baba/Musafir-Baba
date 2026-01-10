@@ -22,7 +22,6 @@ import { Reviews } from "../../holidays/new/page";
 import { getReviewsByIds } from "../../holidays/new/page";
 import { deleteReview } from "../../holidays/new/page";
 import { Label } from "@/components/ui/label";
-import { schemaTypes } from "@/lib/schemaTypes";
 import SmallEditor from "@/components/admin/SmallEditor";
 interface Faq {
   question: string;
@@ -129,10 +128,6 @@ export default function CreateVisaPage() {
     control: form.control,
     name: "faqs",
   });
-  // const reviewsArray = useFieldArray({
-  //   control: form.control,
-  //   name: "reviews",
-  // });
 
   const handleReviewsCreated = async (id: string) => {
     const existing = form.getValues("reviews") || [];
@@ -429,7 +424,7 @@ export default function CreateVisaPage() {
             />
 
             {/* Avatar */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
               <FormField
                 control={form.control}
                 name="coverImage"
@@ -443,7 +438,10 @@ export default function CreateVisaPage() {
                           if (!img) return;
                           form.setValue("coverImage", {
                             url: img ? img.url : "",
-                            alt: form.getValues("country") ?? "",
+                            alt:
+                              img.alt ??
+                              form.getValues("country") ??
+                              "Cover Image",
                           });
                         }}
                       />
@@ -453,26 +451,19 @@ export default function CreateVisaPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="coverImage.alt"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Flag Alt</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Thailand"
-                        {...form.register("coverImage.alt")}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <Input
+                placeholder="Cover alt"
+                value={form.watch("coverImage")?.alt ?? ""}
+                onChange={(e) =>
+                  form.setValue(
+                    "coverImage.alt",
+                    e.target.value ?? form.getValues("country")
+                  )
+                }
               />
             </div>
             {/* Avatar */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
               {/* Banner Image */}
               <FormField
                 control={form.control}
@@ -482,12 +473,12 @@ export default function CreateVisaPage() {
                     <FormLabel>Banner Image</FormLabel>
                     <FormControl>
                       <ImageUploader
-                        initialImage={form.getValues("coverImage")}
+                        initialImage={form.watch("bannerImage")}
                         onUpload={(img) => {
                           if (!img) return;
                           form.setValue("bannerImage", {
-                            url: img ? img.url : "",
-                            alt: form.getValues("country") ?? "",
+                            url: img.url,
+                            alt: img.alt ?? form.getValues("country"),
                           });
                         }}
                       />
@@ -497,22 +488,15 @@ export default function CreateVisaPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="bannerImage.alt"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Banner Image Alt</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Thailand"
-                        {...form.register("bannerImage.alt")}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <Input
+                placeholder="Banner alt"
+                value={form.watch("bannerImage")?.alt ?? ""}
+                onChange={(e) =>
+                  form.setValue(
+                    "bannerImage.alt",
+                    e.target.value ?? form.getValues("country")
+                  )
+                }
               />
             </div>
             {/* keywords */}

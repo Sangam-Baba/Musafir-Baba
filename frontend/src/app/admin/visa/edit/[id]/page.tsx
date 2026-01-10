@@ -426,7 +426,7 @@ export default function CreateVisaPage() {
                 </FormItem>
               )}
             />
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
               {/* Avatar */}
               <FormField
                 control={form.control}
@@ -441,7 +441,7 @@ export default function CreateVisaPage() {
                           if (!img) return;
                           form.setValue("coverImage", {
                             url: img ? img.url : "",
-                            alt: form.getValues("country") ?? "",
+                            alt: img.alt ?? form.getValues("country"),
                           });
                         }}
                       />
@@ -450,25 +450,18 @@ export default function CreateVisaPage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="coverImage.alt"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Flag Alt</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Thailand"
-                        {...form.register("coverImage.alt")}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <Input
+                placeholder="Cover alt"
+                value={form.watch("coverImage")?.alt ?? ""}
+                onChange={(e) =>
+                  form.setValue(
+                    "coverImage.alt",
+                    e.target.value ?? form.getValues("country")
+                  )
+                }
               />
             </div>
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="grid grid-cols-2 items-center gap-4">
               {/* Banner Image */}
               <FormField
                 control={form.control}
@@ -483,7 +476,7 @@ export default function CreateVisaPage() {
                           if (!img) return;
                           form.setValue("bannerImage", {
                             url: img ? img.url : "",
-                            alt: form.getValues("country") ?? "",
+                            alt: img.alt ?? form.getValues("country"),
                           });
                         }}
                       />
@@ -492,22 +485,15 @@ export default function CreateVisaPage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="bannerImage.alt"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Banner Image Alt</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Thailand"
-                        {...form.register("bannerImage.alt")}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <Input
+                placeholder="Banner alt"
+                value={form.watch("bannerImage")?.alt ?? ""}
+                onChange={(e) =>
+                  form.setValue(
+                    "bannerImage.alt",
+                    e.target.value ?? form.getValues("country")
+                  )
+                }
               />
             </div>
             {/* keywords */}

@@ -310,7 +310,7 @@ export default function EditNews() {
                 public_id: img ? img.public_id : "",
                 width: img ? img.width : 1200,
                 height: img ? img.height : 400,
-                alt: form.getValues("title") || "Cover Image",
+                alt: img ? img.alt : form.getValues("title"),
               });
             }}
           />

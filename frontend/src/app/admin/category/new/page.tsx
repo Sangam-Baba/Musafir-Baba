@@ -204,7 +204,7 @@ export default function CreateCategory() {
                 public_id: img?.public_id,
                 width: img?.width,
                 height: img?.height,
-                alt: form.getValues("name") || "Cover Image",
+                alt: img?.alt ?? form.getValues("name"),
               })
             }
           />

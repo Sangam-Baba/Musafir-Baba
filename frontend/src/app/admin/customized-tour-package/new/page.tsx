@@ -355,7 +355,7 @@ export default function CreatePackagePage() {
                         form.setValue("coverImage", {
                           url: img.url,
                           public_id: img.public_id,
-                          alt: form.getValues("title") ?? "",
+                          alt: img.alt ?? form.getValues("title"),
                           width: img.width,
                           height: img.height,
                         });
@@ -377,7 +377,7 @@ export default function CreatePackagePage() {
                       form.setValue(`gallery.${index}`, {
                         url: img.url,
                         public_id: img.public_id,
-                        alt: form.getValues("title") ?? "",
+                        alt: img.alt ?? form.getValues("title"),
                         width: img.width,
                         height: img.height,
                       });

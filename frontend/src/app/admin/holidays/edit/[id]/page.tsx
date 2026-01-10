@@ -669,7 +669,7 @@ export default function CreatePackagePage() {
                         const newImg = {
                           url: img.url,
                           public_id: img.public_id,
-                          alt: form.getValues("title") ?? "",
+                          alt: img.alt ?? form.getValues("title"),
                           width: img.width,
                           height: img.height,
                         };
@@ -684,27 +684,16 @@ export default function CreatePackagePage() {
                 </FormItem>
               )}
             />
-            {form.watch("coverImage") && (
-              <FormField
-                control={form.control}
-                name="coverImage.alt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CoverImage Alt</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        defaultValue={form.watch("title")}
-                        type="text"
-                        placeholder="Cover Image Alt"
-                      />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <Input
+              placeholder="Cover alt"
+              value={form.watch("coverImage")?.alt ?? ""}
+              onChange={(e) =>
+                form.setValue(
+                  "coverImage.alt",
+                  e.target.value ?? form.getValues("title")
+                )
+              }
+            />
             {/* Itinary Download */}
             <FormField
               control={form.control}
@@ -720,7 +709,7 @@ export default function CreatePackagePage() {
                         form.setValue("itineraryDownload", {
                           url: img.url,
                           public_id: img.public_id,
-                          alt: form.getValues("title") ?? "",
+                          alt: img.alt ?? form.getValues("title"),
                         });
                       }}
                     />
@@ -741,7 +730,7 @@ export default function CreatePackagePage() {
                       form.setValue(`gallery.${index}`, {
                         url: img.url,
                         public_id: img.public_id,
-                        alt: form.getValues("title") ?? "",
+                        alt: img.alt ?? form.getValues("title"),
                         width: img.width,
                         height: img.height,
                       });
