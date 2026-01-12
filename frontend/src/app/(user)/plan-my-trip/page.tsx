@@ -8,6 +8,7 @@ import {
   useWatch,
   Control,
   Path,
+  Resolver,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -187,7 +188,7 @@ export default function CustomTourStepper() {
     service_provider: "",
   });
   const methods = useForm<FormData>({
-    resolver: zodResolver(fullSchema),
+    resolver: zodResolver(fullSchema) as Resolver<FormData>,
     defaultValues: {
       customizedPackageId: "",
       numberOfPeople: 1,
