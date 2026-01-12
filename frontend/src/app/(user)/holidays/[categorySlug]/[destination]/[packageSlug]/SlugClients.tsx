@@ -102,13 +102,13 @@ function SlugClients({
             <div>
               {/* <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1> */}
               <div className="flex gap-2">
-                <span className="flex items-center gap-1">
-                  <MapPin color="#FE5300" size={14} />{" "}
+                <span className="flex md:text-xl items-center gap-1 bg-[#87E87F] px-3 py-3 rounded-md">
+                  <MapPin color="#FE5300" size={24} />{" "}
                   {pkg.destination.state.charAt(0).toUpperCase() +
                     pkg.destination.state.slice(1)}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Clock color="#FE5300" size={14} /> {pkg.duration.days}D/
+                <span className="flex md:text-xl items-center gap-1 bg-[#87E87F] px-3 py-3 rounded-md">
+                  <Clock color="#FE5300" size={24} /> {pkg.duration.days}D/
                   {pkg.duration.nights}N
                 </span>
               </div>
@@ -134,7 +134,7 @@ function SlugClients({
             {/* Content */}
             <div className="mt-10 w-full">
               {active === "description" && (
-                <div>
+                <div className="rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
                   <h2 className="font-bold text-lg mb-2">About This Tour</h2>
                   <section className="prose prose-lg max-w-none mt-6">
                     <BlogContent html={pkg.description} />
@@ -143,7 +143,7 @@ function SlugClients({
               )}
 
               {active === "highlights" && (
-                <ul className="list-disc list-inside">
+                <ul className="list-disc list-inside rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
                   {pkg.highlights.map((h, i) => (
                     <li className="mb-2 text-lg" key={i}>
                       {h}
@@ -153,7 +153,10 @@ function SlugClients({
               )}
 
               {active === "itineraries" && (
-                <Accordion type="multiple" className="relative space-y-4">
+                <Accordion
+                  type="multiple"
+                  className="relative space-y-4 rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow"
+                >
                   {pkg.itinerary.map((item: Itinerary, i: number) => (
                     <AccordionItem
                       key={i}
@@ -176,7 +179,11 @@ function SlugClients({
 
                       {/* Accordion Content */}
                       <AccordionContent className="text-gray-600 text-sm ">
-                        {item.description}
+                        {item.description.split("\n").map((line, i) => (
+                          <li key={i} className="ml-5">
+                            {line}
+                          </li>
+                        ))}
                       </AccordionContent>
                     </AccordionItem>
                   ))}
@@ -186,7 +193,7 @@ function SlugClients({
               {active === "includeexclude" && (
                 <div className="space-y-8">
                   {/* Includes Section */}
-                  <div>
+                  <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
                     <h3 className="text-lg font-semibold text-foreground mb-4">{`What's Included`}</h3>
                     <ul className="space-y-3">
                       {pkg?.inclusions.map((inc, i) => (
@@ -199,12 +206,12 @@ function SlugClients({
                   </div>
 
                   {/* Excludes Section */}
-                  <div>
+                  <div className="rounded-xl bg-red-50 px-4 py-6 shadow">
                     <h3 className="text-lg font-semibold text-foreground mb-4">{`What's Not Included`}</h3>
                     <ul className="space-y-3">
                       {pkg?.exclusions.map((exc, i) => (
                         <li key={i} className="flex items-start gap-3">
-                          <X className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                          <X className="w-5 h-5 text-red-600 text-muted-foreground flex-shrink-0 mt-0.5" />
                           <span className="text-sm text-muted-foreground">
                             {exc}
                           </span>
@@ -221,7 +228,7 @@ function SlugClients({
                   collapsible
                   value={openItem}
                   onValueChange={setOpenItem}
-                  className="w-full space-y-3"
+                  className="w-full space-y-3 rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow"
                 >
                   {pkg?.faqs.map((faq, index) => {
                     const isOpen = openItem === `faq-${index}`;

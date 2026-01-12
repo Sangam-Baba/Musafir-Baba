@@ -179,8 +179,9 @@ export default function CheckoutPage() {
           0
         ) ?? 0;
       setBaseAmount(base);
+      const gst = (base + addOnsTotal) * 1.05;
       setAddOnAmount(addOnsTotal);
-      setFinalAmount(base + addOnsTotal);
+      setFinalAmount(gst);
     }
   }, [booking, Package]);
 
@@ -415,6 +416,14 @@ export default function CheckoutPage() {
                     </span>
                     <span className="font-semibold text-foreground">
                       ₹{baseAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">
+                      @GST 5%
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      ₹{(baseAmount + addOnAmount) * 0.05}
                     </span>
                   </div>
                 </div>
