@@ -256,7 +256,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
             {/* Progress line */}
             {index < steps.length - 1 && (
               <div
-                className={`absolute top-4 left-[60%] h-[2px] w-[85%] ${
+                className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
                   index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
                 }`}
               />
@@ -449,8 +449,12 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
           className="w-full md:w-1/2 md:mt-10 border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow h-fit py-4 pt-4 sticky top-10 self-start"
         >
           <div className="flex justify-between px-5 gap-5 py-2">
-            <h3 className="capitalize font-bold text-lg">Room Type</h3>
-            <p className="capitalize font-bold text-lg">Number of Travellers</p>
+            <h3 className="capitalize font-bold text-lg whitespace-nowrap">
+              Room Type
+            </h3>
+            <p className="capitalize font-bold text-lg whitespace-nowrap">
+              Number of Travellers
+            </p>
           </div>
 
           {selectedBatch && (
@@ -556,7 +560,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                 <div className="flex justify-between">
                                   <p className="capitalize">{type}</p>
                                   <p className="text-sm text-gray-500">
-                                    ₹{confirmedBatch?.[type]} *{" "}
+                                    ₹{confirmedBatch?.[type]} X{" "}
                                     {travellers?.[type]}
                                   </p>
                                 </div>

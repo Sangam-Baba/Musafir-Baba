@@ -285,18 +285,45 @@ export default function CheckoutPage() {
     toast.error(msg);
     return <h1 className="text-red-600">{msg}</h1>;
   }
+  const steps = ["Select Batch", "Select Travellers", "Payment"];
+  const currentStep = 2;
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-8 md:py-12 px-4">
       <div className="max-w-6xl mx-auto">
+        {/* Stepper Header */}
+        <div className="flex items-center justify-between mb-8 sticky top-3 bg-white z-10">
+          {steps.map((step, index) => (
+            <div key={index} className="flex-1 text-center relative">
+              <div
+                className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${
+                  index === currentStep
+                    ? "bg-[#FF5300] text-white"
+                    : index < currentStep
+                    ? "bg-[#FF5300]/70 text-white"
+                    : "bg-gray-300 text-gray-700"
+                }`}
+              >
+                {index + 1}
+              </div>
+              <p className="text-xs mt-2 text-gray-600">{step}</p>
+
+              {/* Progress line */}
+              {index < steps.length - 1 && (
+                <div
+                  className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
+                    index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
         {/* Header */}
         <div className="mb-8 md:mb-12">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+            {/* <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
               <Check className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Booking Details
-            </p>
+            </div> */}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
             Complete Your Booking
