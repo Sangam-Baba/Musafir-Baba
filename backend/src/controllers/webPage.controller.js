@@ -158,21 +158,29 @@ const getRelatedPages = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Page not found" });
     }
-
-    if (!webpage.keywords || webpage.keywords.length === 0) {
-      return res.status(200).json({ success: true, data: [] });
-    }
-
-    const relatedPages = await WebPage.find({
-      _id: { $ne: webpage._id },
+    let related = [];
+    const childs = await WebPage.find({
+      parent: webpage._id,
       status: "published",
-      keywords: { $in: webpage.keywords },
     })
-      .limit(5)
       .select("title slug coverImage keywords excerpt createdAt fullSlug")
       .lean();
+    related = [...childs];
+    if (webpage.parent) {
+      const sibling = await WebPage.find({
+        parent: webpage.parent,
+        status: "published",
+      })
+        .select("title slug coverImage keywords excerpt createdAt fullSlug")
+        .lean();
+      related = [...related, ...sibling];
+    }
 
-    return res.status(200).json({ success: true, data: relatedPages });
+    const finalrelated = related
+      .filter((page) => page._id !== webpage._id)
+      .slice(0, 5);
+
+    return res.status(200).json({ success: true, data: finalrelated });
   } catch (error) {
     console.error("Getting Related WebPages failed:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
@@ -186,9 +194,12 @@ const getRelatedPkgs = async (req, res) => {
       return res.status(400).json({ message: "Missing required things" });
     const page = await WebPage.findOne({ slug: slug }).select("keywords");
     if (!page) return res.status(404).json({ message: "Invalid Slug" });
-    const relatedPkgs = await Package.find({
+
+    const matcher = slug.split("-")[0];
+    // console.log("this is matchweer ", matcher);
+    let relatedPkgs = await Package.find({
       status: "published",
-      keywords: { $in: page.keywords },
+      title: { $regex: `\\b${matcher}\\b`, $options: "i" },
     })
       .populate("destination", "_id name country state")
       .populate("batch", "quad")
@@ -196,6 +207,18 @@ const getRelatedPkgs = async (req, res) => {
       .select("title destination batch mainCategory slug coverImage ")
       .limit(5)
       .lean();
+
+    if (relatedPkgs.length === 0) {
+      relatedPkgs = await Package.find({
+        status: "published",
+      })
+        .populate("destination", "_id name country state")
+        .populate("batch", "quad")
+        .populate("mainCategory", "name slug")
+        .select("title destination batch mainCategory slug coverImage ")
+        .limit(5)
+        .lean();
+    }
     res.status(200).json({
       message: "Successfully getting related pkgs",
       data: relatedPkgs,

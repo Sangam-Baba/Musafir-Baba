@@ -41,9 +41,9 @@ function RelatedWebpage({ blogs, title, type }: ListBlogSidebarProps) {
             <Image
               src={blog.coverImage.url}
               alt={blog.coverImage.alt || blog.title}
-              width={120}
-              height={80}
-              className="rounded-md object-cover border border-gray-200"
+              width={1200}
+              height={800}
+              className="rounded-md w-[120px] h-[80px] object-cover border border-gray-200"
             />
             <CardContent className="p-2">
               <Link

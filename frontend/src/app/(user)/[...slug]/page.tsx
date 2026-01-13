@@ -80,7 +80,7 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
 
   const page = await getWebPageBySlug(fullSlug);
   const relatedPage = await getRelatedWebpageBySlug(slug[slug.length - 1]);
-  const trandingPkg = await getTrandingPkg(slug[slug.length - 1]);
+  const trandingPkg = await getTrandingPkg(slug[0]);
   console.log("best saller", trandingPkg);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);
