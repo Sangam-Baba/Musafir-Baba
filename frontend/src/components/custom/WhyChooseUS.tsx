@@ -89,7 +89,10 @@ function WhyChooseUs() {
           <CarouselContent>
             {data.map((data, i) => (
               <CarouselItem key={i} className="">
-                <div key={data.id} className="flex flex-col gap-2 items-center">
+                <div
+                  key={`choose-${i}-${data.id}`}
+                  className="flex flex-col gap-2 items-center"
+                >
                   <Image
                     src={data.url}
                     width={500}

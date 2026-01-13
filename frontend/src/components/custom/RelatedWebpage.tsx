@@ -17,15 +17,14 @@ interface Blog {
   slug: string;
   updatedAt: string;
   createdAt: string;
-  views: number;
+  fullSlug: string;
 }
 interface ListBlogSidebarProps {
   blogs: Blog[];
   title: string;
   type: string;
-  url: string;
 }
-function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
+function RelatedWebpage({ blogs, title, type }: ListBlogSidebarProps) {
   return (
     <Card className="mt-10 ">
       <div className="flex w-full justify-between gap-2 px-5">
@@ -48,7 +47,7 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
             />
             <CardContent className="p-2">
               <Link
-                href={`/${url}/${blog.slug}`}
+                href={`/${blog.fullSlug}`}
                 className="font-semibold text-sm line-clamp-2 hover:text-[#FE5300]"
               >
                 {blog.title}
@@ -64,13 +63,6 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
                   {readingTime(blog.content || "")} Min Read
                 </p>
               )}
-              {type === "trending" && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Views: {blog.views + 1000}{" "}
-                  <span className="text-[#FE5300] font-semibold ">|</span>{" "}
-                  {readingTime(blog.content || "")} Min Read
-                </p>
-              )}
             </CardContent>
           </Card>
         ))}
@@ -80,4 +72,4 @@ function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
   );
 }
 
-export default ListBlogSidebar;
+export default RelatedWebpage;

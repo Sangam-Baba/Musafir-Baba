@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,13 +13,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { format, parseISO, isAfter } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useGroupBookingStore } from "@/store/useBookingStore";
@@ -214,7 +206,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   };
 
   const steps = ["Select Batch", "Select Travellers", "Payment"];
-
+  // if (!accessToken) return <div>Please Login</div>;
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-4">
       {/* <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2> */}

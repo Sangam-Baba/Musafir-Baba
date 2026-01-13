@@ -48,18 +48,29 @@ export async function generateMetadata({
     },
   };
 }
+
+export async function getRelatedWebpageBySlug(slug: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/related/${slug}`
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.data;
+}
 async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = (await params) || [];
+  // console.log("this is SLug ", slug);
   const fullSlug = slug.join("/");
 
   const page = await getWebPageBySlug(fullSlug);
+  const relatedPage = await getRelatedWebpageBySlug(slug[slug.length - 1]);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);
   const breadcrumbSchema = getBreadcrumbSchema(page.fullSlug);
-
+  // console.log("this is realetd page", relatedPage);
   return (
     <>
-      <MainWebPage page={page} />
+      <MainWebPage page={page} relatedPage={relatedPage} />
       {page.schemaType?.includes("Webpage") && (
         <Script
           key="webpage-schema"

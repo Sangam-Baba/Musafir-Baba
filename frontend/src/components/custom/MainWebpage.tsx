@@ -7,41 +7,44 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
-import { notFound } from "next/navigation";
 import { TestiProps } from "@/components/custom/Testimonial";
+import RelatedWebpage from "./RelatedWebpage";
 
 interface Faq {
   question: string;
   answer: string;
 }
 interface WebpageInterface {
+  _id: string;
   title: string;
   content: string;
   slug: string;
-  coverImage?: {
-    url?: string;
-    public_id?: string;
+  coverImage: {
+    url: string;
+    public_id: string;
     alt?: string;
     width?: number;
     height?: number;
   };
   faqs?: Faq[];
   reviews?: TestiProps[];
+  fullSlug: string;
   excerpt: string;
+  updatedAt: string;
+  createdAt: string;
+  views: number;
 }
-// const getRelatedPages = async (slug: string) => {
-//   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/related/${slug}`
-//   );
-//   if (!res.ok) throw new Error("Failed to fetch related pages");
-//   const data = await res.json();
-//   return data;
-// };
-async function MainWebPage({ page }: { page: WebpageInterface }) {
+
+async function MainWebPage({
+  page,
+  relatedPage,
+}: {
+  page: WebpageInterface;
+  relatedPage: WebpageInterface[];
+}) {
   return (
     <section className="">
       <Hero
@@ -69,7 +72,7 @@ async function MainWebPage({ page }: { page: WebpageInterface }) {
               {page?.faqs?.map((faq: Faq, i: number) => (
                 <AccordionItem
                   value={`faq-${i}`}
-                  key={i}
+                  key={`faq-${i}`}
                   className="rounded-2xl shadow-lg p-4"
                 >
                   <AccordionTrigger>{faq.question}</AccordionTrigger>
@@ -85,14 +88,13 @@ async function MainWebPage({ page }: { page: WebpageInterface }) {
         </article>
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start ">
           <QueryForm />
-          {/* {relatedPageArray.length > 0 && (
-            <ListBlogSidebar
-              blogs={relatedPageArray}
+          {relatedPage.length > 0 && (
+            <RelatedWebpage
+              blogs={relatedPage}
               title="Related Pages"
               type="latest"
-              url="visa"
             />
-          )} */}
+          )}
         </aside>
       </div>
       <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">

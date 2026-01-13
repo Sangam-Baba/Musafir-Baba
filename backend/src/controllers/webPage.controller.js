@@ -168,7 +168,7 @@ const getRelatedPages = async (req, res) => {
       keywords: { $in: webpage.keywords },
     })
       .limit(5)
-      .select("title slug coverImage keywords excerpt createdAt")
+      .select("title slug coverImage keywords excerpt createdAt fullSlug")
       .lean();
 
     return res.status(200).json({ success: true, data: relatedPages });

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Hero from "@/components/custom/Hero";
-import React from "react";
 import QueryForm from "@/components/custom/QueryForm";
 import { BlogContent } from "@/components/custom/BlogContent";
 import {
@@ -9,10 +8,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import RelatedPages from "@/components/custom/RelatedPages";
 import HomeBooking from "@/components/custom/HomeBooking";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
+import RelatedWebpage from "@/components/custom/RelatedWebpage";
+import { getRelatedWebpageBySlug } from "@/app/(user)/[...slug]/page";
 interface Faq {
   question: string;
   answer: string;
@@ -42,6 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 async function BookingsWebPage() {
   const slug = "bookings";
+  const relatedPage = await getRelatedWebpageBySlug("bookings");
   const visa = await getWebPageBySlug("bookings");
 
   return (
@@ -85,7 +86,13 @@ async function BookingsWebPage() {
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start">
           <div className="space-y-6">
             <QueryForm />
-            <RelatedPages slug={slug} parent="bookings" />
+            {relatedPage.length > 0 && (
+              <RelatedWebpage
+                blogs={relatedPage}
+                title="Related Page"
+                type="latest"
+              />
+            )}
           </div>
         </aside>
       </div>
