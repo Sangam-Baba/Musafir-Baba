@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { WebPage } from "../models/WebPage.js";
+import { Package } from "../models/Package.js";
 
 const createWebPage = async (req, res) => {
   try {
@@ -178,6 +179,33 @@ const getRelatedPages = async (req, res) => {
   }
 };
 
+const getRelatedPkgs = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug)
+      return res.status(400).json({ message: "Missing required things" });
+    const page = await WebPage.findOne({ slug: slug }).select("keywords");
+    if (!page) return res.status(404).json({ message: "Invalid Slug" });
+    const relatedPkgs = await Package.find({
+      status: "published",
+      keywords: { $in: page.keywords },
+    })
+      .populate("destination", "_id name country state")
+      .populate("batch", "quad")
+      .populate("mainCategory", "name slug")
+      .select("title destination batch mainCategory slug coverImage ")
+      .limit(5)
+      .lean();
+    res.status(200).json({
+      message: "Successfully getting related pkgs",
+      data: relatedPkgs,
+    });
+  } catch (error) {
+    console.log("WebPage getting failed", error.message);
+    res.status(500).json({ message: "Server Error " });
+  }
+};
+
 const getAllParents = async (req, res) => {
   try {
     const parents = await WebPage.find({ isParent: true })
@@ -201,4 +229,5 @@ export {
   getWebPageById,
   getRelatedPages,
   getAllParents,
+  getRelatedPkgs,
 };

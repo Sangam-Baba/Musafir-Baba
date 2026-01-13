@@ -5,6 +5,7 @@ import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import Script from "next/script";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { revalidate } from "../auth/logout/page";
 
 export const getWebPageBySlug = async (slug: string) => {
   const res = await fetch(
@@ -51,7 +52,22 @@ export async function generateMetadata({
 
 export async function getRelatedWebpageBySlug(slug: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/related/${slug}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/related/${slug}`,
+    {
+      next: { revalidate: 120 },
+    }
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.data;
+}
+
+export async function getTrandingPkg(slug: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/related-packages/${slug}`,
+    {
+      next: { revalidate: 120 },
+    }
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -64,13 +80,15 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
 
   const page = await getWebPageBySlug(fullSlug);
   const relatedPage = await getRelatedWebpageBySlug(slug[slug.length - 1]);
+  const trandingPkg = await getTrandingPkg(slug[slug.length - 1]);
+  console.log("best saller", trandingPkg);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);
   const breadcrumbSchema = getBreadcrumbSchema(page.fullSlug);
-  // console.log("this is realetd page", relatedPage);
+  console.log("this is realetd page", relatedPage);
   return (
     <>
-      <MainWebPage page={page} relatedPage={relatedPage} />
+      <MainWebPage page={page} relatedPage={relatedPage} pkg={trandingPkg} />
       {page.schemaType?.includes("Webpage") && (
         <Script
           key="webpage-schema"

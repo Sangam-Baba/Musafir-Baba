@@ -119,7 +119,7 @@ const getRelatedPages = async (req, res) => {
       isActive: "true",
       visaType: visa.visaType,
     })
-      .limit(5)
+      .limit(8)
       .select("title slug coverImage content excerpt createdAt")
       .lean();
     return res.status(200).json({ success: true, data: relatedVisa });

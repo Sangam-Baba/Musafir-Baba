@@ -7,6 +7,7 @@ import {
   deleteWebPage,
   getRelatedPages,
   getAllParents,
+  getRelatedPkgs,
 } from "../controllers/webPage.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -32,6 +33,7 @@ webPageRoute.get(
 );
 webPageRoute.get("/id/:id", getWebPageById);
 webPageRoute.get("/related/:slug", getRelatedPages);
+webPageRoute.get("/related-packages/:slug", getRelatedPkgs);
 webPageRoute.patch(
   "/:id",
   isAuthenticated,

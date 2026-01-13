@@ -269,6 +269,7 @@ const getBestSeller = async (req, res) => {
       .populate("destination", "_id name country state")
       .populate("batch", "quad")
       .populate("mainCategory", "name slug")
+      .select("title destination batch mainCategory slug coverImage ")
       .lean();
 
     if (!bestSellers)

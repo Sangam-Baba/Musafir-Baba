@@ -13,6 +13,8 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
 import RelatedWebpage from "@/components/custom/RelatedWebpage";
 import { getRelatedWebpageBySlug } from "@/app/(user)/[...slug]/page";
+import { getTrandingPkg } from "@/app/(user)/[...slug]/page";
+import TrandingPkgSidebar from "@/components/custom/TrandingPkgSidebar";
 interface Faq {
   question: string;
   answer: string;
@@ -43,6 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
 async function BookingsWebPage() {
   const slug = "bookings";
   const relatedPage = await getRelatedWebpageBySlug("bookings");
+  const trandingPkg = await getTrandingPkg("bookings");
   const visa = await getWebPageBySlug("bookings");
 
   return (
@@ -86,6 +89,12 @@ async function BookingsWebPage() {
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start">
           <div className="space-y-6">
             <QueryForm />
+            {(trandingPkg?.length || 0) > 0 && (
+              <TrandingPkgSidebar
+                pkgs={trandingPkg ?? []}
+                title="Trending Packages"
+              />
+            )}
             {relatedPage.length > 0 && (
               <RelatedWebpage
                 blogs={relatedPage}

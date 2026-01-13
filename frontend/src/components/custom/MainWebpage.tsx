@@ -12,6 +12,7 @@ import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { TestiProps } from "@/components/custom/Testimonial";
 import RelatedWebpage from "./RelatedWebpage";
+import TrandingPkgSidebar from "./TrandingPkgSidebar";
 
 interface Faq {
   question: string;
@@ -37,13 +38,33 @@ interface WebpageInterface {
   createdAt: string;
   views: number;
 }
+interface TrandingPkgInterface {
+  _id: string;
+  title: string;
+  coverImage: {
+    url: string;
+    alt: string;
+  };
+  mainCategory: {
+    slug: string;
+  };
+  slug: string;
+  batch: {
+    quad: number;
+  }[];
+  destination: {
+    state: string;
+  };
+}
 
 async function MainWebPage({
   page,
   relatedPage,
+  pkg,
 }: {
   page: WebpageInterface;
   relatedPage: WebpageInterface[];
+  pkg?: TrandingPkgInterface[];
 }) {
   return (
     <section className="">
@@ -88,6 +109,9 @@ async function MainWebPage({
         </article>
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start ">
           <QueryForm />
+          {(pkg?.length || 0) > 0 && (
+            <TrandingPkgSidebar pkgs={pkg ?? []} title="Trending Packages" />
+          )}
           {relatedPage.length > 0 && (
             <RelatedWebpage
               blogs={relatedPage}
