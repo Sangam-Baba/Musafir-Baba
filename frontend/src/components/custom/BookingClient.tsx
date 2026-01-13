@@ -123,7 +123,6 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     double: 0,
     child: 0,
   });
-  // const [price, setPrice] = useState(0);
   const [addOns, setAddOns] = useState<
     { title: string; price: number; noOfPeople: number }[]
   >([]);
@@ -156,21 +155,14 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     return basePrice + addOnPrice;
   }, [travellers, confirmedBatch, addOns]);
 
-  // const totalPriceWithTax = Math.ceil(totalPrice * 1.05);
-
   const batchesByMonth = useMemo(
     () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
     [pkg.batch]
   );
 
   const confirmSelection = (batch: Batch) => {
-    if (!selectedBatch) return;
-
-    setConfirmedBatch(batch); // ✅ save batch
-    form.setValue("travellers", travellers);
-    form.setValue("batchId", selectedBatch._id);
-
-    // setSelectedBatch(null); // only closes dialog
+    setConfirmedBatch(batch);
+    form.setValue("batchId", batch._id);
   };
 
   const onSubmit = (values: BookingFormValues) => {
@@ -178,12 +170,21 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
       toast.error("Please select Travellers");
       return;
     }
-    setGroup(values);
+    setGroup({
+      packageId: pkg._id,
+      batchId: confirmedBatch!._id,
+      travellers: travellers,
+      addOns: addOns,
+    });
     router.push(`/payment/${values.packageId}`);
   };
   useEffect(() => {
     form.setValue("addOns", addOns);
   }, [addOns, form]);
+
+  useEffect(() => {
+    form.setValue("travellers", travellers);
+  }, [travellers, form]);
 
   useEffect(() => {
     form.setValue("totalPrice", totalPrice);
@@ -236,365 +237,378 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
           </span>
         </div>
       </div>
-      {/* Stepper Header */}
-      <div className="flex items-center justify-between mb-8 sticky top-3 bg-white z-10">
-        {steps.map((step, index) => (
-          <div key={index} className="flex-1 text-center relative">
-            <div
-              className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${
-                index === currentStep
-                  ? "bg-[#FF5300] text-white"
-                  : index < currentStep
-                  ? "bg-[#FF5300]/70 text-white"
-                  : "bg-gray-300 text-gray-700"
-              }`}
-            >
-              {index + 1}
-            </div>
-            <p className="text-xs mt-2 text-gray-600">{step}</p>
-
-            {/* Progress line */}
-            {index < steps.length - 1 && (
-              <div
-                className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
-                  index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
-                }`}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-col md:flex-row gap-8 justify-between">
-        <div className="w-full md:w-1/2">
-          {/* Batches Accordion */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold">Select Travel Dates</h2>
-            </div>
-
-            <Accordion
-              type="single"
-              collapsible
-              defaultValue={Object.keys(batchesByMonth)[0]}
-              className="w-full space-y-3"
-            >
-              {Object.entries(batchesByMonth).map(([month, list]) => (
-                <AccordionItem
-                  key={month}
-                  value={month}
-                  className="border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+      {Object.values(batchesByMonth).length > 0 ? (
+        <div>
+          {/* Stepper Header */}
+          <div className="flex items-center justify-between mb-8 sticky top-3 bg-white z-10">
+            {steps.map((step, index) => (
+              <div key={index} className="flex-1 text-center relative">
+                <div
+                  className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${
+                    index === currentStep
+                      ? "bg-[#FF5300] text-white"
+                      : index < currentStep
+                      ? "bg-[#FF5300]/70 text-white"
+                      : "bg-gray-300 text-gray-700"
+                  }`}
                 >
-                  <AccordionTrigger className="hover:no-underline py-4">
-                    <span className="text-lg font-medium">{month}</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-4">
-                    <div className="grid gap-3">
-                      {list.map((b) => {
-                        const start = format(
-                          parseISO(b.startDate),
-                          "EEE, dd MMM"
-                        );
-                        const end = format(parseISO(b.endDate), "EEE, dd MMM");
-                        const isSelected = selectedBatch?._id === b._id;
-
-                        return (
-                          <div
-                            key={b._id}
-                            onClick={() => {
-                              setSelectedBatch(b);
-                              confirmSelection(b);
-                              const el = document.getElementById("calculator");
-                              el?.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start",
-                              });
-                            }}
-                            className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                              isSelected
-                                ? "border-primary bg-primary/5 shadow-inner"
-                                : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
-                            }`}
-                          >
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-lg">
-                                  {start}
-                                </span>
-                                <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                <span className="font-semibold text-lg">
-                                  {end}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  // variant="outline"
-                                  className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20"
-                                >
-                                  Available
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">
-                                  Industry Best Price
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="mt-4 sm:mt-0 text-left sm:text-right">
-                              <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
-                                From
-                              </p>
-                              <div className="flex items-baseline justify-start sm:justify-end gap-2">
-                                <p className="text-2xl font-bold text-primary">
-                                  ₹{b.quad.toLocaleString()}
-                                </p>
-                                <span className="text-sm text-muted-foreground line-through">
-                                  ₹{b.quadDiscount.toLocaleString()}
-                                </span>
-                              </div>
-                            </div>
-
-                            {isSelected && (
-                              <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-primary fill-background shadow-sm rounded-full" />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </section>
-
-          {/* Add Ons */}
-          {pkg.addOns?.length > 0 && (
-            <div className="space-y-4">
-              <p className="font-semibold text-xl">Special Add On</p>
-
-              <Accordion
-                type="single"
-                collapsible
-                defaultValue={pkg.addOns[0].title}
-                className="w-full border rounded-lg p-4"
-              >
-                {pkg.addOns?.map((items) => (
-                  <AccordionItem key={items.title} value={items.title}>
-                    <AccordionTrigger>{items.title}</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-2">
-                        {items.items?.map((b, i) => {
-                          const selected = addOns.find(
-                            (a) => a.title === b.title
-                          );
-                          // const [people, setPeople] = useState(1);
-
-                          return (
-                            <div
-                              key={i}
-                              className="flex flex-wrap gap-4 justify-between p-3 border rounded-lg"
-                            >
-                              <p className="font-medium">{b.title}</p>
-                              <p>₹{b.price.toLocaleString()}</p>
-
-                              <div className="flex items-center gap-2">
-                                <Label>No. of People</Label>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  value={addOnPeople[b.title] || 1}
-                                  onChange={(e) =>
-                                    setAddOnPeople((p) => ({
-                                      ...p,
-                                      [b.title]: Number(e.target.value),
-                                    }))
-                                  }
-                                />
-                              </div>
-
-                              {!selected ? (
-                                <Button
-                                  onClick={() =>
-                                    handleAddOn(
-                                      { title: b.title, price: b.price },
-                                      addOnPeople[b.title] || 1
-                                    )
-                                  }
-                                  className="w-20"
-                                >
-                                  Add
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="destructive"
-                                  onClick={() => handleRemoveAddOn(b.title)}
-                                  className="w-20"
-                                >
-                                  Remove
-                                </Button>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          )}
-        </div>
-        {/* Calculator */}
-        <div
-          id="calculator"
-          className="w-full md:w-1/2 md:mt-10 border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow h-fit py-4 pt-4 sticky top-10 self-start"
-        >
-          <div className="flex justify-between px-5 gap-5 py-2">
-            <h3 className="capitalize font-bold text-lg whitespace-nowrap">
-              Room Type
-            </h3>
-            <p className="capitalize font-bold text-lg whitespace-nowrap">
-              Number of Travellers
-            </p>
-          </div>
-
-          {selectedBatch && (
-            <div className="space-y-6  ">
-              <div className="grid gap-4">
-                {(
-                  [
-                    { name: "quad", no: 4 },
-                    { name: "triple", no: 3 },
-                    { name: "double", no: 2 },
-                    { name: "child", no: 1 },
-                  ] as const
-                ).map((type) => (
-                  <div
-                    key={type.name}
-                    className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl border border-border/50"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center">
-                        <span className="capitalize font-bold text-md">
-                          {type.name === "child"
-                            ? "Children"
-                            : `${type.name} Sharing`}
-                        </span>
-                        <span className="flex gap-1 ml-2">
-                          {Array.from({ length: type.no }).map((_, i) => (
-                            <User key={i} className="w-4 h-4" />
-                          ))}
-                        </span>
-                      </div>
-                      {type.name == "child" && (
-                        <p className="text-sm">Child upto 12 years</p>
-                      )}
-
-                      <p className="text-primary font-semibold">
-                        ₹{selectedBatch[type.name].toLocaleString()} / person{" "}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 bg-background p-1 rounded-lg border shadow-sm">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="md:h-8 md:w-8 h-4 w-4 rounded-md"
-                        onClick={() => {
-                          setTravellers((t) => ({
-                            ...t,
-                            [type.name]: Math.max(0, t[type.name] - 1),
-                          }));
-                          confirmSelection(selectedBatch);
-                        }}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <span className="text-lg font-bold min-w-[10px] text-center">
-                        {travellers[type.name]}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="md:h-8 md:w-8 h-4 w-4 rounded-md"
-                        onClick={() => {
-                          setTravellers((t) => ({
-                            ...t,
-                            [type.name]: t[type.name] + 1,
-                          }));
-                          confirmSelection(selectedBatch);
-                        }}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="mt-6 space-y-4"
-              >
-                <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
-                  <div>
-                    <div className="flex justify-between">
-                      <p className="text-md font-semibold"> Travel Date </p>
-                      <p>
-                        <p>
-                          {new Date(
-                            confirmedBatch?.startDate || ""
-                          ).toLocaleDateString("en-UK", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </p>
-                    </div>
-
-                    {(["quad", "triple", "double", "child"] as const).map(
-                      (type) => (
-                        <div key={type} className="mb-2">
-                          {confirmedBatch
-                            ? travellers?.[type] > 0 && (
-                                <div className="flex justify-between">
-                                  <p className="capitalize">{type}</p>
-                                  <p className="text-sm text-gray-500">
-                                    ₹{confirmedBatch?.[type]} X{" "}
-                                    {travellers?.[type]}
-                                  </p>
-                                </div>
-                              )
-                            : null}
-                        </div>
-                      )
-                    )}
-                    <div className="flex justify-between border-t pt-4">
-                      <p>Total Travellers</p>
-                      <p className="text-sm text-gray-500">
-                        {travellers.quad +
-                          travellers.triple +
-                          travellers.double}{" "}
-                        adult(s) · {travellers.child} child(ren)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-between bg-primary/5 p-4 rounded-xl border border-primary/10">
-                    <p className="text-md font-semibold">Total Price</p>
-                    <p className="text-xl font-semibold">
-                      {" "}
-                      ₹{form.watch("totalPrice").toLocaleString()}
-                    </p>
-                  </div>
+                  {index + 1}
                 </div>
-                <Button type="submit" className="w-full">
-                  Book Now
-                </Button>
-              </form>
+                <p className="text-xs mt-2 text-gray-600">{step}</p>
+
+                {/* Progress line */}
+                {index < steps.length - 1 && (
+                  <div
+                    className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
+                      index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col md:flex-row gap-8 justify-between">
+            <div className="w-full md:w-1/2">
+              {/* Batches Accordion */}
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Select Travel Dates</h2>
+                </div>
+
+                <Accordion
+                  type="single"
+                  collapsible
+                  defaultValue={Object.keys(batchesByMonth)[0]}
+                  className="w-full space-y-3"
+                >
+                  {Object.entries(batchesByMonth).map(([month, list]) => (
+                    <AccordionItem
+                      key={month}
+                      value={month}
+                      className="border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <AccordionTrigger className="hover:no-underline py-4">
+                        <span className="text-lg font-medium">{month}</span>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4">
+                        <div className="grid gap-3">
+                          {list.map((b) => {
+                            const start = format(
+                              parseISO(b.startDate),
+                              "EEE, dd MMM"
+                            );
+                            const end = format(
+                              parseISO(b.endDate),
+                              "EEE, dd MMM"
+                            );
+                            const isSelected = selectedBatch?._id === b._id;
+
+                            return (
+                              <div
+                                key={b._id}
+                                onClick={() => {
+                                  setSelectedBatch(b);
+                                  confirmSelection(b);
+                                  const el =
+                                    document.getElementById("calculator");
+                                  el?.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "start",
+                                  });
+                                }}
+                                className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                                  isSelected
+                                    ? "border-primary bg-primary/5 shadow-inner"
+                                    : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
+                                }`}
+                              >
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-lg">
+                                      {start}
+                                    </span>
+                                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                                    <span className="font-semibold text-lg">
+                                      {end}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge
+                                      // variant="outline"
+                                      className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20"
+                                    >
+                                      Available
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                      Industry Best Price
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="mt-4 sm:mt-0 text-left sm:text-right">
+                                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
+                                    From
+                                  </p>
+                                  <div className="flex items-baseline justify-start sm:justify-end gap-2">
+                                    <p className="text-2xl font-bold text-primary">
+                                      ₹{b.quad.toLocaleString()}
+                                    </p>
+                                    <span className="text-sm text-muted-foreground line-through">
+                                      ₹{b.quadDiscount.toLocaleString()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {isSelected && (
+                                  <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-primary fill-background shadow-sm rounded-full" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </section>
+
+              {/* Add Ons */}
+              {pkg.addOns?.length > 0 && (
+                <div className="space-y-4">
+                  <p className="font-semibold text-xl">Special Add On</p>
+
+                  <Accordion
+                    type="single"
+                    collapsible
+                    defaultValue={pkg.addOns[0].title}
+                    className="w-full border rounded-lg p-4"
+                  >
+                    {pkg.addOns?.map((items) => (
+                      <AccordionItem key={items.title} value={items.title}>
+                        <AccordionTrigger>{items.title}</AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-2">
+                            {items.items?.map((b, i) => {
+                              const selected = addOns.find(
+                                (a) => a.title === b.title
+                              );
+                              // const [people, setPeople] = useState(1);
+
+                              return (
+                                <div
+                                  key={i}
+                                  className="flex flex-wrap gap-4 justify-between p-3 border rounded-lg"
+                                >
+                                  <p className="font-medium">{b.title}</p>
+                                  <p>₹{b.price.toLocaleString()}</p>
+
+                                  <div className="flex items-center gap-2">
+                                    <Label>No. of People</Label>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      value={addOnPeople[b.title] || 1}
+                                      onChange={(e) =>
+                                        setAddOnPeople((p) => ({
+                                          ...p,
+                                          [b.title]: Number(e.target.value),
+                                        }))
+                                      }
+                                    />
+                                  </div>
+
+                                  {!selected ? (
+                                    <Button
+                                      onClick={() =>
+                                        handleAddOn(
+                                          { title: b.title, price: b.price },
+                                          addOnPeople[b.title] || 1
+                                        )
+                                      }
+                                      className="w-20"
+                                    >
+                                      Add
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() => handleRemoveAddOn(b.title)}
+                                      className="w-20"
+                                    >
+                                      Remove
+                                    </Button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              )}
             </div>
-          )}
+            {/* Calculator */}
+            <div
+              id="calculator"
+              className="w-full md:w-1/2 md:mt-10 border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow h-fit py-4 pt-4 sticky top-10 self-start"
+            >
+              <div className="flex justify-between px-5 gap-5 py-2">
+                <h3 className="capitalize font-bold text-lg whitespace-nowrap">
+                  Room Type
+                </h3>
+                <p className="capitalize font-bold text-lg whitespace-nowrap">
+                  Number of Travellers
+                </p>
+              </div>
+
+              {selectedBatch && (
+                <div className="space-y-6  ">
+                  <div className="grid gap-4">
+                    {(
+                      [
+                        { name: "quad", no: 4 },
+                        { name: "triple", no: 3 },
+                        { name: "double", no: 2 },
+                        { name: "child", no: 1 },
+                      ] as const
+                    ).map((type) => (
+                      <div
+                        key={type.name}
+                        className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl border border-border/50"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center">
+                            <span className="capitalize font-bold text-md">
+                              {type.name === "child"
+                                ? "Children"
+                                : `${type.name} Sharing`}
+                            </span>
+                            <span className="flex gap-1 ml-2">
+                              {Array.from({ length: type.no }).map((_, i) => (
+                                <User key={i} className="w-4 h-4" />
+                              ))}
+                            </span>
+                          </div>
+                          {type.name == "child" && (
+                            <p className="text-sm">Child upto 12 years</p>
+                          )}
+
+                          <p className="text-primary font-semibold">
+                            ₹{selectedBatch[type.name].toLocaleString()} /
+                            person{" "}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4 bg-background p-1 rounded-lg border shadow-sm">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="md:h-8 md:w-8 h-4 w-4 rounded-md"
+                            onClick={() => {
+                              setTravellers((t) => ({
+                                ...t,
+                                [type.name]: Math.max(0, t[type.name] - 1),
+                              }));
+                              confirmSelection(selectedBatch);
+                            }}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <span className="text-lg font-bold min-w-[10px] text-center">
+                            {travellers[type.name]}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="md:h-8 md:w-8 h-4 w-4 rounded-md"
+                            onClick={() => {
+                              setTravellers((t) => ({
+                                ...t,
+                                [type.name]: t[type.name] + 1,
+                              }));
+                              confirmSelection(selectedBatch);
+                            }}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="mt-6 space-y-4"
+                  >
+                    <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
+                      <div>
+                        <div className="flex justify-between">
+                          <p className="text-md font-semibold"> Travel Date </p>
+                          <p>
+                            <p>
+                              {new Date(
+                                confirmedBatch?.startDate || ""
+                              ).toLocaleDateString("en-UK", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </p>
+                          </p>
+                        </div>
+
+                        {(["quad", "triple", "double", "child"] as const).map(
+                          (type) => (
+                            <div key={type} className="mb-2">
+                              {confirmedBatch
+                                ? travellers?.[type] > 0 && (
+                                    <div className="flex justify-between">
+                                      <p className="capitalize">{type}</p>
+                                      <p className="text-sm text-gray-500">
+                                        ₹{confirmedBatch?.[type]} X{" "}
+                                        {travellers?.[type]}
+                                      </p>
+                                    </div>
+                                  )
+                                : null}
+                            </div>
+                          )
+                        )}
+                        <div className="flex justify-between border-t pt-4">
+                          <p>Total Travellers</p>
+                          <p className="text-sm text-gray-500">
+                            {travellers.quad +
+                              travellers.triple +
+                              travellers.double}{" "}
+                            adult(s) · {travellers.child} child(ren)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between bg-primary/5 p-4 rounded-xl border border-primary/10">
+                        <p className="text-md font-semibold">Total Price</p>
+                        <p className="text-xl font-semibold">
+                          {" "}
+                          ₹{form.watch("totalPrice").toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full">
+                      Book Now
+                    </Button>
+                  </form>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="w-full flex items-center justify-center ">
+          <h2 className="text-2xl font-semibold">No Dates Available!</h2>
+        </div>
+      )}
     </div>
   );
 }
