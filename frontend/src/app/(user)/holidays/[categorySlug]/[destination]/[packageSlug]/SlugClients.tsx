@@ -102,14 +102,14 @@ function SlugClients({
             <div>
               {/* <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1> */}
               <div className="flex gap-2">
-                <span className="flex md:text-xl items-center gap-1 bg-[#87E87F] px-3 py-3 rounded-md">
+                <span className="flex md:text-xl items-center gap-1 px-3 py-3 rounded-md">
                   <MapPin color="#FE5300" size={24} />{" "}
                   {pkg.destination.state.charAt(0).toUpperCase() +
                     pkg.destination.state.slice(1)}
                 </span>
-                <span className="flex md:text-xl items-center gap-1 bg-[#87E87F] px-3 py-3 rounded-md">
-                  <Clock color="#FE5300" size={24} /> {pkg.duration.days}D/
-                  {pkg.duration.nights}N
+                <span className="flex md:text-xl items-center gap-1 px-3 py-3 rounded-md">
+                  <Clock color="#FE5300" size={24} /> {pkg.duration.nights}N/
+                  {pkg.duration.days}D
                 </span>
               </div>
               {/* <p className="text-gray-600">{pkg.metaDescription}</p> */}

@@ -475,7 +475,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                           <div className="flex items-center">
                             <span className="capitalize font-bold text-md">
                               {type.name === "child"
-                                ? "Children"
+                                ? "Child"
                                 : `${type.name} Sharing`}
                             </span>
                             <span className="flex gap-1 ml-2">

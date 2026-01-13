@@ -163,6 +163,7 @@ const getRelatedPages = async (req, res) => {
       parent: webpage._id,
       status: "published",
     })
+      .sort({ createdAt: -1 })
       .select("title slug coverImage keywords excerpt createdAt fullSlug")
       .lean();
     related = [...childs];
@@ -171,6 +172,7 @@ const getRelatedPages = async (req, res) => {
         parent: webpage.parent,
         status: "published",
       })
+        .sort({ createdAt: -1 })
         .select("title slug coverImage keywords excerpt createdAt fullSlug")
         .lean();
       related = [...related, ...sibling];

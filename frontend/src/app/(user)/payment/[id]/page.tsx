@@ -122,8 +122,8 @@ export default function CheckoutPage() {
     service_provider: "",
   });
   const accessToken = useAuthStore((s) => s.accessToken) as string;
-  const { id } = useParams(); // ✅ directly extract id
-  const pkgId = String(id ?? ""); // safe conversion
+  const { id } = useParams();
+  const pkgId = String(id ?? "");
   const booking = useGroupBookingStore((s) => s.formData);
   const [appliedCouponId, setAppliedCouponId] = useState<string | null>(null);
   const [baseAmount, setBaseAmount] = useState(0);
@@ -179,7 +179,7 @@ export default function CheckoutPage() {
           0
         ) ?? 0;
       setBaseAmount(base);
-      const gst = (base + addOnsTotal) * 1.05;
+      const gst = Math.ceil((base + addOnsTotal) * 1.05);
       setAddOnAmount(addOnsTotal);
       setFinalAmount(gst);
     }
