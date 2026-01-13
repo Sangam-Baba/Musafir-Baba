@@ -5,6 +5,7 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
+import { notFound } from "next/navigation";
 
 interface ImageType {
   url: string;
@@ -41,9 +42,9 @@ interface FormValues {
 const getWebPageBySlug = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`,
-    { next: { revalidate: 86400 } }
+    { next: { revalidate: 60 } }
   );
-  if (!res.ok) throw new Error("Failed to fetch about");
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data?.data as FormValues;
 };
