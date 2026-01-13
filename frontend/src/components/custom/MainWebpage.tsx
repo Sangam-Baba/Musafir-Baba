@@ -110,7 +110,7 @@ async function MainWebPage({
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start ">
           <QueryForm />
           {(pkg?.length || 0) > 0 && (
-            <TrandingPkgSidebar pkgs={pkg ?? []} title="Trending Packages" />
+            <TrandingPkgSidebar pkgs={pkg ?? []} title="Related Packages" />
           )}
           {relatedPage.length > 0 && (
             <RelatedWebpage

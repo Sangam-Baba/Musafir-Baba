@@ -31,7 +31,7 @@ export default function Header() {
       {/* ===== TOP SOCIAL BAR ===== */}
       <div className="hidden md:flex justify-between items-center w-full px-8 py-3 bg-gradient-to-r from-[#eb3b23] to-[#f8b914] text-white">
         <div className="flex gap-5 items-center">
-          <Link href="https://www.youtube.com/@hello_musafirbaba">
+          <Link href="https://www.youtube.com/@musafirbabatravels">
             <Youtube className="w-5 h-5" />
           </Link>
           <Link href="http://facebook.com/hellomusafirbaba">
