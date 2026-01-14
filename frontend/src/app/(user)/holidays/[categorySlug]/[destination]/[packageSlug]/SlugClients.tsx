@@ -352,7 +352,7 @@ function SlugClients({
           </div>
         )}
       </div>
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-between bg-white md:hidden mb-13 py-2 px-4 ">
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-between items-end bg-white md:hidden mb-13 py-2 px-4 border-b border-gray-400">
         <CardHeader className="flex flex-col justify-between  ">
           <p className="whitespace-nowrap">
             Starting from{" "}
@@ -367,23 +367,22 @@ function SlugClients({
             </span>
           </CardTitle>
         </CardHeader>
-        <div className="flex justify-end">
-          <Button
-            onClick={() => {
-              if (!auth.isAuthenticated) {
-                useAuthDialogStore
-                  .getState()
-                  .openDialog("login", undefined, `${pathName}/${pkg._id}`);
-              } else {
-                router.push(`./${pkg.slug}/${pkg._id}`);
-              }
-            }}
-            size={"lg"}
-            className=" bg-[#FE5300] hover:bg-[#FE5300] text-md"
-          >
-            Book Now
-          </Button>
-        </div>
+
+        <Button
+          onClick={() => {
+            if (!auth.isAuthenticated) {
+              useAuthDialogStore
+                .getState()
+                .openDialog("login", undefined, `${pathName}/${pkg._id}`);
+            } else {
+              router.push(`./${pkg.slug}/${pkg._id}`);
+            }
+          }}
+          size={"lg"}
+          className=" bg-[#FE5300] hover:bg-[#FE5300] text-md"
+        >
+          Book Now
+        </Button>
       </div>
 
       <AuthDialog />
