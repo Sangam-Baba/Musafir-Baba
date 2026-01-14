@@ -25,6 +25,7 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
 import PackageCard from "@/components/custom/PackageCard";
 import { GroupPackageInterface } from "./page";
+import ReadMore from "@/components/common/ReadMore";
 type TabKey =
   | "description"
   | "highlights"
@@ -96,7 +97,7 @@ function SlugClients({
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4  my-4 md:flex">
-        <section className="w-full md:w-2/3 px-4  py-16">
+        <section className="w-full md:w-2/3 px-4 md:py-10 py-4">
           <div className="flex flex-col gap-2  max-w-7xl mx-auto">
             {/* Tabs */}
             <div>
@@ -114,7 +115,7 @@ function SlugClients({
               </div>
               {/* <p className="text-gray-600">{pkg.metaDescription}</p> */}
             </div>
-            <div className="flex flex-wrap  w-full gap-2 mt-4 ">
+            <div className="flex md:flex-wrap w-full gap-2 mt-4 overflow-x-auto no-scrollbar">
               {tabs.map((tab) => (
                 <Button
                   key={tab.key}
@@ -136,7 +137,10 @@ function SlugClients({
               {active === "description" && (
                 <div className="rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
                   <h2 className="font-bold text-lg mb-2">About This Tour</h2>
-                  <section className="prose prose-lg max-w-none mt-6">
+                  <div className="md:hidden">
+                    <ReadMore content={pkg.description} />
+                  </div>
+                  <section className="hidden md:block prose prose-lg max-w-none mt-6">
                     <BlogContent html={pkg.description} />
                   </section>
                 </div>
@@ -285,7 +289,7 @@ function SlugClients({
           </div>
         </section>
         <div className="w-full md:w-1/3 px-4 py-16 ">
-          <Card className="mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
+          <Card className="hidden md:block mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
             <CardHeader className="flex flex-col justify-between  ">
               <p>
                 Starting from{" "}
@@ -347,6 +351,39 @@ function SlugClients({
               ))}
           </div>
         )}
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-between bg-white md:hidden mb-13 py-2 px-4 ">
+        <CardHeader className="flex flex-col justify-between  ">
+          <p className="whitespace-nowrap">
+            Starting from{" "}
+            <span className="text-sm text-muted-foreground line-through">
+              ₹ {dicountedPrice}
+            </span>
+          </p>
+          <CardTitle className="text-3xl font-semibold tracking-tight text-[#FE5300] whitespace-nowrap">
+            ₹ {price.toLocaleString()}{" "}
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              per person
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <div className="flex justify-end">
+          <Button
+            onClick={() => {
+              if (!auth.isAuthenticated) {
+                useAuthDialogStore
+                  .getState()
+                  .openDialog("login", undefined, `${pathName}/${pkg._id}`);
+              } else {
+                router.push(`./${pkg.slug}/${pkg._id}`);
+              }
+            }}
+            size={"lg"}
+            className=" bg-[#FE5300] hover:bg-[#FE5300] text-md"
+          >
+            Book Now
+          </Button>
+        </div>
       </div>
 
       <AuthDialog />

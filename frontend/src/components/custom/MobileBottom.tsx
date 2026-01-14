@@ -11,7 +11,7 @@ function MobileBottom() {
 
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
   return (
-    <div className="block md:hidden fixed bottom-0 z-50 flex items-center px-10 py-2 justify-between w-full bg-white border-t border-gray-400 ">
+    <div className="block md:hidden fixed bottom-0 z-10 flex items-center px-10 py-2 justify-between w-full bg-white border-t border-gray-400 ">
       <div>
         <Link
           href="tel:+919289602447"

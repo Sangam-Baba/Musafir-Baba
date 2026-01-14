@@ -19,7 +19,7 @@ export default async function Page({ params }: Params) {
   const res = await getGroupPackageById(id);
   const pkg = res?.data;
 
-  if (!pkg) {
+  if (!res) {
     return notFound();
   }
 

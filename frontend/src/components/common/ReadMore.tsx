@@ -13,11 +13,11 @@ function ReadMore({ content }: { content: string }) {
   const previewHtml = paragraphs.slice(0, 2).join("");
   const fullHtml = paragraphs.join("");
   return (
-    <div className="flex justify-between">
+    <div className="flex flex-col">
       <BlogContent html={showReadMore ? fullHtml : previewHtml} />
       {paragraphs.length > 2 && (
         <p
-          className="text-pretty font-semibold cursor-pointer whitespace-nowrap flex items-end text-[#FE5300] hover:text-blue-600 mb-0.5"
+          className="justify-end text-pretty font-semibold cursor-pointer whitespace-nowrap flex items-end text-[#FE5300] hover:text-blue-600 mb-0.5"
           onClick={() => setShowReadMore(!showReadMore)}
         >
           {showReadMore ? "Show Less" : "Read More"}

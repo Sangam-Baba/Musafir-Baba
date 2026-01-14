@@ -30,6 +30,7 @@ import {
   Plus,
   User,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Batch {
   _id: string;
@@ -268,101 +269,104 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                   <h2 className="text-xl font-semibold">Select Travel Dates</h2>
                 </div>
 
-                <Accordion
-                  type="single"
-                  collapsible
+                <Tabs
                   defaultValue={Object.keys(batchesByMonth)[0]}
-                  className="w-full space-y-3"
+                  className="flex flex-col w-full "
                 >
+                  <div className="overflow-x-auto no-scrollbar">
+                    <TabsList className="flex flex-row gap-4 mb-4 whitespace-nowrap min-w-max">
+                      {Object.keys(batchesByMonth).map((month) => (
+                        <TabsTrigger
+                          key={month}
+                          value={month}
+                          className="hover:bg-[#FE5300]/80"
+                        >
+                          {month}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
+
                   {Object.entries(batchesByMonth).map(([month, list]) => (
-                    <AccordionItem
-                      key={month}
-                      value={month}
-                      className="border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <AccordionTrigger className="hover:no-underline py-4">
-                        <span className="text-lg font-medium">{month}</span>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-4">
-                        <div className="grid gap-3">
-                          {list.map((b) => {
-                            const start = format(
-                              parseISO(b.startDate),
-                              "EEE, dd MMM"
-                            );
-                            const end = format(
-                              parseISO(b.endDate),
-                              "EEE, dd MMM"
-                            );
-                            const isSelected = selectedBatch?._id === b._id;
+                    <TabsContent key={month} value={month} className="w-full">
+                      <div className="grid gap-3">
+                        {list.map((b) => {
+                          const start = format(
+                            parseISO(b.startDate),
+                            "EEE, dd MMM"
+                          );
+                          const end = format(
+                            parseISO(b.endDate),
+                            "EEE, dd MMM"
+                          );
+                          const isSelected = selectedBatch?._id === b._id;
 
-                            return (
-                              <div
-                                key={b._id}
-                                onClick={() => {
-                                  setSelectedBatch(b);
-                                  confirmSelection(b);
-                                  const el =
-                                    document.getElementById("calculator");
-                                  el?.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "start",
-                                  });
-                                }}
-                                className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                                  isSelected
-                                    ? "border-primary bg-primary/5 shadow-inner"
-                                    : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
-                                }`}
-                              >
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-lg">
-                                      {start}
-                                    </span>
-                                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                    <span className="font-semibold text-lg">
-                                      {end}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Badge
-                                      // variant="outline"
-                                      className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20"
-                                    >
-                                      Available
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground">
-                                      Industry Best Price
-                                    </span>
-                                  </div>
+                          return (
+                            <div
+                              key={b._id}
+                              onClick={() => {
+                                setSelectedBatch(b);
+                                confirmSelection(b);
+                                const el =
+                                  document.getElementById("calculator");
+                                el?.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "start",
+                                });
+                              }}
+                              className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                                isSelected
+                                  ? "border-primary bg-primary/5 shadow-inner"
+                                  : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
+                              }`}
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-lg">
+                                    {start}
+                                  </span>
+                                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                                  <span className="font-semibold text-lg">
+                                    {end}
+                                  </span>
                                 </div>
-
-                                <div className="mt-4 sm:mt-0 text-left sm:text-right">
-                                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
-                                    From
-                                  </p>
-                                  <div className="flex items-baseline justify-start sm:justify-end gap-2">
-                                    <p className="text-2xl font-bold text-primary">
-                                      ₹{b.quad.toLocaleString()}
-                                    </p>
-                                    <span className="text-sm text-muted-foreground line-through">
-                                      ₹{b.quadDiscount.toLocaleString()}
-                                    </span>
-                                  </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    // variant="outline"
+                                    className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20"
+                                  >
+                                    Available
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    Industry Best Price
+                                  </span>
                                 </div>
-
-                                {isSelected && (
-                                  <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-primary fill-background shadow-sm rounded-full" />
-                                )}
                               </div>
-                            );
-                          })}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
+
+                              <div className="mt-4 sm:mt-0 text-left sm:text-right">
+                                <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
+                                  From
+                                </p>
+                                <div className="flex items-baseline justify-start sm:justify-end gap-2">
+                                  <p className="text-2xl font-bold text-primary">
+                                    ₹{b.quad.toLocaleString()}
+                                  </p>
+                                  <span className="text-sm text-muted-foreground line-through">
+                                    ₹{b.quadDiscount.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {isSelected && (
+                                <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-primary fill-background shadow-sm rounded-full" />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </TabsContent>
                   ))}
-                </Accordion>
+                </Tabs>
               </section>
 
               {/* Add Ons */}
@@ -535,7 +539,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="mt-6 space-y-4"
                   >
-                    <div className="flex flex-col  justify-between border-t pt-4 space-y-4">
+                    <div className="flex flex-col justify-between border-t pt-4 space-y-4">
                       <div>
                         <div className="flex justify-between">
                           <p className="text-md font-semibold"> Travel Date </p>
@@ -595,6 +599,66 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
               )}
             </div>
           </div>
+          {/* <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg md:hidden px-5 pb-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="mt-6 space-y-4"
+            >
+              <div className="flex flex-col justify-between border-t pt-4 space-y-4">
+                <div>
+                  <div className="flex justify-between">
+                    <p className="text-md font-semibold"> Travel Date </p>
+                    <p>
+                      <p>
+                        {new Date(
+                          confirmedBatch?.startDate || ""
+                        ).toLocaleDateString("en-UK", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </p>
+                  </div>
+
+                  {(["quad", "triple", "double", "child"] as const).map(
+                    (type) => (
+                      <div key={type} className="mb-2">
+                        {confirmedBatch
+                          ? travellers?.[type] > 0 && (
+                              <div className="flex justify-between">
+                                <p className="capitalize">{type}</p>
+                                <p className="text-sm text-gray-500">
+                                  ₹{confirmedBatch?.[type]} X{" "}
+                                  {travellers?.[type]}
+                                </p>
+                              </div>
+                            )
+                          : null}
+                      </div>
+                    )
+                  )}
+                  <div className="flex justify-between border-t pt-4">
+                    <p>Total Travellers</p>
+                    <p className="text-sm text-gray-500">
+                      {travellers.quad + travellers.triple + travellers.double}{" "}
+                      adult(s) · {travellers.child} child(ren)
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-between bg-primary/5 p-4 rounded-xl border border-primary/10">
+                  <p className="text-md font-semibold">Total Price</p>
+                  <p className="text-xl font-semibold">
+                    {" "}
+                    ₹{form.watch("totalPrice").toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <Button type="submit" className="w-full">
+                Book Now
+              </Button>
+            </form>
+          </div> */}
         </div>
       ) : (
         <div className="w-full flex items-center justify-center ">

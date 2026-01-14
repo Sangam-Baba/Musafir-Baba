@@ -2,6 +2,17 @@
 @import "tw-animate-css";
 @plugin '@tailwindcss/typography';
 
+/* Scrollbar hidden but scroll working at pkg detail page */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 /* Added button styling for editor buttons */
 .prose .editor-button {
   display: flex;

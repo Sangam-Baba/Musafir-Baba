@@ -15,6 +15,7 @@ import Image from "next/image";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { Download } from "lucide-react";
 const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
@@ -80,6 +81,7 @@ export function ItineryDialog({
           className="bg-[#FE5300] hover:bg-[#e04a00] text-white hover:text-white text-xs md:text-sm"
         >
           Download Itinerary
+          <Download className="w-4 h-4 ml-2" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
