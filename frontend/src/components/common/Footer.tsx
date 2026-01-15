@@ -237,7 +237,7 @@ function Footer() {
 
               {/* Socials */}
               <div className="flex items-center  gap-4 pt-4">
-                <Link href="https://www.youtube.com/@hello_musafirbaba">
+                <Link href="https://www.youtube.com/@musafirbabatravels">
                   <Youtube
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
