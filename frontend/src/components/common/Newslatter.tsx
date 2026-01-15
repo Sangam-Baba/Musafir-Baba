@@ -1,9 +1,37 @@
-import React from "react";
+"use client";
 import Image from "next/image";
 import imgleft from "../../../public/Frame 518.png";
 import imgright from "../../../public/Frame 519.png";
 import { Send } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+
+const createNewsletter = async (email: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/newsletter`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error("Failed to create newsletter");
+
+  return res.json();
+};
 function Newslatter() {
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = async () => {
+    if (!email) {
+      toast.error("Please enter your email");
+      return;
+    }
+    try {
+      await createNewsletter(email);
+      toast.success("Newsletter created successfully!");
+      setEmail("");
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <section className="flex  md:flex-row justify-between  w-full bg-[#FF5300]">
       <Image src={imgright} alt="logo" className="w-1/7" />
@@ -20,10 +48,15 @@ function Newslatter() {
 
           <input
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Your email address"
             className="bg-transparent outline-none p-2 text-white w-[80%] "
           />
-          <button className="bg-white p-2 font-semibold   text-[#FF5300] rounded-tr-lg rounded-br-lg">
+          <button
+            onClick={handleSubmit}
+            className="bg-white p-2 font-semibold text-[#FF5300] rounded-tr-lg rounded-br-lg"
+          >
             Subscribe
           </button>
         </div>

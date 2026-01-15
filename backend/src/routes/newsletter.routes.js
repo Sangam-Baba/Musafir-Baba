@@ -12,10 +12,10 @@ const newsletterRoutes = Router();
 
 newsletterRoutes.post("/", createNewsletter);
 newsletterRoutes.post(
-  "/send-newsletter",
+  "/send-newsletter/:type",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "user"]),
   sendNewsletter
 );
 newsletterRoutes.get(
@@ -25,6 +25,6 @@ newsletterRoutes.get(
   authorizedRoles(["admin", "superadmin"]),
   getAllSubscribers
 );
-newsletterRoutes.patch("/unsubscribe/:email", unsubscribe);
+newsletterRoutes.patch("/unsubscribe", unsubscribe);
 
 export default newsletterRoutes;
