@@ -3,6 +3,7 @@ import {
   getAllSubscribers,
   sendNewsletter,
   unsubscribe,
+  previewNewsletter,
 } from "../controllers/newsletter.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -17,6 +18,13 @@ newsletterRoutes.post(
   validateSession,
   authorizedRoles(["admin", "superadmin", "user"]),
   sendNewsletter
+);
+newsletterRoutes.get(
+  "/get-preview/:type",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin", "user"]),
+  previewNewsletter
 );
 newsletterRoutes.get(
   "/",

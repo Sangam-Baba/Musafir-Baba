@@ -199,7 +199,7 @@ function CreateEditStaff({
     },
     {
       label: "Settings",
-      values: ["role", "membership", "authors", "coupon"],
+      values: ["role", "membership", "authors", "coupon", "newsletter"],
     },
   ];
   return (

@@ -42,6 +42,7 @@ import {
   Video,
   IndianRupee,
   Images,
+  NewspaperIcon,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -197,6 +198,12 @@ const NAV_GROUPS = [
         href: "/admin/membership",
         icon: UserRoundCheck,
         permission: "membership",
+      },
+      {
+        label: "Newsletter",
+        href: "/admin/newsletter",
+        icon: NewspaperIcon,
+        permission: "newsletter",
       },
     ],
   },

@@ -61,7 +61,6 @@ const getAllSubscribers = async (req, res) => {
 const sendNewsletter = async (req, res) => {
   try {
     const { type } = req.params;
-    console.log(type);
     let content = [];
     let dataType = "";
 
@@ -119,6 +118,67 @@ const sendNewsletter = async (req, res) => {
   }
 };
 
+const previewNewsletter = async (req, res) => {
+  try {
+    const { type } = req.params;
+    let content = [];
+    let dataType = "";
+
+    if (type === "blog") {
+      const blogs = await Blog.find({ status: "published" })
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .lean();
+
+      content = blogs;
+      dataType = "blog";
+    }
+
+    if (type === "news") {
+      const newsData = await News.find({ status: "published" })
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .lean();
+
+      content = newsData;
+      dataType = "news";
+    }
+
+    if (content.length < 4) {
+      return res
+        .status(400)
+        .json({ success: false, message: "At least 4 items required" });
+    }
+
+    const subject = "MusafirBaba Weekly Newsletter";
+    const body = blogTemplate(content, dataType, "token");
+
+    // const allSubs = await Newsletter.find({ status: "active" }).lean();
+
+    // await Promise.all(
+    //   allSubs.map((subs) => {
+    //     const token = generateUnsubToken(subs.email);
+
+    //     sendEmail(subs.email, subject, body).catch((err) => {
+    //       console.error("Email failed:", subs.email, err);
+    //     });
+    //   })
+    // );
+
+    res.status(200).json({
+      success: true,
+      message: "Newsletter preview sent successfully",
+      data: body,
+    });
+  } catch (error) {
+    console.log("Failed to show preview newsletter", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      message: error.message,
+    });
+  }
+};
 const unsubscribe = async (req, res) => {
   try {
     const { token } = req.query;
@@ -136,4 +196,10 @@ const unsubscribe = async (req, res) => {
   }
 };
 
-export { createNewsletter, getAllSubscribers, sendNewsletter, unsubscribe };
+export {
+  createNewsletter,
+  getAllSubscribers,
+  sendNewsletter,
+  unsubscribe,
+  previewNewsletter,
+};
