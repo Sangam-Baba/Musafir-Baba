@@ -314,7 +314,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                   block: "start",
                                 });
                               }}
-                              className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                              className={`group relative flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
                                 isSelected
                                   ? "border-primary bg-primary/5 shadow-inner"
                                   : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
@@ -343,7 +343,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                 </div>
                               </div>
 
-                              <div className="mt-4 sm:mt-0 text-left sm:text-right">
+                              <div className="">
                                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
                                   From
                                 </p>
@@ -452,11 +452,11 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
               className="w-full md:w-1/2 md:mt-10 border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow h-fit py-4 pt-4 sticky top-10 self-start"
             >
               <div className="flex justify-between px-5 gap-5 py-2">
-                <h3 className="capitalize font-bold text-lg whitespace-nowrap">
+                <h3 className="capitalize font-bold md:text-lg text-md whitespace-nowrap">
                   Room Type
                 </h3>
-                <p className="capitalize font-bold text-lg whitespace-nowrap">
-                  Number of Travellers
+                <p className="capitalize font-bold md:text-lg text-md whitespace-nowrap">
+                  Adults
                 </p>
               </div>
 
@@ -475,8 +475,8 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                         key={type.name}
                         className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl border border-border/50"
                       >
-                        <div className="space-y-1">
-                          <div className="flex items-center">
+                        <div className="space-y-1 flex gap-2 md:gap-5">
+                          <div className="flex flex-col">
                             <span className="capitalize font-bold text-md">
                               {type.name === "child"
                                 ? "Child"
@@ -489,15 +489,16 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                             </span>
                           </div>
                           {type.name == "child" && (
-                            <p className="text-sm">Child upto 12 years</p>
+                            <p className="text-xs text-muted-foreground ">
+                              Child upto 12 years
+                            </p>
                           )}
 
                           <p className="text-primary font-semibold">
-                            ₹{selectedBatch[type.name].toLocaleString()} /
-                            person{" "}
+                            ₹{selectedBatch[type.name].toLocaleString()} /-
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 bg-background p-1 rounded-lg border shadow-sm">
+                        <div className="flex items-center md:gap-4 gap-3 bg-background p-1 rounded-lg border shadow-sm">
                           <Button
                             type="button"
                             variant="ghost"
@@ -513,7 +514,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
-                          <span className="text-lg font-bold min-w-[10px] text-center">
+                          <span className="md:text-lg text-md font-semibold text-center">
                             {travellers[type.name]}
                           </span>
                           <Button

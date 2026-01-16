@@ -216,7 +216,7 @@ export default async function NewsDetailPage({
           </section>
         </article>
         <div className="lg:w-3/9">
-          <QueryForm />
+          {/* <QueryForm /> */}
           <LatestNewsSidebar currentId={news?._id} />
           <TrandingNewsSidebar currentId={news?._id} />
         </div>

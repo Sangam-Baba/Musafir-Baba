@@ -289,18 +289,20 @@ function SlugClients({
           </div>
         </section>
         <div className="w-full md:w-1/3 px-4 py-16 ">
-          <Card className="hidden md:block mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
+          <Card className="hidden md:grid md:grid-cols-1 lg:grid-cols-2 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
             <CardHeader className="flex flex-col justify-between  ">
-              <p>
+              <p className="whitespace-nowrap">
                 Starting from{" "}
                 <span className="text-sm text-muted-foreground line-through">
                   ₹ {dicountedPrice}
                 </span>
               </p>
-              <CardTitle className="text-4xl font-semibold tracking-tight text-[#FE5300]">
+              <CardTitle className="text-4xl font-semibold tracking-tight text-[#FE5300] whitespace-nowrap">
                 ₹ {price.toLocaleString()}{" "}
               </CardTitle>
-              <span className="text-sm text-muted-foreground">per person</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                per person
+              </span>
             </CardHeader>
             <Button
               onClick={() => {
@@ -313,7 +315,7 @@ function SlugClients({
                 }
               }}
               size={"lg"}
-              className="m-4 bg-[#FE5300] hover:bg-[#FE5300] font-bold text-xl"
+              className="m-4 bg-[#FE5300] hover:bg-[#FE5300] font-semibold text-xl"
             >
               Book Now
             </Button>
