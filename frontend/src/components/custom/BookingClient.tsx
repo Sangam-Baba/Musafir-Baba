@@ -31,6 +31,7 @@ import {
   User,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from "next/image";
 
 interface Batch {
   _id: string;
@@ -49,6 +50,10 @@ interface Package {
   _id: string;
   title: string;
   description: string;
+  coverImage: {
+    url: string;
+    alt: string;
+  };
   destination: {
     country: string;
     state: string;
@@ -212,7 +217,17 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     <div className="max-w-7xl mx-auto p-6 space-y-4">
       {/* <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2> */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-5 p-4 rounded-md shadow-md">
-        <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1>
+        <div className="flex items-center gap-2">
+          <Image
+            src={pkg.coverImage.url}
+            alt={pkg.title}
+            width={500}
+            height={500}
+            className="w-[150px] h-[100px] rounded-md"
+          />
+          <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1>
+        </div>
+
         <div className="flex gap-2">
           <span className="flex items-center gap-1 p-1 rounded-md md:text-lg">
             <MapPin color="#FE5300" size={20} />
@@ -225,13 +240,13 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
           <span className="flex items-center gap-1 p-1 rounded-md md:text-lg">
             <Clock color="#FE5300" size={20} />
             <span>
-              {pkg.duration.days}D/{pkg.duration.nights}N
+              {pkg.duration.nights}N/{pkg.duration.days}D
             </span>
           </span>
         </div>
       </div>
       {Object.values(batchesByMonth).length > 0 ? (
-        <div>
+        <div className="mt-10">
           {/* Stepper Header */}
           <div className="flex items-center justify-between mb-8 sticky top-3 bg-white z-10">
             {steps.map((step, index) => (
@@ -322,11 +337,11 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                             >
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-lg">
+                                  <span className="font-semibold md:text-lg text-md">
                                     {start}
                                   </span>
                                   <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                  <span className="font-semibold text-lg">
+                                  <span className="font-semibold md:text-lg text-md">
                                     {end}
                                   </span>
                                 </div>
@@ -345,15 +360,15 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
                               <div className="">
                                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
-                                  From
+                                  From{" "}
+                                  <span className="text-sm text-muted-foreground line-through">
+                                    ₹{b.quadDiscount.toLocaleString()}
+                                  </span>
                                 </p>
                                 <div className="flex items-baseline justify-start sm:justify-end gap-2">
                                   <p className="text-2xl font-bold text-primary">
                                     ₹{b.quad.toLocaleString()}
                                   </p>
-                                  <span className="text-sm text-muted-foreground line-through">
-                                    ₹{b.quadDiscount.toLocaleString()}
-                                  </span>
                                 </div>
                               </div>
 
@@ -482,22 +497,23 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                 ? "Child"
                                 : `${type.name} Sharing`}
                             </span>
-                            <span className="flex gap-1 ml-2">
-                              {Array.from({ length: type.no }).map((_, i) => (
-                                <User key={i} className="w-4 h-4" />
-                              ))}
-                            </span>
+                            <div className="flex gap-2">
+                              <span className="flex gap-1 ml-2">
+                                {Array.from({ length: type.no }).map((_, i) => (
+                                  <User key={i} className="w-4 h-4" />
+                                ))}
+                              </span>
+                              {type.name == "child" && (
+                                <p className="text-xs text-muted-foreground ">
+                                  Child upto 12 years
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          {type.name == "child" && (
-                            <p className="text-xs text-muted-foreground ">
-                              Child upto 12 years
-                            </p>
-                          )}
-
-                          <p className="text-primary font-semibold">
-                            ₹{selectedBatch[type.name].toLocaleString()} /-
-                          </p>
                         </div>
+                        <p className="text-primary font-semibold">
+                          ₹{selectedBatch[type.name].toLocaleString()} /-
+                        </p>
                         <div className="flex items-center md:gap-4 gap-3 bg-background p-1 rounded-lg border shadow-sm">
                           <Button
                             type="button"
@@ -565,8 +581,11 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                     <div className="flex justify-between">
                                       <p className="capitalize">{type}</p>
                                       <p className="text-sm text-gray-500">
-                                        ₹{confirmedBatch?.[type]} X{" "}
-                                        {travellers?.[type]}
+                                        ₹
+                                        {confirmedBatch?.[
+                                          type
+                                        ].toLocaleString()}{" "}
+                                        X {travellers?.[type]}
                                       </p>
                                     </div>
                                   )
