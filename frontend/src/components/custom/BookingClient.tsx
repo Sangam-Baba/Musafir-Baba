@@ -504,15 +504,15 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                 ))}
                               </span>
                               {type.name == "child" && (
-                                <p className="text-xs text-muted-foreground ">
+                                <p className="text-xs text-muted-foreground whitespace-nowrap ">
                                   Child upto 12 years
                                 </p>
                               )}
                             </div>
                           </div>
                         </div>
-                        <p className="text-primary font-semibold">
-                          ₹{selectedBatch[type.name].toLocaleString()} /-
+                        <p className="text-primary font-semibold whitespace-nowrap">
+                          ₹{selectedBatch[type.name].toLocaleString()}/-
                         </p>
                         <div className="flex items-center md:gap-4 gap-3 bg-background p-1 rounded-lg border shadow-sm">
                           <Button
