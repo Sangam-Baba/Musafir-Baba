@@ -225,7 +225,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
             height={500}
             className="w-[150px] h-[100px] rounded-md"
           />
-          <h1 className="text-3xl font-bold mb-4">{pkg.title}</h1>
+          <h1 className="md:text-3xl text-xl font-bold mb-4">{pkg.title}</h1>
         </div>
 
         <div className="flex gap-2">

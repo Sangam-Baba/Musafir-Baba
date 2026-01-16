@@ -299,7 +299,7 @@ function Footer() {
       </div>
 
       {/* LowerFooter */}
-      <div className="text-center py-4 border-t border-gray-200 px-4">
+      <div className="text-center mb-25 md:mb-0 py-4 border-t border-gray-200 px-4">
         <p>
           Copyright © 2020 - 2026 | Musafirbaba Travels Pvt. Ltd. | All Rights
           Reserved.

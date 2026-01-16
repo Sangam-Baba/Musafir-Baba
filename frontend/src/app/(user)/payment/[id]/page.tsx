@@ -442,7 +442,7 @@ export default function CheckoutPage() {
                       {Package.title ?? "Travel Package"}
                     </span>
                     <span className="font-semibold text-foreground">
-                      ₹{baseAmount.toFixed(2)}
+                      ₹{parseInt(baseAmount.toFixed(2)).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -450,7 +450,7 @@ export default function CheckoutPage() {
                       @GST 5%
                     </span>
                     <span className="font-semibold text-foreground">
-                      ₹{(baseAmount + addOnAmount) * 0.05}
+                      ₹{((baseAmount + addOnAmount) * 0.05).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -460,7 +460,7 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-foreground">Total</span>
                     <span className="text-2xl font-bold text-primary">
-                      ₹{finalAmount.toFixed(2)}
+                      ₹{parseInt(finalAmount.toFixed(2)).toLocaleString()}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
@@ -481,7 +481,7 @@ export default function CheckoutPage() {
                       Processing...
                     </span>
                   ) : (
-                    `Pay ₹${finalAmount.toFixed(2)}`
+                    `Pay ₹${parseInt(finalAmount.toFixed(2)).toLocaleString()}`
                   )}
                 </Button>
 
