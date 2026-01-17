@@ -43,19 +43,16 @@ function CategorySidebar() {
   const Categories = data?.data ?? [];
   return (
     <div>
-      <Card className="mt-8">
+      <Card className=" ">
         <CardHeader>
-          <CardTitle className="flex items-center justify-center gap-2">
+          <CardTitle className="flex text-xl font-bold gap-1">
             Categories
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
             {Categories.map((cat: Category, idx: number) => (
-              <li
-                key={idx}
-                className="flex justify-between p-3 border rounded-lg"
-              >
+              <li key={idx} className="flex justify-between p-1 md:px-3 ">
                 <Link
                   href={`/blog?category=${cat.slug}`}
                   className="text-sm text-gray-800 hover:text-[#FE5300]"

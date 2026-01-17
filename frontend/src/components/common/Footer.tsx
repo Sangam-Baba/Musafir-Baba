@@ -145,10 +145,7 @@ function Footer() {
       <div className="md:hidden flex flex-col gap-4  px-4 py-8">
         <Accordion type="single" collapsible className="w-full space-y-4">
           {/* === Services === */}
-          <AccordionItem
-            value="services"
-            className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
-          >
+          <AccordionItem value="services" className=" border-gray-200">
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
               <span>Overview</span>
             </AccordionTrigger>
@@ -171,7 +168,7 @@ function Footer() {
           {/* === Services === */}
           <AccordionItem
             value="trips"
-            className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
+            className=" overflow-hidden  border-gray-200"
           >
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
               <span>Services</span>
@@ -182,10 +179,7 @@ function Footer() {
           </AccordionItem>
 
           {/* === About Us === */}
-          <AccordionItem
-            value="about"
-            className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
-          >
+          <AccordionItem value="about" className=" border-gray-200">
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
               <span>About Us</span>
             </AccordionTrigger>
@@ -195,10 +189,7 @@ function Footer() {
           </AccordionItem>
 
           {/* === Connect === */}
-          <AccordionItem
-            value="connect"
-            className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
-          >
+          <AccordionItem value="connect" className=" border-gray-200">
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
               <span>Contact Us</span>
             </AccordionTrigger>
@@ -271,10 +262,7 @@ function Footer() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem
-            value="Quick Links"
-            className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-200"
-          >
+          <AccordionItem value="Quick Links" className=" border-gray-200">
             <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
               <span>Quick Links</span>
             </AccordionTrigger>
@@ -288,7 +276,7 @@ function Footer() {
       </div>
 
       {/* Quick Links */}
-      <div className="hidden md:flex flex-col border-t border-gray-200 md:py-12 py-8  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
+      <div className="hidden md:flex flex-col border-t border-gray-200 md:py-12 py-4  px-4 md:px-10 lg:px-25  items-center md:items-start justify-between">
         <div className="flex flex-col gap-1 pb-4">
           <p className="text-lg font-bold">Quick Links</p>
           <p className="h-0.5 w-[20%] bg-[#FE5300] rounded-full"></p>
@@ -299,7 +287,7 @@ function Footer() {
       </div>
 
       {/* LowerFooter */}
-      <div className="text-center mb-25 md:mb-0 py-4 border-t border-gray-200 px-4">
+      <div className="text-center mb-30 md:mb-0 py-4 border-t border-gray-200 px-4">
         <p>
           Copyright © 2020 - 2026 | Musafirbaba Travels Pvt. Ltd. | All Rights
           Reserved.
