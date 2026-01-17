@@ -133,7 +133,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   const editor = useEditor({
     extensions: [
       Table.configure({
-        resizable: true,
+        resizable: false,
       }),
       TableRow,
       TableHeader,

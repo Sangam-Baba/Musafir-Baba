@@ -306,13 +306,21 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                     <TabsContent key={month} value={month} className="w-full">
                       <div className="grid gap-3">
                         {list.map((b) => {
-                          const start = format(
-                            parseISO(b.startDate),
-                            "EEE, dd MMM"
-                          );
-                          const end = format(
-                            parseISO(b.endDate),
-                            "EEE, dd MMM"
+                          const start = parseISO(
+                            b.startDate
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          });
+
+                          const end = parseISO(b.endDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
                           );
                           const isSelected = selectedBatch?._id === b._id;
 
@@ -564,7 +572,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                             <p>
                               {new Date(
                                 confirmedBatch?.startDate || ""
-                              ).toLocaleDateString("en-UK", {
+                              ).toLocaleDateString("en-US", {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",

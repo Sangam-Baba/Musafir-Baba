@@ -46,12 +46,37 @@
   text-decoration: underline;
 }
 
-.ProseMirror table {
+/* TABLE CONTAINER */
+/* Table wrapper handles centering + scrolling */
+.ProseMirror .tableWrapper {
   width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
   overflow-x: auto;
-  display: block;
+  text-align: center;
+}
+
+.prose table {
+  width: max-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid #d1d5db; /* outer border */
+}
+.prose :where(table):not(:where(.not-prose, .not-prose *)) {
+  width: auto !important;
+}
+
+.prose
+  :where(th, td):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  text-align: center;
+}
+
+.ProseMirror .tableWrapper table {
+  display: inline-table;
+  width: auto !important; /* overrides element.style */
+  max-width: none;
+  margin: 1rem auto;
+  border-collapse: collapse;
+  border: 1px solid #d1d5db; /* outer border */
 }
 
 .ProseMirror th,
