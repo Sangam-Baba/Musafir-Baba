@@ -98,7 +98,7 @@ const getAllBlog = async (req, res) => {
   try {
     const { title, search, category, author } = req.query;
     const page = Math.max(parseInt(req.query?.page || "1"), 1);
-    const limit = Math.min(parseInt(req.query?.limit || "20"), 250);
+    const limit = Math.min(parseInt(req.query?.limit || "250"), 250);
     const skip = (page - 1) * limit;
 
     const filter = {};
@@ -204,7 +204,7 @@ const blogView = async (req, res) => {
     const newBlog = await Blog.findByIdAndUpdate(
       id,
       { $inc: { views: 1 } },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({ success: true, message: "Blog View successful" });
@@ -230,7 +230,7 @@ const blogLike = async (req, res) => {
     const newBlog = await Blog.findByIdAndUpdate(
       id,
       { $inc: { likes: 1 } },
-      { new: true }
+      { new: true },
     );
 
     res

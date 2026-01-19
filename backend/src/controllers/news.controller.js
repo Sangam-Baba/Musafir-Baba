@@ -96,7 +96,7 @@ const getAllNews = async (req, res) => {
   try {
     const { title, search, author } = req.query;
     const page = Math.max(parseInt(req.query?.page || "1"), 1);
-    const limit = Math.min(parseInt(req.query?.limit || "20"), 200);
+    const limit = Math.min(parseInt(req.query?.limit || "250"), 200);
     const skip = (page - 1) * limit;
 
     const filter = {};
@@ -184,7 +184,7 @@ const NewsView = async (req, res) => {
     const newNews = await News.findByIdAndUpdate(
       id,
       { $inc: { views: 1 } },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({ success: true, message: "News View successful" });
@@ -204,7 +204,7 @@ const NewsLike = async (req, res) => {
     const newNews = await News.findByIdAndUpdate(
       id,
       { $inc: { likes: 1 } },
-      { new: true }
+      { new: true },
     );
 
     res
