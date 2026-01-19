@@ -46,65 +46,67 @@
   text-decoration: underline;
 }
 
-/* TABLE CONTAINER */
-/* Table wrapper handles centering + scrolling */
+.prose .tableWrapper,
 .ProseMirror .tableWrapper {
   width: 100%;
   overflow-x: auto;
-  text-align: center;
 }
 
-.prose table {
-  width: max-content;
+/* Table itself */
+.prose table,
+.ProseMirror table {
+  width: 100% !important; /* stretch full container */
   max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  border: 1px solid #d1d5db; /* outer border */
+  border-collapse: collapse;
+  table-layout: fixed; /* Wikipedia-like */
+  margin: 1rem 0;
+  border: 1px solid #a2a9b1; /* Wikipedia gray */
+  font-size: 0.95rem;
 }
-.prose :where(table):not(:where(.not-prose, .not-prose *)) {
+
+/* Remove colgroup width forcing */
+.prose table colgroup,
+.prose table col,
+.ProseMirror table colgroup,
+.ProseMirror table col {
   width: auto !important;
 }
 
-.prose
-  :where(th, td):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
-  text-align: center;
-}
-
-.ProseMirror .tableWrapper table {
-  display: inline-table;
-  width: auto !important; /* overrides element.style */
-  max-width: none;
-  margin: 1rem auto;
-  border-collapse: collapse;
-  border: 1px solid #d1d5db; /* outer border */
-}
-
-.ProseMirror th,
-.ProseMirror td {
-  border: 1px solid #d1d5db; /* Tailwind gray-300 */
-  padding: 10px;
-  text-align: left;
-}
-
+/* Header */
+.prose th,
 .ProseMirror th {
-  background: #f3f4f6; /* gray-100 */
+  background: #eaecf0; /* Wikipedia header */
+  border: 1px solid #a2a9b1;
+  padding: 8px 10px;
+  text-align: center;
   font-weight: 600;
 }
 
-.ProseMirror table tr:nth-child(even) {
-  background: #fafafa; /* striped table rows */
+/* Cells */
+.prose td,
+.ProseMirror td {
+  border: 1px solid #a2a9b1;
+  padding: 8px 10px;
+  vertical-align: top;
 }
 
-/* Resize handler (if resizable enabled) */
-.ProseMirror .column-resize-handle {
-  background: #3b82f6; /* blue-500 */
-  width: 4px;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  cursor: col-resize;
+/* Zebra rows */
+.prose tbody tr:nth-child(even),
+.ProseMirror tbody tr:nth-child(even) {
+  background: #f8f9fa;
 }
 
+/* Links inside table */
+.prose table a,
+.ProseMirror table a {
+  color: #0645ad;
+  text-decoration: none;
+}
+
+.prose table a:hover,
+.ProseMirror table a:hover {
+  text-decoration: underline;
+}
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
