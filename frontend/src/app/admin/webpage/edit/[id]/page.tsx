@@ -26,7 +26,7 @@ import SmallEditor from "@/components/admin/SmallEditor";
 
 const getWebpage = async (id: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/id/${id}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/id/${id}`,
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
@@ -35,7 +35,7 @@ const getWebpage = async (id: string) => {
 const updatePage = async (
   values: WebpageFormData,
   token: string,
-  id: string
+  id: string,
 ) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/${id}`, {
     method: "PATCH",
@@ -83,6 +83,7 @@ export default function UpdateWebpage() {
     status: "published",
     excerpt: "",
     faqs: [],
+    footerLinks: [],
   };
 
   const form = useForm<WebpageFormData>({
@@ -111,7 +112,10 @@ export default function UpdateWebpage() {
   }, [webpage, form, token, allparents]);
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
-
+  const footerLinksArray = useFieldArray({
+    control: form.control,
+    name: "footerLinks",
+  });
   const mutation = useMutation({
     mutationFn: (values: WebpageFormData) =>
       updatePage(values, token, id as string),
@@ -144,7 +148,7 @@ export default function UpdateWebpage() {
     toast.success("Reviews updated successfully");
     const updated = await getReviewsByIds(token, [id]);
     setReviewsDetails((prev) =>
-      prev.map((b) => (b._id === id ? updated[0] : b))
+      prev.map((b) => (b._id === id ? updated[0] : b)),
     );
     setShowReviewsModal(false);
     setEditReviewsId(null);
@@ -244,7 +248,7 @@ export default function UpdateWebpage() {
                     "schemaType",
                     form
                       .getValues("schemaType")
-                      ?.filter((item) => item !== option)
+                      ?.filter((item) => item !== option),
                   )
                 }
               />
@@ -408,6 +412,42 @@ export default function UpdateWebpage() {
           )}
         </div>
 
+        {/* FooterLink Array */}
+        <div>
+          <Label className="block text-sm font-medium mb-2">
+            Helpful Resources
+          </Label>
+          {footerLinksArray.fields.map((field, index) => (
+            <div key={field.id} className="flex">
+              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+                <Input
+                  {...form.register(`footerLinks.${index}.title`)}
+                  placeholder="Title"
+                />
+                <Input
+                  {...form.register(`footerLinks.${index}.url`)}
+                  placeholder="URL"
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => footerLinksArray.remove(index)}
+                className="ml-2"
+              >
+                X
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            onClick={() => footerLinksArray.append({ title: "", url: "" })}
+          >
+            +Add
+          </Button>
+        </div>
+
         <div className="grid md:grid-cols-3 items-center gap-2">
           <div className="space-x-4">
             <label className="text-md font-semibold " htmlFor="isParent">
@@ -437,7 +477,7 @@ export default function UpdateWebpage() {
                   <option key={i} value={parent._id}>
                     {parent.title}
                   </option>
-                )
+                ),
               )}
             </select>
           </div>

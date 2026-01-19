@@ -75,8 +75,14 @@ const webPageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    footerLinks: [
+      {
+        title: String,
+        url: String,
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 webPageSchema.pre("save", async function (next) {

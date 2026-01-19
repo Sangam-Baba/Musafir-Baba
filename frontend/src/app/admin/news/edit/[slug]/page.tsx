@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useForm, Resolver } from "react-hook-form";
+import { useForm, Resolver, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/custom/loader";
 import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
@@ -46,6 +47,9 @@ const formSchema = z.object({
   excerpt: z
     .string()
     .min(2, { message: "Excerpt must be at least 2 characters." }),
+  footerLinks: z
+    .array(z.object({ title: z.string(), url: z.string() }))
+    .optional(),
 });
 
 interface Author {
@@ -81,7 +85,7 @@ export default function EditNews() {
     queryKey: ["news", slug],
     queryFn: async () => {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`
+        `${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`,
       );
       const data = await res.json();
       return data?.data?.news;
@@ -115,7 +119,13 @@ export default function EditNews() {
       gallery: [],
       status: "draft",
       excerpt: "",
+      footerLinks: [],
     },
+  });
+
+  const footerLinksArray = useFieldArray({
+    control: form.control,
+    name: "footerLinks",
   });
 
   useEffect(() => {
@@ -135,6 +145,7 @@ export default function EditNews() {
         gallery: news.gallery,
         status: news.status ?? "draft",
         excerpt: news.excerpt,
+        footerLinks: news.footerLinks,
       });
     }
   }, [news, form]);
@@ -247,7 +258,7 @@ export default function EditNews() {
                       "schemaType",
                       form
                         .getValues("schemaType")
-                        ?.filter((item) => item !== option)
+                        ?.filter((item) => item !== option),
                     )
                   }
                 />
@@ -321,6 +332,42 @@ export default function EditNews() {
               className="w-full border rounded p-2"
             />
           )}
+        </div>
+
+        {/* FooterLink Array */}
+        <div>
+          <Label className="block text-sm font-medium mb-2">
+            Helpful Resources
+          </Label>
+          {footerLinksArray.fields.map((field, index) => (
+            <div key={field.id} className="flex">
+              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+                <Input
+                  {...form.register(`footerLinks.${index}.title`)}
+                  placeholder="Title"
+                />
+                <Input
+                  {...form.register(`footerLinks.${index}.url`)}
+                  placeholder="URL"
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => footerLinksArray.remove(index)}
+                className="ml-2"
+              >
+                X
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            onClick={() => footerLinksArray.append({ title: "", url: "" })}
+          >
+            +Add
+          </Button>
         </div>
 
         <select

@@ -44,6 +44,7 @@ export interface WebpageFormData {
     question: string;
     answer: string;
   }[];
+  footerLinks?: { title: string; url: string }[];
 }
 
 const createPage = async (values: WebpageFormData, token: string) => {
@@ -59,7 +60,7 @@ const createPage = async (values: WebpageFormData, token: string) => {
     const errorData = await res.json().catch(() => ({}));
 
     throw new Error(
-      errorData.error || errorData.message || "Failed to create page"
+      errorData.error || errorData.message || "Failed to create page",
     );
   }
 
@@ -74,13 +75,13 @@ export const getParents = async (token: string) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
 
     throw new Error(
-      errorData.error || errorData.message || "Failed to get parents"
+      errorData.error || errorData.message || "Failed to get parents",
     );
   }
   const data = await res.json();
@@ -109,6 +110,7 @@ export default function CreateWebpage() {
     status: "published",
     excerpt: "",
     faqs: [],
+    footerLinks: [],
   };
 
   const form = useForm<WebpageFormData>({
@@ -116,6 +118,10 @@ export default function CreateWebpage() {
   });
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
+  const footerLinksArray = useFieldArray({
+    control: form.control,
+    name: "footerLinks",
+  });
   const { data: allparents, isLoading } = useQuery({
     queryKey: ["all-parents"],
     queryFn: () => getParents(token),
@@ -153,7 +159,7 @@ export default function CreateWebpage() {
     toast.success("Reviews updated successfully");
     const updated = await getReviewsByIds(token, [id]);
     setReviewsDetails((prev) =>
-      prev.map((b) => (b._id === id ? updated[0] : b))
+      prev.map((b) => (b._id === id ? updated[0] : b)),
     );
     setShowReviewsModal(false);
     setEditReviewsId(null);
@@ -252,7 +258,7 @@ export default function CreateWebpage() {
                     "schemaType",
                     form
                       .getValues("schemaType")
-                      ?.filter((item) => item !== option)
+                      ?.filter((item) => item !== option),
                   )
                 }
               />
@@ -421,6 +427,42 @@ export default function CreateWebpage() {
           )}
         </div>
 
+        {/* FooterLink Array */}
+        <div>
+          <Label className="block text-sm font-medium mb-2">
+            Helpful Resources
+          </Label>
+          {footerLinksArray.fields.map((field, index) => (
+            <div key={field.id} className="flex">
+              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+                <Input
+                  {...form.register(`footerLinks.${index}.title`)}
+                  placeholder="Title"
+                />
+                <Input
+                  {...form.register(`footerLinks.${index}.url`)}
+                  placeholder="URL"
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => footerLinksArray.remove(index)}
+                className="ml-2"
+              >
+                X
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            onClick={() => footerLinksArray.append({ title: "", url: "" })}
+          >
+            +Add
+          </Button>
+        </div>
+
         <div className="grid md:grid-cols-3 items-center gap-2 ">
           <div className="space-x-4">
             <label className="text-md font-semibold mb-2" htmlFor="isParent">
@@ -450,7 +492,7 @@ export default function CreateWebpage() {
                   <option key={i} value={parent._id}>
                     {parent.title}
                   </option>
-                )
+                ),
               )}
             </select>
           </div>

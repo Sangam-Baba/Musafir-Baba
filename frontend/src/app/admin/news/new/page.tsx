@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Resolver } from "react-hook-form";
+import { useForm, Resolver, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { schemaTypes } from "@/lib/schemaTypes";
+import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -44,6 +45,14 @@ const formSchema = z.object({
   excerpt: z
     .string()
     .min(2, { message: "Excerpt must be at least 2 characters." }),
+  footerLinks: z
+    .array(
+      z.object({
+        title: z.string(),
+        url: z.string(),
+      }),
+    )
+    .optional(),
 });
 
 interface Author {
@@ -57,7 +66,7 @@ interface Author {
 }
 const createNews = async (
   values: z.infer<typeof formSchema>,
-  token: string
+  token: string,
 ) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/`, {
     method: "POST",
@@ -95,7 +104,12 @@ export default function CreateNews() {
       gallery: [],
       status: "draft",
       excerpt: "",
+      footerLinks: [],
     },
+  });
+  const footerLinksArray = useFieldArray({
+    control: form.control,
+    name: "footerLinks",
   });
 
   const { data: users } = useQuery({
@@ -226,7 +240,7 @@ export default function CreateNews() {
                     "schemaType",
                     form
                       .getValues("schemaType")
-                      ?.filter((item) => item !== option)
+                      ?.filter((item) => item !== option),
                   )
                 }
               />
@@ -299,6 +313,42 @@ export default function CreateNews() {
               className="w-full border rounded p-2"
             />
           )}
+        </div>
+
+        {/* FooterLink Array */}
+        <div>
+          <Label className="block text-sm font-medium mb-2">
+            Helpful Resources
+          </Label>
+          {footerLinksArray.fields.map((field, index) => (
+            <div key={field.id} className="flex">
+              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
+                <Input
+                  {...form.register(`footerLinks.${index}.title`)}
+                  placeholder="Title"
+                />
+                <Input
+                  {...form.register(`footerLinks.${index}.url`)}
+                  placeholder="URL"
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => footerLinksArray.remove(index)}
+                className="ml-2"
+              >
+                X
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            onClick={() => footerLinksArray.append({ title: "", url: "" })}
+          >
+            +Add
+          </Button>
         </div>
 
         <select

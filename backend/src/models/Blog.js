@@ -98,8 +98,14 @@ const blogSchema = new mongoose.Schema(
         ref: "Comment",
       },
     ],
+    footerLinks: [
+      {
+        title: String,
+        url: String,
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 blogSchema.pre("save", function (next) {

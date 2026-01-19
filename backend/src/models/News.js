@@ -94,8 +94,14 @@ const newsSchema = new mongoose.Schema(
         ref: "Comment",
       },
     ],
+    footerLinks: [
+      {
+        title: String,
+        url: String,
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 newsSchema.pre("save", function (next) {
