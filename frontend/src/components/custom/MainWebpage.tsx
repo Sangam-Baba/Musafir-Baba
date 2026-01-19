@@ -13,6 +13,7 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { TestiProps } from "@/components/custom/Testimonial";
 import RelatedWebpage from "./RelatedWebpage";
 import TrandingPkgSidebar from "./TrandingPkgSidebar";
+import HelpfulResources from "@/components/custom/HelpfulResources";
 
 interface Faq {
   question: string;
@@ -32,6 +33,7 @@ interface WebpageInterface {
   };
   faqs?: Faq[];
   reviews?: TestiProps[];
+  footerLinks?: [];
   fullSlug: string;
   excerpt: string;
   updatedAt: string;
@@ -105,6 +107,11 @@ async function MainWebPage({
                 </AccordionItem>
               ))}
             </Accordion>
+            {page.footerLinks && page.footerLinks.length > 0 && (
+              <div className="mt-8 md:mt-10">
+                <HelpfulResources data={page.footerLinks ?? []} />
+              </div>
+            )}
           </section>
         </article>
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start ">

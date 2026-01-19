@@ -16,6 +16,7 @@ import { Clock, User, Share2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getNewsSchema } from "@/lib/schema/news.schema";
+import HelpfulResources from "@/components/custom/HelpfulResources";
 // Fetch blog by slug
 async function getNews(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
@@ -107,7 +108,7 @@ export default async function NewsDetailPage({
     news.coverImage?.url || "",
     news.createdAt,
     news.updatedAt || news.createdAt,
-    news.author?.name || "Musafir Baba"
+    news.author?.name || "Musafir Baba",
   );
   const schema = {
     "@context": "https://schema.org",
@@ -205,6 +206,12 @@ export default async function NewsDetailPage({
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={news.content} />
           </section>
+
+          {news.footerLinks && news.footerLinks.length > 0 && (
+            <div className="mt-8 md:mt-10">
+              <HelpfulResources data={news.footerLinks ?? []} />
+            </div>
+          )}
 
           {/* Comments Section */}
           <section className="mt-10 w-full">

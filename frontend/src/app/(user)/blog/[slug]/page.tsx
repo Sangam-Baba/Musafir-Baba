@@ -17,6 +17,7 @@ import { Clock, Share2, User } from "lucide-react";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
+import HelpfulResources from "@/components/custom/HelpfulResources";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -108,7 +109,7 @@ export default async function BlogDetailPage({
     blog.coverImage?.url,
     blog.createdAt,
     blog.updatedAt,
-    blog.author?.name
+    blog.author?.name,
   );
 
   return (
@@ -181,7 +182,11 @@ export default async function BlogDetailPage({
           <section className="prose prose-lg max-w-none mt-6">
             <BlogContent html={blog.content} />
           </section>
-
+          {blog.footerLinks && blog.footerLinks.length > 0 && (
+            <div className="mt-8 md:mt-10">
+              <HelpfulResources data={blog.footerLinks ?? []} />
+            </div>
+          )}
           {/* Comments Section */}
           <section className="mt-10 w-full">
             <BlogComments
