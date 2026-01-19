@@ -45,8 +45,9 @@ function CategorySidebar() {
     <div>
       <Card className=" ">
         <CardHeader>
-          <CardTitle className="flex text-xl font-bold gap-1">
+          <CardTitle className="flex flex-col text-xl font-bold ">
             Categories
+            <p className="w-[8%] h-1 rounded-md bg-[#FE5300]"></p>
           </CardTitle>
         </CardHeader>
         <CardContent>

@@ -222,7 +222,7 @@ export default async function NewsDetailPage({
             />
           </section>
         </article>
-        <div className="lg:w-3/9">
+        <div className="lg:w-3/9 space-y-10">
           {/* <QueryForm /> */}
           <LatestNewsSidebar currentId={news?._id} />
           <TrandingNewsSidebar currentId={news?._id} />

@@ -196,7 +196,7 @@ export default async function BlogDetailPage({
             />
           </section>
         </article>
-        <div className="lg:w-3/9">
+        <div className="lg:w-3/9 space-y-10">
           {/* <QueryForm /> */}
           <CategorySidebar />
           <LatestBlogSidebar currentId={blog._id} />

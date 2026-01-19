@@ -27,10 +27,11 @@ interface ListBlogSidebarProps {
 }
 function ListBlogSidebar({ blogs, title, type, url }: ListBlogSidebarProps) {
   return (
-    <Card className="mt-10 ">
+    <Card className="">
       <div className="flex w-full justify-between gap-2 px-5">
         <div>
           <h3 className="text-xl  font-bold">{title}</h3>
+          <p className="w-[25%] h-1 rounded-md bg-[#FE5300]"></p>
         </div>
       </div>
       <div className=" flex flex-col gap-4 px-2">
