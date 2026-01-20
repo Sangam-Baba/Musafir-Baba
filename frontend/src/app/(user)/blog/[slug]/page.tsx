@@ -142,7 +142,14 @@ export default async function BlogDetailPage({
                 </Link>
               </span>
               <span>Category: {blog.category.name}</span>
-              <span>📅 {new Date(blog.createdAt).toLocaleDateString()}</span>
+              <span>
+                📅{" "}
+                {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
               <span>
                 <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
               </span>

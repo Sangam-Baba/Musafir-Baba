@@ -165,7 +165,14 @@ export default async function NewsDetailPage({
                   {news.author?.name}
                 </Link>
               </span>
-              <span>📅 {new Date(news.createdAt).toLocaleDateString()}</span>
+              <span>
+                📅{" "}
+                {new Date(news.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
               <span>
                 <BlogViewTracker id={news._id} view={news?.views} type="news" />
               </span>
