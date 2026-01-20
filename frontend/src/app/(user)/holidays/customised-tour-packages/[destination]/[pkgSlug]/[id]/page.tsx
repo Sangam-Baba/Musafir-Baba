@@ -55,7 +55,7 @@ const createBooking = async (accessToken: string, formData: FormData) => {
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(formData),
-    }
+    },
   );
   if (!res.ok) throw new Error("Failed to book package");
   const data = await res.json();
@@ -64,7 +64,7 @@ const createBooking = async (accessToken: string, formData: FormData) => {
 
 const getPackage = async (id: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}`,
   );
   if (!res.ok) throw new Error("Failed to fetch package");
   const data = await res.json();
@@ -79,7 +79,10 @@ export const getUser = async (accessToken: string) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  if (!res.ok) throw new Error("Failed to fetch user");
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message);
+  }
   const data = await res.json();
   return data?.data;
 };
@@ -104,7 +107,7 @@ export const validateCoupan = async (
     amount: number;
     itemId: string;
     itemType: string;
-  }
+  },
 ) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/coupan/validate`,
@@ -115,7 +118,7 @@ export const validateCoupan = async (
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(value),
-    }
+    },
   );
   if (!res.ok) {
     const err = await res.json();
@@ -479,7 +482,7 @@ export default function CheckoutButton() {
                             </div>
                           </div>
                         );
-                      }
+                      },
                     )}
                   </div>
                 </div>

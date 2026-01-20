@@ -256,7 +256,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                     index === currentStep
                       ? "bg-[#FF5300] text-white"
                       : index < currentStep
-                        ? "bg-[#FF5300]/70 text-white"
+                        ? "bg-green-500 text-white"
                         : "bg-gray-300 text-gray-700"
                   }`}
                 >
@@ -268,7 +268,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                 {index < steps.length - 1 && (
                   <div
                     className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
-                      index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
+                      index < currentStep ? "bg-green-500" : "bg-gray-300"
                     }`}
                   />
                 )}

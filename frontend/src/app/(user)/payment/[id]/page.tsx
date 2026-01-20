@@ -306,7 +306,7 @@ export default function CheckoutPage() {
                   index === currentStep
                     ? "bg-[#FF5300] text-white"
                     : index < currentStep
-                      ? "bg-[#FF5300]/70 text-white"
+                      ? "bg-green-500 text-white"
                       : "bg-gray-300 text-gray-700"
                 }`}
               >
@@ -318,7 +318,7 @@ export default function CheckoutPage() {
               {index < steps.length - 1 && (
                 <div
                   className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
-                    index < currentStep ? "bg-[#FF5300]" : "bg-gray-300"
+                    index < currentStep ? "bg-green-500" : "bg-gray-300"
                   }`}
                 />
               )}
@@ -344,25 +344,25 @@ export default function CheckoutPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Package Details Card */}
-            <Card className="overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow pt-0">
-              <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+            <div className="flex flex-col md:flex-row rounded-lg overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow pt-0">
+              <div className="md:w-1/2  bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
                 {Package?.coverImage?.url ? (
                   <Image
                     src={Package.coverImage.url || "/placeholder.svg"}
                     alt={Package.title}
                     width={500}
                     height={500}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
                   <MapPin className="w-16 h-16 text-muted-foreground/30" />
                 )}
               </div>
-              <CardContent className="p-6">
+              <CardContent className="md:w-1/2 p-6">
                 <h2 className="text-2xl font-bold text-foreground mb-2">
                   {Package.title ?? "Travel Package"}
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-4 mt-6">
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                     <div>
@@ -407,7 +407,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
 
             {/* Traveller Information Card */}
             <Card className="border-border/50 shadow-sm">
@@ -532,71 +532,73 @@ export default function CheckoutPage() {
                   )}
                 </Button>
 
-                <div className="pt-4 border-t-2 space-y-4">
-                  <div>
-                    <p className="text-xl font-semibold ">Coupons & Offers</p>
-                  </div>
-                  <div className="space-y-2">
-                    {offers?.map(
-                      (offer: {
-                        _id: string;
-                        code: string;
-                        description: string;
-                        value: number;
-                        type: string;
-                      }) => {
-                        const isApplied = appliedCouponId === offer._id;
+                {offers && offers.length > 0 && (
+                  <div className="pt-4 border-t-2 space-y-4">
+                    <div>
+                      <p className="text-xl font-semibold ">Coupons & Offers</p>
+                    </div>
+                    <div className="space-y-2">
+                      {offers?.map(
+                        (offer: {
+                          _id: string;
+                          code: string;
+                          description: string;
+                          value: number;
+                          type: string;
+                        }) => {
+                          const isApplied = appliedCouponId === offer._id;
 
-                        return (
-                          <div
-                            key={offer._id}
-                            className={`flex justify-between gap-5 border-2 rounded-lg p-4 ${
-                              isApplied
-                                ? "border-green-500 bg-green-50"
-                                : "border-[#FE5300]"
-                            }`}
-                          >
-                            <div>
-                              <p className="font-semibold">{offer.code}</p>
-                              <p className="text-muted-foreground text-sm">
-                                {offer.description}
-                              </p>
-                            </div>
-
-                            <div className="text-right">
-                              <p className="text-muted-foreground">
-                                ₹{offer.value}
-                              </p>
-
-                              {isApplied ? (
-                                <p
-                                  onClick={handleRemoveCoupon}
-                                  className="text-red-600 cursor-pointer font-semibold"
-                                >
-                                  Remove
+                          return (
+                            <div
+                              key={offer._id}
+                              className={`flex justify-between gap-5 border-2 rounded-lg p-4 ${
+                                isApplied
+                                  ? "border-green-500 bg-green-50"
+                                  : "border-[#FE5300]"
+                              }`}
+                            >
+                              <div>
+                                <p className="font-semibold">{offer.code}</p>
+                                <p className="text-muted-foreground text-sm">
+                                  {offer.description}
                                 </p>
-                              ) : (
-                                <p
-                                  onClick={() =>
-                                    handleCoupanValidation({
-                                      id: offer._id,
-                                      amount: finalAmount,
-                                      itemId: pkgId,
-                                      itemType: "GROUP_PACKAGE",
-                                    })
-                                  }
-                                  className="text-green-600 cursor-pointer font-semibold"
-                                >
-                                  Apply
+                              </div>
+
+                              <div className="text-right">
+                                <p className="text-muted-foreground">
+                                  ₹{offer.value}
                                 </p>
-                              )}
+
+                                {isApplied ? (
+                                  <p
+                                    onClick={handleRemoveCoupon}
+                                    className="text-red-600 cursor-pointer font-semibold"
+                                  >
+                                    Remove
+                                  </p>
+                                ) : (
+                                  <p
+                                    onClick={() =>
+                                      handleCoupanValidation({
+                                        id: offer._id,
+                                        amount: finalAmount,
+                                        itemId: pkgId,
+                                        itemType: "GROUP_PACKAGE",
+                                      })
+                                    }
+                                    className="text-green-600 cursor-pointer font-semibold"
+                                  >
+                                    Apply
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      },
-                    )}
+                          );
+                        },
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Trust Indicators */}
                 <div className="space-y-2 pt-4 border-t border-border/50">

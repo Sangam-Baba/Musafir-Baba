@@ -54,9 +54,12 @@ const updateCoupan = async (req, res) => {
 
 const getAllCoupan = async (req, res) => {
   try {
-    const allActiveCoupan = await Coupan.find({ isActive: true })
+    const allActiveCoupan = await Coupan.find({
+      isActive: true,
+      validTill: { $gte: new Date() },
+    })
       .select(
-        "-isActive -usedCount -createdAt -updatedAt -perUserLimit -validFrom -validTill"
+        "-isActive -usedCount -createdAt -updatedAt -perUserLimit -validFrom -validTill",
       )
       .lean();
     res.status(200).json({
@@ -109,7 +112,7 @@ const validateCoupan = async (req, res) => {
       const applicableItems = coupan.applicableItems.some(
         (item) =>
           item.itemId.toString() === itemId.toString() &&
-          item.itemType === itemType
+          item.itemType === itemType,
       );
       if (!applicableItems) {
         return res
