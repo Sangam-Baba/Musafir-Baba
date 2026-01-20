@@ -83,7 +83,7 @@ const formSchema = z.object({
         title: z.string(),
         price: z.number(),
         noOfPeople: z.number(),
-      })
+      }),
     )
     .optional(),
 });
@@ -94,7 +94,7 @@ function groupBatchesByMonth(batches: Batch[]) {
   const upcoming = batches.filter(
     (b) =>
       isAfter(parseISO(b.startDate), now) ||
-      format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd")
+      format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd"),
   );
   return upcoming.reduce((acc: Record<string, Batch[]>, batch) => {
     const key = format(parseISO(batch.startDate), "MMM ''yy");
@@ -110,10 +110,10 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   const setGroup = useGroupBookingStore((state) => state.setGroup);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(
-    pkg?.batch[0] ?? null
+    pkg?.batch[0] ?? null,
   );
   const [confirmedBatch, setConfirmedBatch] = useState<Batch | null>(
-    pkg?.batch[0] ?? null
+    pkg?.batch[0] ?? null,
   );
   const [travellers, setTravellers] = useState({
     quad: 0,
@@ -147,7 +147,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
     const addOnPrice = addOns.reduce(
       (sum, a) => sum + a.price * a.noOfPeople,
-      0
+      0,
     );
 
     return basePrice + addOnPrice;
@@ -155,7 +155,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
   const batchesByMonth = useMemo(
     () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
-    [pkg.batch]
+    [pkg.batch],
   );
 
   const confirmSelection = (batch: Batch) => {
@@ -192,14 +192,14 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
   const handleAddOn = (
     addon: { title: string; price: number },
-    people: number
+    people: number,
   ) => {
     setAddOns((prev) => {
       const existing = prev.find((a) => a.title === addon.title);
 
       if (existing) {
         return prev.map((a) =>
-          a.title === addon.title ? { ...a, noOfPeople: people } : a
+          a.title === addon.title ? { ...a, noOfPeople: people } : a,
         );
       }
 
@@ -256,8 +256,8 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                     index === currentStep
                       ? "bg-[#FF5300] text-white"
                       : index < currentStep
-                      ? "bg-[#FF5300]/70 text-white"
-                      : "bg-gray-300 text-gray-700"
+                        ? "bg-[#FF5300]/70 text-white"
+                        : "bg-gray-300 text-gray-700"
                   }`}
                 >
                   {index + 1}
@@ -307,7 +307,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                       <div className="grid gap-3">
                         {list.map((b) => {
                           const start = parseISO(
-                            b.startDate
+                            b.startDate,
                           ).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "long",
@@ -320,7 +320,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                               year: "numeric",
                               month: "long",
                               day: "numeric",
-                            }
+                            },
                           );
                           const isSelected = selectedBatch?._id === b._id;
 
@@ -410,7 +410,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                           <div className="space-y-2">
                             {items.items?.map((b, i) => {
                               const selected = addOns.find(
-                                (a) => a.title === b.title
+                                (a) => a.title === b.title,
                               );
                               // const [people, setPeople] = useState(1);
 
@@ -442,7 +442,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                       onClick={() =>
                                         handleAddOn(
                                           { title: b.title, price: b.price },
-                                          addOnPeople[b.title] || 1
+                                          addOnPeople[b.title] || 1,
                                         )
                                       }
                                       className="w-20"
@@ -571,7 +571,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                           <p>
                             <p>
                               {new Date(
-                                confirmedBatch?.startDate || ""
+                                confirmedBatch?.startDate || "",
                               ).toLocaleDateString("en-US", {
                                 year: "numeric",
                                 month: "long",
@@ -599,7 +599,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                                   )
                                 : null}
                             </div>
-                          )
+                          ),
                         )}
                         <div className="flex justify-between border-t pt-4">
                           <p>Total Travellers</p>
@@ -619,6 +619,12 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                         </p>
                       </div>
                     </div>
+                    <div className="flex gap-5 bg-green-200 rounded-xl p-2 items-center">
+                      <Badge className="w-5 h-5 text-green-900" />
+                      <p className="text-sm text-gray-600">
+                        Partial Payment Available at checkout page
+                      </p>
+                    </div>
                     <Button type="submit" className="w-full">
                       Book Now
                     </Button>
@@ -627,66 +633,6 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
               )}
             </div>
           </div>
-          {/* <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg md:hidden px-5 pb-2">
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="mt-6 space-y-4"
-            >
-              <div className="flex flex-col justify-between border-t pt-4 space-y-4">
-                <div>
-                  <div className="flex justify-between">
-                    <p className="text-md font-semibold"> Travel Date </p>
-                    <p>
-                      <p>
-                        {new Date(
-                          confirmedBatch?.startDate || ""
-                        ).toLocaleDateString("en-UK", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </p>
-                  </div>
-
-                  {(["quad", "triple", "double", "child"] as const).map(
-                    (type) => (
-                      <div key={type} className="mb-2">
-                        {confirmedBatch
-                          ? travellers?.[type] > 0 && (
-                              <div className="flex justify-between">
-                                <p className="capitalize">{type}</p>
-                                <p className="text-sm text-gray-500">
-                                  ₹{confirmedBatch?.[type]} X{" "}
-                                  {travellers?.[type]}
-                                </p>
-                              </div>
-                            )
-                          : null}
-                      </div>
-                    )
-                  )}
-                  <div className="flex justify-between border-t pt-4">
-                    <p>Total Travellers</p>
-                    <p className="text-sm text-gray-500">
-                      {travellers.quad + travellers.triple + travellers.double}{" "}
-                      adult(s) · {travellers.child} child(ren)
-                    </p>
-                  </div>
-                </div>
-                <div className="flex justify-between bg-primary/5 p-4 rounded-xl border border-primary/10">
-                  <p className="text-md font-semibold">Total Price</p>
-                  <p className="text-xl font-semibold">
-                    {" "}
-                    ₹{form.watch("totalPrice").toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <Button type="submit" className="w-full">
-                Book Now
-              </Button>
-            </form>
-          </div> */}
         </div>
       ) : (
         <div className="w-full flex items-center justify-center ">

@@ -56,6 +56,10 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    paidPrice: {
+      type: Number,
+      required: true,
+    },
     paymentMethod: {
       type: String,
       enum: ["PayU", "Cash", "Online"],
@@ -86,7 +90,7 @@ const bookingSchema = new mongoose.Schema(
     },
     addOns: [{ title: String, price: Number, noOfPeople: Number }],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Booking = mongoose.model("Booking", bookingSchema);

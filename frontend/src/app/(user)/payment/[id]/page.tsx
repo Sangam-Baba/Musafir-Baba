@@ -23,10 +23,13 @@ import { validateCoupan } from "@/app/(user)/holidays/customised-tour-packages/[
 import { getAllOffers } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
 import { getUser } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
 import { Batch } from "@/app/sitemap";
+import { Input } from "@/components/ui/input";
+import { check } from "zod";
 
 interface BookingApiResponse {
   _id: string;
   totalPrice: number;
+  paidPrice: number;
 
   travellers: {
     quad: number;
@@ -63,6 +66,7 @@ interface GroupBookingInterface {
     child: number;
   };
   totalPrice: number;
+  paidPrice: number;
   coupanId?: string;
   addOns?: { title: string; price: number; noOfPeople: number }[];
 }
@@ -77,7 +81,7 @@ async function getBooking(bookingId: string, accessToken: string | null) {
         "Content-Type": "application/json",
         Authorization: accessToken ? `Bearer ${accessToken}` : "",
       },
-    }
+    },
   );
 
   if (!res.ok) {
@@ -90,7 +94,7 @@ async function getBooking(bookingId: string, accessToken: string | null) {
 
 async function createGroupBooking(
   values: GroupBookingInterface,
-  accessToken: string
+  accessToken: string,
 ) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/booking`, {
     method: "POST",
@@ -130,6 +134,7 @@ export default function CheckoutPage() {
   const [addOnAmount, setAddOnAmount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
   const [batch, setBatch] = useState<Batch | null>(null);
+  const [paidPrice, setPaidPrice] = useState(0);
 
   //Group Package
   const {
@@ -164,7 +169,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (booking && Package) {
       const selectedBatch = Package.batch.find(
-        (batch: Batch) => batch._id === booking.batchId
+        (batch: Batch) => batch._id === booking.batchId,
       );
       setBatch(selectedBatch);
       const base =
@@ -176,12 +181,13 @@ export default function CheckoutPage() {
       const addOnsTotal =
         booking.addOns?.reduce(
           (total, addOn) => total + addOn.price * addOn.noOfPeople,
-          0
+          0,
         ) ?? 0;
       setBaseAmount(base);
       const gst = Math.ceil((base + addOnsTotal) * 1.05);
       setAddOnAmount(addOnsTotal);
       setFinalAmount(gst);
+      setPaidPrice(gst);
     }
   }, [booking, Package]);
 
@@ -201,6 +207,7 @@ export default function CheckoutPage() {
     mutation.mutate({
       ...booking,
       totalPrice: finalAmount,
+      paidPrice: paidPrice,
       coupanId: appliedCouponId ?? undefined,
       addOns: booking?.addOns ?? undefined,
     });
@@ -219,7 +226,7 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({
           txnid,
-          amount: bookingData?.totalPrice?.toFixed(2),
+          amount: bookingData?.paidPrice?.toFixed(2),
           productinfo: bookingData?.packageId?.title ?? "Travel Package",
           firstname: bookingData?.user?.name ?? "Guest",
           email: bookingData?.user?.email ?? "abhi@example.com",
@@ -299,8 +306,8 @@ export default function CheckoutPage() {
                   index === currentStep
                     ? "bg-[#FF5300] text-white"
                     : index < currentStep
-                    ? "bg-[#FF5300]/70 text-white"
-                    : "bg-gray-300 text-gray-700"
+                      ? "bg-[#FF5300]/70 text-white"
+                      : "bg-gray-300 text-gray-700"
                 }`}
               >
                 {index + 1}
@@ -467,13 +474,53 @@ export default function CheckoutPage() {
                     Prices include all fees
                   </p>
                 </div>
+                <div className="space-y-3">
+                  {/* <div className="flex gap-5">
+                    <input
+                      type="checkbox"
+                      className="w-[30px]"
+                      id="full-pay"
+                      name="full-pay"
+                      value={fullPayment ? "full-pay" : ""}
+                      onChange={(e) =>
+                        setFinalAmount(
+                          e.target.checked
+                            ? finalAmount + finalAmount * 0.25
+                            : finalAmount - finalAmount * 0.25,
+                        )
+                      }
+                    />
+                    <p>Full Payment</p>
+                  </div> */}
+                  <div className="flex gap-5">
+                    <Input
+                      type="checkbox"
+                      className="w-[30px]"
+                      id="full-pay"
+                      name="full-pay"
+                      onChange={(e) =>
+                        setPaidPrice(
+                          e.target.checked
+                            ? Math.ceil(finalAmount * 0.25)
+                            : finalAmount,
+                        )
+                      }
+                    />
+                    <div>
+                      <p>Partial Payment</p>
+                      <span className="text-sm text-gray-600">
+                        pay remaining amount later
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
                 {/* CTA Button */}
                 <Button
                   onClick={handleSubmit}
                   disabled={loading}
-                  size="lg"
-                  className="w-full mb-4 bg-[#FE5300] hover:bg-[#FE5300]/90 text-primary-foreground font-semibold py-6"
+                  size="sm"
+                  className="w-full text-xl my-4 bg-[#FE5300] hover:bg-[#FE5300]/90 text-primary-foreground font-semibold py-6"
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
@@ -481,7 +528,7 @@ export default function CheckoutPage() {
                       Processing...
                     </span>
                   ) : (
-                    `Pay ₹${parseInt(finalAmount.toFixed(2)).toLocaleString()}`
+                    `Pay ₹${parseInt(paidPrice.toFixed(2)).toLocaleString()}`
                   )}
                 </Button>
 
@@ -546,7 +593,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                         );
-                      }
+                      },
                     )}
                   </div>
                 </div>
