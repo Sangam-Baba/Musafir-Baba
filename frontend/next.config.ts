@@ -29,6 +29,18 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/holidays/honeymoon-package",
+        destination: "/holidays/honeymoon-packages",
+        permanent: true,
+      },
+      {
+        source:
+          "/holidays/honeymoon-package/meghalaya/meghalaya-honeymoon-tour-5n-6d",
+        destination:
+          "/holidays/honeymoon-packages/meghalaya/meghalaya-honeymoon-tour-5n-6d",
+        permanent: true,
+      },
+      {
         source: "/blog/schengen-joint-visa-centre-relocates-in-delhi",
         destination: "/news/schengen-joint-visa-centre-relocates-in-delhi",
         permanent: true,

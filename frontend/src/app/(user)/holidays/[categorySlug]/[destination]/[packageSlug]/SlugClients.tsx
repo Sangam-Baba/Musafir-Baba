@@ -26,6 +26,7 @@ import { BlogContent } from "@/components/custom/BlogContent";
 import PackageCard from "@/components/custom/PackageCard";
 import { GroupPackageInterface } from "./page";
 import ReadMore from "@/components/common/ReadMore";
+import EffectCardRelatedPackages from "@/components/custom/EffectCardRelatedPackages";
 type TabKey =
   | "description"
   | "highlights"
@@ -331,27 +332,31 @@ function SlugClients({
         <h2 className="text-2xl font-bold">Related Packages</h2>
         <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
         {relatedGroupPackages && relatedGroupPackages.length > 0 && (
-          <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
-            {relatedGroupPackages
-              .slice(0, 4)
-              .map((pkg: GroupPackageInterface) => (
-                <PackageCard
-                  key={pkg._id}
-                  pkg={{
-                    id: pkg._id,
-                    name: pkg.title,
-                    slug: pkg.slug,
-                    image: pkg.coverImage ? pkg.coverImage.url : "",
-                    price: pkg.batch ? pkg.batch[0]?.quad : 9999,
-                    duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
-                    destination:
-                      pkg.destination?.name ?? pkg.destination?.state ?? "",
-                    batch: pkg?.batch ? pkg?.batch : [],
-                  }}
-                  url={`/holidays/${pkg?.mainCategory?.slug}/${pkg?.destination?.slug}/${pkg.slug}`}
-                />
-              ))}
-          </div>
+          <>
+            <div className="max-w-7xl hidden mx-auto md:grid gap-6  md:grid-cols-3 lg:grid-cols-4 py-12 px-10">
+              {relatedGroupPackages
+                .slice(0, 4)
+                .map((pkg: GroupPackageInterface) => (
+                  <PackageCard
+                    key={pkg._id}
+                    pkg={{
+                      id: pkg._id,
+                      name: pkg.title,
+                      slug: pkg.slug,
+                      image: pkg.coverImage ? pkg.coverImage.url : "",
+                      price: pkg.batch ? pkg.batch[0]?.quad : 9999,
+                      duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                      destination:
+                        pkg.destination?.name ?? pkg.destination?.state ?? "",
+                      batch: pkg?.batch ? pkg?.batch : [],
+                    }}
+                    url={`/holidays/${pkg?.mainCategory?.slug}/${pkg?.destination?.slug}/${pkg.slug}`}
+                  />
+                ))}
+            </div>
+            {/* Mobile related packages */}
+            <EffectCardRelatedPackages pkgs={relatedGroupPackages} />
+          </>
         )}
       </div>
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-between items-end bg-white md:hidden mb-13 py-2 px-4 border-b border-gray-400">

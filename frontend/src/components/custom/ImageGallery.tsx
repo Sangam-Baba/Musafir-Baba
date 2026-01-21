@@ -11,6 +11,18 @@ import {
 } from "@/components/ui/carousel";
 import Image from "next/image";
 
+// Import Swiper React components
+import { Swiper, SwiperSlide } from "swiper/react";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/effect-cards";
+
+// import "./styles.css";
+
+// import required modules
+import { EffectCards } from "swiper/modules";
+
 interface GalleryInterface {
   url: string;
   alt: string;
@@ -25,7 +37,7 @@ export function ImageGallery({
   data?: GalleryInterface[];
 }) {
   const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 3000, stopOnInteraction: true }),
   );
   if (!data || data.length === 0) return null;
   const finalImages = data;
@@ -70,9 +82,34 @@ export function ImageGallery({
             </CarouselItem>
           ))}
         </CarouselContent>
-        {/* <CarouselPrevious />
-        <CarouselNext /> */}
       </Carousel>
+      <Swiper
+        effect={"cards"}
+        grabCursor={true}
+        modules={[EffectCards]}
+        className="mySwiper w-[260px] h-[360px]"
+      >
+        {finalImages.map((item, i) => (
+          <SwiperSlide key={i}>
+            <div className="p-4 w-full">
+              <div
+                className="overflow-hidden rounded-xl shadow-md transform transition-transform duration-500 hover:scale-105"
+                style={{
+                  transform: "perspective(1000px) rotateY(5deg)", // slight curve effect
+                }}
+              >
+                <Image
+                  width={550}
+                  height={550}
+                  src={item.url}
+                  alt={item.alt}
+                  className="w-full h-80 object-cover"
+                />
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </section>
   );
 }
