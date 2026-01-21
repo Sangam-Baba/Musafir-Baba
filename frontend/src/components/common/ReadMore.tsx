@@ -10,7 +10,7 @@ function ReadMore({ content }: { content: string }) {
     .filter((p) => p.trim() !== "")
     .map((p) => p + "</p>");
 
-  const previewHtml = paragraphs.slice(0, 2).join("");
+  const previewHtml = paragraphs.slice(0, 1).join("");
   const fullHtml = paragraphs.join("");
   return (
     <div className="flex flex-col">

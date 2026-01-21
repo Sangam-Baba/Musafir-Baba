@@ -51,7 +51,7 @@ function CustomizedTourClient({
       .sort((a, b) =>
         filter.sort === "asc"
           ? (a.plans[0].price ?? 0) - (b.plans[0].price ?? 0)
-          : (b.plans[0].price ?? 0) - (a.plans[0].price ?? 0)
+          : (b.plans[0].price ?? 0) - (a.plans[0].price ?? 0),
       );
     setFilteredPkgs(result);
   }, [filter, allPkgs]);
@@ -169,12 +169,17 @@ function CustomizedTourClient({
       </div>
       {/* Show packages under this category */}
       {filteredPkgs && filteredPkgs.length > 0 ? (
-        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
+        <div
+          className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8
+    flex gap-4 overflow-x-auto no-scrollbar
+    md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+    md:gap-6 md:overflow-visible"
+        >
           {filteredPkgs.map((pkg: CustomizedPackageInterface) => (
             <Link
               key={pkg._id}
               href={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
-              className="cursor-pointer"
+              className="cursor-pointer min-w-[280px] sm:min-w-[300px] md:min-w-0"
             >
               <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
                 {/* Image + Price tag */}

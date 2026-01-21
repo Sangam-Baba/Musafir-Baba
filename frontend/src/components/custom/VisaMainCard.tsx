@@ -13,7 +13,7 @@ function VisaMainCard({ visa }: { visa: VisaInterface }) {
   return (
     <Card
       key={visa.id}
-      className=" shadow-lg h-full shadow-gray-500/50 hover:shadow-[#FF5300]/50 "
+      className=" shadow-lg h-full shadow-gray-500/50 hover:shadow-[#FF5300]/50  "
     >
       <CardHeader>
         <div className="flex items-center justify-between gap-2">

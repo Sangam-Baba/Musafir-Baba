@@ -61,7 +61,7 @@ export default async function PackagesPage() {
       ...pkg,
       mainCategory: { slug: "customised-tour-packages" },
       price: pkg.plans[0].price,
-    })
+    }),
   );
   const finalGroupPkgs = data?.data.map((pkg: Package) => ({
     ...pkg,
@@ -75,7 +75,7 @@ export default async function PackagesPage() {
     "https://musafirbaba.com/holidays",
     totalPkgs.map((pkg: Package) => ({
       url: `https://musafirbaba.com/holidays/${pkg.mainCategory?.slug}/${pkg?.destination?.state}/${pkg.slug}`,
-    }))
+    })),
   );
 
   const content = `
@@ -218,7 +218,7 @@ export default async function PackagesPage() {
   return (
     <div>
       <Hero
-        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1761815676/tour_package_k5ijnt.webp"
+        image="https://cdn.musafirbaba.com/images/tour_package_k5ijnt.webp"
         title="Holidays"
         align="center"
         height="lg"

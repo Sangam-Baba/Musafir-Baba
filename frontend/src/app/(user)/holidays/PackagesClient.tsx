@@ -37,7 +37,7 @@ export default function MixedPackagesClient({
     duration: 25,
   });
   const [filteredPkgs, setFilteredPkgs] = useState<CombinedInterface[]>(
-    data ?? []
+    data ?? [],
   );
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function MixedPackagesClient({
       .sort((a, b) =>
         filter.sort === "asc"
           ? (a.price ?? 0) - (b.price ?? 0)
-          : (b.price ?? 0) - (a.price ?? 0)
+          : (b.price ?? 0) - (a.price ?? 0),
       );
 
     setFilteredPkgs(result);
@@ -216,26 +216,37 @@ export default function MixedPackagesClient({
 
       {/* Show packages under this category */}
       {filteredPkgs && filteredPkgs.length > 0 ? (
-        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10">
-          {filteredPkgs?.map((pkg: CombinedInterface) => (
-            <PackageCard
-              key={pkg._id}
-              pkg={{
-                id: pkg._id,
-                name: pkg.title,
-                slug: pkg.slug,
-                image: pkg.coverImage?.url ?? "/Hero1.jpg",
-                price: pkg?.price ?? 9999,
-                duration: pkg.duration?.nights
-                  ? `${pkg.duration?.nights ?? 0}N/${pkg.duration.days}D`
-                  : `${pkg.duration.days}D`,
-                destination: pkg.destination?.name ?? "",
-                batch: pkg?.batch ? pkg?.batch : [],
-              }}
-              url={`/holidays/${pkg?.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
-            />
-          ))}
-        </div>
+        <>
+          <div
+            className="
+    max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8
+    flex gap-4 overflow-x-auto no-scrollbar
+    md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+    md:gap-6 md:overflow-visible
+  "
+          >
+            {filteredPkgs?.map((pkg: CombinedInterface) => (
+              // <div key={pkg._id} className="min-w-[280px] md:min-w-0">
+              <PackageCard
+                key={pkg._id}
+                pkg={{
+                  id: pkg._id,
+                  name: pkg.title,
+                  slug: pkg.slug,
+                  image: pkg.coverImage?.url ?? "/Hero1.jpg",
+                  price: pkg?.price ?? 9999,
+                  duration: pkg.duration?.nights
+                    ? `${pkg.duration?.nights ?? 0}N/${pkg.duration.days}D`
+                    : `${pkg.duration.days}D`,
+                  destination: pkg.destination?.name ?? "",
+                  batch: pkg?.batch ? pkg?.batch : [],
+                }}
+                url={`/holidays/${pkg?.mainCategory?.slug}/${pkg.destination.state}/${pkg.slug}`}
+              />
+              // </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="w-full flex flex-col items-center justify-center mt-8">
           <h1 className="text-3xl md:text-4xl font-bold text-center">

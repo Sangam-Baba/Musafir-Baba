@@ -72,7 +72,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
     duration: 25,
   });
   const [filteredPkgs, setFilteredPkgs] = useState<Package[]>(
-    packagesData ?? []
+    packagesData ?? [],
   );
 
   useEffect(() => {
@@ -93,7 +93,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
       .sort((a, b) =>
         filter.sort === "asc"
           ? (a.batch[0].quad ?? 0) - (b.batch[0].quad ?? 0)
-          : (b.batch[0].quad ?? 0) - (a.batch[0].quad ?? 0)
+          : (b.batch[0].quad ?? 0) - (a.batch[0].quad ?? 0),
       );
     setFilteredPkgs(result);
   }, [filter, packagesData]);
@@ -213,7 +213,12 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
       </div>
       {/* Show packages under this category */}
       {packages && filteredPkgs.length > 0 ? (
-        <div className="max-w-7xl  mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-20">
+        <div
+          className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8
+    flex gap-4 overflow-x-auto no-scrollbar
+    md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+    md:gap-6 md:overflow-visible"
+        >
           {filteredPkgs.map((pkg) => (
             <PackageCard
               key={pkg._id}

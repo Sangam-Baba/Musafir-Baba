@@ -25,6 +25,12 @@ import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { Reviews } from "@/app/admin/holidays/new/page";
 import { ImageGallery } from "@/components/custom/ImageGallery";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { EffectCards } from "swiper/modules";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/effect-cards";
 interface Plan {
   _id: string;
   title: string;
@@ -74,6 +80,10 @@ interface Package {
   itinerary: Itinerary[];
   faqs: Faqs[];
   destination: Destination;
+  mainCategory: {
+    name: string;
+    slug: string;
+  };
   status: "draft" | "published";
 }
 export default function CustomizedPackageClient({
@@ -87,7 +97,7 @@ export default function CustomizedPackageClient({
   const accessToken = useAuthStore((state) => state.accessToken);
   const openDialog = useAuthDialogStore((state) => state.openDialog);
   const setFormBookData = useCustomizedBookingStore(
-    (state) => state.setFormBookData
+    (state) => state.setFormBookData,
   );
 
   const [formData, setFormData] = React.useState({
@@ -163,8 +173,8 @@ export default function CustomizedPackageClient({
               pkg.destination.state.slice(1)}
           </span>
           <span className="flex items-center gap-1">
-            <Clock color="#FE5300" size={14} /> {pkg.duration.days}D/
-            {pkg.duration.nights}N
+            <Clock color="#FE5300" size={14} />
+            {pkg.duration.nights}N/{pkg.duration.days}D
           </span>
         </div>
       </div>
@@ -350,29 +360,61 @@ export default function CustomizedPackageClient({
           <h2 className="text-2xl font-bold">Nearby Tours</h2>
           <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
           {relatedPackages && relatedPackages.length > 0 && (
-            <div className="mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
-              {relatedPackages.slice(0, 4).map((pkg: Package) => (
-                <PackageCard
-                  key={pkg._id}
-                  pkg={{
-                    id: pkg._id,
-                    name: pkg.title,
-                    slug: pkg.slug,
-                    image: pkg.coverImage?.url ?? "",
-                    price: pkg?.plans ? pkg?.plans[0]?.price : 999,
-                    duration: `${pkg.duration?.nights}N/${pkg.duration?.days}D`,
-                    destination: pkg.destination?.name ?? "",
-                    batch: [],
-                  }}
-                  url={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
-                />
-              ))}
-            </div>
+            <>
+              <div className="mx-auto hidden md:grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 px-10 my-10">
+                {relatedPackages.slice(0, 4).map((pkg: Package) => (
+                  <PackageCard
+                    key={pkg._id}
+                    pkg={{
+                      id: pkg._id,
+                      name: pkg.title,
+                      slug: pkg.slug,
+                      image: pkg.coverImage?.url ?? "",
+                      price: pkg?.plans ? pkg?.plans[0]?.price : 999,
+                      duration: `${pkg.duration?.nights}N/${pkg.duration?.days}D`,
+                      destination: pkg.destination?.name ?? "",
+                      batch: [],
+                    }}
+                    url={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
+                  />
+                ))}
+              </div>
+              {/* Mobile related packages */}
+              <div className="md:hidden block my-10">
+                <Swiper
+                  effect={"cards"}
+                  grabCursor={true}
+                  modules={[EffectCards]}
+                  className="w-[260px] h-[360px] "
+                >
+                  {relatedPackages.map((pkg: Package) => (
+                    <SwiperSlide key={pkg._id} className="rounded-lg">
+                      <PackageCard
+                        key={pkg._id}
+                        pkg={{
+                          id: pkg._id,
+                          name: pkg.title,
+                          slug: pkg.slug,
+                          image: pkg.coverImage?.url ?? "",
+                          price: pkg?.plans ? pkg?.plans[0]?.price : 999,
+                          duration: `${pkg.duration?.nights}N/${pkg.duration?.days}D`,
+                          destination: pkg.destination?.name ?? "",
+                          batch: [],
+                        }}
+                        url={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
+                      />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              </div>
+            </>
           )}
         </div>
       </div>
       <ImageGallery title="Memories in Motion" data={pkg?.gallery ?? []} />
-      <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
+      {pkg?.faqs?.length > 0 && (
+        <Faqs faqs={pkg.faqs.map((faq: Faqs) => ({ id: faq._id, ...faq }))} />
+      )}
       <WhyChoose />
       <Testimonial data={pkg.reviews ?? []} />
     </section>

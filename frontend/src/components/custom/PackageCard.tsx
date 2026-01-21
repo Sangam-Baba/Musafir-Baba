@@ -36,7 +36,7 @@ function groupBatchesByMonth(batches: Batch[]) {
   const upcoming = batches.filter(
     (b) =>
       isAfter(parseISO(b.startDate), now) ||
-      format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd")
+      format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd"),
   );
   return upcoming.reduce((acc: Record<string, Batch[]>, batch) => {
     const key = format(parseISO(batch.startDate), "MMM ''yy");
@@ -54,14 +54,14 @@ export default function PackageCard({
 }) {
   const batchesByMonth = useMemo(
     () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
-    [pkg.batch]
+    [pkg.batch],
   );
 
   const allDates = Object.values(batchesByMonth)
     .flat()
     .map((b) => format(parseISO(b.startDate), "dd MMM"));
   return (
-    <Link href={url}>
+    <Link href={url} className="min-w-[280px] sm:min-w-[300px] md:min-w-0">
       <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
         {/* Image + Price tag */}
         <div className="relative h-56 w-full">
