@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/dubai-visa-checklist-for-first-time-travellers",
+        destination: "/blog/dubai-visa-checklist-for-first-time-travellers",
+        permanent: true,
+      },
+      {
         source:
           "/holidays/honeymoon-package/meghalaya/meghalaya-honeymoon-tour-5n-6d",
         destination:
