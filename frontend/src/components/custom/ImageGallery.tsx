@@ -1,20 +1,19 @@
 "use client";
 
-import * as React from "react";
-import Autoplay from "embla-carousel-autoplay";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  // CarouselNext,
-  // CarouselPrevious,
-} from "@/components/ui/carousel";
 import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+import "swiper/css";
+import "swiper/css/effect-coverflow";
+import "swiper/css/pagination";
+
+import { EffectCoverflow, Pagination } from "swiper/modules";
 
 interface GalleryInterface {
   url: string;
   alt: string;
 }
+
 export function ImageGallery({
   title,
   description,
@@ -24,53 +23,66 @@ export function ImageGallery({
   description?: string;
   data?: GalleryInterface[];
 }) {
-  const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true }),
-  );
   if (!data || data.length === 0) return null;
-  const finalImages = data;
+
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 flex flex-col items-center">
+    <section className="w-full px-4 md:px-8 lg:px-20 py-10 md:py-16">
       {/* Heading */}
-      <div className="flex flex-col gap-2 items-center py-4 text-center">
+      <div className="flex flex-col gap-2 items-center text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        <div className="h-1 w-24 bg-[#FE5300] rounded-full"></div>
-        <p className="text-gray-600">{description}</p>
+        <div className="h-1 w-24 bg-[#FE5300] rounded-full" />
+        {description && (
+          <p className="text-gray-600 max-w-2xl">{description}</p>
+        )}
       </div>
 
-      {/* Carousel */}
-      <Carousel
-        plugins={[plugin.current]}
-        className="max-w-6xl w-full"
-        onMouseEnter={plugin.current.stop}
-        onMouseLeave={plugin.current.reset}
+      <Swiper
+        effect="coverflow"
+        grabCursor
+        centeredSlides={true}
+        loop={true}
+        slidesPerView={2}
+        spaceBetween={0}
+        coverflowEffect={{
+          rotate: 50,
+          stretch: 0,
+          depth: 120,
+          modifier: 1,
+          slideShadows: true,
+        }}
+        pagination={{ clickable: true }}
+        breakpoints={{
+          640: {
+            slidesPerView: 2,
+          },
+          1024: {
+            slidesPerView: 4,
+          },
+          1280: {
+            slidesPerView: 5,
+          },
+        }}
+        modules={[EffectCoverflow, Pagination]}
+        className="w-full max-w-7xl mx-auto"
       >
-        <CarouselContent>
-          {finalImages.map((item, i) => (
-            <CarouselItem
-              key={i}
-              className="md:basis-1/2 lg:basis-1/4 flex justify-center"
-            >
-              <div className="p-4 w-full">
-                <div
-                  className="overflow-hidden rounded-xl shadow-md transform transition-transform duration-500 hover:scale-105"
-                  style={{
-                    transform: "perspective(1000px) rotateY(5deg)", // slight curve effect
-                  }}
-                >
-                  <Image
-                    width={550}
-                    height={550}
-                    src={item.url}
-                    alt={item.alt}
-                    className="w-full h-80 object-cover"
-                  />
-                </div>
+        {data.map((item, i) => (
+          <SwiperSlide key={i}>
+            <div className="px-2">
+              <div className="relative h-[220px] sm:h-[260px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-2xl shadow-lg">
+                <Image
+                  src={item.url}
+                  alt={item.alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 90vw,
+                         (max-width: 1024px) 45vw,
+                         30vw"
+                />
               </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </section>
   );
 }

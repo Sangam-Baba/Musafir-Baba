@@ -11,7 +11,7 @@ import Link from "next/link";
 // import { Card } from "../ui/card";
 export function DestinationSection() {
   const [active, setActive] = useState<"domestic" | "international">(
-    "domestic"
+    "domestic",
   );
 
   // const destinations = [
@@ -144,7 +144,7 @@ export function DestinationSection() {
                 <div className="relative">
                   <Link href="/destinations/kerala">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758340822/Untitled_design_5_hgguwf.jpg"
+                      src="https://cdn.musafirbaba.com/images/Untitled_design_5_hgguwf.jpg"
                       alt="Kerala"
                       className="rounded-2xl w-full md:h-118 h-56 object-cover"
                       width={500}
@@ -162,7 +162,7 @@ export function DestinationSection() {
                 <div className="relative">
                   <Link href="/destinations/meghalaya">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758340821/Untitled_design_6_mggpgh.jpg"
+                      src="https://cdn.musafirbaba.com/images/Untitled_design_6_mggpgh.jpg"
                       alt="meghalaya"
                       className="rounded-2xl w-full h-56 object-cover"
                       width={500}
@@ -211,7 +211,7 @@ export function DestinationSection() {
                 <div className="relative">
                   <Link href="/destinations/singapore">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758107532/Singapore_bdsaps.jpg"
+                      src="https://cdn.musafirbaba.com/images/Singapore_bdsaps.jpg"
                       alt="Singapore"
                       className="rounded-2xl w-full h-56 object-cover"
                       width={500}
@@ -225,7 +225,7 @@ export function DestinationSection() {
                 <div className="relative">
                   <Link href="/destinations/dubai">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758087427/Untitled_design_4_yrnksb.jpg"
+                      src="https://cdn.musafirbaba.com/images/Untitled_design_4_yrnksb.jpg"
                       alt="Dubai"
                       className="rounded-2xl w-full h-56 object-cover"
                       width={500}
@@ -241,7 +241,7 @@ export function DestinationSection() {
                 <div className="relative">
                   <Link href="/destinations/bali">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758107531/Bali_sc5oct.jpg"
+                      src="https://cdn.musafirbaba.com/images/Bali_sc5oct.jpg"
                       alt="Bali"
                       className="rounded-2xl w-full md:h-118 h-56 object-center"
                       width={500}
@@ -259,7 +259,7 @@ export function DestinationSection() {
                 <div className="relative">
                   <Link href="/destinations/thailand">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758107531/Thailand_btmxk6.jpg"
+                      src="https://cdn.musafirbaba.com/images/Thailand_btmxk6.jpg"
                       alt="Thailand"
                       className="rounded-2xl w-full h-56 "
                       width={500}
@@ -275,7 +275,7 @@ export function DestinationSection() {
                 <div className="relative md:w-1/2">
                   <Link href="/destinations/japan">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758087426/Untitled_design_3_g8ok0g.jpg"
+                      src="https://cdn.musafirbaba.com/images/Untitled_design_3_g8ok0g.jpg"
                       alt="Japan"
                       className="rounded-2xl  h-56 "
                       width={500}
@@ -289,7 +289,7 @@ export function DestinationSection() {
                 <div className="relative md:w-1/2 ">
                   <Link href="/destinations/maldives">
                     <Image
-                      src="https://res.cloudinary.com/dmmsemrty/image/upload/v1758087426/Untitled_design_2_rrfsvj.jpg"
+                      src="https://cdn.musafirbaba.com/images/Untitled_design_2_rrfsvj.jpg"
                       alt="Maldives"
                       className="rounded-2xl h-56"
                       width={500}
