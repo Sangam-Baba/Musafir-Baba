@@ -106,7 +106,7 @@ function Footer() {
               <p className="text-lg font-bold">Follow Us</p>
               <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
               <div className="flex items-center  gap-4 pt-2">
-                <Link href="https://www.youtube.com/@hello_musafirbaba">
+                <Link href="https://www.youtube.com/@musafirbabatravels">
                   <Youtube
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"

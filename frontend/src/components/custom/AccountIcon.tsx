@@ -21,7 +21,7 @@ export function AccountIcon() {
           <DropdownMenuTrigger asChild>
             <div className="group flex flex-col items-center cursor-pointer select-none">
               <div className="flex items-center text-md font-semibold gap-1">
-                Hi, {auth?.name} <SquareChevronDown size={15} />
+                Hi, {auth?.name?.split(" ")[0]} <SquareChevronDown size={15} />
               </div>
 
               <p
