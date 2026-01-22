@@ -208,7 +208,7 @@ export default async function BlogDetailPage({
               <Share2 className="cursor-pointer" />
             </span>
           </div>
-
+          <CategorySidebar />
           {/* Comments Section */}
           <section className="mt-10 w-full">
             <BlogComments
@@ -220,7 +220,7 @@ export default async function BlogDetailPage({
         </article>
         <div className="lg:w-3/9 space-y-10">
           {/* <QueryForm /> */}
-          <CategorySidebar />
+          {/* <CategorySidebar /> */}
           <LatestBlogSidebar currentId={blog._id} />
           <TrandingBlogSidebar currentId={blog._id} />
         </div>

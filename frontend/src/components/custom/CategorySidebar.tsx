@@ -43,29 +43,29 @@ function CategorySidebar() {
   const Categories = data?.data ?? [];
   return (
     <div>
-      <Card className=" ">
+      {/* <Card className=" ">
         <CardHeader>
           <CardTitle className="flex flex-col text-xl font-bold ">
             Categories
             <p className="w-[8%] h-1 rounded-md bg-[#FE5300]"></p>
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-4">
-            {Categories.map((cat: Category, idx: number) => (
-              <li key={idx} className="flex justify-between p-1 md:px-3 ">
-                <Link
-                  href={`/blog?category=${cat.slug}`}
-                  className="text-sm text-gray-800 hover:text-[#FE5300]"
-                >
-                  <span className="mr-2 text-[#FE5300] font-bold">{`>`}</span>
-                  {cat.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+        </CardHeader> */}
+      <div className="flex flex-wrap">
+        {/* <ul className="space-y-4"> */}
+        {Categories.map((cat: Category, idx: number) => (
+          <li key={idx} className="flex justify-between p-1 md:px-3 ">
+            <Link
+              href={`/blog?category=${cat.slug}`}
+              className="text-sm text-blue-800 hover:text-[#FE5300]"
+            >
+              {/* <span className="mr-2 text-[#FE5300] font-bold">{`>`}</span> */}
+              #{cat.name}
+            </Link>
+          </li>
+        ))}
+        {/* </ul> */}
+      </div>
+      {/* </Card> */}
     </div>
   );
 }
