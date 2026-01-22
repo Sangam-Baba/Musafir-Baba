@@ -142,7 +142,7 @@ export default async function NewsDetailPage({
         <Breadcrumb />
       </div>
       <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
-        <article className="lg:w-6/9  ">
+        <article className="lg:w-6/9 space-y-5 ">
           {/* Cover Image */}
 
           <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
@@ -176,24 +176,12 @@ export default async function NewsDetailPage({
               <span>
                 <BlogViewTracker id={news._id} view={news?.views} type="news" />
               </span>
-              <span>
+              {/* <span>
                 <BlogLikes id={news._id} initialLikes={news.likes} />
-              </span>
+              </span> */}
               <span className="flex items-center gap-2 ">
                 <Clock size={16} />
                 {readTime} Min Read
-              </span>
-              <span className="relative group inline-block">
-                {/* Social buttons (hidden until hover) */}
-                <div className="absolute hidden group-hover:flex">
-                  <SocialShare
-                    url={`https://musafirbaba.com/news/${news.slug}`}
-                    title={news.title}
-                  />
-                </div>
-
-                {/* Share icon */}
-                <Share2 className="cursor-pointer" />
               </span>
             </div>
             {/* Tags */}
@@ -208,6 +196,10 @@ export default async function NewsDetailPage({
               ))}
             </div>
           </header>
+          <div className="border border-gray-400 px-4 py-8 flex gap-6 w-full rounded-md bg-gray-50">
+            <p className="bg-[#FE5300] w-1 md:h-15 h:40 rounded-lg"></p>
+            <p className="italic text-gray-500">{news.excerpt}</p>
+          </div>
 
           {/* Blog Content */}
           <section className="prose prose-lg max-w-none mt-6">
@@ -219,6 +211,30 @@ export default async function NewsDetailPage({
               <HelpfulResources data={news.footerLinks ?? []} />
             </div>
           )}
+          <div className="flex gap-3 mt-5">
+            <p className="font-semibold ">
+              Last Updated:{" "}
+              <span className="text-gray-600">
+                {new Date(news.updatedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </p>
+            <span className="relative group inline-block">
+              {/* Social buttons (hidden until hover) */}
+              <div className="absolute hidden group-hover:flex">
+                <SocialShare
+                  url={`https://musafirbaba.com/news/${news.slug}`}
+                  title={news.title}
+                />
+              </div>
+
+              {/* Share icon */}
+              <Share2 className="cursor-pointer" />
+            </span>
+          </div>
 
           {/* Comments Section */}
           <section className="mt-10 w-full">

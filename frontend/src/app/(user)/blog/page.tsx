@@ -7,6 +7,8 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
 import ReadMore from "@/components/common/ReadMore";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Travel Blog - Guides, Tips & Travel Inspiration",
@@ -44,7 +46,7 @@ async function getBlogs(page: number, category?: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=${category}&page=${page}&limit=12`,
     {
       next: { revalidate: 60 }, // ISR: revalidate every 1 minute
-    }
+    },
   );
 
   if (!res.ok) throw new Error("Failed to fetch blogs");
@@ -64,13 +66,16 @@ export default async function BlogPage({
   const blogs = data?.data;
   const totalPages = data?.pages;
 
+  const mainBlogs = blogs.length > 4 ? blogs.slice(0, 4) : null;
+  const restBlogs = blogs.length > 4 ? blogs.slice(4) : blogs;
+
   const breadcrumb = getBreadcrumbSchema("blog");
   const collectionSchema = getCollectionSchema(
     "Blog",
     "https://musafirbaba.com/blog",
     blogs.map((blog: blog) => ({
       url: `https://musafirbaba.com/blog/${blog.slug}`,
-    }))
+    })),
   );
   const content = `
 <p>
@@ -235,18 +240,109 @@ export default async function BlogPage({
 </p>
 `;
   return (
-    <section className="w-full ">
-      <Hero image="/Heroimg.jpg" title="Blog" overlayOpacity={100} />
+    <section className="w-full space-y-5 ">
+      {/* <Hero image="/Heroimg.jpg" title="Blog" overlayOpacity={100} /> */}
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
+        <h1 className="text-2xl md:text-4xl font-semibold">Blog</h1>
+      </div>
       {/* SHow description */}
-
-      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+      <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 ">
         <ReadMore content={content} />
       </div>
+      {mainBlogs && (
+        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* LEFT BIG IMAGE */}
+            <Link
+              href={`/blog/${mainBlogs[0].slug}`}
+              className="relative h-[520px]"
+            >
+              <Image
+                src={mainBlogs[0].coverImage.url}
+                alt={mainBlogs[0].title}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 text-white">
+                <h2 className="text-xl md:text-2xl font-semibold leading-snug">
+                  {mainBlogs[0].title}
+                </h2>
+                <p className="text-sm mt-1 opacity-90">
+                  {mainBlogs[0].author?.name} •{" "}
+                  {new Date(mainBlogs[0].createdAt).toLocaleDateString(
+                    "en-US",
+                    {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    },
+                  )}
+                </p>
+              </div>
+            </Link>
+
+            {/* RIGHT COLUMN */}
+            <div className="grid grid-rows-2 gap-2 h-[520px]">
+              {/* TOP RIGHT */}
+              <Link href={`/blog/${mainBlogs[1].slug}`} className="relative">
+                <Image
+                  src={mainBlogs[1].coverImage.url}
+                  alt={mainBlogs[1].title}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <h3 className="text-lg font-semibold leading-snug">
+                    {mainBlogs[1].title}
+                  </h3>
+                </div>
+              </Link>
+
+              {/* BOTTOM RIGHT (2 SMALL CARDS) */}
+              <div className="grid grid-cols-2 gap-2">
+                <Link href={`/blog/${mainBlogs[2].slug}`} className="relative">
+                  <Image
+                    src={mainBlogs[2].coverImage.url}
+                    alt={mainBlogs[2].title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2 text-white">
+                    <h4 className="text-sm font-medium leading-tight">
+                      {mainBlogs[2].title}
+                    </h4>
+                  </div>
+                </Link>
+
+                <Link href={`/blog/${mainBlogs[3].slug}`} className="relative">
+                  <Image
+                    src={mainBlogs[3].coverImage.url}
+                    alt={mainBlogs[3].title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2 text-white">
+                    <h4 className="text-sm font-medium leading-tight">
+                      {mainBlogs[3].title}
+                    </h4>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container max-w-7xl mx-auto py-10 px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {blogs.map((blog: blog) => (
+        {restBlogs.map((blog: blog) => (
           <BlogCard
             key={blog._id}
             type="blog"

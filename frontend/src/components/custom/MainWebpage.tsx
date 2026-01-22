@@ -14,6 +14,8 @@ import { TestiProps } from "@/components/custom/Testimonial";
 import RelatedWebpage from "./RelatedWebpage";
 import TrandingPkgSidebar from "./TrandingPkgSidebar";
 import HelpfulResources from "@/components/custom/HelpfulResources";
+import SocialShare from "./SocialSharing";
+import { Share2 } from "lucide-react";
 
 interface Faq {
   question: string;
@@ -80,7 +82,7 @@ async function MainWebPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb />
       </div>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 md:py-10 py-5">
         <article className="w-full md:w-2/3 space-y-10">
           {/* <header className="">
             <h1 className="text-3xl md:text-4xl font-bold"></h1>
@@ -113,6 +115,30 @@ async function MainWebPage({
               </div>
             )}
           </section>
+          <div className="flex gap-3 mt-5">
+            <p className="font-semibold ">
+              Last Updated:{" "}
+              <span className="text-gray-600">
+                {new Date(page.updatedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </p>
+            <span className="relative group inline-block">
+              {/* Social buttons (hidden until hover) */}
+              <div className="absolute hidden group-hover:flex">
+                <SocialShare
+                  url={`https://musafirbaba.com/${page.fullSlug}`}
+                  title={page.title}
+                />
+              </div>
+
+              {/* Share icon */}
+              <Share2 className="cursor-pointer" />
+            </span>
+          </div>
         </article>
         <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start ">
           <QueryForm />

@@ -10,10 +10,16 @@ interface BlogCardProps {
   slug: string;
 }
 
-export default function BlogCard({ title, coverImage, description, slug , type}: BlogCardProps) {
+export default function BlogCard({
+  title,
+  coverImage,
+  description,
+  slug,
+  type,
+}: BlogCardProps) {
   return (
     <Link href={`/${type}/${slug}`}>
-      <div className="rounded-2xl overflow-hidden shadow hover:shadow-lg transition bg-white">
+      <div className="rounded-2xl overflow-hidden shadow hover:shadow-lg transition bg-white relative">
         <Image
           src={coverImage}
           alt={title}
@@ -21,7 +27,8 @@ export default function BlogCard({ title, coverImage, description, slug , type}:
           height={400}
           className="w-full h-48 object-cover"
         />
-        <div className="p-4">
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 to-transparent" />
+        <div className="absolute bottom-2 left-4 right-4 text-white">
           <h2 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h2>
           {/* <div className="text-gray-600 text-sm line-clamp-2"><BlogContent html={description} /></div>  */}
           <p className="text-gray-600 text-sm line-clamp-3">{description}</p>
@@ -29,4 +36,4 @@ export default function BlogCard({ title, coverImage, description, slug , type}:
       </div>
     </Link>
   );
-};
+}

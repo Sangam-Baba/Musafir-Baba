@@ -21,7 +21,7 @@ import HelpfulResources from "@/components/custom/HelpfulResources";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
-    cache: "no-cache", // ISR: revalidate every 1 min
+    cache: "no-cache",
   });
 
   if (!res.ok) return notFound();
@@ -118,21 +118,9 @@ export default async function BlogDetailPage({
         <Breadcrumb />
       </div>
       <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
-        <article className="lg:w-6/9 ">
-          {/* Cover Image */}
-          {/* <BlogViewTracker id={blog._id} /> */}
-          <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
-            <Image
-              src={blog.coverImage.url}
-              alt={blog.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-
+        <article className="lg:w-6/9 space-y-5 ">
           {/* Title & Meta */}
-          <header className="mt-6 space-y-2">
+          <header className="my-6 space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold">{blog.title}</h1>
             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-2 ">
@@ -153,23 +141,11 @@ export default async function BlogDetailPage({
               <span>
                 <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
               </span>
-              <span>
+              {/* <span>
                 <BlogLikes id={blog._id} initialLikes={blog.likes} />
-              </span>
+              </span> */}
               <span className="flex gap-2 items-center">
                 <Clock size={16} /> {readTime} Min Read
-              </span>
-              <span className="relative group inline-block">
-                {/* Social buttons (hidden until hover) */}
-                <div className="absolute hidden group-hover:flex">
-                  <SocialShare
-                    url={`https://musafirbaba.com/blog/${blog.slug}`}
-                    title={blog.title}
-                  />
-                </div>
-
-                {/* Share icon */}
-                <Share2 className="cursor-pointer" />
               </span>
             </div>
             {/* Tags */}
@@ -184,6 +160,20 @@ export default async function BlogDetailPage({
               ))}
             </div>
           </header>
+          {/* Cover Image */}
+          <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+            <Image
+              src={blog.coverImage.url}
+              alt={blog.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+          <div className="border border-gray-400 px-4 py-8 flex gap-6 w-full rounded-md bg-gray-50">
+            <p className="bg-[#FE5300] w-1 md:h-15 h:40 rounded-lg"></p>
+            <p className="italic text-gray-500">{blog.excerpt}</p>
+          </div>
 
           {/* Blog Content */}
           <section className="prose prose-lg max-w-none mt-6">
@@ -194,6 +184,31 @@ export default async function BlogDetailPage({
               <HelpfulResources data={blog.footerLinks ?? []} />
             </div>
           )}
+          <div className="flex gap-3 mt-5">
+            <p className="font-semibold ">
+              Last Updated:{" "}
+              <span className="text-gray-600">
+                {new Date(blog.updatedAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </p>
+            <span className="relative group inline-block">
+              {/* Social buttons (hidden until hover) */}
+              <div className="absolute hidden group-hover:flex">
+                <SocialShare
+                  url={`https://musafirbaba.com/blog/${blog.slug}`}
+                  title={blog.title}
+                />
+              </div>
+
+              {/* Share icon */}
+              <Share2 className="cursor-pointer" />
+            </span>
+          </div>
+
           {/* Comments Section */}
           <section className="mt-10 w-full">
             <BlogComments
