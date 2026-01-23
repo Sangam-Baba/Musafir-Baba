@@ -72,7 +72,7 @@ const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const blog = await Blog.findOne({ slug: slug, status: "published" })
+    const blog = await Blog.findOne({ slug: slug })
       .populate("category", "name slug")
       .populate("author", "name slug")
       .lean();
