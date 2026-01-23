@@ -71,7 +71,7 @@ const getNewsBySlug = async (req, res) => {
     if (!slug)
       return res.status(400).json({ success: false, message: "Invalid Slug" });
 
-    const news = await News.findOne({ slug: slug })
+    const news = await News.findOne({ slug: slug, status: "published" })
       .populate("author", "name slug")
       .lean();
 
@@ -89,6 +89,32 @@ const getNewsBySlug = async (req, res) => {
     });
   } catch (error) {
     console.log("News getting by slug failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+const getNewsById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id)
+      return res.status(400).json({ success: false, message: "Invalid Id" });
+
+    const news = await News.findById(id).populate("author", "name slug").lean();
+
+    if (!news)
+      return res.status(404).json({ success: false, message: "Invalid Id" });
+
+    const comments = await NewsComment.find({ newsId: news._id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      message: "News fetched successfully",
+      data: { news, comments },
+    });
+  } catch (error) {
+    console.log("News getting by Id failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -233,6 +259,7 @@ export {
   updateNews,
   deleteNews,
   getNewsBySlug,
+  getNewsById,
   getAllNews,
   NewsView,
   trandingNews,

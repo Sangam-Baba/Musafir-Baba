@@ -70,7 +70,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onEdit(blog.slug)}
+                    onClick={() => onEdit(blog.id)}
                   >
                     <Edit className="w-4 h-4 mr-1" /> Edit
                   </Button>
@@ -113,9 +113,9 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                   variant="outline"
                   size="sm"
                   className="flex-1"
-                  onClick={() => onEdit(blog.slug)}
+                  onClick={() => onEdit(blog.id)}
                 >
-                  <Edit className="w-4 h-4 mr-1" /> Edit
+                  <Edit className="w-4 h-4 mr-1" />
                 </Button>
                 <Button
                   variant="destructive"

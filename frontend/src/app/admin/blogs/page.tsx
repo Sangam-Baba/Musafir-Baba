@@ -27,7 +27,7 @@ const getBlogs = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   if (!res.ok) throw new Error("Failed to get blogs");
   const data = await res.json();
@@ -40,7 +40,7 @@ export default function BlogsPage() {
   });
   const token = useAdminAuthStore((state) => state.accessToken);
   const permissions = useAdminAuthStore(
-    (state) => state.permissions
+    (state) => state.permissions,
   ) as string[];
   const {
     data: blogs,
@@ -67,8 +67,8 @@ export default function BlogsPage() {
   }, [filter, blogs]);
   const router = useRouter();
 
-  const handleEdit = (slug: string) => {
-    router.push(`/admin/blogs/edit/${slug}`);
+  const handleEdit = (id: string) => {
+    router.push(`/admin/blogs/edit/${id}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -83,7 +83,7 @@ export default function BlogsPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       const data = await res.json();
 

@@ -4,6 +4,7 @@ import {
   deleteNews,
   getAllNews,
   getNewsBySlug,
+  getNewsById,
   NewsView,
   trandingNews,
   NewsLike,
@@ -22,24 +23,31 @@ newsRoutes.post(
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  createNews
+  createNews,
 );
 newsRoutes.patch(
   "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  updateNews
+  updateNews,
 );
 newsRoutes.delete(
   "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  deleteNews
+  deleteNews,
 );
 
 newsRoutes.get("/tranding", trandingNews);
+newsRoutes.get(
+  "/id/:id",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getNewsById,
+);
 newsRoutes.get("/:slug", getNewsBySlug);
 newsRoutes.get("/", getAllNews);
 

@@ -77,19 +77,25 @@ const updateNews = async (values: FormValues, token: string, id: string) => {
   return res.json();
 };
 
+export const getNewsById = async (token: string, id: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/id/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await res.json();
+  return data?.data?.news;
+};
+
 export default function EditNews() {
   const { slug } = useParams() as { slug: string };
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
 
   const { data: news, isLoading } = useQuery({
     queryKey: ["news", slug],
-    queryFn: async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`,
-      );
-      const data = await res.json();
-      return data?.data?.news;
-    },
+    queryFn: () => getNewsById(token, slug),
   });
 
   const { data: users } = useQuery({

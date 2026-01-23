@@ -97,19 +97,28 @@ const updateBlog = async (values: FormValues, token: string, id: string) => {
   return res.json();
 };
 
+export const getBlogById = async (token: string, id: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/id/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  const data = await res.json();
+  return data?.data?.blog;
+};
+
 export default function EditBlog() {
   const { slug } = useParams() as { slug: string };
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
 
   const { data: blog, isLoading } = useQuery({
     queryKey: ["blog", slug],
-    queryFn: async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`,
-      );
-      const data = await res.json();
-      return data?.data?.blog;
-    },
+    queryFn: () => getBlogById(token, slug),
   });
 
   const { data: categories } = useQuery({

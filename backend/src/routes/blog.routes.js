@@ -4,6 +4,7 @@ import {
   deleteBlog,
   getAllBlog,
   getBlogBySlug,
+  getBlogById,
   blogComment,
   blogView,
   trandingBlogs,
@@ -24,24 +25,31 @@ blogRoutes.post(
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  createBlog
+  createBlog,
 );
 blogRoutes.patch(
   "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  updateBlog
+  updateBlog,
 );
 blogRoutes.delete(
   "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  deleteBlog
+  deleteBlog,
 );
 
 blogRoutes.get("/tranding", trandingBlogs);
+blogRoutes.get(
+  "/id/:id",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getBlogById,
+);
 blogRoutes.get("/:slug", getBlogBySlug);
 blogRoutes.get("/", getAllBlog);
 

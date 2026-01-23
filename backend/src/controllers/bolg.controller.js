@@ -72,7 +72,7 @@ const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const blog = await Blog.findOne({ slug: slug })
+    const blog = await Blog.findOne({ slug: slug, status: "published" })
       .populate("category", "name slug")
       .populate("author", "name slug")
       .lean();
@@ -91,6 +91,35 @@ const getBlogBySlug = async (req, res) => {
   } catch (error) {
     console.log("Blog getting failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+const getBlogById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id)
+      return res.status(404).json({ success: false, message: "Invalid Id" });
+    const blog = await Blog.findById(id)
+      .populate("category", "name slug")
+      .populate("author", "name slug")
+      .lean();
+
+    if (!blog)
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    const comments = await Comment.find({ blogId: blog._id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      message: "Blog fetched successfully",
+      data: { blog, comments },
+    });
+  } catch (error) {
+    console.log("Geting Blog by Id failed", error.message);
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
@@ -263,6 +292,7 @@ export {
   updateBlog,
   deleteBlog,
   getBlogBySlug,
+  getBlogById,
   getAllBlog,
   blogComment,
   blogView,
