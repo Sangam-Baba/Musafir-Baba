@@ -16,6 +16,7 @@ import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import LatestBlog from "@/components/common/LatestBlog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -246,21 +247,50 @@ export default async function BlogDetailPage({
             />
           </section>
         </article>
-        <div className=" space-y-10">
-          {/* <QueryForm /> */}
-          {/* <CategorySidebar /> */}
-          <LatestBlog
-            blogs={filteredLatestBlog}
-            title="Latest Blog"
-            type="latest"
-            url="blog"
-          />
-          <LatestBlog
+        <div className="space-y-10">
+          <Tabs defaultValue="latest" className="w-full flex items-center">
+            <TabsList className="bg-white flex gap-4">
+              <TabsTrigger
+                value="latest"
+                className="border border-[#FE5300]
+      data-[state=active]:bg-[#FE5300]
+      data-[state=active]:text-white"
+              >
+                Latest Blog
+              </TabsTrigger>
+              <TabsTrigger
+                value="trending"
+                className="border border-[#FE5300] 
+      data-[state=active]:bg-[#FE5300]
+      data-[state=active]:text-white"
+              >
+                Tranding Blog
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="latest">
+              <LatestBlog
+                blogs={filteredLatestBlog}
+                title="Latest Blog"
+                type="latest"
+                url="blog"
+              />
+            </TabsContent>
+            <TabsContent value="trending">
+              <LatestBlog
+                blogs={filteredTrandingBlogs}
+                title="Tranding Blog"
+                type="trending"
+                url="blog"
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* <LatestBlog
             blogs={filteredTrandingBlogs}
             title="Tranding Blog"
             type="trending"
             url="blog"
-          />
+          /> */}
           {/* <LatestBlogSidebar currentId={blog._id} />
           <TrandingBlogSidebar currentId={blog._id} /> */}
         </div>
