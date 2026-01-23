@@ -145,7 +145,7 @@ const login = async (req, res) => {
       user._id,
       user.role,
       sessionId,
-      user.name
+      user.name,
     );
 
     const cookieOption = {
@@ -202,7 +202,7 @@ const verifyOtp = async (req, res) => {
         .json({ success: false, message: "Could not send Welcome email" });
     }
     user.isVerified = true;
-    (user.otp = undefined), (user.otpExpire = undefined);
+    ((user.otp = undefined), (user.otpExpire = undefined));
     await user.save();
     const { accessToken, refreshToken } = issueTokens(user._id, user.role);
 
@@ -351,7 +351,7 @@ const refresh = async (req, res) => {
       payload.sub,
       payload.role,
       payload.sessionId,
-      payload.name
+      payload.name,
     );
     const cookieOptions = {
       httpOnly: true,
@@ -384,7 +384,7 @@ const me = async (req, res) => {
 
     const token = authHeader.split(" ")[1];
     const verifiedToken = verifyAccess(token);
-
+    console.log("this is verufy token response", verifiedToken);
     if (!verifiedToken) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -435,7 +435,7 @@ const logout = async (req, res) => {
 
     await Session.updateOne(
       { sessionId },
-      { status: "logout", logoutAt: new Date() }
+      { status: "logout", logoutAt: new Date() },
     );
     return res
       .status(200)
@@ -477,17 +477,17 @@ const getAllUsers = async (req, res) => {
     // Step 3: Map each user with latest session + logs
     const result = users.map((user) => {
       const userLogs = logs.filter(
-        (l) => String(l.userId) === String(user._id)
+        (l) => String(l.userId) === String(user._id),
       );
       const userSessions = sessions.filter(
-        (s) => String(s.userId) === String(user._id)
+        (s) => String(s.userId) === String(user._id),
       );
 
       const lastLogin =
         userLogs.find(
           (log) =>
             log.eventType === "login" &&
-            !log.userAgent.includes("PostmanRuntime")
+            !log.userAgent.includes("PostmanRuntime"),
         ) || userLogs.find((log) => log.eventType === "login");
       const lastLogout = userLogs.find((log) => log.eventType === "logout");
       const activeSession = userSessions.find((s) => s.status === "active");
@@ -581,7 +581,7 @@ const getAdminById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
     const admin = await User.findById(id).select(
-      " name email phone permissions role"
+      " name email phone permissions role",
     );
     if (!admin) {
       return res

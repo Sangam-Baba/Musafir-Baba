@@ -6,6 +6,7 @@ import { Navbar } from "../common/Navbar";
 import { useUIStore } from "@/store/useUIStore";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { AccountIcon } from "./AccountIcon";
 
 export default function Sidebar() {
   const { toggleSidebar, closeSidebar } = useUIStore();
@@ -44,7 +45,8 @@ export default function Sidebar() {
         className="relative z-10 w-3/4 max-w-xs  bg-[#FFFFFF] h-full transform transition-transform duration-300 ease-in-out"
       >
         <div className="flex items-center justify-between px-4 py-3">
-          <h3 className="font-semibold text-lg">Menu</h3>
+          {/* <h3 className="font-semibold text-lg">Menu</h3> */}
+          <AccountIcon />
           <button
             aria-label="Close sidebar"
             onClick={toggleSidebar}

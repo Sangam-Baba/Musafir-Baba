@@ -71,7 +71,10 @@ const getPackage = async (id: string) => {
   return data?.data;
 };
 
-export const getUser = async (accessToken: string) => {
+export const getUser = async (
+  accessToken: string,
+  refreshAccessToken: () => void,
+) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
     method: "GET",
     headers: {
@@ -79,6 +82,9 @@ export const getUser = async (accessToken: string) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  if (res.status === 401) {
+    await refreshAccessToken();
+  }
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.message);
@@ -149,6 +155,7 @@ export default function CheckoutButton() {
     service_provider: "",
   });
   const accessToken = useAuthStore((s) => s.accessToken) as string;
+  const refreshAccessToken = useAuthStore((s) => s.refreshAccessToken);
   const pkgId = params.id as string;
   const formData = useCustomizedBookingStore((s) => s.formData);
 
@@ -165,7 +172,7 @@ export default function CheckoutButton() {
   });
   const { data: user } = useQuery({
     queryKey: ["user"],
-    queryFn: () => getUser(accessToken),
+    queryFn: () => getUser(accessToken, refreshAccessToken),
     enabled: !!accessToken,
     staleTime: 1000 * 60,
   });

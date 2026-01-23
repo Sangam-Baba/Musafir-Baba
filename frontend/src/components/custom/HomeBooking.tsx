@@ -18,7 +18,7 @@ function HomeBooking() {
         </p>
 
         {/* Icons */}
-        <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-4">
+        <div className="flex flex-wrap justify-center md:justify-start gap-6 my-8">
           {[
             {
               Icon: Plane,
@@ -56,7 +56,7 @@ function HomeBooking() {
       </div>
 
       {/* Right Image */}
-      <div className="w-full md:w-1/2 flex justify-center relative mt-10 md:mt-0 overflow-visible">
+      <div className="w-full hidden  md:w-1/2 md:flex justify-center relative mt-10 md:mt-0 overflow-visible">
         {/* Green Circular Background */}
         <div className="absolute bottom-0 bg-[#87E87F] w-[150px] h-[150px] md:w-[300px] md:h-[300px] rounded-t-full z-0"></div>
 

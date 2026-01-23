@@ -10,11 +10,11 @@ export default function SectionFour() {
     <section className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8 ">
       <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12">
         {/* Text Section */}
-        <div className="flex flex-col gap-4 md:w-1/2">
-          <h2 className="text-2xl md:text-3xl font-bold">
+        <div className="flex flex-col gap-4 items-center md:items-start md:w-1/2">
+          <h2 className="hidden md:blocktext-2xl md:text-3xl font-bold">
             Delhi Tour Packages
           </h2>
-          <div className="bg-[#FE5300] w-12 h-1"></div>
+          <div className="bg-[#FE5300] w-12 h-1 hidden md:block"></div>
           <p className="text-sm md:text-base leading-relaxed text-gray-700">
             At MusafirBaba, we offer customizable Delhi tour packages.
             Experience Delhi like never before with our customizable Delhi
@@ -37,7 +37,14 @@ export default function SectionFour() {
           </Link>
         </div>
 
-        <div className="flex flex-col items-center md:w-1/2">
+        <div className="flex flex-col items-center gap-2 md:w-1/2">
+          <div className="flex flex-col items-center gap-2 mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold">
+              Delhi Tour Packages
+            </h2>
+            <div className="bg-[#FE5300] w-12 h-1"></div>
+          </div>
+
           <Image
             src={h1}
             alt="Delhi Tour"

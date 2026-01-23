@@ -18,8 +18,9 @@ function VideoSection() {
       <section className="max-w-7xl mx-auto py-16 px-4 items-center justify-center  py-16 relative z-50">
         <div className="flex flex-col gap-2 items-center mb-8 text-center">
           <h3 className="text-2xl md:text-3xl  font-bold text-white ">
-            {`About MusafirBaba - India's Trusted Travel Partner`}
+            About MusafirBaba <br /> {`India's Trusted Travel Partner`}
           </h3>
+
           <div className="w-16 h-1 bg-[#FE5300] rounded-full mb-4"></div>
           <p>Trusted for holidays, visas, and end-to-end travel support</p>
         </div>

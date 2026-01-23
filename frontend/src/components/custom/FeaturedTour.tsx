@@ -52,7 +52,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-3 mt-6">
+        <div className="flex gap-3 mt-6 mx-5 overflow-x-auto no-scrollbar">
           {categoriesPkg.map((tab) => (
             <Button
               key={tab.slug}

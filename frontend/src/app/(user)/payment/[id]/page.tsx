@@ -126,6 +126,7 @@ export default function CheckoutPage() {
     service_provider: "",
   });
   const accessToken = useAuthStore((s) => s.accessToken) as string;
+  const refreshAccessToken = useAuthStore((s) => s.refreshAccessToken);
   const { id } = useParams();
   const pkgId = String(id ?? "");
   const booking = useGroupBookingStore((s) => s.formData);
@@ -151,9 +152,13 @@ export default function CheckoutPage() {
   const Package = pkg?.data;
 
   //User
-  const { data: user } = useQuery({
+  const {
+    data: user,
+    isLoading: userLoading,
+    isError: userError,
+  } = useQuery({
     queryKey: ["user"],
-    queryFn: () => getUser(accessToken),
+    queryFn: () => getUser(accessToken, refreshAccessToken),
     enabled: !!accessToken,
     staleTime: 1000 * 60,
   });
@@ -167,6 +172,9 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
+    // if (accessToken) {
+    //   const data = async () => await refreshAccessToken();
+    // }
     if (booking && Package) {
       const selectedBatch = Package.batch.find(
         (batch: Batch) => batch._id === booking.batchId,
@@ -190,6 +198,8 @@ export default function CheckoutPage() {
       setPaidPrice(gst);
     }
   }, [booking, Package]);
+  if (userError) {
+  }
 
   const mutation = useMutation({
     mutationFn: (formData: GroupBookingInterface) =>

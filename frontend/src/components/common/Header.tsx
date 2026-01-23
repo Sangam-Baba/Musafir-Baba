@@ -85,7 +85,7 @@ export default function Header() {
         className="w-full bg-white/70 shadow-sm md:shadow-none md:bg-transparent 
                       flex items-center justify-between md:px-10 px-4 py-4"
       >
-        <div className="flex justify-between items-center w-full">
+        <div className="flex md:justify-between items-center w-full">
           {/* Mobile menu */}
           <button
             aria-label="Open menu"
@@ -96,12 +96,12 @@ export default function Header() {
           </button>
 
           {/* LOGO */}
-          <div className="flex items-center">
+          <div className="flex items-center ml-20 md:ml-0">
             <Link href="/" className="block">
               <Image
                 src={logo}
                 alt="Musafir Baba Logo"
-                className="w-36 h-auto md:w-40 "
+                className="w-40 h-auto"
                 priority
               />
             </Link>
@@ -113,7 +113,7 @@ export default function Header() {
           </nav>
 
           {/* Right side buttons */}
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <Button className="hidden md:flex  text-white">
               <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
                 Pay Now
