@@ -43,7 +43,7 @@ interface blog {
 }
 async function getBlogs(page: number, category?: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=${category}&page=${page}&limit=12`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=${category}&page=${page}&limit=16`,
     {
       next: { revalidate: 60 }, // ISR: revalidate every 1 minute
     },

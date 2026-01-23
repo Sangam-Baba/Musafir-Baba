@@ -2,12 +2,9 @@ import Image from "next/image";
 import { BlogContent } from "@/components/custom/BlogContent";
 import Link from "next/link";
 import NotFoundPage from "@/components/common/Not-Found";
-import QueryForm from "@/components/custom/QueryForm";
 import CategorySidebar from "@/components/custom/CategorySidebar";
-import LatestBlogSidebar from "@/components/custom/LatestBlogSidebar";
 import BlogViewTracker from "@/components/custom/BlogViewTracker";
-import TrandingBlogSidebar from "@/components/custom/TrandingBlogSidebar";
-import BlogLikes from "@/components/custom/BlogLikes";
+// import BlogLikes from "@/components/custom/BlogLikes";
 import { BlogComments } from "@/components/custom/BuildCommentTree";
 import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
@@ -18,6 +15,7 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
 import HelpfulResources from "@/components/custom/HelpfulResources";
+import LatestBlog from "@/components/common/LatestBlog";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -25,6 +23,27 @@ async function getBlog(slug: string) {
   });
 
   if (!res.ok) return notFound();
+  const data = await res.json();
+  return data?.data;
+}
+
+async function getLatestBlog() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
+    next: { revalidate: 60 },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.data;
+}
+
+async function getTrandingBlogs() {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/tranding`,
+    {
+      next: { revalidate: 60 },
+    },
+  );
+  if (!res.ok) return null;
   const data = await res.json();
   return data?.data;
 }
@@ -101,6 +120,15 @@ export default async function BlogDetailPage({
   if (!blog) return <NotFoundPage />;
   const readTime = readingTime(blog.content || "");
 
+  const latestBlogs = await getLatestBlog();
+  const trandingBlogs = await getTrandingBlogs();
+  const filteredLatestBlog = latestBlogs.filter(
+    (blog: any) => blog.slug !== slug,
+  );
+  const filteredTrandingBlogs = trandingBlogs.filter(
+    (blog: any) => blog.slug !== slug,
+  );
+
   const breadcrumbSchema = getBreadcrumbSchema("blog/" + blog.slug);
   const blogSchema = getBlogSchema(
     blog.title,
@@ -114,14 +142,14 @@ export default async function BlogDetailPage({
 
   return (
     <div>
-      <div className="flex flex-col mx-auto max-w-7xl px-12 mt-5">
+      <div className="flex flex-col mx-auto max-w-4xl px-12 mt-5">
         <Breadcrumb />
       </div>
-      <div className="flex flex-col lg:flex-row gap-8 mx-auto max-w-7xl py-4 px-12">
-        <article className="lg:w-6/9 space-y-5 ">
+      <div className="flex flex-col gap-8 mx-auto max-w-4xl py-4 px-12">
+        <article className="space-y-5 ">
           {/* Title & Meta */}
-          <header className="my-6 space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold">{blog.title}</h1>
+          <header className="space-y-2">
+            <h1 className="text-2xl md:text-4xl font-bold">{blog.title}</h1>
             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-2 ">
                 <User size={16} />
@@ -218,11 +246,23 @@ export default async function BlogDetailPage({
             />
           </section>
         </article>
-        <div className="lg:w-3/9 space-y-10">
+        <div className=" space-y-10">
           {/* <QueryForm /> */}
           {/* <CategorySidebar /> */}
-          <LatestBlogSidebar currentId={blog._id} />
-          <TrandingBlogSidebar currentId={blog._id} />
+          <LatestBlog
+            blogs={filteredLatestBlog}
+            title="Latest Blog"
+            type="latest"
+            url="blog"
+          />
+          <LatestBlog
+            blogs={filteredTrandingBlogs}
+            title="Tranding Blog"
+            type="trending"
+            url="blog"
+          />
+          {/* <LatestBlogSidebar currentId={blog._id} />
+          <TrandingBlogSidebar currentId={blog._id} /> */}
         </div>
         {/* ✅ JSON-LD Schema */}
         {/* {blog.schemaType?.includes("Blog") && ( */}
