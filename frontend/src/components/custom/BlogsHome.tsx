@@ -12,7 +12,7 @@ const getCombinedData = async () => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/combined-news-blog`,
     {
       next: { revalidate: 360 },
-    }
+    },
   );
   const data = await res.json();
   return data.data;
@@ -44,18 +44,18 @@ async function BlogsHome() {
       </div>
 
       <div className="w-full flex flex-col-reverse md:flex-row gap-6 justify-between items-center">
-        <div className="md:w-1/2 flex flex-col gap-4">
+        <div className="md:w-1/2 w-full flex md:flex-col gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory ">
           {rest.slice(0, 4).map((blog: NewType) => (
             <Card
               key={blog._id}
-              className="flex flex-row items-center px-2 py-2 gap-2 rounded-xl shadow hover:shadow-lg transition"
+              className="flex min-w-[300px] flex-row items-center px-2 py-2 gap-2 rounded-xl shadow hover:shadow-lg transition  snap-start"
             >
               <Image
                 src={blog.coverImage.url}
                 alt={blog.coverImage.alt || blog.title}
                 width={120}
                 height={80}
-                className="rounded-md object-cover"
+                className="w-[120px] h-[80px] rounded-md object-cover"
               />
               <CardContent className="p-2">
                 <Link
@@ -84,8 +84,8 @@ async function BlogsHome() {
           ))}
         </div>
 
-        <div className="flex md:w-1/2">
-          <Card className="flex  justify-center ietms-center rounded-xl shadow hover:shadow-lg transition py-2 px-2 ">
+        <div className="md:w-1/2">
+          <Card className="flex justify-center ietms-center rounded-xl shadow hover:shadow-lg transition py-2 px-2 ">
             <Image
               src={featured.coverImage.url}
               alt={featured.coverImage.alt || featured.title}
