@@ -11,7 +11,7 @@ export default function SectionFour() {
       <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-center gap-12">
         {/* Text Section */}
         <div className="flex flex-col gap-4 items-center md:items-start md:w-1/2">
-          <h2 className="hidden md:block text-2xl md:text-3xl font-bold">
+          <h2 className="hidden md:block text-lg md:text-3xl font-bold">
             Delhi Tour Packages
           </h2>
           <div className="bg-[#FE5300] w-12 h-1 hidden md:block"></div>
@@ -39,7 +39,7 @@ export default function SectionFour() {
 
         <div className="flex flex-col items-center gap-2 md:w-1/2">
           <div className=" md:hidden flex flex-col items-center gap-2 mb-4">
-            <h2 className="text-2xl md:text-3xl font-bold">
+            <h2 className="text-lg md:text-3xl font-bold">
               Delhi Tour Packages
             </h2>
             <div className="bg-[#FE5300] w-12 h-1"></div>

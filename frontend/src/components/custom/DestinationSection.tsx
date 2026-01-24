@@ -62,7 +62,7 @@ export function DestinationSection() {
         {/* Heading */}
         <div className="flex flex-col gap-5 items-center w-full">
           <div className="flex flex-col items-center space-y-2">
-            <h2 className="text-2xl md:text-3xl font-bold text-center">
+            <h2 className="text-lg md:text-3xl font-bold text-center">
               Top Destinations in India & Around the World
             </h2>
             <div className="w-20 h-1 bg-[#FE5300] "></div>

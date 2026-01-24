@@ -44,7 +44,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
       <div className="flex flex-col gap-2 max-w-7xl mx-auto">
         {/* Heading */}
         <div className="flex flex-col gap-2 items-center w-full text-center">
-          <h2 className="text-2xl md:text-3xl font-bold">
+          <h2 className="text-lg md:text-3xl font-bold">
             Featured Group Tour Packages
           </h2>
           <div className="w-20 h-1 bg-[#FE5300]" />

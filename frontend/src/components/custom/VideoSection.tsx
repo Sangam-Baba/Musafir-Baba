@@ -17,7 +17,7 @@ function VideoSection() {
       <div className="absolute inset-0 bg-[#251203]/90 "></div>
       <section className="max-w-7xl mx-auto py-16 px-4 items-center justify-center  py-16 relative z-50">
         <div className="flex flex-col gap-2 items-center mb-8 text-center">
-          <h3 className="text-2xl md:text-3xl  font-bold text-white ">
+          <h3 className="text-lg md:text-3xl  font-bold text-white ">
             About MusafirBaba <br /> {`India's Trusted Travel Partner`}
           </h3>
 

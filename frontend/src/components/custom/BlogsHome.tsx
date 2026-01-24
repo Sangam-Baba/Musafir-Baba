@@ -29,7 +29,7 @@ async function BlogsHome() {
       {/* Header */}
       <div className="flex flex-col md:flex-row w-full md:justify-between gap-2  mb-10">
         <div className="space-y-2 flex flex-col items-center md:items-start">
-          <h2 className="text-2xl md:text-3xl font-bold">
+          <h2 className="text-lg md:text-3xl font-bold">
             Latest Travel Trends & Tips
           </h2>
           <p className="w-20 h-1 bg-[#FE5300] mt-2"></p>

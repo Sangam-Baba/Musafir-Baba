@@ -29,7 +29,7 @@ export function ImageGallery({
     <section className="w-full px-4 md:px-8 lg:px-20 py-10 md:py-16">
       {/* Heading */}
       <div className="flex flex-col gap-2 items-center text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
+        <h2 className="text-lg md:text-3xl font-bold">{title}</h2>
         <div className="h-1 w-24 bg-[#FE5300] rounded-full" />
         {description && (
           <p className="text-gray-600 max-w-2xl">{description}</p>

@@ -88,8 +88,8 @@ export async function SevenSection() {
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col gap-8 items-center">
         {/* Heading */}
         <div className="text-center space-y-4">
-          <h2 className="text-2xl md:text-3xl font-bold">
-            Hot Honeymoon Packages of the Season — Don’t Miss Out!
+          <h2 className="text-lg md:text-3xl font-bold">
+            Hot Honeymoon Packages of the Season
           </h2>
           <div className="mx-auto w-24 h-1 bg-[#FE5300] rounded-full"></div>
           <p className="text-gray-600">
