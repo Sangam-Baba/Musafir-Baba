@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Calendar, Check, MapPin, Users, Zap } from "lucide-react";
 import { useCustomizedBookingStore } from "@/store/useCutomizedBookingStore";
 import { useParams } from "next/navigation";
+import { secureFetch } from "@/lib/secureFetch";
 
 interface Image {
   url: string;
@@ -71,20 +72,14 @@ const getPackage = async (id: string) => {
   return data?.data;
 };
 
-export const getUser = async (
-  accessToken: string,
-  refreshAccessToken: () => void,
-) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
+export const getUser = async (accessToken: string) => {
+  const res = await secureFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  if (res.status === 401) {
-    await refreshAccessToken();
-  }
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.message);
@@ -94,7 +89,7 @@ export const getUser = async (
 };
 
 export const getAllOffers = async (accessToken: string) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/coupan`, {
+  const res = await secureFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/coupan`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -155,7 +150,7 @@ export default function CheckoutButton() {
     service_provider: "",
   });
   const accessToken = useAuthStore((s) => s.accessToken) as string;
-  const refreshAccessToken = useAuthStore((s) => s.refreshAccessToken);
+  // const refreshAccessToken = useAuthStore((s) => s.refreshAccessToken);
   const pkgId = params.id as string;
   const formData = useCustomizedBookingStore((s) => s.formData);
 
@@ -172,7 +167,7 @@ export default function CheckoutButton() {
   });
   const { data: user } = useQuery({
     queryKey: ["user"],
-    queryFn: () => getUser(accessToken, refreshAccessToken),
+    queryFn: () => getUser(accessToken),
     enabled: !!accessToken,
     staleTime: 1000 * 60,
   });

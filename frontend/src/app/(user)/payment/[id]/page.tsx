@@ -158,7 +158,7 @@ export default function CheckoutPage() {
     isError: userError,
   } = useQuery({
     queryKey: ["user"],
-    queryFn: () => getUser(accessToken, refreshAccessToken),
+    queryFn: () => getUser(accessToken),
     enabled: !!accessToken,
     staleTime: 1000 * 60,
   });

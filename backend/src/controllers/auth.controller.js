@@ -338,6 +338,7 @@ const resetPassword = async (req, res) => {
 const refresh = async (req, res) => {
   try {
     const token = req.cookies?.user_refresh_token;
+    // console.log("this is refresh token", token);
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -384,7 +385,7 @@ const me = async (req, res) => {
 
     const token = authHeader.split(" ")[1];
     const verifiedToken = verifyAccess(token);
-    console.log("this is verufy token response", verifiedToken);
+    // console.log("this is verufy token response", verifiedToken);
     if (!verifiedToken) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
