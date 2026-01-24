@@ -46,22 +46,28 @@ export default function SectionFour() {
           </div>
 
           <Image
-            src={h1}
+            src="https://cdn.musafirbaba.com/h1.webp"
             alt="Delhi Tour"
+            width={250}
+            height={250}
             className="w-full h-auto rounded-2xl shadow-lg"
           />
 
           {/* Side images (hidden on mobile) */}
-          <div className="hidden md:flex gap-4 mt-4">
+          <div className="hidden md:grid grid-cols-2 gap-4 mt-4">
             <Image
-              src={h2}
+              src="https://cdn.musafirbaba.com/2.webp"
               alt="Delhi Attraction"
-              className="w-1/2 rounded-2xl shadow-lg"
+              width={250}
+              height={250}
+              className=" rounded-2xl shadow-lg"
             />
             <Image
-              src={h3}
+              src="https://cdn.musafirbaba.com/3.webp"
               alt="Delhi Culture"
-              className="w-1/2 rounded-2xl shadow-lg"
+              width={250}
+              height={250}
+              className=" rounded-2xl shadow-lg"
             />
           </div>
         </div>

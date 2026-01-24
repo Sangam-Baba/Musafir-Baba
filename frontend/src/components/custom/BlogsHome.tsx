@@ -27,17 +27,21 @@ async function BlogsHome() {
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-8 md:py-16">
       {/* Header */}
-      <div className="flex w-full justify-between gap-2 items-center mb-10">
-        <div className="space-y-2">
+      <div className="flex flex-col md:flex-row w-full md:justify-between gap-2  mb-10">
+        <div className="space-y-2 flex flex-col items-center md:items-start">
           <h2 className="text-2xl md:text-3xl font-bold">
             Latest Travel Trends & Tips
           </h2>
           <p className="w-20 h-1 bg-[#FE5300] mt-2"></p>
           <p>Read travel guides, insights, and expert tips.</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <Link href="/blog" className="text-[#FE5300] font-semibold">
-            View all articles
+        {/* View all */}
+        <div className="flex gap-2 md:items-center justify-end">
+          <Link
+            href="/blog"
+            className="text-[#FE5300] font-semibold whitespace-nowrap"
+          >
+            View all
           </Link>
           <MoveRightIcon className="w-4 h-4 text-[#FE5300]" />
         </div>

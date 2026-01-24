@@ -36,8 +36,8 @@ function Newslatter() {
     <section className="flex  md:flex-row justify-between  w-full bg-[#FF5300]">
       <Image src={imgright} alt="logo" className="w-1/7" />
       <div className="w-5/7 flex flex-col gap-2 items-center py-10 md:gap-6 gap-2">
-        <h4 className="text-2xl font-bold text-white">{`Get Ready to Explore the Beauty of India`}</h4>
-        <p className="text-white">
+        <h4 className="text-2xl font-bold text-white text-center md:text-left">{`Get Ready to Explore the Beauty of India`}</h4>
+        <p className="text-white text-center md:text-left">
           Join our travel community — discover hidden gems, latest deals, and
           trip ideas straight to your inbox.
         </p>
