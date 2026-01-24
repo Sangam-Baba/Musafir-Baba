@@ -112,7 +112,7 @@ export function DestinationSection() {
 
         {/* Content Section */}
         {active === "domestic" && (
-          <div className="flex flex-col md:flex-row gap-4 mt-10 w-full">
+          <div className="hidden md:flex md:flex-row gap-4 mt-10 w-full">
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
                 <div className="relative">
@@ -205,7 +205,7 @@ export function DestinationSection() {
         )}
 
         {active === "international" && (
-          <div className="flex flex-col md:flex-row gap-4 mt-10 w-full">
+          <div className="md:flex hidden md:flex-row gap-4 mt-10 w-full ">
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
                 <div className="relative">
@@ -304,25 +304,119 @@ export function DestinationSection() {
             </div>
           </div>
         )}
+        {active === "domestic" && (
+          <div className="flex md:hidden gap-4 mt-10 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory">
+            {[
+              {
+                title: "Uttarakhand",
+                href: "/destinations/uttarakhand",
+                img: "https://cdn.musafirbaba.com/images/badrinath.jpg",
+              },
+              {
+                title: "Rajasthan",
+                href: "/destinations/rajasthan",
+                img: "https://cdn.musafirbaba.com/images/jaipur.jpg",
+              },
+              {
+                title: "Kerala",
+                href: "/destinations/kerala",
+                img: "https://cdn.musafirbaba.com/images/Untitled_design_5_hgguwf.jpg",
+              },
+              {
+                title: "Meghalaya",
+                href: "/destinations/meghalaya",
+                img: "https://cdn.musafirbaba.com/images/Untitled_design_6_mggpgh.jpg",
+              },
+              {
+                title: "Himachal Pradesh",
+                href: "/destinations/himachal-pradesh",
+                img: "https://cdn.musafirbaba.com/Himachal.jpg",
+              },
+              {
+                title: "Kashmir",
+                href: "/destinations/jammu-and-kashmir",
+                img: "https://cdn.musafirbaba.com/kashmir.jpg",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="relative min-w-[260px] snap-start "
+              >
+                <Link href={item.href} className="z-10">
+                  <Image
+                    src={item.img}
+                    alt={item.title}
+                    width={260}
+                    height={224}
+                    className="rounded-2xl h-56 object-cover"
+                  />
+                </Link>
+
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 to-transparent rounded-2xl " />
+                <h4 className="pointer-events-none absolute bottom-2 inset-x-0  text-white text-center py-1 font-semibold">
+                  {item.title}
+                </h4>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {active === "international" && (
+          <div className="flex md:hidden gap-4 mt-10 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory">
+            {[
+              {
+                title: "Singapore",
+                href: "/destinations/singapore",
+                img: "https://cdn.musafirbaba.com/images/Singapore_bdsaps.jpg",
+              },
+              {
+                title: "Dubai",
+                href: "/destinations/dubai",
+                img: "https://cdn.musafirbaba.com/images/Untitled_design_4_yrnksb.jpg",
+              },
+              {
+                title: "Bali",
+                href: "/destinations/bali",
+                img: "https://cdn.musafirbaba.com/images/Bali_sc5oct.jpg",
+              },
+              {
+                title: "Thailand",
+                href: "/destinations/thailand",
+                img: "https://cdn.musafirbaba.com/images/Thailand_btmxk6.jpg",
+              },
+              {
+                title: "Japan",
+                href: "/destinations/japan",
+                img: "https://cdn.musafirbaba.com/images/Untitled_design_3_g8ok0g.jpg",
+              },
+              {
+                title: "Maldives",
+                href: "/destinations/maldives",
+                img: "https://cdn.musafirbaba.com/images/Untitled_design_2_rrfsvj.jpg",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="relative min-w-[260px] md:min-w-0 md:flex-1 snap-start"
+              >
+                <Link href={item.href} className="z-10">
+                  <Image
+                    src={item.img}
+                    alt={item.title}
+                    width={500}
+                    height={500}
+                    className="rounded-2xl h-56 w-full object-cover"
+                  />
+                </Link>
+                <div className=" pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 to-transparent rounded-2xl " />
+                <h4 className=" pointer-events-none absolute bottom-2 inset-x-0 text-white text-center py-1 font-semibold">
+                  {item.title}
+                </h4>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      {/* <div className="flex flex-wrap gap-2">
-        {destinations.map((dest, i) => (
-          <Card
-            key={i}
-            className="flex flex-col md:flex-row items-center pt-0 overflow-hidden  hover:scale-105 shadow-md hover:shadow-xl transition duration-500"
-          >
-            <Link href={`${dest.url}`}>
-              <Image
-                src={dest.image}
-                alt={`${dest.name} musafirbaba`}
-                width={200}
-                height={200}
-              ></Image>
-              <p>{dest.name}</p>
-            </Link>
-          </Card>
-        ))}
-      </div> */}
     </section>
   );
 }
