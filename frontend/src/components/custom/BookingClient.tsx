@@ -216,35 +216,60 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-4">
       {/* <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2> */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-5 p-4 rounded-md shadow-md">
-        <div className="flex items-center gap-2">
-          <Image
-            src={pkg.coverImage.url}
-            alt={pkg.title}
-            width={500}
-            height={500}
-            className="w-[150px] h-[100px] rounded-md"
-          />
-          <h1 className="md:text-3xl text-xl font-bold mb-4">{pkg.title}</h1>
-        </div>
+      <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+        <div className="relative p-5">
+          <div className="flex gap-8 lg:gap-12 items-start md:items-center justify-between">
+            {/* Left: Image + Content */}
+            <div className="flex gap-6 md:gap-8 items-start md:items-center w-full">
+              {/* Package Image */}
+              <div className="relative hidden md:flex flex-shrink-0">
+                <Image
+                  src={pkg.coverImage?.url}
+                  alt={pkg.title}
+                  width={400}
+                  height={300}
+                  className="w-[160px] h-[110px] md:w-[200px] md:h-[140px] lg:w-[240px] lg:h-[160px] object-cover rounded-2xl shadow-md"
+                  priority
+                />
+                {/* Elegant inner border + subtle shadow */}
+                <div className="absolute inset-0 rounded-2xl ring-2 ring-white/60 shadow-inner" />
+                <div className="absolute inset-0 rounded-2xl ring-1 ring-black/10" />
+              </div>
 
-        <div className="flex gap-2">
-          <span className="flex items-center gap-1 p-1 rounded-md md:text-lg">
-            <MapPin color="#FE5300" size={20} />
-            <span>
-              {pkg.destination.state.charAt(0).toUpperCase() +
-                pkg.destination.state.slice(1)}
-            </span>
-          </span>
+              {/* Title & Details */}
+              <div className="flex flex-col justify-center space-y-4">
+                {/* Main Title */}
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                  {pkg.title}
+                </h1>
 
-          <span className="flex items-center gap-1 p-1 rounded-md md:text-lg">
-            <Clock color="#FE5300" size={20} />
-            <span>
-              {pkg.duration.nights}N/{pkg.duration.days}D
-            </span>
-          </span>
+                {/* Location & Duration - Larger, better spaced */}
+                <div className="flex gap-6 text-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 rounded-xl">
+                      <MapPin size={20} className="text-[#FE5300]" />
+                    </div>
+                    <span className="text-lg font-medium">
+                      {pkg.destination.state.charAt(0).toUpperCase() +
+                        pkg.destination.state.slice(1)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 rounded-xl">
+                      <Clock size={20} className="text-[#FE5300]" />
+                    </div>
+                    <span className="text-lg font-medium">
+                      {pkg.duration.nights}N/{pkg.duration.days}D
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
       {Object.values(batchesByMonth).length > 0 ? (
         <div className="mt-10">
           {/* Stepper Header */}
@@ -472,7 +497,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
             {/* Calculator */}
             <div
               id="calculator"
-              className="w-full md:w-1/2 md:mt-10 border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow h-fit py-4 pt-4 sticky top-10 self-start"
+              className="w-full scroll-mt-20 md:w-1/2 md:mt-10 border rounded-xl px-4 bg-card shadow-sm hover:shadow-md transition-shadow h-fit py-4 pt-4 sticky top-10 self-start"
             >
               <div className="flex justify-between px-5 gap-5 py-2">
                 <h3 className="capitalize font-bold md:text-lg text-md whitespace-nowrap">
