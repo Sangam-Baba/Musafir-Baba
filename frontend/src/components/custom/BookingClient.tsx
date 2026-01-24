@@ -239,7 +239,7 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
               {/* Title & Details */}
               <div className="flex flex-col justify-center space-y-4">
                 {/* Main Title */}
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">
                   {pkg.title}
                 </h1>
 
