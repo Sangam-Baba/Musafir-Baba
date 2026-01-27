@@ -40,7 +40,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
   const [active, setActive] = useState(categoriesPkg[0]?.slug);
 
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-8 md:py-16">
+    <section className="w-full px-4 md:px-8 lg:px-20 py-4 md:py-16">
       <div className="flex flex-col gap-2 max-w-7xl mx-auto">
         {/* Heading */}
         <div className="flex flex-col gap-2 items-center w-full text-center">
@@ -70,7 +70,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
         </div>
 
         {/* Packages */}
-        <div className="mt-10">
+        <div className="mt-4">
           {categoriesPkg.map((tab) => {
             // const category = tab.category;
             const isActive = active === tab.slug;

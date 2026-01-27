@@ -25,7 +25,7 @@ async function BlogsHome() {
   const [featured, ...rest] = data;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-8 md:py-16">
+    <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-4 md:py-16">
       {/* Header */}
       <div className="flex flex-col md:flex-row w-full md:justify-between gap-2  mb-10">
         <div className="space-y-2 flex flex-col items-center md:items-start">

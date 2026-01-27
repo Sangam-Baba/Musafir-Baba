@@ -87,7 +87,7 @@ export interface GroupPackageInterface {
 const getSinglePackages = async (
   state: string,
   slug: string,
-  mainCategory?: string
+  mainCategory?: string,
 ): Promise<GroupPackageInterface> => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${state}&slug=${slug}&category=${mainCategory}`,
@@ -95,7 +95,7 @@ const getSinglePackages = async (
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-    }
+    },
   );
   if (!res.ok) {
     return notFound();
@@ -127,9 +127,9 @@ export async function generateMetadata({
     openGraph: {
       title: page.metaTitle || page.title,
       description: page.metaDescription,
-      url:
-        `https://musafirbaba.com${page.canonicalUrl}` ||
-        `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
+      url: page?.canonicalUrl
+        ? `https://musafirbaba.com${page.canonicalUrl}`
+        : `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
       type: "website",
       images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
     },
@@ -150,20 +150,20 @@ async function PackageDetails({
   const page = await getSinglePackages(destination, packageSlug, categorySlug);
   if (!page) return notFound();
   const breadcrumbSchema = getBreadcrumbSchema(
-    "holidays/" + categorySlug + "/" + destination + "/" + packageSlug
+    "holidays/" + categorySlug + "/" + destination + "/" + packageSlug,
   );
   const collectionSchema = getCollectionSchema(
     "Travel Packages for " + relatedGroupPackages[0]?.destination?.name,
     "https://musafirbaba.com/holidays/" + categorySlug + "/" + destination,
     relatedGroupPackages.map((pkg: GroupPackageInterface) => ({
       url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${pkg.slug}`,
-    }))
+    })),
   );
   const productSchema = getProductSchema(
     page.title,
     page.description,
     page.batch[0].quad?.toLocaleString() ?? "9,999",
-    `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`
+    `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
   );
   const faqSchema = getFAQSchema(page.faqs ?? []);
 
@@ -172,7 +172,7 @@ async function PackageDetails({
       <SlugClients
         pkg={page}
         relatedGroupPackages={relatedGroupPackages.filter(
-          (p: GroupPackageInterface) => p.slug !== packageSlug
+          (p: GroupPackageInterface) => p.slug !== packageSlug,
         )}
       />
       <Script

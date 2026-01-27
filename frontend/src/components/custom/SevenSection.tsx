@@ -79,7 +79,7 @@ export async function SevenSection() {
   const mediaVideo = await getAllMedia();
   return (
     <section
-      className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-8"
+      className="w-full px-4 md:px-8 lg:px-20 md:py-16 py-4"
       // style={{ backgroundImage: `url(${bg.src})` }}
     >
       {/* semi-transparent dark overlay */}

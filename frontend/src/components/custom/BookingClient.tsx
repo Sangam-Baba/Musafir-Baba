@@ -96,6 +96,9 @@ function groupBatchesByMonth(batches: Batch[]) {
       isAfter(parseISO(b.startDate), now) ||
       format(parseISO(b.startDate), "yyyy-MM-dd") === format(now, "yyyy-MM-dd"),
   );
+  upcoming.sort(
+    (a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime(),
+  );
   return upcoming.reduce((acc: Record<string, Batch[]>, batch) => {
     const key = format(parseISO(batch.startDate), "MMM ''yy");
     if (!acc[key]) acc[key] = [];

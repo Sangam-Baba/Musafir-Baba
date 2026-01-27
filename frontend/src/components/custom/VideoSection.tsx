@@ -9,7 +9,7 @@ import { Check } from "lucide-react";
 function VideoSection() {
   return (
     <section
-      className="w-full px-4 md:px-8 lg:px-20 py-6 md:py-16 my-12 relative bg-cover bg-center bg-no-repeat text-white"
+      className="w-full px-4 md:px-8 lg:px-20 py-6 md:py-16 relative bg-cover bg-center bg-no-repeat text-white"
       style={{
         backgroundImage: `url(https://res.cloudinary.com/dmmsemrty/image/upload/v1763462027/Rajpath-delhi-shutterstock_1195751923.jpg_7647e1aad2_1_efilvh.webp)`,
       }}
