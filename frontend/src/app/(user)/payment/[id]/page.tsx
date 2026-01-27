@@ -305,6 +305,11 @@ export default function CheckoutPage() {
   }
   const steps = ["Select Batch", "Select Travellers", "Payment"];
   const currentStep = 2;
+
+  const selectedBatch = Package?.batch.find(
+    (batch: Batch) => batch._id === booking?.batchId,
+  );
+  console.log(selectedBatch);
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-8 md:py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -353,97 +358,103 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Package Details Card */}
-            <div className="flex flex-col md:flex-row rounded-lg overflow-hidden border-border/50 shadow-sm hover:shadow-md transition-shadow pt-0">
-              <div className="md:w-1/2  bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                {Package?.coverImage?.url ? (
-                  <Image
-                    src={Package.coverImage.url || "/placeholder.svg"}
-                    alt={Package.title}
-                    width={500}
-                    height={500}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <MapPin className="w-16 h-16 text-muted-foreground/30" />
-                )}
+          <div className="lg:col-span-2">
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
+              <div className="grid grid-cols-1 md:grid-cols-5">
+                {/* Image Section */}
+                <div className="md:col-span-2 relative h-64 md:h-full">
+                  {Package?.coverImage?.url ? (
+                    <Image
+                      src={Package.coverImage.url}
+                      alt={Package.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-muted">
+                      <MapPin className="h-14 w-14 text-muted-foreground/40" />
+                    </div>
+                  )}
+
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0" />
+                </div>
+
+                {/* Content Section */}
+                <div className="md:col-span-3 p-6 lg:p-8">
+                  {/* Title */}
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-semibold text-foreground leading-tight">
+                      {Package?.title ?? "Travel Package"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Booking summary
+                    </p>
+                  </div>
+
+                  {/* Key Info */}
+                  <div className="space-y-5">
+                    {/* Dates */}
+                    <div className="flex items-start gap-4">
+                      <div className="mt-1 rounded-md bg-primary/10 p-2">
+                        <Calendar className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          Travel Dates
+                        </p>
+                        <p className="text-sm font-medium text-foreground mt-1">
+                          {parseISO(
+                            batch?.startDate as string,
+                          ).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}{" "}
+                          –{" "}
+                          {parseISO(
+                            batch?.endDate as string,
+                          ).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-border" />
+
+                    {/* Traveller Info */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground mb-3">
+                        Traveller Information
+                      </h3>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                          <span className="text-sm text-muted-foreground">
+                            Name
+                          </span>
+                          <span className="text-sm font-medium text-foreground">
+                            {user?.name ?? "Guest"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                          <span className="text-sm text-muted-foreground">
+                            Email
+                          </span>
+                          <span className="text-sm font-medium text-foreground">
+                            {user?.email ?? "guest@gmail.com"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <CardContent className="md:w-1/2 p-6">
-                <h2 className="text-2xl font-bold text-foreground mb-2">
-                  {Package.title ?? "Travel Package"}
-                </h2>
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="flex items-start gap-3">
-                    <Calendar className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Travel Dates
-                      </p>
-                      <p className="text-sm font-semibold text-foreground mt-1">
-                        {batch?.startDate.split("T")[0]}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        to {batch?.endDate.split("T")[0]}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Users className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Travellers
-                      </p>
-                      <p className="text-sm font-semibold text-foreground mt-1">
-                        {booking?.travellers?.quad} Quad +{" "}
-                        {booking?.travellers?.triple} Triple +{" "}
-                        {booking?.travellers?.double} Double +{" "}
-                        {booking?.travellers?.child} Child
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {booking?.travellers?.quad
-                          ? `${booking.travellers.quad}Q `
-                          : ""}
-                        {booking?.travellers?.triple
-                          ? `${booking.travellers.triple}T `
-                          : ""}
-                        {booking?.travellers?.double
-                          ? `${booking.travellers.double}D `
-                          : ""}
-                        {booking?.travellers?.child
-                          ? `${booking.travellers.child}C`
-                          : ""}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                {/* Traveller Information Card */}
-                <div className="">
-                  <div className="p-3">
-                    {/* <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Traveller Information
-                    </h3> */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm text-muted-foreground">
-                          Name
-                        </span>
-                        <span className="font-semibold text-foreground">
-                          {user?.name ?? "Guest"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <span className="text-sm text-muted-foreground">
-                          Email
-                        </span>
-                        <span className="font-semibold text-foreground">
-                          {user?.email ?? "guest@gmail.com"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
             </div>
           </div>
 
@@ -458,14 +469,31 @@ export default function CheckoutPage() {
 
                 {/* Breakdown */}
                 <div className="space-y-3 mb-6 pb-6 border-b border-border/50">
-                  <div className="flex justify-between items-center">
+                  {/* <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">
                       {Package.title ?? "Travel Package"}
                     </span>
                     <span className="font-semibold text-foreground">
                       ₹{parseInt(baseAmount.toFixed(2)).toLocaleString()}
                     </span>
-                  </div>
+                  </div> */}
+                  {(["quad", "triple", "double", "child"] as const).map(
+                    (travellerType) => (
+                      <div key={travellerType}>
+                        {booking?.travellers?.[travellerType] > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground capitalize">
+                              {travellerType}
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              ₹ {selectedBatch?.[travellerType]} X{" "}
+                              {booking?.travellers?.[travellerType]}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">
                       @GST 5%
