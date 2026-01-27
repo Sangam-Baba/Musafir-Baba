@@ -108,15 +108,21 @@ function groupBatchesByMonth(batches: Batch[]) {
 }
 
 export default function BookingClient({ pkg }: { pkg: Package }) {
+  const batchesByMonth = useMemo(
+    () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
+    [pkg.batch],
+  );
+  // console.log("batchesByMonth", batchesByMonth);
+  // console.log("firste", Object.values(batchesByMonth)[0]?.[0]);
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.accessToken) as string;
   const setGroup = useGroupBookingStore((state) => state.setGroup);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(
-    pkg?.batch[0] ?? null,
+    Object.values(batchesByMonth)[0]?.[0] ?? null,
   );
   const [confirmedBatch, setConfirmedBatch] = useState<Batch | null>(
-    pkg?.batch[0] ?? null,
+    Object.values(batchesByMonth)[0]?.[0] ?? null,
   );
   const [travellers, setTravellers] = useState({
     quad: 0,
@@ -155,11 +161,6 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
 
     return basePrice + addOnPrice;
   }, [travellers, confirmedBatch, addOns]);
-
-  const batchesByMonth = useMemo(
-    () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
-    [pkg.batch],
-  );
 
   const confirmSelection = (batch: Batch) => {
     setConfirmedBatch(batch);

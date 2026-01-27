@@ -309,7 +309,6 @@ export default function CheckoutPage() {
   const selectedBatch = Package?.batch.find(
     (batch: Batch) => batch._id === booking?.batchId,
   );
-  console.log(selectedBatch);
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-8 md:py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -404,21 +403,23 @@ export default function CheckoutPage() {
                           Travel Dates
                         </p>
                         <p className="text-sm font-medium text-foreground mt-1">
-                          {parseISO(
-                            batch?.startDate as string,
-                          ).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })}{" "}
+                          {parseISO(batch?.startDate || "").toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )}{" "}
                           –{" "}
-                          {parseISO(
-                            batch?.endDate as string,
-                          ).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {parseISO(batch?.endDate || "").toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )}
                         </p>
                       </div>
                     </div>
