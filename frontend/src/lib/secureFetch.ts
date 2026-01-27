@@ -13,10 +13,11 @@ export async function secureFetch(
 
   let response = await fetch(input, {
     ...init,
-    // headers: {
-    //   ...init.headers,
-    //   ...authHeaders,
-    // },
+    headers: {
+      ...init.headers,
+      Authorization: `Bearer ${accessToken}`,
+      // ...authHeaders,
+    },
     credentials: "include",
   });
 

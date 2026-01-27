@@ -25,6 +25,7 @@ import { getUser } from "@/app/(user)/holidays/customised-tour-packages/[destina
 import { Batch } from "@/app/sitemap";
 import { Input } from "@/components/ui/input";
 import { check } from "zod";
+import { parseISO } from "date-fns";
 
 interface BookingApiResponse {
   _id: string;
@@ -416,31 +417,34 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </div>
-
-            {/* Traveller Information Card */}
-            <Card className="border-border/50 shadow-sm">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Traveller Information
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Name</span>
-                    <span className="font-semibold text-foreground">
-                      {user?.name ?? "Guest"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm text-muted-foreground">Email</span>
-                    <span className="font-semibold text-foreground">
-                      {user?.email ?? "guest@gmail.com"}
-                    </span>
+                {/* Traveller Information Card */}
+                <div className="">
+                  <div className="p-3">
+                    {/* <h3 className="text-lg font-semibold text-foreground mb-4">
+                      Traveller Information
+                    </h3> */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm text-muted-foreground">
+                          Name
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {user?.name ?? "Guest"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm text-muted-foreground">
+                          Email
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {user?.email ?? "guest@gmail.com"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           </div>
 
           {/* Order Summary Sidebar */}
@@ -519,7 +523,16 @@ export default function CheckoutPage() {
                     <div>
                       <p>Partial Payment</p>
                       <span className="text-sm text-gray-600">
-                        pay remaining amount later
+                        pay remaining amount before{" "}
+                        {batch?.startDate &&
+                          new Date(
+                            parseISO(batch.startDate).getTime() -
+                              15 * 24 * 60 * 60 * 1000,
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
                       </span>
                     </div>
                   </div>

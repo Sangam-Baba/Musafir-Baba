@@ -61,7 +61,7 @@ function Partners() {
     },
   ];
   return (
-    <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16 py-4">
+    <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16">
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         <div className="flex flex-col gap-2 items-center">
           <h2 className="text-lg md:text-3xl font-bold text-center">

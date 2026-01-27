@@ -9,13 +9,13 @@ import { Check } from "lucide-react";
 function VideoSection() {
   return (
     <section
-      className="w-full px-4 md:px-8 lg:px-20 py-6 md:py-16 relative bg-cover bg-center bg-no-repeat text-white"
+      className="w-full px-4 md:px-8 lg:px-20 py-4 md:py-16 relative bg-cover bg-center bg-no-repeat text-white"
       style={{
         backgroundImage: `url(https://res.cloudinary.com/dmmsemrty/image/upload/v1763462027/Rajpath-delhi-shutterstock_1195751923.jpg_7647e1aad2_1_efilvh.webp)`,
       }}
     >
       <div className="absolute inset-0 bg-[#251203]/90 "></div>
-      <section className="max-w-7xl mx-auto py-16 px-4 items-center justify-center  py-16 relative z-50">
+      <section className="max-w-7xl mx-auto py-4 px-4 items-center justify-center relative z-50">
         <div className="flex flex-col gap-2 items-center mb-8 text-center">
           <h3 className="text-lg md:text-3xl  font-bold text-white ">
             About MusafirBaba <br /> {`India's Trusted Travel Partner`}

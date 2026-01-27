@@ -27,7 +27,7 @@ async function BlogsHome() {
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-20 py-4 md:py-16">
       {/* Header */}
-      <div className="flex flex-col md:flex-row w-full md:justify-between gap-2  mb-10">
+      <div className="flex flex-col md:flex-row w-full md:justify-between gap-2 mb-10">
         <div className="space-y-2 flex flex-col items-center md:items-start">
           <h2 className="text-lg md:text-3xl font-bold">
             Latest Travel Trends & Tips

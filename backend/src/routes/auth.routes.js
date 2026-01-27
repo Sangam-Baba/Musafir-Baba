@@ -27,14 +27,20 @@ authRouter.post("/verifyOtp", verifyOtp);
 authRouter.post("/verifyOtpForReset", verifyOtpForReset);
 authRouter.post("/forgotPassword", forgotPassword);
 authRouter.post("/refresh", refresh);
-authRouter.get("/me", me);
+authRouter.get(
+  "/me",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["user"]),
+  me,
+);
 
 authRouter.patch(
   "/update-password",
   isAuthenticated,
   validateSession,
   authorizedRoles(["user", "admin", "superadmin"]),
-  userUpdatePassword
+  userUpdatePassword,
 );
 
 authRouter.post(
@@ -42,7 +48,7 @@ authRouter.post(
   isAuthenticated,
   validateSession,
   authorizedRoles(["user"]),
-  logout
+  logout,
 );
 authRouter.patch("/reset-password", resetPassword);
 authRouter.get(
@@ -50,13 +56,13 @@ authRouter.get(
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  getAllUsers
+  getAllUsers,
 );
 authRouter.get(
   "/:id",
   isAuthenticated,
   authorizedRoles(["admin", "superadmin"]),
-  getAdminById
+  getAdminById,
 );
 
 authRouter.delete(
@@ -64,13 +70,13 @@ authRouter.delete(
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
-  blockUser
+  blockUser,
 );
 authRouter.patch(
   "/update/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["user", "admin", "superadmin"]),
-  updateAdmin
+  updateAdmin,
 );
 export default authRouter;

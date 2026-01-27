@@ -61,9 +61,9 @@ export const useAuthStore = create<AuthState>()(
             `${process.env.NEXT_PUBLIC_BASE_URL}/auth/refresh`,
             {
               method: "POST",
-              credentials: "include", // ⬅️ very important, sends HttpOnly cookie
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
-            }
+            },
           );
 
           if (!res.ok) throw new Error("Failed to refresh token");
@@ -78,7 +78,7 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (err) {
           console.error("Refresh failed", err);
-          get().clearAuth();
+          // get().clearAuth();
         }
       },
     }),
@@ -90,6 +90,6 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         name: state.name,
       }),
-    }
-  )
+    },
+  ),
 );
