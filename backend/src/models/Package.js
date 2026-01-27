@@ -115,7 +115,7 @@ const packageSchema = new mongoose.Schema(
     isFeatured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 packageSchema.pre("save", function (next) {
@@ -167,11 +167,15 @@ packageSchema.pre("findOneAndUpdate", async function (next) {
 
   // 🔹 Detect manual canonical edit
   const canonicalEdited =
-    update.canonicalUrl && update.canonicalUrl !== existing.canonicalUrl;
+    !!update.canonicalUrl &&
+    update.canonicalUrl.toString() !== existing.canonicalUrl.toString();
 
   // 🔹 Auto-generate canonical if needed
   if (
-    (categoryChanged || destinationChanged || slugChanged) &&
+    (categoryChanged ||
+      destinationChanged ||
+      slugChanged ||
+      update.canonicalUrl === "") &&
     !canonicalEdited
   ) {
     const categoryId = update.mainCategory ?? existing.mainCategory;

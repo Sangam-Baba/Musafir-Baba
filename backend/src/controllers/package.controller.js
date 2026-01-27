@@ -195,12 +195,12 @@ const getPackages = async (req, res) => {
         { description: { $regex: search, $options: "i" } },
       ];
     }
-    console.log(query);
+    // console.log(query);
     // ✅ Query execution
     const packages = await Package.find(query)
       .populate(
         "destination",
-        "name country state city slug coverImage gallery metaTitle metaDescription keywords"
+        "name country state city slug coverImage gallery metaTitle metaDescription keywords",
       )
       .populate("batch")
       .populate("mainCategory", "_id name slug")
