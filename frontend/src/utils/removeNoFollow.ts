@@ -1,3 +1,4 @@
+import { JSDOM } from "jsdom";
 export function fixInternalLinkRel(html: string) {
   return html.replace(/<a\s+[^>]*href="([^"]+)"[^>]*>/gi, (anchor, href) => {
     const isInternal = href.startsWith("https://musafirbaba.com");
@@ -14,4 +15,16 @@ export function fixInternalLinkRel(html: string) {
       return cleaned ? ` rel="${cleaned}"` : "";
     });
   });
+}
+
+export function optimizeTiptapHTML(html: string) {
+  const dom = new JSDOM(html);
+  const images = dom.window.document.querySelectorAll("img");
+
+  images.forEach((img: any) => {
+    img.setAttribute("loading", "lazy");
+    img.setAttribute("decoding", "async");
+  });
+
+  return dom.serialize();
 }

@@ -144,7 +144,21 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
       CustomLink.configure({
         openOnClick: false,
       }),
-      Image,
+      Image.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            loading: {
+              default: "lazy",
+              renderHTML: () => ({ loading: "lazy" }),
+            },
+            decoding: {
+              default: "async",
+              renderHTML: () => ({ decoding: "async" }),
+            },
+          };
+        },
+      }),
       Underline,
       TextAlign.configure({
         types: ["heading", "paragraph"],
