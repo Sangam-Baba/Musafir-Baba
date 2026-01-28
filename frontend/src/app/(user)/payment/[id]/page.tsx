@@ -309,6 +309,11 @@ export default function CheckoutPage() {
   const selectedBatch = Package?.batch.find(
     (batch: Batch) => batch._id === booking?.batchId,
   );
+  const travellersCount =
+    booking?.travellers?.quad +
+    booking?.travellers?.triple +
+    booking?.travellers?.double +
+    booking?.travellers?.child;
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-8 md:py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -341,13 +346,13 @@ export default function CheckoutPage() {
           ))}
         </div>
         {/* Header */}
-        <div className="mb-8 md:mb-12">
+        <div className="mb-2 md:mb-12">
           <div className="flex items-center gap-2 mb-2">
             {/* <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
               <Check className="w-5 h-5" />
             </div> */}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+          <h1 className="text-xl md:text-4xl font-bold text-foreground">
             Complete Your Booking
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -359,7 +364,7 @@ export default function CheckoutPage() {
           {/* Main Content */}
           <div className="lg:col-span-2">
             <div className="md:grid md:grid-cols-5 overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-              <div className="md:col-span-2  grid grid-cols-5 gap-4 md:gap-0">
+              <div className="md:col-span-2 grid grid-cols-5 gap-4 md:gap-0">
                 {/* Image Section */}
                 <div className="col-span-2 md:col-span-5 relative h-full">
                   {Package?.coverImage?.url ? (
@@ -379,33 +384,33 @@ export default function CheckoutPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0" />
                 </div>
                 <div className="md:hidden grid col-span-3">
-                  <h2 className="text-2xl font-semibold text-foreground leading-tight">
+                  <h2 className="text-lg font-semibold text-foreground leading-tight">
                     {Package?.title ?? "Travel Package"}
                   </h2>
                 </div>
 
                 {/* Content Section */}
               </div>
-              <div className="md:col-span-3 p-6 lg:p-8">
+              <div className="md:col-span-3 p-2 lg:p-8">
                 {/* Title */}
                 <div className="mb-6">
                   <h2 className="hidden md:block text-2xl font-semibold text-foreground leading-tight">
                     {Package?.title ?? "Travel Package"}
                   </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  {/* <p className="text-sm text-muted-foreground mt-1">
                     Booking summary
-                  </p>
+                  </p> */}
                 </div>
 
                 {/* Key Info */}
                 <div className="space-y-5">
                   {/* Dates */}
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-2">
                     <div className="mt-1 rounded-md bg-primary/10 p-2">
                       <Calendar className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      <p className="text-xs font-medium text-muted-foreground tracking-wide">
                         Travel Dates
                       </p>
                       <p className="text-sm font-medium text-foreground mt-1">
@@ -445,7 +450,7 @@ export default function CheckoutPage() {
                           Name
                         </span>
                         <span className="text-sm font-medium text-foreground">
-                          {user?.name ?? "Guest"}
+                          {user?.name ?? "Guest"}({travellersCount})
                         </span>
                       </div>
 
@@ -467,8 +472,8 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             {/* Summary Card */}
-            <Card className="border-border/50 shadow-sm sticky top-6 lg:top-8">
-              <CardContent className="p-6">
+            <Card className="border-border/50 shadow-sm sticky top-6 lg:top-8 p-0 md:p-5">
+              <CardContent className="p-2">
                 <h3 className="text-lg font-semibold text-foreground mb-6">
                   Order Summary
                 </h3>
