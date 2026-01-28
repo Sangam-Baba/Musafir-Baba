@@ -358,16 +358,16 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-              <div className="grid grid-cols-1 md:grid-cols-5">
+            <div className="md:grid md:grid-cols-5 overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
+              <div className="md:col-span-2  grid grid-cols-5 gap-4 md:gap-0">
                 {/* Image Section */}
-                <div className="md:col-span-2 relative h-64 md:h-full">
+                <div className="col-span-2 md:col-span-5 relative h-full">
                   {Package?.coverImage?.url ? (
                     <Image
                       src={Package.coverImage.url}
                       alt={Package.title}
                       fill
-                      className="object-cover"
+                      className="object-cover  "
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center bg-muted">
@@ -378,79 +378,84 @@ export default function CheckoutPage() {
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0" />
                 </div>
+                <div className="md:hidden grid col-span-3">
+                  <h2 className="text-2xl font-semibold text-foreground leading-tight">
+                    {Package?.title ?? "Travel Package"}
+                  </h2>
+                </div>
 
                 {/* Content Section */}
-                <div className="md:col-span-3 p-6 lg:p-8">
-                  {/* Title */}
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-semibold text-foreground leading-tight">
-                      {Package?.title ?? "Travel Package"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Booking summary
-                    </p>
+              </div>
+              <div className="md:col-span-3 p-6 lg:p-8">
+                {/* Title */}
+                <div className="mb-6">
+                  <h2 className="hidden md:block text-2xl font-semibold text-foreground leading-tight">
+                    {Package?.title ?? "Travel Package"}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Booking summary
+                  </p>
+                </div>
+
+                {/* Key Info */}
+                <div className="space-y-5">
+                  {/* Dates */}
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1 rounded-md bg-primary/10 p-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Travel Dates
+                      </p>
+                      <p className="text-sm font-medium text-foreground mt-1">
+                        {parseISO(batch?.startDate || "").toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}{" "}
+                        –{" "}
+                        {parseISO(batch?.endDate || "").toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Key Info */}
-                  <div className="space-y-5">
-                    {/* Dates */}
-                    <div className="flex items-start gap-4">
-                      <div className="mt-1 rounded-md bg-primary/10 p-2">
-                        <Calendar className="h-5 w-5 text-primary" />
+                  {/* Divider */}
+                  <div className="h-px bg-border" />
+
+                  {/* Traveller Info */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3">
+                      Traveller Information
+                    </h3>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                        <span className="text-sm text-muted-foreground">
+                          Name
+                        </span>
+                        <span className="text-sm font-medium text-foreground">
+                          {user?.name ?? "Guest"}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          Travel Dates
-                        </p>
-                        <p className="text-sm font-medium text-foreground mt-1">
-                          {parseISO(batch?.startDate || "").toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "2-digit",
-                              month: "long",
-                              year: "numeric",
-                            },
-                          )}{" "}
-                          –{" "}
-                          {parseISO(batch?.endDate || "").toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "2-digit",
-                              month: "long",
-                              year: "numeric",
-                            },
-                          )}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Divider */}
-                    <div className="h-px bg-border" />
-
-                    {/* Traveller Info */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-foreground mb-3">
-                        Traveller Information
-                      </h3>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-                          <span className="text-sm text-muted-foreground">
-                            Name
-                          </span>
-                          <span className="text-sm font-medium text-foreground">
-                            {user?.name ?? "Guest"}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-                          <span className="text-sm text-muted-foreground">
-                            Email
-                          </span>
-                          <span className="text-sm font-medium text-foreground">
-                            {user?.email ?? "guest@gmail.com"}
-                          </span>
-                        </div>
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                        <span className="text-sm text-muted-foreground">
+                          Email
+                        </span>
+                        <span className="text-sm font-medium text-foreground">
+                          {user?.email ?? "guest@gmail.com"}
+                        </span>
                       </div>
                     </div>
                   </div>
