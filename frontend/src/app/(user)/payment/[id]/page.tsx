@@ -383,10 +383,40 @@ export default function CheckoutPage() {
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/0" />
                 </div>
-                <div className="md:hidden grid col-span-3">
+                <div className="md:hidden grid col-span-3 gap-3">
                   <h2 className="text-lg font-semibold text-foreground leading-tight">
                     {Package?.title ?? "Travel Package"}
                   </h2>
+                  <div className="h-px bg-border" />
+                  <div className="flex items-start gap-2">
+                    <div className="mt-1 rounded-md bg-primary/10 p-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground tracking-wide">
+                        Travel Dates
+                      </p>
+                      <p className="text-xs font-medium text-foreground mt-1">
+                        {parseISO(batch?.startDate || "").toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}{" "}
+                        –{" "}
+                        {parseISO(batch?.endDate || "").toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Content Section */}
@@ -397,6 +427,7 @@ export default function CheckoutPage() {
                   <h2 className="hidden md:block text-2xl font-semibold text-foreground leading-tight">
                     {Package?.title ?? "Travel Package"}
                   </h2>
+
                   {/* <p className="text-sm text-muted-foreground mt-1">
                     Booking summary
                   </p> */}
@@ -405,7 +436,7 @@ export default function CheckoutPage() {
                 {/* Key Info */}
                 <div className="space-y-5">
                   {/* Dates */}
-                  <div className="flex items-start gap-2">
+                  <div className="hidden md:flex items-start gap-2">
                     <div className="mt-1 rounded-md bg-primary/10 p-2">
                       <Calendar className="h-5 w-5 text-primary" />
                     </div>
@@ -436,7 +467,7 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-border" />
+                  <div className="hidden md:blockh-px bg-border" />
 
                   {/* Traveller Info */}
                   <div>
