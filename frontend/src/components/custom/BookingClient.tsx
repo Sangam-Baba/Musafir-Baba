@@ -221,49 +221,50 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
     <div className="max-w-7xl mx-auto p-6 space-y-4">
       {/* <h2 className="text-2xl font-semibold mb-4">{pkg.title}</h2> */}
       <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-        <div className="relative p-5">
+        <div className="relative">
           <div className="flex gap-8 lg:gap-12 items-start md:items-center justify-between">
             {/* Left: Image + Content */}
-            <div className="flex gap-6 md:gap-8 items-start md:items-center w-full">
+            <div className="flex gap-1 md:gap-8 items-start md:items-center w-full">
               {/* Package Image */}
-              <div className="relative hidden md:flex flex-shrink-0">
+              <div className="relative w-[120px] md:w-[200px] lg:w-[240px] aspect-4/3 h-[-webkit-fill-available] flex-shrink-0">
                 <Image
                   src={pkg.coverImage?.url}
                   alt={pkg.title}
-                  width={400}
-                  height={300}
-                  className="w-[160px] h-[110px] md:w-[200px] md:h-[140px] lg:w-[240px] lg:h-[160px] object-cover rounded-2xl shadow-md"
-                  priority
+                  fill
+                  sizes="(max-width: 768px) 120px, (max-width: 1024px) 200px, 240px"
+                  className="object-cover rounded-r-lg shadow-md"
+                  unoptimized
                 />
-                {/* Elegant inner border + subtle shadow */}
-                <div className="absolute inset-0 rounded-2xl ring-2 ring-white/60 shadow-inner" />
-                <div className="absolute inset-0 rounded-2xl ring-1 ring-black/10" />
+
+                {/* Borders */}
+                <div className="absolute inset-0 rounded-r-lg ring-2 ring-white/60 shadow-inner" />
+                <div className="absolute inset-0 rounded-r-lg ring-1 ring-black/10" />
               </div>
 
               {/* Title & Details */}
-              <div className="flex flex-col justify-center space-y-4">
+              <div className="flex flex-col justify-center space-y-4 py-2">
                 {/* Main Title */}
-                <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
                   {pkg.title}
                 </h1>
 
                 {/* Location & Duration - Larger, better spaced */}
                 <div className="flex gap-6 text-gray-700">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-xl">
+                    <div className="md:p-2 bg-orange-100 rounded-xl">
                       <MapPin size={20} className="text-[#FE5300]" />
                     </div>
-                    <span className="text-lg font-medium">
+                    <span className="md:text-lg  font-medium">
                       {pkg.destination.state.charAt(0).toUpperCase() +
                         pkg.destination.state.slice(1)}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-xl">
+                    <div className="md:p-2 bg-orange-100 rounded-xl">
                       <Clock size={20} className="text-[#FE5300]" />
                     </div>
-                    <span className="text-lg font-medium">
+                    <span className="md:text-lg font-medium">
                       {pkg.duration.nights}N/{pkg.duration.days}D
                     </span>
                   </div>

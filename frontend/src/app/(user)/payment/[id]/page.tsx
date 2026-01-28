@@ -481,7 +481,8 @@ export default function CheckoutPage() {
                           Name
                         </span>
                         <span className="text-sm font-medium text-foreground">
-                          {user?.name ?? "Guest"}({travellersCount})
+                          {user?.name ?? "Guest"}
+                          {travellersCount > 1 && " +" + (travellersCount - 1)}
                         </span>
                       </div>
 
