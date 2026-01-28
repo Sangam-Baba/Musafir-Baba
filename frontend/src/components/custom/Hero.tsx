@@ -1,7 +1,7 @@
-"use client";
+// "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 import React from "react";
 
 type Align = "left" | "center" | "right";
@@ -56,7 +56,13 @@ export default function Hero({
           alt={title}
           fill
           priority
-          sizes="100vw"
+          fetchPriority="high"
+          sizes="
+          (max-width: 480px) 100vw,
+          (max-width: 768px) 100vw,
+          (max-width: 1200px) 1200px,
+          1600px
+        "
           className="object-cover"
         />
         {/* Overlay */}
@@ -68,12 +74,12 @@ export default function Hero({
 
       {/* Content */}
       <div
-        className={`absolute md:mt-25   z-10 h-full flex items-center ${
+        className={`absolute md:mt-25 z-10 h-full flex items-center ${
           align === "left"
             ? "justify-start text-left"
             : align === "right"
-            ? "justify-end text-right"
-            : "justify-center text-center"
+              ? "justify-end text-right"
+              : "justify-center text-center"
         }`}
       >
         <div
@@ -81,35 +87,35 @@ export default function Hero({
             align === "center" ? "w-full max-w-5xl" : "max-w-2xl"
           }`}
         >
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+          <h1
+            // initial={{ opacity: 0, y: 16 }}
+            // animate={{ opacity: 1, y: 0 }}
+            // transition={{ duration: 0.5, ease: "easeOut" }}
             className="text-white text-xl sm:text-2xl md:text-5xl font-bold tracking-tight text-center"
           >
             {title}
-          </motion.h1>
+          </h1>
 
           {description && (
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+            <p
+              // initial={{ opacity: 0, y: 12 }}
+              // animate={{ opacity: 1, y: 0 }}
+              // transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
               className="mt-3 md:mt-4  text-white/90 text-sm md:text-base  text-center hidden md:block"
             >
               {description}
-            </motion.p>
+            </p>
           )}
 
           {children && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.18, ease: "easeOut" }}
+            <div
+              // initial={{ opacity: 0, y: 10 }}
+              // animate={{ opacity: 1, y: 0 }}
+              // transition={{ duration: 0.45, delay: 0.18, ease: "easeOut" }}
               className="mt-5 flex flex-wrap gap-3"
             >
               {children}
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
