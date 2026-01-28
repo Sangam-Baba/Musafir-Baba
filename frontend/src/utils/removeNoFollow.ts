@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+// import { JSDOM } from "jsdom";
 export function fixInternalLinkRel(html: string) {
   return html.replace(/<a\s+[^>]*href="([^"]+)"[^>]*>/gi, (anchor, href) => {
     const isInternal = href.startsWith("https://musafirbaba.com");
@@ -17,14 +17,14 @@ export function fixInternalLinkRel(html: string) {
   });
 }
 
-export function optimizeTiptapHTML(html: string) {
-  const dom = new JSDOM(html);
-  const images = dom.window.document.querySelectorAll("img");
+// export function optimizeTiptapHTML(html: string) {
+//   const dom = new JSDOM(html);
+//   const images = dom.window.document.querySelectorAll("img");
 
-  images.forEach((img: any) => {
-    img.setAttribute("loading", "lazy");
-    img.setAttribute("decoding", "async");
-  });
+//   images.forEach((img: any) => {
+//     img.setAttribute("loading", "lazy");
+//     img.setAttribute("decoding", "async");
+//   });
 
-  return dom.serialize();
-}
+//   return dom.serialize();
+// }
