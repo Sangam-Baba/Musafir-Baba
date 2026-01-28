@@ -324,7 +324,9 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                         <TabsTrigger
                           key={month}
                           value={month}
-                          className="hover:bg-[#FE5300]/80"
+                          className="border border-[#FE5300]
+      data-[state=active]:bg-[#FE5300]
+      data-[state=active]:text-white"
                         >
                           {month}
                         </TabsTrigger>
