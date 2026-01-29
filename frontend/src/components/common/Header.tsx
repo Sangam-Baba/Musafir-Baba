@@ -102,6 +102,7 @@ export default function Header() {
                 src={logo}
                 alt="Musafir Baba Logo"
                 className="w-40 h-auto"
+                unoptimized
                 priority
               />
             </Link>

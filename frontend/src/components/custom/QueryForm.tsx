@@ -86,7 +86,7 @@ const verifyOtp = async (email: string, otp: string) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),
-    }
+    },
   );
   if (!res.ok) {
     const err = await res.json();
@@ -157,14 +157,14 @@ export default function QueryForm() {
   // Create country list
   const countryList = countryCodes.customList(
     "countryNameEn",
-    "{countryCode} +{countryCallingCode}"
+    "{countryCode} +{countryCallingCode}",
   );
   // console.log("countryList :", countryList);
   const countryOptions = Object.entries(countryList).map(
     ([countryKey, value]) => ({
       label: `${countryKey} ${value}`,
       value,
-    })
+    }),
   );
   // console.log("countryOptions :", countryOptions);
   return (
@@ -172,7 +172,9 @@ export default function QueryForm() {
       <CardContent className="space-y-6 py-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h4 className="text-2xl font-bold text-gray-900">Get a Free Quote</h4>
+          <h4 className="text-lg md:text-2xl font-bold text-gray-900">
+            Get a Free Quote
+          </h4>
           <div className="w-14 h-1 bg-orange-500 mx-auto rounded-full" />
           <p className="text-gray-600 text-sm">
             Share your trip details — get a custom plan instantly
@@ -247,7 +249,7 @@ export default function QueryForm() {
                         if (e.target.value.length === 6) {
                           handleVerifyOtp(
                             form.getValues("email"),
-                            e.target.value
+                            e.target.value,
                           );
                         }
                       }}
@@ -269,7 +271,7 @@ export default function QueryForm() {
               name="phone"
               render={({ field }) => {
                 const selectedCountry = countryOptions.find(
-                  (c) => c.value === form.watch("countryCode")
+                  (c) => c.value === form.watch("countryCode"),
                 );
 
                 return (

@@ -10,7 +10,7 @@ import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
-import { Clock, Share2, User } from "lucide-react";
+import { Clock, Folders, Share2, User } from "lucide-react";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
@@ -158,7 +158,10 @@ export default async function BlogDetailPage({
                   {blog.author?.name}
                 </Link>
               </span>
-              <span>Category: {blog.category.name}</span>
+              <span className="flex gap-1">
+                <Folders size={18} />
+                {blog.category.name}
+              </span>
               <span>
                 📅{" "}
                 {new Date(blog.createdAt).toLocaleDateString("en-US", {
