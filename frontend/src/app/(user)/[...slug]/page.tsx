@@ -12,7 +12,7 @@ export const getWebPageBySlug = async (slug: string) => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}`,
     {
       next: { revalidate: 120 },
-    }
+    },
   );
 
   if (!res.ok) return notFound();
@@ -55,7 +55,7 @@ export async function getRelatedWebpageBySlug(slug: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/related/${slug}`,
     {
       next: { revalidate: 120 },
-    }
+    },
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -67,7 +67,7 @@ export async function getTrandingPkg(slug: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/related-packages/${slug}`,
     {
       next: { revalidate: 120 },
-    }
+    },
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -81,11 +81,12 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const page = await getWebPageBySlug(fullSlug);
   const relatedPage = await getRelatedWebpageBySlug(slug[slug.length - 1]);
   const trandingPkg = await getTrandingPkg(slug[0]);
-  console.log("best saller", trandingPkg);
+  // console.log("best saller", trandingPkg);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);
   const breadcrumbSchema = getBreadcrumbSchema(page.fullSlug);
-  console.log("this is realetd page", relatedPage);
+  // console.log("this is realetd page", relatedPage);
+  // console.log(JSON.stringify(page.howToSchema));
   return (
     <>
       <MainWebPage page={page} relatedPage={relatedPage} pkg={trandingPkg} />
@@ -103,6 +104,14 @@ async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
+      {page?.howToSchema && (
+        <Script
+          key="howToSchema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: page.howToSchema }}
+        />
+      )}
+
       <Script
         key="breadcrumb-schema"
         type="application/ld+json"

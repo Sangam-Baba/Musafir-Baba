@@ -23,6 +23,7 @@ import { getReviewsByIds } from "../../../holidays/new/page";
 import { WebpageFormData } from "../../new/page";
 import { getParents } from "../../new/page";
 import SmallEditor from "@/components/admin/SmallEditor";
+import { Textarea } from "@/components/ui/textarea";
 
 const getWebpage = async (id: string) => {
   const res = await fetch(
@@ -80,6 +81,7 @@ export default function UpdateWebpage() {
     keywords: [],
     reviews: [],
     schemaType: [],
+    howToSchema: "",
     status: "published",
     excerpt: "",
     faqs: [],
@@ -254,6 +256,17 @@ export default function UpdateWebpage() {
               />
             </p>
           ))}
+        </div>
+        <div className="space-y-2">
+          <p className="font-semibold mb-2">How to Schema</p>
+          <Textarea
+            {...form.register("howToSchema")}
+            placeholder={`{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+}`}
+            className="w-full border rounded p-2"
+          />
         </div>
 
         <div className="space-y-2">

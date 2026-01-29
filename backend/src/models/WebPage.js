@@ -47,6 +47,7 @@ const webPageSchema = new mongoose.Schema(
         ],
       },
     ],
+    howToSchema: String,
     keywords: {
       type: [String],
       index: true,

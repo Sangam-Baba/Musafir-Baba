@@ -18,6 +18,7 @@ import { getReviewsByIds, Reviews } from "../../holidays/new/page";
 import { deleteReview } from "../../holidays/new/page";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import SmallEditor from "@/components/admin/SmallEditor";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface WebpageFormData {
   title: string;
@@ -31,6 +32,7 @@ export interface WebpageFormData {
   keywords?: string[];
   reviews?: string[];
   schemaType?: string[];
+  howToSchema?: string;
   coverImage?: {
     url?: string;
     public_id?: string;
@@ -107,6 +109,7 @@ export default function CreateWebpage() {
     keywords: [],
     reviews: [],
     schemaType: [],
+    howToSchema: "",
     status: "published",
     excerpt: "",
     faqs: [],
@@ -264,6 +267,17 @@ export default function CreateWebpage() {
               />
             </p>
           ))}
+        </div>
+        <div className="space-y-2">
+          <p className="font-semibold mb-2">How to Schema</p>
+          <Textarea
+            {...form.register("howToSchema")}
+            placeholder={`{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+}`}
+            className="w-full border rounded p-2"
+          />
         </div>
 
         <div className="space-y-2">
