@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import CommentPage from "@/components/custom/Comment";
 import NewsCommentPage from "@/components/custom/NewsComment";
 
-interface Comment {
+export interface Comment {
   _id: string;
   blogId: string;
   newsId: string;
@@ -115,7 +115,7 @@ export function BlogComments({
   const tree = buildTree(initialComments);
 
   return (
-    <section className="mt-10 w-full">
+    <section className="mt-10 w-full overflow-hidden">
       <h2 className="text-xl font-semibold mb-4">
         Comments ({initialComments.length})
       </h2>

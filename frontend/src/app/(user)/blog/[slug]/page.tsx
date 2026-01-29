@@ -17,6 +17,7 @@ import { notFound } from "next/navigation";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import LatestBlog from "@/components/common/LatestBlog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CommentDailog } from "@/components/custom/CommentDailog";
 // Fetch blog by slug
 async function getBlog(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
@@ -243,7 +244,12 @@ export default async function BlogDetailPage({
           <CategorySidebar />
           {/* Comments Section */}
           <section className="mt-10 w-full">
-            <BlogComments
+            {/* <BlogComments
+              blogId={blog._id}
+              initialComments={comments}
+              type="blog"
+            /> */}
+            <CommentDailog
               blogId={blog._id}
               initialComments={comments}
               type="blog"
