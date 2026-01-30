@@ -96,92 +96,86 @@ function VisaClientPage({ visa }: { visa: VisaInterface[] }) {
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5"></div>
 
       <div className="container lg:max-w-7xl  mx-auto py-10 px-8 space-y-4">
-        <div className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border md:border-none rounded-xl shadow-sm">
-          {/* Icon */}
-          <div className="flex items-center gap-2">
-            <FilterIcon size={22} className="text-[#FE5300]" />
-            <span className="font-semibold text-gray-700 md:hidden">
-              Filters
-            </span>
-          </div>
-
-          {/* Country Search */}
-          <Input
-            type="text"
-            name="country"
-            placeholder="Search country..."
-            value={search.country}
-            onChange={handleChange}
-            className="w-full md:max-w-[300px]"
-          />
-
-          {/* Visa Type Dropdown */}
-          <div className="w-full md:max-w-[300px]">
-            <Select
-              value={search.visaType}
-              onValueChange={(value) =>
-                setSearch((prev) => ({ ...prev, visaType: value }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Visa Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Visa Type</SelectLabel>
-                  <SelectItem value="E-Visa">E-Visa</SelectItem>
-                  <SelectItem value="DAC">DAC</SelectItem>
-                  <SelectItem value="EVOA">EVOA</SelectItem>
-                  <SelectItem value="Sticker">Sticker</SelectItem>
-                  <SelectItem value="ETA">ETA</SelectItem>
-                  <SelectItem value="PAR">PAR</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Price Slider */}
-          <div className="flex flex-col w-full md:max-w-[250px]">
-            <Label className="text-gray-500 text-sm">
-              Budget:{" "}
-              <span className="font-semibold text-[#FE5300]">
-                ₹{search.maxPrice.toLocaleString()}
-              </span>
-            </Label>
+        <div className="w-full grid md:grid-cols-2 gap-2 items-center  p-4 border md:border-none rounded-xl shadow-sm">
+          <div className="grid grid-cols-3 gap-2">
+            {/* Visa Type Dropdown */}
+            <div className="w-full col-span-1 md:max-w-[300px]">
+              <Select
+                value={search.visaType}
+                onValueChange={(value) =>
+                  setSearch((prev) => ({ ...prev, visaType: value }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Visa Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Visa Type</SelectLabel>
+                    <SelectItem value="E-Visa">E-Visa</SelectItem>
+                    <SelectItem value="DAC">DAC</SelectItem>
+                    <SelectItem value="EVOA">EVOA</SelectItem>
+                    <SelectItem value="Sticker">Sticker</SelectItem>
+                    <SelectItem value="ETA">ETA</SelectItem>
+                    <SelectItem value="PAR">PAR</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Country Search */}
             <Input
-              type="range"
-              name="maxPrice"
+              type="text"
+              name="country"
+              placeholder="Search country..."
+              value={search.country}
               onChange={handleChange}
-              value={search.maxPrice}
-              min={0}
-              max={35000}
-              className="cursor-pointer accent-[#FE5300]"
+              className="w-full col-span-2 md:max-w-[300px]"
             />
           </div>
+          <div className="grid grid-cols-4 gap-2 items-center">
+            {/* Price Slider */}
+            <div className="flex flex-col col-span-3 w-full md:max-w-[250px]">
+              <Label className="text-gray-500 text-sm">
+                Budget:{" "}
+                <span className="font-semibold text-[#FE5300]">
+                  ₹{search.maxPrice.toLocaleString()}
+                </span>
+              </Label>
+              <Input
+                type="range"
+                name="maxPrice"
+                onChange={handleChange}
+                value={search.maxPrice}
+                min={0}
+                max={35000}
+                className="cursor-pointer accent-[#FE5300]"
+              />
+            </div>
 
-          {/* Reset Button */}
-          <Button
-            type="button"
-            onClick={() => {
-              const reset = {
-                country: "",
-                visaType: "",
-                minPrice: 0,
-                maxPrice: 35000,
-              };
-              setSearch(reset);
-              setFilteredVisas(visa);
-            }}
-            className="
-      w-full md:w-auto 
+            {/* Reset Button */}
+            <Button
+              type="button"
+              onClick={() => {
+                const reset = {
+                  country: "",
+                  visaType: "",
+                  minPrice: 0,
+                  maxPrice: 35000,
+                };
+                setSearch(reset);
+                setFilteredVisas(visa);
+              }}
+              className="
+      w-full md:w-auto col-span-1
       font-semibold 
       bg-[#FF5300] hover:bg-[#FE5300] 
       text-white 
       rounded-lg px-5 py-4
     "
-          >
-            Reset
-          </Button>
+            >
+              Reset
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

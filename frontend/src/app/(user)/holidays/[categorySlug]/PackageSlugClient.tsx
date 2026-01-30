@@ -111,79 +111,81 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
       {/* FIlter */}
       <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-end my-8">
         {/* filter */}
-        <div className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border md:border-md border-[#FE5300] rounded-xl shadow-sm">
-          <div className="w-full md:max-w-[150px]">
-            <Select
-              value={filter.sort}
-              onValueChange={(value) =>
-                setFilter((prev) => ({ ...prev, sort: value }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort ↑ ↓" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Sort By</SelectLabel>
+        <div className="w-full grid md:grid-cols-5 gap-2 items-center p-4 border md:border-md border-[#FE5300] rounded-xl shadow-sm">
+          <div className="grid grid-cols-3 gap-2 md:col-span-2">
+            <div className="w-full col-span-1 md:max-w-[150px]">
+              <Select
+                value={filter.sort}
+                onValueChange={(value) =>
+                  setFilter((prev) => ({ ...prev, sort: value }))
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sort ↑ ↓" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Sort By</SelectLabel>
 
-                  <SelectItem key={1} value="desc">
-                    High to Low
-                  </SelectItem>
-                  <SelectItem key={2} value="asc">
-                    Low to High
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Country Search */}
-          <Input
-            type="text"
-            name="search"
-            placeholder="Search country, state..."
-            value={filter.search}
-            onChange={handleChange}
-            className="w-full md:max-w-[300px]"
-          />
-
-          {/* Price Slider */}
-          <div className="flex flex-col w-full md:max-w-[250px]">
-            <Label className="text-black-500 text-sm whitespace-nowrap">
-              Budget:{" "}
-              <span className="font-semibold text-[#FE5300]">
-                ₹{filter.price.toLocaleString()}
-              </span>{" "}
-              per person
-            </Label>
+                    <SelectItem key={1} value="desc">
+                      High to Low
+                    </SelectItem>
+                    <SelectItem key={2} value="asc">
+                      Low to High
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Country Search */}
             <Input
-              type="range"
-              name="price"
+              type="text"
+              name="search"
+              placeholder="Search country, state..."
+              value={filter.search}
               onChange={handleChange}
-              value={filter.price}
-              min={0}
-              max={500000}
-              className="cursor-pointer accent-[#FE5300]"
+              className="w-full col-span-2 md:max-w-[300px]"
             />
           </div>
-          {/* Duration Slider */}
-          <div className="flex flex-col w-full md:max-w-[150px]">
-            <Label className="text-black-500 text-sm">
-              Duration:{" "}
-              <span className="font-semibold text-[#FE5300]">
-                {filter.duration.toLocaleString()}
-              </span>{" "}
-              Days
-            </Label>
-            <Input
-              type="range"
-              name="duration"
-              value={filter.duration}
-              onChange={handleChange}
-              min={1}
-              max={25}
-              className="cursor-pointer accent-[#FE5300]"
-            />
+          <div className="grid grid-cols-2 gap-2 md:col-span-2">
+            {/* Price Slider */}
+            <div className="flex flex-col w-full md:max-w-[250px]">
+              <Label className="text-black-500 text-sm whitespace-nowrap">
+                Budget:{" "}
+                <span className="font-semibold text-[#FE5300]">
+                  ₹{filter.price.toLocaleString()}
+                </span>{" "}
+                -/person
+              </Label>
+              <Input
+                type="range"
+                name="price"
+                onChange={handleChange}
+                value={filter.price}
+                min={0}
+                max={500000}
+                className="cursor-pointer accent-[#FE5300]"
+              />
+            </div>
+            {/* Duration Slider */}
+            <div className="flex flex-col w-full md:max-w-[150px] items-end">
+              <Label className="text-black-500 text-sm">
+                Duration:{" "}
+                <span className="font-semibold text-[#FE5300]">
+                  {filter.duration.toLocaleString()}
+                </span>{" "}
+                Days
+              </Label>
+              <Input
+                type="range"
+                name="duration"
+                value={filter.duration}
+                onChange={handleChange}
+                min={1}
+                max={25}
+                className="cursor-pointer accent-[#FE5300]"
+              />
+            </div>
           </div>
 
           {/* Reset Button */}
@@ -204,7 +206,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
       font-semibold 
       bg-[#FF5300] hover:bg-[#FE5300] 
       text-white 
-      rounded-lg px-5 py-4
+      rounded-lg px-5 py-4 md:col-span-1
     "
           >
             Reset
