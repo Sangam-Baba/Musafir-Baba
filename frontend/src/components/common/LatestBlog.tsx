@@ -45,8 +45,7 @@ function LatestBlog({ blogs, title, type, url }: ListBlogSidebarProps) {
               alt={blog.coverImage.alt || blog.title}
               width={120}
               height={80}
-              sizes="120px"
-              className="rounded-md object-cover border border-gray-200"
+              className="rounded-md w-[120px] h-20 object-cover border border-gray-200"
             />
             <CardContent className="p-2">
               <Link

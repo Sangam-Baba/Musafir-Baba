@@ -180,7 +180,7 @@ const getRelatedPages = async (req, res) => {
 
     const finalrelated = related
       .filter((page) => page._id !== webpage._id)
-      .slice(0, 5);
+      .slice(0, 10);
 
     return res.status(200).json({ success: true, data: finalrelated });
   } catch (error) {

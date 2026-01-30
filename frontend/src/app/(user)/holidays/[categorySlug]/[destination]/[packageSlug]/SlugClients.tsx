@@ -64,7 +64,7 @@ function SlugClients({
   const tabs: { key: TabKey; label: string }[] = [
     { key: "description", label: "Description" },
     { key: "highlights", label: "Highlights" },
-    { key: "itineraries", label: "Itineraries" },
+    { key: "itineraries", label: "Itinerary" },
     { key: "includeexclude", label: "Includes & Excludes" },
     { key: "faqs", label: "FAQs" },
   ];

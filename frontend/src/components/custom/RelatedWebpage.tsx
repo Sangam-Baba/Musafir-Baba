@@ -33,7 +33,7 @@ function RelatedWebpage({ blogs, title, type }: ListBlogSidebarProps) {
         </div>
       </div>
       <div className=" flex flex-col gap-4 px-2">
-        {blogs.slice(0, 5).map((blog) => (
+        {blogs.slice(0, 10).map((blog) => (
           <Card
             key={blog._id}
             className="flex flex-row items-center px-2 py-2 gap-2 border-none shadow-none "
@@ -43,7 +43,7 @@ function RelatedWebpage({ blogs, title, type }: ListBlogSidebarProps) {
               alt={blog.coverImage.alt || blog.title}
               width={1200}
               height={800}
-              className="rounded-md w-[120px] h-[80px] object-cover border border-gray-200"
+              className="rounded-md w-[120px] h-20 object-cover border border-gray-200"
             />
             <CardContent className="p-2">
               <Link

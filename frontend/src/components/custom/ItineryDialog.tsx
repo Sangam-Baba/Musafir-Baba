@@ -80,7 +80,7 @@ export function ItineryDialog({
           size={"sm"}
           className="bg-[#FE5300] hover:bg-[#e04a00] text-white hover:text-white text-xs md:text-sm"
         >
-          Download Itinerary
+          Itinerary
           <Download className="w-2 h-2 md:w-5 md:h-5 ml-2" />
         </Button>
       </DialogTrigger>

@@ -18,7 +18,7 @@ export default function Breadcrumb() {
 
   return (
     <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-2">
-      <ol className="flex items-center flex-wrap">
+      <ol className="flex items-center flex-wrap ">
         <li>
           <Link
             href="/"
@@ -33,15 +33,17 @@ export default function Breadcrumb() {
           return (
             <li
               key={`${bc.href}-${i}`}
-              className="flex items-center gap-1 z-10"
+              className="flex gap-1 z-10 items-baseline"
             >
               <ChevronRightIcon
                 size={13}
                 color="#FE5300"
-                className="pointer-events-none"
+                className="pointer-events-none translate-y-[1px]"
               />
               {i === breadcrumbs.length - 1 ? (
-                <span className="text-gray-800 text-md ">{bc.name} </span>
+                <span className="text-gray-800 text-md ">
+                  {bc.name.substring(0, 35)}{" "}
+                </span>
               ) : (
                 <Link
                   href={bc.href}

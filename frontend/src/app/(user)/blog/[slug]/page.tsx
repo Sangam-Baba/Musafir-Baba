@@ -144,7 +144,7 @@ export default async function BlogDetailPage({
 
   return (
     <div>
-      <div className="flex flex-col mx-auto max-w-4xl px-12 mt-5">
+      <div className="w-full mx-auto max-w-4xl px-12 mt-5">
         <Breadcrumb />
       </div>
       <div className="flex flex-col gap-8 mx-auto max-w-4xl py-4 px-12">
@@ -194,7 +194,7 @@ export default async function BlogDetailPage({
             </div>
           </header>
           {/* Cover Image */}
-          <div className="relative w-full h-80 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+          <div className="relative w-full h-40 md:h-96 rounded-2xl overflow-hidden shadow-lg">
             <Image
               src={blog.coverImage.url}
               alt={blog.title}
@@ -273,7 +273,7 @@ export default async function BlogDetailPage({
       data-[state=active]:bg-[#FE5300]
       data-[state=active]:text-white"
               >
-                Tranding Blog
+                Trending Blog
               </TabsTrigger>
             </TabsList>
             <TabsContent value="latest">
@@ -287,7 +287,7 @@ export default async function BlogDetailPage({
             <TabsContent value="trending">
               <LatestBlog
                 blogs={filteredTrandingBlogs}
-                title="Tranding Blog"
+                title="Trending Blog"
                 type="trending"
                 url="blog"
               />
