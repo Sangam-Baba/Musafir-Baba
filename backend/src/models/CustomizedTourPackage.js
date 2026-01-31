@@ -57,6 +57,10 @@ const customizedTourPackageSchema = new mongoose.Schema(
       days: { type: Number },
       nights: { type: Number },
     },
+    time: {
+      startTime: String,
+      endTime: String,
+    },
     highlight: [
       {
         title: { type: String },
@@ -76,14 +80,14 @@ const customizedTourPackageSchema = new mongoose.Schema(
     ],
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 customizedTourPackageSchema.pre("save", async function (next) {
   this.slug = slugify(this.slug || this.title, { lower: true, strict: true });
   if (!this.canonicalUrl) {
     const destination = await Destination.findById(this.destination).select(
-      "state"
+      "state",
     );
     this.canonicalUrl = `/holidays/customised-tour-packages/${destination.state}/${this.slug}`;
   }
@@ -116,11 +120,12 @@ customizedTourPackageSchema.pre("findOneAndUpdate", async function (next) {
   }
 
   update.slug = finalSlug;
+
   this.setUpdate(update);
   next();
 });
 
 export const CustomizedTourPackage = mongoose.model(
   "CustomizedTourPackage",
-  customizedTourPackageSchema
+  customizedTourPackageSchema,
 );

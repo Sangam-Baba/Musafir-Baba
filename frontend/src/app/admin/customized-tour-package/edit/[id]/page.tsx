@@ -46,7 +46,7 @@ interface Destination {
 async function UpdatePackage(
   values: CustomizedPackageValues,
   accessToken: string,
-  id: string
+  id: string,
 ) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}`,
@@ -57,7 +57,7 @@ async function UpdatePackage(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(values),
-    }
+    },
   );
 
   if (!res.ok) {
@@ -70,7 +70,7 @@ async function UpdatePackage(
 
 async function getPackage(id: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}`,
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
   const data = await res.json();
@@ -173,7 +173,7 @@ export default function CreatePackagePage() {
     },
     onError: (error: unknown) => {
       toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
+        error instanceof Error ? error.message : "Something went wrong",
       );
     },
   });
@@ -195,7 +195,7 @@ export default function CreatePackagePage() {
     toast.success("Reviews updated successfully");
     const updated = await getReviewsByIds(accessToken, [id]);
     setReviewsDetails((prev) =>
-      prev.map((b) => (b._id === id ? updated[0] : b))
+      prev.map((b) => (b._id === id ? updated[0] : b)),
     );
     setShowReviewsModal(false);
     setEditReviewsId(null);
@@ -298,6 +298,41 @@ export default function CreatePackagePage() {
                         type="number"
                         placeholder="Enter Nights Duration"
                         {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="time.startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Time *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="time.endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Time</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />

@@ -9,7 +9,7 @@ import { useCustomizedBookingStore } from "@/store/useCutomizedBookingStore";
 import Hero from "@/components/custom/Hero";
 import { Loader } from "@/components/custom/loader";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import { Clock, MapPin, ArrowBigRight } from "lucide-react";
+import { Clock, MapPin, ArrowBigRight, Highlighter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,8 @@ import { EffectCards } from "swiper/modules";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/effect-cards";
+import ReadMore from "@/components/common/ReadMore";
+import { BlogContent } from "@/components/custom/BlogContent";
 interface Plan {
   _id: string;
   title: string;
@@ -204,13 +206,15 @@ export default function CustomizedPackageClient({
                       onClick={() => handleSelectPlan(plan)}
                       className="flex justify-between w-full"
                     >
-                      <h2 className="text-2xl font-bold">{plan.title}</h2>
-                      <div className="text-right">
+                      <h2 className="text-lg md:text-2xl font-bold">
+                        {plan.title}
+                      </h2>
+                      {/* <div className="text-right">
                         <p>
                           {formData.noOfPeople} Adults × ₹{plan.price}
                         </p>
                         <p>₹{formData.noOfPeople * plan.price}</p>
-                      </div>
+                      </div> */}
                     </AccordionTrigger>
 
                     <AccordionContent className="text-justify pt-3">
@@ -329,7 +333,7 @@ export default function CustomizedPackageClient({
 
                 {/* Accordion Content */}
                 <AccordionContent className="text-gray-600 text-sm ">
-                  {item.description}
+                  <BlogContent html={item.description} />
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -342,8 +346,9 @@ export default function CustomizedPackageClient({
           <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
           {pkg.highlight.map((item: Highlight, i: number) => (
             <div key={i} className="flex  gap-2  p-4">
-              <ArrowBigRight className="w-6 h-6 text-[#FE5300]" />
-              <p className="text-lg font-semibold">{item.title}</p>
+              <Highlighter className="w-6 h-6 text-[#FE5300]" />
+              {/* <ArrowBigRight className="w-6 h-6 text-[#FE5300]" /> */}
+              <p className=" ">{item.title}</p>
             </div>
           ))}
         </div>
@@ -352,7 +357,8 @@ export default function CustomizedPackageClient({
         <div className="w-full mt-8">
           <h2 className="text-2xl font-bold">About This Tour</h2>
           <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
-          {pkg.description}
+          <ReadMore content={pkg.description} />
+          {/* {pkg.description} */}
         </div>
 
         {/* Show related packages under this category */}

@@ -60,6 +60,7 @@ export interface CustomizedPackageValues {
   coverImage?: Image;
   gallery?: Image[];
   duration: { days: number; nights: number };
+  time?: { startTime: string; endTime: string };
   metaTitle?: string;
   metaDescription?: string;
   canonicalUrl?: string;
@@ -87,7 +88,7 @@ interface Destination {
 }
 async function CreatePackage(
   values: CustomizedPackageValues,
-  accessToken: string
+  accessToken: string,
 ) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage`,
@@ -98,7 +99,7 @@ async function CreatePackage(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(values),
-    }
+    },
   );
 
   if (!res.ok) {
@@ -179,7 +180,7 @@ export default function CreatePackagePage() {
     },
     onError: (error: unknown) => {
       toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
+        error instanceof Error ? error.message : "Something went wrong",
       );
     },
   });
@@ -201,7 +202,7 @@ export default function CreatePackagePage() {
     toast.success("Reviews updated successfully");
     const updated = await getReviewsByIds(accessToken, [id]);
     setReviewsDetails((prev) =>
-      prev.map((b) => (b._id === id ? updated[0] : b))
+      prev.map((b) => (b._id === id ? updated[0] : b)),
     );
     setShowReviewsModal(false);
     setEditReviewsId(null);
@@ -304,6 +305,43 @@ export default function CreatePackagePage() {
                         type="number"
                         placeholder="Enter Nights Duration"
                         {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Time */}
+              {/* <div className="flex justify-between gap-4"> */}
+              <FormField
+                control={form.control}
+                name="time.startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Time *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="time.endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Time</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
