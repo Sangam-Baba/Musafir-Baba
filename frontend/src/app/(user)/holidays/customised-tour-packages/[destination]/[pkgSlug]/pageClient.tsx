@@ -78,6 +78,10 @@ interface Package {
     days: number;
     nights: number;
   };
+  time?: {
+    startTime: string;
+    endTime: string;
+  };
   highlight: Highlight[];
   itinerary: Itinerary[];
   faqs: Faqs[];
@@ -176,7 +180,14 @@ export default function CustomizedPackageClient({
           </span>
           <span className="flex items-center gap-1">
             <Clock color="#FE5300" size={14} />
-            {pkg.duration.nights}N/{pkg.duration.days}D
+            {pkg.duration.nights > 0
+              ? `${pkg.duration.nights}N/${pkg.duration.days}D`
+              : `${pkg.duration.days} Days`}{" "}
+            {pkg.time?.startTime && (
+              <span>
+                from {pkg.time?.startTime} to {pkg.time?.endTime}
+              </span>
+            )}
           </span>
         </div>
       </div>

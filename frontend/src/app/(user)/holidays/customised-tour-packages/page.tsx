@@ -31,6 +31,10 @@ export interface CustomizedPackageInterface {
     days: number;
     nights: number;
   };
+  time?: {
+    startTime: string;
+    endTime: string;
+  };
   destination: Destination;
   status: "draft" | "published";
 }
@@ -47,7 +51,7 @@ export const getAllCustomizedPackages = async () => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage`,
     {
       cache: "no-cache",
-    }
+    },
   );
   if (!res.ok) {
     throw new Error("Failed to fetch Packages");
@@ -131,7 +135,7 @@ async function CustomizedPackagePage() {
     "https://musafirbaba.com/holidays/customised-tour-packages",
     AllPackages.map((pkg: CustomizedPackageInterface) => ({
       url: `https://musafirbaba.com/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`,
-    }))
+    })),
   );
   return (
     <section className="w-full mb-12">

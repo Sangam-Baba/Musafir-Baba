@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomizedPackageInterface } from "./page";
+import { calculateHours } from "@/utils/readingTime";
 function CustomizedTourClient({
   allPkgs,
 }: {
@@ -212,6 +213,16 @@ function CustomizedTourClient({
                         </span>
                       ) : (
                         <span>{pkg.duration?.days}D</span>
+                      )}
+                      {pkg.time?.startTime && (
+                        <span>
+                          ,{" "}
+                          {calculateHours(
+                            pkg.time?.startTime,
+                            pkg.time?.endTime,
+                          )}{" "}
+                          hrs
+                        </span>
                       )}
                     </div>
                     <div className="flex items-center gap-1">
