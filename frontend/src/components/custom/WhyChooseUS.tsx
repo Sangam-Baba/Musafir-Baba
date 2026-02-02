@@ -16,42 +16,42 @@ function WhyChooseUs() {
       title: "Personalised Trips Crafted by Experts",
       description:
         "Every itinerary is designed by professional travel planners who understand your interests, budget, and travel style.",
-      url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1763465599/planning_1980949-new_yjy4vw.png",
+      url: "https://cdn.musafirbaba.com/images/planning_1980949-new_yjy4vw.png",
     },
     {
       id: 2,
       title: "Transparent Pricing - No Hidden Charges",
       description:
         "You always know what you’re paying for. All our packages come with clear inclusions and honest pricing.",
-      url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1763465599/price_13080043_d7lyms.png",
+      url: "https://cdn.musafirbaba.com/images/price_13080043_d7lyms.png",
     },
     {
       id: 3,
       title: "Complete Visa & Documentation Support",
       description:
         "Our dedicated visa experts assist with paperwork, submissions, and guidance to ensure a smooth approval process",
-      url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1763465599/citizenship_7550833_yxp6f5.png",
+      url: "https://cdn.musafirbaba.com/images/citizenship_7550833_yxp6f5.png",
     },
     {
       id: 4,
       title: "24×7 On-Trip Assistance",
       description:
         "From minor questions to last-minute changes, our support team stays connected with you throughout the journey.",
-      url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1763465599/24-7-service_17062434-new_cw1xje.png",
+      url: "https://cdn.musafirbaba.com/images/24-7-service_17062434-new_cw1xje.png",
     },
     {
       id: 5,
       title: "Trusted by Thousands of Travellers",
       description:
         "With strong Google ratings and repeat customers, we’re proud of the trust we’ve built over the years.",
-      url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1763465600/customer_18482548_tax102.png",
+      url: "https://cdn.musafirbaba.com/images/customer_18482548_tax102.png",
     },
     {
       id: 6,
       title: "Handpicked Hotels, Guides & Experiences",
       description:
         "We partner only with verified hotels, transport providers, and local experts to ensure safety and quality.",
-      url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1763465599/experts_15108104-new_q5uy6p.png",
+      url: "https://cdn.musafirbaba.com/images/experts_15108104-new_q5uy6p.png",
     },
   ];
   return (

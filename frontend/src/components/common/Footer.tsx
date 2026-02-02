@@ -40,7 +40,7 @@ function Footer() {
           <div className="group relative h-[150px] rounded-xl overflow-hidden mt-2">
             <Link href="https://maps.app.goo.gl/bsvktDpBfWtxsVRm8">
               <Image
-                src="https://res.cloudinary.com/dmmsemrty/image/upload/v1763615567/image_2_gqvedz.png"
+                src="https://cdn.musafirbaba.com/images/image_2_gqvedz.avif"
                 fill
                 alt="Musafir Baba Map"
                 className="object-cover group-hover:scale-105 transition-all duration-300"
