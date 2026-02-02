@@ -512,14 +512,6 @@ export default function CheckoutPage() {
 
                 {/* Breakdown */}
                 <div className="space-y-3 mb-6 pb-6 border-b border-border/50">
-                  {/* <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      {Package.title ?? "Travel Package"}
-                    </span>
-                    <span className="font-semibold text-foreground">
-                      ₹{parseInt(baseAmount.toFixed(2)).toLocaleString()}
-                    </span>
-                  </div> */}
                   {(["quad", "triple", "double", "child"] as const).map(
                     (travellerType) => (
                       <div key={travellerType}>
@@ -560,23 +552,6 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 <div className="space-y-3">
-                  {/* <div className="flex gap-5">
-                    <input
-                      type="checkbox"
-                      className="w-[30px]"
-                      id="full-pay"
-                      name="full-pay"
-                      value={fullPayment ? "full-pay" : ""}
-                      onChange={(e) =>
-                        setFinalAmount(
-                          e.target.checked
-                            ? finalAmount + finalAmount * 0.25
-                            : finalAmount - finalAmount * 0.25,
-                        )
-                      }
-                    />
-                    <p>Full Payment</p>
-                  </div> */}
                   <div className="flex gap-5">
                     <Input
                       type="checkbox"

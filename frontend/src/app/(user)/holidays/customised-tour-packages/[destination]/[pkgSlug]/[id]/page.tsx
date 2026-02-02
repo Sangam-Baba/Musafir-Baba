@@ -8,10 +8,19 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { Calendar, Check, MapPin, Users, Zap } from "lucide-react";
+import {
+  Calendar,
+  Check,
+  Lock,
+  MapPin,
+  ShieldCheck,
+  Users,
+  Zap,
+} from "lucide-react";
 import { useCustomizedBookingStore } from "@/store/useCutomizedBookingStore";
 import { useParams } from "next/navigation";
 import { secureFetch } from "@/lib/secureFetch";
+import { parseISO } from "date-fns";
 
 interface Image {
   url: string;
@@ -37,6 +46,10 @@ type BookingApiResponse = {
   };
   plan: string;
 };
+interface Plan {
+  title: string;
+  price: number;
+}
 
 interface FormData {
   date: string;
@@ -153,7 +166,7 @@ export default function CheckoutButton() {
   // const refreshAccessToken = useAuthStore((s) => s.refreshAccessToken);
   const pkgId = params.id as string;
   const formData = useCustomizedBookingStore((s) => s.formData);
-
+  const [plan, setPlan] = useState<Plan>({ title: "", price: 0 });
   const {
     data: pkg,
     isLoading,
@@ -190,11 +203,16 @@ export default function CheckoutButton() {
   });
 
   const booking = formData;
+  let totalPrice = booking.totalPrice;
   useEffect(() => {
-    if (booking) {
-      setFinalAmount(booking.totalPrice);
+    // console.log("pkg data:", pkg);
+    if (booking && pkg) {
+      const plans = pkg.plans.find((item: any) => item.title === booking.plan);
+      setPlan({ title: plans.title, price: plans.price });
+      totalPrice = booking.noOfPeople * plans.price;
+      setFinalAmount(Math.ceil(totalPrice * 1.05));
     }
-  }, [booking]);
+  }, [booking, pkg]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -274,80 +292,167 @@ export default function CheckoutButton() {
     toast.error(msg);
     return <h1 className="text-red-600">{msg}</h1>;
   }
+  const steps = ["Choose Date", "Select Plan", "Payment"];
+  const currentStep = 2;
   return (
-    <section className="min-h-screen bg-gradient-to-br from-background via-background to-secondary py-12 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto mb-12">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3 tracking-tight">
+    <section className="max-w-6xl mx-auto min-h-screen py-12 px-4 md:px-8">
+      {/* Stepper Header */}
+      <div className="flex items-center justify-between mb-8 sticky top-3 bg-white z-10">
+        {steps.map((step, index) => (
+          <div key={index} className="flex-1 text-center relative">
+            <div
+              className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center ${
+                index === currentStep
+                  ? "bg-[#FF5300] text-white"
+                  : index < currentStep
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-300 text-gray-700"
+              }`}
+            >
+              {index + 1}
+            </div>
+            <p className="text-xs mt-2 text-gray-600">{step}</p>
+
+            {/* Progress line */}
+            {index < steps.length - 1 && (
+              <div
+                className={`absolute top-4 left-[50%] h-[2px] w-[100%] z-[-1] ${
+                  index < currentStep ? "bg-green-500" : "bg-gray-300"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className=" mb-12">
+        <div className="mb-8">
+          <h1 className=" text-xl md:text-4xl font-bold text-foreground">
             Complete Your Booking
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Review your travel details and secure your adventure
+          <p className="text-muted-foreground mt-2">
+            Review your travel details and secure your reservation
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Package Details Card - Featured on left */}
         <div className="lg:col-span-2">
           <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-shadow duration-300 p-0">
-            <div className="relative h-80 md:h-96 overflow-hidden bg-muted">
-              <Image
-                src={pkg?.coverImage?.url ?? ""}
-                alt={pkg?.coverImage?.alt ?? ""}
-                fill
-                className="object-cover hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                Premium Package
+            <div className="md:grid md:grid-cols-5 overflow-hidden rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
+              <div className="md:col-span-2 grid grid-cols-5 gap-4 md:gap-0">
+                {/* Image Section */}
+                <div className="col-span-2 md:col-span-5 relative h-full">
+                  {pkg?.coverImage?.url ? (
+                    <Image
+                      src={pkg.coverImage.url}
+                      alt={pkg.title}
+                      fill
+                      className="object-cover  "
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-muted">
+                      <MapPin className="h-14 w-14 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+                <div className="md:hidden grid col-span-3 gap-3">
+                  <h2 className="text-lg font-semibold text-foreground leading-tight">
+                    {pkg?.title ?? "Travel Package"}
+                  </h2>
+                  <div className="h-px bg-border" />
+                  <div className="flex items-start gap-2">
+                    <div className="mt-1 rounded-md bg-primary/10 p-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground tracking-wide">
+                        Travel Dates
+                      </p>
+                      <p className="text-xs font-medium text-foreground mt-1">
+                        {parseISO(booking?.date || "").toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="md:col-span-3 p-2 lg:p-8">
+                {/* Title */}
+                <div className="mb-6">
+                  <h2 className="hidden md:block text-2xl font-semibold text-foreground leading-tight">
+                    {pkg?.title ?? "Travel Package"}
+                  </h2>
+
+                  {/* <p className="text-sm text-muted-foreground mt-1">
+                                Booking summary
+                              </p> */}
+                </div>
+
+                {/* Key Info */}
+                <div className="space-y-5">
+                  {/* Dates */}
+                  <div className="hidden md:flex items-start gap-2">
+                    <div className="mt-1 rounded-md bg-primary/10 p-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground tracking-wide">
+                        Travel Dates
+                      </p>
+                      <p className="text-sm font-medium text-foreground mt-1">
+                        {parseISO(booking?.date || "").toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="hidden md:blockh-px bg-border" />
+
+                  {/* Traveller Info */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-3">
+                      Traveller Information
+                    </h3>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                        <span className="text-sm text-muted-foreground">
+                          Name
+                        </span>
+                        <span className="text-sm font-medium text-foreground">
+                          {user?.name ?? "Guest"}
+                          {booking?.noOfPeople > 1 &&
+                            " +" + (booking?.noOfPeople! - 1)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                        <span className="text-sm text-muted-foreground">
+                          Email
+                        </span>
+                        <span className="text-sm font-medium text-foreground">
+                          {user?.email ?? "guest@gmail.com"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <CardContent className="p-8">
-              <h2 className="text-3xl font-bold text-foreground mb-6">
-                {pkg?.title}
-              </h2>
-
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start gap-4 pb-4 border-b border-border">
-                  <Users className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">
-                      Number of Travelers
-                    </p>
-                    <p className="text-lg font-semibold text-foreground">
-                      {booking?.noOfPeople}{" "}
-                      {booking?.noOfPeople === 1 ? "Person" : "People"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 pb-4 border-b border-border">
-                  <Calendar className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">
-                      Travel Date
-                    </p>
-                    <p className="text-lg font-semibold text-foreground">
-                      {booking?.date ?? "To be confirmed"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <MapPin className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm text-muted-foreground font-medium">
-                      Plan Type
-                    </p>
-                    <p className="text-lg font-semibold text-foreground">
-                      {booking?.plan ?? "Customized Package"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
           </Card>
         </div>
 
@@ -364,52 +469,47 @@ export default function CheckoutButton() {
               <CardContent className="space-y-6">
                 <div className="space-y-3 pb-6 border-b border-border/50">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Package Price</span>
+                    <span className="text-muted-foreground">Plan Type</span>
                     <span className="font-semibold text-foreground">
-                      ₹{formData.totalPrice}
+                      {booking?.plan ?? "Customized Package"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Travelers</span>
+                    <span className="text-muted-foreground">Package Price</span>
                     <span className="font-semibold text-foreground">
-                      {booking?.noOfPeople}x
+                      ₹{plan.price} X{booking?.noOfPeople}
+                    </span>
+                  </div>
+
+                  {/* GST */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">
+                      @GST 5%
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      ₹{Math.ceil(totalPrice * 0.05).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-primary/10 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Total Amount
-                  </p>
-                  <p className="text-3xl font-bold text-primary">
-                    ₹{finalAmount}
-                  </p>
-                </div>
-
-                <div className="space-y-3 pb-6 border-b border-border/50">
-                  <p className="text-sm font-semibold text-foreground">
-                    Traveler Info
-                  </p>
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Name</p>
-                      <p className="font-medium text-foreground">
-                        {user?.name ?? "Guest"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Email</p>
-                      <p className="font-medium text-foreground text-sm break-all">
-                        {user?.email ?? "abhi@example.com"}
-                      </p>
-                    </div>
+                {/* Total */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-foreground">Total</span>
+                    <span className="text-2xl font-bold text-primary">
+                      ₹{parseInt(finalAmount.toFixed(2)).toLocaleString()}
+                    </span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Prices include all fees
+                  </p>
                 </div>
-
+                {/* CTA Button */}
                 <Button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full bg-[#FE5300] hover:bg-[#FE5300]/90 text-primary-foreground font-semibold py-6 text-lg rounded-lg transition-all duration-200 hover:shadow-lg disabled:opacity-50"
+                  size="sm"
+                  className="w-full bg-[#FE5300] hover:bg-[#FE5300]/90 text-primary-foreground font-semibold py-6 text-xl rounded-lg transition-all duration-200 hover:shadow-lg disabled:opacity-50"
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
@@ -418,83 +518,89 @@ export default function CheckoutButton() {
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      <Check className="w-5 h-5" />
-                      Confirm & Pay
+                      {/* <Check className="w-5 h-5" /> */}
+                      Pay ₹{parseInt(finalAmount.toFixed(2)).toLocaleString()}
                     </span>
                   )}
                 </Button>
-                <div className="pt-4 border-t-2 space-y-4">
-                  <div>
-                    <p className="text-xl font-semibold ">Coupons & Offers</p>
-                  </div>
-                  <div>
-                    {offers?.map(
-                      (offer: {
-                        _id: string;
-                        code: string;
-                        description: string;
-                        value: number;
-                        type: string;
-                      }) => {
-                        const isApplied = appliedCouponId === offer._id;
+                {/* Coupon */}
+                {offers?.length > 0 && (
+                  <div className="pt-4 border-t-2 space-y-4">
+                    <div>
+                      <p className="text-xl font-semibold ">Coupons & Offers</p>
+                    </div>
+                    <div>
+                      {offers?.map(
+                        (offer: {
+                          _id: string;
+                          code: string;
+                          description: string;
+                          value: number;
+                          type: string;
+                        }) => {
+                          const isApplied = appliedCouponId === offer._id;
 
-                        return (
-                          <div
-                            key={offer._id}
-                            className={`flex justify-between gap-5 border-2 rounded-lg p-4 ${
-                              isApplied
-                                ? "border-green-500 bg-green-50"
-                                : "border-[#FE5300]"
-                            }`}
-                          >
-                            <div>
-                              <p className="font-semibold">{offer.code}</p>
-                              <p className="text-muted-foreground text-sm">
-                                {offer.description}
-                              </p>
-                            </div>
-
-                            <div className="text-right">
-                              <p className="text-muted-foreground">
-                                ₹{offer.value}
-                              </p>
-
-                              {isApplied ? (
-                                <p
-                                  onClick={handleRemoveCoupon}
-                                  className="text-red-600 cursor-pointer font-semibold"
-                                >
-                                  Remove
+                          return (
+                            <div
+                              key={offer._id}
+                              className={`flex justify-between gap-5 border-2 rounded-lg p-4 ${
+                                isApplied
+                                  ? "border-green-500 bg-green-50"
+                                  : "border-[#FE5300]"
+                              }`}
+                            >
+                              <div>
+                                <p className="font-semibold">{offer.code}</p>
+                                <p className="text-muted-foreground text-sm">
+                                  {offer.description}
                                 </p>
-                              ) : (
-                                <p
-                                  onClick={() =>
-                                    handleCoupanValidation({
-                                      id: offer._id,
-                                      amount: booking.totalPrice,
-                                      itemId: pkgId,
-                                      itemType: "CUSTOM_PACKAGE",
-                                    })
-                                  }
-                                  className="text-green-600 cursor-pointer font-semibold"
-                                >
-                                  Apply
+                              </div>
+
+                              <div className="text-right">
+                                <p className="text-muted-foreground">
+                                  ₹{offer.value}
                                 </p>
-                              )}
+
+                                {isApplied ? (
+                                  <p
+                                    onClick={handleRemoveCoupon}
+                                    className="text-red-600 cursor-pointer font-semibold"
+                                  >
+                                    Remove
+                                  </p>
+                                ) : (
+                                  <p
+                                    onClick={() =>
+                                      handleCoupanValidation({
+                                        id: offer._id,
+                                        amount: booking.totalPrice,
+                                        itemId: pkgId,
+                                        itemType: "CUSTOM_PACKAGE",
+                                      })
+                                    }
+                                    className="text-green-600 cursor-pointer font-semibold"
+                                  >
+                                    Apply
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      },
-                    )}
+                          );
+                        },
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="pt-4 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground text-center">
-                    ✓ Secure payment powered by PayU
-                  </p>
-                  <p className="text-xs text-muted-foreground text-center mt-2">
-                    Your booking is protected
-                  </p>
+                )}
+                {/* Trust Indicators */}
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Lock className="w-4 h-4 text-primary" />
+                    <span>Secure payment powered by PayU</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ShieldCheck className="w-4 h-4 text-primary" />
+                    <span>Your data is protected</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
