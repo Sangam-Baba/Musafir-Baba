@@ -242,19 +242,6 @@ export default async function BlogDetailPage({
             </span>
           </div>
           <CategorySidebar />
-          {/* Comments Section */}
-          <section className="mt-10 w-full">
-            {/* <BlogComments
-              blogId={blog._id}
-              initialComments={comments}
-              type="blog"
-            /> */}
-            <CommentDailog
-              blogId={blog._id}
-              initialComments={comments}
-              type="blog"
-            />
-          </section>
         </article>
         <div className="space-y-10">
           <Tabs defaultValue="latest" className="w-full flex items-center">
@@ -303,6 +290,14 @@ export default async function BlogDetailPage({
           {/* <LatestBlogSidebar currentId={blog._id} />
           <TrandingBlogSidebar currentId={blog._id} /> */}
         </div>
+        {/* Comments Section */}
+        <section className="mt-10 w-full">
+          <CommentDailog
+            blogId={blog._id}
+            initialComments={comments}
+            type="blog"
+          />
+        </section>
         {/* ✅ JSON-LD Schema */}
         {/* {blog.schemaType?.includes("Blog") && ( */}
         <Script

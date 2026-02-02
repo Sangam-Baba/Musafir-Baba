@@ -37,7 +37,7 @@ export default function SectionFour() {
           </Link>
         </div>
 
-        <div className="flex flex-col items-center gap-2 md:w-1/2">
+        <div className="grid grid-cols-1 items-center justify-center gap-2 md:w-1/2">
           <div className=" md:hidden flex flex-col items-center gap-2 mb-4">
             <h2 className="text-lg md:text-3xl font-bold">
               Delhi Tour Packages
@@ -54,21 +54,23 @@ export default function SectionFour() {
           />
 
           {/* Side images (hidden on mobile) */}
-          <div className="hidden md:grid grid-cols-2 gap-4 mt-4">
-            <Image
-              src="https://cdn.musafirbaba.com/2.webp"
-              alt="Delhi Attraction"
-              width={250}
-              height={250}
-              className=" rounded-2xl shadow-lg"
-            />
-            <Image
-              src="https://cdn.musafirbaba.com/3.webp"
-              alt="Delhi Culture"
-              width={250}
-              height={250}
-              className=" rounded-2xl shadow-lg"
-            />
+          <div className="hidden md:grid grid-cols-2 mt-4 gap-2 mx-auto w-full">
+            <div className=" relative aspect-4/3">
+              <Image
+                src="https://cdn.musafirbaba.com/2.webp"
+                alt="Delhi Attraction"
+                fill
+                className="w-full h-full object-cover rounded-2xl shadow-lg"
+              />
+            </div>
+            <div className="relative aspect-4/3">
+              <Image
+                src="https://cdn.musafirbaba.com/3.webp"
+                alt="Delhi Culture"
+                fill
+                className="w-full h-full object-cover rounded-2xl shadow-lg"
+              />
+            </div>
           </div>
         </div>
       </div>

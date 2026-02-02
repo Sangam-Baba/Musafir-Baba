@@ -42,7 +42,7 @@ export default function Breadcrumb() {
               />
               {i === breadcrumbs.length - 1 ? (
                 <span className="text-gray-800 text-md ">
-                  {bc.name.substring(0, 35)}{" "}
+                  {bc.name.split(" ").slice(0, 6).join(" ")}
                 </span>
               ) : (
                 <Link

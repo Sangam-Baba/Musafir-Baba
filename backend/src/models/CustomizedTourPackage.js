@@ -54,8 +54,8 @@ const customizedTourPackageSchema = new mongoose.Schema(
       },
     ],
     duration: {
-      days: { type: Number },
-      nights: { type: Number },
+      days: { type: Number, default: 1 },
+      nights: { type: Number, default: 0 },
     },
     time: {
       startTime: String,

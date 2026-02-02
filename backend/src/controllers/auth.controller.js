@@ -154,6 +154,7 @@ const login = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
+      maxAge: 60 * 60 * 24 * 30 * 1000,
     };
 
     res.cookie("user_refresh_token", refreshToken, cookieOption);
@@ -360,6 +361,7 @@ const refresh = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
+      maxAge: 60 * 60 * 24 * 30 * 1000,
     };
 
     res.cookie("user_refresh_token", refreshToken, cookieOptions);
@@ -423,6 +425,7 @@ const logout = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       domain: undefined,
       path: "/",
+      maxAge: 60 * 60 * 24 * 30 * 1000,
     };
     res.clearCookie("user_refresh_token", cookieOptions);
     const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
