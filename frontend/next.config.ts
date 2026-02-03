@@ -305,13 +305,13 @@ const nextConfig: NextConfig = {
           "/holidays/honeymoon-packages/maldives/maldives-honeymoon-package",
         permanent: true,
       },
-      {
-        source:
-          "/holidays/group-tour-packages/sikkim/darjeeling-gangtok-pelling-and-north-sikkim-expedition",
-        destination:
-          "/holidays/group-tour-packages/sikkim/darjeeling-gangtok-pelling-north-sikkim-trip",
-        permanent: true,
-      },
+      // {
+      //   source:
+      //     "/holidays/group-tour-packages/sikkim/darjeeling-gangtok-pelling-and-north-sikkim-expedition",
+      //   destination:
+      //     "/holidays/group-tour-packages/sikkim/darjeeling-gangtok-pelling-north-sikkim-trip",
+      //   permanent: true,
+      // },
       {
         source: "/customized-tour-package/delhi-tour-packages",
         destination: "/holidays/customised-tour-packages/delhi",
@@ -342,11 +342,11 @@ const nextConfig: NextConfig = {
         destination: "/holidays/customized-tour-package",
         permanent: true,
       },
-      {
-        source: "/group-tour-packages",
-        destination: "/holidays/group-tour-packages",
-        permanent: true,
-      },
+      // {
+      //   source: "/group-tour-packages",
+      //   destination: "/holidays/group-tour-packages",
+      //   permanent: true,
+      // },
       {
         source: "/solo-trip",
         destination: "/holidays/solo-tour-packages",
@@ -432,11 +432,11 @@ const nextConfig: NextConfig = {
         destination: "/bookings/bus-bookings",
         permanent: true,
       },
-      {
-        source: "/holidays/group-tour-package",
-        destination: "/holidays/group-tour-packages",
-        permanent: true,
-      },
+      // {
+      //   source: "/holidays/group-tour-package",
+      //   destination: "/holidays/group-tour-packages",
+      //   permanent: true,
+      // },
       {
         source: "/us-visa-appointment",
         destination: "/visa/us-visa",
