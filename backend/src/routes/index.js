@@ -37,6 +37,7 @@ import otpRoutes from "./enquiryOtp.routes.js";
 import documentRoutes from "./document.routes.js";
 import coupanRoutes from "./coupan.routes.js";
 import newsletterRoutes from "./newsletter.routes.js";
+import popupRoutes from "./popup.routes.js";
 
 const router = Router();
 
@@ -78,4 +79,5 @@ router.use("/enquiry-otp", otpRoutes);
 router.use("/document", documentRoutes);
 router.use("/coupan", coupanRoutes);
 router.use("/newsletter", newsletterRoutes);
+router.use("/popup", popupRoutes);
 export default router;

@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateEditCoupan } from "@/components/admin/CreateEditCoupan";
 import CoupansList from "@/components/admin/CoupansList";
+import Popup from "./popup";
 
 export interface CoupansInterface {
   _id: string;
@@ -49,7 +50,7 @@ const deleteCoupan = async (accessToken: string, id: string) => {
 function CoupanCode() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
-    (state) => state.permissions
+    (state) => state.permissions,
   ) as string[];
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -128,6 +129,8 @@ function CoupanCode() {
           onDelete={handleDelete}
         />
       )}
+
+      <Popup />
     </div>
   );
 }

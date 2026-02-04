@@ -35,7 +35,7 @@ export function PopupBanner() {
         {/* CTA */}
         <div className="p-4 bg-white">
           <Link
-            href="/https://musafirbaba.com/holidays/religious-tours/uttarakhand/divine-chardham-yatra"
+            href="https://musafirbaba.com/holidays/religious-tours/uttarakhand/divine-chardham-yatra"
             className="block"
           >
             <Button className="w-full font-semibold">Book Now</Button>
