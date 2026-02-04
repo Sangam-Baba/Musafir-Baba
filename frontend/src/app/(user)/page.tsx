@@ -20,6 +20,7 @@ import Script from "next/script";
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
 import { getLocalSchema } from "@/lib/schema/local.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { PopupBanner } from "@/components/custom/PopupBanner";
 
 const faqs = [
   {
@@ -202,7 +203,7 @@ export default async function HomePage({
       <BlogsHome />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
-
+      <PopupBanner />
       <Script
         id="organization-schema"
         type="application/ld+json"
