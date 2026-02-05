@@ -4,6 +4,7 @@ import {
   getPopups,
   updatePopup,
   deletePopup,
+  getPopupById,
 } from "../controllers/popup.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -19,8 +20,21 @@ popupRoutes.post(
   authorizedRoles(["admin", "superadmin"]),
   createPopup,
 );
-popupRoutes.get("/", isAuthenticated, validateSession, getAllPopups);
-popupRoutes.get("/page/:page", isAuthenticated, validateSession, getPopups);
+popupRoutes.get(
+  "/",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getAllPopups,
+);
+popupRoutes.get("/page/:page", getPopups);
+popupRoutes.get(
+  "/id/:id",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getPopupById,
+);
 popupRoutes.put(
   "/:id",
   isAuthenticated,

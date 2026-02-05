@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Loader } from "@/components/custom/loader";
 import PopupList from "@/components/admin/PopupList";
 import { CreateEditPopup } from "@/components/admin/CreateEditPopup";
+import { is } from "zod/v4/locales";
 
 export interface PopupInterface {
   _id: string;
@@ -55,7 +56,11 @@ function Popup() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [editId, setEditId] = React.useState<string | null>(null);
 
-  const { data: allPopups, isLoading } = useQuery({
+  const {
+    data: allPopups,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["all-popups"],
     queryFn: () => getAllPopups(accessToken),
   });
@@ -76,6 +81,13 @@ function Popup() {
       toast.error("Failed to delete Popup");
     }
   };
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <h1 className="text-2xl font-bold">Something went wrong</h1>
+      </div>
+    );
+  }
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -109,8 +121,7 @@ function Popup() {
         <PopupList
           allpopups={allPopups?.map((b: PopupInterface) => ({
             _id: b._id,
-            title: b?.button?.title,
-            url: b?.button?.url,
+            button: b.button,
             coverImage: b.coverImage,
             page: b.page,
             status: b.status,

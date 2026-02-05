@@ -53,13 +53,13 @@ export default function PopupList({
                   {cat.button?.title}
                 </TableCell>
                 <TableCell className="font-medium ">
-                  <Link href={cat.button?.url}>
-                    <ExternalLink className="w-4 h-4 mr-1" />
+                  <Link href={cat.button?.url || "#"}>
+                    <ExternalLink className="w-4 h-4 mr-1 text-blue-500" />
                   </Link>
                 </TableCell>
                 <TableCell className="font-medium">
-                  <Link href={cat.coverImage?.url}>
-                    <ExternalLink className="w-4 h-4 mr-1" />
+                  <Link href={cat.coverImage?.url || "#"}>
+                    <ExternalLink className="w-4 h-4 mr-1 text-blue-500" />
                   </Link>
                 </TableCell>
                 <TableCell className="font-medium">{cat.page}</TableCell>
@@ -95,13 +95,13 @@ export default function PopupList({
             <CardContent className="p-4 space-y-2">
               <h3 className="font-semibold text-lg">{cat.button?.title}</h3>
               <h3 className="font-semibold text-lg">
-                <Link href={cat.button?.url}>
-                  <ExternalLink className="w-4 h-4 mr-1" />
+                <Link href={cat.button?.url || "#"}>
+                  <ExternalLink className="w-4 h-4 mr-1 text-blue-500" />
                 </Link>
               </h3>
               <h3 className="font-semibold text-lg">
-                <Link href={cat.coverImage?.url}>
-                  <ExternalLink className="w-4 h-4 mr-1" />
+                <Link href={cat.coverImage?.url || "#"}>
+                  <ExternalLink className="w-4 h-4 mr-1 text-blue-500" />
                 </Link>
               </h3>
               <h3 className="font-semibold text-lg">{cat.page}</h3>

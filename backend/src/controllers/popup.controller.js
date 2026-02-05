@@ -39,6 +39,29 @@ const getPopups = async (req, res) => {
       .json({ success: false, message: "Server Error", error: error.message });
   }
 };
+const getPopupById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Popup ID is required" });
+    }
+    const popup = await Popup.findById(id);
+    if (!popup) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Popup not found" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Popup fetched", data: popup });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Server Error", error: error.message });
+  }
+};
 
 const getAllPopups = async (req, res) => {
   try {
@@ -101,4 +124,11 @@ const deletePopup = async (req, res) => {
   }
 };
 
-export { createPopup, getPopups, getAllPopups, updatePopup, deletePopup };
+export {
+  createPopup,
+  getPopups,
+  getAllPopups,
+  updatePopup,
+  deletePopup,
+  getPopupById,
+};
