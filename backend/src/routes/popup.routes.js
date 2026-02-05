@@ -35,7 +35,7 @@ popupRoutes.get(
   authorizedRoles(["admin", "superadmin"]),
   getPopupById,
 );
-popupRoutes.put(
+popupRoutes.patch(
   "/:id",
   isAuthenticated,
   validateSession,

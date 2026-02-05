@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Resolver, useForm } from "react-hook-form";
+import { Resolver, useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,23 +22,25 @@ import { title } from "process";
 import page from "@/app/(user)/destinations/page";
 import ImageUploader from "./ImageUploader";
 
+/* -------------------- Schema -------------------- */
 const formSchema = z.object({
   button: z.object({
-    title: z.string(),
-    url: z.string().url(),
+    title: z.string().min(1, "Button title required"),
+    url: z.string().url("Invalid URL"),
   }),
   title: z.string().optional(),
   description: z.string().optional(),
-  coverImage: z.object({
-    url: z.string().url(),
-    alt: z.string(),
-    width: z.number().optional(),
-    height: z.number().optional(),
-  }),
-  page: z.enum(["home", "webpage"]).default("home"),
+  coverImage: z
+    .object({
+      url: z.string().url(),
+      alt: z.string(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+    })
+    .optional(),
+  page: z.enum(["home", "webpage"]),
   status: z.enum(["published", "draft"]),
 });
-
 type FormData = z.infer<typeof formSchema>;
 
 const createPopup = async (accessToken: string, form: FormData) => {
@@ -100,12 +102,6 @@ export const CreateEditPopup = ({
       },
       title: "",
       description: "",
-      coverImage: {
-        url: "",
-        alt: "",
-        width: 0,
-        height: 0,
-      },
       page: "home",
       status: "published",
     },
@@ -123,7 +119,7 @@ export const CreateEditPopup = ({
 
   const coupan = data?.data;
   useEffect(() => {
-    if (id && coupan) {
+    if (coupan) {
       form.reset({
         button: {
           title: coupan.button.title,
@@ -131,17 +127,12 @@ export const CreateEditPopup = ({
         },
         title: coupan.title,
         description: coupan.description,
-        coverImage: {
-          url: coupan.coverImage.url,
-          alt: coupan.coverImage.alt,
-          width: coupan.coverImage.width,
-          height: coupan.coverImage.height,
-        },
+        coverImage: coupan.coverImage,
         page: coupan.page,
         status: coupan.status,
       });
     }
-  }, [id, coupan]);
+  }, [form, coupan]);
 
   const mutation = useMutation({
     mutationFn: (values: FormData) =>
@@ -163,6 +154,13 @@ export const CreateEditPopup = ({
     mutation.mutate(values);
   }
 
+  if (CoupanLoading) {
+    return <Loader />;
+  }
+  if (CoupanError) {
+    return <p className="text-red-500">Failed to load popup data</p>;
+  }
+
   return (
     <div
       className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6"
@@ -172,147 +170,151 @@ export const CreateEditPopup = ({
         {id ? "Update Review" : "Create Review"}
       </h2>
 
-      {/* <Form {...form}> */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Code and Type and Value */}
-        <div className="grid grid-cols-2 gap-5 items-center">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          {/* Code and Type and Value */}
+          <div className="grid grid-cols-2 gap-5 items-center">
+            <FormField
+              control={form.control}
+              name="button.title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Button Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="BABA100" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="button.url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Button URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-5 items-center">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Get 10% off on all bookings"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enjoy discount on your order"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
-            name="button.title"
+            name="coverImage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Button Title</FormLabel>
+                <FormLabel>Image</FormLabel>
                 <FormControl>
-                  <Input placeholder="BABA100" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="button.url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Button URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-5 items-center">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Get 10% off on all bookings" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enjoy discount on your order"
-                    {...field}
+                  <ImageUploader
+                    initialImage={form.watch("coverImage")}
+                    onUpload={(img) => {
+                      if (!img) return;
+                      form.setValue("coverImage", {
+                        url: img?.url,
+                        width: img?.width,
+                        height: img?.height,
+                        alt: img?.alt || "Popup Image",
+                      });
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
-        <FormField
-          control={form.control}
-          name="coverImage"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image</FormLabel>
-              <FormControl>
-                <ImageUploader
-                  onUpload={(img) => {
-                    if (!img) return;
-                    form.setValue("coverImage", {
-                      url: img?.url,
-                      width: img?.width,
-                      height: img?.height,
-                      alt: img?.alt || "Popup Image",
-                    });
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className=" grid grid-cols-2 gap-5">
-          <FormField
-            control={form.control}
-            name="page"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Page</FormLabel>
-                <FormControl>
-                  <select
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="" disabled>
-                      Select Page
-                    </option>
-                    <option value="home">Home</option>
-                    <option value="webpage">Webpage</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <FormControl>
-                  <select
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="" disabled>
-                      Select Status
-                    </option>
-                    <option value="published">Published</option>
-                    <option value="draft">draft</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+          <div className=" grid grid-cols-2 gap-5">
+            <FormField
+              control={form.control}
+              name="page"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Page</FormLabel>
+                  <FormControl>
+                    <select
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="" disabled>
+                        Select Page
+                      </option>
+                      <option value="home">Home</option>
+                      <option value="webpage">Webpage</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <FormControl>
+                    <select
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="" disabled>
+                        Select Status
+                      </option>
+                      <option value="published">Published</option>
+                      <option value="draft">draft</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-        {/* Submit and Close */}
-        <div className="grid grid-cols-2 gap-5">
-          <Button type="submit">Submit</Button>
-          <Button type="button" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </form>
-      {/* </Form> */}
+          {/* Submit and Close */}
+          <div className="grid grid-cols-2 gap-5">
+            <Button type="submit">Submit</Button>
+            <Button type="button" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </form>
+      </Form>
       {mutation.isError && (
         <p className="text-red-500">{mutation.error.message}</p>
       )}

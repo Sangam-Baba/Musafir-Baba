@@ -89,9 +89,9 @@ function Popup() {
     );
   }
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto border-t-2 py-5 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Manage popup</h1>
+        <h1 className="text-2xl font-bold">Manage Popup</h1>
         <button
           onClick={() => setIsOpen(true)}
           className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
