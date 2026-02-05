@@ -6,7 +6,19 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-export function PopupBanner() {
+interface PopupBannerProps {
+  _id: string;
+  button: {
+    title: string;
+    url: string;
+  };
+  coverImage: {
+    url: string;
+    alt: string;
+  };
+}
+
+export function PopupBanner({ data }: { data: PopupBannerProps }) {
   const [open, setOpen] = React.useState(true);
 
   return (
@@ -24,8 +36,11 @@ export function PopupBanner() {
         {/* Image */}
         <div className="relative w-full aspect-6/4">
           <Image
-            src="https://cdn.musafirbaba.com/images/CHARDHAM%20YATRA%202026%20SALE.jpg.jpeg"
-            alt="Special offer"
+            src={
+              data?.coverImage?.url ||
+              "https://cdn.musafirbaba.com/images/CHARDHAM%20YATRA%202026%20SALE.jpg.jpeg"
+            }
+            alt={data?.coverImage?.alt || "Special offer"}
             fill
             priority
             className="object-cover"
@@ -35,10 +50,15 @@ export function PopupBanner() {
         {/* CTA */}
         <div className="p-4 bg-white">
           <Link
-            href="https://musafirbaba.com/holidays/religious-tours/uttarakhand/divine-chardham-yatra"
-            className="block"
+            href={
+              data?.button?.url ||
+              "https://musafirbaba.com/holidays/religious-tours/uttarakhand/divine-chardham-yatra"
+            }
+            className="block max-w-[100px] mx-auto"
           >
-            <Button className="w-full font-semibold">Book Now</Button>
+            <Button className="w-full font-semibold">
+              {data?.button?.title || "Book Now"}
+            </Button>
           </Link>
         </div>
       </DialogContent>

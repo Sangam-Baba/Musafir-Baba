@@ -137,13 +137,30 @@ const images = [
     alt: "",
   },
 ];
-
+const getpopup = async () => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/popup/page/home`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
+  if (!res.ok) {
+    throw new Error("Failed to fetch popup data");
+  }
+  const data = await res.json();
+  return data?.data;
+};
 export default async function HomePage({
   searchParams,
 }: {
   searchParams: Promise<{ auth: string }>;
 }) {
   const { auth } = (await searchParams) || null;
+
+  const popupData = await getpopup();
 
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalSchema();
@@ -203,7 +220,7 @@ export default async function HomePage({
       <BlogsHome />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
-      <PopupBanner />
+      <PopupBanner data={popupData} />
       <Script
         id="organization-schema"
         type="application/ld+json"

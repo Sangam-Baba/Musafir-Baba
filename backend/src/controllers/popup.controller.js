@@ -23,13 +23,15 @@ const createPopup = async (req, res) => {
 
 const getPopups = async (req, res) => {
   try {
-    const { page } = req.body;
+    const { page } = req.params;
+
     if (!page) {
       return res
         .status(400)
         .json({ success: false, message: "Page is required" });
     }
-    const popups = await Popup.find({ page: page });
+
+    const popups = await Popup.findOne({ page: page });
     res
       .status(200)
       .json({ success: true, message: "Popups fetched", data: popups });
