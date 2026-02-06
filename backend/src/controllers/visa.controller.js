@@ -63,6 +63,9 @@ const getVisaBySlug = async (req, res) => {
     const visa = await Visa.findOne({ slug }).populate("reviews").lean();
     if (!visa)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
+    if (!visa.isActive && !verifyPreviewToken(req.query?.token)) {
+      return res.status(403).json({ success: false, message: "Invalid URL" });
+    }
     res.status(200).json({ success: true, data: visa });
   } catch (error) {
     console.log("Visa getting by slug failed", error.message);

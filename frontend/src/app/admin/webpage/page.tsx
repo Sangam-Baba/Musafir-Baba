@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import PageList from "@/components/admin/PageList";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { getPreviewToken } from "../blogs/page";
 interface WebPage {
   title: string;
   content: string;
@@ -42,7 +43,7 @@ const getAllWebPage = async (accessToken: string) => {
 function WebPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
-    (state) => state.permissions
+    (state) => state.permissions,
   ) as string[];
   const [filter, setFilter] = useState({
     search: "",
@@ -53,9 +54,16 @@ function WebPage() {
   const { data, isLoading, isError, error, refetch } = useQuery<QueryResponse>({
     queryKey: ["webpage"],
     queryFn: () => getAllWebPage(accessToken),
+    enabled: permissions.includes("webpage"),
     retry: 2,
   });
   const webpages = data?.data ?? [];
+
+  const { data: previewToken } = useQuery({
+    queryKey: ["preview-token"],
+    queryFn: () => getPreviewToken(accessToken),
+    enabled: permissions.includes("webpage") && !!accessToken,
+  });
 
   useEffect(() => {
     if (webpages) {
@@ -80,7 +88,7 @@ function WebPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       if (!res.ok) throw new Error("Failed to delete webpage");
       toast.success("Webpage: Deleted successfully");
@@ -130,7 +138,7 @@ function WebPage() {
                   b.parent.slug.slice(1)
                 }`
               : "No Parent",
-            url: `/${b.fullSlug}`,
+            url: `/${b.fullSlug}?token=${previewToken}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

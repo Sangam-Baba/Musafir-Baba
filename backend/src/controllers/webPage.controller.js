@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { WebPage } from "../models/WebPage.js";
 import { Package } from "../models/Package.js";
+import { verifyPreviewToken } from "../utils/tokens.js";
 
 const createWebPage = async (req, res) => {
   try {
@@ -55,26 +56,21 @@ const getWebPageBySlug = async (req, res) => {
         .json({ success: false, message: "Invalid Slug h" });
     const webpage = await WebPage.findOne({
       fullSlug: fullSlug,
-      status: "published",
     })
       .populate("reviews")
       .populate("parent", "title slug")
       .lean();
     if (!webpage)
-      return res
-        .status(404)
-        .json({ success: false, message: "Invalid Slug h1" });
-    // if (req.query?.parent && webpage.parent.slug !== req.query.parent)
-    //   return res
-    //     .status(404)
-    //     .json({ success: false, message: "Invalid Slug h2" });
-    // if (webpage?.parent && !req.query?.parent)
-    //   return res
-    //     .status(404)
-    //     .json({ success: false, message: "Invalid Slug h3" });
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    if (
+      webpage.status !== "published" &&
+      !verifyPreviewToken(req.query?.token)
+    ) {
+      return res.status(403).json({ success: false, message: "Invalid Url" });
+    }
     res.status(200).json({ success: true, data: webpage });
   } catch (error) {
-    console.log("WebPage getting by slug failed", error.message);
+    // console.log("WebPage getting by slug failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

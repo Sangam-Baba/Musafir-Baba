@@ -22,9 +22,9 @@ interface Faq {
   question: string;
   answer: string;
 }
-const getVisaBySlug = async (slug: string) => {
+const getVisaBySlug = async (slug: string, token?: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/slug/${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/visa/slug/${slug}?token=${token}`,
   );
   if (!res.ok) throw new Error("Failed to fetch visas");
   const data = await res.json();
@@ -33,11 +33,14 @@ const getVisaBySlug = async (slug: string) => {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const page = await getVisaBySlug(slug);
+  const { token } = await searchParams;
+  const page = await getVisaBySlug(slug, token);
   return {
     title: page.metaTitle || page.title,
     description: page.metaDescription,

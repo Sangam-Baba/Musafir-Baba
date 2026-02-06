@@ -7,9 +7,9 @@ import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { revalidate } from "../auth/logout/page";
 
-export const getWebPageBySlug = async (slug: string) => {
+export const getWebPageBySlug = async (slug: string, token?: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
     {
       next: { revalidate: 120 },
     },
@@ -22,12 +22,15 @@ export const getWebPageBySlug = async (slug: string) => {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ token?: string }>;
 }): Promise<Metadata> {
   const { slug } = (await params) || [];
   const fullSlug = slug.join("/");
-  const page = await getWebPageBySlug(fullSlug);
+  const { token } = await searchParams;
+  const page = await getWebPageBySlug(fullSlug, token);
 
   return {
     title: page.metaTitle || page.title,
@@ -73,12 +76,19 @@ export async function getTrandingPkg(slug: string) {
   const data = await res.json();
   return data.data;
 }
-async function AllWebPage({ params }: { params: Promise<{ slug: string[] }> }) {
+async function AllWebPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ token?: string }>;
+}) {
   const { slug } = (await params) || [];
   // console.log("this is SLug ", slug);
+  const { token } = await searchParams;
   const fullSlug = slug.join("/");
 
-  const page = await getWebPageBySlug(fullSlug);
+  const page = await getWebPageBySlug(fullSlug, token);
   const relatedPage = await getRelatedWebpageBySlug(slug[slug.length - 1]);
   const trandingPkg = await getTrandingPkg(slug[0]);
   // console.log("best saller", trandingPkg);

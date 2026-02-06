@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import VisaList from "@/components/admin/VisaList";
+import { getPreviewToken } from "../blogs/page";
 interface Visa {
   _id: string;
   country: string;
@@ -26,9 +27,9 @@ const getAllVisa = async () => {
   return data;
 };
 function VisaPage() {
-  const accessToken = useAdminAuthStore((state) => state.accessToken);
+  const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
-    (state) => state.permissions
+    (state) => state.permissions,
   ) as string[];
   const router = useRouter();
   const { data, isLoading, isError, error, refetch } = useQuery<QueryResponse>({
@@ -42,6 +43,12 @@ function VisaPage() {
     return <h1>{error.message}</h1>;
   }
   const visa = data?.data ?? [];
+
+  const { data: previewToken } = useQuery({
+    queryKey: ["preview-token"],
+    queryFn: () => getPreviewToken(accessToken),
+    enabled: permissions.includes("visa") && !!accessToken,
+  });
 
   const handleEdit = (id: string) => {
     router.push(`/admin/visa/edit/${id}`);
@@ -57,7 +64,7 @@ function VisaPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       if (!res.ok) throw new Error("Failed to delete visa");
       toast.success("Visa: Deleted successfully");
@@ -92,7 +99,7 @@ function VisaPage() {
             country: b.country,
             cost: b.cost,
             visaType: b.visaType,
-            url: `/visa/${b.slug}`,
+            url: `/visa/${b.slug}?token=${previewToken}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}
