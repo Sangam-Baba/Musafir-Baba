@@ -5,6 +5,7 @@ import { Session } from "../models/AuthSession.js";
 import { v4 as uuid } from "uuid";
 import {
   signAccessToken,
+  signPreviewToken,
   signRefreshToken,
   verifyAccess,
   verifyRefresh,
@@ -57,17 +58,17 @@ const getAllAdmin = async (req, res) => {
     // Step 3: Map each user with latest session + logs
     const result = users.map((user) => {
       const userLogs = logs.filter(
-        (l) => String(l.userId) === String(user._id)
+        (l) => String(l.userId) === String(user._id),
       );
       const userSessions = sessions.filter(
-        (s) => String(s.userId) === String(user._id)
+        (s) => String(s.userId) === String(user._id),
       );
 
       const lastLogin =
         userLogs.find(
           (log) =>
             log.eventType === "login" &&
-            !log.userAgent.includes("PostmanRuntime")
+            !log.userAgent.includes("PostmanRuntime"),
         ) || userLogs.find((log) => log.eventType === "login");
       const lastLogout = userLogs.find((log) => log.eventType === "logout");
       const activeSession = userSessions.find((s) => s.status === "active");
@@ -177,7 +178,7 @@ const loginAdmin = async (req, res) => {
       user._id,
       user.role,
       user.permissions,
-      sessionId
+      sessionId,
     );
 
     const cookieOption = {
@@ -221,7 +222,7 @@ const refresh = async (req, res) => {
       payload.sub,
       payload.role,
       payload.permissions,
-      payload.sessionId
+      payload.sessionId,
     );
     const cookieOptions = {
       httpOnly: true,
@@ -271,7 +272,7 @@ const logout = async (req, res) => {
 
     await Session.updateOne(
       { sessionId },
-      { status: "logout", logoutAt: new Date() }
+      { status: "logout", logoutAt: new Date() },
     );
     return res
       .status(200)
@@ -356,7 +357,7 @@ const getAdminById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
     const admin = await Staff.findById(id).select(
-      " name email phone permissions role"
+      " name email phone permissions role",
     );
     if (!admin) {
       return res
@@ -402,6 +403,22 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
+const previewToken = async (req, res) => {
+  try {
+    const { role } = req.user;
+    if (!role)
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required things" });
+    const token = signPreviewToken({ role });
+    res
+      .status(200)
+      .json({ success: true, message: "Token Get Successfully", data: token });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 export {
   registerAdmin,
   updateAdmin,
@@ -412,4 +429,5 @@ export {
   deleteAdmin,
   refresh,
   me,
+  previewToken,
 };

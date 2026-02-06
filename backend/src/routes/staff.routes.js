@@ -9,6 +9,7 @@ import {
   deleteAdmin,
   refresh,
   me,
+  previewToken,
 } from "../controllers/staff.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -24,23 +25,30 @@ staffRouter.post(
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin"]),
-  logout
+  logout,
 );
 
 staffRouter.get("/me", me);
+staffRouter.get(
+  "/preview-token",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  previewToken,
+);
 staffRouter.get(
   "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin"]),
-  getAdminById
+  getAdminById,
 );
 staffRouter.get(
   "/",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin"]),
-  getAllAdmin
+  getAllAdmin,
 );
 staffRouter.post("/login", loginAdmin);
 staffRouter.patch(
@@ -48,13 +56,13 @@ staffRouter.patch(
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin"]),
-  updateAdmin
+  updateAdmin,
 );
 staffRouter.delete(
   "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin"]),
-  deleteAdmin
+  deleteAdmin,
 );
 export default staffRouter;

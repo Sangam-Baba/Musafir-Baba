@@ -3,6 +3,7 @@ import { News } from "../models/News.js";
 import { NewsComment } from "../models/NewsComment.js";
 import { Author } from "../models/Authors.js";
 import { uploadToCloudinary } from "../services/fileUpload.service.js";
+import { verifyPreviewToken } from "../utils/tokens.js";
 const createNews = async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -71,12 +72,16 @@ const getNewsBySlug = async (req, res) => {
     if (!slug)
       return res.status(400).json({ success: false, message: "Invalid Slug" });
 
-    const news = await News.findOne({ slug: slug, status: "published" })
+    const news = await News.findOne({ slug: slug })
       .populate("author", "name slug")
       .lean();
 
     if (!news)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
+
+    if (news.status !== "published" && !verifyPreviewToken(req.query?.token)) {
+      return res.status(403).json({ success: false, message: "Invalid Url" });
+    }
 
     const comments = await NewsComment.find({ newsId: news._id })
       .sort({ createdAt: -1 })
@@ -88,7 +93,7 @@ const getNewsBySlug = async (req, res) => {
       data: { news, comments },
     });
   } catch (error) {
-    console.log("News getting by slug failed", error.message);
+    // console.log("News getting by slug failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

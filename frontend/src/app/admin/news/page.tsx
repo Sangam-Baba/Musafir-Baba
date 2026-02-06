@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
+import { getPreviewToken } from "../blogs/page";
 
 interface News {
   _id: string;
@@ -22,16 +23,16 @@ interface News {
 const getAllNews = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/news?limit=100`,
-    { next: { revalidate: 60 } }
+    { next: { revalidate: 60 } },
   );
   if (!res.ok) throw new Error("Failed to fetch news");
   const data = await res.json();
   return data.data;
 };
 export default function NewsPage() {
-  const token = useAdminAuthStore((state) => state.accessToken);
+  const token = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
-    (state) => state.permissions
+    (state) => state.permissions,
   ) as string[];
   const [filter, setFilter] = useState({
     search: "",
@@ -47,6 +48,13 @@ export default function NewsPage() {
   } = useQuery({
     queryKey: ["all-news"],
     queryFn: getAllNews,
+    enabled: permissions.includes("news"),
+  });
+
+  const { data: previewToken } = useQuery({
+    queryKey: ["preview-token"],
+    queryFn: () => getPreviewToken(token),
+    enabled: permissions.includes("news") && !!token,
   });
 
   useEffect(() => {
@@ -79,7 +87,7 @@ export default function NewsPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       const data = await res.json();
 
@@ -129,7 +137,7 @@ export default function NewsPage() {
             id: b._id,
             title: b.title,
             description: b.excerpt,
-            url: `/news/${b.slug}`, // or absolute link if needed
+            url: `/news/${b.slug}?token=${previewToken}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

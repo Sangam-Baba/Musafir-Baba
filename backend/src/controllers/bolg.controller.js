@@ -3,6 +3,7 @@ import { Blog } from "../models/Blog.js";
 import { Comment } from "../models/Comment.js";
 import { Category } from "../models/Category.js";
 import { Author } from "../models/Authors.js";
+import { verifyPreviewToken } from "../utils/tokens.js";
 const createBlog = async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -72,13 +73,17 @@ const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const blog = await Blog.findOne({ slug: slug, status: "published" })
+    const blog = await Blog.findOne({ slug: slug })
       .populate("category", "name slug")
       .populate("author", "name slug")
       .lean();
 
     if (!blog)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
+
+    if (blog.status !== "published" && !verifyPreviewToken(req.query?.token)) {
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    }
     const comments = await Comment.find({ blogId: blog._id })
       .sort({ createdAt: -1 })
       .lean();
@@ -89,7 +94,7 @@ const getBlogBySlug = async (req, res) => {
       data: { blog, comments },
     });
   } catch (error) {
-    console.log("Blog getting failed", error.message);
+    // console.log("Blog getting failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

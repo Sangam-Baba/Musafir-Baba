@@ -18,10 +18,13 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getNewsSchema } from "@/lib/schema/news.schema";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 // Fetch blog by slug
-async function getNews(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}`, {
-    cache: "no-cache",
-  });
+async function getNews(slug: string, token?: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/news/${slug}?token=${token}`,
+    {
+      cache: "no-cache",
+    },
+  );
 
   if (!res.ok) return notFound();
   const data = await res.json();
@@ -31,11 +34,14 @@ async function getNews(slug: string) {
 // SEO Metadata
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { slug } = await params;
-  const { news } = await getNews(slug);
+  const { token } = await searchParams;
+  const { news } = await getNews(slug, token);
 
   if (!news) {
     return {
@@ -92,11 +98,14 @@ export async function generateMetadata({
 // Blog Detail Page
 export default async function NewsDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { slug } = await params;
-  const { news, comments } = await getNews(slug);
+  const { token } = await searchParams;
+  const { news, comments } = await getNews(slug, token);
   if (!news) return notFound();
   const readTime = readingTime(news.content || "");
 

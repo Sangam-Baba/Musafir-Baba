@@ -34,11 +34,27 @@ const getBlogs = async () => {
   return data?.data;
 };
 
+export const getPreviewToken = async (token: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/admin/preview-token`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (!res.ok) throw new Error("Failed to get preview token");
+  const data = await res.json();
+  return data?.data;
+};
+
 export default function BlogsPage() {
   const [filter, setFilter] = useState({
     search: "",
   });
-  const token = useAdminAuthStore((state) => state.accessToken);
+  const token = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
     (state) => state.permissions,
   ) as string[];
@@ -50,7 +66,12 @@ export default function BlogsPage() {
   } = useQuery({
     queryKey: ["blogs"],
     queryFn: getBlogs,
-    enabled: permissions.includes("blogs"),
+    enabled: permissions.includes("blogs") && !!token,
+  });
+  const { data: previewToken } = useQuery({
+    queryKey: ["preview-token"],
+    queryFn: () => getPreviewToken(token),
+    enabled: permissions.includes("blogs") && !!token,
   });
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>(blogs);
 
@@ -135,7 +156,7 @@ export default function BlogsPage() {
               id: b._id,
               title: b.title,
               description: b.excerpt,
-              url: `/blog/${b.slug}`, // or absolute link if needed
+              url: `/blog/${b.slug}?token=${previewToken}`,
             })) ?? []
           }
           onEdit={handleEdit}

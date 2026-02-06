@@ -19,10 +19,13 @@ import LatestBlog from "@/components/common/LatestBlog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommentDailog } from "@/components/custom/CommentDailog";
 // Fetch blog by slug
-async function getBlog(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}`, {
-    cache: "no-cache",
-  });
+async function getBlog(slug: string, token?: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/${slug}?token=${token}`,
+    {
+      cache: "no-cache",
+    },
+  );
 
   if (!res.ok) return notFound();
   const data = await res.json();
@@ -53,11 +56,14 @@ async function getTrandingBlogs() {
 // SEO Metadata
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { slug } = await params;
-  const { blog } = await getBlog(slug);
+  const { token } = await searchParams;
+  const { blog } = await getBlog(slug, token);
 
   if (!blog) {
     return {
@@ -114,11 +120,15 @@ export async function generateMetadata({
 // Blog Detail Page
 export default async function BlogDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { slug } = await params;
-  const { blog, comments } = await getBlog(slug);
+  const { token } = await searchParams;
+  console.log("Preview Token:", token);
+  const { blog, comments } = await getBlog(slug, token);
   if (!blog) return <NotFoundPage />;
   const readTime = readingTime(blog.content || "");
 

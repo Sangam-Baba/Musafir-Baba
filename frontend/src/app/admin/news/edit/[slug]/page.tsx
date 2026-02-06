@@ -161,7 +161,7 @@ export default function EditNews() {
     mutationFn: (values: FormValues) => updateNews(values, token, news._id),
     onSuccess: (data) => {
       console.log(data);
-      toast.success("Blog updated successfully!");
+      toast.success("News updated successfully!");
     },
     onError: (error: unknown) => {
       if (error instanceof Error) {

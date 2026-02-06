@@ -20,3 +20,12 @@ export function verifyAccess(token) {
 export function verifyRefresh(token) {
   return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 }
+
+export function signPreviewToken(payload) {
+  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_TTL || "1d",
+  });
+}
+export function verifyPreviewToken(token) {
+  return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+}
