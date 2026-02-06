@@ -38,13 +38,15 @@ function RelatedWebpage({ blogs, title, type }: ListBlogSidebarProps) {
             key={blog._id}
             className="flex flex-row items-center px-2 py-2 gap-2 border-none shadow-none "
           >
-            <Image
-              src={blog.coverImage.url}
-              alt={blog.coverImage.alt || blog.title}
-              width={1200}
-              height={800}
-              className="rounded-md w-[120px] h-20 object-cover border border-gray-200"
-            />
+            <div className="relative w-[120px] h-[80px] shrink-0">
+              <Image
+                src={blog.coverImage.url}
+                alt={blog.coverImage.alt || blog.title}
+                fill
+                unoptimized
+                className="rounded-md object-cover border border-gray-200"
+              />
+            </div>
             <CardContent className="p-2">
               <Link
                 href={`/${blog.fullSlug}`}
