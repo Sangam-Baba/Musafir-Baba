@@ -47,7 +47,7 @@ export default function Hero({
 
   return (
     <section
-      className={`relative w-full aspect-3/1 flex justify-center  ${className}`}
+      className={`relative w-full aspect-5/2 flex justify-center  ${className}`}
     >
       {/* Background image */}
       <div className="absolute inset-0">
@@ -56,6 +56,7 @@ export default function Hero({
           alt={title}
           fill
           priority
+          unoptimized
           fetchPriority="high"
           sizes="
           (max-width: 480px) 100vw,
