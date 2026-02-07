@@ -56,7 +56,6 @@ export default function Hero({
           alt={title}
           fill
           priority
-          unoptimized
           fetchPriority="high"
           sizes="
           (max-width: 480px) 100vw,
