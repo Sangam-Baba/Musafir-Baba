@@ -126,7 +126,7 @@ const getNewsById = async (req, res) => {
 
 const getAllNews = async (req, res) => {
   try {
-    const { title, search, author } = req.query;
+    const { title, search, author, status } = req.query;
     const page = Math.max(parseInt(req.query?.page || "1"), 1);
     const limit = Math.min(parseInt(req.query?.limit || "250"), 200);
     const skip = (page - 1) * limit;
@@ -134,6 +134,7 @@ const getAllNews = async (req, res) => {
     const filter = {};
 
     if (title) filter.title = req.query.title;
+    if (status) filter.status = status;
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },

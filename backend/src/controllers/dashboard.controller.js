@@ -107,16 +107,15 @@ const getMonthlyBookings = async (req, res) => {
     ];
 
     const resu = await Booking.aggregate(pipeline).allowDiskUse(true);
-    const CustomizedTourBookings = await CustomizedTourBooking.aggregate(
-      pipeline
-    ).allowDiskUse(true);
+    const CustomizedTourBookings =
+      await CustomizedTourBooking.aggregate(pipeline).allowDiskUse(true);
     // return ISO strings so client timezone formatting is consistent
     const results = [...resu, ...CustomizedTourBookings];
     const uniqueResults = [];
 
     for (const result of results) {
       const existingResult = uniqueResults.find(
-        (r) => r.month.toISOString() === result.month.toISOString()
+        (r) => r.month.toISOString() === result.month.toISOString(),
       );
       if (existingResult) {
         existingResult.count += result.count;
@@ -244,13 +243,13 @@ const getLatestAcitvity = async (req, res) => {
 
 const getCombinedNewsBlog = async (req, res) => {
   try {
-    const news = await News.find()
+    const news = await News.find({ status: "published" })
       .select("title coverImage excerpt  slug createdAt")
       .sort({ createdAt: -1 })
       .limit(5)
       .lean();
     const newNews = news.map((item) => ({ ...item, type: "news" }));
-    const blog = await Blog.find()
+    const blog = await Blog.find({ status: "published" })
       .select("title coverImage excerpt  slug createdAt")
       .sort({ createdAt: -1 })
       .limit(5)

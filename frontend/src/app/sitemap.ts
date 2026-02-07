@@ -100,13 +100,17 @@ interface Visa {
 
 // Example: Fetch blog slugs from your DB or API
 async function getBlogs() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/`);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/?status=published`,
+  );
   if (!res.ok) throw new Error("Failed to fetch blogs");
   const data = await res.json();
   return data.data;
 }
 async function getNews() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/`);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/news/?status=published`,
+  );
   if (!res.ok) throw new Error("Failed to fetch news");
   const data = await res.json();
   return data.data;
@@ -154,7 +158,7 @@ const getAllWebPage = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-    }
+    },
   );
   if (!res.ok) throw new Error("Failed to fetch webpages");
   const data = await res.json();

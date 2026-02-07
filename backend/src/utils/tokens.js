@@ -23,7 +23,8 @@ export function verifyRefresh(token) {
 
 export function signPreviewToken(payload) {
   return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: process.env.ACCESS_TOKEN_TTL || "1d",
+    // expiresIn: process.env.ACCESS_TOKEN_TTL || "1d",
+    expiresIn: 600,
   });
 }
 export function verifyPreviewToken(token) {

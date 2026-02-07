@@ -130,7 +130,7 @@ const getBlogById = async (req, res) => {
 
 const getAllBlog = async (req, res) => {
   try {
-    const { title, search, category, author } = req.query;
+    const { title, search, category, author, status } = req.query;
     const page = Math.max(parseInt(req.query?.page || "1"), 1);
     const limit = Math.min(parseInt(req.query?.limit || "250"), 250);
     const skip = (page - 1) * limit;
@@ -138,6 +138,7 @@ const getAllBlog = async (req, res) => {
     const filter = {};
 
     if (title) filter.title = req.query.title;
+    if (status) filter.status = status;
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
