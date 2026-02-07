@@ -28,5 +28,6 @@ export function signPreviewToken(payload) {
   });
 }
 export function verifyPreviewToken(token) {
+  if (!token) return false;
   return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 }

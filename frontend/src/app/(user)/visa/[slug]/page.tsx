@@ -26,7 +26,7 @@ const getVisaBySlug = async (slug: string, token?: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/slug/${slug}?token=${token}`,
   );
-  if (!res.ok) throw new Error("Failed to fetch visas");
+  if (!res.ok) return notFound();
   const data = await res.json();
   return data?.data;
 };
