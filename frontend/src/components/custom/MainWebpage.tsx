@@ -87,7 +87,7 @@ async function MainWebPage({
             <h1 className="text-3xl md:text-4xl font-bold"></h1>
           </header> */}
           <div className="border border-gray-400 px-4 py-8 flex gap-6 w-full rounded-md bg-gray-50">
-            <p className="bg-[#FE5300] w-1 md:h-15 h:40 rounded-lg"></p>
+            <p className="bg-[#FE5300] w-1 rounded-lg"></p>
             <p className="italic text-gray-500">{page.excerpt}</p>
           </div>
           <section className="prose prose-lg max-w-none">
