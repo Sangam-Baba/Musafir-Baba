@@ -38,7 +38,7 @@ export async function getNews(page: number) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/news/?page=${page}&limit=12`,
     {
       next: { revalidate: 60 },
-    }
+    },
   );
 
   if (!res.ok) throw new Error("Failed to fetch News");
@@ -63,7 +63,7 @@ export default async function NewsPage({
     "https://musafirbaba.com/blog",
     news.map((news: News) => ({
       url: `https://musafirbaba.com/blog/${news.slug}`,
-    }))
+    })),
   );
 
   const content = `
@@ -275,7 +275,7 @@ export default async function NewsPage({
   return (
     <section className="w-full ">
       <Hero
-        image="https://res.cloudinary.com/dmmsemrty/image/upload/v1763716873/istockphoto-1328182974-640x640_u0562o.jpg"
+        image="https://cdn.musafirbaba.com/images/News.jpg"
         title="News"
         overlayOpacity={100}
       />
