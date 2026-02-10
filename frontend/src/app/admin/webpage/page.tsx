@@ -138,7 +138,8 @@ function WebPage() {
                   b.parent.slug.slice(1)
                 }`
               : "No Parent",
-            url: `/${b.fullSlug}?token=${previewToken}`,
+            url: `/${b.fullSlug}`,
+            previewUrl: `/${b.fullSlug}?token=${previewToken}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

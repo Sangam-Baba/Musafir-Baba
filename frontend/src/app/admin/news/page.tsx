@@ -137,7 +137,8 @@ export default function NewsPage() {
             id: b._id,
             title: b.title,
             description: b.excerpt,
-            url: `/news/${b.slug}?token=${previewToken}`,
+            url: `/news/${b.slug}`,
+            previewUrl: `/news/${b.slug}?token=${previewToken}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

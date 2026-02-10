@@ -18,6 +18,7 @@ interface WebPage {
   status: string;
   parent: string;
   url: string;
+  previewUrl: string;
 }
 
 interface WebpageTableProps {
@@ -42,6 +43,7 @@ export default function PageListt({
               <TableHead className="w-[20%]">Parent</TableHead>
               <TableHead className="w-[20%]">Status</TableHead>
               <TableHead className="w-[15%]">Visit</TableHead>
+              <TableHead className="w-[15%]">Preview</TableHead>
               <TableHead className="w-[25%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -65,6 +67,17 @@ export default function PageListt({
                   >
                     <ExternalLink size={16} />
                     Visit
+                  </a>
+                </TableCell>
+                <TableCell>
+                  <a
+                    href={cat.previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink size={16} />
+                    Preview
                   </a>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
@@ -105,6 +118,15 @@ export default function PageListt({
               >
                 <ExternalLink size={16} />
                 Visit
+              </a>
+              <a
+                href={cat.previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline inline-flex items-center gap-1 text-sm"
+              >
+                <ExternalLink size={16} />
+                Preview
               </a>
               <div className="flex gap-2 pt-2">
                 <Button

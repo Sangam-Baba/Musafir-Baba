@@ -19,6 +19,7 @@ type Blog = {
   title: string;
   description: string;
   url: string;
+  previewUrl: string;
 };
 
 interface BlogTableProps {
@@ -38,6 +39,7 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
               <TableHead className="w-[35%]">Title</TableHead>
               <TableHead className="w-[35%]">Excerpt</TableHead>
               <TableHead className="w-[10%]">URL</TableHead>
+              <TableHead className="w-[10%]">Preview</TableHead>
               <TableHead className="w-[15%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -64,6 +66,17 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
                   >
                     <ExternalLink size={16} />
                     Visit
+                  </a>
+                </TableCell>
+                <TableCell>
+                  <a
+                    href={blog.previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink size={16} />
+                    Preview
                   </a>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
@@ -107,6 +120,15 @@ export default function ListTable({ blogs, onEdit, onDelete }: BlogTableProps) {
               >
                 <ExternalLink size={16} />
                 Visit
+              </a>
+              <a
+                href={blog.previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline inline-flex items-center gap-1 text-sm"
+              >
+                <ExternalLink size={16} />
+                Preview
               </a>
               <div className="flex gap-2 pt-2">
                 <Button

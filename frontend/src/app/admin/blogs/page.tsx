@@ -156,7 +156,8 @@ export default function BlogsPage() {
               id: b._id,
               title: b.title,
               description: b.excerpt,
-              url: `/blog/${b.slug}?token=${previewToken}`,
+              url: `/blog/${b.slug}`,
+              previewUrl: `/blog/${b.slug}?token=${previewToken}`,
             })) ?? []
           }
           onEdit={handleEdit}
