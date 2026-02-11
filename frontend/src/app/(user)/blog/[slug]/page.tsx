@@ -290,15 +290,6 @@ export default async function BlogDetailPage({
               />
             </TabsContent>
           </Tabs>
-
-          {/* <LatestBlog
-            blogs={filteredTrandingBlogs}
-            title="Tranding Blog"
-            type="trending"
-            url="blog"
-          /> */}
-          {/* <LatestBlogSidebar currentId={blog._id} />
-          <TrandingBlogSidebar currentId={blog._id} /> */}
         </div>
         {/* Comments Section */}
         <section className="mt-10 w-full">

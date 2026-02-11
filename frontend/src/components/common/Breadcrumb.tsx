@@ -17,38 +17,47 @@ export default function Breadcrumb() {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-2">
-      <ol className="flex items-center flex-wrap ">
-        <li>
+    <nav aria-label="Breadcrumb" className="text-sm text-gray-600 my-2 z-10">
+      <ol className="flex flex-wrap items-center">
+        <li className="flex items-center">
           <Link
             href="/"
-            className="text-gray-800 hover:text-blue-600 cursor-pointer text-md  hover:underline"
+            className="text-gray-800 hover:text-blue-600 text-md hover:underline"
           >
             Home
           </Link>
+
+          {breadcrumbs.length > 0 && (
+            <ChevronRightIcon
+              size={16}
+              color="#FE5300"
+              className="mx-1 shrink-0"
+            />
+          )}
         </li>
 
-        {breadcrumbs.map((bc, i: number) => {
+        {breadcrumbs.map((bc, i) => {
           const isLast = i === breadcrumbs.length - 1;
+
           return (
-            <li
-              key={`${bc.href}-${i}`}
-              className="flex gap-1 z-10 items-baseline"
-            >
-              <ChevronRightIcon
-                size={13}
-                color="#FE5300"
-                className="pointer-events-none translate-y-[1px]"
-              />
-              {i === breadcrumbs.length - 1 ? (
-                <span className="text-gray-800 text-md ">{bc.name}</span>
+            <li key={`${bc.href}-${i}`} className="flex items-center">
+              {isLast ? (
+                <span className="text-gray-800 text-md">{bc.name}</span>
               ) : (
-                <Link
-                  href={bc.href}
-                  className="text-gray-800 hover:text-blue-600 cursor-pointer text-md hover:underline"
-                >
-                  {bc.name}
-                </Link>
+                <>
+                  <Link
+                    href={bc.href}
+                    className="text-gray-800 hover:text-blue-600 text-md hover:underline z-10"
+                  >
+                    {bc.name}
+                  </Link>
+
+                  <ChevronRightIcon
+                    size={16}
+                    color="#FE5300"
+                    className="mx-1 shrink-0"
+                  />
+                </>
               )}
             </li>
           );

@@ -17,6 +17,7 @@ import { notFound } from "next/navigation";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getNewsSchema } from "@/lib/schema/news.schema";
 import HelpfulResources from "@/components/custom/HelpfulResources";
+import { CommentDailog } from "@/components/custom/CommentDailog";
 // Fetch blog by slug
 async function getNews(slug: string, token?: string) {
   const res = await fetch(
@@ -247,10 +248,10 @@ export default async function NewsDetailPage({
 
           {/* Comments Section */}
           <section className="mt-10 w-full">
-            <BlogComments
+            <CommentDailog
               blogId={news._id}
               initialComments={comments}
-              type="news"
+              type="blog"
             />
           </section>
         </article>
