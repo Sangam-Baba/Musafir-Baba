@@ -13,6 +13,13 @@
   scrollbar-width: none; /* Firefox */
 }
 
+.prose img {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  display: block;
+}
+
 /* Added button styling for editor buttons */
 .prose .editor-button {
   display: flex;
