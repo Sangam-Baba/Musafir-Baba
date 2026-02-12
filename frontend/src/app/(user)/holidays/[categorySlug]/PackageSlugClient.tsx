@@ -155,7 +155,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
                 <span className="font-semibold text-[#FE5300]">
                   ₹{filter.price.toLocaleString()}
                 </span>{" "}
-                -/person
+                / person
               </Label>
               <Input
                 type="range"

@@ -111,7 +111,7 @@ function CustomizedTourClient({
               <span className="font-semibold text-[#FE5300]">
                 ₹{filter.price.toLocaleString()}
               </span>{" "}
-              per person
+              / person
             </Label>
             <Input
               type="range"

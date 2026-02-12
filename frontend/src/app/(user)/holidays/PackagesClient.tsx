@@ -149,7 +149,7 @@ export default function MixedPackagesClient({
                 <span className="font-semibold text-[#FE5300]">
                   ₹{filter.price.toLocaleString()}
                 </span>
-                -/Person
+                / Person
               </Label>
               <Input
                 type="range"
