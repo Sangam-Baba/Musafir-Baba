@@ -38,6 +38,7 @@ import documentRoutes from "./document.routes.js";
 import coupanRoutes from "./coupan.routes.js";
 import newsletterRoutes from "./newsletter.routes.js";
 import popupRoutes from "./popup.routes.js";
+import vehicleRoutes from "./vehicle.routes.js";
 
 const router = Router();
 
@@ -80,4 +81,5 @@ router.use("/document", documentRoutes);
 router.use("/coupan", coupanRoutes);
 router.use("/newsletter", newsletterRoutes);
 router.use("/popup", popupRoutes);
+router.use("/vehicle", vehicleRoutes);
 export default router;
