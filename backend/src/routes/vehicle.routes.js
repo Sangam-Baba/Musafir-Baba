@@ -3,6 +3,7 @@ import {
   updateVehicle,
   deleteVehicle,
   getVehicleById,
+  getAllVehicle,
 } from "../controllers/vehicle.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -19,21 +20,28 @@ vehicleRoutes.post(
   createVehicle,
 );
 vehicleRoutes.get(
-  "/id",
+  "/",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getAllVehicle,
+);
+vehicleRoutes.get(
+  "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getVehicleById,
 );
-vehicleRoutes.put(
-  "/",
+vehicleRoutes.patch(
+  "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   updateVehicle,
 );
 vehicleRoutes.delete(
-  "/",
+  "/:id",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),

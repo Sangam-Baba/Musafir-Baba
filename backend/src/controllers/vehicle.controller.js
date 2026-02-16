@@ -24,7 +24,7 @@ const createVehicle = async (req, res) => {
       faqs,
       status,
     } = req.body;
-    if (!price || vehicleName || title || fuelType) {
+    if (!price || !vehicleName || !title || !fuelType) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required things" });
@@ -124,7 +124,7 @@ const getVehicleById = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Missing Required Things" });
     }
-    const vehicle = await Vehicle.findOne(id);
+    const vehicle = await Vehicle.findById(id);
     if (!vehicle) {
       return res
         .status(500)
@@ -142,4 +142,23 @@ const getVehicleById = async (req, res) => {
     });
   }
 };
-export { createVehicle, updateVehicle, deleteVehicle, getVehicleById };
+
+const getAllVehicle = async (req, res) => {
+  try {
+    const allvehicle = await Vehicle.find();
+    res.status(200).json({
+      success: true,
+      message: "Successfully got all vehicle",
+      data: allvehicle,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+export {
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+  getVehicleById,
+  getAllVehicle,
+};

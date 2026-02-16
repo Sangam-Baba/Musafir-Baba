@@ -1,43 +1,45 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const vehicleSchema = new mongoose.Schema(
   {
     vehicleName: {
-      type: string,
+      type: String,
       trim: true,
       required: true,
     },
     vehicleType: {
-      type: string,
+      type: String,
       enum: ["car", "bike"],
       default: "bike",
     },
-    vehicleYear: string,
+    vehicleYear: String,
     vehicleBrand: {
-      type: string,
+      type: String,
       enum: ["hero", "honda", "tvs"],
       default: "hero",
     },
     vehicleModel: {
-      type: string,
+      type: String,
       enum: ["glamour"],
       default: "glamour",
     },
     vehicleMilage: {
-      type: string,
+      type: String,
     },
     fuelType: {
-      type: string,
-      enum: ["electric", "petrol", "desile", "elctric", "cng", "other"],
+      type: String,
+      enum: ["electric", "petrol", "diesel", "cng", "other"],
       default: "petrol",
     },
-    seats: number,
+    features: [String],
+    seats: Number,
     price: {
-      daily: nummber,
-      hourly: number,
+      daily: Number,
+      hourly: Number,
     },
     title: {
-      type: stirng,
+      type: String,
       trim: true,
       required: true,
     },
@@ -45,25 +47,25 @@ const vehicleSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    content: string,
+    content: String,
     availableStock: {
-      type: number,
+      type: Number,
       default: 1,
     },
     gallery: [
       {
-        url: string,
-        alt: string,
-        title: string,
-        width: number,
-        height: number,
+        url: String,
+        alt: String,
+        title: String,
+        width: Number,
+        height: Number,
       },
     ],
-
     metaTitle: String,
     metaDescription: String,
     canonicalUrl: String,
     excerpt: String,
+    keywords: [String],
     faqs: [
       {
         question: { type: String },
@@ -78,5 +80,24 @@ const vehicleSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+vehicleSchema.pre("save", function (next) {
+  if (!this.slug || this.isModified("slug")) {
+    this.slug = slugify(this.slug || this.title, { lower: true, strict: true });
+  }
+  next();
+});
+
+vehicleSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  if (update.slug) {
+    update.slug = slugify(update.slug || update.title, {
+      lower: true,
+      strict: true,
+    });
+  }
+  this.setUpdate(update);
+  next();
+});
 
 export const Vehicle = mongoose.model("Vehicle", vehicleSchema);
