@@ -21,8 +21,6 @@ const vehicleSchema = new mongoose.Schema(
     },
     vehicleModel: {
       type: String,
-      enum: ["glamour"],
-      default: "glamour",
     },
     vehicleMilage: {
       type: String,

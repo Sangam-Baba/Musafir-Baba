@@ -4,6 +4,8 @@ import {
   deleteVehicle,
   getVehicleById,
   getAllVehicle,
+  getVehicleBySlug,
+  getAllPublishedVehicle,
 } from "../controllers/vehicle.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -26,6 +28,7 @@ vehicleRoutes.get(
   authorizedRoles(["admin", "superadmin"]),
   getAllVehicle,
 );
+vehicleRoutes.get("/all", getAllPublishedVehicle);
 vehicleRoutes.get(
   "/:id",
   isAuthenticated,
@@ -33,6 +36,8 @@ vehicleRoutes.get(
   authorizedRoles(["admin", "superadmin"]),
   getVehicleById,
 );
+vehicleRoutes.get("/slug/:slug", getVehicleBySlug);
+
 vehicleRoutes.patch(
   "/:id",
   isAuthenticated,

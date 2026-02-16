@@ -145,14 +145,61 @@ const getVehicleById = async (req, res) => {
 
 const getAllVehicle = async (req, res) => {
   try {
-    const allvehicle = await Vehicle.find();
+    const allVehicle = await Vehicle.find().sort({ createdAt: -1 });
+
     res.status(200).json({
       success: true,
-      message: "Successfully got all vehicle",
-      data: allvehicle,
+      message: "Successfully got all vehicles",
+      data: allVehicle,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const getAllPublishedVehicle = async (req, res) => {
+  try {
+    const allVehicle = await Vehicle.find({ status: "published" }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully got all published vehicles",
+      data: allVehicle,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+const getVehicleBySlug = async (rq, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required things" });
+    }
+    const vehicle = await Vehicle.findOne({ slug: slug, status: "published" });
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Invalid Slug" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Getting Successfully Vehicle",
+      data: vehicle,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 export {
@@ -161,4 +208,6 @@ export {
   deleteVehicle,
   getVehicleById,
   getAllVehicle,
+  getVehicleBySlug,
+  getAllPublishedVehicle,
 };
