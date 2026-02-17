@@ -29,6 +29,7 @@ vehicleRoutes.get(
   getAllVehicle,
 );
 vehicleRoutes.get("/all", getAllPublishedVehicle);
+vehicleRoutes.get("/slug/:slug", getVehicleBySlug);
 vehicleRoutes.get(
   "/:id",
   isAuthenticated,
@@ -36,7 +37,6 @@ vehicleRoutes.get(
   authorizedRoles(["admin", "superadmin"]),
   getVehicleById,
 );
-vehicleRoutes.get("/slug/:slug", getVehicleBySlug);
 
 vehicleRoutes.patch(
   "/:id",

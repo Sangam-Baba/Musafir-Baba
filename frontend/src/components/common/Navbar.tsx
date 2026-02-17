@@ -38,12 +38,12 @@ export function Navbar({ onClose }: { onClose?: () => void }) {
             </Link>
             <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
           </li>
-          <li className="font-semibold group  text-black">
+          {/* <li className="font-semibold group  text-black">
             <Link onClick={onClose} href="/membership">
               Membership
             </Link>
             <p className="rounded-xl h-0.5 bg-[#FE5300] opacity-0 group-hover:opacity-100 transition-all duration-300"></p>
-          </li>
+          </li> */}
           <li className="font-semibold group  text-black">
             <Link onClick={onClose} href="/blog">
               Blog

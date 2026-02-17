@@ -155,7 +155,7 @@ const getAllVehicle = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server Error for getAllVehicle",
     });
   }
 };
@@ -174,11 +174,11 @@ const getAllPublishedVehicle = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server Error for getAllPublishedVehicle",
     });
   }
 };
-const getVehicleBySlug = async (rq, res) => {
+const getVehicleBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
     if (!slug) {
@@ -198,7 +198,7 @@ const getVehicleBySlug = async (rq, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server Error for getVehicleBySlug",
     });
   }
 };
