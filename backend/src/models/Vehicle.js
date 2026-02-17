@@ -64,6 +64,8 @@ const vehicleSchema = new mongoose.Schema(
     canonicalUrl: String,
     excerpt: String,
     keywords: [String],
+    inclusions: [String],
+    exclusions: [String],
     faqs: [
       {
         question: { type: String },

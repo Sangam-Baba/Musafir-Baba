@@ -24,7 +24,7 @@ async function page({ params }: { params: Promise<{ slug: string }> }) {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold">{vehicle?.vehicleName}</h1>
 
-        <Faqs faqs={vehicle?.faqs} />
+        {vehicle?.faqs.length > 0 && <Faqs faqs={vehicle?.faqs} />}
       </div>
     </div>
   );

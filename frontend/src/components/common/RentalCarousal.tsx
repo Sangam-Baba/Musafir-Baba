@@ -32,12 +32,14 @@ export default function RentalCarousal({
       >
         {gallery.map((image) => (
           <SwiperSlide key={image.url}>
-            <Image
-              src={gallery[0].url}
-              alt={gallery[0].alt}
-              width={500}
-              height={500}
-            />
+            <div className="relative aspect-5/2">
+              <Image
+                src={image.url}
+                alt={image.alt}
+                fill
+                className="object-cover"
+              />
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>
@@ -52,12 +54,14 @@ export default function RentalCarousal({
       >
         {gallery.map((image) => (
           <SwiperSlide key={image.url}>
-            <Image
-              src={gallery[0].url}
-              alt={gallery[0].alt}
-              width={500}
-              height={500}
-            />
+            <div className="relative aspect-3/2">
+              <Image
+                src={image.url}
+                alt={image.alt}
+                fill
+                className="object-cover"
+              />
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>

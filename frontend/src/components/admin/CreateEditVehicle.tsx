@@ -81,6 +81,8 @@ export const vehicleSchema = z.object({
 
   keywords: z.array(z.string()).optional(),
   features: z.array(z.string()).optional(),
+  inclusions: z.array(z.string()).optional(),
+  exclusions: z.array(z.string()).optional(),
 
   faqs: z
     .array(
@@ -169,6 +171,10 @@ export const CreateEditVehicle = ({
       canonicalUrl: "",
       excerpt: "",
       faqs: [],
+      keywords: [],
+      features: [],
+      inclusions: [],
+      exclusions: [],
       status: "draft",
     },
   });
@@ -216,6 +222,8 @@ export const CreateEditVehicle = ({
         excerpt: vehicle.excerpt,
         keywords: vehicle.keywords,
         features: vehicle.features,
+        inclusions: vehicle.inclusions,
+        exclusions: vehicle.exclusions,
         faqs: vehicle.faqs,
         status: vehicle.status,
       });
@@ -264,7 +272,7 @@ export const CreateEditVehicle = ({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title Name</FormLabel>
+                  <FormLabel>Title Name (H1)</FormLabel>
                   <FormControl>
                     <Input placeholder="Honda Shine 2026" {...field} />
                   </FormControl>
@@ -476,7 +484,7 @@ export const CreateEditVehicle = ({
               name="metaTitle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>SEO Title</FormLabel>
+                  <FormLabel>Meta Title</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -538,23 +546,6 @@ export const CreateEditVehicle = ({
                         onChange={(val) => form.setValue("content", val)}
                       />
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <FormControl>
-                    <select {...field} className="input-style">
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -718,9 +709,8 @@ export const CreateEditVehicle = ({
                   type="button"
                   variant="destructive"
                   onClick={() => faqsArray.remove(index)}
-                  className="w-20 ml-2"
                 >
-                  Remove
+                  X
                 </Button>
               </div>
             ))}
@@ -731,9 +721,109 @@ export const CreateEditVehicle = ({
               + FAQ
             </Button>
           </div>
+          <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+            {/* Inclusion */}
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium mb-2">
+                Inclusions
+              </Label>
+              {form.watch("inclusions")?.map((field, index) => (
+                <div key={field} className="flex gap-2">
+                  <Input
+                    {...form.register(`inclusions.${index}`)}
+                    placeholder="Inclusion"
+                  />
 
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() =>
+                      form.setValue(
+                        "inclusions",
+                        form
+                          .watch("inclusions")
+                          ?.filter((_, idx) => idx !== index),
+                      )
+                    }
+                  >
+                    X
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() =>
+                  form.setValue("inclusions", [
+                    ...(form.watch("inclusions") || []),
+                    "",
+                  ])
+                }
+              >
+                + In
+              </Button>
+            </div>
+            {/* Exclusion */}
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium mb-2">
+                Exclusions
+              </Label>
+              {form.watch("exclusions")?.map((field, index) => (
+                <div key={field} className="flex gap-2">
+                  <Input
+                    {...form.register(`exclusions.${index}`)}
+                    placeholder="Exclusion"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() =>
+                      form.setValue(
+                        "exclusions",
+                        form
+                          .watch("exclusions")
+                          ?.filter((_, idx) => idx !== index),
+                      )
+                    }
+                  >
+                    X
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() =>
+                  form.setValue("exclusions", [
+                    ...(form.watch("exclusions") || []),
+                    "",
+                  ])
+                }
+              >
+                + Ex
+              </Button>
+            </div>
+          </div>
           {/* Submit */}
-          <div className="flex gap-5">
+          <div className="flex justify-between gap-5">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem className="flex gap-2">
+                  <FormLabel>Status</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="input-style border rounded-lg"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button type="submit">Submit</Button>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
