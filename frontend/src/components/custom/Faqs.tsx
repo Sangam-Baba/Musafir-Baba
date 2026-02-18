@@ -42,7 +42,7 @@ export function Faqs({ faqs }: FaqsProps) {
           <Accordion type="single" collapsible className="w-full">
             {firstColumn.map((faq) => (
               <AccordionItem
-                value={faq.id.toString()}
+                value={faq.id?.toString()}
                 key={faq.id}
                 className="rounded-2xl shadow-lg p-4"
               >
@@ -62,7 +62,7 @@ export function Faqs({ faqs }: FaqsProps) {
           <Accordion type="single" collapsible className="w-full">
             {secondColumn.map((faq) => (
               <AccordionItem
-                value={faq.id.toString()}
+                value={faq.id?.toString()}
                 key={faq.id}
                 className="rounded-2xl shadow-lg p-4"
               >
