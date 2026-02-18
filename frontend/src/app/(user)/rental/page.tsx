@@ -12,7 +12,7 @@ async function page() {
   const vehicles = await getAllVehicles();
   return (
     <div>
-      <Hero title="Rental Services" image="/rent.jpg" />
+      <Hero title="Rental Services" image="/rent.jpeg" />
 
       <div className="max-w-7xl mx-auto">
         <Breadcrumb />

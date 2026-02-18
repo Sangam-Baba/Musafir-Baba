@@ -1,39 +1,83 @@
+import { Vehicle } from "../models/Vehicle.js";
 import { VehicleBooking } from "../models/VehicleBooking.js";
 
 const createBooking = async (req, res) => {
   try {
-    const { userId } = req.user.sub;
+    const userId = req.user?.sub;
+
     if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Un-authenticated" });
+      return res.status(401).json({
+        success: false,
+        message: "Un-authenticated",
+      });
     }
-    const { vehicleId, checkIn, checkOut, noOfVehicle } = req.body;
+
+    const { vehicleId, checkIn, checkOut, noOfVehicle = 1 } = req.body;
+
     if (!vehicleId || !checkIn || !checkOut) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing requied things" });
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
     }
+
+    // Validate Dates
+    const startDate = new Date(checkIn);
+    const endDate = new Date(checkOut);
+
+    if (startDate >= endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Check-out must be after check-in",
+      });
+    }
+
+    if (startDate < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "Check-in date cannot be in the past",
+      });
+    }
+
+    const vehicle = await Vehicle.findById(vehicleId);
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+      });
+    }
+
+    // Calculate total days
+    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+    // 5% tax included
+    const totalPrice = Math.ceil(
+      totalDays * vehicle.price.daily * noOfVehicle * 1.05,
+    );
+
+    // Optional: Check overlapping bookings
+
     const booking = await VehicleBooking.create({
       userId,
       vehicleId,
-      checkIn,
-      checkOut,
+      checkIn: startDate,
+      checkOut: endDate,
       noOfVehicle,
+      totalPrice,
     });
 
-    if (!booking) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Booking failed" });
-    }
-    res
-      .status(201)
-      .json({ success: true, message: "Bookings Creatted", data: booking });
+    res.status(201).json({
+      success: true,
+      message: "Booking Created Successfully",
+      data: booking,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Booking Failed due to server error" });
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Booking failed due to server error",
+    });
   }
 };
 

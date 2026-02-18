@@ -12,6 +12,10 @@ const vehicleBookingSchema = new mongoose.Schema(
       ref: "Vehicle",
       required: true,
     },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
     checkIn: {
       type: String,
       required: true,

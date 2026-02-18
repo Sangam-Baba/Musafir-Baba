@@ -3,6 +3,7 @@ import { Booking } from "../models/Booking.js";
 import { MembershipBooking } from "../models/membershipBooking.js";
 import { CustomizedBookings } from "../models/CustomizedBookings.js";
 import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
+import { VehicleBooking } from "../models/VehicleBooking.js";
 
 // ENV CONFIG
 const merchantKey = process.env.PAYU_KEY;
@@ -140,7 +141,7 @@ export const verifySuccessPayment = async (req, res) => {
       },
       bookingStatus: "Confirmed",
     },
-    { new: true }
+    { new: true },
   ).exec();
   console.log("Package Payment Verified:", data, booking);
 
@@ -187,7 +188,7 @@ export const verifyFailurePayment = async (req, res) => {
         status: "Failed",
       },
     },
-    { new: true }
+    { new: true },
   ).exec();
   console.log("Payment Failed:", data, booking);
 
@@ -235,7 +236,7 @@ export const verifyMembershipSuccessPayment = async (req, res) => {
       },
       membershipStatus: "Active",
     },
-    { new: true }
+    { new: true },
   ).exec();
   console.log("Payment Verified:", data, booking);
 
@@ -283,7 +284,7 @@ export const verifyMembershipFailurePayment = async (req, res) => {
       },
       membershipStatus: "Cancelled",
     },
-    { new: true }
+    { new: true },
   ).exec();
   console.log("Payment Failed:", data, booking);
 
@@ -334,7 +335,7 @@ export const verifyCustomizedSuccessPayment = async (req, res) => {
         },
         bookingStatus: "Confirmed",
       },
-      { new: true }
+      { new: true },
     ).exec();
     // console.log("Mybooking Data is finalpaymnet:", booking);
   } else {
@@ -349,7 +350,7 @@ export const verifyCustomizedSuccessPayment = async (req, res) => {
         },
         bookingStatus: "Confirmed",
       },
-      { new: true }
+      { new: true },
     ).exec();
 
     // console.log("Mybooking Data is partialpaymnet:", booking);
@@ -399,7 +400,7 @@ export const verifyCustomizedFailurePayment = async (req, res) => {
         status: "Failed",
       },
     },
-    { new: true }
+    { new: true },
   ).exec();
   console.log("Payment Failed:", data, booking);
 
@@ -448,7 +449,7 @@ export const verifyCustomizedTourSuccessPayment = async (req, res) => {
       },
       bookingStatus: "Confirmed",
     },
-    { new: true }
+    { new: true },
   ).exec();
   console.log("Mybooking Data is finalpayment:", booking);
 
@@ -497,7 +498,105 @@ export const verifyCustomizedTourFailurePayment = async (req, res) => {
       },
       bookingStatus: "Cancelled",
     },
-    { new: true }
+    { new: true },
+  ).exec();
+  console.log("Mybooking Data is finalpayment:", booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+};
+
+export const verifyVehicleSuccessPayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+
+  const booking = await VehicleBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Paid",
+      },
+      bookingStatus: "Confirmed",
+    },
+    { new: true },
+  ).exec();
+  console.log("Mybooking Data is finalpayment:", booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+};
+
+export const verifyVehicleFailurePayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+
+  const booking = await VehicleBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Failed",
+      },
+      bookingStatus: "Cancelled",
+    },
+    { new: true },
   ).exec();
   console.log("Mybooking Data is finalpayment:", booking);
 

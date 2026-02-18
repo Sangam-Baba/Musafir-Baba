@@ -8,6 +8,8 @@ import {
   verifyCustomizedSuccessPayment,
   verifyCustomizedTourSuccessPayment,
   verifyCustomizedTourFailurePayment,
+  verifyVehicleSuccessPayment,
+  verifyVehicleFailurePayment,
 } from "../controllers/payment.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -19,7 +21,7 @@ paymentRoute.post(
   "/",
   isAuthenticated,
   authorizedRoles(["user", "admin", "superadmin"]),
-  createPayemnt
+  createPayemnt,
 );
 paymentRoute.post("/success", verifySuccessPayment);
 paymentRoute.post("/failure", verifyFailurePayment);
@@ -29,10 +31,13 @@ paymentRoute.post("/success-customized", verifyCustomizedSuccessPayment);
 paymentRoute.post("/failure-customized", verifyCustomizedFailurePayment);
 paymentRoute.post(
   "/success-customized-tour",
-  verifyCustomizedTourSuccessPayment
+  verifyCustomizedTourSuccessPayment,
 );
 paymentRoute.post(
   "/failure-customized-tour",
-  verifyCustomizedTourFailurePayment
+  verifyCustomizedTourFailurePayment,
 );
+
+paymentRoute.post("/success-vehicle", verifyVehicleSuccessPayment);
+paymentRoute.post("/failure-vehicle", verifyVehicleFailurePayment);
 export default paymentRoute;

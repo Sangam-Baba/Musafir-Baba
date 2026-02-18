@@ -202,6 +202,51 @@ const getVehicleBySlug = async (req, res) => {
     });
   }
 };
+
+const getRelatedVehicle = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: "Slug is required",
+      });
+    }
+
+    // 1Find current vehicle
+    const vehicle = await Vehicle.findOne({ slug, status: "published" });
+
+    if (!vehicle) {
+      return res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+      });
+    }
+
+    //  Find related vehicles
+    const relatedVehicles = await Vehicle.find({
+      _id: { $ne: vehicle._id }, // exclude same vehicle
+      status: "published", // only published for users
+      $or: [{ seats: vehicle.seats }, { vehicleType: vehicle.vehicleType }],
+    })
+      .limit(6) // limit results
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully getting related vehicles",
+      data: relatedVehicles,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 export {
   createVehicle,
   updateVehicle,
@@ -210,4 +255,5 @@ export {
   getAllVehicle,
   getVehicleBySlug,
   getAllPublishedVehicle,
+  getRelatedVehicle,
 };
