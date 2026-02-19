@@ -46,7 +46,7 @@ export async function getPackageByDestinationSlug(slug: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage?destination=${slug}`,
     {
       next: { revalidate: 60 },
-    }
+    },
   );
   if (res.status === 404) return notFound();
   if (!res.ok) throw new Error("Failed to fetch packages");
@@ -61,7 +61,7 @@ export async function generateMetadata({
   const { destination } = await params;
   const meta = await getDestinationMeta(
     "customised-tour-packages",
-    destination
+    destination,
   );
   return {
     title: meta?.metaTitle || `Customised Packages in ${destination}`,
@@ -101,19 +101,19 @@ async function DestinationPage({
   const packages = await getPackageByDestinationSlug(destination);
   const meta = await getDestinationMeta(
     "customised-tour-packages",
-    destination
+    destination,
   );
   if (!packages || packages.length === 0) return notFound();
 
   const breadcrumbSchema = getBreadcrumbSchema(
-    "customised-tour-packages/" + destination
+    "customised-tour-packages/" + destination,
   );
   const collectionSchema = getCollectionSchema(
     "Explore Customised Packages in " + destination,
     "https://musafirbaba.com/holidays/customised-tour-packages/" + destination,
     packages.map((pkg: CustomizedPackageInterface) => ({
       url: `https://musafirbaba.com/holidays/customised-tour-packages/${destination}/${pkg.slug}`,
-    }))
+    })),
   );
   return (
     <section>
@@ -128,7 +128,11 @@ async function DestinationPage({
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
-        <Breadcrumb />
+        <Breadcrumb
+          title={`Explore Customised Packages in ${
+            destination.charAt(0).toUpperCase() + destination.slice(1)
+          }`}
+        />
       </div>
       {/* SHow description */}
       {meta?.content && (

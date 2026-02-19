@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRightIcon } from "lucide-react";
 
-export default function Breadcrumb() {
+export default function Breadcrumb({ title }: { title?: string }) {
   const pathname = usePathname();
   const pathSegments = pathname.split("/").filter(Boolean);
 
@@ -42,7 +42,9 @@ export default function Breadcrumb() {
           return (
             <li key={`${bc.href}-${i}`} className="flex items-center">
               {isLast ? (
-                <span className="text-gray-800 text-md">{bc.name}</span>
+                <span className="text-gray-800 text-md">
+                  {title ?? bc.name}
+                </span>
               ) : (
                 <>
                   <Link

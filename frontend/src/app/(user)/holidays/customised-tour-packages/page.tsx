@@ -148,7 +148,7 @@ async function CustomizedPackagePage() {
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-        <Breadcrumb />
+        <Breadcrumb title={category?.name} />
       </div>
       {/* SHow description */}
       {category?.content && (

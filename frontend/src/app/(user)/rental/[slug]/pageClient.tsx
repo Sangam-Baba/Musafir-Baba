@@ -188,7 +188,7 @@ export default function RentalPageClient({
     <div className="space-y-5">
       <div className=" ">
         <div className="max-w-7xl mx-auto px-4 my-4">
-          <Breadcrumb />
+          <Breadcrumb title={vehicle?.title} />
         </div>
         {/* Title  */}
         <div className="flex items-center px-4 gap-2 max-w-7xl mx-auto">

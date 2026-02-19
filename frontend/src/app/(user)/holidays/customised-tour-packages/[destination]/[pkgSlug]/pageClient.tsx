@@ -167,7 +167,7 @@ export default function CustomizedPackageClient({
         overlayOpacity={50}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-        <Breadcrumb />
+        <Breadcrumb title={pkg.title} />
       </div>
 
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">

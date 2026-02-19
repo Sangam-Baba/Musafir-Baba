@@ -155,7 +155,7 @@ export default async function BlogDetailPage({
   return (
     <div>
       <div className="w-full mx-auto max-w-4xl px-12 mt-5">
-        <Breadcrumb />
+        <Breadcrumb title={blog.title} />
       </div>
       <div className="flex flex-col gap-8 mx-auto max-w-4xl py-4 px-12">
         <article className="space-y-5 ">

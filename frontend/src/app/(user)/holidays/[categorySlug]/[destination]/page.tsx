@@ -22,13 +22,13 @@ export interface Itinerary {
 
 export async function getPackageByDestinationSlug(
   categorySlug: string,
-  slug: string
+  slug: string,
 ) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}&category=${categorySlug}`,
     {
       next: { revalidate: 60 },
-    }
+    },
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
   const data = await res.json();
@@ -37,13 +37,13 @@ export async function getPackageByDestinationSlug(
 
 export async function getDestinationMeta(
   categorySlug: string,
-  destinationSlug: string
+  destinationSlug: string,
 ) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/destinationseo/${categorySlug}/${destinationSlug}`,
     {
       next: { revalidate: 60 },
-    }
+    },
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -86,14 +86,14 @@ async function DestinationPage({
   const meta = await getDestinationMeta(categorySlug, destination);
 
   const breadcrumbSchema = getBreadcrumbSchema(
-    "holidays/" + categorySlug + "/" + destination
+    "holidays/" + categorySlug + "/" + destination,
   );
   const collectionSchema = getCollectionSchema(
     "Travel Packages for " + packages[0]?.destination?.name,
     "https://musafirbaba.com/holidays/" + categorySlug + "/" + destination,
     packages.map((pkg: { slug: string }) => ({
       url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${pkg.slug}`,
-    }))
+    })),
   );
   return (
     <section>
@@ -108,7 +108,11 @@ async function DestinationPage({
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
-        <Breadcrumb />
+        <Breadcrumb
+          title={`Explore Packages in ${
+            destination.charAt(0).toUpperCase() + destination.slice(1)
+          }`}
+        />
       </div>
 
       {/* SHow description */}

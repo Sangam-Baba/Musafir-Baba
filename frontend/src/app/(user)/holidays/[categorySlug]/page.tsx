@@ -67,7 +67,7 @@ export async function getCategoryBySlug(slug: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/category/${slug}`,
     {
       cache: "no-cache",
-    }
+    },
   );
   if (res.status === 404) {
     return notFound();
@@ -82,7 +82,7 @@ export async function getPackageByCategorySlug(slug: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
     {
       next: { revalidate: 60 },
-    }
+    },
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -160,7 +160,7 @@ export default async function Page({
     "https://musafirbaba.com/holidays/" + categorySlug,
     packages.map((pkg: Package) => ({
       url: `https://musafirbaba.com/holidays/${categorySlug}/${pkg?.destination?.state}/${pkg.slug}`,
-    }))
+    })),
   );
   return (
     <>
@@ -174,7 +174,7 @@ export default async function Page({
           overlayOpacity={100}
         />
         <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-          <Breadcrumb />
+          <Breadcrumb title={category?.name} />
         </div>
       </section>
       {/* SHow description */}

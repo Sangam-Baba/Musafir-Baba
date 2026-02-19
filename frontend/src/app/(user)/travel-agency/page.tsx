@@ -29,7 +29,7 @@ import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import Script from "next/script";
 const getOffices = async () => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`,
   );
   if (!res.ok) throw new Error("Failed to fetch offices");
   const data = await res.json();
@@ -85,13 +85,13 @@ async function page() {
   const offices = await getOffices();
   const sortedOffices = offices.sort(
     (a: any, b: any) =>
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
   const visas = await getVisa();
   const packages = await getPackageByCategorySlug("honeymoon-packages");
   const shownVisas = ["Singapore", "Japan", "UK", "Schengen"];
   const filteredVisas = visas.filter((visa: VisaInterface) =>
-    shownVisas.includes(visa.country)
+    shownVisas.includes(visa.country),
   );
   const coreData = [
     {
@@ -154,7 +154,7 @@ async function page() {
   const breadcrumbSchema = getBreadcrumbSchema("travel-agency");
   const webpageSchema = getWebPageSchema(
     "Travel Agency",
-    "https://musafirbaba.com/travel-agency"
+    "https://musafirbaba.com/travel-agency",
   );
   return (
     <div>
@@ -171,7 +171,7 @@ async function page() {
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-        <Breadcrumb />
+        <Breadcrumb title="Travel Agency" />
       </div>
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-10 md:space-y-30 space-y-20">
         <div className="flex flex-col md:flex-row gap-10">

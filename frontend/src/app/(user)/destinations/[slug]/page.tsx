@@ -95,7 +95,7 @@ async function getGroupPackageByDestinationSlug(slug: string) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}`,
     {
       next: { revalidate: 60 },
-    }
+    },
   );
   if (!res.ok) return null;
   const data = await res.json();
@@ -104,7 +104,7 @@ async function getGroupPackageByDestinationSlug(slug: string) {
 
 const getDestinationBySlug = async (slug: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/destination/slug/${slug}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/destination/slug/${slug}`,
   );
   if (!res.ok) throw new Error("Failed to fetch destination");
   const data = await res.json();
@@ -149,7 +149,7 @@ async function DestinationPage({
       ...pkg,
       price: pkg.plans[0].price,
       mainCategory: { slug: "customised-tour-packages" },
-    })
+    }),
   );
   const newGroupPkg = packages.map((pkg: Package) => ({
     ...pkg,
@@ -168,7 +168,7 @@ async function DestinationPage({
     `https://musafirbaba.com/destinations/${slug}`,
     packages.map((pkg: Package) => ({
       url: `https://musafirbaba.com/holidays/${pkg.mainCategory.slug}/${slug}/${pkg.slug}`,
-    }))
+    })),
   );
   return (
     <section>

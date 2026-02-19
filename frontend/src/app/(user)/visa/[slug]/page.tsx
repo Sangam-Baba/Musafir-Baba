@@ -92,7 +92,7 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
-        <Breadcrumb />
+        <Breadcrumb title={visa.title} />
       </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 md:py-8 py-3">
         <article className="w-full md:w-2/3 space-y-10">

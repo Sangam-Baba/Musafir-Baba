@@ -15,7 +15,7 @@ async function page() {
       <Hero title="Rental Services" image="/rent.jpeg" />
 
       <div className="max-w-7xl mx-auto">
-        <Breadcrumb />
+        <Breadcrumb title="Rental Services" />
       </div>
       <div className="max-w-7xl mx-auto mt-10">
         {/* <h2 className="">Book Your Rental</h2> */}

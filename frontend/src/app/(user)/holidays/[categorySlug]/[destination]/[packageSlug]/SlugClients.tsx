@@ -94,7 +94,7 @@ function SlugClients({
         />
       </div>
       <div className="w-full max-w-7xl mx-auto px-8  mt-4">
-        <Breadcrumb />
+        <Breadcrumb title={pkg.title} />
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4  my-4 md:flex">
