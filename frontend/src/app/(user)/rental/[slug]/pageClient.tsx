@@ -127,6 +127,12 @@ export default function RentalPageClient({
 
   const handleSubmit = (e: React.FormEvent) => {
     // e.preventDefault();
+    if (!accessToken) {
+      useAuthDialogStore
+        .getState()
+        .openDialog("login", undefined, `/rental/${vehicle.slug}`);
+      return;
+    }
     mutation.mutate({
       ...data,
     });
@@ -179,12 +185,13 @@ export default function RentalPageClient({
   ];
 
   return (
-    <div>
+    <div className="space-y-5">
       <div className=" ">
         <div className="max-w-7xl mx-auto px-4 my-4">
           <Breadcrumb />
         </div>
-        <div className="flex items-center gap-2 max-w-7xl mx-auto">
+        {/* Title  */}
+        <div className="flex items-center px-4 gap-2 max-w-7xl mx-auto">
           <h1 className="text-3xl  font-bold baseline capitalize">
             {vehicle?.title}
           </h1>
@@ -195,108 +202,101 @@ export default function RentalPageClient({
         </div>
       </div>
 
-      <div className=" max-w-7xl mx-auto flex flex-col md:flex-row mx-w-7xl ">
-        <div className="w-full md:w-2/3 p-4">
-          <RentalCarousal
-            vehicleName={vehicle?.vehicleName}
-            vehiclePrice={vehicle?.price?.daily}
-            slug={vehicle?.slug}
-            gallery={vehicle?.gallery}
-          />
+      <div className=" max-w-7xl mx-auto flex flex-col md:flex-row space-y-5">
+        <div className="w-full md:w-5/7 px-4">
+          <RentalCarousal gallery={vehicle?.gallery} />
         </div>
-
         {/* Payemtn */}
-        {accessToken && (
-          <div className="w-full md:w-1/3 px-4 py-16">
-            <Card className="p-0 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
-              <div>
-                <form
-                  //   onSubmit={handleSubmit}
-                  className="w-full max-w-4xl mx-auto"
-                >
-                  <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 border border-gray-100">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                      Book Your Vehicle
-                    </h2>
+        <div className="w-full md:w-2/7 px-4 ">
+          <Card className="p-0 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
+            <div>
+              <form
+                //   onSubmit={handleSubmit}
+                className="w-full max-w-4xl mx-auto"
+              >
+                <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 border border-gray-100">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                    Book Your Vehicle
+                  </h2>
 
-                    <div className="flex flex-col gap-6">
-                      <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
-                        <div className="flex flex-col gap-2">
-                          <Label className="text-[#FE5300] font-semibold text-sm">
-                            Check In
-                          </Label>
-                          <Input
-                            value={data.checkIn}
-                            onChange={(e) =>
-                              setData({ ...data, checkIn: e.target.value })
-                            }
-                            type="date"
-                            className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <Label className="text-[#FE5300] font-semibold text-sm">
-                            Check Out
-                          </Label>
-                          <Input
-                            value={data.checkOut}
-                            onChange={(e) =>
-                              setData({ ...data, checkOut: e.target.value })
-                            }
-                            type="date"
-                            className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                          />
-                        </div>
+                  <div className="flex flex-col gap-6">
+                    <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-[#FE5300] font-semibold text-sm">
+                          Check In
+                        </Label>
+                        <Input
+                          value={data.checkIn}
+                          onChange={(e) =>
+                            setData({ ...data, checkIn: e.target.value })
+                          }
+                          type="date"
+                          className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                        />
                       </div>
 
-                      <div className="">
-                        <div className="grid grid-cols-2 gap-5">
-                          <Label className="text-[#FE5300] font-semibold text-sm">
-                            Number of Vehicles
-                          </Label>
-                          <Input
-                            value={data.noOfVehicle}
-                            onChange={(e) =>
-                              setData({
-                                ...data,
-                                noOfVehicle: Number(e.target.value),
-                              })
-                            }
-                            type="number"
-                            min={1}
-                            className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                          />
-                        </div>
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-[#FE5300] font-semibold text-sm">
+                          Check Out
+                        </Label>
+                        <Input
+                          value={data.checkOut}
+                          onChange={(e) =>
+                            setData({ ...data, checkOut: e.target.value })
+                          }
+                          type="date"
+                          className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                        />
                       </div>
-                      <Button
-                        type="button" // 🔥 IMPORTANT
-                        onClick={handleSubmit}
-                        className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
-                      >
-                        Pay ₹
-                        {Math.ceil(
-                          ((new Date(data.checkOut).getTime() -
-                            new Date(data.checkIn).getTime()) /
-                            (1000 * 60 * 60 * 24)) *
-                            data.noOfVehicle *
-                            (vehicle?.price?.daily || 0) *
-                            1.05,
-                        ).toLocaleString()}
-                      </Button>
                     </div>
-                    <p className="text-xs text-gray-400">
-                      *All prices are inclusive of GST @ 5%
-                    </p>
+
+                    <div className="">
+                      <div className="grid grid-cols-2 gap-5">
+                        <Label className="text-[#FE5300] font-semibold text-sm">
+                          Number of Vehicles
+                        </Label>
+                        <Input
+                          value={data.noOfVehicle}
+                          onChange={(e) =>
+                            setData({
+                              ...data,
+                              noOfVehicle: Number(e.target.value),
+                            })
+                          }
+                          type="number"
+                          min={1}
+                          className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      // disabled={!accessToken}
+                      type="button"
+                      onClick={handleSubmit}
+                      className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
+                    >
+                      Pay ₹
+                      {Math.ceil(
+                        ((new Date(data.checkOut).getTime() -
+                          new Date(data.checkIn).getTime()) /
+                          (1000 * 60 * 60 * 24)) *
+                          data.noOfVehicle *
+                          (vehicle?.price?.daily || 0) *
+                          1.05,
+                      ).toLocaleString()}
+                    </Button>
                   </div>
-                </form>
-                <div>
-                  <p></p>
+                  <p className="text-xs text-gray-400">
+                    *All prices are inclusive of GST @ 5%
+                  </p>
                 </div>
+              </form>
+              <div>
+                <p></p>
               </div>
-            </Card>
-          </div>
-        )}
+            </div>
+          </Card>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 my-4">
