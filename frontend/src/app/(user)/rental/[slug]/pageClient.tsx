@@ -71,7 +71,7 @@ export default function RentalPageClient({
   const [openItem, setOpenItem] = useState<string | undefined>(undefined);
   const [active, setActive] = useState<TabKey>("description");
   const [data, setData] = useState<FormData>({
-    checkIn: new Date().toISOString().split("T")[0],
+    checkIn: new Date(Date.now()).toISOString().split("T")[0],
     checkOut: new Date(new Date().setDate(new Date().getDate() + 1))
       .toISOString()
       .split("T")[0],

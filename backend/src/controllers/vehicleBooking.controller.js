@@ -32,7 +32,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    if (startDate < new Date()) {
+    if (startDate.getDate < new Date().getDate) {
       return res.status(400).json({
         success: false,
         message: "Check-in date cannot be in the past",

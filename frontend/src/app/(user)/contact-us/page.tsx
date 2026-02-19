@@ -100,7 +100,7 @@ async function VisaWebPage() {
           <div className="mt-20 w-full flex flex-col md:flex-row gap-4">
             <Image
               className="object-cover w-full md:w-1/2 h-full  rounded-xl"
-              src="https://res.cloudinary.com/dmmsemrty/image/upload/v1760004946/5561899_21273_u8g7cq.jpg"
+              src="https://cdn.musafirbaba.com/images/5561899_21273_u8g7cq.jpg"
               width={500}
               height={510}
               alt="Musafirbaba Contact Us"
