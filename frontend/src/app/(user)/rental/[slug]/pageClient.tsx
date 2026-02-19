@@ -180,286 +180,292 @@ export default function RentalPageClient({
 
   return (
     <div>
-      <div>
-        <RentalCarousal
-          vehicleName={vehicle?.vehicleName}
-          vehiclePrice={vehicle?.price?.daily}
-          slug={vehicle?.slug}
-          gallery={vehicle?.gallery}
-        />
+      <div className=" ">
         <div className="max-w-7xl mx-auto px-4 my-4">
           <Breadcrumb />
         </div>
-        <div className="max-w-7xl mx-auto px-4 my-4">
-          <div className="w-full max-w-7xl mx-auto px-4 my-4 md:flex">
-            <section className="w-full max-w-4xl mx-auto px-4 md:py-10 py-4">
-              <div className="flex flex-col gap-2 max-w-7xl mx-auto">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-3xl  font-bold baseline capitalize">
-                    {vehicle?.title}
-                  </h1>
-                  <span className="flex capitalize md:text-xl items-center gap-1 px-3 py-3 rounded-md">
-                    <MapPin color="#FE5300" size={24} /> {vehicle?.vehicleBrand}{" "}
-                    | {vehicle?.vehicleYear}
-                  </span>
-                </div>
-                <div className="flex md:flex-wrap w-full gap-2 mt-4 overflow-x-auto no-scrollbar">
-                  {tabs.map((tab) => (
-                    <Button
-                      key={tab.key}
-                      size="lg"
-                      onClick={() => setActive(tab.key)}
-                      className={`mt-4 ${
-                        active === tab.key
-                          ? "bg-[#FE5300] text-white"
-                          : "bg-white text-black border border-[#FE5300]"
-                      }`}
-                    >
-                      {tab.label}
-                    </Button>
-                  ))}
-                </div>
+        <div className="flex items-center gap-2 max-w-7xl mx-auto">
+          <h1 className="text-3xl  font-bold baseline capitalize">
+            {vehicle?.title}
+          </h1>
+          <span className="flex capitalize md:text-xl items-center gap-1 px-3 py-3 rounded-md">
+            <MapPin color="#FE5300" size={24} /> {vehicle?.vehicleBrand} |{" "}
+            {vehicle?.vehicleYear}
+          </span>
+        </div>
+      </div>
 
-                <div className="mt-10 w-full">
-                  {active === "description" && (
-                    <div className="rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
-                      <h2 className="font-bold text-lg mb-2">
-                        About This Vehicle
-                      </h2>
-                      <div className="md:hidden">
-                        <ReadMore content={vehicle?.content} />
+      <div className=" max-w-7xl mx-auto flex flex-col md:flex-row mx-w-7xl ">
+        <div className="w-full md:w-2/3 p-4">
+          <RentalCarousal
+            vehicleName={vehicle?.vehicleName}
+            vehiclePrice={vehicle?.price?.daily}
+            slug={vehicle?.slug}
+            gallery={vehicle?.gallery}
+          />
+        </div>
+
+        {/* Payemtn */}
+        {accessToken && (
+          <div className="w-full md:w-1/3 px-4 py-16">
+            <Card className="p-0 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
+              <div>
+                <form
+                  //   onSubmit={handleSubmit}
+                  className="w-full max-w-4xl mx-auto"
+                >
+                  <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 border border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                      Book Your Vehicle
+                    </h2>
+
+                    <div className="flex flex-col gap-6">
+                      <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
+                        <div className="flex flex-col gap-2">
+                          <Label className="text-[#FE5300] font-semibold text-sm">
+                            Check In
+                          </Label>
+                          <Input
+                            value={data.checkIn}
+                            onChange={(e) =>
+                              setData({ ...data, checkIn: e.target.value })
+                            }
+                            type="date"
+                            className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <Label className="text-[#FE5300] font-semibold text-sm">
+                            Check Out
+                          </Label>
+                          <Input
+                            value={data.checkOut}
+                            onChange={(e) =>
+                              setData({ ...data, checkOut: e.target.value })
+                            }
+                            type="date"
+                            className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                          />
+                        </div>
                       </div>
-                      <section className="hidden md:block prose prose-lg max-w-none mt-6">
-                        <BlogContent html={vehicle?.content} />
-                      </section>
+
+                      <div className="">
+                        <div className="grid grid-cols-2 gap-5">
+                          <Label className="text-[#FE5300] font-semibold text-sm">
+                            Number of Vehicles
+                          </Label>
+                          <Input
+                            value={data.noOfVehicle}
+                            onChange={(e) =>
+                              setData({
+                                ...data,
+                                noOfVehicle: Number(e.target.value),
+                              })
+                            }
+                            type="number"
+                            min={1}
+                            className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button" // 🔥 IMPORTANT
+                        onClick={handleSubmit}
+                        className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
+                      >
+                        Pay ₹
+                        {Math.ceil(
+                          ((new Date(data.checkOut).getTime() -
+                            new Date(data.checkIn).getTime()) /
+                            (1000 * 60 * 60 * 24)) *
+                            data.noOfVehicle *
+                            (vehicle?.price?.daily || 0) *
+                            1.05,
+                        ).toLocaleString()}
+                      </Button>
                     </div>
-                  )}
-
-                  {active === "features" && (
-                    <ul className="list-disc list-inside rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
-                      {vehicle?.features && vehicle.features.length > 0 ? (
-                        vehicle.features.map((feature: string, i: number) => (
-                          <li className="mb-2 text-lg" key={i}>
-                            {feature}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="mb-2 text-lg">No features available</li>
-                      )}
-                    </ul>
-                  )}
-
-                  {active === "includeexclude" && (
-                    <div className="space-y-8">
-                      <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">
-                          What's Included
-                        </h3>
-                        <ul className="space-y-3">
-                          {vehicle?.inclusions &&
-                          vehicle.inclusions.length > 0 ? (
-                            vehicle.inclusions.map((inc: string, i: number) => (
-                              <li key={i} className="flex items-start gap-3">
-                                <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                                <span className="text-sm text-foreground">
-                                  {inc}
-                                </span>
-                              </li>
-                            ))
-                          ) : (
-                            <li className="flex items-start gap-3">
-                              <span>No inclusions available</span>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-
-                      <div className="rounded-xl bg-red-50 px-4 py-6 shadow">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">
-                          What's Not Included
-                        </h3>
-                        <ul className="space-y-3">
-                          {vehicle?.exclusions &&
-                          vehicle.exclusions.length > 0 ? (
-                            vehicle.exclusions.map((exc: string, i: number) => (
-                              <li key={i} className="flex items-start gap-3">
-                                <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                <span className="text-sm text-muted-foreground">
-                                  {exc}
-                                </span>
-                              </li>
-                            ))
-                          ) : (
-                            <li className="flex items-start gap-3">
-                              <span>No exclusions available</span>
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-
-                  {active === "faqs" && (
-                    <Accordion
-                      type="single"
-                      collapsible
-                      value={openItem}
-                      onValueChange={setOpenItem}
-                      className="w-full space-y-3 rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow"
-                    >
-                      {vehicle?.faqs?.map(
-                        (
-                          faq: { question: string; answer: string },
-                          index: number,
-                        ) => {
-                          const isOpen = openItem === `faq-${index}`;
-                          return (
-                            <AccordionItem
-                              key={index}
-                              value={`faq-${index}`}
-                              className={`group overflow-hidden rounded-lg border transition-all duration-200 ${
-                                isOpen
-                                  ? "border-1 border-[#FE5300] shadow-lg"
-                                  : "border-gray-200 hover:border-[#FE5300] hover:shadow-md"
-                              }`}
-                            >
-                              <AccordionTrigger
-                                className={`px-6 py-4 text-left font-semibold transition-colors ${
-                                  isOpen
-                                    ? "text-blue-600"
-                                    : "text-gray-900 hover:text-[#FE5300]"
-                                }`}
-                              >
-                                <div className="flex items-center gap-3 flex-1">
-                                  <div
-                                    className={`flex-shrink-0 rounded-full p-2 transition-colors ${
-                                      isOpen
-                                        ? "bg-blue-100"
-                                        : "bg-gray-100 group-hover:bg-blue-50"
-                                    }`}
-                                  >
-                                    <ChevronDown
-                                      className={`h-5 w-5 transition-transform duration-300 ${
-                                        isOpen ? "rotate-180" : ""
-                                      }`}
-                                    />
-                                  </div>
-                                  <span className="text-base md:text-lg">
-                                    {faq.question}
-                                  </span>
-                                </div>
-                              </AccordionTrigger>
-
-                              <AccordionContent className="px-6 pb-4 pt-0">
-                                <div className="ml-11 space-y-3 text-gray-600 leading-relaxed">
-                                  <section className="prose prose-lg max-w-none">
-                                    <BlogContent html={faq.answer} />
-                                  </section>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          );
-                        },
-                      )}
-                    </Accordion>
-                  )}
+                    <p className="text-xs text-gray-400">
+                      *All prices are inclusive of GST @ 5%
+                    </p>
+                  </div>
+                </form>
+                <div>
+                  <p></p>
                 </div>
               </div>
-            </section>
+            </Card>
+          </div>
+        )}
+      </div>
 
-            {/* Payemtn */}
-            {accessToken && (
-              <div className="w-full md:w-1/3 px-4 py-16">
-                <Card className="p-0 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
-                  <div>
-                    <form
-                      //   onSubmit={handleSubmit}
-                      className="w-full max-w-4xl mx-auto"
-                    >
-                      <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 border border-gray-100">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                          Book Your Vehicle
-                        </h2>
+      <div className="max-w-7xl mx-auto px-4 my-4">
+        <div className="w-full max-w-7xl mx-auto px-4 my-4 flex flex-col">
+          <section className="w-full max-w-7xl mx-auto px-4 md:py-10 py-4">
+            <div className="flex flex-col gap-2 max-w-7xl mx-auto">
+              <div className="flex md:flex-wrap w-full gap-2 mt-4 overflow-x-auto no-scrollbar">
+                {tabs.map((tab) => (
+                  <Button
+                    key={tab.key}
+                    size="lg"
+                    onClick={() => setActive(tab.key)}
+                    className={`mt-4 ${
+                      active === tab.key
+                        ? "bg-[#FE5300] text-white"
+                        : "bg-white text-black border border-[#FE5300]"
+                    }`}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
 
-                        <div className="flex flex-col gap-6">
-                          <div className="grid md:grid-cols-2 grid-cols-1 gap-5">
-                            <div className="flex flex-col gap-2">
-                              <Label className="text-[#FE5300] font-semibold text-sm">
-                                Check In
-                              </Label>
-                              <Input
-                                value={data.checkIn}
-                                onChange={(e) =>
-                                  setData({ ...data, checkIn: e.target.value })
-                                }
-                                type="date"
-                                className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                              />
-                            </div>
+              <div className="mt-10 w-full">
+                {active === "description" && (
+                  <div className="rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
+                    <h2 className="font-bold text-lg mb-2">
+                      About This Vehicle
+                    </h2>
+                    <div className="md:hidden">
+                      <ReadMore content={vehicle?.content} />
+                    </div>
+                    <section className="hidden md:block prose prose-lg max-w-none mt-6">
+                      <BlogContent html={vehicle?.content} />
+                    </section>
+                  </div>
+                )}
 
-                            <div className="flex flex-col gap-2">
-                              <Label className="text-[#FE5300] font-semibold text-sm">
-                                Check Out
-                              </Label>
-                              <Input
-                                value={data.checkOut}
-                                onChange={(e) =>
-                                  setData({ ...data, checkOut: e.target.value })
-                                }
-                                type="date"
-                                className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                              />
-                            </div>
-                          </div>
+                {active === "features" && (
+                  <ul className="list-disc list-inside rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
+                    {vehicle?.features && vehicle.features.length > 0 ? (
+                      vehicle.features.map((feature: string, i: number) => (
+                        <li className="mb-2 text-lg" key={i}>
+                          {feature}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="mb-2 text-lg">No features available</li>
+                    )}
+                  </ul>
+                )}
 
-                          <div className="">
-                            <div className="grid grid-cols-2 gap-5">
-                              <Label className="text-[#FE5300] font-semibold text-sm">
-                                Number of Vehicles
-                              </Label>
-                              <Input
-                                value={data.noOfVehicle}
-                                onChange={(e) =>
-                                  setData({
-                                    ...data,
-                                    noOfVehicle: Number(e.target.value),
-                                  })
-                                }
-                                type="number"
-                                min={1}
-                                className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                              />
-                            </div>
-                          </div>
-                          <Button
-                            type="button" // 🔥 IMPORTANT
-                            onClick={handleSubmit}
-                            className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
-                          >
-                            Pay ₹
-                            {Math.ceil(
-                              ((new Date(data.checkOut).getTime() -
-                                new Date(data.checkIn).getTime()) /
-                                (1000 * 60 * 60 * 24)) *
-                                data.noOfVehicle *
-                                (vehicle?.price?.daily || 0) *
-                                1.05,
-                            ).toLocaleString()}
-                          </Button>
-                        </div>
-                        <p className="text-xs text-gray-400">
-                          *All prices are inclusive of GST @ 5%
-                        </p>
-                      </div>
-                    </form>
-                    <div>
-                      <p></p>
+                {active === "includeexclude" && (
+                  <div className="space-y-8">
+                    <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        What's Included
+                      </h3>
+                      <ul className="space-y-3">
+                        {vehicle?.inclusions &&
+                        vehicle.inclusions.length > 0 ? (
+                          vehicle.inclusions.map((inc: string, i: number) => (
+                            <li key={i} className="flex items-start gap-3">
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              <span className="text-sm text-foreground">
+                                {inc}
+                              </span>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="flex items-start gap-3">
+                            <span>No inclusions available</span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    <div className="rounded-xl bg-red-50 px-4 py-6 shadow">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        What's Not Included
+                      </h3>
+                      <ul className="space-y-3">
+                        {vehicle?.exclusions &&
+                        vehicle.exclusions.length > 0 ? (
+                          vehicle.exclusions.map((exc: string, i: number) => (
+                            <li key={i} className="flex items-start gap-3">
+                              <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                              <span className="text-sm text-muted-foreground">
+                                {exc}
+                              </span>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="flex items-start gap-3">
+                            <span>No exclusions available</span>
+                          </li>
+                        )}
+                      </ul>
                     </div>
                   </div>
-                </Card>
+                )}
+
+                {active === "faqs" && (
+                  <Accordion
+                    type="single"
+                    collapsible
+                    value={openItem}
+                    onValueChange={setOpenItem}
+                    className="w-full space-y-3 rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow"
+                  >
+                    {vehicle?.faqs?.map(
+                      (
+                        faq: { question: string; answer: string },
+                        index: number,
+                      ) => {
+                        const isOpen = openItem === `faq-${index}`;
+                        return (
+                          <AccordionItem
+                            key={index}
+                            value={`faq-${index}`}
+                            className={`group overflow-hidden rounded-lg border transition-all duration-200 ${
+                              isOpen
+                                ? "border-1 border-[#FE5300] shadow-lg"
+                                : "border-gray-200 hover:border-[#FE5300] hover:shadow-md"
+                            }`}
+                          >
+                            <AccordionTrigger
+                              className={`px-6 py-4 text-left font-semibold transition-colors ${
+                                isOpen
+                                  ? "text-blue-600"
+                                  : "text-gray-900 hover:text-[#FE5300]"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 flex-1">
+                                <div
+                                  className={`flex-shrink-0 rounded-full p-2 transition-colors ${
+                                    isOpen
+                                      ? "bg-blue-100"
+                                      : "bg-gray-100 group-hover:bg-blue-50"
+                                  }`}
+                                >
+                                  <ChevronDown
+                                    className={`h-5 w-5 transition-transform duration-300 ${
+                                      isOpen ? "rotate-180" : ""
+                                    }`}
+                                  />
+                                </div>
+                                <span className="text-base md:text-lg">
+                                  {faq.question}
+                                </span>
+                              </div>
+                            </AccordionTrigger>
+
+                            <AccordionContent className="px-6 pb-4 pt-0">
+                              <div className="ml-11 space-y-3 text-gray-600 leading-relaxed">
+                                <section className="prose prose-lg max-w-none">
+                                  <BlogContent html={faq.answer} />
+                                </section>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        );
+                      },
+                    )}
+                  </Accordion>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </section>
 
           {relatedVehicles && relatedVehicles.length > 0 && (
             <div>

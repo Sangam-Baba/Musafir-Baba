@@ -223,7 +223,7 @@ const verifyOtp = async (req, res) => {
     });
   } catch (error) {
     console.log("OTP verification failed ", error.message);
-    return res.status(500).json({ success: false, message: "Serer Error" });
+    return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
