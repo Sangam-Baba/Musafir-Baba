@@ -43,6 +43,7 @@ import {
   IndianRupee,
   Images,
   NewspaperIcon,
+  Car,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -97,6 +98,12 @@ const NAV_GROUPS = [
         permission: "news",
       },
       { label: "Visa", href: "/admin/visa", icon: Rocket, permission: "visa" },
+      {
+        label: "Vehicle",
+        href: "/admin/vehicle",
+        icon: Car,
+        permission: "vehicle",
+      },
       {
         label: "Career",
         href: "/admin/career",

@@ -63,7 +63,7 @@ function VehiclePage() {
     queryKey: ["vehicle"],
     queryFn: () => getAllVehicle(accessToken),
     retry: 2,
-    // enabled: permissions.includes("vehicle"),
+    enabled: permissions.includes("vehicle"),
   });
   const vehicles = data?.data ?? [];
   if (isError) {
@@ -94,8 +94,8 @@ function VehiclePage() {
     }
   };
 
-  //   if (!permissions.includes("vehicle"))
-  //     return <div className="mx-auto text-2xl">Access Denied</div>;
+  if (!permissions.includes("vehicle"))
+    return <div className="mx-auto text-2xl">Access Denied</div>;
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">

@@ -36,7 +36,7 @@ type FormValues = z.infer<typeof formSchema>;
 const createStaff = async (
   values: FormValues,
   accessToken: string,
-  role: string
+  role: string,
 ) => {
   let res;
   if (role === "admin") {
@@ -66,7 +66,7 @@ const updateStaff = async (
   values: FormValues,
   accessToken: string,
   id: string,
-  role: string
+  role: string,
 ) => {
   let res;
   if (role === "admin") {
@@ -180,6 +180,7 @@ function CreateEditStaff({
         "about-us",
         "news",
         "blogs",
+        "vehicle",
         "gallery",
         "video-banner",
         "footer",
@@ -203,7 +204,7 @@ function CreateEditStaff({
     },
   ];
   return (
-    <div className="flex flex-col max-w-2xl min-w-xl items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
+    <div className="flex flex-col max-w-2xl min-w-xl max-h-[90vh] overflow-auto items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
       {isError && <p>{(error as Error).message}</p>}
       {isLoading ? (
         <p>Loading...</p>
@@ -293,8 +294,8 @@ function CreateEditStaff({
                                       } else {
                                         field.onChange(
                                           field.value?.filter(
-                                            (id) => id !== cat
-                                          )
+                                            (id) => id !== cat,
+                                          ),
                                         );
                                       }
                                     }}
