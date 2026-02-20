@@ -11,7 +11,7 @@ const createDestination = async (req, res) => {
     if (req.files?.coverImage) {
       const result = await uploadToCloudinary(
         req.files.coverImage[0].buffer,
-        "destination/coverImage"
+        "destination/coverImage",
       );
       coverImage = result.secure_url;
     }
@@ -19,7 +19,7 @@ const createDestination = async (req, res) => {
       for (let img = 0; img < req.files.gallery.length; img++) {
         const result = await uploadToCloudinary(
           req.files.gallery[img].buffer,
-          "destination/gallery"
+          "destination/gallery",
         );
         gallery.push(result.secure_url);
       }
@@ -198,7 +198,7 @@ const deleteDestination = async (req, res) => {
 const getOnlyDestination = async (req, res) => {
   try {
     const alldest = await Destination.find({ status: "published" }).select(
-      "_id name country state"
+      "_id name country state",
     );
     if (!alldest)
       return res

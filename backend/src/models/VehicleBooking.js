@@ -55,10 +55,13 @@ const vehicleBookingSchema = new mongoose.Schema(
       enum: ["Pending", "Confirmed", "Cancelled"],
       default: "Pending",
     },
+    policyAccepted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
-
 export const VehicleBooking = mongoose.model(
   "VehicleBooking",
   vehicleBookingSchema,

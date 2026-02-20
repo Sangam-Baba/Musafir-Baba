@@ -136,7 +136,7 @@ async function CreatePackage(values: PackageFormValues, accessToken: string) {
   return res.json();
 }
 
-const getDestination = async () => {
+export const getDestination = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`);
   if (!res.ok) throw new Error("Failed to get destination");
   const data = await res.json();
@@ -183,7 +183,7 @@ export const duplicateBatch = async (accessToken: string, id: string) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
   if (!res.ok) throw new Error("Failed to duplicate batch");
   const data = await res.json();
@@ -306,7 +306,7 @@ export default function CreatePackagePage() {
     },
     onError: (error: unknown) => {
       toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
+        error instanceof Error ? error.message : "Something went wrong",
       );
     },
   });
@@ -352,7 +352,7 @@ export default function CreatePackagePage() {
     toast.success("Reviews updated successfully");
     const updated = await getReviewsByIds(accessToken, [id]);
     setReviewsDetails((prev) =>
-      prev.map((b) => (b._id === id ? updated[0] : b))
+      prev.map((b) => (b._id === id ? updated[0] : b)),
     );
     setShowReviewsModal(false);
     setEditReviewsId(null);
@@ -440,9 +440,9 @@ export default function CreatePackagePage() {
                     <span className="text-xs text-gray-500">
                       {field?.startDate
                         ? `${new Date(
-                            field?.startDate
+                            field?.startDate,
                           ).toLocaleDateString()} → ${new Date(
-                            field?.endDate
+                            field?.endDate,
                           ).toLocaleDateString()}`
                         : "No date info"}
                     </span>
@@ -475,10 +475,10 @@ export default function CreatePackagePage() {
                             "batch",
                             form
                               .getValues("batch")
-                              .filter((id, i) => id !== field._id)
+                              .filter((id, i) => id !== field._id),
                           );
                           setBatchDetails((prev) =>
-                            prev.filter((item, i) => item._id !== field._id)
+                            prev.filter((item, i) => item._id !== field._id),
                           );
                         }
                       }}
@@ -624,7 +624,7 @@ export default function CreatePackagePage() {
                               field.onChange([...(field.value || []), cat._id]);
                             } else {
                               field.onChange(
-                                field.value?.filter((id) => id !== cat._id)
+                                field.value?.filter((id) => id !== cat._id),
                               );
                             }
                           }}
@@ -669,7 +669,7 @@ export default function CreatePackagePage() {
               onChange={(e) =>
                 form.setValue(
                   "coverImage.alt",
-                  e.target.value ?? form.getValues("title")
+                  e.target.value ?? form.getValues("title"),
                 )
               }
             />
@@ -879,7 +879,7 @@ export default function CreatePackagePage() {
                       onClick={async () => {
                         const res = await deleteReview(
                           accessToken,
-                          form.getValues(`reviews.${index}`)
+                          form.getValues(`reviews.${index}`),
                         );
                         if (res) reviewsArray.remove(index);
                       }}
@@ -1035,7 +1035,7 @@ export default function CreatePackagePage() {
                       onChange={(e) => {
                         const values = Array.from(
                           e.target.selectedOptions,
-                          (option) => option.value
+                          (option) => option.value,
                         );
                         field.onChange(values);
                       }}
@@ -1066,7 +1066,7 @@ export default function CreatePackagePage() {
                         "schemaType",
                         form
                           .getValues("schemaType")
-                          ?.filter((item) => item !== option)
+                          ?.filter((item) => item !== option),
                       )
                     }
                   />

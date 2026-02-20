@@ -12,11 +12,15 @@ import { CreateEditVehicle } from "@/components/admin/CreateEditVehicle";
 export interface IVehicleData {
   _id: string;
   vehicleName: string;
+  location: string;
   vehicleType: string;
   vehicleYear: string;
   vehicleBrand: string;
   vehicleMilage?: string;
   fuelType: string;
+  tripProtectionFee: number;
+  convenienceFee: number;
+  vehicleTransmission: "mannual" | "automatic";
   price: {
     daily: number;
     hourly: number;

@@ -13,11 +13,26 @@ const vehicleSchema = new mongoose.Schema(
       enum: ["car", "bike"],
       default: "bike",
     },
+    location: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Destination",
+    },
     vehicleYear: String,
     vehicleBrand: {
       type: String,
       enum: ["hero", "honda", "tvs"],
       default: "hero",
+    },
+    convenienceFee: {
+      type: Number,
+    },
+    tripProtectionFee: {
+      type: Number,
+    },
+    vehicleTransmission: {
+      type: String,
+      enum: ["mannual", "automatic"],
+      default: "mannual",
     },
     vehicleModel: {
       type: String,

@@ -22,6 +22,7 @@ const createVehicle = async (req, res) => {
       canonicalUrl,
       excerpt,
       faqs,
+      location,
       status,
     } = req.body;
     if (!price || !vehicleName || !title || !fuelType) {
@@ -50,6 +51,7 @@ const createVehicle = async (req, res) => {
       excerpt,
       faqs,
       status,
+      ...req.body,
     });
     if (!vehicle) {
       return res.status(500).json({ success: false, message: "Server Error" });
@@ -186,7 +188,10 @@ const getVehicleBySlug = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Missing required things" });
     }
-    const vehicle = await Vehicle.findOne({ slug: slug, status: "published" });
+    const vehicle = await Vehicle.findOne({
+      slug: slug,
+      status: "published",
+    }).populate("location", "name city state ");
     if (!vehicle) {
       return res.status(404).json({ success: false, message: "Invalid Slug" });
     }

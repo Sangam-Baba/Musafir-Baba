@@ -23,6 +23,9 @@ import { toast } from "sonner";
 
 import { secureFetch } from "@/lib/secureFetch";
 import { getUser } from "../../holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
+import { tr } from "zod/v4/locales";
+import { Select } from "@/components/ui/select";
+import Link from "next/link";
 
 type TabKey = "description" | "features" | "includeexclude" | "faqs";
 
@@ -31,6 +34,7 @@ interface FormData {
   checkOut: string;
   noOfVehicle: number;
   vehicleId: string;
+  policyAccepted: boolean;
 }
 
 interface BookingResponse {
@@ -77,6 +81,7 @@ export default function RentalPageClient({
       .split("T")[0],
     noOfVehicle: 1,
     vehicleId: vehicle?._id || "",
+    policyAccepted: true,
   });
 
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -117,6 +122,7 @@ export default function RentalPageClient({
         checkOut: "",
         noOfVehicle: 1,
         vehicleId: vehicle?._id || "",
+        policyAccepted: true,
       });
       handlePayment(resData);
     },
@@ -133,6 +139,8 @@ export default function RentalPageClient({
         .openDialog("login", undefined, `/rental/${vehicle.slug}`);
       return;
     }
+    if (data.policyAccepted === false)
+      return toast.error("Please accept terms and conditions");
     mutation.mutate({
       ...data,
     });
@@ -199,6 +207,7 @@ export default function RentalPageClient({
             <MapPin color="#FE5300" size={24} /> {vehicle?.vehicleBrand} |{" "}
             {vehicle?.vehicleYear}
           </span>
+          <p>{vehicle?.location?.name}</p>
         </div>
       </div>
 
@@ -249,26 +258,54 @@ export default function RentalPageClient({
                         />
                       </div>
                     </div>
-
-                    <div className="">
-                      <div className="grid grid-cols-2 gap-5">
-                        <Label className="text-[#FE5300] font-semibold text-sm">
-                          Number of Vehicles
-                        </Label>
-                        <Input
-                          value={data.noOfVehicle}
-                          onChange={(e) =>
-                            setData({
-                              ...data,
-                              noOfVehicle: Number(e.target.value),
-                            })
-                          }
-                          type="number"
-                          min={1}
-                          className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                        />
-                      </div>
+                    <div className="grid grid-cols-2 gap-5">
+                      <Label className="text-[#FE5300] font-semibold text-sm">
+                        Number of Vehicles
+                      </Label>
+                      <Input
+                        value={data.noOfVehicle}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            noOfVehicle: Number(e.target.value),
+                          })
+                        }
+                        type="number"
+                        min={1}
+                        className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
+                      />
                     </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        // value={data.policyAccepted ? "checked" : "unchecked"}
+                        defaultChecked
+                        className="h-15"
+                        type="checkbox"
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            policyAccepted: e.target.value === "checked",
+                          })
+                        }
+                      />
+                      <Label className="text-sm text-gray-700 flex flex-wrap gap-1">
+                        I agree to
+                        <Link
+                          href="/terms-and-conditions"
+                          className="text-blue-600 hover:underline"
+                        >
+                          T&C
+                        </Link>
+                        and
+                        <Link
+                          href="/privacy-policy"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Privacy Policy
+                        </Link>
+                      </Label>
+                    </div>
+
                     <Button
                       // disabled={!accessToken}
                       type="button"
@@ -485,6 +522,7 @@ export default function RentalPageClient({
                     vehicle={{
                       coverImage: veh.gallery[0],
                       vehicleName: veh.vehicleName,
+                      vehicleTransmission: veh.vehicleTransmission,
                       fuelType: veh.fuelType,
                       availableSeats: veh.seats,
                       price: veh.price,

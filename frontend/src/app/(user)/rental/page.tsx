@@ -32,6 +32,7 @@ async function page() {
                 vehicle={{
                   coverImage: vehicle.gallery[0],
                   vehicleName: vehicle.vehicleName,
+                  vehicleTransmission: vehicle.vehicleTransmission,
                   fuelType: vehicle.fuelType,
                   availableSeats: vehicle.seats,
                   price: vehicle.price,

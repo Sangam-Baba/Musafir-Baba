@@ -24,6 +24,8 @@ import ImageUploader from "./ImageUploader";
 import { Label } from "../ui/label";
 import SmallEditor from "./SmallEditor";
 import { X } from "lucide-react";
+import { getDestination } from "@/app/admin/holidays/new/page";
+import { DestinationInterface } from "@/app/(user)/destinations/page";
 
 export const vehicleSchema = z.object({
   vehicleName: z
@@ -83,6 +85,10 @@ export const vehicleSchema = z.object({
   features: z.array(z.string()).optional(),
   inclusions: z.array(z.string()).optional(),
   exclusions: z.array(z.string()).optional(),
+  tripProtectionFee: z.coerce.number(),
+  convenienceFee: z.coerce.number(),
+  vehicleTransmission: z.enum(["mannual", "automatic"]).default("mannual"),
+  location: z.string(),
 
   faqs: z
     .array(
@@ -153,6 +159,10 @@ export const CreateEditVehicle = ({
     resolver: zodResolver(vehicleSchema) as Resolver<FormData>,
     defaultValues: {
       vehicleName: "",
+      location: "",
+      vehicleTransmission: "mannual",
+      tripProtectionFee: 0,
+      convenienceFee: 0,
       vehicleType: "car",
       vehicleYear: "",
       vehicleBrand: "hero",
@@ -187,6 +197,16 @@ export const CreateEditVehicle = ({
     queryKey: ["vehicle", id],
     queryFn: () => getvehicleById(accessToken, id as string),
     enabled: !!id,
+  });
+
+  const {
+    data: destination,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["destination"],
+    queryFn: getDestination,
   });
 
   const vehicle = data?.data;
@@ -225,6 +245,10 @@ export const CreateEditVehicle = ({
         inclusions: vehicle.inclusions,
         exclusions: vehicle.exclusions,
         faqs: vehicle.faqs,
+        location: vehicle.location,
+        tripProtectionFee: vehicle.tripProtectionFee,
+        convenienceFee: vehicle.convenienceFee,
+        vehicleTransmission: vehicle.vehicleTransmission,
         status: vehicle.status,
       });
     }
@@ -289,6 +313,90 @@ export const CreateEditVehicle = ({
                   <FormLabel>Parmalink</FormLabel>
                   <FormControl>
                     <Input placeholder="honda-shine-2026" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          {/* Loaction and Tranmsiion */}
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* Destination */}
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Destination *</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="w-full rounded-md border border-gray-300 p-2"
+                      value={field.value || ""}
+                    >
+                      <option value="" disabled>
+                        Select a destination
+                      </option>
+                      {destination?.map((dest: DestinationInterface) => (
+                        <option key={dest._id} value={dest._id}>
+                          {dest.name.toLocaleUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="vehicleTransmission"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Transmission</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="input-style border rounded-lg"
+                    >
+                      <option value="mannual">Mannual</option>
+                      <option value="automatic">Automatic</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Transmission fee and Proctation fee */}
+          <div className="grid md:grid-cols-2 gap-5">
+            {/*convenienceFee  */}
+            <FormField
+              control={form.control}
+              name="convenienceFee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Convenience Fee</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="9,99" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/*Transmission fee  */}
+            <FormField
+              control={form.control}
+              name="tripProtectionFee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Protection Fee</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="9,99" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

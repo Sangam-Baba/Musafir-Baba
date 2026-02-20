@@ -52,9 +52,14 @@ const destinationSchema = new mongoose.Schema(
         ],
       },
     ],
+    destinationType: {
+      type: String,
+      enum: ["package", "vehicle"],
+      default: "package",
+    },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 destinationSchema.pre("save", function (next) {

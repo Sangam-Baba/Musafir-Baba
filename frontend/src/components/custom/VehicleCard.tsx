@@ -10,6 +10,7 @@ interface IVehicleCard {
     alt: string;
   };
   vehicleName: string;
+  vehicleTransmission: string;
   fuelType: string;
   availableSeats: number;
   price: {
@@ -47,9 +48,16 @@ function VehicleCard({ vehicle }: { vehicle: IVehicleCard }) {
           <h3 className="font-semibold text-lg line-clamp-1">
             {vehicle.vehicleName}
           </h3>
-          <p className="capitalize text-gray-400 font-medium">
-            {vehicle.vehicleBrand} | {vehicle.vehicleYear}
-          </p>
+          <div className="flex items-center justify-between mt-2">
+            <p className="capitalize text-gray-400 font-medium">
+              {vehicle.vehicleBrand} | {vehicle.vehicleYear}
+            </p>
+            <p>
+              <span className="capitalize text-gray-400 font-medium">
+                {`${vehicle.vehicleTransmission ?? "Mannual"}`}
+              </span>
+            </p>
+          </div>
 
           {/* Duration & Location */}
           <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
