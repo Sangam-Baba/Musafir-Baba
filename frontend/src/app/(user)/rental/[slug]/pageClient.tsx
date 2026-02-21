@@ -2,7 +2,7 @@
 import Breadcrumb from "@/components/common/Breadcrumb";
 import RentalCarousal from "@/components/common/RentalCarousal";
 import { Button } from "@/components/ui/button";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Check, ChevronDown, MapPin, X } from "lucide-react";
 import ReadMore from "@/components/common/ReadMore";
@@ -23,10 +23,9 @@ import { toast } from "sonner";
 
 import { secureFetch } from "@/lib/secureFetch";
 import { getUser } from "../../holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
-import { tr } from "zod/v4/locales";
-import { Select } from "@/components/ui/select";
 import Link from "next/link";
-
+import { IVehicleUserData } from "./page";
+import { set } from "zod";
 type TabKey = "description" | "features" | "includeexclude" | "faqs";
 
 interface FormData {
@@ -68,7 +67,7 @@ export default function RentalPageClient({
   vehicle,
   relatedVehicles,
 }: {
-  vehicle: any;
+  vehicle: IVehicleUserData;
   relatedVehicles: any;
 }) {
   const accessToken = useAuthStore((state) => state.accessToken) as string;
@@ -83,6 +82,14 @@ export default function RentalPageClient({
     vehicleId: vehicle?._id || "",
     policyAccepted: true,
   });
+  const [vehiclePrice, setVehiclePrice] = useState(vehicle?.price?.daily);
+  const [finalPrice, setFinalPrice] = useState(
+    Math.ceil(
+      vehiclePrice * 1.05 +
+        vehicle?.convenienceFee +
+        vehicle?.tripProtectionFee,
+    ),
+  );
 
   const formRef = useRef<HTMLFormElement | null>(null);
   const [loading, setLoading] = useState(false);
@@ -101,6 +108,26 @@ export default function RentalPageClient({
     udf1: "",
     service_provider: "",
   });
+
+  useEffect(() => {
+    const totalDay =
+      (new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime()) /
+        (1000 * 60 * 60 * 24) ===
+      0
+        ? 1
+        : (new Date(data.checkOut).getTime() -
+            new Date(data.checkIn).getTime()) /
+          (1000 * 60 * 60 * 24);
+
+    setVehiclePrice(vehicle?.price?.daily * data.noOfVehicle * totalDay);
+    setFinalPrice(
+      Math.ceil(
+        vehiclePrice * 1.05 +
+          vehicle?.convenienceFee +
+          vehicle?.tripProtectionFee,
+      ),
+    );
+  }, [data, vehiclePrice, finalPrice]);
 
   const {
     data: user,
@@ -192,6 +219,8 @@ export default function RentalPageClient({
     { key: "faqs", label: "FAQs" },
   ];
 
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <div className="space-y-5">
       <div className=" ">
@@ -236,6 +265,7 @@ export default function RentalPageClient({
                         </Label>
                         <Input
                           value={data.checkIn}
+                          min={today}
                           onChange={(e) =>
                             setData({ ...data, checkIn: e.target.value })
                           }
@@ -250,6 +280,7 @@ export default function RentalPageClient({
                         </Label>
                         <Input
                           value={data.checkOut}
+                          min={today}
                           onChange={(e) =>
                             setData({ ...data, checkOut: e.target.value })
                           }
@@ -275,11 +306,32 @@ export default function RentalPageClient({
                         className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
                       />
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    {/* Price Details */}
+                    <div className="border-t border-gray-400 pt-4">
+                      <div className="flex justify-between">
+                        <p>Per Day Price</p>
+                        <p>₹ {vehicle?.price?.daily}</p>
+                      </div>
+                      <div className="flex justify-between text-gray-400 text-xs">
+                        <p>Trip Protection Fee</p>
+                        <p>₹ {vehicle?.tripProtectionFee}</p>
+                      </div>
+                      <div className="flex justify-between text-gray-400 text-xs">
+                        <p>Convenience Fee</p>
+                        <p>₹ {vehicle?.convenienceFee}</p>
+                      </div>
+                      <div className="flex justify-between text-gray-400 text-xs">
+                        <p>GST @5%</p>
+                        <p>₹ {Math.ceil(vehiclePrice * 0.05)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 ">
                       <input
                         // value={data.policyAccepted ? "checked" : "unchecked"}
                         defaultChecked
-                        className="h-15"
+                        className="h-10"
                         type="checkbox"
                         onChange={(e) =>
                           setData({
@@ -305,22 +357,13 @@ export default function RentalPageClient({
                         </Link>
                       </Label>
                     </div>
-
                     <Button
                       // disabled={!accessToken}
                       type="button"
                       onClick={handleSubmit}
                       className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
                     >
-                      Pay ₹
-                      {Math.ceil(
-                        ((new Date(data.checkOut).getTime() -
-                          new Date(data.checkIn).getTime()) /
-                          (1000 * 60 * 60 * 24)) *
-                          data.noOfVehicle *
-                          (vehicle?.price?.daily || 0) *
-                          1.05,
-                      ).toLocaleString()}
+                      Pay ₹{finalPrice.toLocaleString()}
                     </Button>
                   </div>
                   <p className="text-xs text-gray-400">

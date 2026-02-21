@@ -1,5 +1,48 @@
 import RentalPageClient from "./pageClient";
 
+export interface IVehicleUserData {
+  _id: string;
+  vehicleName: string;
+  slug: string;
+  location: {
+    _id: string;
+    name: string;
+    state: string;
+    country: string;
+  };
+  vehicleType: string;
+  vehicleYear: string;
+  vehicleBrand: string;
+  vehicleMilage?: string;
+  fuelType: string;
+  tripProtectionFee: number;
+  convenienceFee: number;
+  vehicleTransmission: "mannual" | "automatic";
+  price: {
+    daily: number;
+    hourly: number;
+  };
+  title: string;
+  content: string;
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string[];
+  vehicleModel?: string;
+  gallery: {
+    url: string;
+    title?: string;
+    alt: string;
+  }[];
+  faqs: {
+    question: string;
+    answer: string;
+  }[];
+  features: string[];
+  inclusions: string[];
+  exclusions: string[];
+  status: string;
+}
+
 const getVehicleBySlug = async (slug: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/slug/${slug}`,
