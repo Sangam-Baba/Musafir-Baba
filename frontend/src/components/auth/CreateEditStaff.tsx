@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Resolver, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -122,6 +123,7 @@ function CreateEditStaff({
   role: "admin" | "user";
 }) {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const QueryClient = useQueryClient();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as Resolver<FormValues>,
     defaultValues: {
@@ -158,12 +160,18 @@ function CreateEditStaff({
         ? updateStaff(values, accessToken, id, role)
         : createStaff(values, accessToken, role),
     onSuccess: () => {
+      toast.success("Staff created successfully");
+      QueryClient.invalidateQueries({ queryKey: ["users"] });
       onClose();
     },
-    onError: (err) => console.log(err),
+    onError: (err) => {
+      console.log(err);
+      toast.error(err.message);
+    },
   });
   function onSubmit(values: FormValues) {
     if (!id && !values.password) return alert("Please enter a password");
+    console.log("thi sis is value", values);
     mutate.mutate(values);
   }
 
@@ -204,7 +212,7 @@ function CreateEditStaff({
     },
   ];
   return (
-    <div className="flex flex-col max-w-2xl min-w-xl max-h-[90vh] overflow-auto items-center justify-center bg-gray-50 px-4 py-6 rounded-lg shadow-md">
+    <div className="flex flex-col max-w-2xl min-w-xl max-h-[90vh] overflow-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
       {isError && <p>{(error as Error).message}</p>}
       {isLoading ? (
         <p>Loading...</p>

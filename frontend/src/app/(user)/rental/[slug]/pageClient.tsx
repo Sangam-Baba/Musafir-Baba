@@ -308,7 +308,7 @@ export default function RentalPageClient({
                     </div>
 
                     {/* Price Details */}
-                    <div className="border-t border-gray-400 pt-4">
+                    <div className="border-t border-gray-400 p-4">
                       <div className="flex justify-between">
                         <p>Per Day Price</p>
                         <p>₹ {vehicle?.price?.daily}</p>
@@ -548,10 +548,10 @@ export default function RentalPageClient({
           </section>
 
           {relatedVehicles && relatedVehicles.length > 0 && (
-            <div>
+            <div className="space-y-5">
               <div className="flex flex-col gap-2 items-center">
                 <h2 className="text-lg md:text-3xl font-bold text-center">
-                  Similer Vehicles
+                  Similar Vehicles
                 </h2>
                 <p className="w-20 h-1 bg-[#FE5300] text-center"></p>
                 <p className=" text-center">
