@@ -59,6 +59,7 @@ export default function MainMediaUploader({
             body: JSON.stringify({
               fileName: file.name,
               fileType: file.type,
+              folder: "media",
             }),
           }
         );

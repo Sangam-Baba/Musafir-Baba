@@ -81,6 +81,21 @@ export default function ImageUploader({
                   </video>
                 )}
               </div>
+            ) : file.format === "pdf" || file.resource_type === "raw" ? (
+              <div className="flex flex-col items-center justify-center w-[200px] h-[120px] border-2 border-dashed border-orange-400 rounded-lg bg-orange-50 gap-2 px-3">
+                <span className="text-4xl">📄</span>
+                <span className="text-xs text-center text-gray-600 break-all line-clamp-2">
+                  {file.url.split("/").pop() || "itinerary.pdf"}
+                </span>
+                <a
+                  href={file.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 underline"
+                >
+                  View PDF
+                </a>
+              </div>
             ) : (
               <Image
                 src={file.url}
