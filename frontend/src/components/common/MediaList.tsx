@@ -112,6 +112,13 @@ export default function MediaPicker({
               >
                 {item.format === "mp4" ? (
                   <video src={item.url} className="h-28 w-full object-cover" />
+                ) : item.format === "pdf" || item.resource_type === "raw" ? (
+                  <div className="h-28 w-full flex flex-col items-center justify-center bg-orange-50 border border-orange-200 rounded gap-1 px-2">
+                    <span className="text-3xl">📄</span>
+                    <span className="text-[10px] text-center text-gray-500 break-all line-clamp-2">
+                      {item.url.split("/").pop() || "file.pdf"}
+                    </span>
+                  </div>
                 ) : (
                   <Image
                     src={item.url}
