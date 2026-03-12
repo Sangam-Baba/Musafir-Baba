@@ -164,9 +164,9 @@ const getAllVehicle = async (req, res) => {
 
 const getAllPublishedVehicle = async (req, res) => {
   try {
-    const allVehicle = await Vehicle.find({ status: "published" }).sort({
-      createdAt: -1,
-    });
+    const allVehicle = await Vehicle.find({ status: "published" })
+      .populate("location", "name city state")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

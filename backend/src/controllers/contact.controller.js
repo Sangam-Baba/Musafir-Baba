@@ -24,7 +24,7 @@ const createContact = async (req, res) => {
       .split("/")
       .join(" - ")}`;
     const emailResponse = await sendEmail(
-      "info@musafirbaba.com",
+      "care@musafirbaba.com",
       subject,
       emailBody
     );

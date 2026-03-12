@@ -1,10 +1,11 @@
 import dotenv from "dotenv";
+dotenv.config(); // ✅ Must be first — loads .env before anything reads process.env
+
 import connectDb from "./config/db.js";
 import app from "./app.js";
 import { startMembershipExpiryCron } from "./services/membershipUpdate.service.js";
 
 const PORT = process.env.PORT || 5000;
-dotenv.config();
 
 connectDb().then(() => {
   console.log("Database connected");
