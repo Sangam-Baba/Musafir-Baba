@@ -10,18 +10,14 @@ const vehicleSchema = new mongoose.Schema(
     },
     vehicleType: {
       type: String,
-      enum: ["car", "bike", "tempo-traveller"],
-      default: "bike",
     },
     location: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Destination",
+      ref: "VehiclePickUpDestination",
     },
     vehicleYear: String,
     vehicleBrand: {
       type: String,
-      enum: ["hero", "honda", "tvs"],
-      default: "hero",
     },
     convenienceFee: {
       type: Number,
