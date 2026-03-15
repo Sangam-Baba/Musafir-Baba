@@ -69,6 +69,14 @@ export default function RentalsClient({ vehicles }: { vehicles: IVehicle[] }) {
     return Array.from(seen.values());
   }, [vehicles]);
 
+  const uniqueTypes = useMemo(() => {
+    const types = new Set<string>();
+    (vehicles ?? []).forEach((v) => {
+      if (v.vehicleType) types.add(v.vehicleType);
+    });
+    return Array.from(types);
+  }, [vehicles]);
+
   useEffect(() => {
     const result = (vehicles ?? [])
       .filter((vehicle: IVehicle) => {
@@ -172,7 +180,7 @@ export default function RentalsClient({ vehicles }: { vehicles: IVehicle[] }) {
               onValueChange={(value) =>
                 setFilter((prev) => ({
                   ...prev,
-                  vehicleType: value,
+                  vehicleType: value === "_all" ? "" : value,
                   seats: value !== "car" ? "" : prev.seats,
                 }))
               }
@@ -183,9 +191,12 @@ export default function RentalsClient({ vehicles }: { vehicles: IVehicle[] }) {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Vehicle Category</SelectLabel>
-                  <SelectItem value="car">Car</SelectItem>
-                  <SelectItem value="bike">Bike</SelectItem>
-                  <SelectItem value="tempo-traveller">Tempo Traveller</SelectItem>
+                  <SelectItem value="_all">All Categories</SelectItem>
+                  {uniqueTypes.map((type) => (
+                    <SelectItem key={type} value={type.toLowerCase()}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -243,15 +254,12 @@ export default function RentalsClient({ vehicles }: { vehicles: IVehicle[] }) {
           {/* Location */}
           <div className="flex flex-col w-full lg:flex-1 lg:min-w-[240px] xl:w-auto justify-end">
             <Label className="text-black-500 text-sm whitespace-nowrap px-1 mb-2">
-              Pickup:{" "}
-              <span className="font-semibold text-[#FE5300]">
-                Khaira Mor, Najafgarh, Delhi
-              </span>
+              Pickup Location
             </Label>
             <Select
               value={filter.location}
               onValueChange={(value) =>
-                setFilter((prev) => ({ ...prev, location: value }))
+                setFilter((prev) => ({ ...prev, location: value === "all" ? "" : value }))
               }
             >
               <SelectTrigger className="w-full h-10">
@@ -260,9 +268,12 @@ export default function RentalsClient({ vehicles }: { vehicles: IVehicle[] }) {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Pickup / Garage</SelectLabel>
-                  <SelectItem value="static-pickup">
-                    Khaira Mor...
-                  </SelectItem>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locationOptions.map((loc) => (
+                    <SelectItem key={loc._id} value={loc._id}>
+                      {loc.name}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>

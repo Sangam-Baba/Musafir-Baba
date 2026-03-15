@@ -30,8 +30,7 @@ export default function BlogCard({
         <div className="absolute inset-0 bg-linear-to-t from-black/90 to-transparent" />
         <div className="absolute bottom-2 left-4 right-4 text-white">
           <h2 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h2>
-          {/* <div className="text-gray-600 text-sm line-clamp-2"><BlogContent html={description} /></div>  */}
-          <p className="text-gray-600 text-sm line-clamp-3">{description}</p>
+          <p className="text-gray-300 text-sm line-clamp-3 leading-tight">{description}</p>
         </div>
       </div>
     </Link>

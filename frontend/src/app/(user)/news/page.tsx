@@ -35,7 +35,7 @@ export interface News {
 }
 export async function getNews(page: number) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/news/?page=${page}&limit=12`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/news/?page=${page}&limit=30`,
     {
       next: { revalidate: 60 },
     },

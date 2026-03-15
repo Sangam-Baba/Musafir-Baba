@@ -41,6 +41,7 @@ export interface IVehicleUserData {
   inclusions: string[];
   exclusions: string[];
   status: string;
+  availableStock: number;
 }
 
 const getVehicleBySlug = async (slug: string) => {
