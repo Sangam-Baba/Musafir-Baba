@@ -23,8 +23,6 @@ async function page() {
   const vehicles = await getAllVehicles();
   
   const content = `
-<h1>Car & Bike Rentals - Flexible Travel With Reliable Vehicle Options</h1>
-
 <p>Travel plans often require flexibility, comfort, and independence. Whether you are exploring a city, planning a road trip, or simply need reliable transport during your journey, car and bike rentals offer the convenience of travelling at your own pace. The MusafirBaba Rentals page brings together a range of vehicles that travellers can choose from based on their travel needs, preferences, and budget.</p>
 
 <p>This page lists available cars and bikes for rent, allowing travellers to explore vehicle options that suit different types of journeys. From short city rides to long-distance road trips, renting a vehicle provides freedom and convenience that traditional transportation options may not always offer.</p>
@@ -173,7 +171,10 @@ async function page() {
 
   return (
     <div>
-      <Hero title="Rental Services" image="/rent.jpeg" />
+      <Hero 
+        title="Car & Bike Rentals - Flexible Travel With Reliable Vehicle Options" 
+        image="/rent.jpeg" 
+      />
 
       <div className="max-w-7xl mx-auto">
         <Breadcrumb title="Rental Services" />

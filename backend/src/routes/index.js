@@ -40,6 +40,8 @@ import newsletterRoutes from "./newsletter.routes.js";
 import popupRoutes from "./popup.routes.js";
 import vehicleRoutes from "./vehicle.routes.js";
 import vehicleBookingsRoutes from "./vehicleBooking.routes.js";
+import masterDataRoutes from "./masterData.routes.js";
+import migrationRoutes from "./migration.routes.js";
 
 const router = Router();
 
@@ -84,4 +86,6 @@ router.use("/newsletter", newsletterRoutes);
 router.use("/popup", popupRoutes);
 router.use("/vehicle", vehicleRoutes);
 router.use("/vehicle-booking", vehicleBookingsRoutes);
+router.use("/master-data", masterDataRoutes);
+router.use("/migration", migrationRoutes);
 export default router;

@@ -24,8 +24,18 @@ import ImageUploader from "./ImageUploader";
 import { Label } from "../ui/label";
 import SmallEditor from "./SmallEditor";
 import { X } from "lucide-react";
-import { getDestination } from "@/app/admin/holidays/new/page";
 import { DestinationInterface } from "@/app/(user)/destinations/page";
+
+const fetchMasterData = async (accessToken: string, endpoint: string) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/master-data/${endpoint}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
+  if (!res.ok) throw new Error(`Failed to fetch ${endpoint}`);
+  return res.json();
+};
 
 export const vehicleSchema = z.object({
   vehicleName: z
@@ -33,18 +43,18 @@ export const vehicleSchema = z.object({
     .trim()
     .min(2, "Vehicle Name must be at least 2 characters"),
 
-  vehicleType: z.enum(["car", "bike"]).default("bike"),
+  vehicleType: z.string().min(1, "Type is required"),
 
   vehicleYear: z.string().optional(),
 
-  vehicleBrand: z.enum(["hero", "honda", "tvs"]).default("hero"),
+  vehicleBrand: z.string().min(1, "Brand is required"),
 
   vehicleModel: z.string().optional(),
 
   vehicleMilage: z.string().optional(),
 
   fuelType: z
-    .enum(["electric", "petrol", "desile", "elctric", "cng", "other"])
+    .enum(["electric", "petrol", "diesel", "cng", "other"])
     .default("petrol"),
 
   seats: z.coerce.number().positive().optional(),
@@ -199,14 +209,19 @@ export const CreateEditVehicle = ({
     enabled: !!id,
   });
 
-  const {
-    data: destination,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["destination"],
-    queryFn: getDestination,
+  const { data: masterBrands } = useQuery({
+    queryKey: ["master-data", "brand"],
+    queryFn: () => fetchMasterData(accessToken, "brand"),
+  });
+
+  const { data: masterTypes } = useQuery({
+    queryKey: ["master-data", "type"],
+    queryFn: () => fetchMasterData(accessToken, "type"),
+  });
+
+  const { data: pickupDestinations } = useQuery({
+    queryKey: ["master-data", "pickup-destination"],
+    queryFn: () => fetchMasterData(accessToken, "pickup-destination"),
   });
 
   const vehicle = data?.data;
@@ -338,9 +353,10 @@ export const CreateEditVehicle = ({
                       <option value="" disabled>
                         Select a destination
                       </option>
-                      {destination?.map((dest: DestinationInterface) => (
+                      {pickupDestinations?.data?.map((dest: any) => (
                         <option key={dest._id} value={dest._id}>
-                          {dest.name.toLocaleUpperCase()}
+                          {dest.name.toUpperCase()} (
+                          {dest.city || "No City"})
                         </option>
                       ))}
                     </select>
@@ -426,10 +442,14 @@ export const CreateEditVehicle = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Vehicle Type</FormLabel>
-                  <FormControl>
+                   <FormControl>
                     <select {...field} className="input-style">
-                      <option value="bike">Bike</option>
-                      <option value="car">Car</option>
+                      <option value="" disabled>Select Type</option>
+                      {masterTypes?.data?.map((t: any) => (
+                        <option key={t._id} value={t.name.toLowerCase()}>
+                          {t.name}
+                        </option>
+                      ))}
                     </select>
                   </FormControl>
                   <FormMessage />
@@ -443,11 +463,14 @@ export const CreateEditVehicle = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Brand</FormLabel>
-                  <FormControl>
+                   <FormControl>
                     <select {...field} className="input-style">
-                      <option value="hero">Hero</option>
-                      <option value="honda">Honda</option>
-                      <option value="tvs">TVS</option>
+                      <option value="" disabled>Select Brand</option>
+                      {masterBrands?.data?.map((b: any) => (
+                        <option key={b._id} value={b.name.toLowerCase()}>
+                          {b.name}
+                        </option>
+                      ))}
                     </select>
                   </FormControl>
                   <FormMessage />

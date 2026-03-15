@@ -4,7 +4,7 @@ import RentalCarousal from "@/components/common/RentalCarousal";
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Check, ChevronDown, MapPin, X } from "lucide-react";
+import { Check, ChevronDown, MapPin, Minus, Plus, X } from "lucide-react";
 import ReadMore from "@/components/common/ReadMore";
 import { BlogContent } from "@/components/custom/BlogContent";
 import { Accordion } from "@radix-ui/react-accordion";
@@ -25,7 +25,6 @@ import { secureFetch } from "@/lib/secureFetch";
 import { getUser } from "../../holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
 import Link from "next/link";
 import { IVehicleUserData } from "./page";
-import { set } from "zod";
 type TabKey = "description" | "features" | "includeexclude" | "faqs";
 
 interface FormData {
@@ -222,38 +221,170 @@ export default function RentalPageClient({
   const today = new Date().toISOString().split("T")[0];
 
   return (
-    <div className="space-y-5">
-      <div className=" ">
-        <div className="max-w-7xl mx-auto px-4 my-4">
-          <Breadcrumb title={vehicle?.title} />
-        </div>
-        {/* Title  */}
-        <div className="flex items-center px-4 gap-2 max-w-7xl mx-auto">
-          <h1 className="text-3xl  font-bold baseline capitalize">
-            {vehicle?.title}
-          </h1>
-          <span className="flex capitalize md:text-xl items-center gap-1 px-3 py-3 rounded-md">
-            <MapPin color="#FE5300" size={24} /> {vehicle?.vehicleBrand} |{" "}
-            {vehicle?.vehicleYear}
-          </span>
-          <p>{vehicle?.location?.name}</p>
-        </div>
+    <div className="space-y-0">
+      {/* Banner Carousel */}
+      <div className="relative">
+        <RentalCarousal
+          gallery={vehicle?.gallery}
+          fullWidth={true}
+          title={vehicle?.title}
+        />
       </div>
 
-      <div className=" max-w-7xl mx-auto flex flex-col md:flex-row space-y-5">
-        <div className="w-full md:w-5/7 px-4">
-          <RentalCarousal gallery={vehicle?.gallery} />
-        </div>
-        {/* Payemtn */}
-        <div className="w-full md:w-2/7 px-4 ">
-          <Card className="p-0 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl">
+      <div className="w-full max-w-7xl mx-auto px-4 mt-8">
+        <Breadcrumb title={vehicle?.title} />
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-4 my-8 md:flex gap-8">
+        {/* Main Content (Left) */}
+        <section className="w-full md:w-2/3">
+            {/* Title Section (Original Style) */}
+            <div className="flex flex-col gap-1 mb-6">
+              <h1 className="text-3xl font-bold capitalize text-gray-900">
+                {vehicle?.title}
+              </h1>
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="flex items-center gap-1 font-semibold uppercase">
+                  <MapPin color="#FE5300" size={18} /> {vehicle?.vehicleBrand} | {vehicle?.vehicleYear}
+                </span>
+                <span className="text-gray-400">|</span>
+                <span className="capitalize">{vehicle?.location?.name}</span>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex md:flex-wrap w-full gap-2 overflow-x-auto no-scrollbar">
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.key}
+                  size="lg"
+                  onClick={() => setActive(tab.key)}
+                  className={`mt-4 ${
+                    active === tab.key
+                      ? "bg-[#FE5300] text-white"
+                      : "bg-white text-black border border-[#FE5300] hover:bg-[#FE5300]/5"
+                  }`}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* Tab Content */}
+            <div className="mt-10 w-full">
+              {active === "description" && (
+                <div className="rounded-xl bg-[#87E87F]/10 px-8 py-8 shadow-sm border border-[#87E87F]/30">
+                  <h2 className="font-bold text-2xl mb-4 text-gray-800">
+                    About This Vehicle
+                  </h2>
+                  <div className="md:hidden">
+                    <ReadMore content={vehicle?.content} />
+                  </div>
+                  <section className="hidden md:block prose prose-lg max-w-none">
+                    <BlogContent html={vehicle?.content} />
+                  </section>
+                </div>
+              )}
+
+              {active === "features" && (
+                <div className="rounded-xl bg-[#87E87F]/10 px-8 py-8 shadow-sm border border-[#87E87F]/30">
+                  <h2 className="font-bold text-2xl mb-6 text-gray-800">Key Features</h2>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {vehicle?.features && vehicle.features.length > 0 ? (
+                      vehicle.features.map((feature: string, i: number) => (
+                        <li className="flex items-center gap-3 text-lg text-gray-700" key={i}>
+                          <div className="w-2 h-2 rounded-full bg-[#FE5300]" />
+                          {feature}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-gray-500">No specific features listed.</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {active === "includeexclude" && (
+                <div className="space-y-8">
+                  <div className="rounded-xl bg-[#87E87F]/10 px-8 py-8 shadow-sm border border-[#87E87F]/30">
+                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                      <div className="w-1 h-6 bg-[#87E87F]" /> What&apos;s Included
+                    </h3>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {vehicle?.inclusions && vehicle.inclusions.length > 0 ? (
+                        vehicle.inclusions.map((inc: string, i: number) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <div className="bg-green-100 rounded-full p-1 mt-0.5">
+                              <Check className="w-4 h-4 text-green-600" />
+                            </div>
+                            <span className="text-gray-700">{inc}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-gray-500 italic">Information pending.</li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-xl bg-red-50 px-8 py-8 shadow-sm border border-red-100">
+                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                      <div className="w-1 h-6 bg-red-400" /> What&apos;s Not Included
+                    </h3>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {vehicle?.exclusions && vehicle.exclusions.length > 0 ? (
+                        vehicle.exclusions.map((exc: string, i: number) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <div className="bg-red-100 rounded-full p-1 mt-0.5">
+                              <X className="w-4 h-4 text-red-600" />
+                            </div>
+                            <span className="text-gray-700">{exc}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-gray-500 italic">Information pending.</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {active === "faqs" && (
+                <div className="rounded-xl bg-[#87E87F]/10 px-8 py-8 shadow-sm border border-[#87E87F]/30">
+                  <h2 className="font-bold text-2xl mb-6 text-gray-800">Frequently Asked Questions</h2>
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="w-full space-y-4"
+                  >
+                    {vehicle?.faqs?.map((faq, index) => (
+                      <AccordionItem
+                        key={index}
+                        value={`faq-${index}`}
+                        className="border rounded-xl bg-white px-4 transition-all duration-200 hover:border-[#FE5300]"
+                      >
+                        <AccordionTrigger className="text-lg font-semibold text-left hover:no-underline py-4">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6 pt-2 text-gray-600 border-t">
+                          <BlogContent html={faq.answer} />
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              )}
+            </div>
+          </section>
+
+        {/* Sidebar (Right) */}
+        <aside className="w-full md:w-1/3 flex flex-col gap-6">
+          <Card className="p-0 mb-4 shadow-lg border-2 border-[#FE5300] hover:shadow-2xl overflow-hidden md:sticky md:top-24 self-start">
             <div>
               <form
-                //   onSubmit={handleSubmit}
                 className="w-full max-w-4xl mx-auto"
               >
                 <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 border border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 font-bold">
                     Book Your Vehicle
                   </h2>
 
@@ -289,25 +420,60 @@ export default function RentalPageClient({
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-5">
+                    <div className="grid grid-cols-2 gap-5 items-center">
                       <Label className="text-[#FE5300] font-semibold text-sm">
                         Number of Vehicles
                       </Label>
-                      <Input
-                        value={data.noOfVehicle}
-                        onChange={(e) =>
-                          setData({
-                            ...data,
-                            noOfVehicle: Number(e.target.value),
-                          })
-                        }
-                        type="number"
-                        min={1}
-                        className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                      />
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 border border-gray-200 rounded-lg h-11 px-2 overflow-hidden bg-white">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon"
+                            className="h-8 w-8 flex-shrink-0 bg-gray-100 hover:bg-[#FE5300]/10 text-gray-700 hover:text-[#FE5300] border-none"
+                            onClick={() =>
+                              setData({
+                                ...data,
+                                noOfVehicle: Math.max(1, data.noOfVehicle - 1),
+                              })
+                            }
+                          >
+                            <Minus size={16} strokeWidth={3} />
+                          </Button>
+                          <Input
+                            value={data.noOfVehicle}
+                            readOnly
+                            className="h-9 w-full border-none text-center font-bold text-lg focus-visible:ring-0 p-0 pointer-events-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon"
+                            disabled={data.noOfVehicle >= (vehicle?.availableStock || 1)}
+                            className={`h-8 w-8 flex-shrink-0 border-none ${
+                                data.noOfVehicle >= (vehicle?.availableStock || 1)
+                                ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                                : "bg-gray-100 hover:bg-[#FE5300]/10 text-gray-700 hover:text-[#FE5300]"
+                            }`}
+                            onClick={() =>
+                              setData({
+                                ...data,
+                                noOfVehicle: data.noOfVehicle + 1,
+                              })
+                            }
+                          >
+                            <Plus size={16} strokeWidth={3} />
+                          </Button>
+                        </div>
+                        {vehicle?.availableStock > 0 && (
+                          <p className={`text-[10px] font-medium text-right ${data.noOfVehicle >= vehicle.availableStock ? 'text-red-500' : 'text-gray-400'}`}>
+                            {vehicle.availableStock} available in stock
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Price Details */}
+                    {/* Price Details - Reverted to original compact style */}
                     <div className="border-t border-gray-400 p-4">
                       <div className="flex justify-between">
                         <p>Per Day Price</p>
@@ -329,14 +495,13 @@ export default function RentalPageClient({
 
                     <div className="flex items-center gap-2 ">
                       <input
-                        // value={data.policyAccepted ? "checked" : "unchecked"}
                         defaultChecked
                         className="h-10"
                         type="checkbox"
                         onChange={(e) =>
                           setData({
                             ...data,
-                            policyAccepted: e.target.value === "checked",
+                            policyAccepted: e.target.checked,
                           })
                         }
                       />
@@ -358,7 +523,6 @@ export default function RentalPageClient({
                       </Label>
                     </div>
                     <Button
-                      // disabled={!accessToken}
                       type="button"
                       onClick={handleSubmit}
                       className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
@@ -366,219 +530,48 @@ export default function RentalPageClient({
                       Pay ₹{finalPrice.toLocaleString()}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 mt-2">
                     *All prices are inclusive of GST @ 5%
                   </p>
                 </div>
               </form>
-              <div>
-                <p></p>
-              </div>
             </div>
           </Card>
-        </div>
+        </aside>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 my-4">
-        <div className="w-full max-w-7xl mx-auto px-4 my-4 flex flex-col">
-          <section className="w-full max-w-7xl mx-auto px-4 md:py-10 py-4">
-            <div className="flex flex-col gap-2 max-w-7xl mx-auto">
-              <div className="flex md:flex-wrap w-full gap-2 mt-4 overflow-x-auto no-scrollbar">
-                {tabs.map((tab) => (
-                  <Button
-                    key={tab.key}
-                    size="lg"
-                    onClick={() => setActive(tab.key)}
-                    className={`mt-4 ${
-                      active === tab.key
-                        ? "bg-[#FE5300] text-white"
-                        : "bg-white text-black border border-[#FE5300]"
-                    }`}
-                  >
-                    {tab.label}
-                  </Button>
-                ))}
-              </div>
-
-              <div className="mt-10 w-full">
-                {active === "description" && (
-                  <div className="rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
-                    <h2 className="font-bold text-lg mb-2">
-                      About This Vehicle
-                    </h2>
-                    <div className="md:hidden">
-                      <ReadMore content={vehicle?.content} />
-                    </div>
-                    <section className="hidden md:block prose prose-lg max-w-none mt-6">
-                      <BlogContent html={vehicle?.content} />
-                    </section>
-                  </div>
-                )}
-
-                {active === "features" && (
-                  <ul className="list-disc list-inside rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
-                    {vehicle?.features && vehicle.features.length > 0 ? (
-                      vehicle.features.map((feature: string, i: number) => (
-                        <li className="mb-2 text-lg" key={i}>
-                          {feature}
-                        </li>
-                      ))
-                    ) : (
-                      <li className="mb-2 text-lg">No features available</li>
-                    )}
-                  </ul>
-                )}
-
-                {active === "includeexclude" && (
-                  <div className="space-y-8">
-                    <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">
-                        What's Included
-                      </h3>
-                      <ul className="space-y-3">
-                        {vehicle?.inclusions &&
-                        vehicle.inclusions.length > 0 ? (
-                          vehicle.inclusions.map((inc: string, i: number) => (
-                            <li key={i} className="flex items-start gap-3">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                              <span className="text-sm text-foreground">
-                                {inc}
-                              </span>
-                            </li>
-                          ))
-                        ) : (
-                          <li className="flex items-start gap-3">
-                            <span>No inclusions available</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-
-                    <div className="rounded-xl bg-red-50 px-4 py-6 shadow">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">
-                        What's Not Included
-                      </h3>
-                      <ul className="space-y-3">
-                        {vehicle?.exclusions &&
-                        vehicle.exclusions.length > 0 ? (
-                          vehicle.exclusions.map((exc: string, i: number) => (
-                            <li key={i} className="flex items-start gap-3">
-                              <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="text-sm text-muted-foreground">
-                                {exc}
-                              </span>
-                            </li>
-                          ))
-                        ) : (
-                          <li className="flex items-start gap-3">
-                            <span>No exclusions available</span>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-
-                {active === "faqs" && (
-                  <Accordion
-                    type="single"
-                    collapsible
-                    value={openItem}
-                    onValueChange={setOpenItem}
-                    className="w-full space-y-3 rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow"
-                  >
-                    {vehicle?.faqs?.map(
-                      (
-                        faq: { question: string; answer: string },
-                        index: number,
-                      ) => {
-                        const isOpen = openItem === `faq-${index}`;
-                        return (
-                          <AccordionItem
-                            key={index}
-                            value={`faq-${index}`}
-                            className={`group overflow-hidden rounded-lg border transition-all duration-200 ${
-                              isOpen
-                                ? "border-1 border-[#FE5300] shadow-lg"
-                                : "border-gray-200 hover:border-[#FE5300] hover:shadow-md"
-                            }`}
-                          >
-                            <AccordionTrigger
-                              className={`px-6 py-4 text-left font-semibold transition-colors ${
-                                isOpen
-                                  ? "text-blue-600"
-                                  : "text-gray-900 hover:text-[#FE5300]"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3 flex-1">
-                                <div
-                                  className={`flex-shrink-0 rounded-full p-2 transition-colors ${
-                                    isOpen
-                                      ? "bg-blue-100"
-                                      : "bg-gray-100 group-hover:bg-blue-50"
-                                  }`}
-                                >
-                                  <ChevronDown
-                                    className={`h-5 w-5 transition-transform duration-300 ${
-                                      isOpen ? "rotate-180" : ""
-                                    }`}
-                                  />
-                                </div>
-                                <span className="text-base md:text-lg">
-                                  {faq.question}
-                                </span>
-                              </div>
-                            </AccordionTrigger>
-
-                            <AccordionContent className="px-6 pb-4 pt-0">
-                              <div className="ml-11 space-y-3 text-gray-600 leading-relaxed">
-                                <section className="prose prose-lg max-w-none">
-                                  <BlogContent html={faq.answer} />
-                                </section>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        );
-                      },
-                    )}
-                  </Accordion>
-                )}
-              </div>
+      <div className="max-w-7xl mx-auto px-4 my-16">
+        {relatedVehicles && relatedVehicles.length > 0 && (
+          <div className="space-y-10">
+            <div className="flex flex-col gap-2 items-center">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900">
+                Similar Vehicles
+              </h2>
+              <div className="w-24 h-1.5 bg-[#FE5300] rounded-full"></div>
+              <p className="text-gray-500 mt-2 text-lg">
+                Hand-picked alternatives you might like
+              </p>
             </div>
-          </section>
-
-          {relatedVehicles && relatedVehicles.length > 0 && (
-            <div className="space-y-5">
-              <div className="flex flex-col gap-2 items-center">
-                <h2 className="text-lg md:text-3xl font-bold text-center">
-                  Similar Vehicles
-                </h2>
-                <p className="w-20 h-1 bg-[#FE5300] text-center"></p>
-                <p className=" text-center">
-                  You may also like ({relatedVehicles.length})
-                </p>
-              </div>
-              <div className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8 flex gap-4 overflow-x-auto no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6 md:overflow-visible">
-                {relatedVehicles.map((veh: any) => (
-                  <VehicleCard
-                    key={veh._id}
-                    vehicle={{
-                      coverImage: veh.gallery[0],
-                      vehicleName: veh.vehicleName,
-                      vehicleTransmission: veh.vehicleTransmission,
-                      fuelType: veh.fuelType,
-                      availableSeats: veh.seats,
-                      price: veh.price,
-                      vehicleBrand: veh.vehicleBrand,
-                      vehicleYear: veh.vehicleYear,
-                      url: `/rental/${veh.slug}`,
-                    }}
-                  />
-                ))}
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {relatedVehicles.map((veh: any) => (
+                <VehicleCard
+                  key={veh._id}
+                  vehicle={{
+                    coverImage: veh.gallery[0],
+                    vehicleName: veh.vehicleName,
+                    vehicleTransmission: veh.vehicleTransmission,
+                    fuelType: veh.fuelType,
+                    availableSeats: veh.seats,
+                    price: veh.price,
+                    vehicleBrand: veh.vehicleBrand,
+                    vehicleYear: veh.vehicleYear,
+                    url: `/rental/${veh.slug}`,
+                  }}
+                />
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <form

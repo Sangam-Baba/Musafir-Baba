@@ -44,6 +44,8 @@ import {
   Images,
   NewspaperIcon,
   Car,
+  Database,
+  KeyRound,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import Link from "next/link";
@@ -179,6 +181,30 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: "Master Data",
+    icon: Database,
+    items: [
+      {
+        label: "Vehicle Brands",
+        href: "/admin/master-data/brand",
+        icon: Tags,
+        permission: "vehicle",
+      },
+      {
+        label: "Vehicle Types",
+        href: "/admin/master-data/type",
+        icon: ListChecks,
+        permission: "vehicle",
+      },
+      {
+        label: "Pickup Destinations",
+        href: "/admin/master-data/pickup-destination",
+        icon: MapPin,
+        permission: "vehicle",
+      },
+    ],
+  },
+  {
     label: "Settings",
     icon: FaCog,
     items: [
@@ -212,17 +238,30 @@ const NAV_GROUPS = [
         icon: NewspaperIcon,
         permission: "newsletter",
       },
+      {
+        label: "Change Password",
+        href: "/admin/update-password",
+        icon: KeyRound,
+        permission: "dashboard", // Everyone with dashboard access (likely all admins) can change their password
+      },
     ],
   },
 ];
 
 export function AdminSidebar() {
+  const role = useAdminAuthStore((s) => s.role);
   const permissions = useAdminAuthStore((s) => s.permissions) as string[];
   const pathname = usePathname();
 
   const filteredNavGroups = NAV_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter((item) => permissions.includes(item.permission)),
+    items: group.items.filter((item) => {
+      // "Change Password" is visible to any admin/superadmin
+      if (item.label === "Change Password") {
+        return role === "admin" || role === "superadmin";
+      }
+      return permissions.includes(item.permission);
+    }),
   })).filter((group) => group.items.length > 0);
   return (
     <Sidebar variant="inset" collapsible="icon">
