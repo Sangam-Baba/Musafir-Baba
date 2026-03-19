@@ -86,14 +86,14 @@ function Footer() {
                 </p>
               </div>
             </div>
-            <div className="flex gap-1 items-center">
+            {/* <div className="flex gap-1 items-center">
               <Phone size={20} color="#FE5300" className="w-[5%] h-5  " />
               <div className="md:flex justify-start w-[90%] gap-2">
                 <p>
                   <span className="font-bold">Visa:</span>+91 92170 82447
                 </p>
               </div>
-            </div>
+            </div> */}
             <div className="flex gap-1 items-center">
               <Mail size={20} color="#FE5300" className="w-[5%] h-5  " />
               <p className="flex justify-start w-[90%]">care@musafirbaba.com</p>
