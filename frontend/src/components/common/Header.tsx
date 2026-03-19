@@ -63,20 +63,8 @@ export default function Header() {
             </TooltipContent>
           </Tooltip>
 
-          <span className="mx-1">|</span>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <a
-                href="tel:+919355663591"
-                className="flex items-center gap-1 text-inherit"
-              >
-                Visa: +91 92170 82447
-              </a>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Talk to our visa experts</p>
-            </TooltipContent>
-          </Tooltip>
+          {/* <span className="mx-1">|</span> */}
+          
         </div>
       </div>
 
