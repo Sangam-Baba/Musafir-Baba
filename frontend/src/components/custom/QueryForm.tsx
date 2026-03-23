@@ -14,6 +14,7 @@ import {
   Phone,
   MessageCircleCode,
   CircleCheck,
+  MapPin,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,12 +39,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { INDIAN_STATES_AND_CITIES, INDIAN_STATES } from "@/lib/indiaData";
 
 const EnquiryFromSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
   countryCode: z.string().default("+91"),
   phone: z.string().min(9, "Phone number is required"),
+  state: z.string().optional(),
+  city: z.string().optional(),
   message: z.string().min(1, "Message is required"),
   whatsapp: z.boolean().optional(),
   policy: z.boolean().refine((val) => val === true, {
@@ -107,6 +111,8 @@ export default function QueryForm() {
       email: "",
       countryCode: "IN +91",
       phone: "",
+      state: "",
+      city: "",
       message: "",
       whatsapp: false,
       policy: false,
@@ -166,7 +172,12 @@ export default function QueryForm() {
       value,
     }),
   );
-  // console.log("countryOptions :", countryOptions);
+
+  const selectedState = form.watch("state");
+  const cityOptions = selectedState && INDIAN_STATES_AND_CITIES[selectedState] 
+    ? INDIAN_STATES_AND_CITIES[selectedState] 
+    : [];
+
   return (
     <Card className="w-full mx-auto rounded-2xl shadow-lg p-1">
       <CardContent className="space-y-6 py-6">
@@ -182,64 +193,63 @@ export default function QueryForm() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 md:space-y-4">
             {/* Name */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
+                <FormItem className="relative pt-2 space-y-0">
+                  <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10 transition-colors">Name</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                      <UserRound className="w-5 h-5 text-orange-500" />
+                      <UserRound className="w-5 h-5 text-orange-500 shrink-0" />
                       <Input
                         placeholder="John Doe"
                         {...field}
-                        className="border-none p-0 shadow-none focus-visible:ring-0"
+                        className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
                       />
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="mt-1 text-[10px]" />
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-4 gap-2 items-center">
+            <div className="grid grid-cols-4 gap-2 items-start">
               {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem className="col-span-3">
-                    <FormLabel>Email</FormLabel>
+                  <FormItem className="col-span-3 relative pt-2 space-y-0">
+                    <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10 transition-colors">Email</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                        <Mail className="w-5 h-5 text-orange-500" />
+                        <Mail className="w-5 h-5 text-orange-500 shrink-0" />
                         <Input
                           placeholder="john@gmail.com"
                           {...field}
-                          className="border-none p-0 shadow-none focus-visible:ring-0"
+                          className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="mt-1 text-[10px]" />
                   </FormItem>
                 )}
               />
               <Button
                 type="button"
-                // disabled={!form.getValues("email")}
                 onClick={() => handleCreateOtp(form.getValues("email"))}
-                className="col-span-1 h-13 mt-5"
+                className="col-span-1 h-[42px] mt-2 text-xs md:text-sm px-2"
               >
                 Get OTP
               </Button>
             </div>
             {/* Otp */}
             {openOtp && (
-              <div className="flex items-center gap-2">
-                <div className="w-[80%] space-y-2">
-                  <FormLabel>Enter OTP</FormLabel>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-[80%] relative pt-2">
+                  <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10">Enter OTP</FormLabel>
                   <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                     <Input
                       type="text"
@@ -275,8 +285,8 @@ export default function QueryForm() {
                 );
 
                 return (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
+                  <FormItem className="relative pt-2 space-y-0">
+                    <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10 transition-colors">Phone</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
                         <Phone className="w-7 h-5 text-orange-500" />
@@ -307,38 +317,134 @@ export default function QueryForm() {
                         <Input
                           placeholder="7345678901"
                           {...field}
-                          className="border-none p-0 shadow-none focus-visible:ring-0"
+                          className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
                           onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
                             field.onChange(value);
                           }}
                         />
+
+                        {/* WhatsApp Quick Toggle */}
+                        <div className="flex items-center gap-1.5 shrink-0 border-l border-gray-200 pl-3 pr-1" title="Available on WhatsApp?">
+                          <Checkbox
+                            id="whatsapp-inline"
+                            checked={form.watch("whatsapp")}
+                            onCheckedChange={(val) => form.setValue("whatsapp", val === true)}
+                            className="w-4 h-4 text-green-600 border-gray-400 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                          />
+                          <Label htmlFor="whatsapp-inline" className="cursor-pointer flex items-center justify-center mt-0.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" className="text-green-500 hover:text-green-600 transition">
+                              <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                            </svg>
+                          </Label>
+                        </div>
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="mt-1 text-[10px]" />
                   </FormItem>
                 );
               }}
             />
+
+            {/* State and City */}
+            <div className="flex flex-wrap gap-3 w-full">
+              <div className="flex-1 min-w-[140px]">
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem className="relative pt-2 space-y-0">
+                      <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10 transition-colors">State</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                          <MapPin className="w-5 h-5 text-orange-500 shrink-0" />
+                          <Select
+                            value={field.value || ""}
+                            onValueChange={(val) => {
+                              field.onChange(val);
+                              form.setValue("city", "");
+                            }}
+                          >
+                            <SelectTrigger className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-none shadow-none text-left px-0 h-auto">
+                              <span className={!field.value ? "text-muted-foreground" : "text-foreground"}>
+                                {field.value || "Select State"}
+                              </span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {INDIAN_STATES.map((stateItem) => (
+                                <SelectItem key={stateItem} value={stateItem}>
+                                  {stateItem}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="mt-1 text-[10px]" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex-1 min-w-[140px]">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem className="relative pt-2 space-y-0">
+                      <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10 transition-colors">City</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                          <MapPin className="w-5 h-5 text-orange-500 shrink-0" />
+                          <Select
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            disabled={!selectedState}
+                          >
+                            <SelectTrigger className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-none shadow-none text-left px-0 h-auto disabled:opacity-50">
+                              <span className={!field.value ? "text-muted-foreground" : "text-foreground"}>
+                                {field.value || "Select City"}
+                              </span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {cityOptions.length > 0 ? (
+                                cityOptions.map((cityItem) => (
+                                  <SelectItem key={cityItem} value={cityItem}>
+                                    {cityItem}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="none" disabled>Select a state first</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="mt-1 text-[10px]" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             {/* Message */}
             <FormField
               control={form.control}
               name="message"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Message</FormLabel>
+                <FormItem className="relative pt-2 space-y-0">
+                  <FormLabel className="absolute top-0 left-4 bg-white px-1.5 text-[11px] text-gray-500 font-semibold z-10 transition-colors">Message</FormLabel>
                   <FormControl>
-                    <div className="flex  gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
-                      <MessageCircleCode className="w-5 h-5 text-orange-500" />
+                    <div className="flex gap-2 border border-gray-300 rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition">
+                      <MessageCircleCode className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
                       <Textarea
                         placeholder="Write your travel plan or special requirements..."
-                        className="min-h-[50px] border-none p-0 shadow-none focus-visible:ring-0"
+                        className="min-h-[50px] border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
                         {...field}
                       />
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="mt-1 text-[10px]" />
                 </FormItem>
               )}
             />

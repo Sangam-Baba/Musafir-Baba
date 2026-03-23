@@ -27,6 +27,8 @@ interface Enquiry {
   whatsapp: boolean;
   policy: boolean;
   source: string;
+  state?: string;
+  city?: string;
   createdAt: string;
 }
 interface QueryResponse {
@@ -91,6 +93,8 @@ function EnquiryPage() {
             phone: b.phone,
             source: b.source,
             message: b.message,
+            state: b.state,
+            city: b.city,
             whatsapp: `${b.whatsapp === true ? "Yes" : "No"}`,
             createdAt: b.createdAt.split("T")[0],
           }))}
