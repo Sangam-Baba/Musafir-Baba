@@ -10,6 +10,7 @@ import { MembershipBooking } from "../models/membershipBooking.js";
 import { News } from "../models/News.js";
 import { Blog } from "../models/Blog.js";
 import { ContactEnquiry } from "../models/ContactInquiry.js";
+import { Document } from "../models/Document.js";
 
 const getDashboardSummary = async (req, res) => {
   try {
@@ -264,10 +265,107 @@ const getCombinedNewsBlog = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+const getUserDashboardSummary = async (req, res) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // 1. Fetch User Data
+    const user = await User.findById(userId)
+      .select("name email role isVerified createdAt phone")
+      .lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // 2. Fetch Active Bookings
+    const groupBookings = await Booking.find({ user: userId })
+      .populate("packageId", "title")
+      .populate("batchId", "startDate endDate status")
+      .sort({ createdAt: -1 })
+      .lean();
+      
+    const customizedBookings = await CustomizedTourBooking.find({ userId })
+      .sort({ createdAt: -1 })
+      .lean();
+      
+    // Combine and mark types
+    const bookings = [
+      ...groupBookings.map(b => ({ ...b, type: "group", date: b.batchId?.startDate || b.bookingDate })),
+      ...customizedBookings.map(b => ({ ...b, type: "customized", date: b.date || b.bookingDate }))
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Calculate Payment & Booking Totals
+    let totalPaid = 0;
+    let pendingBalance = 0;
+    
+    bookings.forEach(b => {
+      const amount = Number(b.totalPrice || b.amount || 0);
+      if (b.paymentInfo?.status === "completed" || b.PaymentStatus === "Paid") {
+        totalPaid += amount;
+      }
+      if (b.paymentInfo?.status === "pending" || b.PaymentStatus === "Pending") {
+        pendingBalance += amount;
+      }
+    });
+
+    const activeServices = bookings.slice(0, 5); 
+
+    // 3. Document Stats
+    const documentsCount = await Document.countDocuments({ userId });
+    
+    const stats = {
+      documentsUploaded: documentsCount,
+      kycStatus: documentsCount >= 3 ? "Completed" : "Pending",
+      totalBookings: bookings.length,
+      totalPaid,
+      pendingBalance,
+    };
+
+    // 4. Fetch Latest Updates (Combined News and Blogs)
+    const newsData = await News.find({ status: "published" })
+      .select("title coverImage excerpt slug createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+    const blogData = await Blog.find({ status: "published" })
+      .select("title coverImage excerpt slug createdAt")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+      
+    const latestUpdates = [
+      ...newsData.map(item => ({ ...item, type: "news" })),
+      ...blogData.map(item => ({ ...item, type: "blog" }))
+    ]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+
+    return res.status(200).json({
+      success: true,
+      message: "User dashboard summary fetched successfully",
+      data: {
+        user,
+        stats,
+        activeServices,
+        latestUpdates
+      }
+    });
+
+  } catch (error) {
+    console.error("getUserDashboardSummary failed:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 export {
   getDashboardSummary,
   getMonthlyBookings,
   getBookingVSVisaEnquiry,
   getLatestAcitvity,
   getCombinedNewsBlog,
+  getUserDashboardSummary,
 };
