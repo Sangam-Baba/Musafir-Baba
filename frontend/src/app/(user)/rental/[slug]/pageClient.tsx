@@ -244,11 +244,11 @@ export default function RentalPageClient({
                 {vehicle?.title}
               </h1>
               <div className="flex items-center gap-2 text-gray-600">
-                <span className="flex items-center gap-1 font-semibold uppercase">
+                <span className="flex items-center gap-1 font-semibold">
                   <MapPin color="#FE5300" size={18} /> {vehicle?.vehicleBrand} | {vehicle?.vehicleYear}
                 </span>
                 <span className="text-gray-400">|</span>
-                <span className="capitalize">{vehicle?.location?.name}</span>
+                <span>{vehicle?.location?.name}</span>
               </div>
             </div>
 

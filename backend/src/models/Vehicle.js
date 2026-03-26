@@ -27,8 +27,8 @@ const vehicleSchema = new mongoose.Schema(
     },
     vehicleTransmission: {
       type: String,
-      enum: ["mannual", "automatic"],
-      default: "mannual",
+      // enum: ["manual", "automatic", "mannual"], // removing strict enum to allow master data values
+      default: "manual",
     },
     vehicleModel: {
       type: String,
@@ -38,7 +38,7 @@ const vehicleSchema = new mongoose.Schema(
     },
     fuelType: {
       type: String,
-      enum: ["electric", "petrol", "diesel", "cng", "other"],
+      // enum: ["electric", "petrol", "diesel", "cng", "other"], // removing strict enum to allow master data values
       default: "petrol",
     },
     features: [String],

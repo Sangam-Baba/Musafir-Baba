@@ -20,7 +20,7 @@ export interface IVehicleData {
   fuelType: string;
   tripProtectionFee: number;
   convenienceFee: number;
-  vehicleTransmission: "mannual" | "automatic";
+  vehicleTransmission: string;
   price: {
     daily: number;
     hourly: number;
