@@ -49,12 +49,12 @@ function VehicleCard({ vehicle }: { vehicle: IVehicleCard }) {
             {vehicle.vehicleName}
           </h3>
           <div className="flex items-center justify-between mt-2">
-            <p className="capitalize text-gray-400 font-medium">
+            <p className="text-gray-400 font-medium">
               {vehicle.vehicleBrand} | {vehicle.vehicleYear}
             </p>
             <p>
-              <span className="capitalize text-gray-400 font-medium">
-                {`${vehicle.vehicleTransmission ?? "Mannual"}`}
+              <span className="text-gray-400 font-medium">
+                {vehicle.vehicleTransmission === "mannual" ? "Manual" : (vehicle.vehicleTransmission ?? "Manual")}
               </span>
             </p>
           </div>
@@ -63,7 +63,7 @@ function VehicleCard({ vehicle }: { vehicle: IVehicleCard }) {
           <div className="flex items-center justify-between text-sm text-gray-700 mt-2">
             <div className="flex items-center gap-1">
               <Fuel className="w-4 h-4 text-blue-600" />
-              <span className="capitalize">{vehicle.fuelType}</span>
+              <span>{vehicle.fuelType}</span>
             </div>
             <div className="flex items-center gap-1">
               <span>Seats: {vehicle.availableSeats}</span>

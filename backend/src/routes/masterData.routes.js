@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { brandController, typeController, destinationController } from "../controllers/masterData.controller.js";
+import { brandController, typeController, destinationController, fuelTypeController, transmissionController } from "../controllers/masterData.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
 import { validateSession } from "../middleware/session.middleware.js";
@@ -17,6 +17,7 @@ const applyRoutes = (path, controller) => {
   
   // Publicly accessible for frontend fetching (or require auth if you prefer, but usually frontends need this list for dropdowns if available publicly, though here we will use it for admin and public)
   masterDataRoutes.get(path, controller.getAll);
+  masterDataRoutes.get(`${path}/:id`, controller.getById);
   
   masterDataRoutes.patch(
     `${path}/:id`,
@@ -37,5 +38,7 @@ const applyRoutes = (path, controller) => {
 applyRoutes("/brand", brandController);
 applyRoutes("/type", typeController);
 applyRoutes("/pickup-destination", destinationController);
+applyRoutes("/fuel-type", fuelTypeController);
+applyRoutes("/transmission", transmissionController);
 
 export default masterDataRoutes;

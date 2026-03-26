@@ -202,6 +202,18 @@ const NAV_GROUPS = [
         icon: MapPin,
         permission: "vehicle",
       },
+      {
+        label: "Fuel Types",
+        href: "/admin/master-data/fuel-type",
+        icon: Database,
+        permission: "vehicle",
+      },
+      {
+        label: "Transmissions",
+        href: "/admin/master-data/transmission",
+        icon: Settings,
+        permission: "vehicle",
+      },
     ],
   },
   {
@@ -264,37 +276,51 @@ export function AdminSidebar() {
     }),
   })).filter((group) => group.items.length > 0);
   return (
-    <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
-          Admin Panel
-        </h1>
+    <Sidebar variant="inset" collapsible="icon" className="border-r-0 bg-transparent">
+      <SidebarHeader className="h-20 flex items-center px-6 border-b border-slate-200/40 dark:border-slate-800/40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-t-2xl">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl overflow-hidden shadow-lg shadow-orange-500/10 ring-1 ring-slate-200/50 dark:ring-white/10 flex items-center justify-center bg-white dark:bg-slate-800">
+            <img src="/favicon.ico" alt="MusafirBaba" className="h-6 w-6 object-contain" />
+          </div>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <h1 className="text-md font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+              MusafirBaba
+            </h1>
+            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 tracking-widest uppercase mt-1">
+              Admin Portal
+            </span>
+          </div>
+        </div>
       </SidebarHeader>
 
-      <SidebarContent className="">
+      <SidebarContent className="px-3 py-6 gap-6 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm">
         {filteredNavGroups.map((group) => (
           <SidebarGroup
             key={group.label}
-            className="space-y-0 py-1 border-b last:border-b-0 border-slate-200/40 dark:border-slate-800/60"
+            className="p-0 border-none"
           >
-            <SidebarGroupContent className="space-y-0">
-              <SidebarMenu className="space-y-0">
-                <Collapsible defaultOpen className="group">
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <Collapsible defaultOpen className="group/collapsible">
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full data-[state=open]:bg-[#87E87F] data-[state=open]:hover:bg-[#87E87F] flex items-center justify-between text-left text-sm font-medium">
-                      <div className="flex gap-1 items-center">
-                        <group.icon className="h-4 w-4 shrink-0" />
-                        <span className="text-slate-900 dark:text-white text-md group-data-[collapsible=icon]:hidden">
+                    <SidebarMenuButton className="w-full hover:bg-white dark:hover:bg-slate-800/40 flex items-center justify-between px-4 py-2.5 transition-all duration-300 rounded-xl group-data-[state=open]/collapsible:bg-[#87E87F]/5 group-data-[state=open]/collapsible:shadow-sm">
+                      <div className="flex gap-3.5 items-center">
+                        <div className={`p-1.5 rounded-lg transition-colors duration-300 ${
+                          "group-data-[state=open]/collapsible:bg-[#87E87F]/20 group-data-[state=open]/collapsible:text-[#2d5a27]"
+                        }`}>
+                          <group.icon className="h-4.5 w-4.5 shrink-0 transition-transform duration-300 group-hover/collapsible:scale-110" />
+                        </div>
+                        <span className="text-slate-500 dark:text-slate-400 text-[11px] font-bold tracking-[0.1em] uppercase group-data-[collapsible=icon]:hidden group-data-[state=open]/collapsible:text-slate-900 dark:group-data-[state=open]/collapsible:text-white transition-colors">
                           {group.label}
                         </span>
                       </div>
 
-                      <FaChevronCircleDown className="ml-2 h-4 w-4 transition-transform duration-500 group-data-[state=open]:rotate-180 group-data-[collapsible=icon]:hidden" />
+                      <FaChevronCircleDown className="ml-2 h-4 w-4 text-slate-400 transition-all duration-500 group-data-[state=open]/collapsible:rotate-180 group-data-[state=open]/collapsible:text-[#87E87F] group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
 
-                  <CollapsibleContent className="pt-1 transition-all duration-300 ease-in-out">
-                    <SidebarMenuSub className="pl-3 space-y-1">
+                  <CollapsibleContent className="transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden">
+                    <SidebarMenuSub className="ml-6 pl-4 border-l-2 border-slate-100 dark:border-slate-800 group-data-[state=open]/collapsible:border-[#87E87F]/30 space-y-1.5 my-2 transition-colors duration-500">
                       {group.items.map((item) => {
                         const Icon = item.icon;
                         const active = pathname === item.href;
@@ -302,16 +328,21 @@ export function AdminSidebar() {
                           <SidebarMenuSubItem key={item.href}>
                             <Link
                               href={item.href}
-                              className={`flex items-center gap-3 rounded-md px-3 py-1.5 transition text-sm ${
+                              className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-300 text-sm group/item relative ${
                                 active
-                                  ? "bg-[#FE5300] text-white"
-                                  : "hover:bg-[#FE5300]/10 dark:hover:bg-slate-800"
+                                  ? "bg-gradient-to-r from-[#FE5300] to-[#ff7a3d] text-white shadow-lg shadow-orange-500/30 scale-[1.02]"
+                                  : "text-slate-600 dark:text-slate-400 hover:bg-[#87E87F]/10 hover:text-slate-900 dark:hover:text-white active:scale-[0.98]"
                               }`}
                             >
-                              <Icon className="h-4 w-4 shrink-0" />
-                              <span className="group-data-[collapsible=icon]:hidden">
+                              <Icon className={`h-4.5 w-4.5 shrink-0 transition-all duration-300 ${
+                                active ? "text-white scale-110" : "text-slate-400 group-hover/item:text-[#87E87F] group-hover/item:scale-110"
+                              }`} />
+                              <span className="group-data-[collapsible=icon]:hidden font-medium">
                                 {item.label}
                               </span>
+                              {active && (
+                                <div className="absolute left-[-22px] w-1.5 h-6 bg-[#FE5300] rounded-r-full shadow-[2px_0_8px_rgba(254,83,0,0.5)]" />
+                              )}
                             </Link>
                           </SidebarMenuSubItem>
                         );
@@ -325,10 +356,18 @@ export function AdminSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-slate-200/40 dark:border-slate-800/60">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} Musafirbaba Pvt. Ltd
-        </p>
+      <SidebarFooter className="p-8 border-t border-slate-200/40 dark:border-slate-800/40 bg-white/60 dark:bg-slate-950/60 backdrop-blur-md rounded-b-2xl">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-[#87E87F] animate-pulse" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+              System Active
+            </p>
+          </div>
+          <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 opacity-80">
+            © {new Date().getFullYear()} MusafirBaba Pvt. Ltd
+          </p>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

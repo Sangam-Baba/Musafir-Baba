@@ -53,68 +53,86 @@ export default function ImageUploader({
   };
 
   return (
-    <div className="p-4 border rounded-xl w-full  flex items-center justify-between gap-2">
-      <Button
-        type="button"
-        onClick={() => setShowPicker(true)}
-        className="mt-2 px-4 py-2 bg-green-500 text-white rounded "
-      >
-        Choose from Library
-      </Button>
-
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {uploadedImages.map((file, i) => (
-          <div key={i} className="flex gap-5">
-            {file.resource_type === "video" ? (
-              <div className="relative">
-                {file.thumbnail_url ? (
-                  <Image
-                    src={file.thumbnail_url!}
-                    width={200}
-                    height={200}
-                    alt="Video thumbnail"
-                    className="rounded"
-                  />
-                ) : (
-                  <video width={200} height={200} controls className="mt-2">
-                    <source src={file.url} />
-                  </video>
-                )}
-              </div>
-            ) : file.format === "pdf" || file.resource_type === "raw" ? (
-              <div className="flex flex-col items-center justify-center w-[200px] h-[120px] border-2 border-dashed border-orange-400 rounded-lg bg-orange-50 gap-2 px-3">
-                <span className="text-4xl">📄</span>
-                <span className="text-xs text-center text-gray-600 break-all line-clamp-2">
-                  {file.url.split("/").pop() || "itinerary.pdf"}
-                </span>
-                <a
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-600 underline"
+    <div className="relative w-full aspect-square bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#FE5300]/50 transition-colors group">
+      {uploadedImages.length > 0 ? (
+        <div className="w-full h-full relative">
+          {uploadedImages[0].resource_type === "video" ? (
+            <div className="w-full h-full bg-black flex items-center justify-center">
+              {uploadedImages[0].thumbnail_url ? (
+                <Image
+                  src={uploadedImages[0].thumbnail_url}
+                  fill
+                  alt="Video thumbnail"
+                  className="object-cover"
+                />
+              ) : (
+                <video className="w-full h-full object-cover">
+                  <source src={uploadedImages[0].url} />
+                </video>
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  type="button"
+                  onClick={() => setShowPicker(true)}
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white/90 hover:bg-white text-black font-semibold"
                 >
-                  View PDF
-                </a>
+                  Change Video
+                </Button>
               </div>
-            ) : (
+            </div>
+          ) : uploadedImages[0].format === "pdf" || uploadedImages[0].resource_type === "raw" ? (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50 gap-2 p-3">
+              <span className="text-4xl">📄</span>
+              <span className="text-[10px] text-center text-gray-600 break-all line-clamp-2">
+                {uploadedImages[0].url.split("/").pop()}
+              </span>
+              <Button
+                type="button"
+                onClick={() => setShowPicker(true)}
+                variant="ghost"
+                size="sm"
+                className="text-[#FE5300] hover:bg-orange-100 h-7 text-xs"
+              >
+                Change PDF
+              </Button>
+            </div>
+          ) : (
+            <>
               <Image
-                src={file.url}
-                width={200}
-                height={200}
-                alt="Musafirbaba"
+                src={uploadedImages[0].url}
+                fill
+                alt="Preview"
+                className="object-cover"
               />
-            )}
-
-            <Button
-              type="button"
-              onClick={() => handleRemove()}
-              className="mt-2 px-2 py-1 bg-red-500 text-white rounded"
-            >
-              <X className=" h-2 w-2" />
-            </Button>
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  type="button"
+                  onClick={() => setShowPicker(true)}
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white/90 hover:bg-white text-black font-semibold"
+                >
+                  Change Image
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowPicker(true)}
+          className="w-full h-full flex flex-col items-center justify-center gap-2 hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#FE5300]"
+        >
+          <div className="w-10 h-10 border-2 border-current border-dashed rounded-full flex items-center justify-center">
+            <span className="text-2xl">+</span>
           </div>
-        ))}
-      </div>
+          <span className="text-xs font-medium">Choose Media</span>
+        </button>
+      )}
+
       {showPicker && (
         <MediaPicker
           open={showPicker}
@@ -123,7 +141,6 @@ export default function ImageUploader({
             setUploadedImages([media]);
             onUpload(media);
             setShowPicker(false);
-            setFiles(null);
           }}
         />
       )}
