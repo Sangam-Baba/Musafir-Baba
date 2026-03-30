@@ -1,26 +1,20 @@
-import SectionFour from "../../components/custom/SectionFour";
-import SectionFive from "../../components/custom/SectionFive";
-import { Testimonial } from "../../components/custom/Testimonial";
-import { ImageGallery } from "../../components/custom/ImageGallery";
-import { SevenSection } from "../../components/custom/SevenSection";
-import { DestinationSection } from "../../components/custom/DestinationSection";
-import { Faqs } from "../../components/custom/Faqs";
-import FeaturedTourSSG from "../../components/custom/FeaturedTourSSG";
-import SearchBanner from "@/components/custom/Search";
-import BlogsHome from "@/components/custom/BlogsHome";
-import HomeBooking from "../../components/custom/HomeBooking";
-import VisaHome from "@/components/custom/VisaHome";
-import VideoSection from "@/components/custom/VideoSection";
-import WhyChoose from "@/components/custom/WhyChoose";
+import { Suspense } from "react";
 import Image from "next/image";
-import SecondSectionServer from "@/components/custom/SecondSectionServer";
-import LoginAutoOpen from "@/components/User/LoginAutoOpen";
-import Partners from "@/components/custom/Partners";
 import Script from "next/script";
+
+// ─── Critical above-the-fold: direct imports (Server Components) ───────────
+import SearchBanner from "@/components/custom/Search";
+import SecondSectionServer from "@/components/custom/SecondSectionServer";
+import VisaHome from "@/components/custom/VisaHome";
+import { SevenSection } from "@/components/custom/SevenSection";
+import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
+
+// ─── Client boundary: all lazy-loaded below-the-fold sections ─────────────
+import HomeClientSections from "@/components/custom/HomeClientSections";
+
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
 import { getLocalSchema } from "@/lib/schema/local.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
-import { PopupBanner } from "@/components/custom/PopupBanner";
 
 const faqs = [
   {
@@ -57,9 +51,10 @@ const faqs = [
     id: 6,
     question: "Do you provide 24/7 customer support?",
     answer:
-      "Yes, we provide 24/7 customer support throughout your journey via phone, WhatsApp, and email to ensure a hassle-free travel experience.You can reach us at +91 92896 02447",
+      "Yes, we provide 24/7 customer support throughout your journey via phone, WhatsApp, and email to ensure a hassle-free travel experience. You can reach us at +91 92896 02447",
   },
 ];
+
 const testi = [
   {
     id: 1,
@@ -92,81 +87,35 @@ const testi = [
     name: "Dr. Ritu Mishra",
     location: "Traveler",
     comment:
-      "The team at Musafir Baba is incredibly professional yet so friendly. They were always available for any questions, and every little detail was taken care of. I’ll definitely be planning my next trip with them again!",
+      "The team at Musafir Baba is incredibly professional yet so friendly. They were always available for any questions, and every little detail was taken care of. I'll definitely be planning my next trip with them again!",
   },
 ];
+
 const images = [
-  {
-    id: 1,
-    url: "/frame1.webp",
-    alt: "",
-  },
-  {
-    id: 2,
-    url: "/frame2.jpg",
-    alt: "",
-  },
-  {
-    id: 3,
-    url: "/frame3.jpg",
-    alt: "",
-  },
-  {
-    id: 4,
-    url: "/frame4.webp",
-    alt: "",
-  },
-  {
-    id: 5,
-    url: "/frame5.jpg",
-    alt: "",
-  },
-  {
-    id: 6,
-    url: "/frame6.jpg",
-    alt: "",
-  },
-  {
-    id: 7,
-    url: "/frame7.jpg",
-    alt: "",
-  },
-  {
-    id: 8,
-    url: "/frame8.webp",
-    alt: "",
-  },
+  { id: 1, url: "/frame1.webp", alt: "" },
+  { id: 2, url: "/frame2.jpg", alt: "" },
+  { id: 3, url: "/frame3.jpg", alt: "" },
+  { id: 4, url: "/frame4.webp", alt: "" },
+  { id: 5, url: "/frame5.jpg", alt: "" },
+  { id: 6, url: "/frame6.jpg", alt: "" },
+  { id: 7, url: "/frame7.jpg", alt: "" },
+  { id: 8, url: "/frame8.webp", alt: "" },
 ];
-const getpopup = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/popup/page/home`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  if (!res.ok) {
-    throw new Error("Failed to fetch popup data");
-  }
-  const data = await res.json();
-  return data?.data;
-};
+
 export default async function HomePage({
   searchParams,
 }: {
   searchParams: Promise<{ auth: string }>;
 }) {
-  const { auth } = (await searchParams) || null;
-
-  const popupData = await getpopup();
+  const { auth } = (await searchParams) || {};
 
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalSchema();
   const breadcrumbSchema = getBreadcrumbSchema("/");
+
   return (
-    <main className="">
+    <main>
+      {/* ── Hero Banner (LCP) ─────────────────────────────────────────── */}
       <section className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center">
         <Image
           src="/homebanner.webp"
@@ -177,66 +126,58 @@ export default async function HomePage({
           sizes="100vw"
           className="object-cover"
         />
-        {/* <div className="absolute inset-0  z-10  bg-gradient-to-r from-black/20 to-transparent"></div> */}
-        <div className="flex flex-col ml-10 md:gap-10 gap-4 items-center  z-10 w-[80%] md:w-[60%] lg:w-[55%] xl:w-[50%] relative ">
+        <div className="flex flex-col ml-10 md:gap-10 gap-4 items-center z-10 w-[80%] md:w-[60%] lg:w-[55%] xl:w-[50%] relative">
           <div className="text-center flex flex-col items-center justify-center">
-            <h1
-              className={`text-xl font-poppins font-extrabold md:text-2xl lg:text-4xl xl:text-5xl text-inline leading-tight`}
-            >
+            <h1 className="text-xl font-poppins font-extrabold md:text-2xl lg:text-4xl xl:text-5xl text-inline leading-tight">
               <span className="whitespace-nowrap">
-                Book your <span className="text-[#74ff18]">dream trip</span> in
-                just
+                Book your <span className="text-[#74ff18]">dream trip</span> in just
               </span>
               <br />
               <span> 60 seconds</span>
             </h1>
-            <p className="hidden md:block text-sm md:text-md xl:text-lg mt-1 font-poppins ">
-              Get curated tours & seamless visa assistance - all in one place
+            <p className="hidden md:block text-sm md:text-md xl:text-lg mt-1 font-poppins">
+              Get curated tours &amp; seamless visa assistance - all in one place
             </p>
           </div>
-
-          <div className="relative z-20 w-4/5 md:w-3/5   overflow-visible">
+          <div className="relative z-20 w-4/5 md:w-3/5 overflow-visible">
             <SearchBanner />
           </div>
         </div>
       </section>
-      <SecondSectionServer />
-      <VisaHome />
-      <SevenSection />
-      <FeaturedTourSSG />
-      <SectionFour />
-      <SectionFive />
-      <DestinationSection />
-      <VideoSection />
-      <WhyChoose />
-      <Testimonial data={testi} />
-      <ImageGallery
-        title="Memories in Motion"
-        description="Picture Perfect Moments with the Best Travel Agency in India"
-        data={images}
-      />
-      <HomeBooking />
-      <Partners />
-      <BlogsHome />
-      <Faqs faqs={faqs} />
-      <LoginAutoOpen auth={auth} />
-      <PopupBanner data={popupData} />
+
+      {/* ── Above-the-fold Server Sections (streamed) ─────────────────── */}
+      <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <SecondSectionServer />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <VisaHome />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <SevenSection />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <FeaturedTourSSG />
+      </Suspense>
+
+      {/* ── Below-the-fold Client Sections (lazy loaded) ──────────────── */}
+      <HomeClientSections testi={testi} images={images} faqs={faqs} auth={auth ?? null} />
+
+      {/* ── JSON-LD Structured Data ───────────────────────────────────── */}
       <Script
         id="organization-schema"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(organizationSchema),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
       <Script
         id="local-business-schema"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(localBusinessSchema),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
       />
       <Script
-        key="breadcrumb-schema"
+        id="breadcrumb-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />

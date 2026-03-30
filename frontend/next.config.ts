@@ -5,9 +5,13 @@ const nextConfig: NextConfig = {
   // browsersListForSwc: true,
   productionBrowserSourceMaps: false,
   images: {
-    minimumCacheTTL: 31536000, // 1 year (good)
+    minimumCacheTTL: 31536000, // 1 year cache
     formats: ["image/avif", "image/webp"],
-
+    // Responsive breakpoints — prevents browser downloading 2x images on mobile
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // AVIF/WebP quality — 80 is optimal for visual quality vs file size
+    qualities: [80],
     remotePatterns: [
       {
         protocol: "https",
