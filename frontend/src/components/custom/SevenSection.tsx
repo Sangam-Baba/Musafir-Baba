@@ -69,6 +69,7 @@ export const getAllMedia = async () => {
     headers: {
       "Content-Type": "application/json",
     },
+    next: { revalidate: 3600 }, // Cache for 1 hour
   });
   if (!res.ok) throw new Error("Failed to fetch media");
   const data = await res.json();

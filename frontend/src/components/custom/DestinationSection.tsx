@@ -120,6 +120,7 @@ export function DestinationSection() {
                     <Image
                       src={badrinath}
                       alt="Uttarakhand"
+                      loading="lazy"
                       className="rounded-2xl w-full h-56 object-cover"
                     />
                   </Link>
@@ -132,6 +133,7 @@ export function DestinationSection() {
                     <Image
                       src={jaipur}
                       alt="Rajasthan"
+                      loading="lazy"
                       className="rounded-2xl w-full h-56 object-cover"
                     />
                   </Link>
@@ -180,6 +182,7 @@ export function DestinationSection() {
                     <Image
                       src={himachal}
                       alt="himachal"
+                      loading="lazy"
                       className="rounded-2xl  h-56 object-cover"
                     />
                   </Link>
@@ -192,6 +195,7 @@ export function DestinationSection() {
                     <Image
                       src={kashmir}
                       alt="Kerala"
+                      loading="lazy"
                       className="rounded-2xl h-56 object-cover"
                     />
                   </Link>
