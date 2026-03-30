@@ -40,11 +40,13 @@ const NAV = [
     href: "/admin/customized-tour-package",
     icon: MdDashboardCustomize,
   },
+/*
   {
     label: "Plan My Trip",
     href: "/admin/customized-package",
     icon: Cog,
   },
+*/
   { label: "Destinations", href: "/admin/destination", icon: MapPin },
   { label: "Category", href: "/admin/category", icon: Tags },
   { label: "Authors", href: "/admin/authors", icon: Users },
