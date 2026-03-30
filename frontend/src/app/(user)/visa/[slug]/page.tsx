@@ -17,6 +17,8 @@ import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import Script from "next/script";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface Faq {
   question: string;
@@ -123,7 +125,21 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
             </Accordion>
           </section>
         </article>
-        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start space-y-10 ">
+        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start space-y-6 ">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 font-medium">Visa Fee</span>
+              <span className="text-2xl font-bold text-[#FE5300]">₹{visa.cost}</span>
+            </div>
+            <Link href={`/visa/${visa.slug}/apply`} className="w-full">
+              <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-6 rounded-xl text-lg font-bold transition-all shadow-md hover:shadow-lg">
+                Apply Now
+              </Button>
+            </Link>
+            <p className="text-xs text-center text-gray-400">
+              * Secure and encrypted application process
+            </p>
+          </div>
           <QueryForm />
           {relatedPageArray.length > 0 && (
             <ListBlogSidebar

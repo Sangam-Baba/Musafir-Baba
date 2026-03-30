@@ -86,6 +86,7 @@ export default function CreateVisaPage() {
     ],
     visaProcessed: 0,
     duration: "",
+    necessaryDocuments: ["Photo", "Passport"],
   };
   const form = useForm<Visa>({ defaultValues });
   const { data, isLoading, isError, error } = useQuery<Visa>({
@@ -536,6 +537,52 @@ export default function CreateVisaPage() {
                         ...arr,
                       ]);
                       e.target.value = "";
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* necessaryDocuments */}
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">Necessary Documents</Label>
+              <div className="flex flex-wrap gap-2 border rounded p-2">
+                {form.watch("necessaryDocuments")?.map((doc, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded-full text-sm"
+                  >
+                    {doc}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newDocs = form
+                          .getValues("necessaryDocuments")
+                          ?.filter((_, idx) => idx !== i);
+                        form.setValue("necessaryDocuments", newDocs);
+                      }}
+                      className="text-gray-600 hover:text-red-500"
+                    >
+                      <X size={14} />
+                    </button>
+                  </span>
+                ))}
+
+                <input
+                  type="text"
+                  className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+                  placeholder="Type document name and press Enter"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const val = (e.target as HTMLInputElement).value.trim();
+                      if (val) {
+                        form.setValue("necessaryDocuments", [
+                          ...(form.getValues("necessaryDocuments") || []),
+                          val,
+                        ]);
+                        (e.target as HTMLInputElement).value = "";
+                      }
                     }
                   }}
                 />
