@@ -55,7 +55,7 @@ import { RootProvider } from "@/providers/root-provider";
 import GTMProvider from "@/providers/GTMProvider";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
-import PlanMyTrip from "@/components/common/Plan-My-Trip";
+// import PlanMyTrip from "@/components/common/Plan-My-Trip";
 import { Poppins } from "next/font/google";
 import MobileBottom from "@/components/custom/MobileBottom";
 
@@ -114,7 +114,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-grow">
             {children}
-            <PlanMyTrip />
+{/* <PlanMyTrip /> */}
             <QueryDailogBox />
             <WhatsAppButton />
             <MobileBottom />

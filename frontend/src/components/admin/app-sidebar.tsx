@@ -154,12 +154,14 @@ const NAV_GROUPS = [
         icon: MdDashboardCustomize,
         permission: "customized-tour-package",
       },
+/*
       {
         label: "Plan My Trip",
         href: "/admin/customized-package",
         icon: Cog,
         permission: "plan-my-trip",
       },
+*/
       {
         label: "Destinations",
         href: "/admin/destination",
