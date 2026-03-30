@@ -3,7 +3,7 @@ import SecondSection from "./SecondSection";
 export default async function SecondSectionServer() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/counter/68e6549442582b78aea7c191`,
-    { cache: "no-store" }
+    { next: { revalidate: 300 } } // 5-min ISR cache — no need to re-fetch on every request
   );
 
   const data = await res.json();

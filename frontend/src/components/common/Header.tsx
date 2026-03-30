@@ -101,9 +101,10 @@ export default function Header() {
               <Image
                 src={logo}
                 alt="Musafir Baba Logo"
-                className="w-40 h-auto"
-                unoptimized
-                priority
+                width={160} // Set explicit width
+                height={40}  // Set explicit height
+                className="w-32 md:w-40 h-auto"
+                priority // Critical for LCP as it's at the top
               />
             </Link>
           </div>

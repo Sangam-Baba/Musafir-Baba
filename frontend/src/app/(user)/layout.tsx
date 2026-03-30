@@ -61,9 +61,9 @@ import MobileBottom from "@/components/custom/MobileBottom";
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "600", "800"], // Reduced from 6 weights to 3 for mobile performance
   variable: "--font-poppins",
-  display: "swap", // Prevents invisible text during font load (improves CLS + FCP)
+  display: "swap",
 });
 export default function RootLayout({
   children,
@@ -87,10 +87,10 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://static.doubleclick.net" />
 
-        {/* Google Tag Manager Script */}
+        {/* Google Tag Manager Script — lazyOnload for mobile thread freedom */}
         <Script
           id="gtm-script"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
