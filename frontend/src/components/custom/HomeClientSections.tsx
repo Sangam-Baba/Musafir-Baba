@@ -29,7 +29,6 @@ const ImageGallery = dynamic(
 );
 const HomeBooking = dynamic(() => import("./HomeBooking"), { ssr: false });
 const Partners = dynamic(() => import("./Partners"), { ssr: false });
-const BlogsHome = dynamic(() => import("./BlogsHome"), { ssr: false });
 const Faqs = dynamic(
   () => import("./Faqs").then((mod) => ({ default: mod.Faqs })),
   { ssr: false }
@@ -85,7 +84,6 @@ export default function HomeClientSections({ testi, images, faqs, auth }: Props)
       />
       <HomeBooking />
       <Partners />
-      <BlogsHome />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
       <PopupBanner />

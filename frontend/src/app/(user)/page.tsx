@@ -8,6 +8,7 @@ import SecondSectionServer from "@/components/custom/SecondSectionServer";
 import VisaHome from "@/components/custom/VisaHome";
 import { SevenSection } from "@/components/custom/SevenSection";
 import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
+import BlogsHome from "@/components/custom/BlogsHome";
 
 // ─── Client boundary: all lazy-loaded below-the-fold sections ─────────────
 import HomeClientSections from "@/components/custom/HomeClientSections";
@@ -160,6 +161,10 @@ export default async function HomePage({
 
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
         <FeaturedTourSSG />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <BlogsHome />
       </Suspense>
 
       {/* ── Below-the-fold Client Sections (lazy loaded) ──────────────── */}
