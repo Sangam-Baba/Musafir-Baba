@@ -163,12 +163,12 @@ export default async function HomePage({
         <FeaturedTourSSG />
       </Suspense>
 
-      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
-        <BlogsHome />
-      </Suspense>
-
       {/* ── Below-the-fold Client Sections (lazy loaded) ──────────────── */}
-      <HomeClientSections testi={testi} images={images} faqs={faqs} auth={auth ?? null} />
+      <HomeClientSections testi={testi} images={images} faqs={faqs} auth={auth ?? null}>
+        <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+          <BlogsHome />
+        </Suspense>
+      </HomeClientSections>
 
       {/* ── JSON-LD Structured Data ───────────────────────────────────── */}
       <Script

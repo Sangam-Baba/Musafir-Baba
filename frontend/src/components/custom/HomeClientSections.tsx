@@ -8,6 +8,7 @@
  * while still enabling next/dynamic with ssr:false.
  */
 
+import React from "react";
 import dynamic from "next/dynamic";
 
 // Lazy load all below-the-fold sections
@@ -66,9 +67,10 @@ interface Props {
   images: GalleryImage[];
   faqs: Faq[];
   auth: string | null;
+  children?: React.ReactNode;
 }
 
-export default function HomeClientSections({ testi, images, faqs, auth }: Props) {
+export default function HomeClientSections({ testi, images, faqs, auth, children }: Props) {
   return (
     <>
       <SectionFour />
@@ -83,6 +85,7 @@ export default function HomeClientSections({ testi, images, faqs, auth }: Props)
         data={images}
       />
       <HomeBooking />
+      {children}
       <Partners />
       <Faqs faqs={faqs} />
       <LoginAutoOpen auth={auth} />
