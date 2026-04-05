@@ -7,7 +7,7 @@ const SessionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    sessionId: { type: String, required: true },
+    sessionId: { type: String, required: true, index: true },
     loginAt: { type: Date, default: Date.now },
     lastSeen: { type: Date, default: Date.now },
     logoutAt: Date,

@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+
 import React from "react";
 import { Download } from "lucide-react";
 const formSchema = z.object({
@@ -47,7 +47,6 @@ export function ItineryDialog({
   img: string;
   packageId: string;
 }) {
-  const router = useRouter();
   const [data, setData] = React.useState<FormData>({
     email: "",
     packageId: packageId,
@@ -66,7 +65,16 @@ export function ItineryDialog({
       setLoading(true);
       formSchema.parse(data);
       await createItinerary(data);
-      router.push(url);
+      // Trigger browser file download from the stored itinerary PDF URL
+      if (url) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = title + ".pdf";
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (error) {
       console.log(error);
     } finally {

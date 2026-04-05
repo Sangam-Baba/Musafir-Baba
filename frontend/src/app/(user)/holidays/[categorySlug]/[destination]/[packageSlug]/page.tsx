@@ -95,6 +95,7 @@ const getSinglePackages = async (
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
+      cache: "no-store",
     },
   );
   if (!res.ok) {

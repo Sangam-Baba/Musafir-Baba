@@ -419,6 +419,42 @@ const previewToken = async (req, res) => {
   }
 };
 
+const adminUpdatePassword = async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+    const staff = await Staff.findById(userId);
+    if (!staff) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+    const isPasswordCorrect = await bcrypt.compare(
+      oldPassword,
+      staff.password,
+    );
+    if (!isPasswordCorrect) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Old password is incorrect" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    staff.password = hashedPassword;
+    await staff.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.log("update password error:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export {
   registerAdmin,
   updateAdmin,
@@ -430,4 +466,5 @@ export {
   refresh,
   me,
   previewToken,
+  adminUpdatePassword,
 };

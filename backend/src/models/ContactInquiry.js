@@ -12,6 +12,8 @@ const contactSchema = new mongoose.Schema(
     message: { type: String },
     policy: { type: Boolean },
     source: { type: String },
+    state: { type: String },
+    city: { type: String },
   },
   { timestamps: true }
 );

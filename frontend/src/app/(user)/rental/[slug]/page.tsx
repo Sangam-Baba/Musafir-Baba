@@ -17,7 +17,7 @@ export interface IVehicleUserData {
   fuelType: string;
   tripProtectionFee: number;
   convenienceFee: number;
-  vehicleTransmission: "mannual" | "automatic";
+  vehicleTransmission: string;
   price: {
     daily: number;
     hourly: number;
@@ -41,6 +41,7 @@ export interface IVehicleUserData {
   inclusions: string[];
   exclusions: string[];
   status: string;
+  availableStock: number;
 }
 
 const getVehicleBySlug = async (slug: string) => {

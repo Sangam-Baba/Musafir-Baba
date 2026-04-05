@@ -10,18 +10,14 @@ const vehicleSchema = new mongoose.Schema(
     },
     vehicleType: {
       type: String,
-      enum: ["car", "bike"],
-      default: "bike",
     },
     location: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Destination",
+      ref: "VehiclePickUpDestination",
     },
     vehicleYear: String,
     vehicleBrand: {
       type: String,
-      enum: ["hero", "honda", "tvs"],
-      default: "hero",
     },
     convenienceFee: {
       type: Number,
@@ -31,8 +27,8 @@ const vehicleSchema = new mongoose.Schema(
     },
     vehicleTransmission: {
       type: String,
-      enum: ["mannual", "automatic"],
-      default: "mannual",
+      // enum: ["manual", "automatic", "mannual"], // removing strict enum to allow master data values
+      default: "manual",
     },
     vehicleModel: {
       type: String,
@@ -42,7 +38,7 @@ const vehicleSchema = new mongoose.Schema(
     },
     fuelType: {
       type: String,
-      enum: ["electric", "petrol", "diesel", "cng", "other"],
+      // enum: ["electric", "petrol", "diesel", "cng", "other"], // removing strict enum to allow master data values
       default: "petrol",
     },
     features: [String],

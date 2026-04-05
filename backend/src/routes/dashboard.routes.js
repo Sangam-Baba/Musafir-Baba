@@ -7,6 +7,7 @@ import {
   getBookingVSVisaEnquiry,
   getLatestAcitvity,
   getCombinedNewsBlog,
+  getUserDashboardSummary,
 } from "../controllers/dashboard.controller.js";
 import { validateSession } from "../middleware/session.middleware.js";
 
@@ -45,4 +46,13 @@ dashboardRoute.get(
 );
 
 dashboardRoute.get("/combined-news-blog", getCombinedNewsBlog);
+
+// User Dashboard Summary Route
+dashboardRoute.get(
+  "/user-summary",
+  isAuthenticated,
+  validateSession,
+  getUserDashboardSummary
+);
+
 export default dashboardRoute;

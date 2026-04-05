@@ -229,11 +229,11 @@ export default function QueryForm() {
                       <Input
                         placeholder="John Doe"
                         {...field}
-                        className="border-none p-0 shadow-none focus-visible:ring-0"
+                        className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
                       />
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="mt-1 text-[10px]" />
                 </FormItem>
               )}
             />
@@ -249,11 +249,11 @@ export default function QueryForm() {
                         <Input
                           placeholder="john@gmail.com"
                           {...field}
-                          className="border-none p-0 shadow-none focus-visible:ring-0"
+                          className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
                         />
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="mt-1 text-[10px]" />
                   </FormItem>
                 )}
               />
@@ -307,7 +307,7 @@ export default function QueryForm() {
                         </div>
                       </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="mt-1 text-[10px]" />
                   </FormItem>
                 );
               }}

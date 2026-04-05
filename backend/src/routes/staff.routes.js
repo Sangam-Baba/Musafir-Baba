@@ -10,6 +10,7 @@ import {
   refresh,
   me,
   previewToken,
+  adminUpdatePassword,
 } from "../controllers/staff.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -19,6 +20,14 @@ const staffRouter = Router();
 staffRouter.post("/", registerAdmin);
 
 staffRouter.post("/refresh", refresh);
+
+staffRouter.patch(
+  "/update-password",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  adminUpdatePassword,
+);
 
 staffRouter.post(
   "/logout",
