@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { stripHtml } from "@/lib/utils";
 
 type Category = {
   id: string;
@@ -67,7 +68,7 @@ export default function CategoryGrid({
                   </h3>
                   {cat.description && (
                     <p className="text-sm text-muted-foreground line-clamp-1">
-                      {cat.description}
+                      {stripHtml(cat.description)}
                     </p>
                   )}
                 </CardContent>

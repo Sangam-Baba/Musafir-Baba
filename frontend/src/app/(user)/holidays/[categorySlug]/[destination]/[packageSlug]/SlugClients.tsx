@@ -82,6 +82,8 @@ function SlugClients({
             url={pkg.itineraryDownload?.url ?? ""}
             img={pkg.coverImage?.url}
             packageId={pkg._id}
+            itinerary={pkg.itinerary}
+            duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
           />
         </div>
         <Hero
