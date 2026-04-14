@@ -3,6 +3,7 @@
 import Image from "next/image";
 // import { motion } from "framer-motion";
 import React from "react";
+import { stripHtml } from "@/lib/utils";
 
 type Align = "left" | "center" | "right";
 
@@ -98,12 +99,9 @@ export default function Hero({
 
           {description && (
             <p
-              // initial={{ opacity: 0, y: 12 }}
-              // animate={{ opacity: 1, y: 0 }}
-              // transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
               className="mt-3 md:mt-4  text-white/90 text-sm md:text-base  text-center hidden md:block"
             >
-              {description}
+              {stripHtml(description)}
             </p>
           )}
 
