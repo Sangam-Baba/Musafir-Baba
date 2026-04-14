@@ -42,6 +42,7 @@ import vehicleRoutes from "./vehicle.routes.js";
 import vehicleBookingsRoutes from "./vehicleBooking.routes.js";
 import masterDataRoutes from "./masterData.routes.js";
 import migrationRoutes from "./migration.routes.js";
+import visaApplicationRoutes from "./visaApplication.routes.js";
 
 const router = Router();
 
@@ -88,4 +89,5 @@ router.use("/vehicle", vehicleRoutes);
 router.use("/vehicle-booking", vehicleBookingsRoutes);
 router.use("/master-data", masterDataRoutes);
 router.use("/migration", migrationRoutes);
+router.use("/visa-application", visaApplicationRoutes);
 export default router;

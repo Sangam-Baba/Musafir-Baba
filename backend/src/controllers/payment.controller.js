@@ -4,6 +4,7 @@ import { MembershipBooking } from "../models/membershipBooking.js";
 import { CustomizedBookings } from "../models/CustomizedBookings.js";
 import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
 import { VehicleBooking } from "../models/VehicleBooking.js";
+import { VisaApplication } from "../models/VisaApplication.js";
 
 // ENV CONFIG
 const merchantKey = process.env.PAYU_KEY;
@@ -599,6 +600,102 @@ export const verifyVehicleFailurePayment = async (req, res) => {
     { new: true },
   ).exec();
   console.log("Mybooking Data is finalpayment:", booking);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+};
+
+export const verifyVisaSuccessPayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+  const application = await VisaApplication.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Paid",
+      },
+      applicationStatus: "Submitted",
+    },
+    { new: true },
+  ).exec();
+  console.log("Visa Payment Verified:", data, application);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+};
+
+export const verifyVisaFailurePayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  // ✅ Update DB with payment status here
+  const application = await VisaApplication.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: {
+        orderId: txnid,
+        paymentId: mihpayid,
+        signature: hash,
+        status: "Failed",
+      },
+      applicationStatus: "Pending",
+    },
+    { new: true },
+  ).exec();
+  console.log("Visa Payment Failed:", data, application);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
 };
