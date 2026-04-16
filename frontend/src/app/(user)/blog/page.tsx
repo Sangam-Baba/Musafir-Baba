@@ -66,8 +66,8 @@ export default async function BlogPage({
   const blogs = data?.data;
   const totalPages = data?.pages;
 
-  const mainBlogs = blogs.length > 4 ? blogs.slice(0, 4) : null;
-  const restBlogs = blogs.length > 4 ? blogs.slice(4) : blogs;
+  const mainBlogs = blogs.length > 3 ? blogs.slice(0, 3) : null;
+  const restBlogs = blogs.length > 3 ? blogs.slice(3) : blogs;
 
   const breadcrumb = getBreadcrumbSchema("blog");
   const collectionSchema = getCollectionSchema(
@@ -254,53 +254,49 @@ export default async function BlogPage({
       </div>
       {mainBlogs && (
         <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
             {/* LEFT BIG IMAGE */}
             <Link
               href={`/blog/${mainBlogs[0].slug}`}
-              className="relative h-[520px] overflow-hidden group rounded-3xl shadow-2xl transition-all duration-500 hover:shadow-[#FE5300]/10"
+              className="relative h-[480px] lg:col-span-2 overflow-hidden group rounded-3xl shadow-2xl transition-all duration-500 hover:shadow-[#FE5300]/10"
             >
-              {/* High-Vibrancy Mirror Atmosphere */}
-              <div className="absolute inset-0 z-0">
-                <Image
-                  src={mainBlogs[0].coverImage.url}
-                  alt=""
-                  fill
-                  className="object-cover blur-3xl scale-150 saturate-[2] brightness-[0.6] transition-transform duration-700 group-hover:scale-125"
-                />
-                <div className="absolute inset-0 bg-slate-950/10" />
-              </div>
-
-              {/* Main Image (Framed - Floats on atmosphere) */}
-              <div className="absolute inset-0 flex items-center justify-center p-4 md:p-12 z-10 transition-transform duration-700 group-hover:scale-105">
+              {/* Main Image */}
+              <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-110">
                 <Image
                   src={mainBlogs[0].coverImage.url}
                   alt={mainBlogs[0].title}
-                  width={800}
-                  height={600}
-                  className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                  fill
+                  className="object-cover"
                   priority
+                  quality={100}
+                  sizes="(max-width: 1024px) 100vw, 1200px"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               </div>
 
-              {/* Glassmorphism Text Panel */}
-              <div className="absolute bottom-6 left-6 right-6 z-20">
-                <div className="backdrop-blur-xl bg-black/30 p-6 md:p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
-                  <h2 className="text-xl md:text-3xl font-bold leading-tight text-white group-hover:text-[#FE5300] transition-colors relative z-10">
+              {/* Content Overlay */}
+              <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 md:p-12">
+                <div className="space-y-4 max-w-2xl transform transition-transform duration-500 group-hover:translate-y-[-8px]">
+                  {/* Optional Category Tag - Showing Blog for now as it matches current design intent */}
+                  <div className="inline-flex px-3 py-1 bg-[#FE5300] text-white text-[10px] uppercase tracking-widest font-bold rounded-sm shadow-lg">
+                    FEATURED POST
+                  </div>
+
+                  <h2 className="text-2xl md:text-4xl lg:text-5xl font-black leading-[1.1] text-white drop-shadow-2xl">
                     {mainBlogs[0].title}
                   </h2>
-                  <div className="flex items-center gap-3 text-sm mt-4 text-gray-200 font-medium relative z-10">
+
+                  <div className="flex items-center gap-4 text-xs md:text-sm text-gray-200/90 font-medium">
                     {mainBlogs[0].author?.name && (
-                      <span className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-[#FE5300] flex items-center justify-center text-[11px] font-bold text-white uppercase border border-white/20">
-                          {mainBlogs[0].author.name.charAt(0)}
+                      <div className="flex items-center gap-2.5 group/author">
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/20 backdrop-blur-md overflow-hidden transition-all group-hover/author:border-[#FE5300]">
+                          <span className="text-[10px] font-bold text-white uppercase">{mainBlogs[0].author.name.charAt(0)}</span>
                         </div>
-                        {mainBlogs[0].author.name}
-                      </span>
+                        <span className="hover:text-[#FE5300] transition-colors cursor-default">{mainBlogs[0].author.name}</span>
+                      </div>
                     )}
-                    <span className="opacity-40">•</span>
-                    <span className="opacity-80">
+                    <span className="w-1 h-1 rounded-full bg-[#FE5300] shadow-[0_0_8px_#FE5300]" />
+                    <span className="tracking-wide">
                       {new Date(mainBlogs[0].createdAt).toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "long",
@@ -313,104 +309,66 @@ export default async function BlogPage({
             </Link>
 
             {/* RIGHT COLUMN */}
-            <div className="grid grid-rows-2 gap-2 h-[520px]">
+            <div className="grid grid-rows-2 gap-2 h-[480px] lg:col-span-1">
               {/* TOP RIGHT */}
               <Link href={`/blog/${mainBlogs[1].slug}`} className="relative overflow-hidden group rounded-2xl shadow-xl">
-                {/* High-Vibrancy Mirror Atmosphere */}
-                <div className="absolute inset-0 z-0">
-                  <Image
-                    src={mainBlogs[1].coverImage.url}
-                    alt=""
-                    fill
-                    className="object-cover blur-3xl scale-150 saturate-[2] brightness-[0.6]"
-                  />
-                  <div className="absolute inset-0 bg-slate-950/10" />
-                </div>
-
-                <div className="absolute inset-0 flex items-center justify-center p-6 z-10 transition-transform duration-700 group-hover:scale-110">
+                {/* Main Image */}
+                <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-110">
                   <Image
                     src={mainBlogs[1].coverImage.url}
                     alt={mainBlogs[1].title}
-                    width={500}
-                    height={300}
-                    className="w-full h-full object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)]"
+                    fill
+                    className="object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 </div>
 
-                {/* Glassmorphism Text Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 z-20">
-                  <div className="backdrop-blur-lg bg-black/40 p-4 rounded-xl border border-white/10">
-                    <h3 className="text-lg md:text-xl font-bold leading-tight text-white group-hover:text-[#FE5300] transition-colors line-clamp-2">
+                {/* Content Overlay */}
+                <div className="absolute inset-0 z-20 flex flex-col justify-end p-5">
+                  <div className="space-y-2 transform transition-transform duration-500 group-hover:translate-y-[-4px]">
+                    <h3 className="text-base md:text-lg font-bold leading-tight text-white group-hover:text-[#FE5300] transition-colors line-clamp-2 drop-shadow-lg">
                       {mainBlogs[1].title}
                     </h3>
+                    <div className="text-[10px] text-gray-300 font-medium uppercase tracking-wider opacity-80">
+                      {new Date(mainBlogs[1].createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
+                      })}
+                    </div>
                   </div>
                 </div>
               </Link>
 
-              {/* BOTTOM RIGHT (2 SMALL CARDS) */}
-              <div className="grid grid-cols-2 gap-2">
-                <Link href={`/blog/${mainBlogs[2].slug}`} className="relative overflow-hidden group rounded-2xl shadow-lg">
-                  {/* High-Vibrancy Mirror Atmosphere */}
-                  <div className="absolute inset-0 z-0">
-                    <Image
-                      src={mainBlogs[2].coverImage.url}
-                      alt=""
-                      fill
-                      className="object-cover blur-3xl scale-150 saturate-[2] brightness-[0.6]"
-                    />
-                  </div>
+              {/* BOTTOM RIGHT */}
+              <Link href={`/blog/${mainBlogs[2].slug}`} className="relative overflow-hidden group rounded-2xl shadow-lg">
+                {/* Main Image */}
+                <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-110">
+                  <Image
+                    src={mainBlogs[2].coverImage.url}
+                    alt={mainBlogs[2].title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                </div>
 
-                  <div className="absolute inset-0 flex items-center justify-center p-4 z-10 transition-transform duration-700 group-hover:scale-110">
-                    <Image
-                      src={mainBlogs[2].coverImage.url}
-                      alt={mainBlogs[2].title}
-                      width={300}
-                      height={200}
-                      className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
-                    />
-                  </div>
-
-                  {/* Glassmorphism Text Overlay */}
-                  <div className="absolute bottom-2 left-2 right-2 z-20">
-                    <div className="backdrop-blur-md bg-black/40 p-3 rounded-xl border border-white/10">
-                      <h4 className="text-sm font-bold leading-tight text-white group-hover:text-[#FE5300] transition-colors line-clamp-2">
-                        {mainBlogs[2].title}
-                      </h4>
+                {/* Content Overlay */}
+                <div className="absolute inset-0 z-20 flex flex-col justify-end p-5">
+                  <div className="space-y-2 transform transition-transform duration-500 group-hover:translate-y-[-4px]">
+                    <h4 className="text-xs md:text-sm font-bold leading-tight text-white group-hover:text-[#FE5300] transition-colors line-clamp-2 drop-shadow-lg">
+                      {mainBlogs[2].title}
+                    </h4>
+                    <div className="text-[9px] text-gray-300 font-medium uppercase tracking-wider opacity-80">
+                      {new Date(mainBlogs[2].createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
+                      })}
                     </div>
                   </div>
-                </Link>
-
-                <Link href={`/blog/${mainBlogs[3].slug}`} className="relative overflow-hidden group rounded-2xl shadow-lg">
-                  {/* High-Vibrancy Mirror Atmosphere */}
-                  <div className="absolute inset-0 z-0">
-                    <Image
-                      src={mainBlogs[3].coverImage.url}
-                      alt=""
-                      fill
-                      className="object-cover blur-3xl scale-150 saturate-[2] brightness-[0.6]"
-                    />
-                  </div>
-
-                  <div className="absolute inset-0 flex items-center justify-center p-4 z-10 transition-transform duration-700 group-hover:scale-110">
-                    <Image
-                      src={mainBlogs[3].coverImage.url}
-                      alt={mainBlogs[3].title}
-                      width={300}
-                      height={200}
-                      className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
-                    />
-                  </div>
-
-                  {/* Glassmorphism Text Overlay */}
-                  <div className="absolute bottom-2 left-2 right-2 z-20">
-                    <div className="backdrop-blur-md bg-black/40 p-3 rounded-xl border border-white/10">
-                      <h4 className="text-sm font-bold leading-tight text-white group-hover:text-[#FE5300] transition-colors line-clamp-2">
-                        {mainBlogs[3].title}
-                      </h4>
-                    </div>
-                  </div>
-                </Link>
-              </div>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

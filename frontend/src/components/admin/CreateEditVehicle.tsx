@@ -91,7 +91,7 @@ export const vehicleSchema = z.object({
   excerpt: z.string().optional(),
 
   keywords: z.array(z.string()).optional(),
-  features: z.array(z.string()).optional(),
+  features: z.array(z.object({ value: z.string() })).optional(),
   inclusions: z.array(z.object({ value: z.string() })).optional(),
   exclusions: z.array(z.object({ value: z.string() })).optional(),
   tripProtectionFee: z.coerce.number(),
@@ -191,7 +191,7 @@ export const CreateEditVehicle = ({
       excerpt: "",
       faqs: [],
       keywords: [],
-      features: [],
+      features: [{ value: "" }],
       inclusions: [{ value: "" }],
       exclusions: [{ value: "" }],
       status: "draft",
@@ -251,6 +251,10 @@ export const CreateEditVehicle = ({
     control: form.control,
     name: "exclusions",
   });
+  const featuresArray = useFieldArray({
+    control: form.control,
+    name: "features",
+  });
   useEffect(() => {
     if (id && vehicle) {
       // Find case-insensitive matches from master data for consistent selection
@@ -287,7 +291,7 @@ export const CreateEditVehicle = ({
         canonicalUrl: vehicle.canonicalUrl,
         excerpt: vehicle.excerpt,
         keywords: vehicle.keywords,
-        features: vehicle.features,
+        features: vehicle.features?.map((f: string) => ({ value: f })) || [{ value: "" }],
         inclusions: vehicle.inclusions?.map((i: string) => ({ value: i })) || [{ value: "" }],
         exclusions: vehicle.exclusions?.map((e: string) => ({ value: e })) || [{ value: "" }],
         faqs: vehicle.faqs,
@@ -322,6 +326,7 @@ export const CreateEditVehicle = ({
   function onSubmit(values: FormData) {
     const finalValues = {
       ...values,
+      features: values.features?.map((f) => f.value).filter(Boolean),
       inclusions: values.inclusions?.map((i) => i.value).filter(Boolean),
       exclusions: values.exclusions?.map((e) => e.value).filter(Boolean),
     };
@@ -759,38 +764,38 @@ export const CreateEditVehicle = ({
             {/* --- Additional Info Tab --- */}
             <TabsContent value="additional" className="space-y-6 pt-1 px-1">
               <div className="space-y-4">
-                <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Vehicle Features</Label>
-                <div className="flex flex-wrap gap-2 border rounded-xl p-4 bg-gray-50/50 min-h-[100px] items-start">
-                  {form.watch("features")?.map((feat, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-white border border-[#FE5300]/20 px-3 py-1.5 rounded-lg text-sm shadow-sm hover:border-[#FE5300] transition-colors">
-                      <span className="text-gray-700 font-medium">{feat}</span>
-                      <button
+                <div className="flex items-center justify-between border-b pb-2">
+                  <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Vehicle Features</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
+                    onClick={() => featuresArray.append({ value: "" })}
+                  >
+                    + Add Row
+                  </Button>
+                </div>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 pt-2">
+                  {featuresArray.fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2 group items-center">
+                      <span className="w-1.5 h-1.5 bg-[#FE5300] rounded-full shrink-0" />
+                      <Input
+                        placeholder="e.g. AC, Bluetooth, Power Windows"
+                        className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
+                        {...form.register(`features.${index}.value`)}
+                      />
+                      <Button
                         type="button"
-                        onClick={() => {
-                          const newFeats = form.getValues("features")?.filter((_, idx) => idx !== i);
-                          form.setValue("features", newFeats);
-                        }}
-                        className="text-gray-400 hover:text-red-500 hover:scale-110 transition-all"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
+                        onClick={() => featuresArray.remove(index)}
                       >
                         <X className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
-                  <input
-                    type="text"
-                    className="flex-1 min-w-[200px] bg-transparent border-none focus:ring-0 focus:outline-none text-sm py-1.5"
-                    placeholder="Type feature & press Enter..."
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        const val = (e.target as HTMLInputElement).value.trim();
-                        if (val) {
-                          form.setValue("features", [...(form.getValues("features") || []), val]);
-                          (e.target as HTMLInputElement).value = "";
-                        }
-                      }
-                    }}
-                  />
                 </div>
               </div>
 

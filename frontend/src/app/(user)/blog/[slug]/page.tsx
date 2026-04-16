@@ -18,6 +18,8 @@ import HelpfulResources from "@/components/custom/HelpfulResources";
 import LatestBlog from "@/components/common/LatestBlog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommentDailog } from "@/components/custom/CommentDailog";
+import { TableOfContents } from "@/components/custom/TableOfContents";
+import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
 // Fetch blog by slug
 async function getBlog(slug: string, token?: string) {
   const res = await fetch(
@@ -152,6 +154,9 @@ export default async function BlogDetailPage({
     blog.author?.name,
   );
 
+  const headings = extractHeadings(blog.content || "");
+  const contentWithIds = addIdsToHeadings(blog.content || "");
+
   return (
     <div>
       <div className="w-full mx-auto max-w-4xl px-12 mt-5">
@@ -218,9 +223,12 @@ export default async function BlogDetailPage({
             <p className="italic text-gray-500">{blog.excerpt}</p>
           </div>
 
+          {/* Table of Contents */}
+          <TableOfContents headings={headings} />
+
           {/* Blog Content */}
           <section className="prose prose-lg max-w-none mt-6">
-            <BlogContent html={blog.content} />
+            <BlogContent html={contentWithIds} />
           </section>
           {blog.footerLinks && blog.footerLinks.length > 0 && (
             <div className="mt-8 md:mt-10">
