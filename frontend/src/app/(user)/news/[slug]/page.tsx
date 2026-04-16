@@ -18,6 +18,8 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getNewsSchema } from "@/lib/schema/news.schema";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import { CommentDailog } from "@/components/custom/CommentDailog";
+import { TableOfContents } from "@/components/custom/TableOfContents";
+import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
 // Fetch blog by slug
 async function getNews(slug: string, token?: string) {
   const res = await fetch(
@@ -120,6 +122,9 @@ export default async function NewsDetailPage({
     news.updatedAt || news.createdAt,
     news.author?.name || "Musafir Baba",
   );
+
+  const headings = extractHeadings(news.content || "");
+  const contentWithIds = addIdsToHeadings(news.content || "");
   const schema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -211,9 +216,12 @@ export default async function NewsDetailPage({
             <p className="italic text-gray-500">{news.excerpt}</p>
           </div>
 
+          {/* Table of Contents */}
+          <TableOfContents headings={headings} />
+
           {/* Blog Content */}
           <section className="prose prose-lg max-w-none mt-6">
-            <BlogContent html={news.content} />
+            <BlogContent html={contentWithIds} />
           </section>
 
           {news.footerLinks && news.footerLinks.length > 0 && (
