@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
 
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
+
       // 🔁 TEMPORARY — keep until full migration done
       {
         protocol: "https",

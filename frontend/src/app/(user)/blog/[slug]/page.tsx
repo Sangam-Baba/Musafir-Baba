@@ -20,6 +20,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommentDailog } from "@/components/custom/CommentDailog";
 import { TableOfContents } from "@/components/custom/TableOfContents";
 import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
+import ReadingProgressBar from "@/components/custom/ReadingProgressBar";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 // Fetch blog by slug
 async function getBlog(slug: string, token?: string) {
   const res = await fetch(
@@ -158,172 +161,246 @@ export default async function BlogDetailPage({
   const contentWithIds = addIdsToHeadings(blog.content || "");
 
   return (
-    <div>
-      <div className="w-full mx-auto max-w-4xl px-12 mt-5">
-        <Breadcrumb title={blog.title} />
-      </div>
-      <div className="flex flex-col gap-8 mx-auto max-w-4xl py-4 px-12">
-        <article className="space-y-5 ">
-          {/* Title & Meta */}
-          <header className="space-y-2">
-            <h1 className="text-2xl md:text-4xl font-bold">{blog.title}</h1>
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <span className="flex items-center gap-2 ">
-                <User size={16} />
-                <Link href={`/author/${blog.author?.slug}`}>
-                  {blog.author?.name}
-                </Link>
-              </span>
-              <span className="flex gap-1">
-                <Folders size={18} />
-                {blog.category.name}
-              </span>
-              <span>
-                📅{" "}
-                {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-              <span>
-                <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
-              </span>
-              {/* <span>
-                <BlogLikes id={blog._id} initialLikes={blog.likes} />
-              </span> */}
-              <span className="flex gap-2 items-center">
-                <Clock size={16} /> {readTime} Min Read
-              </span>
-            </div>
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              {blog.tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          </header>
-          {/* Cover Image */}
-          <div className="relative w-full h-40 md:h-96 rounded-2xl overflow-hidden shadow-lg">
-            <Image
-              src={blog.coverImage.url}
-              alt={blog.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-          <div className="border border-gray-400 px-4 py-8 flex gap-6 w-full rounded-md bg-gray-50">
-            <p className="bg-[#FE5300] w-1 rounded-lg"></p>
-            <p className="italic text-gray-500">{blog.excerpt}</p>
+    <div className="bg-white min-h-screen">
+      <ReadingProgressBar />
+      
+      {/* Premium Split Hero Section */}
+      <header className="w-full bg-white pt-8 pb-16 md:pt-12 md:pb-20 overflow-hidden">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+          
+          {/* Breadcrumbs Top Bar */}
+          <div className="mb-12">
+            <Breadcrumb title={blog.title} />
           </div>
 
-          {/* Table of Contents */}
-          <TableOfContents headings={headings} />
-
-          {/* Blog Content */}
-          <section className="prose prose-lg max-w-none mt-6">
-            <BlogContent html={contentWithIds} />
-          </section>
-          {blog.footerLinks && blog.footerLinks.length > 0 && (
-            <div className="mt-8 md:mt-10">
-              <HelpfulResources data={blog.footerLinks ?? []} />
-            </div>
-          )}
-          <div className="flex gap-3 mt-5">
-            <p className="font-semibold ">
-              Last Updated:{" "}
-              <span className="text-gray-600">
-                {new Date(blog.updatedAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </p>
-            <span className="relative group inline-block">
-              {/* Social buttons (hidden until hover) */}
-              <div className="absolute hidden group-hover:flex">
-                <SocialShare
-                  url={`https://musafirbaba.com/blog/${blog.slug}`}
-                  title={blog.title}
-                />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Column: Content */}
+            <div className="lg:col-span-4 space-y-8 animate-in fade-in slide-in-from-left duration-700">
+              <div className="space-y-6">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge className="bg-[#FE5300] text-white hover:bg-[#FE5300]/90 border-none px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest rounded-full shadow-sm">
+                    {blog.category.name}
+                  </Badge>
+                  {(blog.tags || []).map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="text-gray-400 font-bold text-[11px] uppercase tracking-[0.2em] px-2 py-1 transition-all hover:text-[#FE5300]"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+                
+                <h1 className="text-3xl md:text-5xl lg:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight">
+                  {blog.title}
+                </h1>
               </div>
 
-              {/* Share icon */}
-              <Share2 className="cursor-pointer" />
-            </span>
-          </div>
-          <CategorySidebar />
-        </article>
-        <div className="space-y-10">
-          <Tabs defaultValue="latest" className="w-full flex items-center">
-            <TabsList className="bg-white flex gap-4">
-              <TabsTrigger
-                value="latest"
-                className="border border-[#FE5300]
-      data-[state=active]:bg-[#FE5300]
-      data-[state=active]:text-white"
-              >
-                Latest Blog
-              </TabsTrigger>
-              <TabsTrigger
-                value="trending"
-                className="border border-[#FE5300] 
-      data-[state=active]:bg-[#FE5300]
-      data-[state=active]:text-white"
-              >
-                Trending Blog
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="latest">
-              <LatestBlog
-                blogs={filteredLatestBlog}
-                title="Latest Blog"
-                type="latest"
-                url="blog"
-              />
-            </TabsContent>
-            <TabsContent value="trending">
-              <LatestBlog
-                blogs={filteredTrandingBlogs}
-                title="Trending Blog"
-                type="trending"
-                url="blog"
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-        {/* Comments Section */}
-        <section className="mt-10 w-full">
-          <CommentDailog
-            blogId={blog._id}
-            initialComments={comments}
-            type="blog"
-          />
-        </section>
-        {/* ✅ JSON-LD Schema */}
-        {/* {blog.schemaType?.includes("Blog") && ( */}
-        <Script
-          id="blog-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
-        />
-        {/* )} */}
+              <div className="flex flex-wrap items-center gap-6 text-[12px] font-bold text-gray-500 uppercase tracking-widest pt-4">
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-[#FE5300]" />
+                  <span>{readTime} Min Read</span>
+                </div>
+                <Separator orientation="vertical" className="h-4 bg-gray-200" />
+                <span className="text-gray-400">Published {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}</span>
+                <Separator orientation="vertical" className="h-4 bg-gray-200" />
+                <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
+              </div>
+            </div>
 
-        <Script
-          id="breadcrumb-schema"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(breadcrumbSchema),
-          }}
-        />
+            {/* Right Column: Ultra-Wide Featured Image */}
+            <div className="lg:col-span-8 relative animate-in fade-in slide-in-from-right duration-1000">
+              <div className="relative aspect-video w-full overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] group">
+                <Image
+                  src={blog.coverImage.url}
+                  alt={blog.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  priority
+                />
+              </div>
+              {/* Refined Ambient Glow */}
+              <div className="absolute -z-10 -bottom-16 -right-16 w-64 h-64 bg-[#FE5300]/10 rounded-full blur-3xl opacity-55" />
+              <div className="absolute -z-10 -top-16 -left-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl opacity-55" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content & Sidebar Grid */}
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 relative font-sans">
+          
+          {/* Left Sidebar: Author & TOC (Desktop Only) */}
+          <aside className="hidden lg:block lg:col-span-3 sticky top-12 h-fit space-y-2">
+            
+            {/* Written By Section */}
+            <div className="space-y-6">
+              <h3 className="text-[13px] font-bold text-gray-400 uppercase tracking-widest border-b pb-4">
+                Written by
+              </h3>
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-full border-2 border-white shadow-md overflow-hidden bg-[#FE5300] flex items-center justify-center shrink-0 relative">
+                  <Image 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${blog.author?.name}`} 
+                    alt={blog.author?.name}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <Link href={`/author/${blog.author?.slug}`} className="font-bold text-lg text-gray-900 hover:text-[#FE5300] transition-colors leading-tight">
+                    {blog.author?.name}
+                  </Link>
+                  <span className="text-xs text-gray-500 font-medium">Senior Travel Expert</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Table of Contents */}
+            <TableOfContents headings={headings} />
+            
+            {/* Social Share (Vertical) */}
+            <div className="pt-6 border-t">
+               <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">Share this article</h3>
+               <SocialShare
+                url={`https://musafirbaba.com/blog/${blog.slug}`}
+                title={blog.title}
+                type="vertical"
+              />
+            </div>
+          </aside>
+
+          {/* Center Column: Main Article */}
+          <main className="lg:col-span-9 xl:col-span-8 2xl:col-span-7">
+            <article>
+              
+              {/* TL;DR Box (Excerpt Transformation) */}
+              <div className="relative py-10 px-8 md:px-12 mb-16 bg-[#e7f6ed] rounded-[2rem] border border-green-100 overflow-hidden shadow-sm group">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-green-600/10 p-2 rounded-lg text-green-700">
+                    <Folders size={20} />
+                  </div>
+                  <span className="text-sm font-bold text-green-800 tracking-tight">
+                    TL;DR <span className="text-green-600/60 ml-2 italic font-normal">powered by Musafir Expert Analytics</span>
+                  </span>
+                </div>
+                <p className="text-xl md:text-2xl font-medium leading-[1.5] text-green-900/80">
+                  {blog.excerpt}
+                </p>
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transition-transform duration-500 group-hover:rotate-12">
+                   <Folders size={120} />
+                </div>
+              </div>
+
+              {/* Mobile Table of Contents */}
+              <div className="lg:hidden mb-12">
+                <TableOfContents headings={headings} />
+              </div>
+
+              {/* Main Content Body */}
+              <section className="prose prose-lg md:prose-xl max-w-none 
+                prose-headings:text-gray-900 prose-headings:font-black prose-headings:tracking-tight
+                prose-p:text-gray-700/90 prose-p:leading-[1.8] prose-p:mb-8
+                prose-a:text-[#FE5300] prose-a:no-underline hover:prose-a:underline
+                prose-img:rounded-[2rem] prose-img:shadow-2xl prose-img:my-16
+                prose-strong:text-gray-900
+                prose-ul:list-disc prose-ul:pl-6
+                prose-li:text-gray-700/90 prose-li:mb-2 text-justify">
+                <BlogContent html={contentWithIds} />
+              </section>
+
+              {/* Footer Metadata */}
+              <div className="mt-20 py-12 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8">
+                 <div className="flex flex-col gap-2">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Status Tracking</span>
+                    <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
+                 </div>
+                 <div className="flex items-center gap-4">
+                  <div className="flex gap-2">
+                    <SocialShare
+                      url={`https://musafirbaba.com/blog/${blog.slug}`}
+                      title={blog.title}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Resources */}
+              {blog.footerLinks && blog.footerLinks.length > 0 && (
+                <div className="mt-8">
+                  <HelpfulResources data={blog.footerLinks ?? []} />
+                </div>
+              )}
+              {/* Trending Categories Hashtags */}
+              <div className="mt-16 pt-16 border-t border-gray-100">
+                <div className="flex flex-col gap-6">
+                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Explore Categories</h3>
+                  <div className="-mx-3">
+                    <CategorySidebar />
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* Widgets Section */}
+            <section className="mt-24 space-y-12">
+              <Separator className="bg-gray-100" />
+              <div className="flex flex-col gap-10">
+                <Tabs defaultValue="latest" className="w-full">
+                  <TabsList className="bg-gray-50 border p-1 rounded-xl mb-10 inline-flex">
+                    <TabsTrigger
+                      value="latest"
+                      className="rounded-lg px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm font-bold transition-all text-sm"
+                    >
+                      Latest Blog
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="trending"
+                      className="rounded-lg px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm font-bold transition-all text-sm"
+                    >
+                      Trending Articles
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="latest" className="animate-in fade-in zoom-in-95 duration-500">
+                    <LatestBlog blogs={filteredLatestBlog} title="Latest Blog" type="latest" url="blog" />
+                  </TabsContent>
+                  <TabsContent value="trending" className="animate-in fade-in zoom-in-95 duration-500">
+                    <LatestBlog blogs={filteredTrandingBlogs} title="Trending Blog" type="trending" url="blog" />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </section>
+
+            {/* Comments Section */}
+            <section className="mt-24 pt-16 border-t border-gray-100">
+              <div className="max-w-3xl">
+                <h3 className="text-4xl font-black mb-4 text-gray-900 tracking-tight">Community Insights</h3>
+                <p className="text-gray-500 mb-12 text-lg">Have a question or a story to share? Join the conversation below.</p>
+                <CommentDailog blogId={blog._id} initialComments={comments} type="blog" />
+              </div>
+            </section>
+          </main>
       </div>
+    </div>
+
+      <Script
+        id="blog-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
     </div>
   );
 }

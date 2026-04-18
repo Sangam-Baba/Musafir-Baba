@@ -47,6 +47,22 @@ const vehicleSchema = new mongoose.Schema(
       daily: Number,
       hourly: Number,
     },
+    seatingOptions: [
+      {
+        seats: Number,
+        dailyPrice: Number,
+        hourlyPrice: Number,
+        stock: {
+          type: Number,
+          default: 1,
+        },
+      },
+    ],
+    pricingType: {
+      type: String,
+      enum: ["single", "multiple"],
+      default: "single",
+    },
     title: {
       type: String,
       trim: true,

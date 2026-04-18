@@ -12,7 +12,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    const { vehicleId, checkIn, checkOut, noOfVehicle = 1 } = req.body;
+    const { vehicleId, checkIn, checkOut, noOfVehicle = 1, selectedSeats } = req.body;
 
     if (!vehicleId || !checkIn || !checkOut) {
       return res.status(400).json({
@@ -51,9 +51,29 @@ const createBooking = async (req, res) => {
     // Calculate total days
     const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
 
+    // Determine Daily Price and Stock based on selectedSeats
+    let dailyPrice = vehicle.price?.daily || 0;
+    let availableStock = vehicle.availableStock || 0;
+    
+    if (selectedSeats && vehicle.seatingOptions && vehicle.seatingOptions.length > 0) {
+      const option = vehicle.seatingOptions.find(o => o.seats === Number(selectedSeats));
+      if (option) {
+        dailyPrice = option.dailyPrice;
+        availableStock = option.stock || 0;
+      }
+    }
+
+    // Validate Stock
+    if (noOfVehicle > availableStock) {
+      return res.status(400).json({
+        success: false,
+        message: `Only ${availableStock} vehicles available for this seating configuration`,
+      });
+    }
+
     // 5% tax included
     const totalPrice = Math.ceil(
-      totalDays * vehicle.price.daily * noOfVehicle * 1.05,
+      totalDays * dailyPrice * noOfVehicle * 1.05,
     );
 
     // Optional: Check overlapping bookings
@@ -61,6 +81,7 @@ const createBooking = async (req, res) => {
     const booking = await VehicleBooking.create({
       userId,
       vehicleId,
+      selectedSeats,
       checkIn: startDate,
       checkOut: endDate,
       noOfVehicle,

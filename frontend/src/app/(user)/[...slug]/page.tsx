@@ -6,6 +6,7 @@ import Script from "next/script";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { revalidate } from "../auth/logout/page";
+import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
 
 export const getWebPageBySlug = async (slug: string, token?: string) => {
   const res = await fetch(
@@ -95,11 +96,19 @@ async function AllWebPage({
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);
   const breadcrumbSchema = getBreadcrumbSchema(page.fullSlug);
-  // console.log("this is realetd page", relatedPage);
-  // console.log(JSON.stringify(page.howToSchema));
+  
+  const headings = extractHeadings(page.content || "");
+  const contentWithIds = addIdsToHeadings(page.content || "");
+
   return (
     <>
-      <MainWebPage page={page} relatedPage={relatedPage} pkg={trandingPkg} />
+      <MainWebPage 
+        page={page} 
+        relatedPage={relatedPage} 
+        pkg={trandingPkg} 
+        headings={headings}
+        contentWithIds={contentWithIds}
+      />
       {page.schemaType?.includes("Webpage") && (
         <Script
           key="webpage-schema"

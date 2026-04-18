@@ -22,6 +22,12 @@ export interface IVehicleUserData {
     daily: number;
     hourly: number;
   };
+  seatingOptions?: {
+    seats: number;
+    dailyPrice: number;
+    hourlyPrice: number;
+  }[];
+  pricingType?: "single" | "multiple";
   title: string;
   content: string;
   metaTitle: string;

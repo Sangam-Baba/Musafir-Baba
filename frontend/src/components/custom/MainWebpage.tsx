@@ -16,6 +16,8 @@ import TrandingPkgSidebar from "./TrandingPkgSidebar";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import SocialShare from "./SocialSharing";
 import { Share2 } from "lucide-react";
+import { TableOfContents } from "@/components/custom/TableOfContents";
+import { Heading } from "@/utils/blogUtils";
 
 interface Faq {
   question: string;
@@ -65,10 +67,14 @@ async function MainWebPage({
   page,
   relatedPage,
   pkg,
+  headings = [],
+  contentWithIds = "",
 }: {
   page: WebpageInterface;
   relatedPage: WebpageInterface[];
   pkg?: TrandingPkgInterface[];
+  headings?: Heading[];
+  contentWithIds?: string;
 }) {
   return (
     <section className="">
@@ -90,8 +96,12 @@ async function MainWebPage({
             <p className="bg-[#FE5300] w-1 rounded-lg"></p>
             <p className="italic text-gray-500">{page.excerpt}</p>
           </div>
+
+          {/* Table of Contents */}
+          <TableOfContents headings={headings} />
+
           <section className="prose prose-lg max-w-none">
-            <BlogContent html={page.content} />
+            <BlogContent html={contentWithIds || page.content} />
           </section>
           <section>
             <h2 className="text-2xl font-bold mt-8">{`FAQ's`}</h2>

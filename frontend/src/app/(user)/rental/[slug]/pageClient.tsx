@@ -32,6 +32,7 @@ interface FormData {
   checkOut: string;
   noOfVehicle: number;
   vehicleId: string;
+  selectedSeats?: number;
   policyAccepted: boolean;
 }
 
@@ -79,9 +80,16 @@ export default function RentalPageClient({
       .split("T")[0],
     noOfVehicle: 1,
     vehicleId: vehicle?._id || "",
+    selectedSeats: vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length 
+      ? vehicle.seatingOptions[0].seats 
+      : vehicle?.seats,
     policyAccepted: true,
   });
-  const [vehiclePrice, setVehiclePrice] = useState(vehicle?.price?.daily);
+  const [vehiclePrice, setVehiclePrice] = useState(
+    vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length 
+      ? vehicle.seatingOptions[0].dailyPrice 
+      : vehicle?.price?.daily
+  );
   const [finalPrice, setFinalPrice] = useState(
     Math.ceil(
       vehiclePrice * 1.05 +
@@ -118,7 +126,11 @@ export default function RentalPageClient({
             new Date(data.checkIn).getTime()) /
           (1000 * 60 * 60 * 24);
 
-    setVehiclePrice(vehicle?.price?.daily * data.noOfVehicle * totalDay);
+    const basePrice = vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length
+      ? (vehicle.seatingOptions.find(o => o.seats === data.selectedSeats)?.dailyPrice || vehicle?.price?.daily || 0)
+      : (vehicle?.price?.daily || 0);
+
+    setVehiclePrice(basePrice * data.noOfVehicle * totalDay);
     setFinalPrice(
       Math.ceil(
         vehiclePrice * 1.05 +
@@ -383,8 +395,8 @@ export default function RentalPageClient({
               <form
                 className="w-full max-w-4xl mx-auto"
               >
-                <div className="bg-white shadow-xl rounded-2xl p-6 md:p-8 border border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6 font-bold">
+                <div className="bg-white shadow-xl rounded-2xl p-5 md:p-6 border border-gray-100">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Book Your Vehicle
                   </h2>
 
@@ -394,43 +406,43 @@ export default function RentalPageClient({
                         <Label className="text-[#FE5300] font-semibold text-sm">
                           Check In
                         </Label>
-                        <Input
-                          value={data.checkIn}
-                          min={today}
-                          onChange={(e) =>
-                            setData({ ...data, checkIn: e.target.value })
-                          }
-                          type="date"
-                          className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                        />
+                          <Input
+                            value={data.checkIn}
+                            min={today}
+                            onChange={(e) =>
+                              setData({ ...data, checkIn: e.target.value })
+                            }
+                            type="date"
+                            className="h-9 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300] text-sm"
+                          />
                       </div>
 
                       <div className="flex flex-col gap-2">
                         <Label className="text-[#FE5300] font-semibold text-sm">
                           Check Out
                         </Label>
-                        <Input
-                          value={data.checkOut}
-                          min={today}
-                          onChange={(e) =>
-                            setData({ ...data, checkOut: e.target.value })
-                          }
-                          type="date"
-                          className="h-11 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300]"
-                        />
+                          <Input
+                            value={data.checkOut}
+                            min={today}
+                            onChange={(e) =>
+                              setData({ ...data, checkOut: e.target.value })
+                            }
+                            type="date"
+                            className="h-9 rounded-lg focus-visible:ring-2 focus-visible:ring-[#FE5300] text-sm"
+                          />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-5 items-center">
                       <Label className="text-[#FE5300] font-semibold text-sm">
                         Number of Vehicles
                       </Label>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2 border border-gray-200 rounded-lg h-11 px-2 overflow-hidden bg-white">
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="icon"
-                            className="h-8 w-8 flex-shrink-0 bg-gray-100 hover:bg-[#FE5300]/10 text-gray-700 hover:text-[#FE5300] border-none"
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2 border border-gray-200 rounded-lg h-9 px-2 overflow-hidden bg-white">
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="icon"
+                              className="h-6 w-6 flex-shrink-0 bg-gray-100 hover:bg-[#FE5300]/10 text-gray-700 hover:text-[#FE5300] border-none"
                             onClick={() =>
                               setData({
                                 ...data,
@@ -445,49 +457,89 @@ export default function RentalPageClient({
                             readOnly
                             className="h-9 w-full border-none text-center font-bold text-lg focus-visible:ring-0 p-0 pointer-events-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="icon"
-                            disabled={data.noOfVehicle >= (vehicle?.availableStock || 1)}
-                            className={`h-8 w-8 flex-shrink-0 border-none ${
-                                data.noOfVehicle >= (vehicle?.availableStock || 1)
-                                ? "bg-gray-50 text-gray-300 cursor-not-allowed"
-                                : "bg-gray-100 hover:bg-[#FE5300]/10 text-gray-700 hover:text-[#FE5300]"
-                            }`}
-                            onClick={() =>
-                              setData({
-                                ...data,
-                                noOfVehicle: data.noOfVehicle + 1,
-                              })
-                            }
-                          >
-                            <Plus size={16} strokeWidth={3} />
-                          </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="icon"
+                              disabled={data.noOfVehicle >= (
+                                vehicle?.seatingOptions && vehicle.seatingOptions.length > 0 
+                                  ? (vehicle.seatingOptions.find(o => o.seats === data.selectedSeats)?.stock || 1)
+                                  : (vehicle?.availableStock || 1)
+                              )}
+                              className={`h-6 w-6 flex-shrink-0 border-none ${
+                                  data.noOfVehicle >= (
+                                    vehicle?.seatingOptions && vehicle.seatingOptions.length > 0 
+                                      ? (vehicle.seatingOptions.find(o => o.seats === data.selectedSeats)?.stock || 1)
+                                      : (vehicle?.availableStock || 1)
+                                  )
+                                  ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                                  : "bg-gray-100 hover:bg-[#FE5300]/10 text-gray-700 hover:text-[#FE5300]"
+                              }`}
+                              onClick={() =>
+                                setData({
+                                  ...data,
+                                  noOfVehicle: data.noOfVehicle + 1,
+                                })
+                              }
+                            >
+                              <Plus size={14} strokeWidth={3} />
+                            </Button>
                         </div>
-                        {vehicle?.availableStock > 0 && (
-                          <p className={`text-[10px] font-medium text-right ${data.noOfVehicle >= vehicle.availableStock ? 'text-red-500' : 'text-gray-400'}`}>
-                            {vehicle.availableStock} available in stock
-                          </p>
-                        )}
+                        <p className={`text-[10px] font-bold text-right uppercase tracking-wider ${
+                          data.noOfVehicle >= (
+                            vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length 
+                              ? (vehicle.seatingOptions.find(o => o.seats === data.selectedSeats)?.stock || 1)
+                              : (vehicle?.availableStock || 1)
+                          ) ? 'text-red-500' : 'text-gray-400'}`}>
+                          {vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length 
+                            ? (vehicle.seatingOptions.find(o => o.seats === data.selectedSeats)?.stock || 0)
+                            : (vehicle?.availableStock || 0)} Units Available
+                        </p>
                       </div>
                     </div>
 
-                    {/* Price Details - Reverted to original compact style */}
-                    <div className="border-t border-gray-400 p-4">
-                      <div className="flex justify-between">
-                        <p>Per Day Price</p>
-                        <p>₹ {vehicle?.price?.daily}</p>
+                    {/* Seating Selector */}
+                    {vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <Label className="text-[#FE5300] font-semibold text-xs">
+                          Choose Seating Capacity
+                        </Label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {vehicle.seatingOptions.map((option) => (
+                            <button
+                              key={option.seats}
+                              type="button"
+                              onClick={() => setData({ ...data, selectedSeats: option.seats })}
+                              className={`h-7 w-7 flex items-center justify-center rounded-full border transition-all duration-200 text-xs font-normal ${
+                                data.selectedSeats === option.seats
+                                  ? "border-[#FE5300] bg-[#FE5300] text-white shadow-sm"
+                                  : "border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:bg-gray-50"
+                              }`}
+                            >
+                              {option.seats}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex justify-between text-gray-400 text-xs">
+                    )}
+
+                    {/* Price Details - Reverted to original compact style */}
+                    <div className="border-t border-gray-400 p-3 bg-gray-50/30 rounded-lg">
+                      <div className="flex justify-between text-sm">
+                        <p>Daily Rate</p>
+                        <p className="font-bold">₹ {(vehicle?.pricingType === "multiple" && vehicle?.seatingOptions?.length 
+                          ? vehicle.seatingOptions.find(o => o.seats === data.selectedSeats)?.dailyPrice 
+                          : vehicle?.price?.daily)?.toLocaleString()}</p>
+                      </div>
+                      <div className="flex justify-between text-gray-400 text-[10px] mt-0.5">
                         <p>Trip Protection Fee</p>
                         <p>₹ {vehicle?.tripProtectionFee}</p>
                       </div>
-                      <div className="flex justify-between text-gray-400 text-xs">
+                      <div className="flex justify-between text-gray-400 text-[10px]">
                         <p>Convenience Fee</p>
                         <p>₹ {vehicle?.convenienceFee}</p>
                       </div>
-                      <div className="flex justify-between text-gray-400 text-xs">
+                      <div className="flex justify-between text-gray-400 text-[10px]">
                         <p>GST @5%</p>
                         <p>₹ {Math.ceil(vehiclePrice * 0.05)}</p>
                       </div>
@@ -525,7 +577,7 @@ export default function RentalPageClient({
                     <Button
                       type="button"
                       onClick={handleSubmit}
-                      className="text-xl w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
+                      className="h-10 text-lg w-full md:w-auto bg-[#FE5300] hover:bg-[#e14a00] transition-all duration-300 rounded-lg text-white font-semibold"
                     >
                       Pay ₹{finalPrice.toLocaleString()}
                     </Button>
@@ -566,6 +618,8 @@ export default function RentalPageClient({
                     vehicleBrand: veh.vehicleBrand,
                     vehicleYear: veh.vehicleYear,
                     url: `/rental/${veh.slug}`,
+                    pricingType: veh.pricingType,
+                    seatingOptions: veh.seatingOptions,
                   }}
                 />
               ))}
