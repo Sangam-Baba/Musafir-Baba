@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
@@ -23,7 +23,7 @@ import BlogEditor from "./BlogEditor";
 import ImageUploader from "./ImageUploader";
 import { Label } from "../ui/label";
 import SmallEditor from "./SmallEditor";
-import { X, Plus, Minus } from "lucide-react";
+import { X, Plus, Minus, Maximize2, Minimize2 } from "lucide-react";
 import { DestinationInterface } from "@/app/(user)/destinations/page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -108,6 +108,17 @@ export const vehicleSchema = z.object({
     )
     .optional(),
 
+  seatingOptions: z
+    .array(
+      z.object({
+        seats: z.coerce.number().positive(),
+        dailyPrice: z.coerce.number().nonnegative(),
+        hourlyPrice: z.coerce.number().nonnegative(),
+        stock: z.coerce.number().int().nonnegative().default(1),
+      }),
+    )
+    .optional(),
+  pricingType: z.enum(["single", "multiple"]).default("single"),
   status: z.enum(["draft", "published"]).default("published"),
 });
 
@@ -162,6 +173,7 @@ export const CreateEditVehicle = ({
   onClose: () => void;
   id: string | null;
 }) => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
   const form = useForm<FormData>({
@@ -194,6 +206,8 @@ export const CreateEditVehicle = ({
       features: [{ value: "" }],
       inclusions: [{ value: "" }],
       exclusions: [{ value: "" }],
+      seatingOptions: [],
+      pricingType: "single",
       status: "draft",
     },
   });
@@ -255,6 +269,10 @@ export const CreateEditVehicle = ({
     control: form.control,
     name: "features",
   });
+  const seatingOptionsArray = useFieldArray({
+    control: form.control,
+    name: "seatingOptions",
+  });
   useEffect(() => {
     if (id && vehicle) {
       // Find case-insensitive matches from master data for consistent selection
@@ -299,6 +317,8 @@ export const CreateEditVehicle = ({
         tripProtectionFee: vehicle.tripProtectionFee,
         convenienceFee: vehicle.convenienceFee,
         vehicleTransmission: matchedTransmission ? matchedTransmission.name : vehicle.vehicleTransmission,
+        seatingOptions: vehicle.seatingOptions || [],
+        pricingType: vehicle.pricingType || "single",
         status: vehicle.status,
       });
     }
@@ -334,21 +354,64 @@ export const CreateEditVehicle = ({
     mutation.mutate(finalValues as any);
   }
 
+  const syncFromSingle = () => {
+    const seats = form.getValues("seats");
+    const dailyPrice = form.getValues("price.daily");
+    const hourlyPrice = form.getValues("price.hourly");
+    const stock = form.getValues("availableStock");
+
+    seatingOptionsArray.append({
+      seats: seats || 1,
+      dailyPrice: dailyPrice || 0,
+      hourlyPrice: hourlyPrice || 0,
+      stock: stock || 1,
+    });
+    toast.info("Populated configuration from single pricing");
+  };
+
   return (
     <div
-      className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6"
+      className={`bg-white shadow-2xl overflow-y-auto transition-all duration-300 ease-in-out ${
+        isFullScreen 
+          ? "fixed inset-0 w-full h-full max-w-none max-h-none rounded-none z-[60] p-8" 
+          : "rounded-xl w-full max-w-4xl max-h-[90vh] p-6"
+      }`}
       onClick={(e) => e.stopPropagation()}
     >
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-        {id ? "Update Vehicle" : "Create Vehicle"}
-      </h2>
+      <div className="flex items-center justify-between mb-6 sticky top-0 bg-white z-30 pb-2 border-b">
+        <div className="w-10"></div> {/* Spacer for balance */}
+        <h2 className="text-2xl font-semibold text-center text-gray-800">
+          {id ? "Update Vehicle" : "Create Vehicle"}
+        </h2>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-500 hover:text-[#FE5300] hover:bg-[#FE5300]/5"
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            title={isFullScreen ? "Minimize" : "Full Screen"}
+          >
+            {isFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-500 hover:text-red-500 hover:bg-red-50"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="grid grid-cols-5 w-full mb-6">
               <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="pricing">Pricing</TabsTrigger>
+              <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
               <TabsTrigger value="media">Media</TabsTrigger>
               <TabsTrigger value="additional">Additional</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -529,108 +592,282 @@ export const CreateEditVehicle = ({
                   )}
                 />
               </div>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                <FormField
-                  control={form.control}
-                  name="seats"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Seats</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 shrink-0"
-                          onClick={() => {
-                            const val = Number(form.getValues("seats")) || 0;
-                            form.setValue("seats", Math.max(1, val - 1));
-                          }}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            className="w-20 text-center"
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 shrink-0"
-                          onClick={() => {
-                            const val = Number(form.getValues("seats")) || 0;
-                            form.setValue("seats", val + 1);
-                          }}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="vehicleMilage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Milage</FormLabel>
-                      <FormControl>
-                        <Input placeholder="15 km/l" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
             </TabsContent>
 
             {/* --- Pricing & Inventory Tab --- */}
             <TabsContent value="pricing" className="space-y-4 pt-1 px-1">
-              <div className="grid md:grid-cols-2 gap-5">
-                <FormField
-                  control={form.control}
-                  name="price.daily"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Daily Price (₹)</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="price.hourly"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hourly Price (₹)</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="pricingType"
+                render={({ field }) => (
+                  <FormItem className="space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <FormLabel className="text-gray-700 font-bold">Pricing Configuration Mode</FormLabel>
+                    <FormControl>
+                      <div className="flex gap-3">
+                        <label className={`flex-1 flex items-center justify-center gap-2 p-1.5 rounded-lg border cursor-pointer transition-all ${field.value === 'single' ? 'border-[#FE5300] bg-white text-[#FE5300] shadow-sm' : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'}`}>
+                          <input type="radio" {...field} value="single" checked={field.value === 'single'} className="sr-only" onChange={(e) => field.onChange(e.target.value)} />
+                          <span className="font-bold text-[11px] uppercase tracking-tighter">Single Mode</span>
+                        </label>
+                        <label className={`flex-1 flex items-center justify-center gap-2 p-1.5 rounded-lg border cursor-pointer transition-all ${field.value === 'multiple' ? 'border-[#FE5300] bg-white text-[#FE5300] shadow-sm' : 'border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300'}`}>
+                          <input type="radio" {...field} value="multiple" checked={field.value === 'multiple'} className="sr-only" onChange={(e) => field.onChange(e.target.value)} />
+                          <span className="font-bold text-[11px] uppercase tracking-tighter">Multi Option</span>
+                        </label>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <div className="grid md:grid-cols-2 gap-5">
+              {form.watch("pricingType") === "single" ? (
+                <div className="space-y-4">
+                  {/* Row 1: Config (3 columns) */}
+                  <div className="grid md:grid-cols-3 gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name="seats"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700 font-bold text-xs uppercase tracking-tight">👤 Seats</FormLabel>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 border-gray-200"
+                              onClick={() => {
+                                const val = Number(form.getValues("seats")) || 1;
+                                form.setValue("seats", Math.max(1, val - 1));
+                              }}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                className="w-14 h-8 text-center font-bold text-sm bg-gray-50/30"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 border-gray-200"
+                              onClick={() => {
+                                const val = Number(form.getValues("seats")) || 1;
+                                form.setValue("seats", val + 1);
+                              }}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="vehicleMilage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-bold uppercase tracking-tight text-gray-700">🚀 Mileage</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. 15 km/l" {...field} className="h-8 text-sm bg-gray-50/30" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="availableStock"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-bold uppercase tracking-tight text-gray-700">📦 Total Units</FormLabel>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 border-gray-200"
+                              onClick={() => {
+                                const val = Number(form.getValues("availableStock")) || 0;
+                                form.setValue("availableStock", Math.max(0, val - 1));
+                              }}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                className="w-14 h-8 text-center text-sm font-bold bg-gray-50/30"
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 border-gray-200"
+                              onClick={() => {
+                                const val = Number(form.getValues("availableStock")) || 0;
+                                form.setValue("availableStock", val + 1);
+                              }}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Row 2: Rates (2 columns) */}
+                  <div className="grid md:grid-cols-2 gap-4 pt-1">
+                    <FormField
+                      control={form.control}
+                      name="price.daily"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-black uppercase text-[#FE5300] tracking-widest">💰 Daily Rate (₹)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} className="h-9 text-sm font-bold border-gray-200 focus:border-[#FE5300] focus:ring-[#FE5300]/10" onChange={(e) => field.onChange(Number(e.target.value))} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="price.hourly"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[10px] font-black uppercase text-[#FE5300] tracking-widest">⏱️ Hourly Rate (₹)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} className="h-9 text-sm font-bold border-gray-200 focus:border-[#FE5300] focus:ring-[#FE5300]/10" onChange={(e) => field.onChange(Number(e.target.value))} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 border-t space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-extrabold text-gray-900 italic tracking-tight">Multiple Configurations</h3>
+                      <p className="text-[10px] text-gray-500 font-medium">Manage distinct pricing/stock for different seating options.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:bg-blue-50 text-[10px] font-bold h-8 border border-blue-100"
+                        onClick={syncFromSingle}
+                      >
+                        ⚡ Load from Single
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-[#FE5300] border-[#FE5300]/20 hover:bg-[#FE5300]/5 text-[10px] font-bold h-7 px-2"
+                        onClick={() => seatingOptionsArray.append({ seats: 1, dailyPrice: 0, hourlyPrice: 0, stock: 1 })}
+                      >
+                        <Plus className="w-2.5 h-2.5 mr-1" /> Add Row
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-white">
+                    {/* Header Row */}
+                    <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50 border-b text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      <div className="col-span-2 flex items-center gap-1">👥 Seats</div>
+                      <div className="col-span-3 flex items-center gap-1">💰 Daily ₹</div>
+                      <div className="col-span-3 flex items-center gap-1">⏱️ Hourly ₹</div>
+                      <div className="col-span-3 flex items-center gap-1">📦 Stock</div>
+                      <div className="col-span-1"></div>
+                    </div>
+
+                    <div className="divide-y divide-gray-100">
+                      {seatingOptionsArray.fields.length > 0 ? (
+                        seatingOptionsArray.fields.map((field, index) => (
+                          <div key={field.id} className="grid grid-cols-12 gap-2 px-4 py-1.5 items-center hover:bg-gray-50/5 transition-colors group">
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                className="h-7 px-2 text-[11px] transition-all focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/20 font-bold"
+                                {...form.register(`seatingOptions.${index}.seats` as const)}
+                              />
+                            </div>
+                            <div className="col-span-3">
+                              <Input
+                                type="number"
+                                className="h-7 px-2 text-[11px] transition-all focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/20 font-bold"
+                                {...form.register(`seatingOptions.${index}.dailyPrice` as const)}
+                              />
+                            </div>
+                            <div className="col-span-3">
+                              <Input
+                                type="number"
+                                className="h-7 px-2 text-[11px] transition-all focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/20 font-bold"
+                                {...form.register(`seatingOptions.${index}.hourlyPrice` as const)}
+                              />
+                            </div>
+                            <div className="col-span-3">
+                              <Input
+                                type="number"
+                                className="h-7 px-2 text-[11px] transition-all focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/20 font-bold"
+                                {...form.register(`seatingOptions.${index}.stock` as const)}
+                              />
+                            </div>
+                            <div className="col-span-1 flex justify-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full"
+                                onClick={() => seatingOptionsArray.remove(index)}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="py-12 flex flex-col items-center justify-center text-gray-400">
+                          <p className="text-xs italic">No capacities configured yet.</p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="mt-3 text-[#FE5300] hover:bg-[#FE5300]/5 text-[10px] font-bold uppercase tracking-widest"
+                            onClick={syncFromSingle}
+                          >
+                            Sync from Single Pricing
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-4 pt-6 border-t mt-6">
                 <FormField
                   control={form.control}
                   name="convenienceFee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Convenience Fee (₹)</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase text-gray-500 tracking-widest">📋 Convenience Fee (₹)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        <Input type="number" {...field} className="h-8 text-sm bg-gray-50/10 border-gray-200" onChange={(e) => field.onChange(Number(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -641,60 +878,15 @@ export const CreateEditVehicle = ({
                   name="tripProtectionFee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Trip Protection Fee (₹)</FormLabel>
+                      <FormLabel className="text-[10px] font-black uppercase text-gray-500 tracking-widest">🛡️ Trip Protection Fee (₹)</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                        <Input type="number" {...field} className="h-8 text-sm bg-gray-50/10 border-gray-200" onChange={(e) => field.onChange(Number(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="availableStock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Available Stock</FormLabel>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10 shrink-0"
-                        onClick={() => {
-                          const val = Number(form.getValues("availableStock")) || 0;
-                          form.setValue("availableStock", Math.max(0, val - 1));
-                        }}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          className="w-20 text-center"
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10 shrink-0"
-                        onClick={() => {
-                          const val = Number(form.getValues("availableStock")) || 0;
-                          form.setValue("availableStock", val + 1);
-                        }}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </TabsContent>
 
             {/* --- Media & Content Tab --- */}
@@ -1042,16 +1234,16 @@ export const CreateEditVehicle = ({
                 variant="outline"
                 onClick={onClose}
                 disabled={mutation.isPending}
-                className="px-6 h-11 font-medium border-gray-300 bg-white"
+                className="px-5 h-9 text-xs font-bold border-gray-200 bg-white uppercase tracking-widest"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={mutation.isPending}
-                className="px-10 h-11 font-bold bg-[#FE5300] hover:bg-[#e14a00] text-white shadow-lg shadow-[#FE5300]/20 transition-all uppercase tracking-wide"
+                className="h-9 px-8 text-xs font-bold uppercase tracking-widest bg-[#FE5300] hover:bg-[#E44B00] shadow-md shadow-[#FE5300]/20"
               >
-                {mutation.isPending ? "Connecting..." : (id ? "Update Records" : "Create Vehicle")}
+                {mutation.isPending ? "Syncing..." : id ? "Update Records" : "Create Vehicle"}
               </Button>
             </div>
           </div>

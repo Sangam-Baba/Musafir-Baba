@@ -35,6 +35,8 @@ interface IVehicle {
     hourly: number;
   };
   gallery: { url: string; alt: string }[];
+  pricingType?: "single" | "multiple";
+  seatingOptions?: { seats: number; dailyPrice: number; stock?: number }[];
   slug: string;
   location?: ILocation;
 }
@@ -343,6 +345,8 @@ export default function RentalsClient({ vehicles }: { vehicles: IVehicle[] }) {
                 vehicleBrand: vehicle.vehicleBrand,
                 vehicleYear: vehicle.vehicleYear,
                 url: `/rental/${vehicle.slug}`,
+                pricingType: vehicle.pricingType,
+                seatingOptions: vehicle.seatingOptions,
               }}
             />
           ))}

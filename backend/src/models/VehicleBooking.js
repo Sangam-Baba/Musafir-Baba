@@ -12,6 +12,9 @@ const vehicleBookingSchema = new mongoose.Schema(
       ref: "Vehicle",
       required: true,
     },
+    selectedSeats: {
+      type: Number,
+    },
     totalPrice: {
       type: Number,
       required: true,
