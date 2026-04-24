@@ -8,8 +8,6 @@ const uploadRoutes = Router();
 
 uploadRoutes.post(
   "/cloudflare-url",
-  isAuthenticated,
-  authorizedRoles(["admin", "superadmin", "user"]),
   getPresignedUploadUrl
 );
 

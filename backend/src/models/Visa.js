@@ -87,6 +87,14 @@ const visaSchema = new mongoose.Schema(
         ref: "Reviews",
       },
     ],
+    necessaryDocuments: {
+      type: [String],
+      default: [],
+    },
+    process: {
+      type: [String],
+      default: [],
+    },
     isActive: {
       type: Boolean,
       default: true,

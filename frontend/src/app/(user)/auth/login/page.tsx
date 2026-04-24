@@ -16,9 +16,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 // ✅ Zod Schema
@@ -52,6 +53,9 @@ async function loginUser(values: z.infer<typeof formSchema>) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
+  
   const setAuth = useAuthStore((s) => s.setAuth);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,13 +73,17 @@ export default function LoginPage() {
       toast.success("Login successful!");
       // 👉 Redirect or reset form here
       const accessToken = data.accessToken;
-      console.log(accessToken);
-      // const user=data.user;
-      setAuth(accessToken, data.role);
+      setAuth(accessToken, data.role, data.name);
       form.reset();
-      setTimeout(() => {
-        router.replace("/");
-      }, 3000);
+      
+      // Immediate redirect if parameter exists, otherwise brief delay
+      if (redirectUrl) {
+         router.replace(redirectUrl);
+      } else {
+         setTimeout(() => {
+           router.replace("/");
+         }, 1500);
+      }
     },
     onError: (error) => {
       console.error("Registration failed:", error);
@@ -89,79 +97,85 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">
-          Log in to your Account
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-20 pb-40">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl shadow-orange-100 border border-orange-50">
+        <h1 className="mb-2 text-center text-3xl font-black text-gray-900 tracking-tight">
+          Welcome Back
         </h1>
+        <p className="text-center text-sm text-gray-500 mb-8 font-medium">
+          Log in to manage your MusafirBaba journey.
+        </p>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email */}
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Email Address</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       placeholder="you@example.com"
+                      className="bg-gray-50 border-gray-100 rounded-xl focus:ring-orange-500 focus:border-orange-500"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
             />
 
-            {/* Password */}
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Input 
+                      type="password" 
+                      placeholder="••••••••" 
+                      className="bg-gray-50 border-gray-100 rounded-xl focus:ring-orange-500 focus:border-orange-500"
+                      {...field} 
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[10px]" />
                 </FormItem>
               )}
             />
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-[#FE5300] hover:bg-[#FE5300]/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95"
               disabled={mutation.isPending}
             >
-              {mutation.isPending ? "Loging in..." : "Login"}
+              {mutation.isPending ? (
+                <div className="flex items-center gap-2 justify-center">
+                   <Loader2 className="animate-spin" size={18} />
+                   Signing in...
+                </div>
+              ) : "Login Now"}
             </Button>
           </form>
         </Form>
 
-        {mutation.isError && (
-          <p className="mt-3 text-center text-sm text-red-500">
-            {mutation.error.message}
-          </p>
-        )}
-        {mutation.isSuccess && (
-          <p className="mt-3 text-center text-sm text-green-600">
-            Login successful!
-          </p>
-        )}
-
-        <div className="flex gap-2 items-center justify-center mt-4 text-center text-sm text-gray-500">
+        <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col gap-4">
           <Link
             href="/auth/forget-password"
-            className="text-blue-600 hover:underline"
+            className="text-center text-sm font-bold text-gray-400 hover:text-[#FE5300] transition-colors"
           >
-            Forget Password
+            Forgot Password?
           </Link>
-          <Link href="/auth/register" className="text-blue-600 hover:underline">
-            Register
-          </Link>
+          <div className="text-center">
+            <p className="text-sm text-gray-500 font-medium">
+              New here?{" "}
+              <Link href={`/auth/register${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`} className="text-[#FE5300] font-bold hover:underline">
+                Create Account
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

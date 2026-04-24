@@ -322,7 +322,7 @@ export default function UserDashboardPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <ShortcutCard icon={Upload} label="Upload Documents" href="/user/documents" color="text-blue-500" bg="bg-blue-500/10" />
               <ShortcutCard icon={History} label="My Bookings" href="/user/bookings" color="text-purple-500" bg="bg-purple-500/10" />
-              <ShortcutCard icon={FileBadge} label="Visa Status" href="/visa" color="text-green-500" bg="bg-green-500/10" />
+              <ShortcutCard icon={FileBadge} label="Visa Status" href="/user/visa-applications" color="text-green-500" bg="bg-green-500/10" />
               <ShortcutCard icon={Headset} label="Talk to Support" href="/contact-us" color="text-pink-500" bg="bg-pink-500/10" />
               <ShortcutCard icon={Compass} label="Explore Packages" href="/holidays" color="text-primary" bg="bg-primary/10" />
               <ShortcutCard icon={TicketPercent} label="My Offers" href="/user/my-offers" color="text-yellow-500" bg="bg-yellow-500/10" />

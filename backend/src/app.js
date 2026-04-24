@@ -14,8 +14,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. Postman, server-to-server)
-      if (!origin) return callback(null, true);
+      // Allow requests with no origin or "null" origin (e.g. Postman, server-to-server, PayU cross-origin POSTs)
+      if (!origin || origin === "null") return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       callback(new Error(`CORS: Origin ${origin} not allowed`));
     },

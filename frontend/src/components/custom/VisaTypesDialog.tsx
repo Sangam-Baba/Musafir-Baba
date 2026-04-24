@@ -9,6 +9,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Info } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 type VisaInfo = {
   title: string
   description: string
@@ -89,38 +95,76 @@ export function VisaTypesDialog({ type }: { type: string }) {
   if (!visa) return null // if type is not valid, render nothing
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">{type} <Info color="#FE5300" /></Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{visa.title}</DialogTitle>
-        </DialogHeader>
-        <div className="flex items-center gap-2">
-          <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
-            <div className="rounded-md border p-4">
-              <h1 className="mb-2 font-bold md:text-xl">What is {type}?</h1>
-              <p>{visa.description}</p>
-            </div>
-            <div className="rounded-md border p-4">
-              <h1 className="mb-2 font-bold md:text-xl">Benefits of {type}</h1>
-              <ul className="list-disc pl-4">
-                {visa.benefits.map((b, i) => (
-                  <li key={i}>{b}</li>
+    <TooltipProvider delayDuration={0}>
+      <Dialog>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-7 px-2 text-[12px] gap-1.5 border-gray-200 hover:bg-gray-50 flex items-center relative z-20"
+              >
+                {type}
+                <div className="p-0.5 rounded-full transition-colors">
+                  <Info size={14} color="#FE5300" />
+                </div>
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            className="z-[100] max-w-[320px] p-4 bg-white text-gray-900 border border-gray-200 shadow-2xl rounded-xl"
+          >
+            <p className="font-bold text-[14px] text-[#FE5300] mb-1.5">
+              {visa.title}
+            </p>
+            <p className="text-[11px] leading-relaxed text-gray-600 mb-3 pb-3 border-b border-gray-100">
+              {visa.description}
+            </p>
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Benefits of {type}:
+              </p>
+              <ul className="space-y-1.5">
+                {visa.benefits.map((benefit, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-[11px] text-gray-600 leading-tight">
+                    <span className="mt-1 flex h-1 w-1 shrink-0 rounded-full bg-[#FE5300]"></span>
+                    <span>{benefit}</span>
+                  </li>
                 ))}
               </ul>
             </div>
+          </TooltipContent>
+        </Tooltip>
+        <DialogContent className="sm:max-w-3xl z-[101]">
+          <DialogHeader>
+            <DialogTitle>{visa.title}</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
+              <div className="rounded-md border p-4">
+                <h1 className="mb-2 font-bold md:text-xl">What is {type}?</h1>
+                <p>{visa.description}</p>
+              </div>
+              <div className="rounded-md border p-4">
+                <h1 className="mb-2 font-bold md:text-xl">Benefits of {type}</h1>
+                <ul className="list-disc pl-4">
+                  {visa.benefits.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
-        <DialogFooter className="sm:justify-start">
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
+          <DialogFooter className="sm:justify-start">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </TooltipProvider>
+  );
 }

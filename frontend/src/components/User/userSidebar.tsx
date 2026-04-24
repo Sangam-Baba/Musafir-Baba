@@ -24,6 +24,7 @@ import {
   Clock,
   HandCoins,
   History,
+  Rocket,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { label: "Membership", href: "/user/membership", icon: HandCoins },
   { label: "Documents", href: "/user/documents", icon: FileText },
   // { label: "Wishlist", href: "/user/wishlist", icon: Heart },
+  { label: "Visa Application", href: "/user/visa-applications", icon: Rocket },
   { label: "Offers", href: "/user/my-offers", icon: TicketPercent },
   // { label: "Wallet", href: "/user/wallet", icon: Wallet },
 ];

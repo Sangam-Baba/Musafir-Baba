@@ -75,6 +75,12 @@ const NAV_GROUPS = [
         icon: CookingPot,
         permission: "bookings",
       },
+      {
+        label: "Visa Application",
+        href: "/admin/visa-applications",
+        icon: Rocket,
+        permission: "bookings",
+      },
     ],
   },
   {

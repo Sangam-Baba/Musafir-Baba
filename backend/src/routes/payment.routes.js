@@ -10,6 +10,8 @@ import {
   verifyCustomizedTourFailurePayment,
   verifyVehicleSuccessPayment,
   verifyVehicleFailurePayment,
+  verifyVisaSuccessPayment,
+  verifyVisaFailurePayment,
 } from "../controllers/payment.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -40,4 +42,9 @@ paymentRoute.post(
 
 paymentRoute.post("/success-vehicle", verifyVehicleSuccessPayment);
 paymentRoute.post("/failure-vehicle", verifyVehicleFailurePayment);
+
+paymentRoute.post("/success-visa", verifyVisaSuccessPayment);
+paymentRoute.post("/failure-visa", verifyVisaFailurePayment);
+
 export default paymentRoute;
+
