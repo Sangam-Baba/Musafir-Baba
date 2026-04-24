@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -91,6 +92,17 @@ export function AuthDialog() {
         ? { name: "", email: "", password: "" }
         : { email: email || "", otp: "" },
   });
+
+  // Reset form whenever mode or email changes to ensure correct schema and default values
+  useEffect(() => {
+    form.reset(
+      mode === "login"
+        ? { email: "", password: "" }
+        : mode === "register"
+        ? { name: "", email: "", password: "" }
+        : { email: email || "", otp: "" }
+    );
+  }, [mode, email, form.reset]);
 
   const loginMutation = useMutation({
     mutationFn: async (values: z.infer<typeof loginSchema>) => {

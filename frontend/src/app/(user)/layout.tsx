@@ -106,7 +106,7 @@ export default function UserLayout({
         <Header />
         <main className="flex-grow">
           {children}
-          <PlanMyTrip />
+          {/* <PlanMyTrip /> */}
           <QueryDailogBox />
           <WhatsAppButton />
           <MobileBottom />

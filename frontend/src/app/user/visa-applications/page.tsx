@@ -91,42 +91,56 @@ export default function UserVisaApplicationsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {applications.map((app: any) => (
-                    <TableRow key={app._id} className="hover:bg-slate-50 transition-colors">
-                      <TableCell className="font-medium">
-                        <div className="flex flex-col">
-                            <span>{app.visaId?.title}</span>
-                            <span className="text-xs text-gray-500">{app.visaId?.country}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{app.firstName} {app.lastName}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={getStatusColor(app.status)}>
-                          {getStatusText(app.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={app.paymentInfo?.status === "Paid" ? "bg-green-50 text-green-600" : "bg-gray-50 text-gray-500"}>
-                          {app.paymentInfo?.status || "Pending"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{new Date(app.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                            {(app.status === "Pending" || app.status === "Returned") && (
+                  {applications.map((app: any) => {
+                    const mainTraveller = app.travellers?.[0];
+                    const appStatus = app.applicationStatus || "Pending";
+                    
+                    return (
+                      <TableRow key={app._id} className="hover:bg-slate-50 transition-colors">
+                        <TableCell className="font-medium">
+                          <div className="flex flex-col">
+                              <span>{app.visaId?.title}</span>
+                              <span className="text-xs text-gray-500">{app.visaId?.country}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {mainTraveller ? `${mainTraveller.firstName} ${mainTraveller.lastName}` : "Not specified"}
+                          {app.travellers?.length > 1 && (
+                            <span className="text-xs text-gray-400 ml-1">+{app.travellers.length - 1} more</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={getStatusColor(appStatus)}>
+                            {getStatusText(appStatus)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={
+                            app.paymentInfo?.status === "Paid" ? "bg-green-50 text-green-600 border-green-200" : 
+                            app.paymentInfo?.status === "Failed" ? "bg-red-50 text-red-600 border-red-200" : 
+                            "bg-orange-50 text-orange-600 border-orange-200"
+                          }>
+                            {app.paymentInfo?.status || "Pending"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(app.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {(appStatus === "Pending" || appStatus === "Returned") && (
                                 <Button variant="outline" size="sm" className="bg-[#FE5300]/10 text-[#FE5300] border-[#FE5300]/20 hover:bg-[#FE5300] hover:text-white" asChild>
                                     <a href={`/visa/${app.visaId?.slug}/apply?applicationId=${app._id}`}>
-                                        {app.status === "Pending" ? "Resume" : "Edit & Fix"}
+                                        {appStatus === "Pending" ? (app.paymentInfo?.status === "Failed" ? "Retry Payment" : "Resume") : "Edit & Fix"}
                                     </a>
                                 </Button>
                             )}
-                            <Button variant="ghost" size="sm" onClick={() => setSelectedApp(app)}>
-                            <Eye size={18} className="text-primary" />
-                            </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                              <Button variant="ghost" size="sm" onClick={() => setSelectedApp(app)}>
+                              <Eye size={18} className="text-primary" />
+                              </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -151,14 +165,14 @@ export default function UserVisaApplicationsPage() {
               </div>
 
               <div className="p-6 overflow-y-auto space-y-6">
-                {selectedApp.status === "Returned" && (
+                {(selectedApp.applicationStatus === "Returned" || selectedApp.status === "Returned") && (
                   <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3">
                     <AlertCircle className="text-red-500 shrink-0" />
                     <div>
                       <p className="font-bold text-red-700 text-sm">Action Required: Application Returned</p>
                       <p className="text-red-600 text-sm mt-1">{selectedApp.returnReason}</p>
                       <Button size="sm" variant="destructive" className="mt-3" asChild>
-                        <a href={`/visa/${selectedApp.visaId?.slug}/apply`}>Re-apply / Fix Documents</a>
+                        <a href={`/visa/${selectedApp.visaId?.slug}/apply?applicationId=${selectedApp._id}`}>Re-apply / Fix Documents</a>
                       </Button>
                     </div>
                   </div>
@@ -167,7 +181,11 @@ export default function UserVisaApplicationsPage() {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500 font-bold uppercase">Applicant Name</p>
-                    <p className="font-medium">{selectedApp.firstName} {selectedApp.lastName}</p>
+                    <p className="font-medium">
+                      {selectedApp.travellers?.[0] 
+                        ? `${selectedApp.travellers[0].firstName} ${selectedApp.travellers[0].lastName}` 
+                        : "Not specified"}
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-gray-500 font-bold uppercase">Visa Type</p>

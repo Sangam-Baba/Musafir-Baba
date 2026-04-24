@@ -58,6 +58,7 @@ export interface Visa {
   duration: string;
   visaProcessed: number;
   necessaryDocuments?: string[];
+  process?: string[];
 }
 
 async function createVisa(values: Visa, accessToken: string) {
@@ -106,6 +107,7 @@ export default function CreateVisaPage() {
     visaProcessed: 0,
     duration: "",
     necessaryDocuments: ["Photo", "Passport"],
+    process: [],
   };
 
   const form = useForm<Visa>({ defaultValues });

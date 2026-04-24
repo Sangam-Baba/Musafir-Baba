@@ -1,10 +1,11 @@
 "use client";
 
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,9 +17,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { toast } from "sonner";
 import Link from "next/link";
+import { useAuthStore } from "@/store/useAuthStore";
+import { Loader2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 // ✅ Zod Schema
@@ -40,6 +42,10 @@ const formSchema = z
     path: ["confirmPassword"],
   });
 
+const verifyOtpSchema = z.object({
+  otp: z.string().length(6, "OTP must be 6 digits"),
+});
+
 // ✅ API call function
 async function registerUser(values: z.infer<typeof formSchema>) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/register`, {
@@ -56,7 +62,30 @@ async function registerUser(values: z.infer<typeof formSchema>) {
   return res.json();
 }
 
+async function verifyOtpAPI(email: string, otp: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/verifyOtp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Verification failed");
+  }
+
+  return res.json();
+}
+
 export default function RegisterPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
+  
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,126 +99,185 @@ export default function RegisterPage() {
   // ✅ Use Mutation instead of useQuery
   const mutation = useMutation({
     mutationFn: registerUser,
-    onSuccess: (data) => {
-      console.log("Registered successfully:", data);
+    onSuccess: (data, variables) => {
       toast.success("Registration successful! Please verify your email.");
-      // 👉 Redirect or reset form here
-      form.reset();
+      setRegisteredEmail(variables.email);
+      setIsVerifying(true);
     },
     onError: (error) => {
-      console.error("Registration failed:", error);
       toast.error(error.message);
-      form.reset();
     },
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: (otp: string) => verifyOtpAPI(registeredEmail, otp),
+    onSuccess: (data) => {
+      toast.success("Email verified successfully!");
+      setAuth(data.accessToken, data.role, data.name);
+      router.push(redirectUrl || "/");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const otpForm = useForm<z.infer<typeof verifyOtpSchema>>({
+    resolver: zodResolver(verifyOtpSchema),
+    defaultValues: { otp: "" },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     mutation.mutate(values);
   }
 
+  function onOtpSubmit(values: z.infer<typeof verifyOtpSchema>) {
+    verifyMutation.mutate(values.otp);
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">
-          Create an Account
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-20 pb-40">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl shadow-orange-100 border border-orange-50">
+        <h1 className="mb-2 text-center text-3xl font-black text-gray-900 tracking-tight">
+          {isVerifying ? "Verify Email" : "Create Account"}
         </h1>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Username */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="johndoe" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    This will be your public display name.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Email */}
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Password */}
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Confirm Password */}
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? "Registering..." : "Register"}
-            </Button>
-          </form>
-        </Form>
-
-        {mutation.isError && (
-          <p className="mt-3 text-center text-sm text-red-500">
-            {mutation.error.message}
-          </p>
-        )}
-        {mutation.isSuccess && (
-          <p className="mt-3 text-center text-sm text-green-600">
-            Registration successful!
-          </p>
-        )}
-
-        <p className="mt-4 text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <Link href="/auth/login" className="text-blue-600 hover:underline">
-            Login
-          </Link>
+        <p className="text-center text-sm text-gray-500 mb-8 font-medium">
+          {isVerifying 
+            ? `Digit code sent to ${registeredEmail}` 
+            : "Join MusafirBaba today and start your journey."}
         </p>
+
+        {!isVerifying ? (
+          <>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" className="bg-gray-50 border-gray-100 rounded-xl focus:ring-orange-500 focus:border-orange-500" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Email Address</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="john@example.com" className="bg-gray-50 border-gray-100 rounded-xl focus:ring-orange-500 focus:border-orange-500" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-[10px]" />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" className="bg-gray-50 border-gray-100 rounded-xl focus:ring-orange-500 focus:border-orange-500" {...field} />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Confirm</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" className="bg-gray-50 border-gray-100 rounded-xl focus:ring-orange-500 focus:border-orange-500" {...field} />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-[#FE5300] hover:bg-[#FE5300]/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95"
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                       <Loader2 className="animate-spin" size={18} />
+                       Creating Account...
+                    </div>
+                  ) : "Register Now"}
+                </Button>
+              </form>
+            </Form>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-500 font-medium">
+                Already have an account?{" "}
+                <Link href={`/auth/login${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`} className="text-[#FE5300] font-bold hover:underline">
+                  Login
+                </Link>
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="space-y-6">
+            <Form {...otpForm}>
+              <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-6">
+                <FormField
+                  control={otpForm.control}
+                  name="otp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-bold uppercase tracking-widest text-gray-400">Enter OTP Code</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="000000" 
+                          maxLength={6} 
+                          className="bg-gray-50 border-gray-100 rounded-xl text-center text-3xl font-black tracking-[1em] h-20 focus:ring-orange-500 focus:border-orange-500" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[10px] text-center" />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gray-900 hover:bg-black text-white font-bold py-6 rounded-xl shadow-xl transition-all active:scale-95"
+                  disabled={verifyMutation.isPending}
+                >
+                  {verifyMutation.isPending ? (
+                    <div className="flex items-center gap-2 justify-center">
+                       <Loader2 className="animate-spin" size={18} />
+                       Verifying...
+                    </div>
+                  ) : "Verify & Complete Signup"}
+                </Button>
+              </form>
+            </Form>
+            
+            <button 
+              onClick={() => setIsVerifying(false)}
+              className="w-full text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-[#FE5300] transition-colors"
+            >
+              Back to registration
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

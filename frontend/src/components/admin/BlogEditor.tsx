@@ -168,7 +168,7 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg max-w-none focus:outline-none px-8 py-6 min-h-[400px]",
+          "prose prose-sm max-w-none focus:outline-none px-4 py-3 min-h-[200px]",
       },
     },
     content: value,

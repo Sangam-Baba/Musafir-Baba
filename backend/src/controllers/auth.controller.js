@@ -220,6 +220,7 @@ const verifyOtp = async (req, res) => {
       message: "OTP verify",
       accessToken,
       role: user.role,
+      name: user.name,
     });
   } catch (error) {
     console.log("OTP verification failed ", error.message);

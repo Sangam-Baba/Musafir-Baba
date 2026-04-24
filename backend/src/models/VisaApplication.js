@@ -32,6 +32,7 @@ const visaApplicationSchema = new mongoose.Schema(
     documents: [
       {
         name: { type: String }, // e.g., "Passport", "Photo"
+        travellerId: { type: String }, // Link document to a specific traveller
         media: {
           url: String,
           key: String,
@@ -65,8 +66,11 @@ const visaApplicationSchema = new mongoose.Schema(
     },
     applicationStatus: {
       type: String,
-      enum: ["Pending", "Submitted", "Processing", "Approved", "Rejected"],
+      enum: ["Pending", "Submitted", "Processing", "Approved", "Rejected", "Returned", "Applied", "Under Review", "Reviewed"],
       default: "Pending",
+    },
+    returnReason: {
+      type: String,
     },
   },
   { timestamps: true }

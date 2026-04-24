@@ -91,6 +91,10 @@ const visaSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    process: {
+      type: [String],
+      default: [],
+    },
     isActive: {
       type: Boolean,
       default: true,

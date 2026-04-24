@@ -112,7 +112,8 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
       
       const docsMap: Record<string, UploadedFile> = {};
       app.documents.forEach((d: any) => {
-        docsMap[d.name] = d.media;
+        const key = d.travellerId ? `${d.travellerId}_${d.name}` : d.name;
+        docsMap[key] = d.media;
       });
       setDocuments(docsMap);
     }
@@ -137,8 +138,9 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
     }
   }, [user, applicationId]);
 
-  const handleFileUpload = async (docName: string, file: File) => {
-    setUploading(docName);
+  const handleFileUpload = async (docName: string, file: File, travellerId?: string) => {
+    const uploadKey = travellerId ? `${travellerId}_${docName}` : docName;
+    setUploading(uploadKey);
     try {
       const presignRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/upload/cloudflare-url`, {
         method: "POST",
@@ -164,7 +166,7 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
 
       setDocuments((prev) => ({
         ...prev,
-        [docName]: {
+        [uploadKey]: {
           url: fileUrl,
           key,
           format: file.type.split("/")[1],
@@ -196,7 +198,10 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
   const isStep1Valid = travellers.every(t => t.firstName && t.lastName && t.dob && t.gender);
 
   const requiredDocs = Array.from(new Set(["Passport", "Photo", ...(visa.necessaryDocuments || [])]));
-  const allDocumentsUploaded = requiredDocs.every((doc) => documents[doc]);
+  
+  const allDocumentsUploaded = travellers.every((t) => 
+    requiredDocs.every((doc) => documents[`${t.id}_${doc}`])
+  );
   
   const totalCost = visa.cost * travellers.length;
 
@@ -215,13 +220,18 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
         body: JSON.stringify({
           visaId: visa._id,
           travellers: travellers.map(({id, ...rest}) => rest),
-          email: contactInfo.email,
-          phone: contactInfo.phone,
+          email: contactInfo.email || user?.email || "",
+          phone: contactInfo.phone || user?.phone || "",
           currentStep: nextStep,
-          documents: Object.entries(documents).map(([name, data]) => ({
-            name,
-            media: data,
-          })),
+          documents: Object.entries(documents).map(([key, data]) => {
+            const [travellerId, ...nameParts] = key.split("_");
+            const name = nameParts.join("_");
+            return {
+              name: name || key, // Fallback for legacy docs
+              travellerId: name ? travellerId : undefined,
+              media: data,
+            };
+          }),
         }),
       });
 
@@ -233,7 +243,8 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
       
       if (requireLogin) {
         toast.info("Please login to complete your application");
-        router.push(`/auth/login?redirect=/visa/${visa.slug}/apply?applicationId=${newAppId}`);
+        const redirectPath = `/visa/${visa.slug}/apply?applicationId=${newAppId}`;
+        router.push(`/auth/login?redirect=${encodeURIComponent(redirectPath)}`);
         return;
       }
       
@@ -244,7 +255,11 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
   };
 
   const handleProceedToPayment = async () => {
-    if (!isAuthenticated) {
+    // Read token fresh from store to avoid stale state after page navigation
+    const freshToken = useAuthStore.getState().accessToken;
+    const freshAuth = useAuthStore.getState().isAuthenticated;
+
+    if (!freshAuth || !freshToken) {
       await saveProgress(3, true);
       return;
     }
@@ -255,7 +270,7 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${freshToken}`,
         },
       });
 
@@ -265,7 +280,7 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${freshToken}`,
         },
         body: JSON.stringify({
             txnid: "txn" + Date.now(),
@@ -332,30 +347,7 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
       <div className="space-y-4">
         {step === 1 && (
           <>
-            <div className={cardStyles}>
-              <h2 className="text-base font-bold mb-3 text-gray-900 border-b border-gray-100 pb-2">Primary Contact <span className="text-gray-400 font-normal text-xs ml-1">(Optional)</span></h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-gray-700">Email Address</label>
-                  <input 
-                    type="email"
-                    className={inputStyles}
-                    value={contactInfo.email}
-                    onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="john@example.com" 
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-gray-700">Phone Number</label>
-                  <input 
-                    className={inputStyles}
-                    value={contactInfo.phone}
-                    onChange={(e) => setContactInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="+91 98765 43210" 
-                  />
-                </div>
-              </div>
-            </div>
+            {/* Primary Contact section removed as per requirement */}
 
             <div className="space-y-4">
               {travellers.map((traveller, index) => (
@@ -436,40 +428,56 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
 
         {step === 2 && (
            <>
-            <div className={cardStyles}>
-              <h2 className="text-base font-bold mb-1 text-gray-900">Upload Documents</h2>
-              <p className="text-xs text-gray-500 mb-4">Provide clear, colored scanned copies.</p>
-              
-              <div className="space-y-3">
-                {requiredDocs.map((doc) => (
-                  <div key={doc} className="p-3 sm:p-4 rounded-lg border border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 flex items-center gap-2">
-                        {doc}
-                        {documents[doc] && <ShieldCheck size={14} className="text-green-600" />}
-                      </p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">Required</p>
+             <div className="space-y-8">
+               {travellers.map((traveller, tIdx) => (
+                 <div key={traveller.id} className={cardStyles + " border-l-4 border-l-[#FE5300]"}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-[#FE5300] text-white flex items-center justify-center text-xs font-bold">
+                        {tIdx + 1}
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-gray-900 leading-none">
+                          {traveller.firstName ? `${traveller.firstName} ${traveller.lastName}` : `Traveller ${tIdx + 1}`}
+                        </h2>
+                        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mt-1">Required Documents</p>
+                      </div>
                     </div>
-                    <div className="relative shrink-0">
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        id={`upload-${doc}`}
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload(doc, e.target.files[0])}
-                        disabled={!!uploading}
-                      />
-                      <label 
-                        htmlFor={`upload-${doc}`}
-                        className={`w-full sm:w-auto px-4 py-2 rounded-md justify-center text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${documents[doc] ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"}`}
-                      >
-                        {uploading === doc ? <Loader2 className="animate-spin" size={14} /> : documents[doc] ? "Change" : "Browse"}
-                        {!uploading && !documents[doc] && <Upload size={14} />}
-                      </label>
+                    
+                    <div className="space-y-3">
+                      {requiredDocs.map((doc) => {
+                        const uploadKey = `${traveller.id}_${doc}`;
+                        return (
+                          <div key={doc} className="p-3 sm:p-4 rounded-lg border border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <p className="font-semibold text-sm text-gray-900 flex items-center gap-2">
+                                {doc}
+                                {documents[uploadKey] && <ShieldCheck size={14} className="text-green-600" />}
+                              </p>
+                              <p className="text-[10px] text-gray-500 mt-0.5">Mandatory Piece</p>
+                            </div>
+                            <div className="relative shrink-0">
+                              <input 
+                                type="file" 
+                                className="hidden" 
+                                id={`upload-${uploadKey}`}
+                                onChange={(e) => e.target.files?.[0] && handleFileUpload(doc, e.target.files[0], traveller.id)}
+                                disabled={!!uploading}
+                              />
+                              <label 
+                                htmlFor={`upload-${uploadKey}`}
+                                className={`w-full sm:w-auto px-4 py-2 rounded-md justify-center text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${documents[uploadKey] ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+                              >
+                                {uploading === uploadKey ? <Loader2 className="animate-spin" size={14} /> : documents[uploadKey] ? "Change File" : "Upload Scan"}
+                                {!uploading && !documents[uploadKey] && <Upload size={14} />}
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                 </div>
+               ))}
+             </div>
             
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
               <button onClick={() => saveProgress(1)} className={`sm:w-1/3 ${secondaryButtonStyles}`}>

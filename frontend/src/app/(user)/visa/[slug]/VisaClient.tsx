@@ -9,8 +9,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 
-type TabKey = "description" | "faqs";
+type TabKey = "description" | "faqs" | "documents" | "process";
 
 interface Faq {
   question: string;
@@ -25,6 +26,12 @@ export default function VisaClient({ visa }: { visa: any }) {
     { key: "description", label: "Description" },
   ];
 
+  if (visa.process && visa.process.length > 0) {
+    tabs.push({ key: "process", label: "Process" });
+  }
+  if (visa.necessaryDocuments && visa.necessaryDocuments.length > 0) {
+    tabs.push({ key: "documents", label: "Documents" });
+  }
   if (visa.faqs && visa.faqs.length > 0) {
     tabs.push({ key: "faqs", label: "FAQs" });
   }
@@ -85,6 +92,34 @@ export default function VisaClient({ visa }: { visa: any }) {
               );
             })}
           </Accordion>
+        )}
+
+        {active === "documents" && visa.necessaryDocuments && visa.necessaryDocuments.length > 0 && (
+          <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Required Documents</h3>
+            <ul className="space-y-3">
+              {visa.necessaryDocuments.map((doc: string, idx: number) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-foreground">{doc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {active === "process" && visa.process && visa.process.length > 0 && (
+          <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Step-by-Step Process</h3>
+            <ul className="space-y-3">
+              {visa.process.map((step: string, idx: number) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-foreground">{step}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
     </div>
