@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2 } from "lucide-react";
+
 export const dynamic = "force-dynamic";
 
 // ✅ Zod Schema
@@ -77,7 +78,7 @@ async function verifyOtpAPI(email: string, otp: string) {
   return res.json();
 }
 
-export default function RegisterPage() {
+function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
@@ -136,7 +137,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-20 pb-40">
-      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl shadow-orange-100 border border-orange-50">
+      <div className="w-full max-md rounded-3xl bg-white p-8 shadow-2xl shadow-orange-100 border border-orange-50">
         <h1 className="mb-2 text-center text-3xl font-black text-gray-900 tracking-tight">
           {isVerifying ? "Verify Email" : "Create Account"}
         </h1>
@@ -280,5 +281,19 @@ export default function RegisterPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader2 className="animate-spin text-orange-500" size={32} />
+        </div>
+      }
+    >
+      <RegisterContent />
+    </Suspense>
   );
 }
