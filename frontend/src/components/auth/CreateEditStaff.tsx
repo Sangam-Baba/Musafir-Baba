@@ -193,6 +193,7 @@ function CreateEditStaff({
         "video-banner",
         "footer",
         "career",
+        "sitemap",
       ],
     },
     {

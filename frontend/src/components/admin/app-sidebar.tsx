@@ -88,6 +88,12 @@ const NAV_GROUPS = [
     icon: ListChecks,
     items: [
       {
+        label: "Sitemap",
+        href: "/admin/sitemap",
+        icon: MapPin,
+        permission: "dashboard",
+      },
+      {
         label: "WebPages",
         href: "/admin/webpage",
         icon: LayoutTemplate,
@@ -142,6 +148,7 @@ const NAV_GROUPS = [
         icon: ListChecks,
         permission: "footer",
       },
+
     ],
   },
   {
@@ -280,7 +287,7 @@ export function AdminSidebar() {
       if (item.label === "Change Password") {
         return role === "admin" || role === "superadmin";
       }
-      return permissions.includes(item.permission);
+      return role === "superadmin" || permissions.includes(item.permission);
     }),
   })).filter((group) => group.items.length > 0);
   return (
