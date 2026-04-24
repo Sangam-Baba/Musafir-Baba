@@ -1,5 +1,6 @@
 "use client";
 
+import React, { Suspense } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,6 +21,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+
 export const dynamic = "force-dynamic";
 
 // ✅ Zod Schema
@@ -51,7 +53,7 @@ async function loginUser(values: z.infer<typeof formSchema>) {
   return res.json();
 }
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
@@ -179,5 +181,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader2 className="animate-spin text-orange-500" size={32} />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
