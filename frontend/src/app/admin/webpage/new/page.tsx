@@ -91,6 +91,9 @@ export const getParents = async (token: string) => {
   return data?.data;
 };
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Layout, Search, Settings, MessageSquarePlus } from "lucide-react";
+
 export default function CreateWebpage() {
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
   const [showReviewsModal, setShowReviewsModal] = useState(false);
@@ -135,6 +138,7 @@ export default function CreateWebpage() {
       toast.success("Page created successfully!");
       form.reset();
       router.refresh();
+      router.push("/admin/webpage");
     },
     onError: (error: unknown) => {
       if (error instanceof Error) {
@@ -182,360 +186,331 @@ export default function CreateWebpage() {
 
   const schemaTypes = ["FAQ", "Webpage", "Review"];
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-md">
-      <h1 className="text-2xl font-bold mb-6">Create Page</h1>
-      <form
-        onSubmit={form.handleSubmit((values) => onSubmit(values))}
-        className="space-y-6"
-      >
-        <input
-          {...form.register("title")}
-          placeholder="Title"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.title && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.title.message}
-          </p>
-        )}
-        <input
-          {...form.register("slug")}
-          placeholder="ParmaLink"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.slug && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.slug.message}
-          </p>
-        )}
-
-        <div className="border rounded p-2">
-          <BlogEditor
-            value={form.getValues("content")}
-            onChange={(val) => form.setValue("content", val)}
-          />
-        </div>
-
-        <input
-          {...form.register("metaTitle")}
-          placeholder="Meta Title"
-          className="w-full border rounded p-2"
-        />
-        <textarea
-          {...form.register("metaDescription")}
-          placeholder="Meta Description"
-          className="w-full border rounded p-2"
-        />
-        <textarea
-          {...form.register("excerpt")}
-          placeholder="Excerpt"
-          className="w-full border rounded p-2"
-        />
-        <input
-          {...form.register("canonicalUrl")}
-          placeholder="Canonical URL"
-          className="w-full border rounded p-2"
-        />
-        <div>
-          <label className="font-semibold">Schema Type</label>
-          <select
-            multiple
-            {...form.register("schemaType")}
-            className="w-full border rounded-lg p-2"
+    <div className="max-w-6xl mx-auto p-4 min-h-screen bg-slate-50/10">
+      <div className="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden">
+        <div className="p-5 md:p-6 space-y-6">
+          <div className="space-y-0.5 text-center">
+            <h1 className="text-lg font-black text-slate-800 tracking-tight">Create Webpage</h1>
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">Sitemap Management</p>
+          </div>
+          
+          <form
+            onSubmit={form.handleSubmit((values) => onSubmit(values))}
+            className="space-y-6"
           >
-            {schemaTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex gap-2">
-          {form.watch("schemaType")?.map((option) => (
-            <p key={option} className="bg-gray-100 rounded-lg  p-2 w-[150px]">
-              {option}
-              <X
-                className="float-right cursor-pointer hover:text-red-500"
-                onClick={() =>
-                  form.setValue(
-                    "schemaType",
-                    form
-                      .getValues("schemaType")
-                      ?.filter((item) => item !== option),
-                  )
-                }
-              />
-            </p>
-          ))}
-        </div>
-        <div className="space-y-2">
-          <p className="font-semibold mb-2">How to Schema</p>
-          <Textarea
-            {...form.register("howToSchema")}
-            placeholder={`{
-  "@context": "https://schema.org",
-  "@type": "HowTo",
-}`}
-            className="w-full border rounded p-2"
-          />
-        </div>
+            <Tabs defaultValue="content" className="w-full">
+              <TabsList className="grid grid-cols-4 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
+                <TabsTrigger value="content" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Basic Detail
+                </TabsTrigger>
+                <TabsTrigger value="seo" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Media & SEO
+                </TabsTrigger>
+                <TabsTrigger value="org" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Organization
+                </TabsTrigger>
+                <TabsTrigger value="interactive" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Interactivity
+                </TabsTrigger>
+              </TabsList>
 
-        <div className="space-y-2">
-          <ImageUploader
-            onUpload={(img) => {
-              if (!img) return null;
-              form.setValue("coverImage", {
-                url: img ? img.url : "",
-                public_id: img ? img.public_id : "",
-                width: img ? img.width : 0,
-                height: img ? img.height : 0,
-                alt: img?.alt || "Cover Image",
-              });
-            }}
-          />
+              <div className="min-h-[300px]">
+                {/* Basic Detail Tab */}
+                <TabsContent value="content" className="mt-0 space-y-4 animate-in fade-in-50 duration-200">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Title</Label>
+                      <Input
+                        {...form.register("title")}
+                        placeholder="Enter page title"
+                        className="h-9 bg-white border-slate-200 focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/10 rounded-md text-[13px] font-medium"
+                      />
+                      {form.formState.errors.title && (
+                        <p className="text-red-500 text-[9px] font-bold uppercase ml-0.5">{form.formState.errors.title.message}</p>
+                      )}
+                    </div>
 
-          <input
-            {...form.register("coverImage.alt")}
-            placeholder="Cover Image Alt"
-            className="w-full border rounded p-2"
-          />
-        </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Permalink</Label>
+                      <Input
+                        {...form.register("slug")}
+                        placeholder="page-slug-example"
+                        className="h-9 bg-white border-slate-200 focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/10 rounded-md text-[13px] font-mono"
+                      />
+                    </div>
+                  </div>
 
-        <div className="space-y-2">
-          <Label className="block text-sm font-medium">Keywords</Label>
-          <div className="flex flex-wrap gap-2 border rounded p-2">
-            {form.watch("keywords")?.map((kw, i) => (
-              <span
-                key={i}
-                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Page Content</Label>
+                    <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                      <BlogEditor
+                        value={form.getValues("content")}
+                        onChange={(val) => form.setValue("content", val)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Excerpt</Label>
+                    <Textarea
+                      {...form.register("excerpt")}
+                      placeholder="Brief summary..."
+                      className="min-h-[80px] bg-white border-slate-200 focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/10 rounded-md text-[13px]"
+                    />
+                  </div>
+                </TabsContent>
+
+                {/* Media & SEO Tab */}
+                <TabsContent value="seo" className="mt-0 space-y-6 animate-in fade-in-50 duration-200">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Meta Title</Label>
+                        <Input {...form.register("metaTitle")} placeholder="SEO Title" className="h-9 rounded-md text-[13px]" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Meta Description</Label>
+                        <Textarea {...form.register("metaDescription")} placeholder="SEO Description" className="min-h-[80px] rounded-md text-[13px]" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Canonical URL</Label>
+                        <Input {...form.register("canonicalUrl")} placeholder="https://..." className="h-9 rounded-md text-[13px]" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Cover Image</Label>
+                        <div className="border border-dashed border-slate-200 rounded-xl p-4 bg-slate-50/50">
+                          <ImageUploader
+                            onUpload={(img) => {
+                              if (!img) return null;
+                              form.setValue("coverImage", {
+                                url: img.url,
+                                public_id: img.public_id,
+                                width: img.width,
+                                height: img.height,
+                                alt: img?.alt || "Cover Image",
+                              });
+                            }}
+                          />
+                          <Input
+                            {...form.register("coverImage.alt")}
+                            placeholder="Alt Text"
+                            className="mt-3 h-8 text-[11px] rounded-md bg-white border-slate-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Keywords</Label>
+                        <div className="flex flex-wrap gap-1.5 border border-slate-200 bg-white p-2 rounded-md min-h-[36px]">
+                          {form.watch("keywords")?.map((kw, i) => (
+                            <span key={i} className="flex items-center gap-1 bg-orange-50 text-[#FE5300] px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border border-orange-100">
+                              {kw}
+                              <button type="button" onClick={() => form.setValue("keywords", form.getValues("keywords")?.filter((_, idx) => idx !== i))} className="hover:text-red-500">
+                                <X size={10} />
+                              </button>
+                            </span>
+                          ))}
+                          <input
+                            className="flex-1 min-w-[100px] text-[13px] focus:outline-none bg-transparent"
+                            placeholder="Add tag..."
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = e.currentTarget.value.trim();
+                                if (val) {
+                                  form.setValue("keywords", [...(form.getValues("keywords") || []), val]);
+                                  e.currentTarget.value = "";
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Schema Types</Label>
+                      <select
+                        multiple
+                        {...form.register("schemaType")}
+                        className="w-full border border-slate-200 rounded-lg p-2 text-[12px] h-24 bg-white"
+                      >
+                        {schemaTypes.map((type) => (
+                          <option key={type} value={type} className="px-2 py-0.5 rounded mb-0.5">{type}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">How-to Schema</Label>
+                      <Textarea
+                        {...form.register("howToSchema")}
+                        placeholder='{ ... }'
+                        className="min-h-[96px] text-[11px] font-mono bg-slate-50 border-slate-200 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Organization Tab */}
+                <TabsContent value="org" className="mt-0 space-y-6 animate-in fade-in-50 duration-200 max-w-xl mx-auto">
+                   <div className="grid gap-4 py-2">
+                    <div className="flex items-center justify-between p-4 bg-orange-50/20 rounded-xl border border-orange-100 shadow-sm">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-black text-slate-700 uppercase tracking-tight">Parent Page</Label>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Enable Hierarchy</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        {...form.register("isParent")}
+                        className="h-5 w-5 rounded border-slate-300 text-[#FE5300] focus:ring-[#FE5300]/10 accent-[#FE5300] cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Relationship</Label>
+                      <select
+                        {...form.register("parent", { setValueAs: (v) => v || undefined })}
+                        className="w-full border border-slate-200 rounded-lg p-3 text-[13px] font-medium bg-white"
+                      >
+                        <option value="">No Parent (Root)</option>
+                        {allparents?.map((parent: any, i: number) => (
+                          <option key={i} value={parent._id}>{parent.title}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Status</Label>
+                      <select
+                        {...form.register("status")}
+                        className="w-full border border-slate-200 rounded-lg p-3 text-[13px] font-medium bg-white"
+                      >
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                      </select>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Interactivity Tab */}
+                <TabsContent value="interactive" className="mt-0 space-y-8 animate-in fade-in-50 duration-200">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">FAQs</Label>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => faqsArray.append({ question: "", answer: "" })}
+                        className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100"
+                      >
+                        + New FAQ
+                      </Button>
+                    </div>
+                    <div className="grid gap-3">
+                      {faqsArray.fields.map((field, index) => (
+                        <div key={field.id} className="group relative bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                          <div className="grid gap-3">
+                            <Input {...form.register(`faqs.${index}.question`)} placeholder="Question" className="h-8 text-[13px] font-semibold border-none bg-slate-50 px-2" />
+                            <div className="rounded-md border border-slate-50 overflow-hidden">
+                              <SmallEditor
+                                value={form.getValues(`faqs.${index}.answer`)}
+                                onChange={(val) => form.setValue(`faqs.${index}.answer`, val)}
+                              />
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => faqsArray.remove(index)} className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-red-50 text-red-400 rounded-full flex items-center justify-center border border-red-50 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">Testimonials</Label>
+                      <Button type="button" variant="secondary" size="sm" onClick={() => setShowReviewsModal(true)} className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100">+ Add</Button>
+                    </div>
+                    <div className="grid sm:grid-cols-3 gap-2">
+                      {reviewsDetails.map((review, index) => (
+                        <div key={review._id} className="flex justify-between items-center bg-slate-50/50 px-3 py-2 rounded-lg border border-slate-100">
+                          <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight truncate">{review.name}</span>
+                          <button type="button" onClick={() => handleReviewsRemove(review._id as string, index)} className="text-slate-300 hover:text-red-400 ml-2">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">Resource Links</Label>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => footerLinksArray.append({ title: "", url: "" })}
+                        className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100"
+                      >
+                        + Add
+                      </Button>
+                    </div>
+                    <div className="grid gap-2">
+                      {footerLinksArray.fields.map((field, index) => (
+                        <div key={field.id} className="flex gap-2 items-center">
+                          <Input {...form.register(`footerLinks.${index}.title`)} placeholder="Title" className="h-9 rounded-md text-[13px]" />
+                          <Input {...form.register(`footerLinks.${index}.url`)} placeholder="URL" className="h-9 rounded-md text-[13px]" />
+                          <Button type="button" variant="ghost" size="icon" onClick={() => footerLinksArray.remove(index)} className="text-slate-300 hover:text-red-400 h-8 w-8">
+                            <X size={16} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => router.push("/admin/webpage")}
+                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600"
               >
-                {kw}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newKeywords = form
-                      .getValues("keywords")
-                      ?.filter((_, idx) => idx !== i);
-                    form.setValue("keywords", newKeywords);
-                  }}
-                  className="text-gray-600 hover:text-red-500"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </span>
-            ))}
+                Discard
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={mutation.isPending}
+                className="bg-[#FE5300] hover:bg-[#FE5300]/90 text-white font-black uppercase tracking-widest h-9 px-8 rounded-lg shadow-md active:scale-[0.98] transition-all text-[11px]"
+              >
+                {mutation.isPending ? "Saving..." : "Create Webpage"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
 
-            <input
-              type=" text"
-              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
-              placeholder="Type keyword and press Enter"
-              onBlur={(e) => {
-                const arr = e.target.value
-                  .split(",")
-                  .map((v) => v.trim())
-                  .filter(Boolean);
-                if (arr.length > 0) {
-                  form.setValue("keywords", [
-                    ...(form.getValues("keywords") || []),
-                    ...arr,
-                  ]);
-                  e.target.value = "";
-                }
-              }}
+      {showReviewsModal && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xl transform animate-in zoom-in-95 duration-200">
+            <CreateReviewsModal
+              onReviewsCreated={handleReviewsCreated}
+              onClose={() => { setShowReviewsModal(false); setEditReviewsId(null); }}
+              onReviewsUpdated={handleReviewsUpdated}
+              existingReviews={editReviewsId}
+              type="package"
             />
           </div>
         </div>
-
-        {/* Faqs */}
-        <div>
-          <Label className="block text-sm font-medium mb-2">FAQs</Label>
-          {faqsArray.fields.map((field, index) => (
-            <div key={field.id} className="flex">
-              <div className="grid gap-2 mb-2 w-full">
-                <Input
-                  {...form.register(`faqs.${index}.question`)}
-                  placeholder="Question"
-                />
-                <div className="border rounded p-2">
-                  <SmallEditor
-                    value={form.getValues(`faqs.${index}.answer`)}
-                    onChange={(val) =>
-                      form.setValue(`faqs.${index}.answer`, val)
-                    }
-                  />
-                </div>
-                {/* <Input
-                  {...form.register(`faqs.${index}.answer`)}
-                  placeholder="Answer"
-                /> */}
-              </div>
-
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => faqsArray.remove(index)}
-                className="w-20 ml-2"
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
-          <Button
-            type="button"
-            onClick={() => faqsArray.append({ question: "", answer: "" })}
-          >
-            + FAQ
-          </Button>
-        </div>
-
-        {/* Reviews */}
-        <div>
-          <Label className="mb-2 text-lg">Reviews</Label>
-
-          {reviewsDetails.map((review, index) => (
-            <div
-              key={review._id}
-              className="flex justify-between items-center mb-2"
-            >
-              <span>{review.name}</span>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="default"
-                  onClick={() => handleReviewsEdit(review._id as string)}
-                >
-                  Edit
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() =>
-                    handleReviewsRemove(review._id as string, index)
-                  }
-                >
-                  Remove
-                </Button>
-              </div>
-            </div>
-          ))}
-
-          <Button type="button" onClick={() => setShowReviewsModal(true)}>
-            + Add New Review
-          </Button>
-
-          {showReviewsModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <CreateReviewsModal
-                onReviewsCreated={handleReviewsCreated}
-                onClose={() => {
-                  setShowReviewsModal(false);
-                  setEditReviewsId(null);
-                }}
-                onReviewsUpdated={handleReviewsUpdated}
-                existingReviews={editReviewsId}
-                type="package"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* FooterLink Array */}
-        <div>
-          <Label className="block text-sm font-medium mb-2">
-            Helpful Resources
-          </Label>
-          {footerLinksArray.fields.map((field, index) => (
-            <div key={field.id} className="flex">
-              <div className="grid grid-cols-2 gap-2 mb-2 w-full">
-                <Input
-                  {...form.register(`footerLinks.${index}.title`)}
-                  placeholder="Title"
-                />
-                <Input
-                  {...form.register(`footerLinks.${index}.url`)}
-                  placeholder="URL"
-                />
-              </div>
-
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => footerLinksArray.remove(index)}
-                className="ml-2"
-              >
-                X
-              </Button>
-            </div>
-          ))}
-          <Button
-            type="button"
-            onClick={() => footerLinksArray.append({ title: "", url: "" })}
-          >
-            +Add
-          </Button>
-        </div>
-
-        <div className="grid md:grid-cols-3 items-center gap-2 ">
-          <div className="space-x-4">
-            <label className="text-md font-semibold mb-2" htmlFor="isParent">
-              IsParent
-            </label>
-            <input
-              type="checkbox"
-              {...form.register("isParent")}
-              checked={form.watch("isParent")}
-              onChange={(e) => form.setValue("isParent", e.target.checked)}
-            />
-          </div>
-          <div>
-            <label className="text-md font-semibold mb-2" htmlFor="status">
-              My Parent
-            </label>
-
-            <select
-              {...form.register("parent", {
-                setValueAs: (v) => v || undefined,
-              })}
-              className="w-full border rounded p-2"
-            >
-              <option value="">Select Parent</option>
-              {allparents?.map(
-                (parent: { title: string; _id: string }, i: number) => (
-                  <option key={i} value={parent._id}>
-                    {parent.title}
-                  </option>
-                ),
-              )}
-            </select>
-          </div>
-          <div>
-            <label className="text-md font-semibold mb-2" htmlFor="status">
-              Status
-            </label>
-            <select
-              {...form.register("status")}
-              className="w-full border rounded p-2"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-        </div>
-
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Creating..." : "Create Page"}
-        </Button>
-      </form>
-      {mutation.isError && (
-        <p className="text-red-500 text-sm">
-          {(mutation.error as Error).message}
-        </p>
-      )}
-
-      {mutation.isSuccess && (
-        <p className="text-green-500 text-sm">Page created successfully!</p>
       )}
     </div>
   );
