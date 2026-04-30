@@ -151,7 +151,7 @@ function WebPage() {
             onDelete={handleDelete}
           />
           
-          <div className="flex items-center justify-between px-2 pt-2">
+          <div className="flex items-center justify-between px-2 py-4">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
               Showing {((page - 1) * 10) + 1} - {Math.min(page * 10, meta.total)} of {meta.total}
             </p>
