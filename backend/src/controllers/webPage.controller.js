@@ -24,7 +24,16 @@ const createWebPage = async (req, res) => {
 
 const getWebPage = async (req, res) => {
   try {
-    const { filter = {} } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const searchTerm = req.query.search || "";
+
+    const filter = {};
+    if (searchTerm) {
+      filter.title = { $regex: searchTerm, $options: "i" };
+    }
+    
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.parent) {
       const parent = await WebPage.findOne({ slug: req.query.parent }).lean();
@@ -35,12 +44,26 @@ const getWebPage = async (req, res) => {
       filter.parent = parent._id;
     }
     if (req.query?.status) filter.status = req.query.status;
+
+    const total = await WebPage.countDocuments(filter);
     const webpage = await WebPage.find(filter)
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate("parent", "title slug")
       .select("-content -faqs")
       .lean();
-    res.status(200).json({ success: true, data: webpage });
+
+    res.status(200).json({ 
+      success: true, 
+      data: webpage,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.log("WebPage getting failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });

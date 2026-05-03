@@ -516,7 +516,7 @@ export default function QueryForm() {
                 ? "Sending..."
                 : isHumanVerified
                 ? "Send Enquiry"
-                : "Solve Math to Send"}
+                : "Send Enquiry"}
             </Button>
           </form>
         </Form>
