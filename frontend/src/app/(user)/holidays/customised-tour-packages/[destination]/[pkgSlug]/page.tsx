@@ -5,6 +5,7 @@ import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getProductSchema } from "@/lib/schema/product.schema";
 import Script from "next/script";
+import { stripHtml } from "@/lib/utils";
 async function getCustomizedPackage(slug: string, destination?: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/?slug=${slug}&destination=${destination}`,
@@ -105,12 +106,13 @@ export default async function Page({
 
   const productSchema = getProductSchema(
     pkg.title,
-    pkg.description,
-    pkg?.plan?.price,
+    stripHtml(pkg.description || ""),
+    pkg?.plan?.price?.toString() || "9999",
     "https://musafirbaba.com/holidays/customised-tour-packages/" +
       pkg.destination.state +
       "/" +
-      pkgSlug
+      pkgSlug,
+    pkg.coverImage?.url || "https://musafirbaba.com/homebanner.webp"
   );
   const faqSchema = getFAQSchema(pkg.faqs ?? []);
   const collectionSchema = getCollectionSchema(

@@ -9,6 +9,7 @@ import { getFAQSchema } from "@/lib/schema/faq.schema";
 import Script from "next/script";
 import { notFound } from "next/navigation";
 import { Reviews } from "@/app/admin/holidays/new/page";
+import { stripHtml } from "@/lib/utils";
 
 interface Destination {
   _id: string;
@@ -162,9 +163,10 @@ async function PackageDetails({
   );
   const productSchema = getProductSchema(
     page.title,
-    page.description,
-    page.batch[0].quad?.toLocaleString() ?? "9,999",
+    stripHtml(page.description),
+    page.batch[0]?.quad?.toString() || "9999",
     `https://musafirbaba.com/holidays/${categorySlug}/${destination}/${page.slug}`,
+    page.coverImage?.url || "https://musafirbaba.com/homebanner.webp"
   );
   const faqSchema = getFAQSchema(page.faqs ?? []);
 
