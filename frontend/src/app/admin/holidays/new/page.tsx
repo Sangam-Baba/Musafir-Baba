@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -216,6 +216,7 @@ export const deleteReview = async (accessToken: string, id: string) => {
 };
 export default function CreatePackagePage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const queryClient = useQueryClient();
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
   const [batchDetails, setBatchDetails] = useState<Batch[]>([]);
@@ -301,6 +302,7 @@ export default function CreatePackagePage() {
     mutationFn: (values: PackageFormValues) =>
       CreatePackage(values, accessToken),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["packages"] });
       toast.success("Package Created successfully");
       // router.refresh();
     },

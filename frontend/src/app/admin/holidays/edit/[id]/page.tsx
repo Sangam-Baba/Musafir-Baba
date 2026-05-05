@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -198,6 +198,7 @@ export default function CreatePackagePage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const params = useParams();
   const id = params.id as string;
+  const queryClient = useQueryClient();
 
   const defaultValues: PackageFormValues = {
     title: "",
@@ -372,6 +373,7 @@ export default function CreatePackagePage() {
     mutationFn: (values: PackageFormValues) =>
       updatePackage(values, accessToken, id),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["packages"] });
       toast.success("Package Updated successfully");
       // form.reset(defaultValues)
     },

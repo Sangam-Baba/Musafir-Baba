@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -56,6 +56,7 @@ import { Layout, Search, Settings, MessageSquarePlus } from "lucide-react";
 export default function UpdateWebpage() {
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
@@ -126,6 +127,7 @@ export default function UpdateWebpage() {
     mutationFn: (values: WebpageFormData) =>
       updatePage(values, token, id as string),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["webpage"] });
       toast.success("Page updated successfully!");
       router.push("/admin/webpage");
     },

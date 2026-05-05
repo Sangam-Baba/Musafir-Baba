@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -65,6 +65,7 @@ async function updateAuthor(values: AuthorFormValues, accessToken: string) {
 export default function UpdateAuthorPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const { id } = useParams() as { id: string };
+  const queryClient = useQueryClient();
 
   const defaultValues: AuthorFormValues = {
     _id: id,
@@ -98,6 +99,7 @@ export default function UpdateAuthorPage() {
   const mutation = useMutation({
     mutationFn: (values: AuthorFormValues) => updateAuthor(values, accessToken),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["authors"] });
       console.log("Registered successfully:", data);
       toast.success("Registration successful!");
       form.reset(defaultValues);

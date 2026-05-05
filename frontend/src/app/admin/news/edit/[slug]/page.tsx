@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useForm, Resolver, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
@@ -92,6 +92,7 @@ export const getNewsById = async (token: string, id: string) => {
 export default function EditNews() {
   const { slug } = useParams() as { slug: string };
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
+  const queryClient = useQueryClient();
 
   const { data: news, isLoading } = useQuery({
     queryKey: ["news", slug],
@@ -160,6 +161,8 @@ export default function EditNews() {
   const mutation = useMutation({
     mutationFn: (values: FormValues) => updateNews(values, token, news._id),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["all-news"] });
+      queryClient.invalidateQueries({ queryKey: ["news", slug] });
       console.log(data);
       toast.success("News updated successfully!");
     },

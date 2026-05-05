@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Resolver, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -83,6 +83,7 @@ const createNews = async (
 
 export default function CreateNews() {
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as Resolver<z.infer<typeof formSchema>>,
@@ -131,6 +132,7 @@ export default function CreateNews() {
     mutationFn: (values: z.infer<typeof formSchema>) =>
       createNews(values, token),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-news"] });
       toast.success("News created successfully!");
       form.reset();
     },
