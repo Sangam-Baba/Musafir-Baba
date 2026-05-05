@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -81,6 +81,7 @@ async function createVisa(values: Visa, accessToken: string) {
 
 export default function CreateVisaPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const queryClient = useQueryClient();
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
@@ -116,6 +117,7 @@ export default function CreateVisaPage() {
   const mutation = useMutation({
     mutationFn: (values: Visa) => createVisa(values, accessToken),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["visa"] });
       console.log("Registered successfully:", data);
       toast.success("Registration successful!");
       form.reset(defaultValues);

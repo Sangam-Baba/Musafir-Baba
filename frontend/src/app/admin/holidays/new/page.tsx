@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -77,7 +77,7 @@ interface PackageFormValues {
   destination: string;
   mainCategory: string;
   otherCategory: string[];
-  reviews?: Reviews[];
+  reviews?: string[];
   coverImage?: Image;
   gallery?: Image[];
   duration: { days: number; nights: number };
@@ -216,6 +216,7 @@ export const deleteReview = async (accessToken: string, id: string) => {
 };
 export default function CreatePackagePage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const queryClient = useQueryClient();
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editBatchId, setEditBatchId] = useState<string | null>(null);
   const [batchDetails, setBatchDetails] = useState<Batch[]>([]);
@@ -271,10 +272,6 @@ export default function CreatePackagePage() {
 
   const addOnsArray = useFieldArray({ control: form.control, name: "addOns" });
   // const batchArray = useFieldArray({ control: form.control, name: "batch" });
-  const reviewsArray = useFieldArray({
-    control: form.control,
-    name: "reviews",
-  });
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
@@ -301,6 +298,7 @@ export default function CreatePackagePage() {
     mutationFn: (values: PackageFormValues) =>
       CreatePackage(values, accessToken),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["packages"] });
       toast.success("Package Created successfully");
       // router.refresh();
     },
@@ -338,7 +336,7 @@ export default function CreatePackagePage() {
     setShowBatchModal(false);
   };
   const handleReviewsCreated = async (id: string) => {
-    reviewsArray.append(id);
+    form.setValue("reviews", [...(form.getValues("reviews") || []), id]);
     const newBatch = await getReviewsByIds(accessToken, [id]);
     setReviewsDetails((prev) => [...prev, ...newBatch]);
     setShowReviewsModal(false);

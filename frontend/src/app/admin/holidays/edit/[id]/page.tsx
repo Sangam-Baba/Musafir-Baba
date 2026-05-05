@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -66,7 +66,7 @@ interface PackageFormValues {
   title: string;
   description: string;
   batch: string[];
-  reviews?: Reviews[];
+  reviews?: string[];
   slug: string;
   destination: string;
   mainCategory: string;
@@ -198,6 +198,7 @@ export default function CreatePackagePage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const params = useParams();
   const id = params.id as string;
+  const queryClient = useQueryClient();
 
   const defaultValues: PackageFormValues = {
     title: "",
@@ -260,10 +261,6 @@ export default function CreatePackagePage() {
     shouldUnregister: false,
   });
 
-  const reviewsArray = useFieldArray({
-    control: form.control,
-    name: "reviews",
-  });
   const handleBatchCreated = async (id: string) => {
     const newBatch = await getBatchByIds(accessToken, [id]);
     form.setValue("batch", [...form.getValues("batch"), id]);
@@ -291,7 +288,7 @@ export default function CreatePackagePage() {
     setShowBatchModal(false);
   };
   const handleReviewsCreated = async (id: string) => {
-    reviewsArray.append(id);
+    form.setValue("reviews", [...(form.getValues("reviews") || []), id]);
     const newBatch = await getReviewsByIds(accessToken, [id]);
     setReviewsDetails((prev) => [...prev, ...newBatch]);
     setShowReviewsModal(false);
@@ -372,6 +369,7 @@ export default function CreatePackagePage() {
     mutationFn: (values: PackageFormValues) =>
       updatePackage(values, accessToken, id),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["packages"] });
       toast.success("Package Updated successfully");
       // form.reset(defaultValues)
     },

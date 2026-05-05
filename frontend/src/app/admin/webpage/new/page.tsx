@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -100,6 +100,7 @@ export default function CreateWebpage() {
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const defaultValues: WebpageFormData = {
     title: "",
@@ -135,6 +136,7 @@ export default function CreateWebpage() {
   const mutation = useMutation({
     mutationFn: (values: WebpageFormData) => createPage(values, token),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["webpage"] });
       toast.success("Page created successfully!");
       form.reset();
       router.refresh();

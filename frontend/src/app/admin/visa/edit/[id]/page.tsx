@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -62,6 +62,7 @@ async function getVisa(id: string, accessToken: string) {
 export default function CreateVisaPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const { id } = useParams() as { id: string };
+  const queryClient = useQueryClient();
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
@@ -128,6 +129,7 @@ export default function CreateVisaPage() {
   const mutation = useMutation({
     mutationFn: (values: Visa) => updateVisa(values, accessToken, id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["visa"] });
       toast.success("Updated successful!");
     },
     onError: (error: unknown) => {
@@ -674,7 +676,7 @@ export default function CreateVisaPage() {
                         <div key={review._id} className="flex justify-between items-center p-1.5 bg-white rounded border shadow-sm">
                           <div>
                             <span className="font-semibold text-xs block leading-none mb-0.5">{review.name}</span>
-                            <span className="text-[10px] text-gray-500 line-clamp-1">{review.review}</span>
+                            <span className="text-[10px] text-gray-500 line-clamp-1">{review.comment}</span>
                           </div>
                           <div className="flex gap-1 shrink-0 ml-2">
                             <Button type="button" variant="secondary" size="sm" className="h-6 text-[10px] px-1.5 rounded-sm" onClick={() => handleReviewsEdit(review._id as string)}>

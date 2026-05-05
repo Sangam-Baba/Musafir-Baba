@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Resolver, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -100,6 +100,7 @@ const createBlog = async (
 export default function CreateBlog() {
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as Resolver<z.infer<typeof formSchema>>,
@@ -158,6 +159,7 @@ export default function CreateBlog() {
     mutationFn: (values: z.infer<typeof formSchema>) =>
       createBlog(values, token),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
       toast.success("Blog created successfully!");
       form.reset();
       router.push("/admin/blogs");
