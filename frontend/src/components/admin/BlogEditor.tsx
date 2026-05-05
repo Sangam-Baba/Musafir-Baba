@@ -215,8 +215,8 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   };
   return (
     <TooltipProvider>
-      <div className="w-full border rounded-lg bg-background shadow-sm">
-        <div className="flex sticky top-1 items-center gap-1 border-b bg-gray-400 z-20 p-2 flex-wrap">
+      <div className="w-full border rounded-lg bg-background shadow-sm flex flex-col h-[600px] overflow-hidden">
+        <div className="flex items-center gap-1 border-b bg-gray-400 z-20 p-2 flex-wrap shrink-0">
           {/* Text formatting group */}
           <div className="flex items-center gap-1">
             <ToolbarButton
@@ -474,7 +474,9 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
           />
         </div>
 
-        <EditorContent editor={editor} className="prose-editor" />
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <EditorContent editor={editor} className="prose-editor" />
+        </div>
         {/* Dialog for button insertion */}
         <Dialog open={buttonDialogOpen} onOpenChange={setButtonDialogOpen}>
           <DialogContent>

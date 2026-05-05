@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm, Resolver, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -113,6 +113,7 @@ export default function EditBlog() {
   const { slug } = useParams() as { slug: string };
   const token = useAdminAuthStore((state) => state.accessToken) ?? "";
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data: blog, isLoading } = useQuery({
     queryKey: ["blog", slug],
@@ -190,6 +191,8 @@ export default function EditBlog() {
   const mutation = useMutation({
     mutationFn: (values: FormValues) => updateBlog(values, token, blog._id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+      queryClient.invalidateQueries({ queryKey: ["blog", slug] });
       toast.success("Blog updated successfully!");
       router.push("/admin/blogs");
     },
