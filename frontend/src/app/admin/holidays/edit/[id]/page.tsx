@@ -66,7 +66,7 @@ interface PackageFormValues {
   title: string;
   description: string;
   batch: string[];
-  reviews?: Reviews[];
+  reviews?: string[];
   slug: string;
   destination: string;
   mainCategory: string;
@@ -261,10 +261,6 @@ export default function CreatePackagePage() {
     shouldUnregister: false,
   });
 
-  const reviewsArray = useFieldArray({
-    control: form.control,
-    name: "reviews",
-  });
   const handleBatchCreated = async (id: string) => {
     const newBatch = await getBatchByIds(accessToken, [id]);
     form.setValue("batch", [...form.getValues("batch"), id]);
@@ -292,7 +288,7 @@ export default function CreatePackagePage() {
     setShowBatchModal(false);
   };
   const handleReviewsCreated = async (id: string) => {
-    reviewsArray.append(id);
+    form.setValue("reviews", [...(form.getValues("reviews") || []), id]);
     const newBatch = await getReviewsByIds(accessToken, [id]);
     setReviewsDetails((prev) => [...prev, ...newBatch]);
     setShowReviewsModal(false);

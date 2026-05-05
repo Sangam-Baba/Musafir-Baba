@@ -676,7 +676,7 @@ export default function CreateVisaPage() {
                         <div key={review._id} className="flex justify-between items-center p-1.5 bg-white rounded border shadow-sm">
                           <div>
                             <span className="font-semibold text-xs block leading-none mb-0.5">{review.name}</span>
-                            <span className="text-[10px] text-gray-500 line-clamp-1">{review.review}</span>
+                            <span className="text-[10px] text-gray-500 line-clamp-1">{review.comment}</span>
                           </div>
                           <div className="flex gap-1 shrink-0 ml-2">
                             <Button type="button" variant="secondary" size="sm" className="h-6 text-[10px] px-1.5 rounded-sm" onClick={() => handleReviewsEdit(review._id as string)}>
