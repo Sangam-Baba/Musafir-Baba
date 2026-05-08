@@ -185,6 +185,13 @@ async function PackageDetails({
       />
       {page.schemaType?.includes("FAQ") && (
         <Script
+          id="faq-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+      {page.schemaType?.includes("Collection") && (
+        <Script
           id="collection-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
