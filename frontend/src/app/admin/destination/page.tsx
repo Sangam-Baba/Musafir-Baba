@@ -111,7 +111,7 @@ export default function DestinationPage() {
             name: b.name,
             country: b.country,
             state: b.state,
-            url: `/${b.country}/${b.state}/`, // or absolute link if needed
+            url: `/destinations/${b.slug}`,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}
