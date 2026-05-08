@@ -865,12 +865,12 @@ export default function CreatePackagePage() {
             {/* Reviews */}
             <div>
               <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
-              {reviewsArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2">
+              {reviewsDetails.map((field, index) => (
+                <div key={field._id} className="grid grid-cols-2 gap-2 mb-2">
                   {/* REVIEW Content */}
                   <div className="flex  items-center text-left gap-2">
                     <span className="font-medium">
-                      {reviewsDetails[index]?.name || `Reviews ${index + 1}`}
+                      {field.name || `Reviews ${index + 1}`}
                     </span>
                   </div>
 
@@ -879,16 +879,22 @@ export default function CreatePackagePage() {
                     <Button
                       type="button"
                       variant="destructive"
-                      onClick={() => reviewsArray.remove(index)}
+                      onClick={() => {
+                        form.setValue(
+                          "reviews",
+                          form.getValues("reviews")?.filter((id) => id !== field._id)
+                        );
+                        setReviewsDetails((prev) =>
+                          prev.filter((item) => item._id !== field._id)
+                        );
+                      }}
                     >
                       Remove
                     </Button>
                     <Button
                       type="button"
                       variant="default"
-                      onClick={() =>
-                        handleReviewsEdit(form.getValues(`reviews.${index}`))
-                      }
+                      onClick={() => handleReviewsEdit(field._id)}
                     >
                       Edit
                     </Button>
@@ -896,11 +902,16 @@ export default function CreatePackagePage() {
                       type="button"
                       variant="destructive"
                       onClick={async () => {
-                        const res = await deleteReview(
-                          accessToken,
-                          form.getValues(`reviews.${index}`)
-                        );
-                        if (res) reviewsArray.remove(index);
+                        const res = await deleteReview(accessToken, field._id);
+                        if (res) {
+                          form.setValue(
+                            "reviews",
+                            form.getValues("reviews")?.filter((id) => id !== field._id)
+                          );
+                          setReviewsDetails((prev) =>
+                            prev.filter((item) => item._id !== field._id)
+                          );
+                        }
                       }}
                     >
                       Delete
