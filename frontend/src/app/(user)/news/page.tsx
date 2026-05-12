@@ -299,7 +299,9 @@ export default async function NewsPage({
           />
         ))}
       </div>
-      <PaginationClient totalPages={totalPages} currentPage={currPage} />
+      <div className="flex justify-center items-center w-full pb-16">
+        <PaginationClient totalPages={totalPages} currentPage={currPage} />
+      </div>
       <script
         key="collection-schema"
         type="application/ld+json"

@@ -387,7 +387,9 @@ export default async function BlogPage({
         ))}
       </div>
 
-      <PaginationClient totalPages={totalPages} currentPage={CurrPage} />
+      <div className="flex justify-center items-center w-full pb-16">
+        <PaginationClient totalPages={totalPages} currentPage={CurrPage} />
+      </div>
 
       <Script
         key="collection-schema"

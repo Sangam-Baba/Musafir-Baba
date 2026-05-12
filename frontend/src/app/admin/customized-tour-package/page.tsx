@@ -29,6 +29,7 @@ interface Package {
   ];
   slug: string;
   status: string;
+  canonicalUrl?: string;
 }
 const getAllPackages = async (accessToken: string) => {
   const res = await fetch(
@@ -115,7 +116,7 @@ function PackagePage() {
                     (b.destination?.state?.charAt(0).toUpperCase() as string) +
                     b.destination?.state?.slice(1),
                   price: b.plans[0]?.price?.toLocaleString("en-US"),
-                  url: `/customized-tour-package/${b.slug}`,
+                  url: b.canonicalUrl || `/holidays/customised-tour-packages/${b.destination?.state?.toLowerCase().replace(/ /g, '-')}/${b.slug}`,
                   slug: b.slug as string,
                   status: b.status === "published" ? "Published" : "Draft",
                 }))
