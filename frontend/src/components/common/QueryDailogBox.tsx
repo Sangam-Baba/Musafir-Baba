@@ -10,7 +10,7 @@ export function QueryDailogBox() {
         <DialogTrigger asChild>
           <Button>Enquire Now</Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] md:max-w-[550px] p-0">
+        <DialogContent className="sm:max-w-[425px] md:max-w-[480px] p-0 border-none shadow-none bg-transparent">
           <QueryForm />
         </DialogContent>
       </Dialog>

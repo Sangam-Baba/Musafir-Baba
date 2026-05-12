@@ -12,7 +12,7 @@ export default function PopupQueryForm() {
           Apply Now
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[480px] p-0 border-none shadow-none bg-transparent">
         <QueryForm />
       </DialogContent>
     </Dialog>

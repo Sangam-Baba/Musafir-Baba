@@ -165,7 +165,7 @@ export default async function BlogDetailPage({
       <ReadingProgressBar />
       
       {/* Premium Split Hero Section */}
-      <header className="w-full bg-white pt-8 pb-16 md:pt-12 md:pb-20 overflow-hidden">
+      <header className="w-full bg-white pt-8 pb-8 md:pt-12 md:pb-10 overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
           
           {/* Breadcrumbs Top Bar */}
@@ -197,31 +197,37 @@ export default async function BlogDetailPage({
                 </h1>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 text-[12px] font-bold text-gray-500 uppercase tracking-widest pt-4">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-[#FE5300]" />
-                  <span>{readTime} Min Read</span>
+              <div className="flex flex-col gap-2 pt-4 pb-2">
+                {/* First Line: Read Time and Views */}
+                <div className="flex items-center flex-wrap gap-4 md:gap-6 text-[11px] md:text-[12px] font-bold text-gray-500 uppercase tracking-widest">
+                  <div className="flex items-center gap-2">
+                    <Clock size={16} className="text-[#FE5300]" />
+                    <span>{readTime} Min Read</span>
+                  </div>
+                  <Separator orientation="vertical" className="h-4 bg-gray-200" />
+                  <div>
+                    <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
+                  </div>
                 </div>
-                <Separator orientation="vertical" className="h-4 bg-gray-200" />
-                <span className="text-gray-400">Published {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}</span>
-                <Separator orientation="vertical" className="h-4 bg-gray-200" />
-                <BlogViewTracker id={blog?._id} view={blog.views} type="blog" />
+                
+                {/* Second Line: Published Date */}
+                <div className="text-[10px] md:text-[11px] font-normal text-gray-400 tracking-wide">
+                  Published {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Right Column: Ultra-Wide Featured Image */}
             <div className="lg:col-span-8 relative animate-in fade-in slide-in-from-right duration-1000">
-              <div className="relative aspect-video w-full overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] group">
-                <Image
+              <div className="w-full overflow-hidden rounded-3xl shadow-2xl group">
+                <img
                   src={blog.coverImage.url}
                   alt={blog.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  priority
+                  className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
               {/* Refined Ambient Glow */}
@@ -233,7 +239,7 @@ export default async function BlogDetailPage({
       </header>
 
       {/* Main Content & Sidebar Grid */}
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 md:py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-8 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 relative font-sans">
           
           {/* Left Sidebar: Author & TOC (Desktop Only) */}
@@ -278,26 +284,19 @@ export default async function BlogDetailPage({
           </aside>
 
           {/* Center Column: Main Article */}
-          <main className="lg:col-span-9 xl:col-span-8 2xl:col-span-7">
+          <main className="lg:col-span-9 xl:col-span-9 2xl:col-span-9">
             <article>
               
-              {/* TL;DR Box (Excerpt Transformation) */}
-              <div className="relative py-10 px-8 md:px-12 mb-16 bg-[#e7f6ed] rounded-[2rem] border border-green-100 overflow-hidden shadow-sm group">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="bg-green-600/10 p-2 rounded-lg text-green-700">
-                    <Folders size={20} />
-                  </div>
-                  <span className="text-sm font-bold text-green-800 tracking-tight">
-                    TL;DR <span className="text-green-600/60 ml-2 italic font-normal">powered by Musafir Expert Analytics</span>
+              {/* Summary Box (Excerpt Transformation) */}
+              <div className="relative py-6 px-6 md:px-8 mb-12 bg-[#e7f6ed] rounded-2xl border border-green-100 overflow-hidden shadow-sm group">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-xs font-bold text-green-800 tracking-widest uppercase">
+                    Quick Summary
                   </span>
                 </div>
-                <p className="text-xl md:text-2xl font-medium leading-[1.5] text-green-900/80">
+                <p className="text-base md:text-lg font-normal leading-relaxed text-green-900/90 text-justify">
                   {blog.excerpt}
                 </p>
-                {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transition-transform duration-500 group-hover:rotate-12">
-                   <Folders size={120} />
-                </div>
               </div>
 
               {/* Mobile Table of Contents */}
