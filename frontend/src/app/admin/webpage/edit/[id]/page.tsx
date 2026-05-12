@@ -171,6 +171,14 @@ export default function UpdateWebpage() {
     setReviewsDetails(updatedDetails);
   };
   function onSubmit(values: WebpageFormData) {
+    if (values.parent) {
+      const parentObj = allparents?.find((p: any) => p._id === values.parent);
+      if (parentObj) {
+        values.parentModel = parentObj.parentModel;
+      }
+    } else {
+      values.parentModel = "WebPage";
+    }
     mutation.mutate({ ...values });
   }
 
