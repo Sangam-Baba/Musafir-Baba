@@ -65,7 +65,12 @@ const webPageSchema = new mongoose.Schema(
     ],
     parent: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "WebPage",
+      refPath: "parentModel",
+    },
+    parentModel: {
+      type: String,
+      enum: ["WebPage", "Visa"],
+      default: "WebPage",
     },
     fullSlug: {
       type: String,
@@ -87,13 +92,26 @@ const webPageSchema = new mongoose.Schema(
 );
 
 webPageSchema.pre("save", async function (next) {
-  const parent = this.parent
-    ? await this.model("WebPage").findById(this.parent)
-    : null;
+  let parent = null;
+  if (this.parent) {
+    if (this.parentModel === "Visa") {
+      parent = await this.model("Visa").findById(this.parent);
+    } else {
+      parent = await this.model("WebPage").findById(this.parent);
+    }
+  }
 
   this.slug = slugify(this.slug, { lower: true, strict: true });
 
-  this.fullSlug = parent ? `${parent.fullSlug}/${this.slug}` : this.slug;
+  if (parent) {
+    if (this.parentModel === "Visa") {
+      this.fullSlug = `visa/${parent.slug}/${this.slug}`;
+    } else {
+      this.fullSlug = `${parent.fullSlug}/${this.slug}`;
+    }
+  } else {
+    this.fullSlug = this.slug;
+  }
 
   next();
 });
@@ -110,14 +128,27 @@ webPageSchema.post("findOneAndUpdate", async function (doc) {
 
 webPageSchema.methods.updateFullSlugRecursively = async function () {
   // Build its own fullSlug
-  let parent = this.parent
-    ? await this.model("WebPage").findById(this.parent)
-    : null;
+  let parent = null;
+  if (this.parent) {
+    if (this.parentModel === "Visa") {
+      parent = await this.model("Visa").findById(this.parent);
+    } else {
+      parent = await this.model("WebPage").findById(this.parent);
+    }
+  }
 
   const oldFullSlug = this.fullSlug;
 
-  this.fullSlug = parent ? `${parent.fullSlug}/${this.slug}` : this.slug;
-  await this.save();
+  if (parent) {
+    if (this.parentModel === "Visa") {
+      this.fullSlug = `visa/${parent.slug}/${this.slug}`;
+    } else {
+      this.fullSlug = `${parent.fullSlug}/${this.slug}`;
+    }
+  } else {
+    this.fullSlug = this.slug;
+  }
+  await this.save({ validateBeforeSave: false });
 
   if (!this.canonicalUrl || this.canonicalUrl === `/${oldFullSlug}`) {
     this.canonicalUrl = `/${this.fullSlug}`;

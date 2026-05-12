@@ -36,7 +36,10 @@ const getWebPage = async (req, res) => {
     
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.parent) {
-      const parent = await WebPage.findOne({ slug: req.query.parent }).lean();
+      let parent = await WebPage.findOne({ slug: req.query.parent }).lean();
+      if (!parent) {
+        parent = await mongoose.model("Visa").findOne({ slug: req.query.parent }).lean();
+      }
       if (!parent)
         return res
           .status(404)
@@ -252,9 +255,19 @@ const getRelatedPkgs = async (req, res) => {
 
 const getAllParents = async (req, res) => {
   try {
-    const parents = await WebPage.find({ isParent: true })
+    const webPages = await WebPage.find({ isParent: true })
       .select("title slug")
       .lean();
+      
+    const visas = await mongoose.model("Visa").find({ isActive: true })
+      .select("title slug")
+      .lean();
+      
+    const parents = [
+      ...webPages.map(p => ({ ...p, parentModel: "WebPage" })),
+      ...visas.map(v => ({ ...v, title: `Visa: ${v.title}`, parentModel: "Visa" }))
+    ];
+
     res.status(200).json({ success: true, data: parents });
   } catch (error) {
     console.log("Parents getting failed", error.message);
