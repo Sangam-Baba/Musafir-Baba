@@ -28,7 +28,7 @@ function HelpfulResources({ data }: { data: ItemsInterface[] }) {
             ))}
         </ul>
 
-        {data.length > 2 && (
+        {data.length > 1 && (
           <ul className="list-disc list-outside pl-5 space-y-2">
             {data
               .slice(Math.ceil(data.length / 2))

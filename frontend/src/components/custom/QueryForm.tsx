@@ -73,7 +73,7 @@ const createContact = async (formData: EnquiryFromType) => {
   return res.json();
 };
 
-export default function QueryForm() {
+export default function QueryForm({ className }: { className?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const [captcha, setCaptcha] = useState({ n1: 0, n2: 0 });
@@ -203,7 +203,7 @@ export default function QueryForm() {
   ];
 
   return (
-    <Card className="w-full max-w-[480px] mx-auto rounded-2xl shadow-xl p-0">
+    <Card className={`w-full max-w-[480px] mx-auto rounded-2xl shadow-xl p-0 ${className || ""}`}>
       <CardContent className="space-y-3 p-4 md:p-6">
         <div className="text-center space-y-0.5">
           <h4 className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">

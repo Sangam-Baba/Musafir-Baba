@@ -34,7 +34,7 @@ function MobileBottom() {
           <DialogTrigger asChild>
             <SquarePen color="#FE5300" className="w-10 h-8 text-primary" />
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[480px] p-0 border-none shadow-none bg-transparent">
             <QueryForm />
           </DialogContent>
         </Dialog>
