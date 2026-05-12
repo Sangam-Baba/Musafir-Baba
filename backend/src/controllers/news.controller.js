@@ -159,7 +159,7 @@ const getAllNews = async (req, res) => {
 
     const total = await News.countDocuments(filter);
     const news = await News.find(filter)
-      .select("title content coverImage slug excerpt updatedAt createdAt views")
+      .select("title content coverImage slug excerpt updatedAt createdAt views status")
       .populate("comments")
       .sort({ createdAt: -1 })
       .limit(limit)
