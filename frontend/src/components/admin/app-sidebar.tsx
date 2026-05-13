@@ -196,6 +196,18 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: "Bills & Invoice",
+    icon: FaBox, // I'll fix the icon import later if needed, FaBox is safe for now or I can use FaHome
+    items: [
+      {
+        label: "Invoices",
+        href: "/admin/invoices",
+        icon: ScrollText,
+        permission: "dashboard", // Using dashboard permission to ensure admins can see it
+      },
+    ],
+  },
+  {
     label: "Master Data",
     icon: Database,
     items: [
