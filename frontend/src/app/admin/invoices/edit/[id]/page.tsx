@@ -38,6 +38,7 @@ export default function EditInvoicePage() {
   });
 
   const [formData, setFormData] = useState({
+    invoiceType: "Package",
     clientName: "",
     clientEmail: "",
     clientPhone: "",
@@ -47,10 +48,41 @@ export default function EditInvoicePage() {
     taxRate: 0,
     discountAmount: 0,
     notes: "",
+    customerId: "",
+    paymentMode: "",
+    remarks: "",
+    billingTo: {
+      bedSharing: "N/A",
+      emergencyContact: "",
+    },
+    packageSummary: {
+      particulars: "",
+      duration: "",
+      startDate: "",
+      endDate: "",
+      packagePrice: 0,
+    },
+    rentalSummary: {
+      vehicleName: "",
+      checkIn: "",
+      checkOut: "",
+      numberOfVehicles: 1,
+    },
+    paymentSummary: {
+      paymentId: "",
+      advanceReceived: 0,
+      cgst: 0,
+      sgst: 0,
+      balanceAmount: 0,
+    }
   });
 
   const [items, setItems] = useState([
     { description: "", quantity: 1, price: 0, amount: 0 }
+  ]);
+
+  const [passengerDetails, setPassengerDetails] = useState([
+    { sNo: 1, name: "", aadharNo: "N/A", age: "N/A", address: "", medical: "N/A" }
   ]);
 
   const [totals, setTotals] = useState({
@@ -64,6 +96,7 @@ export default function EditInvoicePage() {
     if (invoiceData?.data) {
       const inv = invoiceData.data;
       setFormData({
+        invoiceType: inv.invoiceType || "Package",
         clientName: inv.clientName || "",
         clientEmail: inv.clientEmail || "",
         clientPhone: inv.clientPhone || "",
@@ -73,10 +106,53 @@ export default function EditInvoicePage() {
         taxRate: inv.taxRate || 0,
         discountAmount: inv.discountAmount || 0,
         notes: inv.notes || "",
+        customerId: inv.customerId || "",
+        paymentMode: inv.paymentMode || "",
+        remarks: inv.remarks || "",
+        billingTo: {
+          bedSharing: inv.billingTo?.bedSharing || "N/A",
+          emergencyContact: inv.billingTo?.emergencyContact || "",
+        },
+        packageSummary: {
+          particulars: inv.packageSummary?.particulars || "",
+          duration: inv.packageSummary?.duration || "",
+          startDate: inv.packageSummary?.startDate ? new Date(inv.packageSummary.startDate).toISOString().split("T")[0] : "",
+          endDate: inv.packageSummary?.endDate ? new Date(inv.packageSummary.endDate).toISOString().split("T")[0] : "",
+          packagePrice: inv.packageSummary?.packagePrice || 0,
+        },
+        paymentSummary: {
+          paymentId: inv.paymentSummary?.paymentId || "",
+          advanceReceived: inv.paymentSummary?.advanceReceived || 0,
+          cgst: inv.paymentSummary?.cgst || 0,
+          sgst: inv.paymentSummary?.sgst || 0,
+          balanceAmount: inv.paymentSummary?.balanceAmount || 0,
+        },
+        rentalSummary: {
+          vehicleName: inv.rentalSummary?.vehicleName || "",
+          checkIn: inv.rentalSummary?.checkIn ? new Date(inv.rentalSummary.checkIn).toISOString().split("T")[0] : "",
+          checkOut: inv.rentalSummary?.checkOut ? new Date(inv.rentalSummary.checkOut).toISOString().split("T")[0] : "",
+          numberOfVehicles: inv.rentalSummary?.numberOfVehicles || 1,
+        }
       });
       setItems(inv.items || [{ description: "", quantity: 1, price: 0, amount: 0 }]);
+      setPassengerDetails(inv.passengerDetails || [{ sNo: 1, name: "", aadharNo: "N/A", age: "N/A", address: "", medical: "N/A" }]);
     }
   }, [invoiceData]);
+
+  // Sync passenger count with item quantity automatically ONLY for Package
+  useEffect(() => {
+    if (formData.invoiceType !== "Package") return;
+    const paxCount = passengerDetails.length;
+    setItems((prevItems) => {
+      const needsUpdate = prevItems.some(item => item.quantity !== paxCount);
+      if (!needsUpdate) return prevItems;
+      return prevItems.map(item => ({
+        ...item,
+        quantity: paxCount,
+        amount: paxCount * item.price
+      }));
+    });
+  }, [passengerDetails.length, formData.invoiceType]);
 
   // Calculate totals whenever items, taxRate, or discount changes
   useEffect(() => {
@@ -119,6 +195,23 @@ export default function EditInvoicePage() {
     }
   };
 
+  const handlePassengerChange = (index: number, field: string, value: string | number) => {
+    const newPassengers = [...passengerDetails];
+    (newPassengers[index] as any)[field] = value;
+    setPassengerDetails(newPassengers);
+  };
+
+  const addPassenger = () => {
+    setPassengerDetails([...passengerDetails, { sNo: passengerDetails.length + 1, name: "", aadharNo: "N/A", age: "N/A", address: "", medical: "N/A" }]);
+  };
+
+  const removePassenger = (index: number) => {
+    if (passengerDetails.length > 1) {
+      const newPassengers = passengerDetails.filter((_, i) => i !== index).map((p, i) => ({ ...p, sNo: i + 1 }));
+      setPassengerDetails(newPassengers);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -127,16 +220,12 @@ export default function EditInvoicePage() {
       return;
     }
     
-    if (items.some(i => !i.description)) {
-      toast.error("All items must have a description");
-      return;
-    }
-
     setLoading(true);
     try {
       const payload = {
         ...formData,
         items,
+        passengerDetails,
         ...totals
       };
 
@@ -188,65 +277,178 @@ export default function EditInvoicePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* INVOICE TYPE SELECTOR */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-800">Invoice Type</h2>
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+            <Button
+              type="button"
+              variant="ghost"
+              className={`px-6 h-8 text-sm ${formData.invoiceType === "Package" ? "bg-white shadow-sm font-medium text-slate-800" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200"}`}
+              onClick={() => setFormData({ ...formData, invoiceType: "Package" })}
+            >
+              Package
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className={`px-6 h-8 text-sm ${formData.invoiceType === "Rental" ? "bg-white shadow-sm font-medium text-slate-800" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200"}`}
+              onClick={() => setFormData({ ...formData, invoiceType: "Rental" })}
+            >
+              Rental
+            </Button>
+          </div>
+        </div>
+
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h2 className="text-lg font-semibold mb-4 text-slate-800">Client Details</h2>
+          <h2 className="text-lg font-semibold mb-4 text-slate-800">Invoice Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="customerId">Customer ID</Label>
+              <Input
+                id="customerId"
+                value={formData.customerId}
+                onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                placeholder="5313"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="paymentMode">Payment Mode</Label>
+              <Input
+                id="paymentMode"
+                value={formData.paymentMode}
+                onChange={(e) => setFormData({ ...formData, paymentMode: e.target.value })}
+                placeholder="UPI"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="remarks">Remarks</Label>
+              <Input
+                id="remarks"
+                value={formData.remarks}
+                onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                placeholder="Booking amount received"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+          <h2 className="text-lg font-semibold mb-4 text-slate-800">Billing Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="clientName">Client Name *</Label>
+            <div className="space-y-4">
+              <h3 className="font-medium text-slate-700">Billing From (Fixed)</h3>
+              <div className="text-sm text-slate-500 space-y-1">
+                <p><strong>Musafirbaba Travels Pvt Ltd</strong></p>
+                <p>GSTN: 07AAQCM4510N1Z2</p>
+                <p>Najafgarh, ND - 110043</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="font-medium text-slate-700">Billing To</h3>
+              <div className="space-y-2">
+                <Label htmlFor="clientName">Client Name *</Label>
+                <Input
+                  id="clientName"
+                  value={formData.clientName}
+                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label htmlFor="clientPhone">Client Phone</Label>
+                  <Input
+                    id="clientPhone"
+                    value={formData.clientPhone}
+                    onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                    placeholder="Phone number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientEmail">Client Email</Label>
+                  <Input
+                    id="clientEmail"
+                    value={formData.clientEmail}
+                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                    placeholder="Email address"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label htmlFor="bedSharing">Bed Sharing</Label>
+                  <Input
+                    id="bedSharing"
+                    value={formData.billingTo.bedSharing}
+                    onChange={(e) => setFormData({ ...formData, billingTo: { ...formData.billingTo, bedSharing: e.target.value } })}
+                    placeholder="N/A"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyContact">Emergency Contact</Label>
+                  <Input
+                    id="emergencyContact"
+                    value={formData.billingTo.emergencyContact}
+                    onChange={(e) => setFormData({ ...formData, billingTo: { ...formData.billingTo, emergencyContact: e.target.value } })}
+                    placeholder="9289602447"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clientAddress">Client Address</Label>
+                <Textarea
+                  id="clientAddress"
+                  rows={2}
+                  value={formData.clientAddress}
+                  onChange={(e) => setFormData({ ...formData, clientAddress: e.target.value })}
+                  placeholder="Billing address..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {formData.invoiceType === "Package" && (
+          <>
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+              <h2 className="text-lg font-semibold mb-4 text-slate-800">Package Summary</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-3 space-y-2">
+              <Label htmlFor="particulars">Particulars</Label>
               <Input
-                id="clientName"
-                value={formData.clientName}
-                onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                placeholder="John Doe"
-                required
+                id="particulars"
+                value={formData.packageSummary.particulars}
+                onChange={(e) => setFormData({ ...formData, packageSummary: { ...formData.packageSummary, particulars: e.target.value } })}
+                placeholder="Helicopter Booking (Sersi to Sersi)"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="clientEmail">Client Email</Label>
+              <Label htmlFor="duration">Duration</Label>
               <Input
-                id="clientEmail"
-                type="email"
-                value={formData.clientEmail}
-                onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                placeholder="john@example.com"
+                id="duration"
+                value={formData.packageSummary.duration}
+                onChange={(e) => setFormData({ ...formData, packageSummary: { ...formData.packageSummary, duration: e.target.value } })}
+                placeholder="24 hours"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="clientPhone">Client Phone</Label>
+              <Label htmlFor="startDate">Start Date</Label>
               <Input
-                id="clientPhone"
-                value={formData.clientPhone}
-                onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-                placeholder="+91 9876543210"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="invoiceDate">Invoice Date *</Label>
-              <Input
-                id="invoiceDate"
+                id="startDate"
                 type="date"
-                value={formData.invoiceDate}
-                onChange={(e) => setFormData({ ...formData, invoiceDate: e.target.value })}
-                required
+                value={formData.packageSummary.startDate}
+                onChange={(e) => setFormData({ ...formData, packageSummary: { ...formData.packageSummary, startDate: e.target.value } })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label htmlFor="endDate">End Date</Label>
               <Input
-                id="dueDate"
+                id="endDate"
                 type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="clientAddress">Billing Address</Label>
-              <Textarea
-                id="clientAddress"
-                rows={2}
-                value={formData.clientAddress}
-                onChange={(e) => setFormData({ ...formData, clientAddress: e.target.value })}
-                placeholder="123 Main St..."
+                value={formData.packageSummary.endDate}
+                onChange={(e) => setFormData({ ...formData, packageSummary: { ...formData.packageSummary, endDate: e.target.value } })}
               />
             </div>
           </div>
@@ -254,9 +456,105 @@ export default function EditInvoicePage() {
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">Line Items</h2>
+            <h2 className="text-lg font-semibold text-slate-800">Passenger Details</h2>
+            <Button type="button" onClick={addPassenger} variant="outline" size="sm" className="h-8 border-[#FE5300] text-[#FE5300] hover:bg-[#FE5300] hover:text-white">
+              <Plus size={14} className="mr-1" /> Add Passenger
+            </Button>
+          </div>
+          <div className="space-y-4">
+            {passengerDetails.map((p, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-3 p-4 bg-slate-50 rounded-lg border border-slate-100 relative group">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">S.No</Label>
+                  <Input value={p.sNo} disabled className="h-8" />
+                </div>
+                <div className="md:col-span-2 space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">Name / Pax</Label>
+                  <Input value={p.name} onChange={(e) => handlePassengerChange(index, "name", e.target.value)} placeholder="Name" className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">Aadhar No</Label>
+                  <Input value={p.aadharNo} onChange={(e) => handlePassengerChange(index, "aadharNo", e.target.value)} placeholder="N/A" className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">Age</Label>
+                  <Input value={p.age} onChange={(e) => handlePassengerChange(index, "age", e.target.value)} placeholder="N/A" className="h-8" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">Medical</Label>
+                  <Input value={p.medical} onChange={(e) => handlePassengerChange(index, "medical", e.target.value)} placeholder="N/A" className="h-8" />
+                </div>
+                <div className="md:col-span-6 space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">Address</Label>
+                  <Input value={p.address} onChange={(e) => handlePassengerChange(index, "address", e.target.value)} placeholder="Passenger Address" className="h-8" />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white border shadow-sm text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removePassenger(index)}
+                  disabled={passengerDetails.length === 1}
+                >
+                  <Trash2 size={12} />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+          </>
+        )}
+
+        {formData.invoiceType === "Rental" && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <h2 className="text-lg font-semibold mb-4 text-slate-800">Rental Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2 space-y-2">
+                <Label htmlFor="vehicleName">Vehicle Name</Label>
+                <Input
+                  id="vehicleName"
+                  value={formData.rentalSummary.vehicleName}
+                  onChange={(e) => setFormData({ ...formData, rentalSummary: { ...formData.rentalSummary, vehicleName: e.target.value } })}
+                  placeholder="Toyota Innova Crysta"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkIn">Check In</Label>
+                <Input
+                  id="checkIn"
+                  type="date"
+                  value={formData.rentalSummary.checkIn}
+                  onChange={(e) => setFormData({ ...formData, rentalSummary: { ...formData.rentalSummary, checkIn: e.target.value } })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkOut">Check Out</Label>
+                <Input
+                  id="checkOut"
+                  type="date"
+                  value={formData.rentalSummary.checkOut}
+                  onChange={(e) => setFormData({ ...formData, rentalSummary: { ...formData.rentalSummary, checkOut: e.target.value } })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="numberOfVehicles">Number of Vehicles</Label>
+                <Input
+                  id="numberOfVehicles"
+                  type="number"
+                  min="1"
+                  value={formData.rentalSummary.numberOfVehicles}
+                  onChange={(e) => setFormData({ ...formData, rentalSummary: { ...formData.rentalSummary, numberOfVehicles: parseInt(e.target.value) || 1 } })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-slate-800">Payment Items (Summary)</h2>
             <Button type="button" onClick={addItem} variant="outline" size="sm" className="h-8 border-[#FE5300] text-[#FE5300] hover:bg-[#FE5300] hover:text-white">
-              <Plus size={14} className="mr-1" /> Add Item
+              <Plus size={14} className="mr-1" /> Add Row
             </Button>
           </div>
 
@@ -311,15 +609,36 @@ export default function EditInvoicePage() {
           <div className="mt-8 border-t pt-6">
             <div className="flex flex-col md:flex-row gap-8 justify-between">
               <div className="flex-1 space-y-4 max-w-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cgst">CGST (₹)</Label>
+                    <Input
+                      id="cgst"
+                      type="number"
+                      min="0"
+                      value={formData.paymentSummary.cgst}
+                      onChange={(e) => setFormData({ ...formData, paymentSummary: { ...formData.paymentSummary, cgst: Number(e.target.value) } })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sgst">SGST (₹)</Label>
+                    <Input
+                      id="sgst"
+                      type="number"
+                      min="0"
+                      value={formData.paymentSummary.sgst}
+                      onChange={(e) => setFormData({ ...formData, paymentSummary: { ...formData.paymentSummary, sgst: Number(e.target.value) } })}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="taxRate">Tax Rate (%)</Label>
+                  <Label htmlFor="advanceReceived">Advance Received (₹)</Label>
                   <Input
-                    id="taxRate"
+                    id="advanceReceived"
                     type="number"
                     min="0"
-                    max="100"
-                    value={formData.taxRate}
-                    onChange={(e) => setFormData({ ...formData, taxRate: Number(e.target.value) })}
+                    value={formData.paymentSummary.advanceReceived}
+                    onChange={(e) => setFormData({ ...formData, paymentSummary: { ...formData.paymentSummary, advanceReceived: Number(e.target.value) } })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -332,35 +651,35 @@ export default function EditInvoicePage() {
                     onChange={(e) => setFormData({ ...formData, discountAmount: Number(e.target.value) })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes / Terms</Label>
-                  <Textarea
-                    id="notes"
-                    rows={3}
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Thank you for your business..."
-                  />
-                </div>
               </div>
 
-              <div className="w-full md:w-64 space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100 h-fit">
+              <div className="w-full md:w-80 space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100 h-fit">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Subtotal:</span>
                   <span className="font-mono">₹{totals.subTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Tax ({formData.taxRate}%):</span>
-                  <span className="font-mono">₹{totals.taxAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                  <span className="text-slate-500">CGST + SGST:</span>
+                  <span className="font-mono">₹{(formData.paymentSummary.cgst + formData.paymentSummary.sgst).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between text-sm text-red-500">
                   <span>Discount:</span>
                   <span className="font-mono">-₹{formData.discountAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="border-t border-slate-200 pt-3 flex justify-between items-center mt-2">
-                  <span className="font-bold text-slate-800">Total:</span>
+                  <span className="font-bold text-slate-800">Total Amount:</span>
+                  <span className="font-bold text-lg font-mono text-slate-900">
+                    ₹{(totals.subTotal + formData.paymentSummary.cgst + formData.paymentSummary.sgst - formData.discountAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm text-green-600 font-medium">
+                  <span>Advance Received:</span>
+                  <span className="font-mono">₹{formData.paymentSummary.advanceReceived.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="border-t border-slate-200 pt-3 flex justify-between items-center mt-2">
+                  <span className="font-bold text-slate-800 uppercase text-xs tracking-wider">Balance Due:</span>
                   <span className="font-bold text-xl font-mono text-[#FE5300]">
-                    ₹{totals.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹{Math.max(0, (totals.subTotal + formData.paymentSummary.cgst + formData.paymentSummary.sgst - formData.discountAmount) - formData.paymentSummary.advanceReceived).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

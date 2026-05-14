@@ -29,12 +29,55 @@ interface InvoiceItem {
 export interface Invoice {
   _id: string;
   invoiceNumber: string;
+  invoiceType?: "Package" | "Rental";
   clientName: string;
   clientEmail: string;
   clientPhone: string;
   clientAddress: string;
   invoiceDate: string;
   dueDate: string;
+  customerId?: string;
+  paymentMode?: string;
+  remarks?: string;
+  billingFrom?: {
+    gstnNo: string;
+    address: string;
+    contactNo: string;
+    emailId: string;
+    website: string;
+  };
+  billingTo?: {
+    bedSharing: string;
+    emergencyContact: string;
+  };
+  packageSummary?: {
+    particulars: string;
+    duration: string;
+    startDate: string;
+    endDate: string;
+    packagePrice: number;
+  };
+  rentalSummary?: {
+    vehicleName: string;
+    checkIn: string;
+    checkOut: string;
+    numberOfVehicles: number;
+  };
+  passengerDetails?: Array<{
+    sNo: number;
+    name: string;
+    aadharNo: string;
+    age: string;
+    address: string;
+    medical: string;
+  }>;
+  paymentSummary?: {
+    paymentId: string;
+    advanceReceived: number;
+    cgst: number;
+    sgst: number;
+    balanceAmount: number;
+  };
   items: InvoiceItem[];
   subTotal: number;
   taxRate: number;

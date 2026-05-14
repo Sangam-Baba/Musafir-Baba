@@ -17,9 +17,11 @@ const getNextInvoiceNumber = async () => {
 export const createInvoice = async (req, res) => {
   try {
     const { 
-      clientName, clientEmail, clientPhone, clientAddress, 
+      invoiceType, clientName, clientEmail, clientPhone, clientAddress, 
       invoiceDate, dueDate, items, subTotal, 
-      taxRate, taxAmount, discountAmount, totalAmount, notes 
+      taxRate, taxAmount, discountAmount, totalAmount, notes,
+      customerId, paymentMode, remarks, billingFrom, billingTo,
+      packageSummary, passengerDetails, paymentSummary, rentalSummary
     } = req.body;
 
     if (!clientName || !items || items.length === 0) {
@@ -29,6 +31,7 @@ export const createInvoice = async (req, res) => {
     const invoiceNumber = await getNextInvoiceNumber();
 
     const invoice = new Invoice({
+      invoiceType: invoiceType || "Package",
       invoiceNumber,
       clientName,
       clientEmail,
@@ -42,7 +45,16 @@ export const createInvoice = async (req, res) => {
       taxAmount,
       discountAmount,
       totalAmount,
-      notes
+      notes,
+      customerId,
+      paymentMode,
+      remarks,
+      billingFrom,
+      billingTo,
+      packageSummary,
+      passengerDetails,
+      paymentSummary,
+      rentalSummary
     });
 
     await invoice.save();
