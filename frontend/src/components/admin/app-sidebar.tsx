@@ -91,7 +91,7 @@ const NAV_GROUPS = [
         label: "Sitemap",
         href: "/admin/sitemap",
         icon: MapPin,
-        permission: "dashboard",
+        permission: "sitemap",
       },
       {
         label: "WebPages",
