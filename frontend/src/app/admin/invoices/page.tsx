@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Search, Download, Trash2, Edit, Eye } from "lucide-react";
+import { Loader2, Search, Download, Trash2, Edit, Eye, X } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
@@ -108,6 +108,8 @@ export default function InvoicesPage() {
   const token = useAdminAuthStore((state) => state.accessToken) as string;
   const [filter, setFilter] = useState({ search: "" });
   const [page, setPage] = useState(1);
+  const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string>("");
   const router = useRouter();
 
   const {
@@ -162,8 +164,14 @@ export default function InvoicesPage() {
   };
 
   const handleAction = (invoice: Invoice, action: "view" | "download") => {
-    generateInvoicePDF(invoice, action);
-    if (action === "download") {
+    if (action === "view") {
+      const dataUrl = generateInvoicePDF(invoice, "dataurl");
+      if (dataUrl) {
+        setPdfDataUrl(dataUrl);
+        setPreviewInvoice(invoice);
+      }
+    } else {
+      generateInvoicePDF(invoice, "download");
       toast.success("Invoice downloaded!");
     }
   };
@@ -298,6 +306,56 @@ export default function InvoicesPage() {
         </div>
       )}
       {isError && toast.error(error.message)}
+
+      {/* PDF Preview Drawer */}
+      {previewInvoice && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+            onClick={() => {
+              URL.revokeObjectURL(pdfDataUrl);
+              setPreviewInvoice(null);
+            }}
+          />
+          {/* Drawer */}
+          <div className="fixed top-0 right-0 h-full w-[55vw] max-w-4xl bg-white shadow-2xl z-50 flex flex-col">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <div>
+                <p className="text-xs text-slate-500 uppercase tracking-widest">Invoice Preview</p>
+                <h2 className="font-bold text-slate-800 text-lg mt-0.5">{previewInvoice.invoiceNumber}</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    generateInvoicePDF(previewInvoice, "download");
+                    toast.success("Invoice downloaded!");
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-[#FE5300] text-white px-4 py-2 rounded-lg hover:bg-[#FE5300]/90 transition"
+                >
+                  <Download size={13} /> Download PDF
+                </button>
+                <button
+                  onClick={() => {
+                    URL.revokeObjectURL(pdfDataUrl);
+                    setPreviewInvoice(null);
+                  }}
+                  className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-100 transition text-slate-500"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+            {/* PDF iframe */}
+            <iframe
+              src={pdfDataUrl}
+              className="flex-1 w-full border-0"
+              title="Invoice PDF Preview"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
