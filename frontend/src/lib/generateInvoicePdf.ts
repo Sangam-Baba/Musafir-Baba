@@ -1,7 +1,7 @@
 import { Invoice } from "@/app/admin/invoices/page";
 import { jsPDF } from "jspdf";
 
-export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download" = "download") => {
+export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download" | "dataurl" = "download"): string | undefined => {
   const doc = new jsPDF();
   const margin = 10;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -570,6 +570,9 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   // Final Action
   if (action === "view") {
     window.open(doc.output("bloburl"), "_blank");
+  } else if (action === "dataurl") {
+    const blob = doc.output("blob");
+    return URL.createObjectURL(blob);
   } else {
     doc.save(`${invoice.invoiceNumber}.pdf`);
   }
