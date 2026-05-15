@@ -1,0 +1,260 @@
+import {
+  Home,
+  Users,
+  Box,
+  Settings,
+  ScrollText,
+  MapPin,
+  Tags,
+  LayoutTemplate,
+  Newspaper,
+  UserRoundCheck,
+  ListChecks,
+  Rocket,
+  Briefcase,
+  Cog,
+  CircleQuestionMark,
+  CookingPot,
+  MapPinPenIcon,
+  Video,
+  IndianRupee,
+  Images,
+  NewspaperIcon,
+  Car,
+  Database,
+  KeyRound,
+} from "lucide-react";
+import { MdDashboardCustomize } from "react-icons/md";
+import { FaHome, FaCog, FaBox } from "react-icons/fa";
+
+export const NAV_GROUPS = [
+  {
+    label: "Main",
+    icon: FaHome,
+    items: [
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: Home,
+        permission: "dashboard",
+      },
+      {
+        label: "Enquiry",
+        href: "/admin/enquiry",
+        icon: CircleQuestionMark,
+        permission: "enquiry",
+      },
+      {
+        label: "Bookings",
+        href: "/admin/bookings",
+        icon: CookingPot,
+        permission: "bookings",
+      },
+      {
+        label: "Visa Application",
+        href: "/admin/visa-applications",
+        icon: Rocket,
+        permission: "visa-application",
+      },
+    ],
+  },
+  {
+    label: "Content Management",
+    icon: ListChecks,
+    items: [
+      {
+        label: "Sitemap",
+        href: "/admin/sitemap",
+        icon: MapPin,
+        permission: "sitemap",
+      },
+      {
+        label: "WebPages",
+        href: "/admin/webpage",
+        icon: LayoutTemplate,
+        permission: "webpage",
+      },
+      {
+        label: "Blogs",
+        href: "/admin/blogs",
+        icon: ScrollText,
+        permission: "blogs",
+      },
+      {
+        label: "News",
+        href: "/admin/news",
+        icon: Newspaper,
+        permission: "news",
+      },
+      { label: "Visa", href: "/admin/visa", icon: Rocket, permission: "visa" },
+      {
+        label: "Vehicle",
+        href: "/admin/vehicle",
+        icon: Car,
+        permission: "vehicle",
+      },
+      {
+        label: "Career",
+        href: "/admin/career",
+        icon: Briefcase,
+        permission: "career",
+      },
+      {
+        label: "Gallery",
+        href: "/admin/gallery",
+        icon: Images,
+        permission: "gallery",
+      },
+      {
+        label: "About Us",
+        href: "/admin/about-us",
+        icon: Users,
+        permission: "about-us",
+      },
+      {
+        label: "Video Banner",
+        href: "/admin/video-banner",
+        icon: Video,
+        permission: "video-banner",
+      },
+      {
+        label: "Footer Items",
+        href: "/admin/footer",
+        icon: ListChecks,
+        permission: "footer",
+      },
+    ],
+  },
+  {
+    label: "Packages",
+    icon: FaBox,
+    items: [
+      {
+        label: "All Packages",
+        href: "/admin/holidays",
+        icon: Box,
+        permission: "holidays",
+      },
+      {
+        label: "Customized Packages",
+        href: "/admin/customized-tour-package",
+        icon: MdDashboardCustomize,
+        permission: "customized-tour-package",
+      },
+      {
+        label: "Destinations",
+        href: "/admin/destination",
+        icon: MapPin,
+        permission: "destination",
+      },
+      {
+        label: "Destinations Meta",
+        href: "/admin/destination-seo",
+        icon: MapPinPenIcon,
+        permission: "destination-seo",
+      },
+      {
+        label: "Category",
+        href: "/admin/category",
+        icon: Tags,
+        permission: "category",
+      },
+    ],
+  },
+  {
+    label: "Bills & Invoice",
+    icon: FaBox,
+    items: [
+      {
+        label: "Invoices",
+        href: "/admin/invoices",
+        icon: ScrollText,
+        permission: "invoice",
+      },
+    ],
+  },
+  {
+    label: "Master Data",
+    icon: Database,
+    items: [
+      {
+        label: "Vehicle Brands",
+        href: "/admin/master-data/brand",
+        icon: Tags,
+        permission: "master-vehicle-brand",
+      },
+      {
+        label: "Vehicle Types",
+        href: "/admin/master-data/type",
+        icon: ListChecks,
+        permission: "master-vehicle-type",
+      },
+      {
+        label: "Pickup Destinations",
+        href: "/admin/master-data/pickup-destination",
+        icon: MapPin,
+        permission: "master-pickup-destination",
+      },
+      {
+        label: "Fuel Types",
+        href: "/admin/master-data/fuel-type",
+        icon: Database,
+        permission: "master-fuel-type",
+      },
+      {
+        label: "Transmissions",
+        href: "/admin/master-data/transmission",
+        icon: Settings,
+        permission: "master-transmission",
+      },
+      {
+        label: "Sales Person",
+        href: "/admin/master-data/sales-person",
+        icon: Users,
+        permission: "master-sales-person",
+      },
+    ],
+  },
+  {
+    label: "Settings",
+    icon: FaCog,
+    items: [
+      {
+        label: "Authors",
+        href: "/admin/authors",
+        icon: Users,
+        permission: "authors",
+      },
+      {
+        label: "Role Management",
+        href: "/admin/role",
+        icon: Settings,
+        permission: "role",
+      },
+      {
+        label: "Coupons",
+        href: "/admin/coupon",
+        icon: IndianRupee,
+        permission: "coupon",
+      },
+      {
+        label: "Membership",
+        href: "/admin/membership",
+        icon: UserRoundCheck,
+        permission: "membership",
+      },
+      {
+        label: "Newsletter",
+        href: "/admin/newsletter",
+        icon: NewspaperIcon,
+        permission: "newsletter",
+      },
+      {
+        label: "Change Password",
+        href: "/admin/update-password",
+        icon: KeyRound,
+        permission: "change-password",
+      },
+    ],
+  },
+];

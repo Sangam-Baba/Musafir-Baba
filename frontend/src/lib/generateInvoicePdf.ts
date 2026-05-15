@@ -1,8 +1,10 @@
 import { Invoice } from "@/app/admin/invoices/page";
 import { jsPDF } from "jspdf";
 
-export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download" | "dataurl" = "download"): string | undefined => {
-  const doc = new jsPDF();
+export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download" | "dataurl" | "base64" = "download"): string | undefined => {
+  const doc = new jsPDF({
+    compress: true,
+  });
   const margin = 10;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -18,7 +20,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   const drawHeader = () => {
     try {
       // Use the combined header image provided by the user
-      doc.addImage("/invoice_pdf_header.png", "PNG", 0, 0, pageWidth, 50);
+      doc.addImage("/invoice_pdf_header.jpg", "JPEG", 0, 0, pageWidth, 50, undefined, "FAST");
     } catch (e) {
       console.error("Header image error:", e);
     }
@@ -573,6 +575,8 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   } else if (action === "dataurl") {
     const blob = doc.output("blob");
     return URL.createObjectURL(blob);
+  } else if (action === "base64") {
+    return doc.output("datauristring");
   } else {
     doc.save(`${invoice.invoiceNumber}.pdf`);
   }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Search, Download, Trash2, Edit, Eye, X } from "lucide-react";
+import { Loader2, Search, Download, Trash2, Edit, Eye, X, Mail } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
@@ -110,6 +110,7 @@ export default function InvoicesPage() {
   const [page, setPage] = useState(1);
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
   const [pdfDataUrl, setPdfDataUrl] = useState<string>("");
+  const [sendingMailId, setSendingMailId] = useState<string | null>(null);
   const router = useRouter();
 
   const {
@@ -163,16 +164,49 @@ export default function InvoicesPage() {
     }
   };
 
-  const handleAction = (invoice: Invoice, action: "view" | "download") => {
+  const handleAction = async (invoice: Invoice, action: "view" | "download" | "mail") => {
     if (action === "view") {
       const dataUrl = generateInvoicePDF(invoice, "dataurl");
       if (dataUrl) {
         setPdfDataUrl(dataUrl);
         setPreviewInvoice(invoice);
       }
-    } else {
+    } else if (action === "download") {
       generateInvoicePDF(invoice, "download");
       toast.success("Invoice downloaded!");
+    } else if (action === "mail") {
+      if (!invoice.clientEmail) {
+        return toast.error("Client email is missing for this invoice!");
+      }
+
+      setSendingMailId(invoice._id);
+      try {
+        const base64Pdf = generateInvoicePDF(invoice, "base64");
+        
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/invoice/${invoice._id}/send-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            base64Pdf,
+            fileName: `${invoice.invoiceNumber}.pdf`
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          toast.success(`Invoice sent to ${invoice.clientEmail} successfully!`);
+        } else {
+          toast.error(data.message || "Failed to send email");
+        }
+      } catch (error) {
+        console.error("Email error:", error);
+        toast.error("Something went wrong while sending email");
+      } finally {
+        setSendingMailId(null);
+      }
     }
   };
 
@@ -267,6 +301,20 @@ export default function InvoicesPage() {
                         >
                           <Download size={14} className="mr-1" />
                           <span className="text-[10px] font-bold uppercase tracking-wider">PDF</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          onClick={() => handleAction(invoice, "mail")}
+                          disabled={sendingMailId === invoice._id}
+                        >
+                          {sendingMailId === invoice._id ? (
+                            <Loader2 size={14} className="mr-1 animate-spin" />
+                          ) : (
+                            <Mail size={14} className="mr-1" />
+                          )}
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Mail</span>
                         </Button>
                         <Button
                           variant="ghost"
