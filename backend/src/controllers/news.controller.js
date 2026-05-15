@@ -128,7 +128,7 @@ const getAllNews = async (req, res) => {
   try {
     const { title, search, author, status } = req.query;
     const page = Math.max(parseInt(req.query?.page || "1"), 1);
-    const limit = Math.min(parseInt(req.query?.limit || "250"), 200);
+    const limit = Math.min(parseInt(req.query?.limit || "250"), 10000);
     const skip = (page - 1) * limit;
 
     const filter = {};

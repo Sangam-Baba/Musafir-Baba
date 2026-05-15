@@ -28,7 +28,8 @@ const createCategory = async (req, res) => {
 
 const getCategory = async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true })
+    const filter = req.query.all === "true" ? {} : { isActive: true };
+    const categories = await Category.find(filter)
       .sort({ createdAt: -1 })
       .lean();
 

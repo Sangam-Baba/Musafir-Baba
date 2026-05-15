@@ -151,7 +151,7 @@ const getPackages = async (req, res) => {
     const query = {};
 
     // ✅ Status filter
-    if (status) query.status = status;
+    if (status && status !== "all") query.status = status;
     if (slug) query.slug = slug;
 
     // ✅ Duration filter
