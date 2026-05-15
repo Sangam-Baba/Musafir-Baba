@@ -299,7 +299,7 @@ export function AdminSidebar() {
       if (item.label === "Change Password") {
         return role === "admin" || role === "superadmin";
       }
-      return role === "superadmin" || permissions.includes(item.permission);
+      return role === "superadmin" || role === "admin" || permissions.includes(item.permission);
     }),
   })).filter((group) => group.items.length > 0);
   return (

@@ -10,7 +10,8 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Car
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,10 @@ const CATEGORIES: Record<string, { label: string; icon: any; color: string }> = 
   visa: { label: "Visa", icon: Hash, color: "text-indigo-500" },
   blog: { label: "Blog", icon: Newspaper, color: "text-pink-500" },
   news: { label: "News", icon: Newspaper, color: "text-red-500" },
+  customized: { label: "Customized Package", icon: Plane, color: "text-amber-500" },
+  seo: { label: "Destinations Meta", icon: MapPin, color: "text-purple-500" },
+  vehicle: { label: "Vehicle", icon: Car, color: "text-blue-400" },
+  aboutus: { label: "About Us", icon: Layout, color: "text-emerald-500" },
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -39,14 +44,18 @@ const ITEMS_PER_PAGE = 10;
 async function getAllSitemapData() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const [blogs, news, catRes, packages, destinations, webpages, visas] = await Promise.all([
-      fetch(`${baseUrl}/blogs/?status=published`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/news/?status=published`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/category`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/packages/`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/destination`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/webpage/?status=published`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/visa`, { next: { revalidate: 60 } }).then(r => r.json()),
+    const [blogs, news, catRes, packages, destinations, webpages, visas, customized, seo, vehicles, aboutus] = await Promise.all([
+      fetch(`${baseUrl}/blogs/?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/news/?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/category?limit=10000&all=true`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/packages/?limit=10000&status=all`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/destination?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/webpage/?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/visa?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/customizedtourpackage?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/destinationseo?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/vehicle?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/aboutus?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
     ]);
 
     const items: SitemapItem[] = [
@@ -70,6 +79,18 @@ async function getAllSitemapData() {
     }));
     destinations.data?.forEach((d: any) => items.push({ title: d.name, url: `/destinations/${d.state}`, category: "destination" }));
     visas.data?.forEach((v: any) => items.push({ title: `${v.country} Visa`, url: `/visa/${v.slug}`, category: "visa" }));
+    customized.data?.forEach((c: any) => items.push({ title: c.title, url: `/holidays/customised-tour-packages/${c.slug}`, category: "customized" }));
+    seo.data?.forEach((s: any) => {
+      if (s.destinationId && s.categoryId) {
+        items.push({ 
+          title: `${s.destinationId.name} - ${s.categoryId.name} (SEO)`, 
+          url: `/holidays/${s.categoryId.slug}/${s.destinationId.state}`, 
+          category: "seo" 
+        });
+      }
+    });
+    vehicles.data?.forEach((v: any) => items.push({ title: v.title, url: `/rental/${v.slug}`, category: "vehicle" }));
+    aboutus.data?.forEach((a: any) => items.push({ title: a.title, url: `/about-us`, category: "aboutus" }));
 
     return items;
   } catch (error) {
@@ -164,7 +185,7 @@ export default async function SitemapPage(props: {
                     </td>
                     <td className="py-2 px-4 text-right">
                       <Link 
-                        href={`https://musafirbaba.com${item.url}`} 
+                        href={item.url} 
                         target="_blank"
                         className="inline-flex items-center justify-center h-7 w-7 rounded-md text-slate-300 hover:text-[#FE5300] hover:bg-orange-50 transition-all group/icon"
                       >

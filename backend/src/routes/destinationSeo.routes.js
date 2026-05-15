@@ -31,13 +31,7 @@ destinationSeoRoute.get(
 
 destinationSeoRoute.get("/:category_slug/:destination_slug", getDestinationSeo);
 
-destinationSeoRoute.get(
-  "/",
-  isAuthenticated,
-  validateSession,
-  authorizedRoles(["admin", "superadmin"]),
-  getAllDestinationSeo
-);
+destinationSeoRoute.get("/", getAllDestinationSeo);
 
 destinationSeoRoute.patch(
   "/:id",

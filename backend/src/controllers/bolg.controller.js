@@ -132,7 +132,7 @@ const getAllBlog = async (req, res) => {
   try {
     const { title, search, category, author, status } = req.query;
     const page = Math.max(parseInt(req.query?.page || "1"), 1);
-    const limit = Math.min(parseInt(req.query?.limit || "250"), 250);
+    const limit = Math.min(parseInt(req.query?.limit || "250"), 10000);
     const skip = (page - 1) * limit;
 
     const filter = {};

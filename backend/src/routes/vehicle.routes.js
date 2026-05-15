@@ -22,13 +22,7 @@ vehicleRoutes.post(
   authorizedRoles(["admin", "superadmin"]),
   createVehicle,
 );
-vehicleRoutes.get(
-  "/",
-  isAuthenticated,
-  validateSession,
-  authorizedRoles(["admin", "superadmin"]),
-  getAllVehicle,
-);
+vehicleRoutes.get("/", getAllVehicle);
 vehicleRoutes.get("/all", getAllPublishedVehicle);
 vehicleRoutes.get("/slug/:slug", getVehicleBySlug);
 vehicleRoutes.get("/related/:slug", getRelatedVehicle);
