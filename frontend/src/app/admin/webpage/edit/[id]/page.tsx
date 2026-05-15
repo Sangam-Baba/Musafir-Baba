@@ -61,6 +61,7 @@ export default function UpdateWebpage() {
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const router = useRouter();
+  const [isReset, setIsReset] = useState(false);
 
   const {
     data: webpage,
@@ -98,7 +99,7 @@ export default function UpdateWebpage() {
   });
 
   useEffect(() => {
-    if (webpage && allparents) {
+    if (webpage && allparents && !isReset) {
       const reviewsIds = webpage.reviews?.map((r: string) => r) || [];
       form.reset({
         ...webpage,
@@ -115,8 +116,9 @@ export default function UpdateWebpage() {
           })
           .catch((err) => console.error("Failed to fetch review info:", err));
       }
+      setIsReset(true);
     }
-  }, [webpage, form, token, allparents]);
+  }, [webpage, form, token, allparents, isReset]);
 
   const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
   const footerLinksArray = useFieldArray({
@@ -216,7 +218,7 @@ export default function UpdateWebpage() {
 
               <div className="min-h-[300px]">
                 {/* Basic Detail Tab */}
-                <TabsContent value="content" className="mt-0 space-y-4 animate-in fade-in-50 duration-200">
+                <TabsContent value="content" forceMount className="mt-0 space-y-4 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Title</Label>
@@ -244,8 +246,8 @@ export default function UpdateWebpage() {
                     <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Page Content</Label>
                     <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm">
                       <BlogEditor
-                        value={form.getValues("content")}
-                        onChange={(val) => form.setValue("content", val)}
+                        value={form.watch("content")}
+                        onChange={(val) => form.setValue("content", val, { shouldDirty: true })}
                       />
                     </div>
                   </div>
@@ -261,7 +263,7 @@ export default function UpdateWebpage() {
                 </TabsContent>
 
                 {/* Media & SEO Tab */}
-                <TabsContent value="seo" className="mt-0 space-y-6 animate-in fade-in-50 duration-200">
+                <TabsContent value="seo" forceMount className="mt-0 space-y-6 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="space-y-1.5">
@@ -358,7 +360,7 @@ export default function UpdateWebpage() {
                 </TabsContent>
 
                 {/* Organization Tab */}
-                <TabsContent value="org" className="mt-0 space-y-6 animate-in fade-in-50 duration-200 max-w-xl mx-auto">
+                <TabsContent value="org" forceMount className="mt-0 space-y-6 animate-in fade-in-50 duration-200 max-w-xl mx-auto data-[state=inactive]:hidden">
                    <div className="grid gap-4 py-2">
                     <div className="flex items-center justify-between p-4 bg-orange-50/20 rounded-xl border border-orange-100 shadow-sm">
                       <div className="space-y-0.5">
@@ -399,7 +401,7 @@ export default function UpdateWebpage() {
                 </TabsContent>
 
                 {/* Interactivity Tab */}
-                <TabsContent value="interactive" className="mt-0 space-y-8 animate-in fade-in-50 duration-200">
+                <TabsContent value="interactive" forceMount className="mt-0 space-y-8 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-1">
                       <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">FAQs</Label>
@@ -420,8 +422,8 @@ export default function UpdateWebpage() {
                             <Input {...form.register(`faqs.${index}.question`)} placeholder="Question" className="h-8 text-[13px] font-semibold border-none bg-slate-50 px-2" />
                             <div className="rounded-md border border-slate-50 overflow-hidden">
                               <SmallEditor
-                                value={form.getValues(`faqs.${index}.answer`)}
-                                onChange={(val) => form.setValue(`faqs.${index}.answer`, val)}
+                                value={form.watch(`faqs.${index}.answer`)}
+                                onChange={(val) => form.setValue(`faqs.${index}.answer`, val, { shouldDirty: true })}
                               />
                             </div>
                           </div>
