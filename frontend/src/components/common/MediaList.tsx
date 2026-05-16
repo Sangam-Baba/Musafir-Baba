@@ -137,10 +137,7 @@ export default function MediaPicker({
             <div className="w-80 bg-gray-100 p-4 rounded sticky top-10 self-start">
               <h3 className="font-semibold mb-2">Attachment Details</h3>
 
-              <form
-                className="space-y-3"
-                // onSubmit={form.handleSubmit((v) => mutation.mutate(v))}
-              >
+              <div className="space-y-3">
                 <label>Alt</label>
                 <Input
                   {...form.register("alt")}
@@ -167,7 +164,7 @@ export default function MediaPicker({
                 >
                   {mutation.isPending ? "Saving..." : "Select"}
                 </Button>
-              </form>
+              </div>
             </div>
           )}
         </div>

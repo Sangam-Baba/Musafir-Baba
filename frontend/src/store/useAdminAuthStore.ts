@@ -67,7 +67,7 @@ export const useAdminAuthStore = create<AdminAuthState>()(
             }
           );
 
-          if (!res.ok) throw new Error("Failed to refresh token");
+          if (!res.ok) return;
 
           const data = await res.json();
           set({
