@@ -5,6 +5,7 @@ import {
   getInvoiceById,
   updateInvoice,
   deleteInvoice,
+  sendInvoiceEmail,
 } from "../controllers/invoice.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 
@@ -18,5 +19,6 @@ router.get("/", getInvoices);
 router.get("/:id", getInvoiceById);
 router.put("/:id", updateInvoice);
 router.delete("/:id", deleteInvoice);
+router.post("/:id/send-email", sendInvoiceEmail);
 
 export default router;

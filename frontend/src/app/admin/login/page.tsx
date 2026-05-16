@@ -69,8 +69,27 @@ export default function LoginPage() {
       const accessToken = data.accessToken;
       setAuth(accessToken, data.role, data.permissions);
       form.reset();
+
+      // Find the first available permission if dashboard is not allowed
+      let targetPath = "/admin";
+      if (data.role === "staff" && !data.permissions.includes("dashboard")) {
+        // Simple mapping of some common permissions to their routes
+        const permissionMap: Record<string, string> = {
+          "invoice": "/admin/invoices",
+          "enquiry": "/admin/enquiry",
+          "bookings": "/admin/bookings",
+          "visa-application": "/admin/visa-applications",
+          "holidays": "/admin/holidays",
+        };
+        
+        const firstPerm = data.permissions.find((p: string) => permissionMap[p]);
+        if (firstPerm) {
+          targetPath = permissionMap[firstPerm];
+        }
+      }
+
       setTimeout(() => {
-        router.replace("/admin");
+        router.replace(targetPath);
       }, 2000);
     },
     onError: (error) => {

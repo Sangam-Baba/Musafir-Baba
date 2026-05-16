@@ -33,7 +33,7 @@ staffRouter.post(
   "/logout",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   logout,
 );
 
@@ -49,14 +49,14 @@ staffRouter.get(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getAdminById,
 );
 staffRouter.get(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin"]),
+  authorizedRoles(["admin", "superadmin"]),
   getAllAdmin,
 );
 staffRouter.post("/login", loginAdmin);
@@ -64,14 +64,14 @@ staffRouter.patch(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   updateAdmin,
 );
 staffRouter.delete(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin"]),
+  authorizedRoles(["admin", "superadmin"]),
   deleteAdmin,
 );
 export default staffRouter;

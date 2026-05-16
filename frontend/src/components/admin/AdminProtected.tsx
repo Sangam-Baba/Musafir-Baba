@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
+import { NAV_GROUPS } from "@/config/navigation";
 
 export default function AdminProtected({
   children,
@@ -12,16 +13,18 @@ export default function AdminProtected({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { accessToken, refreshAccessToken, clearAuth } = useAdminAuthStore();
+
+  // 1. Immediate Bypass for Login/Logout pages
+  // This ensures they render instantly without any auth checks or loaders
+  if (pathname === "/admin/login" || pathname === "/admin/logout") {
+    return <>{children}</>;
+  }
+
+  const { accessToken, refreshAccessToken, clearAuth, role, permissions } = useAdminAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-
-    if (pathname === "/admin/login") {
-      if (mounted) setLoading(false);
-      return;
-    }
 
     async function bootstrap() {
       try {
@@ -50,10 +53,10 @@ export default function AdminProtected({
 
         if (meRes.ok) {
           const user = await meRes.json();
-          if (user.data.role !== "admin" && user.data.role !== "superadmin") {
+          if (user.data.role !== "admin" && user.data.role !== "superadmin" && user.data.role !== "staff") {
             clearAuth();
             toast.error("You are not authorized to access this page.");
-            router.replace("/auth/login");
+            router.replace("/admin/login");
             return;
           }
           if (mounted) setLoading(false);
@@ -72,7 +75,7 @@ export default function AdminProtected({
           }
 
           const meRes2 = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`,
+            `${process.env.NEXT_PUBLIC_BASE_URL}/admin/me`,
             {
               headers: { Authorization: `Bearer ${newToken}` },
               credentials: "include",
@@ -81,7 +84,7 @@ export default function AdminProtected({
 
           if (meRes2.ok) {
             const user = await meRes2.json();
-            if (user.role !== "admin" && user.role !== "superadmin") {
+            if (user.data.role !== "admin" && user.data.role !== "superadmin" && user.data.role !== "staff") {
               clearAuth();
               router.replace("/admin/login");
               return;
@@ -105,8 +108,48 @@ export default function AdminProtected({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [accessToken, clearAuth, refreshAccessToken, router]);
 
   if (loading) return <Loader />;
+
+  // Path-based permission check
+  // Skip check for superadmin/admin or specific excluded paths
+  const userRole = role;
+  const userPermissions = permissions || [];
+  
+  if (userRole !== "superadmin" && userRole !== "admin") {
+    const isExcluded = pathname === "/admin" || pathname === "/admin/login" || pathname === "/admin/logout" || pathname === "/admin/update-password";
+    
+    if (!isExcluded) {
+      // Find if this path matches any NAV_GROUP item (longest match first)
+      const allItems = NAV_GROUPS.flatMap(g => g.items).sort((a, b) => b.href.length - a.href.length);
+      const matchedItem = allItems.find(item => {
+        if (item.href === "/admin") return pathname === "/admin"; // Exact match for root
+        return pathname.startsWith(item.href);
+      });
+      
+      if (matchedItem && !userPermissions.includes(matchedItem.permission)) {
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6">
+            <h1 className="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">
+              <span className="p-2 bg-red-50 rounded-full">🚫</span>
+              Access Denied
+            </h1>
+            <p className="text-slate-600 mb-6 text-center max-w-md">
+              You do not have permission to access the <strong>{matchedItem.label}</strong> module. 
+              Please contact your administrator if you believe this is an error.
+            </p>
+            <button 
+              onClick={() => router.replace("/admin")}
+              className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-95"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        );
+      }
+    }
+  }
+
   return <>{children}</>;
 }

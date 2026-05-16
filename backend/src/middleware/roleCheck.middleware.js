@@ -6,7 +6,7 @@ const authorizedRoles = ([...roles]) => {
       const id = req.user.sub;
       const role = req.user.role;
       let user;
-      if (role === "admin") {
+      if (role === "admin" || role === "superadmin" || role === "staff") {
         user = await Staff.findById(id).select("role");
       } else {
         user = await User.findById(id).select("role");

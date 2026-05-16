@@ -51,6 +51,8 @@ export const useAdminAuthStore = create<AdminAuthState>()(
           get().clearAuth();
         } catch (err) {
           console.error("Logout failed", err);
+        } finally {
+          get().clearAuth();
         }
       },
       refreshAccessToken: async () => {

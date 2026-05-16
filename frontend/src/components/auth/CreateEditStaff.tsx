@@ -29,6 +29,7 @@ const formSchema = z.object({
     message: "Please enter a valid phone number.",
   }),
   password: z.string().optional(),
+  role: z.enum(["admin", "staff"]).default("staff"),
   permissions: z.array(z.string()).optional(),
 });
 
@@ -113,6 +114,8 @@ const getStaff = async (accessToken: string, id: string, role: string) => {
   const data = await res.json();
   return data?.data;
 };
+import { NAV_GROUPS } from "@/config/navigation";
+
 function CreateEditStaff({
   id,
   onClose,
@@ -130,6 +133,7 @@ function CreateEditStaff({
       name: "",
       email: "",
       phone: 0,
+      role: "staff",
       permissions: [],
     },
   });
@@ -151,6 +155,7 @@ function CreateEditStaff({
       form.setValue("name", staff.name);
       form.setValue("email", staff.email);
       form.setValue("phone", staff.phone);
+      form.setValue("role", staff.role || "staff");
       form.setValue("permissions", staff.permissions);
     }
   }, [staff, accessToken, form]);
@@ -175,45 +180,30 @@ function CreateEditStaff({
     mutate.mutate(values);
   }
 
-  const newData = [
-    {
-      label: "Main",
-      values: ["dashboard", "enquiry", "bookings"],
-    },
-    {
-      label: "Content Management",
-      values: [
-        "visa",
-        "webpage",
-        "about-us",
-        "news",
-        "blogs",
-        "vehicle",
-        "gallery",
-        "video-banner",
-        "footer",
-        "career",
-        "sitemap",
-      ],
-    },
-    {
-      label: "Packages",
-      values: [
-        "holidays",
-        "customized-tour-package",
-        "plan-my-trip",
-        "destination",
-        "destination-seo",
-        "category",
-      ],
-    },
-    {
-      label: "Settings",
-      values: ["role", "membership", "authors", "coupon", "newsletter"],
-    },
-  ];
+  // Dynamically generate the permission categories from NAV_GROUPS
+  const dynamicPermissionGroups = NAV_GROUPS.map((group) => {
+    // Unique permissions in this group
+    const uniqueItems: { label: string; permission: string }[] = [];
+    const seenPermissions = new Set<string>();
+
+    group.items.forEach((item) => {
+      if (!seenPermissions.has(item.permission)) {
+        seenPermissions.add(item.permission);
+        uniqueItems.push({
+          label: item.label,
+          permission: item.permission,
+        });
+      }
+    });
+
+    return {
+      label: group.label,
+      items: uniqueItems,
+    };
+  });
+
   return (
-    <div className="flex flex-col max-w-2xl min-w-xl max-h-[90vh] overflow-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
+    <div className="flex flex-col max-w-2xl min-w-[500px] max-h-[90vh] overflow-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
       {isError && <p>{(error as Error).message}</p>}
       {isLoading ? (
         <p>Loading...</p>
@@ -272,6 +262,25 @@ function CreateEditStaff({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>User Role</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full p-2 border rounded-md bg-white text-sm"
+                    >
+                      <option value="staff">Staff (Permission Based)</option>
+                      <option value="admin">Admin (Full Access)</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {role === "admin" && (
               <FormField
                 control={form.control}
@@ -280,38 +289,31 @@ function CreateEditStaff({
                   <FormItem>
                     <FormLabel>Assign Permissions</FormLabel>
                     <FormControl>
-                      <div className="flex flex-col space-y-2">
-                        {newData.map((item, i) => (
-                          <div key={i}>
-                            <h1 className="text-gray-600">{item.label}</h1>
-                            <div className="flex flex-wrap space-y-2 gap-2 mt-2">
-                              {item.values?.map((cat: string, i: number) => (
+                      <div className="flex flex-col space-y-4">
+                        {dynamicPermissionGroups.map((group, i) => (
+                          <div key={i} className="border-b pb-4 last:border-0">
+                            <h3 className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">{group.label}</h3>
+                            <div className="flex flex-wrap gap-x-4 gap-y-2">
+                              {group.items.map((item, idx) => (
                                 <label
-                                  key={i}
-                                  className="flex items-center space-x-2"
+                                  key={idx}
+                                  className="flex items-center space-x-2 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"
                                 >
                                   <input
                                     type="checkbox"
-                                    value={cat}
-                                    checked={field.value?.includes(cat)}
+                                    value={item.permission}
+                                    checked={field.value?.includes(item.permission)}
                                     onChange={(e) => {
+                                      const current = field.value || [];
                                       if (e.target.checked) {
-                                        field.onChange([
-                                          ...(field.value || []),
-                                          cat,
-                                        ]);
+                                        field.onChange([...current, item.permission]);
                                       } else {
-                                        field.onChange(
-                                          field.value?.filter(
-                                            (id) => id !== cat,
-                                          ),
-                                        );
+                                        field.onChange(current.filter((p) => p !== item.permission));
                                       }
                                     }}
+                                    className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                                   />
-                                  <span>
-                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                                  </span>
+                                  <span>{item.label}</span>
                                 </label>
                               ))}
                             </div>

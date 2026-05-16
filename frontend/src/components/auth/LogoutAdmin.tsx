@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -12,15 +12,19 @@ export default function LogoutAdminClient() {
 
   const redirect = params.get("redirect") || "/";
   const logout = useAdminAuthStore((s) => s.logout);
+  const hasLoggedOut = useRef(false);
 
   useEffect(() => {
+    if (hasLoggedOut.current) return;
+    hasLoggedOut.current = true;
+
     (async () => {
       try {
         await logout(token);
-        toast.success("Logged out");
+        toast.success("Logged out successfully");
         router.replace(redirect);
       } catch (err) {
-        toast.error("Logout failed");
+        console.error("Logout error", err);
         router.replace(redirect);
       }
     })();

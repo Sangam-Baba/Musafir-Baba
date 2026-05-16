@@ -118,7 +118,7 @@ const registerAdmin = async (req, res) => {
       email,
       password: hashedpassword,
       phone,
-      role: "admin",
+      role: req.body.role || "staff",
       permissions: req.body?.permissions ?? [],
     });
     await user.save();
@@ -245,43 +245,45 @@ const refresh = async (req, res) => {
   }
 };
 const logout = async (req, res) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    domain: undefined,
+    path: "/",
+  };
+  
   try {
-    const { sessionId } = req.user;
-    if (!sessionId) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid session or already logged out",
-      });
-    }
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      domain: undefined,
-      path: "/",
-    };
+    const { sessionId } = req.user || {};
+    
+    // Always clear the cookie first
     res.clearCookie("admin_refresh_token", cookieOptions);
-    const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
-    await AuthLog.create({
-      userId: req?.user?.sub,
-      eventType: "logout",
-      sessionId,
-      ip: ip,
-      userAgent: req.headers["user-agent"],
-    });
+    
+    if (sessionId) {
+      const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
+      await AuthLog.create({
+        userId: req?.user?.sub,
+        eventType: "logout",
+        sessionId,
+        ip: ip,
+        userAgent: req.headers["user-agent"],
+      });
 
-    await Session.updateOne(
-      { sessionId },
-      { status: "logout", logoutAt: new Date() },
-    );
+      await Session.updateOne(
+        { sessionId },
+        { status: "logout", logoutAt: new Date() },
+      );
+    }
+    
     return res
       .status(200)
       .json({ success: true, message: "Logout successful" });
   } catch (error) {
     console.log("Logout error:", error.message);
+    // Even if DB update fails, we already cleared cookie
     return res
-      .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+      .status(200) // Still return 200 because cookie was cleared
+      .json({ success: true, message: "Logged out with minor errors" });
   }
 };
 
