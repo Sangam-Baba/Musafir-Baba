@@ -20,7 +20,7 @@ destinationRoutes.post(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "destination"),
   upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "gallery", maxCount: 10 },
@@ -36,14 +36,14 @@ destinationRoutes.patch(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "destination"),
   updateDestination
 );
 destinationRoutes.delete(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "destination"),
   deleteDestination
 );
 

@@ -293,6 +293,10 @@ export default function CreatePackagePage() {
     control: form.control,
     name: "itinerary",
   });
+  const reviewsArray = useFieldArray({
+    control: form.control,
+    name: "reviews",
+  });
 
   const mutation = useMutation({
     mutationFn: (values: PackageFormValues) =>
