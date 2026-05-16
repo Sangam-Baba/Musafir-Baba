@@ -25,21 +25,21 @@ pkgRoute.post(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "holidays"),
   createPackage
 );
 pkgRoute.delete(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "holidays"),
   deletePackage
 );
 pkgRoute.patch(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "holidays"),
   editPackage
 );
 pkgRoute.get("/", getPackages);
