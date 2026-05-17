@@ -22,8 +22,13 @@ export const createInvoice = async (req, res) => {
       invoiceDate, dueDate, items, subTotal, 
       taxRate, taxAmount, discountAmount, totalAmount, notes,
       customerId, paymentMode, remarks, billingFrom, billingTo,
-      packageSummary, passengerDetails, paymentSummary, rentalSummary
+      packageSummary, passengerDetails, paymentSummary, rentalSummary,
+      salesPerson
     } = req.body;
+
+    if (!salesPerson) {
+      return res.status(400).json({ success: false, message: "Sales person is required." });
+    }
 
     if (!clientName || !items || items.length === 0) {
       return res.status(400).json({ success: false, message: "Client name and items are required." });
@@ -55,7 +60,8 @@ export const createInvoice = async (req, res) => {
       packageSummary,
       passengerDetails,
       paymentSummary,
-      rentalSummary
+      rentalSummary,
+      salesPerson
     });
 
     await invoice.save();
@@ -84,6 +90,7 @@ export const getInvoices = async (req, res) => {
 
     const total = await Invoice.countDocuments(filter);
     const invoices = await Invoice.find(filter)
+      .populate("salesPerson")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -105,7 +112,7 @@ export const getInvoices = async (req, res) => {
 export const getInvoiceById = async (req, res) => {
   try {
     const { id } = req.params;
-    const invoice = await Invoice.findById(id).lean();
+    const invoice = await Invoice.findById(id).populate("salesPerson").lean();
 
     if (!invoice) {
       return res.status(404).json({ success: false, message: "Invoice not found." });
@@ -121,6 +128,15 @@ export const getInvoiceById = async (req, res) => {
 export const updateInvoice = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Prevent salesPerson and isApproved from being modified through general update
+    if (req.body.salesPerson) {
+      delete req.body.salesPerson;
+    }
+    if (req.body.isApproved !== undefined) {
+      delete req.body.isApproved;
+    }
+
     const invoice = await Invoice.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
 
     if (!invoice) {
@@ -162,6 +178,10 @@ export const sendInvoiceEmail = async (req, res) => {
     const invoice = await Invoice.findById(id).lean();
     if (!invoice) {
       return res.status(404).json({ success: false, message: "Invoice not found." });
+    }
+
+    if (!invoice.isApproved) {
+      return res.status(400).json({ success: false, message: "Invoice must be approved before sending." });
     }
 
     if (!invoice.clientEmail) {
@@ -350,6 +370,27 @@ export const sendInvoiceEmail = async (req, res) => {
     }
   } catch (error) {
     console.error("Sending invoice email failed", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// Approve an invoice
+export const approveInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findByIdAndUpdate(
+      id,
+      { isApproved: true },
+      { new: true }
+    );
+
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: "Invoice not found." });
+    }
+
+    res.status(200).json({ success: true, data: invoice, message: "Invoice approved successfully." });
+  } catch (error) {
+    console.error("Approving invoice failed", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

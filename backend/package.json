@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "backup": "node db_backup.js",
+    "restore": "node db_restore.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

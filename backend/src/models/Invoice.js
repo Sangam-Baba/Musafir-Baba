@@ -110,6 +110,14 @@ const invoiceSchema = new mongoose.Schema(
     notes: {
       type: String,
     },
+    salesPerson: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SalesPerson",
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

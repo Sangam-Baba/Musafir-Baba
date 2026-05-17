@@ -36,21 +36,59 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
     
-    const drawFooterIconText = (text: string, x: number, y: number) => {
+    const drawFooterIconText = (type: "phone" | "gst" | "email" | "web", text: string, x: number, y: number) => {
+      // Draw custom vector icon based on type
+      doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.circle(x, y - 1, 1.5, "F");
+      doc.setLineWidth(0.4);
+
+      if (type === "phone") {
+        // Mobile phone icon
+        doc.rect(x - 1.1, y - 2.8, 2.2, 3.4, "S");
+        doc.circle(x, y - 0.6, 0.25, "F"); // home button
+        doc.line(x - 0.4, y - 2.4, x + 0.4, y - 2.4); // speaker
+      } else if (type === "gst") {
+        // Document/GST icon
+        doc.rect(x - 1.2, y - 2.8, 2.4, 3.4, "S");
+        doc.line(x - 0.7, y - 2.0, x + 0.7, y - 2.0);
+        doc.line(x - 0.7, y - 1.3, x + 0.7, y - 1.3);
+        doc.line(x - 0.7, y - 0.6, x + 0.2, y - 0.6);
+      } else if (type === "email") {
+        // Envelope icon
+        doc.rect(x - 1.5, y - 2.3, 3, 2.2, "S");
+        doc.line(x - 1.5, y - 2.3, x, y - 1.2);
+        doc.line(x + 1.5, y - 2.3, x, y - 1.2);
+      } else if (type === "web") {
+        // Globe icon
+        doc.circle(x, y - 1.2, 1.7, "S");
+        doc.line(x - 1.7, y - 1.2, x + 1.7, y - 1.2); // equator
+        doc.line(x, y - 2.9, x, y + 0.5); // prime meridian
+      }
+
       doc.setTextColor(255, 255, 255);
       doc.text(text, x + 4, y);
     };
 
-    drawFooterIconText("+91 92896 02447", 15, footerY + 8);
-    drawFooterIconText("07CEKPR2608F2ZF", 15, footerY + 14);
+    drawFooterIconText("phone", "+91 92896 02447", 15, footerY + 8);
+    drawFooterIconText("gst", "07CEKPR2608F2ZF", 15, footerY + 14);
 
-    drawFooterIconText("care@musafirbaba.com", pageWidth / 2 - 20, footerY + 8);
-    drawFooterIconText("www.musafirbaba.com", pageWidth / 2 - 20, footerY + 14);
+    drawFooterIconText("email", "care@musafirbaba.com", pageWidth / 2 - 20, footerY + 8);
+    drawFooterIconText("web", "www.musafirbaba.com", pageWidth / 2 - 20, footerY + 14);
 
+    // Location/Map marker icon on the right
+    const locX = pageWidth - 65;
+    const locY = footerY + 8;
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.circle(pageWidth - 65, footerY + 7, 1.5, "F");
+    doc.setLineWidth(0.4);
+    
+    // Pin head circle
+    doc.circle(locX, locY - 1.8, 1.3, "S");
+    // Inside dot
+    doc.circle(locX, locY - 1.8, 0.45, "F");
+    // Pointy bottom
+    doc.line(locX - 1.0, locY - 1.2, locX, locY + 0.5);
+    doc.line(locX + 1.0, locY - 1.2, locX, locY + 0.5);
     
     doc.setTextColor(255, 255, 255);
     const addressText = invoice.billingFrom?.address || "1st Floor, Khaira More, Najafgarh, ND - 110043";
@@ -85,10 +123,19 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   // yPos += 18;
 
   // --- INFO BOX ---
-  doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-  doc.roundedRect(margin, yPos, contentWidth, 24, 3, 3, "S");
-  
+  const rightX = pageWidth / 2 + 5;
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
+  const remarksText = invoice.remarks || "N/A";
+  const maxRemarksWidth = pageWidth - margin - (rightX + 50) - 2;
+  const wrappedRemarks = doc.splitTextToSize(remarksText, maxRemarksWidth);
+  const extraLines = Math.max(0, wrappedRemarks.length - 1);
+  const extraHeight = extraLines * 3.5;
+  const boxHeight = 24 + extraHeight;
+
+  doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, "S");
+  
   doc.setTextColor(textColor[0]);
 
   const drawIcon = (x: number, y: number) => {
@@ -123,7 +170,6 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
 
   // Right Col
   infoY = yPos + 6;
-  const rightX = pageWidth / 2 + 5;
   drawIcon(rightX + 6, infoY);
   doc.setFont("helvetica", "bold");
   doc.text("PAYMENT MODE", rightX + 12, infoY);
@@ -145,9 +191,9 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   doc.text("REMARKS", rightX + 12, infoY);
   doc.text(":", rightX + 45, infoY);
   doc.setFont("helvetica", "normal");
-  doc.text(invoice.remarks || "N/A", rightX + 50, infoY);
+  doc.text(wrappedRemarks, rightX + 50, infoY);
 
-  yPos += 30;
+  yPos += 30 + extraHeight;
 
   // --- BILLING FROM / TO ---
   doc.setFontSize(7.5);
@@ -471,7 +517,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   const totalDisplay = `Rs. ${finalTotal}`;
 
   const payData = [
-    invoice.paymentSummary?.paymentId || "UPI/515850948410",
+    invoice.paymentSummary?.paymentId || "N/A",
     `Rs. ${advance}`,
     `${cgst}`,
     `${sgst}`,
@@ -528,7 +574,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   drawHeader();
   yPos = 55;
 
-  // --- TERMS & CONDITIONS ---
+  // --- TERMS & CONDITIONS (PAGE 2) ---
   doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   doc.roundedRect(margin, yPos, 50, 6, 3, 3, "F");
   doc.setTextColor(255, 255, 255);
@@ -540,33 +586,160 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   doc.setTextColor(255, 255, 255);
   doc.text("TERMS & CONDITIONS", margin + 9, yPos + 4.2);
   
-  yPos += 6;
-  doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-  doc.rect(margin, yPos, contentWidth, 34, "S");
-  
-  yPos += 4;
-  doc.setFontSize(6.5);
-  doc.setFont("helvetica", "normal");
+  yPos += 10;
+  doc.setFontSize(7);
   doc.setTextColor(textColor[0]);
 
   const terms = [
-    "An advance payment of 50% of the total booking amount is required to confirm the booking.",
-    "The remaining balance amount must be paid 7 days before the departure date.",
-    "In case of non-payment or cancellation 7 days post booking, token amount is non-refundable.",
-    "Payments can be made via bank transfer, credit card, or mutually agreed methods. Fees apply.",
-    "Certain services like flights and hotels are non-refundable after payment.",
-    "Musafirbaba Travels reserves the right to make itinerary changes due to unforeseen events.",
-    "Customer is responsible for carrying valid travel documents (passport, visa)."
+    "All bookings are subject to availability at the time of confirmation. Seats are confirmed only after receipt of the required booking amount.",
+    "This is a fixed group departure; the itinerary, travel dates, hotels, and transport are pre-planned and cannot be changed for individual participants.",
+    "The company reserves the right to modify the itinerary, sequence of sightseeing, or accommodation due to operational reasons, weather conditions, road conditions, or any unforeseen circumstances, without compromising the overall travel experience.",
+    "Hotel check-in and check-out timings will be as per hotel policy. Early check-in or late check-out is subject to availability and may incur additional charges.",
+    "Rooms are provided on a shared basis as per the selected occupancy (quad/triple/double). Single occupancy is subject to availability and extra charges.",
+    "The company is not responsible for delays, changes, or cancellations caused by natural calamities, weather conditions, landslides, road blockages, political disturbances, or any other force majeure events.",
+    "Any increase in government taxes, permit fees, toll charges, parking fees, or local entry fees applicable during the tour must be paid by the customer directly.",
+    "Personal expenses such as laundry, tips, phone calls, medical expenses, additional meals, or any services not mentioned in inclusions are not covered in the package cost.",
+    "For trekking or high-altitude destinations, participants must assess their own physical fitness. The company will not be responsible for health-related issues arising during the tour.",
+    "Any damage caused to hotel property, vehicles, or public property during the tour shall be borne by the concerned participant.",
+    "The company reserves the right to cancel or reschedule a group departure if the minimum required number of participants is not met. In such cases, alternate options or a full refund will be provided.",
+    "By booking the tour, the customer confirms that they have read, understood, and agreed to all the terms and conditions mentioned above."
   ];
 
-  terms.forEach(term => {
-    doc.setFillColor(textColor[0], textColor[1], textColor[2]);
-    doc.circle(margin + 4, yPos - 1, 0.5, "F");
-    doc.text(term, margin + 7, yPos);
-    yPos += 4.5;
+  terms.forEach((term, index) => {
+    // Left serial number in bold
+    doc.setFont("helvetica", "bold");
+    const numText = `${index + 1}.`;
+    doc.text(numText, margin + 2, yPos);
+    
+    // Wrapped term text in normal font
+    doc.setFont("helvetica", "normal");
+    const wrapped = doc.splitTextToSize(term, contentWidth - 10);
+    doc.text(wrapped, margin + 8, yPos);
+    
+    // Increment yPos based on lines and gap
+    yPos += wrapped.length * 3.5 + 1.5;
   });
 
   // --- FOOTER FOR PAGE 2 ---
+  drawFooter();
+
+  // Add new page for Cancellation & Refund Policy (PAGE 3)
+  doc.addPage();
+  drawHeader();
+  yPos = 55;
+
+  // --- CANCELLATION & REFUND POLICY ---
+  doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  doc.roundedRect(margin, yPos, 65, 6, 3, 3, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.circle(margin + 5, yPos + 3, 1.5, "F"); // icon bullet
+  doc.setTextColor(255, 255, 255);
+  doc.text("CANCELLATION & REFUND POLICY", margin + 9, yPos + 4.2);
+  
+  yPos += 10;
+
+  // Section 1: Cancellation by Customer
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  doc.text("Cancellation by Customer:", margin + 2, yPos);
+  yPos += 5;
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(textColor[0]);
+  
+  // More than 30 days
+  doc.setFont("helvetica", "bold");
+  doc.text("More than 30 days before departure:", margin + 4, yPos);
+  yPos += 4.5;
+  doc.setFont("helvetica", "normal");
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.text("Rs. 5,999 per person (booking amount) will be deducted.", margin + 11, yPos);
+  yPos += 4;
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.text("Balance amount will be refunded.", margin + 11, yPos);
+  yPos += 5.5;
+
+  // 15-30 days
+  doc.setFont("helvetica", "bold");
+  doc.text("15-30 days before departure:", margin + 4, yPos);
+  yPos += 4.5;
+  doc.setFont("helvetica", "normal");
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.text("50% of the total tour cost will be deducted.", margin + 11, yPos);
+  yPos += 5.5;
+
+  // 7-14 days
+  doc.setFont("helvetica", "bold");
+  doc.text("7-14 days before departure:", margin + 4, yPos);
+  yPos += 4.5;
+  doc.setFont("helvetica", "normal");
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.text("75% of the total tour cost will be deducted.", margin + 11, yPos);
+  yPos += 5.5;
+
+  // Less than 7 days
+  doc.setFont("helvetica", "bold");
+  doc.text("Less than 7 days before departure or No-Show:", margin + 4, yPos);
+  yPos += 4.5;
+  doc.setFont("helvetica", "normal");
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.text("100% of the total tour cost will be deducted. No refund will be applicable.", margin + 11, yPos);
+  yPos += 9;
+
+  // Section 2: Cancellation by Company
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  doc.text("Cancellation by Company:", margin + 2, yPos);
+  yPos += 5;
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(textColor[0]);
+  doc.setFont("helvetica", "normal");
+  
+  const compLines = doc.splitTextToSize("If the tour is cancelled by MusafirBaba due to operational reasons or insufficient group size, the customer will be offered:", contentWidth - 10);
+  doc.text(compLines, margin + 4, yPos);
+  yPos += compLines.length * 4 + 1.5;
+
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.text("An alternate departure date OR", margin + 11, yPos);
+  yPos += 4;
+  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  const compRefLine = doc.splitTextToSize("A full refund of the amount paid (excluding any non-refundable third-party charges, if applicable).", contentWidth - 20);
+  doc.text(compRefLine, margin + 11, yPos);
+  yPos += compRefLine.length * 4 + 6;
+
+  // Section 3: Important Notes
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  doc.text("Important Notes:", margin + 2, yPos);
+  yPos += 5;
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(textColor[0]);
+  doc.setFont("helvetica", "normal");
+
+  const notes = [
+    "Refunds (if applicable) will be processed within 10-15 working days after confirmation of cancellation.",
+    "No refund will be provided for any unused services, early departure, or missed sightseeing during the tour.",
+    "Advance booking amount is non-refundable once the booking is confirmed.",
+    "Cancellation requests will be accepted only in written form via email or WhatsApp."
+  ];
+
+  notes.forEach(note => {
+    doc.circle(margin + 6, yPos - 1, 0.5, "F");
+    const wrappedNote = doc.splitTextToSize(note, contentWidth - 15);
+    doc.text(wrappedNote, margin + 9, yPos);
+    yPos += wrappedNote.length * 4 + 1.5;
+  });
+
+  // --- FOOTER FOR PAGE 3 ---
   drawFooter();
 
   // Final Action
