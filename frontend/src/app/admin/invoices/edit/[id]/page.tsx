@@ -314,12 +314,17 @@ export default function EditInvoicePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="paymentMode">Payment Mode</Label>
-              <Input
+              <select
                 id="paymentMode"
                 value={formData.paymentMode}
                 onChange={(e) => setFormData({ ...formData, paymentMode: e.target.value })}
-                placeholder="UPI"
-              />
+                className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select Payment Mode</option>
+                <option value="UPI">UPI</option>
+                <option value="CASH">CASH</option>
+                <option value="A/C TRANSFER">A/C TRANSFER</option>
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="remarks">Remarks</Label>
@@ -639,6 +644,15 @@ export default function EditInvoicePage() {
                     min="0"
                     value={formData.paymentSummary.advanceReceived}
                     onChange={(e) => setFormData({ ...formData, paymentSummary: { ...formData.paymentSummary, advanceReceived: Number(e.target.value) } })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paymentId">Payment ID</Label>
+                  <Input
+                    id="paymentId"
+                    value={formData.paymentSummary.paymentId}
+                    onChange={(e) => setFormData({ ...formData, paymentSummary: { ...formData.paymentSummary, paymentId: e.target.value } })}
+                    placeholder="e.g. UPI/515850948410"
                   />
                 </div>
                 <div className="space-y-2">
