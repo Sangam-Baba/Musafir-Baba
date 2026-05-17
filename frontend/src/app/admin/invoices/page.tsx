@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Search, Download, Trash2, Edit, Eye, X, Mail } from "lucide-react";
+import { Loader2, Search, Download, Trash2, Edit, Eye, X, Mail, Check } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
@@ -86,6 +86,8 @@ export interface Invoice {
   totalAmount: number;
   status: string;
   notes: string;
+  isApproved?: boolean;
+  salesPerson?: any;
 }
 
 const getInvoices = async (page: number, search: string, token: string) => {
@@ -106,12 +108,35 @@ const getInvoices = async (page: number, search: string, token: string) => {
 
 export default function InvoicesPage() {
   const token = useAdminAuthStore((state) => state.accessToken) as string;
+  const role = useAdminAuthStore((state) => state.role);
   const [filter, setFilter] = useState({ search: "" });
   const [page, setPage] = useState(1);
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
   const [pdfDataUrl, setPdfDataUrl] = useState<string>("");
   const [sendingMailId, setSendingMailId] = useState<string | null>(null);
   const router = useRouter();
+
+  const handleApprove = async (id: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/invoice/${id}/approve`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Invoice approved successfully!");
+        refetch();
+      } else {
+        toast.error(data.message || "Failed to approve invoice");
+      }
+    } catch (error) {
+      console.error("Approval error:", error);
+      toast.error("Something went wrong while approving invoice");
+    }
+  };
 
   const {
     data: invoicesData,
@@ -172,9 +197,17 @@ export default function InvoicesPage() {
         setPreviewInvoice(invoice);
       }
     } else if (action === "download") {
+      if (!invoice.isApproved) {
+        toast.error("Invoice must be approved before download!");
+        return;
+      }
       generateInvoicePDF(invoice, "download");
       toast.success("Invoice downloaded!");
     } else if (action === "mail") {
+      if (!invoice.isApproved) {
+        toast.error("Invoice must be approved before sending via email!");
+        return;
+      }
       if (!invoice.clientEmail) {
         return toast.error("Client email is missing for this invoice!");
       }
@@ -255,14 +288,15 @@ export default function InvoicesPage() {
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Invoice No.</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Client</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date</TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Total</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+               <TableBody>
                 {invoices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-slate-500">
+                    <TableCell colSpan={6} className="text-center py-10 text-slate-500">
                       No invoices found. Create one to get started.
                     </TableCell>
                   </TableRow>
@@ -280,6 +314,17 @@ export default function InvoicesPage() {
                            day: "numeric", month: "short", year: "numeric"
                         })}
                       </TableCell>
+                      <TableCell className="py-3 px-4">
+                        {invoice.isApproved ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            Approved
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 animate-pulse">
+                            Pending Approval
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell className="py-3 px-4 font-mono font-medium text-slate-700">
                         ₹{invoice.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </TableCell>
@@ -296,7 +341,8 @@ export default function InvoicesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 px-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                          disabled={!invoice.isApproved}
+                          className={`h-8 px-2 ${invoice.isApproved ? "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50" : "text-slate-300 hover:text-slate-300 hover:bg-transparent cursor-not-allowed"}`}
                           onClick={() => handleAction(invoice, "download")}
                         >
                           <Download size={14} className="mr-1" />
@@ -305,9 +351,9 @@ export default function InvoicesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          disabled={!invoice.isApproved || sendingMailId === invoice._id}
+                          className={`h-8 px-2 ${invoice.isApproved ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" : "text-slate-300 hover:text-slate-300 hover:bg-transparent cursor-not-allowed"}`}
                           onClick={() => handleAction(invoice, "mail")}
-                          disabled={sendingMailId === invoice._id}
                         >
                           {sendingMailId === invoice._id ? (
                             <Loader2 size={14} className="mr-1 animate-spin" />
@@ -316,6 +362,17 @@ export default function InvoicesPage() {
                           )}
                           <span className="text-[10px] font-bold uppercase tracking-wider">Mail</span>
                         </Button>
+                        {!invoice.isApproved && (role === "admin" || role === "superadmin") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                            onClick={() => handleApprove(invoice._id)}
+                          >
+                            <Check size={14} className="mr-1" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Approve</span>
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -375,15 +432,17 @@ export default function InvoicesPage() {
                 <h2 className="font-bold text-slate-800 text-lg mt-0.5">{previewInvoice.invoiceNumber}</h2>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    generateInvoicePDF(previewInvoice, "download");
-                    toast.success("Invoice downloaded!");
-                  }}
-                  className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-[#FE5300] text-white px-4 py-2 rounded-lg hover:bg-[#FE5300]/90 transition"
-                >
-                  <Download size={13} /> Download PDF
-                </button>
+                {previewInvoice.isApproved && (
+                  <button
+                    onClick={() => {
+                      generateInvoicePDF(previewInvoice, "download");
+                      toast.success("Invoice downloaded!");
+                    }}
+                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-[#FE5300] text-white px-4 py-2 rounded-lg hover:bg-[#FE5300]/90 transition"
+                  >
+                    <Download size={13} /> Download PDF
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     URL.revokeObjectURL(pdfDataUrl);

@@ -39,6 +39,7 @@ export default function EditInvoicePage() {
 
   const [formData, setFormData] = useState({
     invoiceType: "Package",
+    salesPerson: "",
     clientName: "",
     clientEmail: "",
     clientPhone: "",
@@ -91,12 +92,36 @@ export default function EditInvoicePage() {
     totalAmount: 0,
   });
 
+  const [salesPersons, setSalesPersons] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSalesPersons = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/sales-person`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setSalesPersons(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch sales persons", err);
+      }
+    };
+    if (token) {
+      fetchSalesPersons();
+    }
+  }, [token]);
+
   // Populate form on load
   useEffect(() => {
     if (invoiceData?.data) {
       const inv = invoiceData.data;
       setFormData({
         invoiceType: inv.invoiceType || "Package",
+        salesPerson: inv.salesPerson?._id || inv.salesPerson || "",
         clientName: inv.clientName || "",
         clientEmail: inv.clientEmail || "",
         clientPhone: inv.clientPhone || "",
@@ -302,7 +327,25 @@ export default function EditInvoicePage() {
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h2 className="text-lg font-semibold mb-4 text-slate-800">Invoice Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="salesPerson">Sales Person *</Label>
+              <select
+                id="salesPerson"
+                value={formData.salesPerson}
+                onChange={(e) => setFormData({ ...formData, salesPerson: e.target.value })}
+                required
+                disabled={true}
+                className="h-9 w-full rounded-md border border-input bg-slate-50 px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-80 text-slate-500 font-medium"
+              >
+                <option value="">Select Sales Person</option>
+                {salesPersons.map((sp: any) => (
+                  <option key={sp._id} value={sp._id}>
+                    {sp.name} ({sp.salesId})
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="customerId">Customer ID</Label>
               <Input
