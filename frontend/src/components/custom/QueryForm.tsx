@@ -188,12 +188,12 @@ export default function QueryForm({ className }: { className?: string }) {
     "countryNameEn",
     "{countryCode} +{countryCallingCode}",
   );
-  const countryOptions = Object.entries(countryList).map(
-    ([countryKey, value]) => ({
+  const countryOptions = Object.entries(countryList)
+    .map(([countryKey, value]) => ({
       label: `${countryKey} ${value}`,
       value,
-    }),
-  );
+    }))
+    .filter((item, index, self) => index === self.findIndex((t) => t.value === item.value));
 
   const interestOptions = [
     { id: "visa", label: "Visa" },

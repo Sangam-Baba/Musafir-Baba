@@ -10,8 +10,28 @@ import { SevenSection } from "@/components/custom/SevenSection";
 import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
 import BlogsHome from "@/components/custom/BlogsHome";
 
-// ─── Client boundary: all lazy-loaded below-the-fold sections ─────────────
-import HomeClientSections from "@/components/custom/HomeClientSections";
+// ─── Below-the-fold Server Components (direct imports) ───────────────
+import SectionFour from "@/components/custom/SectionFour";
+import SectionFive from "@/components/custom/SectionFive";
+import WhyChoose from "@/components/custom/WhyChoose";
+import HomeBooking from "@/components/custom/HomeBooking";
+import Partners from "@/components/custom/Partners";
+
+// ─── Below-the-fold Client Components (dynamic imports to defer JS) ──
+import dynamic from "next/dynamic";
+const DestinationSection = dynamic(
+  () => import("@/components/custom/DestinationSection").then((mod) => ({ default: mod.DestinationSection }))
+);
+import { LazyVideoSection, LazyTestimonial, LazyImageGallery } from "@/components/custom/LazyCarousels";
+const Faqs = dynamic(
+  () => import("@/components/custom/Faqs").then((mod) => ({ default: mod.Faqs }))
+);
+const LoginAutoOpen = dynamic(
+  () => import("@/components/User/LoginAutoOpen")
+);
+const PopupBanner = dynamic(
+  () => import("@/components/custom/PopupBanner").then((mod) => ({ default: mod.PopupBanner }))
+);
 
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
 import { getLocalSchema } from "@/lib/schema/local.schema";
@@ -103,13 +123,7 @@ const images = [
   { id: 8, url: "/frame8.webp", alt: "" },
 ];
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ auth: string }>;
-}) {
-  const { auth } = (await searchParams) || {};
-
+export default async function HomePage() {
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalSchema();
   const breadcrumbSchema = getBreadcrumbSchema("/");
@@ -124,6 +138,7 @@ export default async function HomePage({
           fill
           priority
           fetchPriority="high"
+          quality={70}
           sizes="100vw"
           className="object-cover"
         />
@@ -163,12 +178,28 @@ export default async function HomePage({
         <FeaturedTourSSG />
       </Suspense>
 
-      {/* ── Below-the-fold Client Sections (lazy loaded) ──────────────── */}
-      <HomeClientSections testi={testi} images={images} faqs={faqs} auth={auth ?? null}>
-        <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
-          <BlogsHome />
-        </Suspense>
-      </HomeClientSections>
+      {/* ── Below-the-fold Components (Server & Client interweaved) ──────── */}
+      <SectionFour />
+      <SectionFive />
+      <DestinationSection />
+      <LazyVideoSection />
+      <WhyChoose />
+      <LazyTestimonial data={testi} />
+      <LazyImageGallery
+        title="Memories in Motion"
+        description="Picture Perfect Moments with the Best Travel Agency in India"
+        data={images}
+      />
+      <HomeBooking />
+      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <BlogsHome />
+      </Suspense>
+      <Partners />
+      <Faqs faqs={faqs} />
+      <Suspense fallback={null}>
+        <LoginAutoOpen />
+      </Suspense>
+      <PopupBanner />
 
       {/* ── JSON-LD Structured Data ───────────────────────────────────── */}
       <Script

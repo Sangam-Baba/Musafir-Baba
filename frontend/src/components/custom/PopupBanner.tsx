@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface PopupBannerProps {
   _id: string;
@@ -68,6 +68,8 @@ export function PopupBanner() {
       rounded-xl
     "
       >
+        <DialogTitle className="sr-only">Special Offer</DialogTitle>
+        <DialogDescription className="sr-only">Check out our latest special offer for this season.</DialogDescription>
         {/* Image */}
         <div className="relative w-full aspect-6/4">
           <Image
@@ -77,6 +79,7 @@ export function PopupBanner() {
             }
             alt={data?.coverImage?.alt || "Special offer"}
             fill
+            sizes="(max-width: 620px) 100vw, 700px"
             priority
             className="object-cover"
           />

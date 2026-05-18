@@ -25,12 +25,6 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
 
-      // 🔁 TEMPORARY — keep until full migration done
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
     ],
   },
   typescript: {

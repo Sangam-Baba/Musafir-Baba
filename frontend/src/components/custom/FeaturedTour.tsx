@@ -127,7 +127,6 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                   >
                     <CarouselContent className="">
                       {tab.categoryPackages
-                        .sort(() => Math.random() - 0.5)
                         .slice(0, 4)
                         .map((pkg, i) => (
                           <CarouselItem key={i}>

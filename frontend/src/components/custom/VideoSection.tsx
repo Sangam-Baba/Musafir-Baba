@@ -11,7 +11,7 @@ function VideoSection() {
     <section
       className="w-full px-4 md:px-8 lg:px-20 py-4 md:py-16 relative bg-cover bg-center bg-no-repeat text-white"
       style={{
-        backgroundImage: `url(https://res.cloudinary.com/dmmsemrty/image/upload/v1763462027/Rajpath-delhi-shutterstock_1195751923.jpg_7647e1aad2_1_efilvh.webp)`,
+        backgroundImage: `url(https://musafirbaba.com/homebanner.webp)`,
       }}
     >
       <div className="absolute inset-0 bg-[#251203]/90 "></div>

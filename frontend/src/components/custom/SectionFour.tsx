@@ -60,6 +60,7 @@ export default function SectionFour() {
                 src="https://cdn.musafirbaba.com/2.webp"
                 alt="Delhi Attraction"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="w-full h-full object-cover rounded-2xl shadow-lg"
               />
             </div>
@@ -68,6 +69,7 @@ export default function SectionFour() {
                 src="https://cdn.musafirbaba.com/3.webp"
                 alt="Delhi Culture"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="w-full h-full object-cover rounded-2xl shadow-lg"
               />
             </div>
