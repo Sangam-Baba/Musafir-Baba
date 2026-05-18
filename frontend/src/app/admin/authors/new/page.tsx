@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { Plus, Trash2 } from "lucide-react";
 
 interface AuthorFormValues {
   name: string;
@@ -27,6 +28,10 @@ interface AuthorFormValues {
     public_id?: string;
     alt?: string;
   };
+  socialLinks?: {
+    platform: string;
+    link: string;
+  }[];
 }
 
 async function registerAuthor(values: AuthorFormValues, accessToken: string) {
@@ -57,9 +62,15 @@ export default function RegisterAuthor() {
     about: "",
     avatar: undefined,
     role: "author",
+    socialLinks: [],
   };
 
   const form = useForm<AuthorFormValues>({ defaultValues });
+
+  const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({
+    control: form.control,
+    name: "socialLinks",
+  });
 
   // ✅ pass variables (values) into mutate
   const mutation = useMutation({
@@ -194,6 +205,71 @@ export default function RegisterAuthor() {
                 </FormItem>
               )}
             />
+
+            {/* Social Links */}
+            <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-slate-800">Social Links</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendSocial({ platform: "Facebook", link: "" })}
+                  className="flex items-center gap-1 text-[12px] h-8"
+                >
+                  <Plus className="h-3 w-3" /> Add Link
+                </Button>
+              </div>
+              
+              {socialFields.map((item, index) => (
+                <div key={item.id} className="flex items-start gap-3">
+                  <FormField
+                    control={form.control}
+                    name={`socialLinks.${index}.platform`}
+                    render={({ field }) => (
+                      <FormItem className="w-1/3">
+                        <FormControl>
+                          <select
+                            className="w-full rounded-md border border-gray-300 p-2 text-sm"
+                            {...field}
+                          >
+                            <option value="Facebook">Facebook</option>
+                            <option value="Linkedin">Linkedin</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="twitter">Twitter</option>
+                          </select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`socialLinks.${index}.link`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input
+                            placeholder="https://"
+                            className="text-sm h-[38px]"
+                            {...field}
+                            required
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeSocial(index)}
+                    className="h-[38px] w-[38px] text-red-500 hover:bg-red-50 hover:text-red-600 shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
 
             <Button
               type="submit"

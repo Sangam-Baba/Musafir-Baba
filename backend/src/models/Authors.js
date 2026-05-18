@@ -32,6 +32,15 @@ const authorSchema = new mongoose.Schema(
       enum: ["editor", "author"],
       default: "author",
     },
+    socialLinks: [
+      {
+        platform: {
+          type: String,
+          enum: ["Facebook", "Linkedin", "instagram", "twitter"],
+        },
+        link: String,
+      },
+    ],
   },
   { timestamps: true }
 );
