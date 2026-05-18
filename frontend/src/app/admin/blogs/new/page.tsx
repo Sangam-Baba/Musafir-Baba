@@ -207,7 +207,7 @@ export default function CreateBlog() {
 
               <div className="min-h-[400px]">
                 {/* Basic Detail Tab */}
-                <TabsContent value="content" className="mt-0 space-y-4 animate-in fade-in-50 duration-200">
+                <TabsContent value="content" forceMount className="mt-0 space-y-4 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Title</Label>
@@ -238,7 +238,7 @@ export default function CreateBlog() {
                     <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Content</Label>
                     <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm">
                       <BlogEditor
-                        value={form.getValues("content")}
+                        value={form.watch("content")}
                         onChange={(val) => form.setValue("content", val)}
                       />
                     </div>
@@ -255,7 +255,7 @@ export default function CreateBlog() {
                 </TabsContent>
 
                 {/* Media & SEO Tab */}
-                <TabsContent value="seo" className="mt-0 space-y-6 animate-in fade-in-50 duration-200">
+                <TabsContent value="seo" forceMount className="mt-0 space-y-6 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="space-y-1.5">
@@ -360,7 +360,7 @@ export default function CreateBlog() {
                 </TabsContent>
 
                 {/* Organization Tab */}
-                <TabsContent value="org" className="mt-0 space-y-6 animate-in fade-in-50 duration-200 max-w-2xl mx-auto">
+                <TabsContent value="org" forceMount className="mt-0 space-y-6 animate-in fade-in-50 duration-200 max-w-2xl mx-auto data-[state=inactive]:hidden">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Category</Label>
