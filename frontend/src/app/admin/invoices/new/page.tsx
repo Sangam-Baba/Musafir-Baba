@@ -17,7 +17,6 @@ export default function NewInvoicePage() {
 
   const [formData, setFormData] = useState({
     invoiceType: "Package",
-    salesPerson: "",
     clientName: "",
     clientEmail: "",
     clientPhone: "",
@@ -70,28 +69,7 @@ export default function NewInvoicePage() {
     totalAmount: 0,
   });
 
-  const [salesPersons, setSalesPersons] = useState<any[]>([]);
 
-  useEffect(() => {
-    const fetchSalesPersons = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/sales-person`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          setSalesPersons(data.data.filter((sp: any) => sp.isActive));
-        }
-      } catch (err) {
-        console.error("Failed to fetch sales persons", err);
-      }
-    };
-    if (token) {
-      fetchSalesPersons();
-    }
-  }, [token]);
 
   // Sync passenger count with item quantity automatically ONLY for Package
   useEffect(() => {
@@ -169,10 +147,7 @@ export default function NewInvoicePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.salesPerson) {
-      toast.error("Sales Person is required");
-      return;
-    }
+
 
     if (!formData.clientName) {
       toast.error("Client Name is required");
@@ -251,24 +226,7 @@ export default function NewInvoicePage() {
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h2 className="text-lg font-semibold mb-4 text-slate-800">Invoice Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="salesPerson">Sales Person *</Label>
-              <select
-                id="salesPerson"
-                value={formData.salesPerson}
-                onChange={(e) => setFormData({ ...formData, salesPerson: e.target.value })}
-                required
-                className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select Sales Person</option>
-                {salesPersons.map((sp: any) => (
-                  <option key={sp._id} value={sp._id}>
-                    {sp.name} ({sp.salesId})
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerId">Customer ID</Label>
               <Input

@@ -18,6 +18,188 @@ import { Input } from "@/components/ui/input";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+const designations = [
+  // Management / Leadership
+  "Founder",
+  "Co-Founder",
+  "CEO",
+  "COO",
+  "CTO",
+  "CMO",
+  "Director",
+  "VP Engineering",
+  "VP Marketing",
+  "General Manager",
+  "Operations Manager",
+
+  // Business Development / Sales
+  "Business Development Executive",
+  "Business Development Manager",
+  "Sales Executive",
+  "Sales Manager",
+  "IT Sales Executive",
+  "Lead Generation Executive",
+  "Upwork Bidder",
+  "Freelancer Platform Specialist",
+  "Account Executive",
+  "Client Acquisition Specialist",
+  "Pre-Sales Consultant",
+  "Partnership Manager",
+
+  // Project Management
+  "Project Coordinator",
+  "Project Manager",
+  "Technical Project Manager",
+  "Scrum Master",
+  "Product Manager",
+  "Product Owner",
+  "Delivery Manager",
+  "Agile Coach",
+
+  // Software Development
+  "Frontend Developer",
+  "React Developer",
+  "Next.js Developer",
+  "Angular Developer",
+  "Vue.js Developer",
+  "UI Developer",
+  "Backend Developer",
+  "Node.js Developer",
+  "Python Developer",
+  "FastAPI Developer",
+  "PHP Developer",
+  "Laravel Developer",
+  "Java Developer",
+  ".NET Developer",
+  "Full Stack Developer",
+  "MERN Stack Developer",
+  "MEAN Stack Developer",
+  "Android Developer",
+  "iOS Developer",
+  "Flutter Developer",
+  "React Native Developer",
+  "Senior Software Engineer",
+  "Lead Developer",
+  "Technical Lead",
+  "Solution Architect",
+  "Software Architect",
+
+  // DevOps / Cloud / Infrastructure
+  "DevOps Engineer",
+  "Cloud Engineer",
+  "AWS Engineer",
+  "Site Reliability Engineer",
+  "Infrastructure Engineer",
+  "Linux Administrator",
+  "System Administrator",
+  "Kubernetes Engineer",
+  "CI/CD Engineer",
+  "Network Engineer",
+
+  // QA / Testing
+  "QA Engineer",
+  "Software Tester",
+  "Manual Tester",
+  "Automation Tester",
+  "QA Analyst",
+  "Performance Tester",
+  "Security Tester",
+  "Test Lead",
+
+  // UI/UX & Design
+  "UI Designer",
+  "UX Designer",
+  "UI/UX Designer",
+  "Graphic Designer",
+  "Motion Graphic Designer",
+  "Web Designer",
+  "Product Designer",
+  "Brand Designer",
+  "Creative Director",
+
+  // Digital Marketing
+  "SEO Executive",
+  "SEO Specialist",
+  "SEO Analyst",
+  "Technical SEO Expert",
+  "Local SEO Specialist",
+  "Link Building Specialist",
+  "PPC Expert",
+  "Google Ads Specialist",
+  "Meta Ads Specialist",
+  "Performance Marketer",
+  "Media Buyer",
+  "Social Media Executive",
+  "Social Media Manager",
+  "Community Manager",
+  "Instagram Manager",
+  "Email Marketing Specialist",
+  "Marketing Automation Specialist",
+  "CRM Specialist",
+  "Digital Marketing Analyst",
+  "Web Analytics Specialist",
+  "Conversion Rate Optimization Specialist",
+
+  // Content
+  "Content Writer",
+  "Copywriter",
+  "Technical Writer",
+  "Blog Writer",
+  "Script Writer",
+  "Content Strategist",
+  "Content Manager",
+  "Editor",
+  "Proofreader",
+
+  // Video & Media
+  "Video Editor",
+  "Motion Graphics Artist",
+  "Animator",
+  "Videographer",
+  "YouTube Content Editor",
+  "Reels Editor",
+
+  // Customer Support / Client Success
+  "Customer Support Executive",
+  "Technical Support Engineer",
+  "Client Success Manager",
+  "Account Manager",
+  "Customer Relationship Manager",
+  "Helpdesk Executive",
+
+  // HR & Recruitment
+  "HR Executive",
+  "HR Manager",
+  "Talent Acquisition Specialist",
+  "Recruiter",
+  "Technical Recruiter",
+  "HR Business Partner",
+
+  // Finance & Accounts
+  "Accountant",
+  "Finance Executive",
+  "Accounts Manager",
+  "Payroll Executive",
+  "Financial Analyst",
+  "Billing Executive",
+
+  // Data & AI
+  "Data Analyst",
+  "Data Engineer",
+  "Data Scientist",
+  "AI Engineer",
+  "Machine Learning Engineer",
+  "Prompt Engineer",
+  "AI Automation Specialist",
+
+  // Security
+  "Cybersecurity Analyst",
+  "Security Engineer",
+  "Penetration Tester",
+  "SOC Analyst",
+  "Information Security Manager"
+];
+
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Username must be at least 2 characters.",
@@ -31,6 +213,9 @@ const formSchema = z.object({
   password: z.string().optional(),
   role: z.enum(["admin", "staff"]).default("staff"),
   permissions: z.array(z.string()).optional(),
+  designation: z.string().min(1, {
+    message: "Designation is required.",
+  }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -135,6 +320,7 @@ function CreateEditStaff({
       phone: 0,
       role: "staff",
       permissions: [],
+      designation: "",
     },
   });
 
@@ -157,6 +343,7 @@ function CreateEditStaff({
       form.setValue("phone", staff.phone);
       form.setValue("role", staff.role || "staff");
       form.setValue("permissions", staff.permissions);
+      form.setValue("designation", staff.designation || "");
     }
   }, [staff, accessToken, form]);
   const mutate = useMutation({
@@ -275,6 +462,27 @@ function CreateEditStaff({
                     >
                       <option value="staff">Staff (Permission Based)</option>
                       <option value="admin">Admin (Full Access)</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="designation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Designation</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full p-2 border rounded-md bg-white text-sm"
+                    >
+                      <option value="" disabled>Select Designation</option>
+                      {designations.map((des) => (
+                        <option key={des} value={des}>{des}</option>
+                      ))}
                     </select>
                   </FormControl>
                   <FormMessage />

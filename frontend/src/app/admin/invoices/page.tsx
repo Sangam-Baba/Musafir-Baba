@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Search, Download, Trash2, Edit, Eye, X, Mail, Check } from "lucide-react";
+import { Loader2, Search, Download, Trash2, Edit, Eye, X, Mail, Check, Info } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
@@ -17,6 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { generateInvoicePDF } from "@/lib/generateInvoicePdf";
 
 interface InvoiceItem {
@@ -88,6 +94,20 @@ export interface Invoice {
   notes: string;
   isApproved?: boolean;
   salesPerson?: any;
+  downloadLogs?: Array<{
+    user: {
+      name: string;
+      designation?: string;
+    };
+    timestamp: string;
+  }>;
+  emailLogs?: Array<{
+    user: {
+      name: string;
+      designation?: string;
+    };
+    timestamp: string;
+  }>;
 }
 
 const getInvoices = async (page: number, search: string, token: string) => {
@@ -161,7 +181,28 @@ export default function InvoicesPage() {
     router.push(`/admin/invoices/edit/${id}`);
   };
 
+  const logDownload = async (invoiceId: string) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/invoice/${invoiceId}/log-download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      refetch();
+    } catch (err) {
+      console.error("Failed to log download:", err);
+    }
+  };
+
   const handleDelete = async (id: string) => {
+    const invoice = invoices.find((inv: Invoice) => inv._id === id);
+    if (invoice?.isApproved) {
+      toast.error("Approved invoices cannot be deleted.");
+      return;
+    }
+
     if (!confirm("Are you sure you want to delete this invoice?")) return null;
 
     try {
@@ -203,6 +244,7 @@ export default function InvoicesPage() {
       }
       generateInvoicePDF(invoice, "download");
       toast.success("Invoice downloaded!");
+      logDownload(invoice._id);
     } else if (action === "mail") {
       if (!invoice.isApproved) {
         toast.error("Invoice must be approved before sending via email!");
@@ -231,6 +273,7 @@ export default function InvoicesPage() {
         const data = await res.json();
         if (data.success) {
           toast.success(`Invoice sent to ${invoice.clientEmail} successfully!`);
+          refetch();
         } else {
           toast.error(data.message || "Failed to send email");
         }
@@ -244,7 +287,8 @@ export default function InvoicesPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <TooltipProvider delayDuration={0}>
+      <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Invoices</h1>
@@ -290,13 +334,16 @@ export default function InvoicesPage() {
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Total</TableHead>
+                  {(role === "admin" || role === "superadmin") && (
+                    <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Created By</TableHead>
+                  )}
                   <TableHead className="py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
                <TableBody>
                 {invoices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-10 text-slate-500">
+                    <TableCell colSpan={role === "admin" || role === "superadmin" ? 7 : 6} className="text-center py-10 text-slate-500">
                       No invoices found. Create one to get started.
                     </TableCell>
                   </TableRow>
@@ -328,68 +375,169 @@ export default function InvoicesPage() {
                       <TableCell className="py-3 px-4 font-mono font-medium text-slate-700">
                         ₹{invoice.totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </TableCell>
+                      {(role === "admin" || role === "superadmin") && (
+                        <TableCell className="py-3 px-4 text-sm text-slate-500">
+                          {invoice.salesPerson ? (
+                            <div>
+                              <div className="font-semibold text-slate-700">{invoice.salesPerson.name}</div>
+                              {invoice.salesPerson.designation && (
+                                <div className="text-[11px] text-slate-400 font-medium">{invoice.salesPerson.designation}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 italic">System / Legacy</span>
+                          )}
+                        </TableCell>
+                      )}
                       <TableCell className="py-3 px-4 text-right space-x-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                            >
+                              <Info size={14} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="bg-white border border-slate-200 p-3 shadow-md rounded-xl max-w-xs z-50">
+                            <div className="space-y-3 p-1 max-w-[220px] text-xs text-left">
+                              {/* Downloads Section */}
+                              <div>
+                                <div className="font-semibold text-slate-700 flex items-center justify-between border-b border-slate-100 pb-1 mb-1">
+                                  <span>Downloads</span>
+                                  <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                    {invoice.downloadLogs?.length || 0}
+                                  </span>
+                                </div>
+                                {invoice.downloadLogs && invoice.downloadLogs.length > 0 ? (
+                                  <div className="max-h-[120px] overflow-y-auto space-y-1.5 pr-1">
+                                    {invoice.downloadLogs.map((log: any, idx: number) => (
+                                      <div key={idx} className="flex flex-col text-slate-500 text-[10px] border-b border-slate-50 pb-1 last:border-0 last:pb-0">
+                                        <span className="font-medium text-slate-700 truncate">
+                                          {log.user?.name || "Staff"}
+                                        </span>
+                                        <span className="text-slate-400 text-[9px]">
+                                          {log.user?.designation || "Executive"}
+                                        </span>
+                                        <span className="text-slate-400 text-[9px] mt-0.5">
+                                          {new Date(log.timestamp).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-slate-400 italic text-[10px] py-0.5">No downloads yet</div>
+                                )}
+                              </div>
+
+                              {/* Emails Section */}
+                              <div>
+                                <div className="font-semibold text-slate-700 flex items-center justify-between border-b border-slate-100 pb-1 mb-1 mt-1">
+                                  <span>Emails Sent</span>
+                                  <span className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                    {invoice.emailLogs?.length || 0}
+                                  </span>
+                                </div>
+                                {invoice.emailLogs && invoice.emailLogs.length > 0 ? (
+                                  <div className="max-h-[120px] overflow-y-auto space-y-1.5 pr-1">
+                                    {invoice.emailLogs.map((log: any, idx: number) => (
+                                      <div key={idx} className="flex flex-col text-slate-500 text-[10px] border-b border-slate-50 pb-1 last:border-0 last:pb-0">
+                                        <span className="font-medium text-slate-700 truncate">
+                                          {log.user?.name || "Staff"}
+                                        </span>
+                                        <span className="text-slate-400 text-[9px]">
+                                          {log.user?.designation || "Executive"}
+                                        </span>
+                                        <span className="text-slate-400 text-[9px] mt-0.5">
+                                          {new Date(log.timestamp).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-slate-400 italic text-[10px] py-0.5">No emails sent yet</div>
+                                )}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          title="View Invoice"
+                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                           onClick={() => handleAction(invoice, "view")}
                         >
-                          <Eye size={14} className="mr-1" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">View</span>
+                          <Eye size={14} />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           disabled={!invoice.isApproved}
-                          className={`h-8 px-2 ${invoice.isApproved ? "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50" : "text-slate-300 hover:text-slate-300 hover:bg-transparent cursor-not-allowed"}`}
+                          title="Download PDF"
+                          className={`h-8 w-8 p-0 ${invoice.isApproved ? "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50" : "text-slate-300 hover:text-slate-300 hover:bg-transparent cursor-not-allowed"}`}
                           onClick={() => handleAction(invoice, "download")}
                         >
-                          <Download size={14} className="mr-1" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">PDF</span>
+                          <Download size={14} />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           disabled={!invoice.isApproved || sendingMailId === invoice._id}
-                          className={`h-8 px-2 ${invoice.isApproved ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" : "text-slate-300 hover:text-slate-300 hover:bg-transparent cursor-not-allowed"}`}
+                          title="Send Email"
+                          className={`h-8 w-8 p-0 ${invoice.isApproved ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" : "text-slate-300 hover:text-slate-300 hover:bg-transparent cursor-not-allowed"}`}
                           onClick={() => handleAction(invoice, "mail")}
                         >
                           {sendingMailId === invoice._id ? (
-                            <Loader2 size={14} className="mr-1 animate-spin" />
+                            <Loader2 size={14} className="animate-spin" />
                           ) : (
-                            <Mail size={14} className="mr-1" />
+                            <Mail size={14} />
                           )}
-                          <span className="text-[10px] font-bold uppercase tracking-wider">Mail</span>
                         </Button>
                         {!invoice.isApproved && (role === "admin" || role === "superadmin") && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                            title="Approve Invoice"
+                            className="h-8 w-8 p-0 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                             onClick={() => handleApprove(invoice._id)}
                           >
-                            <Check size={14} className="mr-1" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Approve</span>
+                            <Check size={14} />
                           </Button>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50"
-                          onClick={() => handleEdit(invoice._id)}
-                        >
-                          <Edit size={14} className="mr-1" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">Edit</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                          onClick={() => handleDelete(invoice._id)}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
+                        {!invoice.isApproved && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Edit Invoice"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-orange-600 hover:bg-orange-50"
+                            onClick={() => handleEdit(invoice._id)}
+                          >
+                            <Edit size={14} />
+                          </Button>
+                        )}
+                        {!invoice.isApproved && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Delete Invoice"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDelete(invoice._id)}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -437,6 +585,7 @@ export default function InvoicesPage() {
                     onClick={() => {
                       generateInvoicePDF(previewInvoice, "download");
                       toast.success("Invoice downloaded!");
+                      logDownload(previewInvoice._id);
                     }}
                     className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-[#FE5300] text-white px-4 py-2 rounded-lg hover:bg-[#FE5300]/90 transition"
                   >
@@ -456,7 +605,7 @@ export default function InvoicesPage() {
             </div>
             {/* PDF iframe */}
             <iframe
-              src={pdfDataUrl}
+              src={`${pdfDataUrl}#toolbar=0`}
               className="flex-1 w-full border-0"
               title="Invoice PDF Preview"
             />
@@ -464,5 +613,6 @@ export default function InvoicesPage() {
         </>
       )}
     </div>
+  </TooltipProvider>
   );
 }

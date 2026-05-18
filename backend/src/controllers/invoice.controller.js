@@ -22,13 +22,8 @@ export const createInvoice = async (req, res) => {
       invoiceDate, dueDate, items, subTotal, 
       taxRate, taxAmount, discountAmount, totalAmount, notes,
       customerId, paymentMode, remarks, billingFrom, billingTo,
-      packageSummary, passengerDetails, paymentSummary, rentalSummary,
-      salesPerson
+      packageSummary, passengerDetails, paymentSummary, rentalSummary
     } = req.body;
-
-    if (!salesPerson) {
-      return res.status(400).json({ success: false, message: "Sales person is required." });
-    }
 
     if (!clientName || !items || items.length === 0) {
       return res.status(400).json({ success: false, message: "Client name and items are required." });
@@ -61,7 +56,7 @@ export const createInvoice = async (req, res) => {
       passengerDetails,
       paymentSummary,
       rentalSummary,
-      salesPerson
+      salesPerson: req.user?.sub
     });
 
     await invoice.save();
@@ -88,9 +83,15 @@ export const getInvoices = async (req, res) => {
       ];
     }
 
+    if (req.user?.role !== "admin" && req.user?.role !== "superadmin") {
+      filter.salesPerson = req.user?.sub;
+    }
+
     const total = await Invoice.countDocuments(filter);
     const invoices = await Invoice.find(filter)
       .populate("salesPerson")
+      .populate("downloadLogs.user", "name designation")
+      .populate("emailLogs.user", "name designation")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -112,7 +113,11 @@ export const getInvoices = async (req, res) => {
 export const getInvoiceById = async (req, res) => {
   try {
     const { id } = req.params;
-    const invoice = await Invoice.findById(id).populate("salesPerson").lean();
+    const invoice = await Invoice.findById(id)
+      .populate("salesPerson")
+      .populate("downloadLogs.user", "name designation")
+      .populate("emailLogs.user", "name designation")
+      .lean();
 
     if (!invoice) {
       return res.status(404).json({ success: false, message: "Invoice not found." });
@@ -129,6 +134,15 @@ export const updateInvoice = async (req, res) => {
   try {
     const { id } = req.params;
     
+    const existingInvoice = await Invoice.findById(id);
+    if (!existingInvoice) {
+      return res.status(404).json({ success: false, message: "Invoice not found." });
+    }
+
+    if (existingInvoice.isApproved) {
+      return res.status(400).json({ success: false, message: "Approved invoices cannot be edited." });
+    }
+
     // Prevent salesPerson and isApproved from being modified through general update
     if (req.body.salesPerson) {
       delete req.body.salesPerson;
@@ -138,10 +152,6 @@ export const updateInvoice = async (req, res) => {
     }
 
     const invoice = await Invoice.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-
-    if (!invoice) {
-      return res.status(404).json({ success: false, message: "Invoice not found." });
-    }
 
     res.status(200).json({ success: true, data: invoice, message: "Invoice updated successfully." });
   } catch (error) {
@@ -153,11 +163,17 @@ export const updateInvoice = async (req, res) => {
 export const deleteInvoice = async (req, res) => {
   try {
     const { id } = req.params;
-    const invoice = await Invoice.findByIdAndDelete(id);
+    const invoice = await Invoice.findById(id);
 
     if (!invoice) {
       return res.status(404).json({ success: false, message: "Invoice not found." });
     }
+
+    if (invoice.isApproved) {
+      return res.status(400).json({ success: false, message: "Approved invoices cannot be deleted." });
+    }
+
+    await Invoice.findByIdAndDelete(id);
 
     res.status(200).json({ success: true, data: invoice, message: "Invoice deleted successfully." });
   } catch (error) {
@@ -364,12 +380,42 @@ export const sendInvoiceEmail = async (req, res) => {
     const result = await sendEmail(invoice.clientEmail, subject, htmlBody, attachments);
 
     if (result.success) {
+      await Invoice.findByIdAndUpdate(id, {
+        $push: {
+          emailLogs: {
+            user: req.user.sub,
+            timestamp: new Date()
+          }
+        }
+      });
       res.status(200).json({ success: true, message: `Invoice sent to ${invoice.clientEmail} successfully.` });
     } else {
       res.status(500).json({ success: false, message: "Failed to send email.", error: result.error });
     }
   } catch (error) {
     console.error("Sending invoice email failed", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export const logInvoiceDownload = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findById(id);
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: "Invoice not found." });
+    }
+
+    invoice.downloadLogs.push({
+      user: req.user.sub,
+      timestamp: new Date()
+    });
+
+    await invoice.save();
+
+    res.status(200).json({ success: true, message: "Download logged successfully." });
+  } catch (error) {
+    console.error("Logging download failed", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
