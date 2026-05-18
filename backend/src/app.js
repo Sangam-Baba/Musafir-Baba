@@ -2,9 +2,12 @@ import express from "express";
 import cors from "cors";
 import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
+import requestLogger from "./middleware/requestLogger.middleware.js";
 //import errorHandler from "./middleware/errorHandler.js"
 
 const app = express();
+
+app.use(requestLogger);
 
 // Allow multiple origins: reads ALLOWED_ORIGINS (comma-separated) or falls back to FRONTEND_URL
 const allowedOrigins = process.env.ALLOWED_ORIGINS

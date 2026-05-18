@@ -220,6 +220,12 @@ export const NAV_GROUPS = [
     icon: FaCog,
     items: [
       {
+        label: "Attendance",
+        href: "/admin/attendance",
+        icon: UserRoundCheck,
+        permission: "attendance",
+      },
+      {
         label: "Authors",
         href: "/admin/authors",
         icon: Users,

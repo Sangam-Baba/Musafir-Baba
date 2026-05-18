@@ -1,0 +1,44 @@
+import mongoose from "mongoose";
+
+const breakSchema = new mongoose.Schema({
+  start: { type: Date, required: true },
+  end: { type: Date },
+});
+
+const attendanceSchema = new mongoose.Schema(
+  {
+    staff: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Staff",
+      required: true,
+    },
+    date: {
+      type: Date,
+      required: true,
+    },
+    checkInTime: { type: Date },
+    checkInLocation: {
+      lat: Number,
+      lng: Number,
+      distance: Number,
+    },
+    checkOutTime: { type: Date },
+    checkOutLocation: {
+      lat: Number,
+      lng: Number,
+      distance: Number,
+    },
+    breaks: [breakSchema],
+    totalOfficeHours: {
+      type: Number,
+      default: 0,
+    },
+    totalWorkingHours: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true }
+);
+
+export const Attendance = mongoose.model("Attendance", attendanceSchema);
