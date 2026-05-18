@@ -85,13 +85,11 @@ export default function Header() {
 
           {/* LOGO */}
           <div className="flex items-center ml-20 md:ml-0">
-            <Link href="/" className="block">
+            <Link href="/" className="block w-32 md:w-40">
               <Image
                 src={logo}
                 alt="Musafir Baba Logo"
-                width={160} // Set explicit width
-                height={40}  // Set explicit height
-                className="w-32 md:w-40 h-auto"
+                style={{ width: '100%', height: 'auto' }}
                 priority // Critical for LCP as it's at the top
               />
             </Link>

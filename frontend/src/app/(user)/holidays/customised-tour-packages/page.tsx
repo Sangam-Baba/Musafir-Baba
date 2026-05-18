@@ -80,7 +80,7 @@ export async function generateMetadata() {
       siteName: "MusafirBaba",
       images: [
         {
-          url: "https://res.cloudinary.com/dmmsemrty/image/upload/v1762488352/rolvmorbutnkmwgnmh5s.jpg",
+          url: "https://musafirbaba.com/homebanner.webp",
           width: 1200,
           height: 630,
           alt: "MusafirBaba Travel",

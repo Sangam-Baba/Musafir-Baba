@@ -75,7 +75,7 @@ const getBlogBySlug = async (req, res) => {
 
     const blog = await Blog.findOne({ slug: slug })
       .populate("category", "name slug")
-      .populate("author", "name slug")
+      .populate("author", "name slug avatar socialLinks")
       .lean();
 
     if (!blog)
@@ -106,7 +106,7 @@ const getBlogById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Invalid Id" });
     const blog = await Blog.findById(id)
       .populate("category", "name slug")
-      .populate("author", "name slug")
+      .populate("author", "name slug avatar socialLinks")
       .lean();
 
     if (!blog)

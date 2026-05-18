@@ -10,7 +10,7 @@ const CATEGORY_SLUGS = [
 
 async function getPackageByCategorySlug(slug: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}?limit=12&minimal=true`,
     {
       next: { revalidate: 60 },
     }

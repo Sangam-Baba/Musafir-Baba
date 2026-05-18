@@ -2,7 +2,7 @@ import { Author } from "../models/Authors.js";
 
 const createAuthor = async (req, res) => {
   try {
-    const { name, email, about, avatar, role } = req.body;
+    const { name, email, about, avatar, role, socialLinks } = req.body;
     const isExist = await Author.findOne({ email });
     if (isExist) {
       return res.status(400).json({
@@ -10,7 +10,7 @@ const createAuthor = async (req, res) => {
         message: "Author with this email already exists",
       });
     }
-    const author = await Author.create({ name, email, about, avatar, role });
+    const author = await Author.create({ name, email, about, avatar, role, socialLinks });
     res.status(201).json({
       success: true,
       message: "Author Created successfully",
@@ -93,10 +93,10 @@ const updateAuthor = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Author not found" });
     }
-    const { name, email, about, avatar, role } = req.body;
+    const { name, email, about, avatar, role, socialLinks } = req.body;
     const newAuthor = await Author.findByIdAndUpdate(
       id,
-      { name, email, about, avatar, role },
+      { name, email, about, avatar, role, socialLinks },
       { new: true, runValidators: true }
     ).lean();
     if (!newAuthor) {

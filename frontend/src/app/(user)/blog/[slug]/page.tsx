@@ -10,7 +10,7 @@ import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
-import { Clock, Folders, Share2, User } from "lucide-react";
+import { Clock, Folders, Share2, User, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
@@ -253,8 +253,8 @@ export default async function BlogDetailPage({
               <div className="flex items-center gap-4">
                 <div className="h-14 w-14 rounded-full border-2 border-white shadow-md overflow-hidden bg-[#FE5300] flex items-center justify-center shrink-0 relative">
                   <Image 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${blog.author?.name}`} 
-                    alt={blog.author?.name}
+                    src={blog.author?.avatar?.url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${blog.author?.name}`} 
+                    alt={blog.author?.name || "Author"}
                     fill
                     unoptimized
                     className="object-cover"
@@ -264,7 +264,25 @@ export default async function BlogDetailPage({
                   <Link href={`/author/${blog.author?.slug}`} className="font-bold text-lg text-gray-900 hover:text-[#FE5300] transition-colors leading-tight">
                     {blog.author?.name}
                   </Link>
-                  <span className="text-xs text-gray-500 font-medium">Senior Travel Expert</span>
+                  <span className="text-xs text-gray-500 font-medium mb-1.5">Senior Travel Expert</span>
+                  {blog.author?.socialLinks && blog.author.socialLinks.length > 0 && (
+                    <div className="flex items-center gap-2.5">
+                      {blog.author.socialLinks.map((social: any, idx: number) => {
+                        const platform = social.platform.toLowerCase();
+                        let Icon = null;
+                        if (platform === 'facebook') Icon = Facebook;
+                        if (platform === 'twitter') Icon = Twitter;
+                        if (platform === 'instagram') Icon = Instagram;
+                        if (platform === 'linkedin') Icon = Linkedin;
+                        if (!Icon) return null;
+                        return (
+                          <a key={idx} href={social.link} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FE5300] transition-colors bg-gray-50 p-1.5 rounded-full border border-gray-100">
+                            <Icon size={12} strokeWidth={2.5} />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -227,6 +227,8 @@ const getPackages = async (req, res) => {
 const getPackageByCategorySlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    const { limit, minimal } = req.query;
+    
     const category = await Category.findOne({ slug });
     if (!category) {
       return res
@@ -234,7 +236,7 @@ const getPackageByCategorySlug = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     }
 
-    const packages = await Package.find({
+    let query = Package.find({
       $and: [
         { status: "published" },
         {
@@ -244,11 +246,23 @@ const getPackageByCategorySlug = async (req, res) => {
           ],
         },
       ],
-    })
+    });
+
+    if (minimal === "true") {
+      query = query.select("_id title slug coverImage duration destination batch mainCategory");
+    }
+
+    query = query
       .populate("destination", "_id name country state city slug")
       .populate("batch")
-      .populate("mainCategory", "name slug")
-      .lean();
+      .populate("mainCategory", "name slug");
+
+    if (limit) {
+      query = query.limit(parseInt(limit, 10));
+    }
+
+    const packages = await query.lean();
+    
     if (!packages) {
       return res
         .status(404)

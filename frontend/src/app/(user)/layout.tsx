@@ -69,13 +69,6 @@ export default function UserLayout({
       {/* Only 2 preconnects max — Lighthouse flags 4+ as harmful */}
       <link rel="preconnect" href="https://musafir-baba-backend.onrender.com" />
       <link rel="dns-prefetch" href="https://musafir-baba-backend.onrender.com" />
-      {/* Preload hero image for LCP — critical for fast paint */}
-      <link
-        rel="preload"
-        as="image"
-        type="image/webp"
-        href="/homebanner.webp"
-      />
       {/* GTM: dns-prefetch only (not preconnect) to avoid blocking */}
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       <link rel="dns-prefetch" href="https://static.doubleclick.net" />

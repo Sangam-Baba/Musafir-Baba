@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -6,7 +9,9 @@ import {
   CarouselPrevious,
 } from "../ui/carousel";
 import Image from "next/image";
+
 function Partners() {
+
   const partners = [
     {
       name: "VFS",

@@ -160,8 +160,8 @@ async function page() {
     <div>
       <Hero
         image={
-          page?.coverImage.url ||
-          "https://res.cloudinary.com/dmmsemrty/image/upload/v1765003780/dda7b162262041.5a8af0c73f8bd_aazzhr.jpg"
+          page?.coverImage?.url ||
+          "https://musafirbaba.com/homebanner.webp"
         }
         title={
           page?.title ||
