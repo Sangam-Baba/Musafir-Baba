@@ -7,6 +7,7 @@ import {
   deleteInvoice,
   sendInvoiceEmail,
   approveInvoice,
+  logInvoiceDownload,
 } from "../controllers/invoice.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -22,6 +23,7 @@ router.get("/:id", getInvoiceById);
 router.put("/:id", updateInvoice);
 router.delete("/:id", deleteInvoice);
 router.post("/:id/send-email", sendInvoiceEmail);
+router.post("/:id/log-download", logInvoiceDownload);
 router.patch("/:id/approve", authorizedRoles(["admin", "superadmin"]), approveInvoice);
 
 export default router;

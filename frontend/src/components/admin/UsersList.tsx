@@ -32,11 +32,12 @@ export default function UsersList({
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="w-[30%]">Name</TableHead>
-              <TableHead className="w-[30%]">E-mail</TableHead>
-              <TableHead className="w-[30%]">Last Login</TableHead>
-              <TableHead className="w-[30%]">Device</TableHead>
-              <TableHead className="w-[30%]">Status</TableHead>
+              <TableHead className="w-[20%]">Name</TableHead>
+              <TableHead className="w-[20%]">Designation</TableHead>
+              <TableHead className="w-[20%]">E-mail</TableHead>
+              <TableHead className="w-[20%]">Last Login</TableHead>
+              <TableHead className="w-[20%]">Device</TableHead>
+              <TableHead className="w-[20%]">Status</TableHead>
               <TableHead className="w-[20%] text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -49,6 +50,7 @@ export default function UsersList({
                 className="border-b"
               >
                 <TableCell className="font-medium">{cat.name}</TableCell>
+                <TableCell className="font-medium text-slate-500">{cat.designation ?? "N/A"}</TableCell>
                 <TableCell className="font-medium">{cat.email}</TableCell>
                 <TableCell className="font-medium">
                   {new Date(cat?.loginInfo?.lastLoginAt ?? "").toLocaleString(
@@ -98,8 +100,15 @@ export default function UsersList({
         {users.map((cat: ListUserInterface) => (
           <Card key={cat._id} className="shadow-md">
             <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{cat.name}</h3>
-              <h3 className="font-semibold text-lg">{cat.email}</h3>
+              <div className="flex justify-between items-start">
+                <h3 className="font-semibold text-lg">{cat.name}</h3>
+                {cat.designation && (
+                  <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                    {cat.designation}
+                  </span>
+                )}
+              </div>
+              <h3 className="text-sm text-slate-500">{cat.email}</h3>
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="default"

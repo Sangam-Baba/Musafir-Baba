@@ -25,6 +25,9 @@ const staffSchema = new mongoose.Schema(
       default: "staff",
     },
     permissions: [String],
+    designation: {
+      type: String,
+    },
     avatar: {
       type: String,
     },

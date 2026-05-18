@@ -12,6 +12,7 @@ export interface ListUserInterface {
   name: string;
   email: string;
   role: string;
+  designation?: string;
   avatar?: {
     url: string;
     public_id: string;
@@ -189,6 +190,7 @@ function UsersPage() {
           users={filtered.map((b) => ({
             _id: b._id,
             name: b.name,
+            designation: b.designation,
             email: b.email,
             role: b.role,
             loginInfo: b.loginInfo,

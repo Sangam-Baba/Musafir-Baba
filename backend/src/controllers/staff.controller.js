@@ -100,8 +100,8 @@ const getAllAdmin = async (req, res) => {
 };
 const registerAdmin = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
-    if (!name || !email || !password || !phone) {
+    const { name, email, password, phone, designation } = req.body;
+    if (!name || !email || !password || !phone || !designation) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
@@ -120,6 +120,7 @@ const registerAdmin = async (req, res) => {
       phone,
       role: req.body.role || "staff",
       permissions: req.body?.permissions ?? [],
+      designation,
     });
     await user.save();
     return res
@@ -338,7 +339,7 @@ const updateAdmin = async (req, res) => {
     }
     const updatedAdmin = await Staff.findByIdAndUpdate(id, req.body, {
       new: true,
-    }).select("name email phone permissions");
+    }).select("name email phone permissions designation");
     res.status(200).json({
       success: true,
       message: "Admin updated successfully",
@@ -359,7 +360,7 @@ const getAdminById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
     const admin = await Staff.findById(id).select(
-      " name email phone permissions role",
+      " name email phone permissions role designation",
     );
     if (!admin) {
       return res

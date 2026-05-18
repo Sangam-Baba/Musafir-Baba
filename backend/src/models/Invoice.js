@@ -112,12 +112,38 @@ const invoiceSchema = new mongoose.Schema(
     },
     salesPerson: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SalesPerson",
+      ref: "Staff",
     },
     isApproved: {
       type: Boolean,
       default: false,
     },
+    downloadLogs: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Staff",
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    emailLogs: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Staff",
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

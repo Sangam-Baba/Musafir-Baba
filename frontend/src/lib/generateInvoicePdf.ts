@@ -317,17 +317,17 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   const drawPillTitle = (title: string, y: number) => {
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    const tw = doc.getTextWidth(title) + 20;
-    doc.roundedRect((pageWidth - tw) / 2, y, tw, 6, 3, 3, "F");
+    doc.setFontSize(7.5);
+    const tw = doc.getTextWidth(title) + 16;
+    doc.roundedRect((pageWidth - tw) / 2, y, tw, 5.5, 2.75, 2.75, "F");
     
-    // Add side arrows/triangles to the pill
-    doc.triangle((pageWidth - tw) / 2, y, (pageWidth - tw) / 2 - 4, y + 3, (pageWidth - tw) / 2, y + 6, "F");
-    doc.triangle((pageWidth + tw) / 2, y, (pageWidth + tw) / 2 + 4, y + 3, (pageWidth + tw) / 2, y + 6, "F");
+    // Add side arrows/triangles to the pill with a clean 1.0mm gap
+    doc.triangle((pageWidth - tw) / 2 - 1.0, y, (pageWidth - tw) / 2 - 4.5, y + 2.75, (pageWidth - tw) / 2 - 1.0, y + 5.5, "F");
+    doc.triangle((pageWidth + tw) / 2 + 1.0, y, (pageWidth + tw) / 2 + 4.5, y + 2.75, (pageWidth + tw) / 2 + 1.0, y + 5.5, "F");
 
-    doc.setTextColor(0);
-    doc.text(title, pageWidth / 2, y + 4.2, { align: "center" });
-    return y + 6;
+    doc.setTextColor(0, 0, 0);
+    doc.text(title, pageWidth / 2, y + 3.8, { align: "center" });
+    return y + 5.5;
   };
 
   const drawTableHeader = (cols: {name: string, width: number, sub?: string[]}[], y: number) => {
@@ -394,7 +394,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
       doc.text(pkgData[i], cX + col.width / 2, yPos + 5, { align: "center" });
       cX += col.width;
     });
-    yPos += 10;
+    yPos += 14;
 
     // --- PASSENGER DETAILS ---
     yPos = drawPillTitle("PASSENGER DETAILS", yPos);
@@ -447,7 +447,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
         });
         yPos += 8;
     }
-    yPos += 2;
+    yPos += 6;
   }
 
   // --- RENTAL SUMMARY (Rental invoices only) ---
@@ -482,7 +482,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
       doc.text(rentalData[i], rX + col.width / 2, yPos + 5, { align: "center" });
       rX += col.width;
     });
-    yPos += 10;
+    yPos += 14;
   }
 
 
@@ -566,28 +566,22 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
 
   yPos += 14;
 
-  // Draw footer for page 1 before moving to new page
-  drawFooter();
-
-  // Add new page for terms
+  // Add new page for terms & cancellation (PAGE 2)
   doc.addPage();
   drawHeader();
   yPos = 55;
 
-  // --- TERMS & CONDITIONS (PAGE 2) ---
+  // --- TERMS & CONDITIONS (PAGE 2 - UPPER SECTION) ---
   doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-  doc.roundedRect(margin, yPos, 50, 6, 3, 3, "F");
+  doc.roundedRect(margin, yPos, 45, 6, 3, 3, "F");
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.circle(margin + 4, yPos + 3, 1.2, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.circle(margin + 5, yPos + 3, 1.5, "F"); // icon bullet
-  doc.setTextColor(255, 255, 255);
-  doc.text("TERMS & CONDITIONS", margin + 9, yPos + 4.2);
-  
-  yPos += 10;
-  doc.setFontSize(7);
+  doc.text("TERMS & CONDITIONS", margin + 7, yPos + 4.2);
+
+  yPos += 9;
   doc.setTextColor(textColor[0]);
 
   const terms = [
@@ -605,6 +599,7 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
     "By booking the tour, the customer confirms that they have read, understood, and agreed to all the terms and conditions mentioned above."
   ];
 
+  doc.setFontSize(7.0);
   terms.forEach((term, index) => {
     // Left serial number in bold
     doc.setFont("helvetica", "bold");
@@ -617,111 +612,105 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
     doc.text(wrapped, margin + 8, yPos);
     
     // Increment yPos based on lines and gap
-    yPos += wrapped.length * 3.5 + 1.5;
+    yPos += wrapped.length * 3.4 + 1.0;
   });
 
-  // --- FOOTER FOR PAGE 2 ---
-  drawFooter();
+  // Gap between sections
+  yPos += 6;
 
-  // Add new page for Cancellation & Refund Policy (PAGE 3)
-  doc.addPage();
-  drawHeader();
-  yPos = 55;
-
-  // --- CANCELLATION & REFUND POLICY ---
+  // --- CANCELLATION & REFUND POLICY (PAGE 2 - LOWER SECTION) ---
   doc.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-  doc.roundedRect(margin, yPos, 65, 6, 3, 3, "F");
+  doc.roundedRect(margin, yPos, 55, 6, 3, 3, "F");
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.circle(margin + 4, yPos + 3, 1.2, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.circle(margin + 5, yPos + 3, 1.5, "F"); // icon bullet
-  doc.setTextColor(255, 255, 255);
-  doc.text("CANCELLATION & REFUND POLICY", margin + 9, yPos + 4.2);
-  
-  yPos += 10;
+  doc.text("CANCELLATION & REFUND POLICY", margin + 7, yPos + 4.2);
+
+  yPos += 9;
 
   // Section 1: Cancellation by Customer
-  doc.setFontSize(8);
+  doc.setFontSize(7.2);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   doc.text("Cancellation by Customer:", margin + 2, yPos);
-  yPos += 5;
+  yPos += 4.0;
 
-  doc.setFontSize(7.5);
+  doc.setFontSize(6.8);
   doc.setTextColor(textColor[0]);
   
   // More than 30 days
   doc.setFont("helvetica", "bold");
   doc.text("More than 30 days before departure:", margin + 4, yPos);
-  yPos += 4.5;
+  yPos += 3.5;
   doc.setFont("helvetica", "normal");
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
   doc.text("Rs. 5,999 per person (booking amount) will be deducted.", margin + 11, yPos);
-  yPos += 4;
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  yPos += 3.2;
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
   doc.text("Balance amount will be refunded.", margin + 11, yPos);
-  yPos += 5.5;
+  yPos += 5.0;
 
   // 15-30 days
   doc.setFont("helvetica", "bold");
   doc.text("15-30 days before departure:", margin + 4, yPos);
-  yPos += 4.5;
+  yPos += 3.5;
   doc.setFont("helvetica", "normal");
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
   doc.text("50% of the total tour cost will be deducted.", margin + 11, yPos);
-  yPos += 5.5;
+  yPos += 5.0;
 
   // 7-14 days
   doc.setFont("helvetica", "bold");
   doc.text("7-14 days before departure:", margin + 4, yPos);
-  yPos += 4.5;
+  yPos += 3.5;
   doc.setFont("helvetica", "normal");
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
   doc.text("75% of the total tour cost will be deducted.", margin + 11, yPos);
-  yPos += 5.5;
+  yPos += 5.0;
 
   // Less than 7 days
   doc.setFont("helvetica", "bold");
   doc.text("Less than 7 days before departure or No-Show:", margin + 4, yPos);
-  yPos += 4.5;
+  yPos += 3.5;
   doc.setFont("helvetica", "normal");
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
-  doc.text("100% of the total tour cost will be deducted. No refund will be applicable.", margin + 11, yPos);
-  yPos += 9;
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
+  const wrappedNoShow = doc.splitTextToSize("100% of the total tour cost will be deducted. No refund will be applicable.", contentWidth - 15);
+  doc.text(wrappedNoShow, margin + 11, yPos);
+  yPos += wrappedNoShow.length * 3.2 + 6.0;
 
   // Section 2: Cancellation by Company
-  doc.setFontSize(8);
+  doc.setFontSize(7.2);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   doc.text("Cancellation by Company:", margin + 2, yPos);
-  yPos += 5;
+  yPos += 4.0;
 
-  doc.setFontSize(7.5);
+  doc.setFontSize(6.8);
   doc.setTextColor(textColor[0]);
   doc.setFont("helvetica", "normal");
   
   const compLines = doc.splitTextToSize("If the tour is cancelled by MusafirBaba due to operational reasons or insufficient group size, the customer will be offered:", contentWidth - 10);
   doc.text(compLines, margin + 4, yPos);
-  yPos += compLines.length * 4 + 1.5;
+  yPos += compLines.length * 3.2 + 1.5;
 
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
   doc.text("An alternate departure date OR", margin + 11, yPos);
-  yPos += 4;
-  doc.circle(margin + 8, yPos - 1, 0.5, "F");
-  const compRefLine = doc.splitTextToSize("A full refund of the amount paid (excluding any non-refundable third-party charges, if applicable).", contentWidth - 20);
+  yPos += 3.2;
+  doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
+  const compRefLine = doc.splitTextToSize("A full refund of the amount paid (excluding any non-refundable third-party charges, if applicable).", contentWidth - 15);
   doc.text(compRefLine, margin + 11, yPos);
-  yPos += compRefLine.length * 4 + 6;
+  yPos += compRefLine.length * 3.2 + 6.0;
 
   // Section 3: Important Notes
-  doc.setFontSize(8);
+  doc.setFontSize(7.2);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   doc.text("Important Notes:", margin + 2, yPos);
-  yPos += 5;
+  yPos += 4.0;
 
-  doc.setFontSize(7.5);
+  doc.setFontSize(6.8);
   doc.setTextColor(textColor[0]);
   doc.setFont("helvetica", "normal");
 
@@ -733,13 +722,13 @@ export const generateInvoicePDF = (invoice: Invoice, action: "view" | "download"
   ];
 
   notes.forEach(note => {
-    doc.circle(margin + 6, yPos - 1, 0.5, "F");
+    doc.circle(margin + 8, yPos - 1.0, 0.45, "F");
     const wrappedNote = doc.splitTextToSize(note, contentWidth - 15);
-    doc.text(wrappedNote, margin + 9, yPos);
-    yPos += wrappedNote.length * 4 + 1.5;
+    doc.text(wrappedNote, margin + 11, yPos);
+    yPos += wrappedNote.length * 3.2 + 1.2;
   });
 
-  // --- FOOTER FOR PAGE 3 ---
+  // --- FOOTER FOR PAGE 2 ---
   drawFooter();
 
   // Final Action
