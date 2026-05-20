@@ -18,7 +18,7 @@ export function QueryDailogBox() {
 
             <div className="hidden md:block w-1/2 relative min-h-full">
                <Image 
-                  src="/enquary_pop_up_v2.png" 
+                  src="/enquary_pop_up_v21.png" 
                   alt="Enquiry" 
                   fill 
                   sizes="(max-width: 768px) 100vw, 50vw"
