@@ -167,6 +167,12 @@ export default function QueryForm({ className }: { className?: string }) {
       return;
     }
 
+    if (stateData.length > 0 && !values.state) {
+      form.setError("state", { message: "State is required", type: "manual" });
+      toast.error("Please select a state.");
+      return;
+    }
+
     // Process interests and message
     const coreInterests = (values.interests || []).filter(i => i !== "other");
     let finalMessage = coreInterests.join(", ");
@@ -184,15 +190,20 @@ export default function QueryForm({ className }: { className?: string }) {
     });
   }
 
-  const countryList = countryCodes.customList(
-    "countryNameEn",
-    "{countryCode} +{countryCallingCode}",
+  const countryListRaw = countryCodes.customList(
+    "countryCode",
+    "{countryNameEn}::{flag}::{countryCode} +{countryCallingCode}",
   );
-  const countryOptions = Object.entries(countryList)
-    .map(([countryKey, value]) => ({
-      label: `${countryKey} ${value}`,
-      value,
-    }))
+  const countryOptions = Object.values(countryListRaw)
+    .map((rawString) => {
+      const [countryKey, flag, value] = rawString.split("::");
+      return {
+        label: `${flag} ${countryKey} ${value}`,
+        value,
+        flag,
+        callingCode: value.split(" ")[1],
+      };
+    })
     .filter((item, index, self) => index === self.findIndex((t) => t.value === item.value));
 
   const interestOptions = [
@@ -221,16 +232,18 @@ export default function QueryForm({ className }: { className?: string }) {
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="relative">
-                  <FormLabel className="absolute -top-2 left-4 bg-white px-1 text-[10px] font-bold text-gray-400 z-10">NAME <span className="text-red-500">*</span></FormLabel>
+                <FormItem className="relative pt-1.5">
                   <FormControl>
-                    <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                    <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
                       <UserRound className="w-5 h-5 text-orange-500" />
                       <Input
-                        placeholder="John Doe"
+                        placeholder=" "
                         {...field}
-                        className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
+                        className="peer border-none p-0 shadow-none focus-visible:ring-0 min-w-0 bg-transparent"
                       />
+                      <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-9 pointer-events-none">
+                        Name <span className="text-red-500">*</span>
+                      </FormLabel>
                     </div>
                   </FormControl>
                   <FormMessage className="mt-1 text-[10px]" />
@@ -241,16 +254,18 @@ export default function QueryForm({ className }: { className?: string }) {
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem className="relative">
-                    <FormLabel className="absolute -top-2 left-4 bg-white px-1 text-[10px] font-bold text-gray-400 z-10">EMAIL <span className="text-red-500">*</span></FormLabel>
+                  <FormItem className="relative pt-1.5">
                     <FormControl>
-                      <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                      <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
                         <Mail className="w-4 h-4 text-orange-500" />
                         <Input
-                          placeholder="john@gmail.com"
+                          placeholder=" "
                           {...field}
-                          className="border-none p-0 shadow-none focus-visible:ring-0 min-w-0"
+                          className="peer border-none p-0 shadow-none focus-visible:ring-0 min-w-0 bg-transparent"
                         />
+                        <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-9 pointer-events-none">
+                          Email <span className="text-red-500">*</span>
+                        </FormLabel>
                       </div>
                     </FormControl>
                     <FormMessage className="mt-1 text-[10px]" />
@@ -267,11 +282,10 @@ export default function QueryForm({ className }: { className?: string }) {
                 );
 
                 return (
-                  <FormItem className="relative">
-                    <FormLabel className="absolute -top-2 left-10 bg-white px-1 text-[10px] font-bold text-gray-400 z-10">PHONE <span className="text-red-500">*</span></FormLabel>
+                  <FormItem className="relative pt-1.5">
                     <FormControl>
-                      <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
-                        <Phone className="w-4 h-4 text-orange-500" />
+                      <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                        <Phone className="w-4 h-4 text-orange-500 shrink-0" />
 
                         <Select
                           value={form.watch("countryCode")}
@@ -279,32 +293,45 @@ export default function QueryForm({ className }: { className?: string }) {
                             form.setValue("countryCode", value);
                           }}
                         >
-                          <SelectTrigger className="w-[100px] h-8 focus-visible:ring-0 focus-visible:ring-offset-0 border-none shadow-none">
-                            {selectedCountry?.value?.split(" ")[1] || "Code"}
+                          <SelectTrigger className="w-[80px] md:w-[100px] h-8 focus-visible:ring-0 focus-visible:ring-offset-0 border-none shadow-none text-sm p-0">
+                            {selectedCountry ? (
+                              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                                <span className="text-[20px] leading-none">{selectedCountry.flag}</span>
+                                <span>{selectedCountry.callingCode}</span>
+                              </span>
+                            ) : (
+                              "Code"
+                            )}
                           </SelectTrigger>
 
                           <SelectContent>
                             {countryOptions.map((item) => (
                               <SelectItem key={item.value} value={item.value}>
-                                {item.label}
+                                <span className="flex items-center gap-2">
+                                  <span className="text-[20px] leading-none">{item.flag}</span>
+                                  <span>{item.label.replace(item.flag + " ", "")}</span>
+                                </span>
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
 
                         <Input
-                          placeholder="7345678901"
+                          placeholder=" "
                           {...field}
-                          className="border-none p-0 shadow-none focus-visible:ring-0 flex-1"
+                          className="peer border-none bg-transparent p-0 shadow-none focus-visible:ring-0 flex-1"
                           onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
                             field.onChange(value);
                           }}
                         />
-                        <div className="flex items-center gap-2 border-l pl-2">
+                        <div className="flex items-center gap-2 border-l pl-2 relative z-20">
                             <Checkbox checked={form.watch("whatsapp")} onCheckedChange={(val) => form.setValue("whatsapp", !!val)} className="w-5 h-5 border-gray-300 data-[state=checked]:bg-green-500" />
                            <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="whatsapp" width={18} height={18} className="object-contain" />
                         </div>
+                        <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-9 peer-placeholder-shown:left-[120px] md:peer-placeholder-shown:left-[140px] peer-focus:left-9 pointer-events-none">
+                          Phone <span className="text-red-500">*</span>
+                        </FormLabel>
                       </div>
                     </FormControl>
                     <FormMessage className="mt-1 text-[10px]" />
@@ -319,18 +346,17 @@ export default function QueryForm({ className }: { className?: string }) {
                   control={form.control}
                   name="state"
                   render={({ field }) => (
-                    <FormItem className="relative flex-1">
-                      <FormLabel className="absolute -top-2 left-4 bg-white px-1 text-[10px] font-bold text-gray-400 z-10">STATE</FormLabel>
+                    <FormItem className="relative flex-1 pt-1.5">
                       <FormControl>
-                        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                        <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
                           <MapPin className="w-4 h-4 text-orange-500" />
                           <Select
                             disabled={!countryIso || stateData.length === 0}
                             value={field.value}
                             onValueChange={field.onChange}
                           >
-                            <SelectTrigger className="border-none shadow-none focus:ring-0 h-8 p-0 text-left overflow-hidden text-[13px]">
-                               <SelectValue placeholder={!countryIso ? "Select country" : "Select State"} />
+                            <SelectTrigger className="peer w-full border-none shadow-none focus:ring-0 h-8 p-0 text-left overflow-hidden text-[13px] bg-transparent relative z-20 flex justify-between items-center">
+                               <SelectValue placeholder="" />
                             </SelectTrigger>
                             <SelectContent className="max-h-60 overflow-y-auto">
                                {stateData.map((state) => (
@@ -340,6 +366,13 @@ export default function QueryForm({ className }: { className?: string }) {
                                ))}
                             </SelectContent>
                           </Select>
+                          <FormLabel className={`absolute text-[13px] text-gray-400 duration-300 transform origin-[0] bg-white px-1 left-9 pointer-events-none z-10
+                            ${field.value ? "-translate-y-4 scale-[0.8] top-1.5" : "-translate-y-1/2 top-1/2"}
+                            peer-focus:-translate-y-4 peer-focus:scale-[0.8] peer-focus:top-1.5 peer-focus:text-orange-500
+                            peer-data-[state=open]:-translate-y-4 peer-data-[state=open]:scale-[0.8] peer-data-[state=open]:top-1.5 peer-data-[state=open]:text-orange-500
+                          `}>
+                            State {stateData.length > 0 && <span className="text-red-500">*</span>}
+                          </FormLabel>
                         </div>
                       </FormControl>
                     </FormItem>
@@ -349,18 +382,17 @@ export default function QueryForm({ className }: { className?: string }) {
                   control={form.control}
                   name="city"
                   render={({ field }) => (
-                    <FormItem className="relative flex-1">
-                      <FormLabel className="absolute -top-2 left-4 bg-white px-1 text-[10px] font-bold text-gray-400 z-10">CITY</FormLabel>
+                    <FormItem className="relative flex-1 pt-1.5">
                       <FormControl>
-                        <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                        <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
                           <MapPin className="w-4 h-4 text-orange-500" />
                           <Select
                             disabled={!stateNameValue || cityData.length === 0}
                             value={field.value}
                             onValueChange={field.onChange}
                           >
-                            <SelectTrigger className="border-none shadow-none focus:ring-0 h-8 p-0 text-left overflow-hidden text-[13px]">
-                               <SelectValue placeholder={!stateNameValue ? "Select state" : "Select City"} />
+                            <SelectTrigger className="peer w-full border-none shadow-none focus:ring-0 h-8 p-0 text-left overflow-hidden text-[13px] bg-transparent relative z-20 flex justify-between items-center">
+                               <SelectValue placeholder="" />
                             </SelectTrigger>
                             <SelectContent className="max-h-60 overflow-y-auto">
                                {cityData.map((city) => (
@@ -370,6 +402,13 @@ export default function QueryForm({ className }: { className?: string }) {
                                ))}
                             </SelectContent>
                           </Select>
+                          <FormLabel className={`absolute text-[13px] text-gray-400 duration-300 transform origin-[0] bg-white px-1 left-9 pointer-events-none z-10
+                            ${field.value ? "-translate-y-4 scale-[0.8] top-1.5" : "-translate-y-1/2 top-1/2"}
+                            peer-focus:-translate-y-4 peer-focus:scale-[0.8] peer-focus:top-1.5 peer-focus:text-orange-500
+                            peer-data-[state=open]:-translate-y-4 peer-data-[state=open]:scale-[0.8] peer-data-[state=open]:top-1.5 peer-data-[state=open]:text-orange-500
+                          `}>
+                            City
+                          </FormLabel>
                         </div>
                       </FormControl>
                     </FormItem>
@@ -421,16 +460,20 @@ export default function QueryForm({ className }: { className?: string }) {
                 control={form.control}
                 name="message"
                 render={({ field }) => (
-                  <FormItem className="relative animate-in slide-in-from-top-2 duration-300">
-                    <FormLabel className="absolute -top-2 left-4 bg-white px-1 text-xs font-semibold text-gray-500 z-10">Details Message</FormLabel>
+                  <FormItem className="relative animate-in slide-in-from-top-2 duration-300 pt-1.5">
                     <FormControl>
-                      <div className="flex gap-2 border border-blue-400 rounded-lg px-3 py-2 bg-white shadow-sm ring-1 ring-blue-100 transition">
-                        <MessageCircleCode className="w-5 h-5 text-blue-500 mt-1" />
-                        <Textarea
-                          placeholder="Tell us more about your travel plan..."
-                          className="min-h-[80px] border-none p-0 shadow-none focus-visible:ring-0 text-sm"
-                          {...field}
-                        />
+                      <div className="relative flex gap-2 border border-blue-400 rounded-lg px-3 py-2 bg-white shadow-sm ring-1 ring-blue-100 transition focus-within:ring-blue-400">
+                        <MessageCircleCode className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                        <div className="relative w-full">
+                          <Textarea
+                            placeholder=" "
+                            className="peer min-h-[80px] border-none p-0 bg-transparent shadow-none focus-visible:ring-0 text-sm w-full resize-none"
+                            {...field}
+                          />
+                          <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-3 scale-[0.8] top-1 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:top-0 peer-focus:top-1 peer-focus:scale-[0.8] peer-focus:-translate-y-3 left-0 pointer-events-none">
+                            Details Message
+                          </FormLabel>
+                        </div>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -439,23 +482,20 @@ export default function QueryForm({ className }: { className?: string }) {
               />
             )}
 
-            <div className="space-y-1 relative pt-1">
-                <FormLabel className="absolute -top-2 left-4 bg-white px-1 text-[10px] font-bold text-gray-400 z-10">
-                    CAPTCHA <span className="text-red-500">*</span>
-                </FormLabel>
-                <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1 bg-blue-50/30 transition-all focus-within:border-orange-500 focus-within:bg-orange-50/10">
-                    <div className="bg-orange-500 text-white px-2 py-0.5 rounded text-[12px] font-black shadow-sm select-none tracking-widest min-w-[70px] text-center">
+            <div className="space-y-1 relative pt-1.5">
+                <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-blue-50/30 transition-all focus-within:border-orange-500 focus-within:bg-orange-50/10">
+                    <div className="bg-orange-500 text-white px-2 py-0.5 rounded text-[12px] font-black shadow-sm select-none tracking-widest min-w-[70px] text-center relative z-20">
                         {captcha.n1}+{captcha.n2}
                     </div>
-                    <span className="text-gray-400 font-bold text-xs">=</span>
+                    <span className="text-gray-400 font-bold text-xs relative z-20">=</span>
                     <Input
                         type="number"
-                        placeholder="Answer"
+                        placeholder=" "
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
-                        className="border-none bg-transparent p-0 shadow-none focus-visible:ring-0 text-[14px] font-semibold flex-1 placeholder:text-gray-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="peer border-none bg-transparent p-0 shadow-none focus-visible:ring-0 text-[14px] font-semibold flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <div className="flex items-center gap-1.5 pr-1 border-l pl-2 border-gray-200">
+                    <div className="flex items-center gap-1.5 pr-1 border-l pl-2 border-gray-200 relative z-20">
                         {isHumanVerified ? (
                              <CircleCheck className="w-4 h-4 text-green-500" />
                         ) : (
@@ -469,6 +509,9 @@ export default function QueryForm({ className }: { className?: string }) {
                           </button>
                         )}
                     </div>
+                    <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-4 peer-placeholder-shown:left-[110px] peer-focus:left-4 pointer-events-none">
+                        Captcha <span className="text-red-500">*</span>
+                    </FormLabel>
                 </div>
                 {!isHumanVerified && userAnswer && (
                     <p className="text-[10px] text-red-500 font-medium px-1">Incorrect result.</p>
@@ -509,14 +552,10 @@ export default function QueryForm({ className }: { className?: string }) {
 
             <Button
               type="submit"
-              disabled={mutation.isPending || !isHumanVerified}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
+              disabled={mutation.isPending}
+              className={`w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98] ${!isHumanVerified ? 'hidden' : ''}`}
             >
-              {mutation.isPending
-                ? "Sending..."
-                : isHumanVerified
-                ? "Send Enquiry"
-                : "Send Enquiry"}
+              {mutation.isPending ? "Sending..." : "Send Enquiry"}
             </Button>
           </form>
         </Form>
