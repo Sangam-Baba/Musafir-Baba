@@ -19,6 +19,8 @@ interface PopupBannerProps {
 }
 
 export function PopupBanner() {
+  return null; // Commented out homepage popup
+
   const [open, setOpen] = React.useState(false);
   const [data, setData] = React.useState<PopupBannerProps | null>(null);
 

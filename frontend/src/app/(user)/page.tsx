@@ -199,7 +199,7 @@ export default async function HomePage() {
       <Suspense fallback={null}>
         <LoginAutoOpen />
       </Suspense>
-      <PopupBanner />
+      {/* <PopupBanner /> */}
 
       {/* ── JSON-LD Structured Data ───────────────────────────────────── */}
       <Script
