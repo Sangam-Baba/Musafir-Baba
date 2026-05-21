@@ -5,7 +5,6 @@ import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import Script from "next/script";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
-import { revalidate } from "../auth/logout/page";
 import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
 
 export const getWebPageBySlug = async (slug: string, token?: string) => {
@@ -90,8 +89,11 @@ async function AllWebPage({
   const fullSlug = slug.join("/");
 
   const page = await getWebPageBySlug(fullSlug, token);
+  
   const relatedPage = await getRelatedWebpageBySlug(slug[slug.length - 1]);
+  
   const trandingPkg = await getTrandingPkg(slug[0]);
+
   // console.log("best saller", trandingPkg);
   const webpageSchema = getWebPageSchema(page.title, page.fullSlug);
   const faqSchema = getFAQSchema(page.faqs ?? []);

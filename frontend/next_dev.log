@@ -1,0 +1,186 @@
+
+> frontend@0.1.0 dev
+> next dev --turbopack
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.11:3000
+- Environments: .env.local, .env
+
+✓ Starting...
+✓ Ready in 5.6s
+○ Compiling /admin/webpage ...
+ GET /admin/webpage 200 in 6.1s (compile: 5.1s, render: 1022ms)
+Image with src "/homebanner.webp" is using quality "70" which is not configured in images.qualities [80]. Please update your config to [70, 80].
+Read more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+ GET / 200 in 11.2s (compile: 6.4s, render: 4.8s)
+Preview Token: undefined
+⨯ TypeError: fetch failed
+    at ignore-listed frames {
+  digest: '4182639802',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at ignore-listed frames {
+  digest: '4182639802',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+ GET /blog/dehradun-mussoorie-worth-visiting 500 in 11.8s (compile: 11.2s, render: 579ms)
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+ GET / 200 in 1525ms (compile: 112ms, render: 1413ms)
+○ Compiling /admin/login ...
+ GET /admin/login 200 in 7.1s (compile: 6.7s, render: 397ms)
+ GET /admin/login 200 in 116ms (compile: 18ms, render: 98ms)
+✓ Finished writing to filesystem cache in 28.3s
+✓ Finished filesystem cache database compaction in 15.6s
+ GET /blog 200 in 3.8s (compile: 1981ms, render: 1803ms)
+Preview Token: undefined
+Failed to set fetch cache http://127.0.0.1:8000/api/blogs Error: Failed to set Next.js data cache for http://127.0.0.1:8000/api/blogs, items over 2MB can not be cached (2243543 bytes)
+    at ignore-listed frames
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 1900ms (compile: 41ms, render: 1859ms)
+[?25h

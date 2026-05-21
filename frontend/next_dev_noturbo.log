@@ -1,0 +1,68 @@
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.11:3000
+- Environments: .env.local, .env
+
+✓ Starting...
+✓ Ready in 2.1s
+Preview Token: undefined
+⨯ TypeError: fetch failed
+    at ignore-listed frames {
+  digest: '4182639802',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at ignore-listed frames {
+  digest: '4182639802',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+TypeError: fetch failed
+    at ignore-listed frames {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 500 in 2.9s (compile: 1908ms, render: 960ms)
+○ Compiling /[...slug] ...
+[?25h
