@@ -57,8 +57,8 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   }
 
   return (
-    <div className="py-2 w-full bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.04)] rounded-lg">
-      <div className="flex items-center justify-between mb-4 px-1">
+    <div className="py-4 px-4 w-full bg-[#e7f6ed] border border-green-100 shadow-sm rounded-2xl">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-[13px] font-bold text-gray-900 uppercase tracking-widest">
           On this page
         </h2>
@@ -73,7 +73,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       </div>
 
       {!isGlobalCollapsed && (
-        <nav className="relative">
+        <nav className="relative max-h-[60vh] overflow-y-auto overscroll-contain pr-1">
           {/* Vertical accent line */}
           <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gray-100 rounded-full" />
           

@@ -1,0 +1,581 @@
+
+> frontend@0.1.0 dev
+> next dev --turbopack
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.11:3000
+- Environments: .env.local, .env
+
+✓ Starting...
+✓ Ready in 1043ms
+○ Compiling /blog/[slug] ...
+Preview Token: undefined
+⨯ TypeError: fetch failed
+    at ignore-listed frames {
+  digest: '4182639802',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at ignore-listed frames {
+  digest: '4182639802',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/LowerFooter.tsx:17:15)
+    at async LowerFooterItem (src/components/custom/LowerFooter.tsx:26:23)
+  15 |
+  16 | const getFooter = async () => {
+> 17 |   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+     |               ^
+  18 |     next: { revalidate: 120 },
+  19 |   });
+  20 |   if (!res.ok) throw new Error("Failed to fetch footer"); {
+  digest: '1160462136',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/LowerFooter.tsx:17:15)
+    at async LowerFooterItem (src/components/custom/LowerFooter.tsx:26:23)
+  15 |
+  16 | const getFooter = async () => {
+> 17 |   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+     |               ^
+  18 |     next: { revalidate: 120 },
+  19 |   });
+  20 |   if (!res.ok) throw new Error("Failed to fetch footer"); {
+  digest: '1160462136',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 500 in 11.9s (compile: 10.8s, render: 1040ms)
+○ Compiling /[...slug] ...
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: nag-tibba-trek
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: .well-known/appspecific/com.chrome.devtools.json
+Fetching getWebPageBySlug: nag-tibba-trek
+getWebPageBySlug called for: nag-tibba-trek
+Fetching getWebPageBySlug: .well-known/appspecific/com.chrome.devtools.json
+getWebPageBySlug called for: .well-known/appspecific/com.chrome.devtools.json
+⨯ TypeError: fetch failed
+    at async getWebPageBySlug (src/app/(user)/[...slug]/page.tsx:12:15)
+    at async Module.generateMetadata (src/app/(user)/[...slug]/page.tsx:36:16)
+  10 | export const getWebPageBySlug = async (slug: string, token?: string) => {
+  11 |   console.log("getWebPageBySlug called for:", slug);
+> 12 |   const res = await fetch(
+     |               ^
+  13 |     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
+  14 |     {
+  15 |       next: { revalidate: 120 }, {
+  digest: '2229755854',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getWebPageBySlug (src/app/(user)/[...slug]/page.tsx:12:15)
+    at async Module.generateMetadata (src/app/(user)/[...slug]/page.tsx:36:16)
+  10 | export const getWebPageBySlug = async (slug: string, token?: string) => {
+  11 |   console.log("getWebPageBySlug called for:", slug);
+> 12 |   const res = await fetch(
+     |               ^
+  13 |     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
+  14 |     {
+  15 |       next: { revalidate: 120 }, {
+  digest: '2229755854',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/LowerFooter.tsx:17:15)
+    at async LowerFooterItem (src/components/custom/LowerFooter.tsx:26:23)
+  15 |
+  16 | const getFooter = async () => {
+> 17 |   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+     |               ^
+  18 |     next: { revalidate: 120 },
+  19 |   });
+  20 |   if (!res.ok) throw new Error("Failed to fetch footer"); {
+  digest: '1160462136',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/LowerFooter.tsx:17:15)
+    at async LowerFooterItem (src/components/custom/LowerFooter.tsx:26:23)
+  15 |
+  16 | const getFooter = async () => {
+> 17 |   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+     |               ^
+  18 |     next: { revalidate: 120 },
+  19 |   });
+  20 |   if (!res.ok) throw new Error("Failed to fetch footer"); {
+  digest: '1160462136',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/LowerFooter.tsx:17:15)
+    at async LowerFooterItem (src/components/custom/LowerFooter.tsx:26:23)
+  15 |
+  16 | const getFooter = async () => {
+> 17 |   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+     |               ^
+  18 |     next: { revalidate: 120 },
+  19 |   });
+  20 |   if (!res.ok) throw new Error("Failed to fetch footer"); {
+  digest: '1160462136',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getWebPageBySlug (src/app/(user)/[...slug]/page.tsx:12:15)
+    at async Module.generateMetadata (src/app/(user)/[...slug]/page.tsx:36:16)
+  10 | export const getWebPageBySlug = async (slug: string, token?: string) => {
+  11 |   console.log("getWebPageBySlug called for:", slug);
+> 12 |   const res = await fetch(
+     |               ^
+  13 |     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
+  14 |     {
+  15 |       next: { revalidate: 120 }, {
+  digest: '2229755854',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/FooterItem.tsx:8:15)
+    at async FooterItem (src/components/custom/FooterItem.tsx:22:19)
+   6 | }
+   7 | const getFooter = async (title: string) => {
+>  8 |   const res = await fetch(
+     |               ^
+   9 |     `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+  10 |     {
+  11 |       next: { revalidate: 120 }, {
+  digest: '1915916221',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getFooter (src/components/custom/LowerFooter.tsx:17:15)
+    at async LowerFooterItem (src/components/custom/LowerFooter.tsx:26:23)
+  15 |
+  16 | const getFooter = async () => {
+> 17 |   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+     |               ^
+  18 |     next: { revalidate: 120 },
+  19 |   });
+  20 |   if (!res.ok) throw new Error("Failed to fetch footer"); {
+  digest: '1160462136',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+⨯ TypeError: fetch failed
+    at async getWebPageBySlug (src/app/(user)/[...slug]/page.tsx:12:15)
+    at async Module.generateMetadata (src/app/(user)/[...slug]/page.tsx:36:16)
+  10 | export const getWebPageBySlug = async (slug: string, token?: string) => {
+  11 |   console.log("getWebPageBySlug called for:", slug);
+> 12 |   const res = await fetch(
+     |               ^
+  13 |     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
+  14 |     {
+  15 |       next: { revalidate: 120 }, {
+  digest: '2229755854',
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8000
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8000) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8000
+  }
+}
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: nag-tibba-trek
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: .well-known/appspecific/com.chrome.devtools.json
+ HEAD /nag-tibba-trek 500 in 7.1s (compile: 5.6s, render: 1473ms)
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 7.5s (compile: 5.9s, render: 1524ms)
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: nag-tibba-trek
+Fetching getWebPageBySlug: nag-tibba-trek
+getWebPageBySlug called for: nag-tibba-trek
+getWebPageBySlug fetch response ok? true
+generateMetadata got page data
+getWebPageBySlug fetch response ok? true
+Fetched getWebPageBySlug
+Fetching getRelatedWebpageBySlug
+Fetched getRelatedWebpageBySlug
+Fetching getTrandingPkg
+Fetched getTrandingPkg
+Extracting headings
+IDs added
+ GET /nag-tibba-trek 200 in 1121ms (compile: 145ms, render: 976ms)
+Preview Token: undefined
+Preview Token: undefined
+Failed to set fetch cache http://127.0.0.1:8000/api/blogs Error: Failed to set Next.js data cache for http://127.0.0.1:8000/api/blogs, items over 2MB can not be cached (2243543 bytes)
+    at ignore-listed frames
+○ Compiling /admin/login ...
+TableOfContents rendered with headings: 9
+TableOfContents finished processing headings
+TableOfContents rendered with headings: 9
+TableOfContents finished processing headings
+Failed to set fetch cache http://127.0.0.1:8000/api/blogs Error: Failed to set Next.js data cache for http://127.0.0.1:8000/api/blogs, items over 2MB can not be cached (2243543 bytes)
+    at ignore-listed frames
+TableOfContents rendered with headings: 10
+TableOfContents finished processing headings
+TableOfContents rendered with headings: 10
+TableOfContents finished processing headings
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 3.1s (compile: 28ms, render: 3.0s)
+ GET /blog/dehradun-mussoorie-worth-visiting 200 in 2.3s (compile: 16ms, render: 2.2s)
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: .well-known/appspecific/com.chrome.devtools.json
+Fetching getWebPageBySlug: .well-known/appspecific/com.chrome.devtools.json
+getWebPageBySlug called for: .well-known/appspecific/com.chrome.devtools.json
+ GET /admin/login 200 in 8.8s (compile: 8.4s, render: 407ms)
+getWebPageBySlug fetch response ok? false
+getWebPageBySlug fetch response ok? false
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 3.6s (compile: 642ms, render: 3.0s)
+✓ Compiled in 1290ms
+Preview Token: undefined
+Preview Token: undefined
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 1709ms (compile: 113ms, render: 1596ms)
+ GET /blog/dehradun-mussoorie-worth-visiting 200 in 1070ms (compile: 20ms, render: 1050ms)
+✓ Finished writing to filesystem cache in 13.2s
+generateMetadata calling getWebPageBySlug
+getWebPageBySlug called for: nag-tibba-trek
+getWebPageBySlug fetch response ok? true
+generateMetadata got page data
+Fetching getWebPageBySlug: nag-tibba-trek
+getWebPageBySlug called for: nag-tibba-trek
+getWebPageBySlug fetch response ok? true
+Fetched getWebPageBySlug
+Fetching getRelatedWebpageBySlug
+Fetched getRelatedWebpageBySlug
+Fetching getTrandingPkg
+Fetched getTrandingPkg
+Extracting headings
+IDs added
+TableOfContents rendered with headings: 42
+TableOfContents finished processing headings
+ HEAD /nag-tibba-trek 200 in 4.3s (compile: 2.6s, render: 1774ms)
+✓ Compiled in 527ms
+Preview Token: undefined
+ GET /admin/login 200 in 485ms (compile: 32ms, render: 454ms)
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 428ms (compile: 27ms, render: 401ms)
+✓ Compiled in 258ms
+Preview Token: undefined
+ GET /admin/login 200 in 517ms (compile: 27ms, render: 490ms)
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 485ms (compile: 21ms, render: 464ms)
+✓ Compiled in 183ms
+Preview Token: undefined
+ GET /admin/login 200 in 231ms (compile: 12ms, render: 220ms)
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 1187ms (compile: 8ms, render: 1179ms)
+✓ Compiled in 168ms
+Preview Token: undefined
+ GET /admin/login 200 in 224ms (compile: 19ms, render: 205ms)
+ GET /blog/how-to-plan-dehradun-mussoorie-trip 200 in 243ms (compile: 14ms, render: 230ms)
+✓ Compiled in 527ms
+✓ Compiled in 171ms
+○ Compiling /admin ...
+ GET /admin 200 in 5.2s (compile: 4.9s, render: 278ms)
+ GET /admin/attendance 200 in 1311ms (compile: 854ms, render: 457ms)
+ GET /admin/authors 200 in 1171ms (compile: 1122ms, render: 49ms)
+ GET /admin/webpage 200 in 446ms (compile: 427ms, render: 19ms)
+ GET /visa/china-visa/requirements 200 in 3.0s (compile: 293ms, render: 2.7s)
+ GET /chardham-yatra/from-hyderabad 200 in 787ms (compile: 28ms, render: 760ms)
