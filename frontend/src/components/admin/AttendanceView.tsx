@@ -7,12 +7,14 @@ import { secureAdminFetch } from "@/lib/secureAdminFetch";
 import { toast } from "sonner";
 import { MapPin, Clock, Coffee, CheckCircle2, PlayCircle, StopCircle, LogOut } from "lucide-react";
 import { getAttendanceStatus } from "@/lib/attendanceUtils";
+import { CameraModal } from "./CameraModal";
 
 export default function AttendanceView() {
   const [attendance, setAttendance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [cameraConfig, setCameraConfig] = useState<{ action: "check-in" | "check-out" | null, title: string }>({ action: null, title: "" });
 
   useEffect(() => {
     fetchTodayAttendance();
@@ -57,16 +59,16 @@ export default function AttendanceView() {
     });
   };
 
-  const handleAction = async (action: "check-in" | "check-out" | "break/start" | "break/end") => {
+  const handleAction = async (action: "check-in" | "check-out" | "break/start" | "break/end", photoBase64?: string) => {
     try {
       setActionLoading(true);
-      let payload = {};
+      let payload: any = {};
 
-      // Only check-in and check-out need location
+      // Only check-in and check-out need location and photo
       if (action === "check-in" || action === "check-out") {
         try {
           const loc = await getLocation();
-          payload = loc;
+          payload = { ...loc, photo: photoBase64 };
         } catch (e) {
           setActionLoading(false);
           return; // Stop if location fails
@@ -180,7 +182,7 @@ export default function AttendanceView() {
                 <Button 
                   size="sm" 
                   className="w-full h-10 text-[12px] font-bold bg-[#FE5300] hover:bg-orange-600 transition-colors shadow-sm rounded-md" 
-                  onClick={() => handleAction("check-in")}
+                  onClick={() => setCameraConfig({ action: "check-in", title: "Take a photo to Check In" })}
                   disabled={actionLoading}
                 >
                   <MapPin className="mr-1.5 h-4 w-4" /> Check In
@@ -213,7 +215,7 @@ export default function AttendanceView() {
                     size="sm" 
                     variant="destructive"
                     className="w-full h-10 text-[12px] font-bold rounded-md" 
-                    onClick={() => handleAction("check-out")}
+                    onClick={() => setCameraConfig({ action: "check-out", title: "Take a photo to Check Out" })}
                     disabled={actionLoading || isOnBreak}
                   >
                     <StopCircle className="mr-1.5 h-4 w-4" /> Check Out
@@ -261,6 +263,17 @@ export default function AttendanceView() {
             </div>
           </CardContent>
         </Card>
+      )}
+      {cameraConfig.action && (
+        <CameraModal 
+          title={cameraConfig.title}
+          onCancel={() => setCameraConfig({ action: null, title: "" })}
+          onCapture={(base64) => {
+            const action = cameraConfig.action;
+            setCameraConfig({ action: null, title: "" });
+            if (action) handleAction(action, base64);
+          }}
+        />
       )}
     </div>
   );

@@ -22,12 +22,14 @@ const attendanceSchema = new mongoose.Schema(
       lng: Number,
       distance: Number,
     },
+    checkInPhotoUrl: { type: String },
     checkOutTime: { type: Date },
     checkOutLocation: {
       lat: Number,
       lng: Number,
       distance: Number,
     },
+    checkOutPhotoUrl: { type: String },
     breaks: [breakSchema],
     totalOfficeHours: {
       type: Number,
