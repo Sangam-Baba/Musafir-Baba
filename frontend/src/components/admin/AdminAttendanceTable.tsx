@@ -83,7 +83,12 @@ export default function AdminAttendanceTable() {
                 {records.map((record) => (
                   <TableRow key={record._id} className="hover:bg-orange-50/50 transition-all duration-300 hover:translate-x-[1px] group cursor-default border-slate-100">
                     <TableCell className="py-2">
-                      <div className="text-[13px] font-semibold text-slate-700">{record.staff?.name || 'Unknown'}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-[13px] font-semibold text-slate-700">{record.staff?.name || 'Unknown'}</div>
+                        {record.breaks?.some((b: any) => !b.end) && (
+                          <span className="bg-orange-100 text-orange-600 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase whitespace-nowrap">On Break</span>
+                        )}
+                      </div>
                       <div className="text-[10px] font-medium text-slate-400 lowercase">{record.staff?.email}</div>
                     </TableCell>
                     <TableCell className="py-2">
@@ -113,7 +118,13 @@ export default function AdminAttendanceTable() {
                         {!record.checkInLocation?.distance && !record.checkOutLocation?.distance && "-"}
                       </div>
                     </TableCell>
-                    <TableCell className="py-2 text-[13px] font-semibold text-slate-600">{record.totalOfficeHours || "-"}</TableCell>
+                    <TableCell className="py-2 text-[13px] font-semibold text-slate-600">
+                      {record.totalOfficeHours || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
+                        <span className="text-blue-500 font-medium text-[12px]">
+                          {((Date.now() - new Date(record.checkInTime).getTime()) / (1000 * 60 * 60)).toFixed(2)} hrs
+                        </span>
+                      ) : "-")}
+                    </TableCell>
                     <TableCell className="py-2 text-[13px] font-bold text-[#FE5300]">{record.totalWorkingHours || "-"}</TableCell>
                   </TableRow>
                 ))}
