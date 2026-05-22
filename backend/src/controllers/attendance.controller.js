@@ -19,8 +19,8 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 // Default office location if not provided in env
-const OFFICE_LAT = process.env.OFFICE_LAT || 26.770197; // Default to New Delhi lat
-const OFFICE_LNG = process.env.OFFICE_LNG || 80.9282652; // Default to New Delhi lng
+const OFFICE_LAT = process.env.OFFICE_LAT || 28.611123809619; // Exact office Lat
+const OFFICE_LNG = process.env.OFFICE_LNG || 76.9749109459618; // Exact office Lng
 
 const getStartOfDay = () => {
   const now = new Date();
