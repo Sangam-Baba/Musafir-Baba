@@ -66,6 +66,7 @@ function HomeBooking() {
           alt="Coming Soon"
           width={400}
           height={400}
+          sizes="(max-width: 768px) 350px, 400px"
           className="relative h-[200px] z-10 object-contain md:w-[350px] md:h-[420px] md:-mt-30 "
         />
       </div>

@@ -1,8 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-
-const QueryForm = dynamic(() => import("./QueryForm"));
+import LazyQueryForm from "./LazyQueryForm";
 
 function SectionFive() {
   return (
@@ -14,12 +12,13 @@ function SectionFive() {
             src="https://cdn.musafirbaba.com/images/vector_with_white_bg_cqwssa.jpg"
             width={500}
             height={510}
+            sizes="50vw"
             alt="h1"
           />
         </div>
         <div className="md:w-1/2 flex">
           <div className="w-full flex flex-col justify-center">
-            <QueryForm />
+            <LazyQueryForm />
           </div>
         </div>
       </div>

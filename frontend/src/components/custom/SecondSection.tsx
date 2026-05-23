@@ -16,7 +16,11 @@ function SecondSection({ initialCount }: { initialCount: number }) {
   const [counter, setCounter] = useState<number>(initialCount);
 
   useEffect(() => {
-    updateCounter();
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => updateCounter());
+    } else {
+      setTimeout(updateCounter, 1000);
+    }
   }, []);
 
   return (

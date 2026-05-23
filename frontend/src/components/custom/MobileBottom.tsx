@@ -5,9 +5,8 @@ import { FaWhatsapp } from "react-icons/fa";
 import { SquarePen } from "lucide-react";
 import { Dialog } from "@radix-ui/react-dialog";
 import { DialogContent, DialogTrigger } from "../ui/dialog";
-import dynamic from "next/dynamic";
+import LazyQueryForm from "./LazyQueryForm";
 
-const QueryForm = dynamic(() => import("./QueryForm"));
 function MobileBottom() {
   const whatsappNumber = "919289602447";
 
@@ -37,7 +36,7 @@ function MobileBottom() {
             <SquarePen color="#FE5300" className="w-10 h-8 text-primary" />
           </DialogTrigger>
           <DialogContent className="sm:max-w-[480px] p-0 border-none shadow-none bg-transparent">
-            <QueryForm />
+            <LazyQueryForm />
           </DialogContent>
         </Dialog>
       </div>

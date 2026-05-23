@@ -50,6 +50,7 @@ export default function SectionFour() {
             alt="Delhi Tour"
             width={250}
             height={250}
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="w-full h-auto rounded-2xl shadow-lg"
           />
 

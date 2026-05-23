@@ -67,6 +67,7 @@ function WhyChooseUs() {
               width={500}
               height={500}
               alt={data.title}
+              sizes="(max-width: 768px) 150px, 200px"
               className="rounded-2xl w-25 h-25 hover:scale-105  hover:shadow-xl transition duration-500"
             />
             <div className="h-25 space-y-1">
@@ -98,6 +99,7 @@ function WhyChooseUs() {
                     width={500}
                     height={500}
                     alt={data.title}
+                    sizes="(max-width: 768px) 100px, 150px"
                     className="rounded-2xl w-15 h-15"
                   />
                   <div className=" space-y-1">

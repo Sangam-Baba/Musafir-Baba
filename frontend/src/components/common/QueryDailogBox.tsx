@@ -1,9 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import dynamic from "next/dynamic";
-
-const QueryForm = dynamic(() => import("../custom/QueryForm"));
+import LazyQueryForm from "../custom/LazyQueryForm";
 import Image from "next/image";
 
 export function QueryDailogBox() {
@@ -29,7 +27,7 @@ export function QueryDailogBox() {
                />
             </div>
             <div className="w-full md:w-1/2">
-               <QueryForm className="shadow-none rounded-none w-full max-w-full" />
+               <LazyQueryForm className="shadow-none rounded-none w-full max-w-full" />
             </div>
           </div>
         </DialogContent>
