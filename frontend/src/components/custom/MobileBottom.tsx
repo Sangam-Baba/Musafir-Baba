@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Phone } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -8,6 +11,7 @@ import { DialogContent, DialogTrigger } from "../ui/dialog";
 import LazyQueryForm from "./LazyQueryForm";
 
 function MobileBottom() {
+  const [isOpen, setIsOpen] = useState(false);
   const whatsappNumber = "919289602447";
 
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
@@ -31,12 +35,12 @@ function MobileBottom() {
         <FaWhatsapp size={40} color="green" />
       </a>
       <div>
-        <Dialog>
+        <Dialog onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <SquarePen color="#FE5300" className="w-10 h-8 text-primary" />
           </DialogTrigger>
           <DialogContent className="sm:max-w-[480px] p-0 border-none shadow-none bg-transparent">
-            <LazyQueryForm />
+            {isOpen && <LazyQueryForm />}
           </DialogContent>
         </Dialog>
       </div>
