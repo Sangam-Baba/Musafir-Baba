@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import Image from "next/image";
-import { State, City } from "country-state-city";
+import { getStates, getCities } from "@/actions/location";
 
 const EnquiryFromSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -121,9 +121,16 @@ export default function QueryForm({ className }: { className?: string }) {
   const stateNameValue = form.watch("state");
   const selectedInterests = form.watch("interests") || [];
 
-  // Get dynamic state list
-  const stateData = useMemo(() => {
-    return countryIso ? State.getStatesOfCountry(countryIso) : [];
+  const [stateData, setStateData] = useState<{name: string, isoCode: string}[]>([]);
+  const [cityData, setCityData] = useState<{name: string}[]>([]);
+
+  // Get dynamic state list from Server Action
+  useEffect(() => {
+    if (countryIso) {
+      getStates(countryIso).then(setStateData).catch(console.error);
+    } else {
+      setStateData([]);
+    }
   }, [countryIso]);
 
   // Find the selected state's ISO code for cities
@@ -131,11 +138,13 @@ export default function QueryForm({ className }: { className?: string }) {
     return stateData.find((s) => s.name === stateNameValue)?.isoCode || "";
   }, [stateData, stateNameValue]);
 
-  // Get dynamic city list
-  const cityData = useMemo(() => {
-    return countryIso && selectedStateIso
-      ? City.getCitiesOfState(countryIso, selectedStateIso)
-      : [];
+  // Get dynamic city list from Server Action
+  useEffect(() => {
+    if (countryIso && selectedStateIso) {
+      getCities(countryIso, selectedStateIso).then(setCityData).catch(console.error);
+    } else {
+      setCityData([]);
+    }
   }, [countryIso, selectedStateIso]);
 
   // Reset dependent fields when parent selection changes
