@@ -1,224 +1,283 @@
-You are a senior-level Next.js performance engineer.
+You are a principal-level Next.js performance architect.
 
-We already attempted basic optimization, but the homepage MOBILE performance is still extremely poor.
+STOP making direct optimizations immediately.
 
-Current Lighthouse Mobile issues:
-- Performance Score: 36
-- LCP: 17s
-- TBT: 4600ms
-- Speed Index: 9.5s
-- Main-thread work: 9.4s
-- JS execution time: 5.9s
-- Forced reflow detected
-- Critical request chains
-- Large client JS chunks
-- Render-blocking CSS
-- Image delivery issues
-- Heavy script evaluation/parsing
-- GTM consuming CPU time
-- Excessive hydration/client-side execution
+The previous optimization attempts made the MOBILE performance and Core Web Vitals WORSE.
 
-CRITICAL REQUIREMENTS:
-- DO NOT redesign UI.
-- DO NOT change spacing, layout, styling, animation appearance, business logic, routing, forms, SEO structure, APIs, or user flows.
-- DO NOT break any existing feature.
-- DO NOT remove tracking completely.
-- DO NOT create hydration mismatch issues.
-- DO NOT introduce unstable hacks.
-- DO NOT touch unrelated files.
-- DO NOT massively refactor the architecture.
-- ONLY apply safe, production-grade optimizations.
-- Keep every change isolated and reversible.
+Current state after previous changes:
+- Mobile Performance Score dropped badly
+- Core Web Vitals FAILED
+- Mobile LCP became worse (~8s+)
+- TBT still high (~1300ms)
+- Large network payloads (~4.5MB)
+- Unused JS increased
+- Hydration/client execution likely increased
+- Render-blocking CSS still exists
+- Critical request chains still exist
+- Forced reflows still exist
+- Mobile real-user metrics are failing
+- Desktop is less important
+- MOBILE-FIRST is the priority
 
-We need DEEP performance optimization now.
+CRITICAL RULE:
+DO NOT APPLY ANY CODE CHANGES YET.
+
+We first need:
+1. Deep analysis
+2. Root cause validation
+3. Optimization strategy
+4. Risk assessment
+5. Then ONLY small incremental fixes
 
 ==================================================
-PHASE 1 — FIND THE REAL ROOT CAUSE
+MOST IMPORTANT REQUIREMENTS
 ==================================================
 
-First perform a deep audit and identify:
+- DO NOT redesign UI
+- DO NOT break existing functionality
+- DO NOT alter SEO structure
+- DO NOT break forms/search flows
+- DO NOT break animations visually
+- DO NOT massively refactor architecture
+- DO NOT convert random components blindly
+- DO NOT aggressively dynamic import everything
+- DO NOT add memoization everywhere
+- DO NOT add hacks
+- DO NOT create hydration mismatches
+- DO NOT worsen real-world CWV
+- DO NOT optimize only Lighthouse score artificially
 
-1. Which components are causing:
-   - huge hydration cost
-   - forced reflow
-   - long JS execution
-   - main-thread blocking
-   - unnecessary rerenders
-   - large client bundles
-
-2. Find:
-   - components unnecessarily marked "use client"
-   - components that can safely become server components
-   - expensive hooks/effects
-   - expensive animations
-   - oversized DOM trees
-   - unnecessary providers/context rerenders
-   - heavy carousels/sliders
-   - expensive libraries loaded on homepage
-   - large icon libraries
-   - unnecessary global imports
-   - client-side fetched data that should be server-side
-   - duplicate requests
-   - heavy third-party scripts
-
-3. Generate a ranked bottleneck report:
-   - highest impact first
-   - include estimated ms savings
-   - include risk level
-   - explain why fix is safe
+We care about:
+- REAL mobile user experience
+- REAL Core Web Vitals
+- Production stability
 
 ==================================================
-PHASE 2 — FIX LCP (17s IS CRITICAL)
+PHASE 1 — FULL PERFORMANCE FORENSIC ANALYSIS
 ==================================================
 
-Identify EXACT LCP element.
+First perform a COMPLETE analysis ONLY.
 
-Apply ONLY safe fixes:
-- remove lazy loading from LCP image
-- preload hero image correctly
-- ensure priority loading
-- use proper sizes attribute
-- ensure responsive mobile image dimensions
-- prevent giant image downloads
-- optimize hero rendering path
-- remove render delays before hero render
-- defer below-fold sections
+NO FIXES YET.
 
-IMPORTANT:
-- keep same visual quality
-- preserve exact hero UI appearance
-- no visual degradation
+Investigate and produce detailed reports for:
 
 ==================================================
-PHASE 3 — REDUCE JAVASCRIPT EXECUTION
+A. LCP ROOT CAUSE ANALYSIS
 ==================================================
 
-The homepage is executing too much JS.
+Identify:
+- Exact LCP element
+- Why LCP is taking 8s+
+- Whether delay comes from:
+  - server response
+  - hydration blocking
+  - image loading
+  - CSS blocking
+  - JS execution
+  - render delay
+  - font loading
+  - client-side rendering
+  - animations
+  - third-party scripts
 
-Apply:
-- route-level code splitting
-- component-level dynamic imports
-- lazy load below-fold sections
-- defer heavy widgets
-- defer non-critical animations
-- isolate client-only components
-- convert safe components to server components
-- remove unnecessary hydration
-- memoize only expensive stable components
-- prevent cascading rerenders
+Break down:
+- TTFB
+- resource load delay
+- resource load duration
+- render delay
 
-DO NOT:
-- blindly memoize everything
-- break state flows
-- break animations
-- break forms/interactions
+Find:
+- whether hero content is client rendered
+- whether hero waits for JS before rendering
+- whether sliders/carousels delay paint
+- whether large CSS blocks hero render
 
 ==================================================
-PHASE 4 — FIX FORCED REFLOWS
+B. JAVASCRIPT EXECUTION ANALYSIS
 ==================================================
 
-Lighthouse detected forced reflow.
+We now have:
+- huge main-thread work
+- excessive JS execution
+- unused JS
+- long tasks
 
-Audit:
+Find EXACTLY:
+- largest JS bundles
+- largest client chunks
+- components causing hydration cost
+- expensive libraries
+- large third-party packages
+- unnecessary client components
+- rerender loops
+- expensive useEffect hooks
+- expensive context/provider rerenders
+- large animation libraries
+- expensive sliders/carousels
+- unused dependencies loaded on homepage
+
+Generate:
+- ranked bundle analysis
+- estimated KB savings
+- estimated CPU savings
+
+==================================================
+C. RENDERING ANALYSIS
+==================================================
+
+Investigate:
+- forced reflows
 - layout thrashing
-- repeated DOM measurements
-- bad useEffect patterns
-- expensive resize/scroll listeners
-- animation libraries causing layout recalculation
+- non-composited animations
+- DOM size problems
+- expensive CSS selectors
+- unnecessary style recalculations
 
-Fix using:
-- requestAnimationFrame where needed
-- passive listeners
-- transform-based animations
-- batched DOM reads/writes
-- memoized layout calculations
-
-WITHOUT changing animation visuals.
+Find:
+- components triggering reflows
+- animations causing layout recalculation
+- scroll/resize handlers
+- DOM measurements in effects
 
 ==================================================
-PHASE 5 — THIRD PARTY SCRIPT OPTIMIZATION
+D. NETWORK ANALYSIS
 ==================================================
 
-Google Tag Manager and analytics are consuming CPU time.
-
-Optimize safely:
-- delay GTM until interaction or idle
-- use next/script properly
-- use strategy="afterInteractive" or lazyOnload appropriately
-- ensure tracking still works
-- preserve analytics accuracy
-
-DO NOT remove analytics entirely.
-
-==================================================
-PHASE 6 — CSS & CRITICAL REQUESTS
-==================================================
-
-Fix:
+Investigate:
+- why payload is ~4.5MB
+- all large requests
+- image payload breakdown
+- duplicate requests
+- unnecessary preloads
 - render-blocking CSS
 - critical request chains
-- unnecessary global CSS
-- oversized Tailwind generation
-- duplicate CSS imports
+- unused preconnects
+- slow backend/API dependencies
 
-Safely optimize:
-- CSS loading order
-- remove unused styles safely
-- inline only truly critical CSS if needed
-
-WITHOUT changing appearance.
+Generate:
+- ranked request table
+- largest offenders first
 
 ==================================================
-PHASE 7 — IMAGE DELIVERY
+E. IMAGE DELIVERY ANALYSIS
 ==================================================
 
-Audit ALL homepage images:
+We STILL have major image problems.
+
+Audit:
+- all homepage images
+- image dimensions vs rendered size
+- wrong sizes attributes
 - oversized images
-- wrong aspect ratios
-- desktop images on mobile
-- missing sizes attributes
 - excessive quality values
-- improper next/image usage
+- images loaded above fold unnecessarily
+- missing responsive behavior
+- carousel image waste
+- CDN/cache configuration
 
-Apply:
-- responsive sizes
-- correct width/height
-- AVIF/WebP
-- mobile-specific sizing
-- proper lazy loading strategy
-
-Preserve visual quality.
+Find:
+- exact KB waste per image
+- exact mobile savings possible
 
 ==================================================
-PHASE 8 — OUTPUT FORMAT
+F. SERVER VS CLIENT ANALYSIS
 ==================================================
 
-For EVERY optimization provide:
+Audit:
+- all homepage sections
+- server vs client component boundaries
 
-1. Problem
-2. Root cause
-3. Exact affected files/components
-4. Safe fix
-5. Exact code change
-6. Why it will NOT break UI/features
-7. Estimated Lighthouse improvement
-8. Rollback path
+Identify:
+- components incorrectly using "use client"
+- sections safe to render on server
+- sections safe to defer
+- sections safe to lazy load below fold
+
+DO NOT APPLY CHANGES YET.
 
 ==================================================
-PHASE 9 — IMPORTANT IMPLEMENTATION RULES
+PHASE 2 — CREATE OPTIMIZATION STRATEGY
 ==================================================
 
-- Make changes incrementally.
-- Validate after every optimization.
-- Prioritize HIGH IMPACT + LOW RISK fixes first.
-- Do not perform broad rewrites.
-- Preserve existing functionality completely.
-- Maintain production stability.
-- Avoid overengineering.
-- Keep code clean and maintainable.
+After analysis, generate a SAFE optimization roadmap.
 
-FINAL TARGET:
-- Mobile Lighthouse 80+
-- LCP under 2.5s
-- TBT under 300ms
-- Maintain identical UI/UX and functionality.
+The roadmap MUST contain:
+
+1. Optimization priority
+2. Expected impact
+3. Risk level
+4. Rollback difficulty
+5. Files affected
+6. Whether CWV improves or worsens
+7. Whether change affects:
+   - SEO
+   - hydration
+   - interaction
+   - visual stability
+   - accessibility
+
+==================================================
+PHASE 3 — IMPLEMENTATION RULES
+==================================================
+
+ONLY after approval:
+
+- Apply ONE optimization at a time
+- Measure before/after
+- Never batch massive changes
+- Prefer HIGH IMPACT + LOW RISK first
+- Validate CWV impact after every step
+- Revert immediately if metrics worsen
+
+==================================================
+MOST IMPORTANT PRIORITIES
+==================================================
+
+PRIORITY ORDER:
+
+1. Real Mobile CWV
+2. LCP
+3. TBT
+4. Main-thread work
+5. Payload reduction
+6. Hydration reduction
+7. JS execution reduction
+8. Lighthouse score
+
+NOT the other way around.
+
+==================================================
+EXPECTED OUTPUT FORMAT
+==================================================
+
+DO NOT directly edit code first.
+
+First provide:
+
+# PERFORMANCE FORENSIC REPORT
+
+## 1. LCP Breakdown
+## 2. JS Execution Breakdown
+## 3. Main-thread Analysis
+## 4. Hydration Analysis
+## 5. Network Payload Analysis
+## 6. Image Waste Analysis
+## 7. CSS Blocking Analysis
+## 8. Forced Reflow Analysis
+## 9. Server vs Client Component Analysis
+## 10. Ranked Bottleneck List
+
+Then:
+
+# SAFE OPTIMIZATION ROADMAP
+
+For every proposed optimization include:
+- expected gain
+- risk level
+- affected files
+- rollback plan
+- why safe
+- whether it impacts CWV positively
+
+DO NOT implement fixes until analysis is completed properly.

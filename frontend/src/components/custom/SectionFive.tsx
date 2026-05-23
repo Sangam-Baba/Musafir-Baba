@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import LazyQueryForm from "./LazyQueryForm";
+import LazyQueryFormInView from "./LazyQueryFormInView";
 
 function SectionFive() {
   return (
@@ -18,7 +18,7 @@ function SectionFive() {
         </div>
         <div className="md:w-1/2 flex">
           <div className="w-full flex flex-col justify-center">
-            <LazyQueryForm />
+            <LazyQueryFormInView />
           </div>
         </div>
       </div>
