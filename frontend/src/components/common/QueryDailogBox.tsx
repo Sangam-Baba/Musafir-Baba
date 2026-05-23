@@ -1,7 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import QueryForm from "../custom/QueryForm";
+import dynamic from "next/dynamic";
+
+const QueryForm = dynamic(() => import("../custom/QueryForm"));
 import Image from "next/image";
 
 export function QueryDailogBox() {

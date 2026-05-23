@@ -121,6 +121,7 @@ export function DestinationSection() {
                       src={badrinath}
                       alt="Uttarakhand"
                       loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="rounded-2xl w-full h-56 object-cover"
                     />
                   </Link>
@@ -134,6 +135,7 @@ export function DestinationSection() {
                       src={jaipur}
                       alt="Rajasthan"
                       loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="rounded-2xl w-full h-56 object-cover"
                     />
                   </Link>
@@ -149,6 +151,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Untitled_design_5_hgguwf.jpg"
                       alt="Kerala"
                       className="rounded-2xl w-full md:h-118 h-56 object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -167,6 +170,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Untitled_design_6_mggpgh.jpg"
                       alt="meghalaya"
                       className="rounded-2xl w-full h-56 object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -183,6 +187,7 @@ export function DestinationSection() {
                       src={himachal}
                       alt="himachal"
                       loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="rounded-2xl  h-56 object-cover"
                     />
                   </Link>
@@ -196,6 +201,7 @@ export function DestinationSection() {
                       src={kashmir}
                       alt="Kerala"
                       loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="rounded-2xl h-56 object-cover"
                     />
                   </Link>
@@ -218,6 +224,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Singapore_bdsaps.jpg"
                       alt="Singapore"
                       className="rounded-2xl w-full h-56 object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -232,6 +239,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Untitled_design_4_yrnksb.jpg"
                       alt="Dubai"
                       className="rounded-2xl w-full h-56 object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -248,6 +256,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Bali_sc5oct.jpg"
                       alt="Bali"
                       className="rounded-2xl w-full md:h-118 h-56 object-center"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -266,6 +275,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Thailand_btmxk6.jpg"
                       alt="Thailand"
                       className="rounded-2xl w-full h-56 "
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -282,6 +292,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Untitled_design_3_g8ok0g.jpg"
                       alt="Japan"
                       className="rounded-2xl  h-56 "
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -296,6 +307,7 @@ export function DestinationSection() {
                       src="https://cdn.musafirbaba.com/images/Untitled_design_2_rrfsvj.jpg"
                       alt="Maldives"
                       className="rounded-2xl h-56"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
@@ -352,6 +364,7 @@ export function DestinationSection() {
                     alt={item.title}
                     width={260}
                     height={224}
+                    sizes="(max-width: 768px) 260px, 33vw"
                     className="rounded-2xl h-56 object-cover"
                   />
                 </Link>
@@ -409,6 +422,7 @@ export function DestinationSection() {
                     alt={item.title}
                     width={500}
                     height={500}
+                    sizes="(max-width: 768px) 260px, 33vw"
                     className="rounded-2xl h-56 w-full object-cover"
                   />
                 </Link>

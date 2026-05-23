@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Calendar as CalendarIcon, MapPin } from "lucide-react";
+import { Search, Calendar as CalendarIcon, MapPin, Camera } from "lucide-react";
 
 export default function AdminAttendanceTable() {
   const [records, setRecords] = useState<any[]>([]);
@@ -42,6 +42,26 @@ export default function AdminAttendanceTable() {
   const formatTime = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
+  const getActiveWorkingHours = (record: any) => {
+    if (!record.checkInTime || record.checkOutTime) return null;
+    const now = Date.now();
+    const checkIn = new Date(record.checkInTime).getTime();
+    let totalOfficeMs = now - checkIn;
+    
+    let totalBreakMs = 0;
+    if (record.breaks && Array.isArray(record.breaks)) {
+      record.breaks.forEach((b: any) => {
+        if (b.start) {
+          const breakStart = new Date(b.start).getTime();
+          const breakEnd = b.end ? new Date(b.end).getTime() : now;
+          totalBreakMs += (breakEnd - breakStart);
+        }
+      });
+    }
+    const workingHrs = (totalOfficeMs - totalBreakMs) / (1000 * 60 * 60);
+    return workingHrs > 0 ? workingHrs.toFixed(2) : "0.00";
   };
 
   return (
@@ -101,8 +121,26 @@ export default function AdminAttendanceTable() {
                         );
                       })()}
                     </TableCell>
-                    <TableCell className="py-2 text-[13px] font-medium text-slate-600">{formatTime(record.checkInTime)}</TableCell>
-                    <TableCell className="py-2 text-[13px] font-medium text-slate-600">{formatTime(record.checkOutTime)}</TableCell>
+                    <TableCell className="py-2 text-[13px] font-medium text-slate-600">
+                      <div className="flex items-center gap-2">
+                        {record.checkInPhotoUrl && (
+                          <a href={record.checkInPhotoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0" title="View Check-in Photo">
+                            <img src={record.checkInPhotoUrl} alt="Check In" className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:scale-110 transition-transform shadow-sm" />
+                          </a>
+                        )}
+                        <span>{formatTime(record.checkInTime)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2 text-[13px] font-medium text-slate-600">
+                      <div className="flex items-center gap-2">
+                        {record.checkOutPhotoUrl && (
+                          <a href={record.checkOutPhotoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0" title="View Check-out Photo">
+                            <img src={record.checkOutPhotoUrl} alt="Check Out" className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:scale-110 transition-transform shadow-sm" />
+                          </a>
+                        )}
+                        <span>{formatTime(record.checkOutTime)}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="py-2">
                       <div className="flex flex-col gap-1 text-[11px] font-medium text-slate-500 capitalize">
                         {record.checkInLocation?.distance !== undefined && (
@@ -125,7 +163,13 @@ export default function AdminAttendanceTable() {
                         </span>
                       ) : "-")}
                     </TableCell>
-                    <TableCell className="py-2 text-[13px] font-bold text-[#FE5300]">{record.totalWorkingHours || "-"}</TableCell>
+                    <TableCell className="py-2 text-[13px] font-bold text-[#FE5300]">
+                      {record.totalWorkingHours || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
+                        <span className="text-orange-500 font-bold text-[12px]">
+                          {getActiveWorkingHours(record)} hrs
+                        </span>
+                      ) : "-")}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

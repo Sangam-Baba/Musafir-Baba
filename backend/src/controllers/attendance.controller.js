@@ -1,5 +1,6 @@
 import { Attendance } from "../models/Attendance.js";
 import { Staff } from "../models/Staff.js";
+import { uploadToR2 } from "../services/fileUpload.service.js";
 
 // Utility function to calculate distance using Haversine formula (returns distance in km)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -43,7 +44,7 @@ export const getTodayAttendance = async (req, res, next) => {
 
 export const checkIn = async (req, res, next) => {
   try {
-    const { lat, lng } = req.body;
+    const { lat, lng, photo } = req.body;
     const startOfDay = getStartOfDay();
     
     let attendance = await Attendance.findOne({
@@ -64,8 +65,20 @@ export const checkIn = async (req, res, next) => {
       });
     }
 
+    let checkInPhotoUrl = null;
+    if (photo) {
+      try {
+        const base64Data = photo.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        checkInPhotoUrl = await uploadToR2(buffer, "attendance");
+      } catch (err) {
+        console.error("Check-in photo upload failed", err);
+      }
+    }
+
     attendance.checkInTime = new Date();
     attendance.checkInLocation = { lat, lng, distance };
+    if (checkInPhotoUrl) attendance.checkInPhotoUrl = checkInPhotoUrl;
     await attendance.save();
 
     return res.status(200).json({ success: true, attendance, message: "Checked in successfully" });
@@ -76,7 +89,7 @@ export const checkIn = async (req, res, next) => {
 
 export const checkOut = async (req, res, next) => {
   try {
-    const { lat, lng } = req.body;
+    const { lat, lng, photo } = req.body;
     const startOfDay = getStartOfDay();
     
     let attendance = await Attendance.findOne({
@@ -101,8 +114,20 @@ export const checkOut = async (req, res, next) => {
 
     const distance = calculateDistance(lat, lng, OFFICE_LAT, OFFICE_LNG);
 
+    let checkOutPhotoUrl = null;
+    if (photo) {
+      try {
+        const base64Data = photo.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        checkOutPhotoUrl = await uploadToR2(buffer, "attendance");
+      } catch (err) {
+        console.error("Check-out photo upload failed", err);
+      }
+    }
+
     attendance.checkOutTime = now;
     attendance.checkOutLocation = { lat, lng, distance };
+    if (checkOutPhotoUrl) attendance.checkOutPhotoUrl = checkOutPhotoUrl;
 
     // Calculate hours
     const totalOfficeMs = attendance.checkOutTime - attendance.checkInTime;
