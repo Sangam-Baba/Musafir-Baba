@@ -5,7 +5,9 @@ import { FaWhatsapp } from "react-icons/fa";
 import { SquarePen } from "lucide-react";
 import { Dialog } from "@radix-ui/react-dialog";
 import { DialogContent, DialogTrigger } from "../ui/dialog";
-import QueryForm from "./QueryForm";
+import dynamic from "next/dynamic";
+
+const QueryForm = dynamic(() => import("./QueryForm"));
 function MobileBottom() {
   const whatsappNumber = "919289602447";
 

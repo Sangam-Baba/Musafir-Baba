@@ -1,6 +1,8 @@
 import React from "react";
 import Image from "next/image";
-import QueryForm from "./QueryForm";
+import dynamic from "next/dynamic";
+
+const QueryForm = dynamic(() => import("./QueryForm"));
 
 function SectionFive() {
   return (

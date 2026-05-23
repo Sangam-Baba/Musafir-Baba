@@ -30,10 +30,12 @@ function HomeVideoBanner({ data }: { data: VideoBannerType[] }) {
       {!isVisible ? (
         <div className="w-full bg-neutral-200 rounded-xl relative overflow-hidden" style={{ aspectRatio: "553/200" }}>
           {data?.[0]?.media?.thumbnail_url && (
-            <img
+            <Image
               src={data[0].media.thumbnail_url}
               alt="Honeymoon Package Preview"
-              className="rounded-xl w-full h-full object-cover animate-pulse"
+              fill
+              sizes="(max-width: 768px) 100vw, 100vw"
+              className="rounded-xl object-cover animate-pulse"
             />
           )}
         </div>

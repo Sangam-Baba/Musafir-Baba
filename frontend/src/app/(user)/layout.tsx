@@ -54,7 +54,8 @@ export const metadata: Metadata = {
 
 import { RootProvider } from "@/providers/root-provider";
 import GTMProvider from "@/providers/GTMProvider";
-import { AuthDialog } from "@/components/auth/AuthDialog";
+import dynamic from "next/dynamic";
+const AuthDialog = dynamic(() => import("@/components/auth/AuthDialog").then(mod => ({ default: mod.AuthDialog })));
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import PlanMyTrip from "@/components/common/Plan-My-Trip";
 import MobileBottom from "@/components/custom/MobileBottom";

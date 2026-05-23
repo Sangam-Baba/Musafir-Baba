@@ -77,6 +77,7 @@ async function VisaHome() {
                       width={200}
                       height={50}
                       loading="lazy"
+                      sizes="(max-width: 768px) 50vw, 16vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
@@ -148,6 +149,7 @@ async function VisaHome() {
                           width={200}
                           height={30}
                           loading="lazy"
+                          sizes="(max-width: 768px) 50vw, 16vw"
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
