@@ -89,6 +89,7 @@ function Partners() {
                 alt={partner.name || "Partner logo"}
                 width={250}
                 height={150}
+                sizes="(max-width: 768px) 150px, 250px"
                 className="object-contain p-4 mx-auto"
                 loading="lazy"
               />
@@ -115,6 +116,7 @@ function Partners() {
                       alt={data.name || "Partner logo"}
                       width={250}
                       height={150}
+                      sizes="(max-width: 768px) 150px, 250px"
                       className="object-contain p-4 mx-auto"
                       loading="lazy"
                     />
