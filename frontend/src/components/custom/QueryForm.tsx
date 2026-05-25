@@ -223,6 +223,21 @@ export default function QueryForm({ className }: { className?: string }) {
     { id: "other", label: "Other" },
   ];
 
+  const formName = form.watch("name") || "";
+  const formEmail = form.watch("email") || "";
+  const formPhone = form.watch("phone") || "";
+  const formPolicy = form.watch("policy");
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail);
+  const isStateValid = stateData.length > 0 ? !!stateNameValue : true;
+
+  const areMandatoryFieldsFilled = 
+    formName.trim().length > 0 &&
+    isEmailValid &&
+    formPhone.trim().length >= 9 &&
+    formPolicy === true &&
+    isStateValid;
+
   return (
     <Card className={`w-full max-w-[480px] mx-auto rounded-2xl shadow-xl p-0 ${className || ""}`}>
       <CardContent className="space-y-3 p-4 md:p-6">
@@ -490,42 +505,6 @@ export default function QueryForm({ className }: { className?: string }) {
               />
             )}
 
-            <div className="space-y-1 relative pt-1.5">
-                <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-blue-50/30 transition-all focus-within:border-orange-500 focus-within:bg-orange-50/10">
-                    <div className="bg-orange-500 text-white px-2 py-0.5 rounded text-[12px] font-black shadow-sm select-none tracking-widest min-w-[70px] text-center relative z-20">
-                        {captcha.n1}+{captcha.n2}
-                    </div>
-                    <span className="text-gray-400 font-bold text-xs relative z-20">=</span>
-                    <Input
-                        type="number"
-                        placeholder=" "
-                        value={userAnswer}
-                        onChange={(e) => setUserAnswer(e.target.value)}
-                        className="peer border-none bg-transparent p-0 shadow-none focus-visible:ring-0 text-[14px] font-semibold flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <div className="flex items-center gap-1.5 pr-1 border-l pl-2 border-gray-200 relative z-20">
-                        {isHumanVerified ? (
-                             <CircleCheck className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <button
-                              type="button"
-                              onClick={generateCaptcha}
-                              className="text-gray-300 hover:text-orange-500 transition-colors"
-                              title="Refresh"
-                          >
-                              <RefreshCcw className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                    </div>
-                    <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-4 peer-placeholder-shown:left-[110px] peer-focus:left-4 pointer-events-none">
-                        Captcha <span className="text-red-500">*</span>
-                    </FormLabel>
-                </div>
-                {!isHumanVerified && userAnswer && (
-                    <p className="text-[10px] text-red-500 font-medium px-1">Incorrect result.</p>
-                )}
-            </div>
-
             <FormField
               control={form.control}
               name="policy"
@@ -557,6 +536,44 @@ export default function QueryForm({ className }: { className?: string }) {
                 </FormItem>
               )}
             />
+
+            {areMandatoryFieldsFilled && (
+              <div className="space-y-1 relative pt-1.5 animate-in slide-in-from-top-2 duration-300">
+                  <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-blue-50/30 transition-all focus-within:border-orange-500 focus-within:bg-orange-50/10">
+                      <div className="bg-orange-500 text-white px-2 py-0.5 rounded text-[12px] font-black shadow-sm select-none tracking-widest min-w-[70px] text-center relative z-20">
+                          {captcha.n1}+{captcha.n2}
+                      </div>
+                      <span className="text-gray-400 font-bold text-xs relative z-20">=</span>
+                      <Input
+                          type="number"
+                          placeholder=" "
+                          value={userAnswer}
+                          onChange={(e) => setUserAnswer(e.target.value)}
+                          className="peer border-none bg-transparent p-0 shadow-none focus-visible:ring-0 text-[14px] font-semibold flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <div className="flex items-center gap-1.5 pr-1 border-l pl-2 border-gray-200 relative z-20">
+                          {isHumanVerified ? (
+                               <CircleCheck className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <button
+                                type="button"
+                                onClick={generateCaptcha}
+                                className="text-gray-300 hover:text-orange-500 transition-colors"
+                                title="Refresh"
+                            >
+                                <RefreshCcw className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                      </div>
+                      <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-4 peer-placeholder-shown:left-[110px] peer-focus:left-4 pointer-events-none">
+                          Captcha <span className="text-red-500">*</span>
+                      </FormLabel>
+                  </div>
+                  {!isHumanVerified && userAnswer && (
+                      <p className="text-[10px] text-red-500 font-medium px-1">Incorrect result.</p>
+                  )}
+              </div>
+            )}
 
             <Button
               type="submit"
