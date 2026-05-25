@@ -18,13 +18,16 @@ const nextConfig: NextConfig = {
         hostname: "cdn.musafirbaba.com",
         pathname: "/**",
       },
-
       {
         protocol: "https",
         hostname: "api.dicebear.com",
         pathname: "/**",
       },
-
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
     ],
   },
   typescript: {
