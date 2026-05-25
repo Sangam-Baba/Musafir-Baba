@@ -43,7 +43,7 @@ export default function SocialShare({ title, url, type = "horizontal" }: SocialS
       <a
         href={shareLinks.twitter}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="nofollow noopener noreferrer"
         className={`${btnClass} bg-sky-500 hover:bg-sky-600 text-white`}
         title="Share on Twitter"
       >
@@ -52,7 +52,7 @@ export default function SocialShare({ title, url, type = "horizontal" }: SocialS
       <a
         href={shareLinks.facebook}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="nofollow noopener noreferrer"
         className={`${btnClass} bg-indigo-700 hover:bg-indigo-800 text-white`}
         title="Share on Facebook"
       >
@@ -61,7 +61,7 @@ export default function SocialShare({ title, url, type = "horizontal" }: SocialS
       <a
         href={shareLinks.linkedin}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="nofollow noopener noreferrer"
         className={`${btnClass} bg-blue-600 hover:bg-blue-700 text-white`}
         title="Share on LinkedIn"
       >
@@ -70,7 +70,7 @@ export default function SocialShare({ title, url, type = "horizontal" }: SocialS
       <a
         href={shareLinks.whatsapp}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="nofollow noopener noreferrer"
         className={`${btnClass} bg-emerald-500 hover:bg-emerald-600 text-white`}
         title="Share on WhatsApp"
       >

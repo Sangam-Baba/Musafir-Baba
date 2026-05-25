@@ -16,7 +16,7 @@ export default function WhatsAppButton() {
       <a
         href={whatsappLink}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="nofollow noopener noreferrer"
         className="bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition duration-300"
         aria-label="Chat on WhatsApp"
       >

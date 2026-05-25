@@ -29,7 +29,7 @@ function MobileBottom() {
       <a
         href={whatsappLink}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="nofollow noopener noreferrer"
         aria-label="Chat on WhatsApp"
       >
         <FaWhatsapp size={40} color="green" />
