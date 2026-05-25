@@ -176,7 +176,7 @@ export default function EditBlog() {
         metaTitle: blog.metaTitle,
         metaDescription: blog.metaDescription,
         canonicalUrl: blog.canonicalUrl,
-        schemaType: blog.schemaType,
+        schemaType: Array.isArray(blog.schemaType) ? blog.schemaType : (blog.schemaType ? [blog.schemaType] : []),
         keywords: blog.keywords,
         tags: blog.tags,
         coverImage: blog.coverImage,
@@ -372,18 +372,19 @@ export default function EditBlog() {
                         ))}
                       </select>
                       <div className="flex flex-wrap gap-2 content-start w-full">
-                        {form.watch("schemaType")?.map((option) => (
+                        {(Array.isArray(form.watch("schemaType")) ? form.watch("schemaType") : []).map((option) => (
                           <span key={option} className="flex items-center gap-1 bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-bold">
                             {option}
                             <X
                               size={10}
                               className="cursor-pointer hover:text-red-500"
-                              onClick={() =>
+                              onClick={() => {
+                                const current = Array.isArray(form.getValues("schemaType")) ? form.getValues("schemaType") : [];
                                 form.setValue(
                                   "schemaType",
-                                  form.getValues("schemaType")?.filter((item) => item !== option),
+                                  current.filter((item) => item !== option),
                                 )
-                              }
+                              }}
                             />
                           </span>
                         ))}
