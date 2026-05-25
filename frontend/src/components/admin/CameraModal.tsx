@@ -48,12 +48,23 @@ export function CameraModal({ onCapture, onCancel, title }: { onCapture: (base64
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      
+      const MAX_WIDTH = 640;
+      let width = video.videoWidth;
+      let height = video.videoHeight;
+
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
       const context = canvas.getContext('2d');
       if (context) {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        context.drawImage(video, 0, 0, width, height);
+        // Compress heavily (quality 0.6) to save space
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
         
         if (stream) {
           stream.getTracks().forEach(track => track.stop());

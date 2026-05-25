@@ -19,6 +19,7 @@ export default function AdminAttendanceTable() {
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRecords();
@@ -124,9 +125,9 @@ export default function AdminAttendanceTable() {
                     <TableCell className="py-2 text-[13px] font-medium text-slate-600">
                       <div className="flex items-center gap-2">
                         {record.checkInPhotoUrl && (
-                          <a href={record.checkInPhotoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0" title="View Check-in Photo">
+                          <button onClick={() => setPreviewImage(record.checkInPhotoUrl)} className="shrink-0" title="View Check-in Photo">
                             <img src={record.checkInPhotoUrl} alt="Check In" className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:scale-110 transition-transform shadow-sm" />
-                          </a>
+                          </button>
                         )}
                         <span>{formatTime(record.checkInTime)}</span>
                       </div>
@@ -134,9 +135,9 @@ export default function AdminAttendanceTable() {
                     <TableCell className="py-2 text-[13px] font-medium text-slate-600">
                       <div className="flex items-center gap-2">
                         {record.checkOutPhotoUrl && (
-                          <a href={record.checkOutPhotoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0" title="View Check-out Photo">
+                          <button onClick={() => setPreviewImage(record.checkOutPhotoUrl)} className="shrink-0" title="View Check-out Photo">
                             <img src={record.checkOutPhotoUrl} alt="Check Out" className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:scale-110 transition-transform shadow-sm" />
-                          </a>
+                          </button>
                         )}
                         <span>{formatTime(record.checkOutTime)}</span>
                       </div>
@@ -177,6 +178,19 @@ export default function AdminAttendanceTable() {
           </div>
         )}
       </CardContent>
+      {previewImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreviewImage(null)}>
+          <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+            <img src={previewImage} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+            <button 
+              className="absolute top-4 right-4 md:-right-12 text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-colors"
+              onClick={() => setPreviewImage(null)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
