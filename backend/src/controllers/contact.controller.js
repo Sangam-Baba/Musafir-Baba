@@ -12,13 +12,67 @@ const createContact = async (req, res) => {
     }
     const contact = await ContactEnquiry.create({ ...req.body, name, phone });
     const subject = "New Contact Enquiry: " + name;
-    const emailBody = `Name: ${name}\nPhone: ${phone}\nMessage: ${
-      contact.message
-    }\nEmail: ${contact.email}\n Source: ${contact.source
-      .split("/")
-      .join(" - ")}`;
+    const emailBody = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333333; line-height: 1.6;">
+        <!-- Header -->
+        <div style="text-align: center; padding: 40px 0 30px; border-bottom: 1px solid #eaeaea;">
+          <img src="https://cdn.musafirbaba.com/images/logo.png" alt="MusafirBaba" style="max-width: 180px; height: auto;" />
+        </div>
+        
+        <!-- Intro -->
+        <div style="padding: 40px 20px 20px;">
+          <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 5px; color: #111111;">New Website Enquiry</h2>
+          <p style="font-size: 14px; color: #666666; margin: 0 0 30px;">A new contact request has been submitted.</p>
+          
+          <!-- Details -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tbody>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; width: 120px; color: #888888;">Name</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">${contact.name || "N/A"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Email</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2;">
+                  <a href="mailto:${contact.email}" style="color: #111111; text-decoration: none;">${contact.email || "N/A"}</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Phone</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">
+                  ${contact.phone || "N/A"} 
+                  ${contact.whatsapp ? '<span style="color: #25D366; font-size: 12px; margin-left: 6px; font-weight: 500;">(WhatsApp)</span>' : ''}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Location</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">${[contact.city, contact.state].filter(Boolean).join(", ") || "N/A"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Source</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">Website</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <!-- Message -->
+          <div style="margin-top: 30px;">
+            <p style="font-size: 14px; font-weight: 500; color: #888888; margin-bottom: 10px;">Interests & Message</p>
+            <div style="font-size: 14px; color: #111111; line-height: 1.8; background-color: #fafafa; padding: 20px; border-radius: 6px;">
+              ${contact.message ? contact.message.replace(/\n/g, '<br/>') : "<span style='color:#999;'>No additional details provided.</span>"}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; padding: 30px 20px; border-top: 1px solid #eaeaea; margin-top: 20px;">
+          <p style="font-size: 12px; color: #999999; margin: 0;">Automated notification from MusafirBaba Website</p>
+        </div>
+      </div>
+    `;
+    const toEmail = process.env.NODE_ENV === "development" ? "shubham.jauhari@musafirbaba.com" : "care@musafirbaba.com";
     const emailResponse = await sendEmail(
-      "care@musafirbaba.com",
+      toEmail,
       subject,
       emailBody
     );

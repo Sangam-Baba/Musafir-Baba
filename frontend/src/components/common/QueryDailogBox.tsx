@@ -4,13 +4,20 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } 
 import LazyQueryForm from "../custom/LazyQueryForm";
 import Image from "next/image";
 
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export function QueryDailogBox() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   return (
     <div className="hidden md:flex fixed top-100 -right-10 z-50 flex items-center gap-2 rotate-[270deg]">
-      <Dialog onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <Button>Enquire Now</Button>
         </DialogTrigger>

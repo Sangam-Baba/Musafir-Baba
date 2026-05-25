@@ -471,19 +471,17 @@ export default function QueryForm({ className }: { className?: string }) {
                 render={({ field }) => (
                   <FormItem className="relative animate-in slide-in-from-top-2 duration-300 pt-1.5">
                     <FormControl>
-                      <div className="relative flex gap-2 border border-blue-400 rounded-lg px-3 py-2 bg-white shadow-sm ring-1 ring-blue-100 transition focus-within:ring-blue-400">
-                        <MessageCircleCode className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
-                        <div className="relative w-full">
+                        <div className="relative flex gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
+                          <MessageCircleCode className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" />
                           <Textarea
                             placeholder=" "
-                            className="peer min-h-[80px] border-none p-0 bg-transparent shadow-none focus-visible:ring-0 text-sm w-full resize-none"
+                            className="peer min-h-[80px] border-none p-0 bg-transparent shadow-none focus-visible:ring-0 text-sm w-full resize-none flex-1"
                             {...field}
                           />
-                          <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-3 scale-[0.8] top-1 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:top-0 peer-focus:top-1 peer-focus:scale-[0.8] peer-focus:-translate-y-3 left-0 pointer-events-none">
+                          <FormLabel className="absolute text-[13px] text-gray-400 duration-300 transform -translate-y-4 scale-[0.8] top-1.5 z-10 origin-[0] bg-white px-1 peer-focus:px-1 peer-focus:text-orange-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:top-1.5 peer-focus:top-1.5 peer-focus:scale-[0.8] peer-focus:-translate-y-4 left-9 pointer-events-none">
                             Details Message
                           </FormLabel>
                         </div>
-                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
