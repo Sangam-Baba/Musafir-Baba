@@ -4,6 +4,7 @@ import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AttendanceView from "@/components/admin/AttendanceView";
 import AdminAttendanceTable from "@/components/admin/AdminAttendanceTable";
+import AdminUserwiseAttendanceTable from "@/components/admin/AdminUserwiseAttendanceTable";
 
 export default function AttendancePage() {
   const role = useAdminAuthStore((state) => state.role);
@@ -33,8 +34,9 @@ export default function AttendancePage() {
             <AttendanceView />
           </TabsContent>
           
-          <TabsContent value="all-attendance" className="mt-0">
+          <TabsContent value="all-attendance" className="mt-0 space-y-8">
             <AdminAttendanceTable />
+            <AdminUserwiseAttendanceTable />
           </TabsContent>
         </Tabs>
       ) : (

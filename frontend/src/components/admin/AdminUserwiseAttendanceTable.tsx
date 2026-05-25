@@ -1,0 +1,247 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { secureAdminFetch } from "@/lib/secureAdminFetch";
+import { getAttendanceStatus } from "@/lib/attendanceUtils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar as CalendarIcon, MapPin } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+export default function AdminUserwiseAttendanceTable() {
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<string>("");
+  const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+  const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
+
+  useEffect(() => {
+    if (selectedStaff && monthFilter) {
+      fetchRecords();
+    } else {
+      setRecords([]);
+    }
+  }, [selectedStaff, monthFilter]);
+
+  const fetchStaffList = async () => {
+    try {
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin`);
+      const res = await response.json();
+      if (res && res.success) {
+        setStaffList(res.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch staff:", error);
+    }
+  };
+
+  const fetchRecords = async () => {
+    try {
+      setLoading(true);
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/attendance/userwise?userId=${selectedStaff}&month=${monthFilter}`);
+      const res = await response.json();
+      if (res && res.success) {
+        // Build a complete array of dates for the selected month
+        const [year, month] = monthFilter.split('-');
+        const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+        
+        const completeRecords = [];
+        for (let i = 1; i <= daysInMonth; i++) {
+          const dateStr = `${year}-${month}-${String(i).padStart(2, '0')}`;
+          // Ensure exact match by mapping to ISO string date parts
+          const existingRecord = res.data.find((r: any) => r.date.startsWith(dateStr));
+          if (existingRecord) {
+            completeRecords.push(existingRecord);
+          } else {
+            completeRecords.push({
+              _id: `absent_${dateStr}`,
+              date: dateStr,
+              checkInTime: null,
+              checkOutTime: null,
+              breaks: [],
+              totalOfficeHours: 0,
+              totalWorkingHours: 0
+            });
+          }
+        }
+        // sort by date descending
+        completeRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setRecords(completeRecords);
+      }
+    } catch (error) {
+      console.error("Failed to fetch userwise attendance:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+  
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const getActiveWorkingHours = (record: any) => {
+    if (!record.checkInTime || record.checkOutTime) return null;
+    const now = Date.now();
+    const checkIn = new Date(record.checkInTime).getTime();
+    let totalOfficeMs = now - checkIn;
+    
+    let totalBreakMs = 0;
+    if (record.breaks && Array.isArray(record.breaks)) {
+      record.breaks.forEach((b: any) => {
+        if (b.start) {
+          const breakStart = new Date(b.start).getTime();
+          const breakEnd = b.end ? new Date(b.end).getTime() : now;
+          totalBreakMs += (breakEnd - breakStart);
+        }
+      });
+    }
+    const workingHrs = (totalOfficeMs - totalBreakMs) / (1000 * 60 * 60);
+    return workingHrs > 0 ? workingHrs.toFixed(2) : "0.00";
+  };
+
+  return (
+    <Card className="shadow-lg border-none mt-8">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+        <CardTitle className="text-[18px] font-bold text-slate-800">User-Wise Records</CardTitle>
+        <div className="flex flex-wrap items-center gap-4">
+          <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+            <SelectTrigger className="w-[200px] h-8 bg-slate-50 border-0 shadow-none focus:ring-1 focus:ring-[#FE5300] text-[13px] font-semibold text-slate-700">
+              <SelectValue placeholder="Select Staff Member" />
+            </SelectTrigger>
+            <SelectContent>
+              {staffList.map((staff) => (
+                <SelectItem key={staff._id} value={staff._id}>
+                  {staff.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-slate-400" />
+            <Input 
+              type="month" 
+              value={monthFilter} 
+              onChange={(e) => setMonthFilter(e.target.value)}
+              className="w-auto h-8 bg-slate-50 border-0 shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] font-semibold text-slate-700"
+            />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {!selectedStaff ? (
+          <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-500">
+            Please select a staff member to view their records.
+          </div>
+        ) : loading ? (
+          <div className="text-center py-8 text-muted-foreground animate-pulse">Loading records...</div>
+        ) : records.length === 0 ? (
+          <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-500">
+            No attendance records found for this period.
+          </div>
+        ) : (
+          <div className="rounded-xl border overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow className="border-none">
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Date</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Status</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Check In</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Check Out</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Distance (In/Out)</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Total Hrs</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Working Hrs</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {records.map((record) => (
+                  <TableRow key={record._id} className="hover:bg-orange-50/50 transition-all duration-300 hover:translate-x-[1px] group cursor-default border-slate-100">
+                    <TableCell className="py-2">
+                      <div className="text-[13px] font-semibold text-slate-700">{formatDate(record.date)}</div>
+                    </TableCell>
+                    <TableCell className="py-2">
+                      {(() => {
+                        const status = getAttendanceStatus(record.checkInTime, record.date);
+                        return (
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${status.color}`}>
+                            {status.label}
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="py-2 text-[13px] font-medium text-slate-600">
+                      <div className="flex items-center gap-2">
+                        {record.checkInPhotoUrl && (
+                          <a href={record.checkInPhotoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0" title="View Check-in Photo">
+                            <img src={record.checkInPhotoUrl} alt="Check In" className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:scale-110 transition-transform shadow-sm" />
+                          </a>
+                        )}
+                        <span>{formatTime(record.checkInTime)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2 text-[13px] font-medium text-slate-600">
+                      <div className="flex items-center gap-2">
+                        {record.checkOutPhotoUrl && (
+                          <a href={record.checkOutPhotoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0" title="View Check-out Photo">
+                            <img src={record.checkOutPhotoUrl} alt="Check Out" className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:scale-110 transition-transform shadow-sm" />
+                          </a>
+                        )}
+                        <span>{formatTime(record.checkOutTime)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <div className="flex flex-col gap-1 text-[11px] font-medium text-slate-500 capitalize">
+                        {record.checkInLocation?.distance !== undefined && (
+                          <span className="flex items-center gap-1 group-hover:text-[#FE5300] transition-colors">
+                            <MapPin className="w-3 h-3" /> In: {record.checkInLocation.distance.toFixed(2)} km
+                          </span>
+                        )}
+                        {record.checkOutLocation?.distance !== undefined && (
+                          <span className="flex items-center gap-1 group-hover:text-[#FE5300] transition-colors">
+                            <MapPin className="w-3 h-3" /> Out: {record.checkOutLocation.distance.toFixed(2)} km
+                          </span>
+                        )}
+                        {!record.checkInLocation?.distance && !record.checkOutLocation?.distance && "-"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2 text-[13px] font-semibold text-slate-600">
+                      {record.totalOfficeHours || (record.checkInTime && !record.checkOutTime && record.date.startsWith(new Date().toISOString().split("T")[0]) ? (
+                        <span className="text-blue-500 font-medium text-[12px]">
+                          {((Date.now() - new Date(record.checkInTime).getTime()) / (1000 * 60 * 60)).toFixed(2)} hrs
+                        </span>
+                      ) : "-")}
+                    </TableCell>
+                    <TableCell className="py-2 text-[13px] font-bold text-[#FE5300]">
+                      {record.totalWorkingHours || (record.checkInTime && !record.checkOutTime && record.date.startsWith(new Date().toISOString().split("T")[0]) ? (
+                        <span className="text-orange-500 font-bold text-[12px]">
+                          {getActiveWorkingHours(record)} hrs
+                        </span>
+                      ) : "-")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

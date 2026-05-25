@@ -6,6 +6,7 @@ import {
   endBreak,
   getTodayAttendance,
   getAllAttendance,
+  getUserwiseAttendance,
 } from "../controllers/attendance.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -61,6 +62,14 @@ attendanceRouter.get(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getAllAttendance
+);
+
+attendanceRouter.get(
+  "/userwise",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getUserwiseAttendance
 );
 
 export default attendanceRouter;
