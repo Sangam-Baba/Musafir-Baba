@@ -50,7 +50,11 @@ const createContact = async (req, res) => {
               </tr>
               <tr>
                 <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Source</td>
-                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">Website</td>
+                <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">
+                  ${contact.source && contact.source.startsWith('http') 
+                    ? `<a href="${contact.source}" style="color: #FE5300; text-decoration: underline;">${contact.source}</a>`
+                    : (contact.source || 'Website')}
+                </td>
               </tr>
             </tbody>
           </table>

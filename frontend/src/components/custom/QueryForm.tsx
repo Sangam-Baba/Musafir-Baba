@@ -196,6 +196,7 @@ export default function QueryForm({ className }: { className?: string }) {
       ...values,
       message: finalMessage || "General Enquiry",
       phone: `${values.countryCode}${values.phone}`,
+      source: typeof window !== "undefined" ? window.location.href : values.source,
     });
   }
 
