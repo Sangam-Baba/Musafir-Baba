@@ -248,3 +248,33 @@ export const getAllAttendance = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getUserwiseAttendance = async (req, res, next) => {
+  try {
+    const { userId, month } = req.query; 
+
+    if (!userId || !month) {
+      return res.status(400).json({ success: false, message: "userId and month are required" });
+    }
+
+    // month is expected to be "YYYY-MM"
+    const [year, m] = month.split('-');
+    if (!year || !m) {
+      return res.status(400).json({ success: false, message: "Invalid month format. Use YYYY-MM" });
+    }
+
+    const startDate = new Date(year, m - 1, 1);
+    const endDate = new Date(year, m, 0, 23, 59, 59, 999);
+
+    const records = await Attendance.find({
+      staff: userId,
+      date: { $gte: startDate, $lte: endDate }
+    })
+      .populate("staff", "name email role")
+      .sort({ date: -1 });
+
+    return res.status(200).json({ success: true, data: records });
+  } catch (error) {
+    next(error);
+  }
+};

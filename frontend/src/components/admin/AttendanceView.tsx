@@ -110,6 +110,46 @@ export default function AttendanceView() {
 
   const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date());
 
+  const getOngoingStats = () => {
+    if (!attendance || !attendance.checkInTime) {
+      return { office: "0.00", working: "0.00", breaks: "0.00" };
+    }
+    if (attendance.checkOutTime) {
+      const breaksMins = attendance.breaks?.reduce((acc: number, b: any) => {
+        if (b.start && b.end) {
+          return acc + (new Date(b.end).getTime() - new Date(b.start).getTime());
+        }
+        return acc;
+      }, 0) || 0;
+      return {
+        office: attendance.totalOfficeHours?.toFixed(2) || "0.00",
+        working: attendance.totalWorkingHours?.toFixed(2) || "0.00",
+        breaks: (breaksMins / (1000 * 60 * 60)).toFixed(2)
+      };
+    }
+    const now = currentTime.getTime();
+    const checkIn = new Date(attendance.checkInTime).getTime();
+    const totalOfficeMs = Math.max(0, now - checkIn);
+    let totalBreakMs = 0;
+    if (attendance.breaks && Array.isArray(attendance.breaks)) {
+      attendance.breaks.forEach((b: any) => {
+        if (b.start) {
+          const breakStart = new Date(b.start).getTime();
+          const breakEnd = b.end ? new Date(b.end).getTime() : now;
+          totalBreakMs += (breakEnd - breakStart);
+        }
+      });
+    }
+    const totalWorkingMs = Math.max(0, totalOfficeMs - totalBreakMs);
+    return {
+      office: (totalOfficeMs / (1000 * 60 * 60)).toFixed(2),
+      working: (totalWorkingMs / (1000 * 60 * 60)).toFixed(2),
+      breaks: (totalBreakMs / (1000 * 60 * 60)).toFixed(2),
+    };
+  };
+
+  const stats = getOngoingStats();
+
   return (
     <div className="w-full space-y-4">
       {/* Unified Dashboard Card */}
@@ -131,20 +171,35 @@ export default function AttendanceView() {
         <div className="flex flex-col md:flex-row">
           {/* Left Column: Status Data */}
           <div className="w-full md:w-3/5 p-5 border-b md:border-b-0 md:border-r border-slate-100">
-            <div className="flex items-center justify-between mb-6">
-              <div className="text-3xl font-bold tracking-tight text-slate-800">
-                {currentTime.toLocaleTimeString()}
+            <div className="flex flex-col mb-6 gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Today's Summary</h3>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
+                  {isCheckedOut ? (
+                    <><CheckCircle2 className="w-3.5 h-3.5 text-[#FE5300]" /> <span>Checked Out</span></>
+                  ) : isOnBreak ? (
+                    <><Coffee className="w-3.5 h-3.5 text-orange-500" /> <span className="text-orange-600">On Break</span></>
+                  ) : isCheckedIn ? (
+                    <><PlayCircle className="w-3.5 h-3.5 text-blue-500" /> <span className="text-blue-600">Working</span></>
+                  ) : (
+                    <><Clock className="w-3.5 h-3.5" /> <span>Not Checked In</span></>
+                  )}
+                </div>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
-                {isCheckedOut ? (
-                  <><CheckCircle2 className="w-3.5 h-3.5 text-[#FE5300]" /> <span>Checked Out</span></>
-                ) : isOnBreak ? (
-                  <><Coffee className="w-3.5 h-3.5 text-orange-500" /> <span className="text-orange-600">On Break</span></>
-                ) : isCheckedIn ? (
-                  <><PlayCircle className="w-3.5 h-3.5 text-blue-500" /> <span className="text-blue-600">Working</span></>
-                ) : (
-                  <><Clock className="w-3.5 h-3.5" /> <span>Not Checked In</span></>
-                )}
+              
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Office Hrs</span>
+                  <span className="text-xl md:text-2xl font-bold text-slate-800">{stats.office} <span className="text-[11px] text-slate-500 font-semibold">h</span></span>
+                </div>
+                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Working Hrs</span>
+                  <span className="text-xl md:text-2xl font-bold text-[#FE5300]">{stats.working} <span className="text-[11px] text-[#FE5300]/70 font-semibold">h</span></span>
+                </div>
+                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Break Time</span>
+                  <span className="text-xl md:text-2xl font-bold text-orange-500">{stats.breaks} <span className="text-[11px] text-orange-500/70 font-semibold">h</span></span>
+                </div>
               </div>
             </div>
 
@@ -158,19 +213,6 @@ export default function AttendanceView() {
                 <p className="text-[14px] font-semibold text-slate-800">{formatTime(attendance?.checkOutTime)}</p>
               </div>
             </div>
-
-            {isCheckedOut && (
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Office Hours</span>
-                  <span className="text-[14px] font-semibold text-slate-800">{attendance.totalOfficeHours} <span className="text-[11px] text-slate-500">hrs</span></span>
-                </div>
-                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Working Hours</span>
-                  <span className="text-[14px] font-bold text-[#FE5300]">{attendance.totalWorkingHours} <span className="text-[11px] text-[#FE5300]/70">hrs</span></span>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right Column: Actions */}
