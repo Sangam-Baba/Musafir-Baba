@@ -30,28 +30,26 @@ const ITEMS_PER_PAGE = 10;
 import { cache } from "react";
 import SitemapTable from "./SitemapTable";
 
-const getAllSitemapData = cache(async (search: string = "") => {
+const getAllSitemapData = cache(async () => {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    const query = search ? `&search=${encodeURIComponent(search)}` : "";
     
     const [blogs, news, catRes, packages, destinations, webpages, visas, customized, seo, vehicles, aboutus] = await Promise.all([
-      fetch(`${baseUrl}/blogs/?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/news/?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/category?limit=10000&all=true${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/packages/?limit=10000&status=all${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/destination?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/webpage/?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/visa?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/customizedtourpackage?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/destinationseo?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/vehicle?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
-      fetch(`${baseUrl}/aboutus?limit=10000${query}`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/blogs/?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/news/?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/category?limit=10000&all=true`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/packages/?limit=10000&status=all`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/destination?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/webpage/?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/visa?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/customizedtourpackage?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/destinationseo?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/vehicle?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
+      fetch(`${baseUrl}/aboutus?limit=10000`, { next: { revalidate: 60 } }).then(r => r.json()),
     ]);
 
     const items: SitemapItem[] = [];
     
-    // Only add static links if no search or if they match
     const staticLinks = [
       { title: "Home Page", url: "/", category: "webpage" },
       { title: "Holidays Listing", url: "/holidays", category: "holiday" },
@@ -63,9 +61,7 @@ const getAllSitemapData = cache(async (search: string = "") => {
     ];
 
     staticLinks.forEach(link => {
-      if (!search || link.title.toLowerCase().includes(search.toLowerCase())) {
-        items.push(link);
-      }
+      items.push(link);
     });
 
     webpages.data?.forEach((p: any) => items.push({ title: p.title, url: `/${p.fullSlug}`, category: "webpage" }));
@@ -107,7 +103,7 @@ export default async function SitemapPage(props: {
   const category = searchParams.category || "all";
   const page = parseInt(searchParams.page || "1");
 
-  const allData = await getAllSitemapData(search);
+  const allData = await getAllSitemapData();
 
   // Server-side filtering for category and title precision
   const filteredData = allData.filter(item => {

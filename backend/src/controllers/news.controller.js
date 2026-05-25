@@ -137,9 +137,7 @@ const getAllNews = async (req, res) => {
     if (status) filter.status = status;
     if (search) {
       filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { content: { $regex: search, $options: "i" } },
-        { tags: { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } }
       ];
     }
     if (
