@@ -29,6 +29,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import Pagination from "@/components/common/Pagination";
 import { Activity, Search, ServerCrash, CheckCircle2, ShieldAlert } from "lucide-react";
 
 interface AuditLog {
@@ -182,12 +183,12 @@ export default function AuditLogsPage() {
               placeholder="Search by Title..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 w-[180px] h-9 text-xs font-medium bg-white"
+              className="pl-9 w-[180px] h-8 text-xs font-medium bg-slate-50 border-0 focus-visible:ring-1 focus-visible:ring-[#FE5300] focus-visible:ring-offset-0"
             />
           </div>
 
           <Select value={moduleFilter} onValueChange={(v) => { setModuleFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[140px] h-9 text-xs font-semibold bg-white">
+            <SelectTrigger className="w-[140px] h-8 text-xs font-semibold bg-slate-50 border-0 focus:ring-1 focus:ring-[#FE5300] focus:ring-offset-0">
               <SelectValue placeholder="Module" />
             </SelectTrigger>
             <SelectContent>
@@ -217,7 +218,7 @@ export default function AuditLogsPage() {
           </Select>
 
           <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(1); }}>
-            <SelectTrigger className="w-[120px] h-9 text-xs font-semibold bg-white">
+            <SelectTrigger className="w-[120px] h-8 text-xs font-semibold bg-slate-50 border-0 focus:ring-1 focus:ring-[#FE5300] focus:ring-offset-0">
               <SelectValue placeholder="Action" />
             </SelectTrigger>
             <SelectContent>
@@ -245,41 +246,41 @@ export default function AuditLogsPage() {
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow>
-                  <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-wider pl-6 py-4">Timestamp</TableHead>
-                  <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-wider">User</TableHead>
-                  <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-wider">Record</TableHead>
-                  <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-wider">Module</TableHead>
-                  <TableHead className="font-bold text-slate-600 text-[11px] uppercase tracking-wider">Action</TableHead>
+                  <TableHead className="font-bold text-slate-400 text-[10px] uppercase tracking-wider pl-4 py-2">Timestamp</TableHead>
+                  <TableHead className="font-bold text-slate-400 text-[10px] uppercase tracking-wider py-2">User</TableHead>
+                  <TableHead className="font-bold text-slate-400 text-[10px] uppercase tracking-wider py-2">Title</TableHead>
+                  <TableHead className="font-bold text-slate-400 text-[10px] uppercase tracking-wider py-2">Module</TableHead>
+                  <TableHead className="font-bold text-slate-400 text-[10px] uppercase tracking-wider py-2">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data?.data?.map((log: AuditLog) => (
                   <TableRow 
                     key={log._id}
-                    className={`hover:bg-orange-50/50 cursor-pointer transition-colors ${selectedLog?._id === log._id ? 'bg-orange-50/50' : ''}`}
+                    className={`hover:bg-slate-50/80 cursor-pointer transition-all duration-300 ease-in-out group ${selectedLog?._id === log._id ? 'bg-slate-50/80' : ''}`}
                     onClick={() => setSelectedLog(log)}
                   >
-                    <TableCell className="pl-6 py-4 whitespace-nowrap text-xs text-slate-600 font-medium">
+                    <TableCell className="pl-4 py-2 whitespace-nowrap text-[11px] text-slate-600 font-medium">
                       {format(new Date(log.createdAt), "MMM d, yyyy • h:mm a")}
                     </TableCell>
-                    <TableCell className="py-4 whitespace-nowrap">
+                    <TableCell className="py-2 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-800">{log.userName}</span>
-                        <span className="text-[10px] text-slate-500 font-semibold">{log.role}</span>
+                        <span className="text-[11px] font-bold text-slate-800">{log.userName}</span>
+                        <span className="text-[9px] text-slate-500 font-semibold">{log.role}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 max-w-[250px]">
-                      <span className="text-xs text-slate-800 font-bold truncate block" title={log.documentTitle}>
-                        {log.documentTitle && log.documentTitle !== "N/A" ? log.documentTitle : log.description}
+                    <TableCell className="py-2 max-w-[250px]">
+                      <span className={`text-[13px] font-semibold truncate block transition-transform duration-300 group-hover:translate-x-[1px] ${!log.documentTitle || log.documentTitle === "N/A" ? 'text-slate-400 italic' : 'text-slate-700'}`} title={log.documentTitle}>
+                        {log.documentTitle && log.documentTitle !== "N/A" ? log.documentTitle : "NA"}
                       </span>
                     </TableCell>
-                    <TableCell className="py-4 whitespace-nowrap">
-                      <span className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wide uppercase border border-slate-200">
+                    <TableCell className="py-2 whitespace-nowrap">
+                      <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-sm text-[9px] font-bold tracking-wide uppercase border border-slate-200">
                         {log.moduleName}
                       </span>
                     </TableCell>
-                    <TableCell className="py-4 whitespace-nowrap">
-                      <span className={`flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${getActionColor(log.actionType)}`}>
+                    <TableCell className="py-2 whitespace-nowrap">
+                      <span className={`flex items-center gap-1 w-fit px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider border ${getActionColor(log.actionType)}`}>
                         {getActionIcon(log.actionType)}
                         {log.actionType}
                       </span>
@@ -300,32 +301,17 @@ export default function AuditLogsPage() {
         )}
       </div>
 
-      {data?.pagination && data.pagination.pages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-xs text-slate-500 font-medium">
-            Showing page <span className="font-bold text-slate-800">{page}</span> of{" "}
-            <span className="font-bold text-slate-800">{data.pagination.pages}</span>
+      {data?.pagination && (
+        <div className="flex items-center justify-between px-2 pt-2">
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">
+            Showing page <span className="text-slate-700">{page}</span> of{" "}
+            <span className="text-slate-700">{data.pagination.pages}</span>
           </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="text-xs font-semibold h-8"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(data.pagination.pages, p + 1))}
-              disabled={page === data.pagination.pages}
-              className="text-xs font-semibold h-8"
-            >
-              Next
-            </Button>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={data.pagination.pages}
+            onPageChange={setPage}
+          />
         </div>
       )}
 

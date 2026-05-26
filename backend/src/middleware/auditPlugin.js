@@ -57,18 +57,24 @@ export function auditPlugin(schema, options) {
     next();
   });
 
-  // Post-hook for save (CREATE)
+  // Pre-hook for save to capture if the document is newly created
+  schema.pre("save", function (next) {
+    this._wasNew = this.isNew;
+    next();
+  });
+
+  // Post-hook for save (CREATE or UPDATE via doc.save())
   schema.post("save", function (doc, next) {
     if (!doc || EXCLUDED_MODELS.includes(doc.constructor.modelName)) return next();
     const req = auditContext.getStore();
     if (req && req.user && req.logAction) {
       try {
         req.logAction({
-          actionType: this.isNew ? "CREATE" : "UPDATE",
+          actionType: this._wasNew ? "CREATE" : "UPDATE",
           moduleName: options?.moduleName || doc.constructor.modelName,
           entityId: doc._id,
           documentTitle: extractTitle(doc),
-          description: `${this.isNew ? "Created" : "Updated"} ${doc.constructor.modelName} record`,
+          description: `${this._wasNew ? "Created" : "Updated"} ${doc.constructor.modelName} record`,
           newValue: doc,
         });
       } catch (err) {}
