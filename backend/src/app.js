@@ -3,6 +3,7 @@ import cors from "cors";
 import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import requestLogger from "./middleware/requestLogger.middleware.js";
+import { auditInterceptor } from "./middleware/auditInterceptor.js";
 //import errorHandler from "./middleware/errorHandler.js"
 
 const app = express();
@@ -28,6 +29,9 @@ app.use(
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Initialize AsyncLocalStorage context for Global Audit Logging
+app.use(auditInterceptor);
 
 app.use("/api", routes);
 

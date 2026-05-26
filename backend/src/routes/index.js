@@ -46,6 +46,7 @@ import visaApplicationRoutes from "./visaApplication.routes.js";
 import invoiceRoutes from "./invoice.routes.js";
 import salesPersonRoutes from "./salesPerson.routes.js";
 import attendanceRoutes from "./attendance.routes.js";
+import auditRoutes from "./audit.routes.js";
 
 const router = Router();
 
@@ -96,4 +97,5 @@ router.use("/visa-application", visaApplicationRoutes);
 router.use("/invoice", invoiceRoutes);
 router.use("/sales-person", salesPersonRoutes);
 router.use("/attendance", attendanceRoutes);
+router.use("/audit", auditRoutes);
 export default router;

@@ -21,6 +21,7 @@ import {
   CookingPot,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
+import { Activity } from "lucide-react";
 
 const NAV = [
   { label: "Dashboard", href: "/admin", icon: Home },
@@ -55,6 +56,7 @@ const NAV = [
   { label: "Visa", href: "/admin/visa", icon: Rocket },
   { label: "Career", href: "/admin/career", icon: Briefcase },
   { label: "Footer Items", href: "/admin/footer", icon: ListChecks },
+  { label: "Audit Logs", href: "/admin/audit-logs", icon: Activity },
 ];
 
 function cx(...parts: Array<string | false | null | undefined>) {
