@@ -23,6 +23,7 @@ import {
   Car,
   Database,
   KeyRound,
+  Activity,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import { FaHome, FaCog, FaBox } from "react-icons/fa";
@@ -254,6 +255,12 @@ export const NAV_GROUPS = [
         href: "/admin/newsletter",
         icon: NewspaperIcon,
         permission: "newsletter",
+      },
+      {
+        label: "Audit Logs",
+        href: "/admin/audit-logs",
+        icon: Activity,
+        permission: "dashboard",
       },
       {
         label: "Change Password",
