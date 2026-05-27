@@ -111,11 +111,19 @@ export default function AttendanceView() {
   const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date());
 
   const getOngoingStats = () => {
+    const formatMsToHHMM = (ms: number) => {
+      if (ms < 0) return "0.00";
+      const totalMins = Math.floor(ms / 60000);
+      const hours = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      return `${hours}.${mins.toString().padStart(2, '0')}`;
+    };
+
     if (!attendance || !attendance.checkInTime) {
       return { office: "0.00", working: "0.00", breaks: "0.00" };
     }
     if (attendance.checkOutTime) {
-      const breaksMins = attendance.breaks?.reduce((acc: number, b: any) => {
+      const breaksMs = attendance.breaks?.reduce((acc: number, b: any) => {
         if (b.start && b.end) {
           return acc + (new Date(b.end).getTime() - new Date(b.start).getTime());
         }
@@ -124,7 +132,7 @@ export default function AttendanceView() {
       return {
         office: attendance.totalOfficeHours?.toFixed(2) || "0.00",
         working: attendance.totalWorkingHours?.toFixed(2) || "0.00",
-        breaks: (breaksMins / (1000 * 60 * 60)).toFixed(2)
+        breaks: formatMsToHHMM(breaksMs)
       };
     }
     const now = currentTime.getTime();
@@ -142,9 +150,9 @@ export default function AttendanceView() {
     }
     const totalWorkingMs = Math.max(0, totalOfficeMs - totalBreakMs);
     return {
-      office: (totalOfficeMs / (1000 * 60 * 60)).toFixed(2),
-      working: (totalWorkingMs / (1000 * 60 * 60)).toFixed(2),
-      breaks: (totalBreakMs / (1000 * 60 * 60)).toFixed(2),
+      office: formatMsToHHMM(totalOfficeMs),
+      working: formatMsToHHMM(totalWorkingMs),
+      breaks: formatMsToHHMM(totalBreakMs),
     };
   };
 

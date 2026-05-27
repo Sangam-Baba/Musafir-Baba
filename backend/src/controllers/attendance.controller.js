@@ -141,8 +141,16 @@ export const checkOut = async (req, res, next) => {
 
     const totalWorkingMs = totalOfficeMs - totalBreakMs;
 
-    attendance.totalOfficeHours = parseFloat((totalOfficeMs / (1000 * 60 * 60)).toFixed(2));
-    attendance.totalWorkingHours = parseFloat((totalWorkingMs / (1000 * 60 * 60)).toFixed(2));
+    const formatMsToHHMM = (ms) => {
+      if (ms < 0) return 0;
+      const totalMins = Math.floor(ms / 60000);
+      const hours = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      return parseFloat(`${hours}.${mins.toString().padStart(2, '0')}`);
+    };
+
+    attendance.totalOfficeHours = formatMsToHHMM(totalOfficeMs);
+    attendance.totalWorkingHours = formatMsToHHMM(totalWorkingMs);
 
     await attendance.save();
 
