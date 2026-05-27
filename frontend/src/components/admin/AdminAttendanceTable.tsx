@@ -167,19 +167,19 @@ export default function AdminAttendanceTable() {
                       </div>
                     </TableCell>
                     <TableCell className="py-2 text-[13px] font-semibold text-slate-600">
-                      {record.totalOfficeHours?.toFixed(2) || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
+                      {record.totalOfficeHours ? record.totalOfficeHours.toFixed(2) : (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
                         <span className="text-blue-500 font-medium text-[12px]">
                           {formatMsToHHMM(Date.now() - new Date(record.checkInTime).getTime())} hrs
                         </span>
-                      ) : "-")}
+                      ) : "0.00")}
                     </TableCell>
                     <TableCell className="py-2 text-[13px] font-bold text-[#FE5300]">
                       <div className="flex items-center gap-2">
-                        {record.totalWorkingHours?.toFixed(2) || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
+                        {record.totalWorkingHours ? record.totalWorkingHours.toFixed(2) : (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
                           <span className="text-orange-500 font-bold text-[12px]">
                             {getActiveWorkingHours(record)} hrs
                           </span>
-                        ) : "-")}
+                        ) : "0.00")}
                         {record.breaks && record.breaks.length > 0 && (
                           <button onClick={() => setSelectedBreaks(record.breaks)} className="text-slate-400 hover:text-[#FE5300] transition-colors" title="View Breaks">
                             <Info className="w-4 h-4" />
