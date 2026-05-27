@@ -46,6 +46,14 @@ export default function AdminAttendanceTable() {
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
+  const formatMsToHHMM = (ms: number) => {
+    if (ms < 0) return "0.00";
+    const totalMins = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    return `${hours}.${mins.toString().padStart(2, '0')}`;
+  };
+
   const getActiveWorkingHours = (record: any) => {
     if (!record.checkInTime || record.checkOutTime) return null;
     const now = Date.now();
@@ -62,8 +70,8 @@ export default function AdminAttendanceTable() {
         }
       });
     }
-    const workingHrs = (totalOfficeMs - totalBreakMs) / (1000 * 60 * 60);
-    return workingHrs > 0 ? workingHrs.toFixed(2) : "0.00";
+    const totalWorkingMs = totalOfficeMs - totalBreakMs;
+    return formatMsToHHMM(totalWorkingMs);
   };
 
   return (
@@ -159,15 +167,15 @@ export default function AdminAttendanceTable() {
                       </div>
                     </TableCell>
                     <TableCell className="py-2 text-[13px] font-semibold text-slate-600">
-                      {record.totalOfficeHours || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
+                      {record.totalOfficeHours?.toFixed(2) || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
                         <span className="text-blue-500 font-medium text-[12px]">
-                          {((Date.now() - new Date(record.checkInTime).getTime()) / (1000 * 60 * 60)).toFixed(2)} hrs
+                          {formatMsToHHMM(Date.now() - new Date(record.checkInTime).getTime())} hrs
                         </span>
                       ) : "-")}
                     </TableCell>
                     <TableCell className="py-2 text-[13px] font-bold text-[#FE5300]">
                       <div className="flex items-center gap-2">
-                        {record.totalWorkingHours || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
+                        {record.totalWorkingHours?.toFixed(2) || (record.checkInTime && !record.checkOutTime && dateFilter === new Date().toISOString().split("T")[0] ? (
                           <span className="text-orange-500 font-bold text-[12px]">
                             {getActiveWorkingHours(record)} hrs
                           </span>
