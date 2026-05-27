@@ -1,30 +1,12 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
-
-const updateCounter = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/counter/68e6549442582b78aea7c191`,
-    { method: "PATCH" }
-  );
-  if (!res.ok) throw new Error("Failed to update counter");
-  return res.json();
-};
+import CounterUpdater from "./CounterUpdater";
 
 function SecondSection({ initialCount }: { initialCount: number }) {
-  const [counter, setCounter] = useState<number>(initialCount);
-
-  useEffect(() => {
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(() => updateCounter());
-    } else {
-      setTimeout(updateCounter, 1000);
-    }
-  }, []);
 
   return (
     <section className="w-full md:py-16 py-8">
+      <CounterUpdater />
       {/* <div className="absolute inset-0 bg-white/10 z-10 "></div> */}
       <div className="max-w-7xl mx-auto flex justify-around items-center px-8  gap-6">
         <div className="flex flex-col gap-2 items-center">
@@ -36,7 +18,7 @@ function SecondSection({ initialCount }: { initialCount: number }) {
             className="w-10 h-10 md:w-14 md:h-14  "
           />
           {/* <Smile className="w-10 h-10 md:w-14 md:h-14 lg:w-18 lg:h-18 text-[#FF5733]" /> */}
-          <p className="text-xl md:text-2xl font-bold text-black">{counter}</p>
+          <p className="text-xl md:text-2xl font-bold text-black">{initialCount}</p>
           <p className="text-sm text-black text-center">Happy Travellers</p>
         </div>
 

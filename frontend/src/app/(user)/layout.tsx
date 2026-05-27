@@ -4,7 +4,9 @@ import Header from "@/components/common/Header";
 import "../globals.css";
 import Footer from "@/components/common/Footer";
 import Script from "next/script";
-import WhatsAppButton from "@/components/common/WhatsappButton";
+import dynamic from "next/dynamic";
+const WhatsAppButton = dynamic(() => import("@/components/common/WhatsappButton"));
+const MobileBottom = dynamic(() => import("@/components/custom/MobileBottom"));
 
 export const metadata: Metadata = {
   title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
@@ -57,7 +59,8 @@ import GTMProvider from "@/providers/GTMProvider";
 import { LazyAuthDialog } from "@/components/auth/LazyAuthDialog";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import PlanMyTrip from "@/components/common/Plan-My-Trip";
-import MobileBottom from "@/components/custom/MobileBottom";
+import GTMInjector from "@/components/common/GTMInjector";
+
 
 export default function UserLayout({
   children,
@@ -73,28 +76,8 @@ export default function UserLayout({
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       <link rel="dns-prefetch" href="https://static.doubleclick.net" />
 
-      {/* Google Tag Manager Script — lazyOnload for mobile thread freedom */}
-      <Script
-        id="gtm-script"
-        strategy="lazyOnload"
-        dangerouslySetInnerHTML={{
-          __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-KW5RGQR6');`,
-        }}
-      />
-
-      {/* Google Tag Manager (noscript) */}
-      <noscript>
-        <iframe
-          src="https://www.googletagmanager.com/ns.html?id=GTM-KW5RGQR6"
-          height="0"
-          width="0"
-          style={{ display: "none", visibility: "hidden" }}
-        ></iframe>
-      </noscript>
+      {/* Google Tag Manager (Loaded on interaction) */}
+      <GTMInjector />
       <RootProvider>
         <Header />
         <main className="flex-grow">

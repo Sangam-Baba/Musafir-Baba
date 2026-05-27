@@ -12,7 +12,13 @@
 // import Link from "next/link";
 // import { Clock, MapPin } from "lucide-react";
 // import { FaMoneyBill } from "react-icons/fa";
-import HomeVideoBanner from "./HomeVideoBanner";
+import dynamic from "next/dynamic";
+
+const HomeVideoBanner = dynamic(() => import("./HomeVideoBanner"), {
+  loading: () => (
+    <div className="w-full bg-neutral-200 rounded-xl animate-pulse" style={{ aspectRatio: "553/200" }} />
+  ),
+});
 
 // interface Batch {
 //   quad: number;
