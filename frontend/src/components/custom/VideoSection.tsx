@@ -33,7 +33,7 @@ function VideoSection() {
                   id="iFEIzFtT8yQ"
                   title="Behind the Scenes Video"
                   lazyLoad={true}
-                  poster="maxresdefault" // better thumbnail quality
+                  poster="hqdefault" // better thumbnail quality
                   cookie={true} // privacy mode, faster load
                   webp={true} // lighter images
                   playlist={false}

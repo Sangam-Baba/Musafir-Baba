@@ -1,13 +1,5 @@
 import Image from "next/image";
 import React from "react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "../ui/carousel";
-import { CarouselDots } from "../ui/carousel-indicators";
 
 function WhyChooseUs() {
   const data = [
@@ -78,42 +70,31 @@ function WhyChooseUs() {
         ))}
       </div>
 
-      {/* Carosal */}
-      <div className="md:hidden flex flex-col gap-2 items-center mt-8">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full max-w-sm"
-        >
-          <CarouselContent>
-            {data.map((data, i) => (
-              <CarouselItem key={i} className="">
-                <div
-                  key={`choose-${i}-${data.id}`}
-                  className="flex flex-col gap-2 items-center"
-                >
-                  <Image
-                    src={data.url}
-                    width={500}
-                    height={500}
-                    alt={data.title}
-                    sizes="(max-width: 768px) 100px, 150px"
-                    className="rounded-2xl w-15 h-15"
-                  />
-                  <div className=" space-y-1">
-                    <p className="text-md font-semibold text-center">
-                      {data.title}
-                    </p>
-                    <p className="text-sm text-center">{data.description}</p>
-                  </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselDots />
-        </Carousel>
+      {/* CSS Scroll Carousel for Mobile */}
+      <div className="md:hidden flex gap-4 mt-8 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 pb-4">
+        {data.map((data, i) => (
+          <div
+            key={`choose-${i}-${data.id}`}
+            className="flex flex-col gap-2 items-center min-w-[200px] snap-start"
+          >
+            <Image
+              src={data.url}
+              width={150}
+              height={150}
+              alt={data.title}
+              sizes="(max-width: 768px) 150px, 150px"
+              className="rounded-2xl w-[100px] h-[100px] md:w-15 md:h-15"
+            />
+            <div className="space-y-1 mt-2">
+              <p className="text-md font-semibold text-center leading-tight">
+                {data.title}
+              </p>
+              <p className="text-sm text-center text-gray-600 line-clamp-3">
+                {data.description}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

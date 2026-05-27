@@ -1,12 +1,5 @@
 import React from "react";
 import { VisaInterface } from "@/app/(user)/visa/visaClient";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "../ui/carousel";
 import Link from "next/link";
 import Image from "next/image";
 import { Globe } from "lucide-react";
@@ -123,65 +116,47 @@ async function VisaHome() {
           })}
         </div>
 
-        {/* Carosal */}
+        <div className="flex md:hidden gap-4 mt-8 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory px-4">
+          {shownVisa.slice(0, 12).map((data, i) => (
+            <div key={i} className="relative min-w-[260px] snap-start">
+              <Link href={`/visa/${data.slug}`}>
+                <div className="group relative overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400 h-full">
+                  {/* Background gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        <div className=" md:hidden flex flex-col gap-2 items-center mt-8 px-4 w-full">
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full max-w-sm"
-          >
-            <CarouselContent>
-              {shownVisa.slice(0, 12).map((data, i) => (
-                <CarouselItem key={i} className="basis-1/2">
-                  <Link key={i} href={`/visa/${data.slug}`}>
-                    <div className="group relative  overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400">
-                      {/* Background gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {/* Flag Image */}
+                  <div className="relative h-32 w-full overflow-hidden bg-neutral-100">
+                    <Image
+                      src={data.bannerImage?.url || "/placeholder.svg"}
+                      alt={data.bannerImage?.alt || "Musafirbaba Visa"}
+                      width={260}
+                      height={128}
+                      loading="lazy"
+                      sizes="(max-width: 768px) 260px, 16vw"
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
+                  </div>
 
-                      {/* Flag Image */}
-                      <div className="relative h-25 w-full overflow-hidden bg-neutral-100">
-                        <Image
-                          src={data.bannerImage?.url || "/placeholder.svg"}
-                          alt={data.bannerImage?.alt || "Musafirbaba Visa"}
-                          width={200}
-                          height={30}
-                          loading="lazy"
-                          sizes="(max-width: 768px) 50vw, 16vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
+                  {/* Content Section */}
+                  <div className="flex flex-col justify-between p-4">
+                    {/* Header with country name and icon */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors mt-1 line-clamp-1">
+                          {data.country}
+                        </h3>
                       </div>
-
-                      {/* Content Section */}
-                      <div className="flex flex-col justify-between p-4 ">
-                        {/* Header with country name and icon */}
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            {/* <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                          Visa
-                        </p> */}
-                            <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors mt-1 line-clamp-1">
-                              {data.country}
-                            </h3>
-                          </div>
-                          <Globe className="w-5 h-5 text-neutral-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-1" />
-                        </div>
-                      </div>
-
-                      {/* Hover effect border */}
-                      <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-400/30 transition-colors pointer-events-none" />
+                      <Globe className="w-5 h-5 text-neutral-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-1" />
                     </div>
-                  </Link>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="ml-6" />
-            <CarouselNext className="mr-6" />
-            {/* <CarouselDots /> */}
-          </Carousel>
+                  </div>
+
+                  {/* Hover effect border */}
+                  <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-400/30 transition-colors pointer-events-none" />
+                </div>
+              </Link>
+            </div>
+          ))}
         </div>
         <div className="mt-6">
           <PopupQueryForm />

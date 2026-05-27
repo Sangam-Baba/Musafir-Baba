@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     // AVIF/WebP quality — 80 is optimal for visual quality vs file size
-    qualities: [80],
+    qualities: [70, 80],
     remotePatterns: [
       {
         protocol: "https",

@@ -15,22 +15,28 @@ import SectionFour from "@/components/custom/SectionFour";
 import SectionFive from "@/components/custom/SectionFive";
 import WhyChoose from "@/components/custom/WhyChoose";
 import HomeBooking from "@/components/custom/HomeBooking";
-import Partners from "@/components/custom/Partners";
+
 
 // ─── Below-the-fold Client Components (dynamic imports to defer JS) ──
 import dynamic from "next/dynamic";
 const DestinationSection = dynamic(
-  () => import("@/components/custom/DestinationSection").then((mod) => ({ default: mod.DestinationSection }))
+  () => import("@/components/custom/DestinationSection").then((mod) => ({ default: mod.DestinationSection })),
+  { loading: () => <div className="h-64 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
 );
 import { LazyVideoSection, LazyTestimonial, LazyImageGallery } from "@/components/custom/LazyCarousels";
 const Faqs = dynamic(
-  () => import("@/components/custom/Faqs").then((mod) => ({ default: mod.Faqs }))
+  () => import("@/components/custom/Faqs").then((mod) => ({ default: mod.Faqs })),
+  { loading: () => <div className="h-64 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
 );
 const LoginAutoOpen = dynamic(
   () => import("@/components/User/LoginAutoOpen")
 );
 const PopupBanner = dynamic(
   () => import("@/components/custom/PopupBanner").then((mod) => ({ default: mod.PopupBanner }))
+);
+const Partners = dynamic(
+  () => import("@/components/custom/Partners"),
+  { loading: () => <div className="h-40 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
 );
 
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
