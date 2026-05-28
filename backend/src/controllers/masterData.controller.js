@@ -3,6 +3,9 @@ import { VehicleType } from "../models/VehicleType.js";
 import { VehiclePickUpDestination } from "../models/VehiclePickUpDestination.js";
 import { VehicleFuelType } from "../models/VehicleFuelType.js";
 import { VehicleTransmission } from "../models/VehicleTransmission.js";
+import { VisaType } from "../models/VisaType.js";
+import { VisaValidity } from "../models/VisaValidity.js";
+import { VisaDuration } from "../models/VisaDuration.js";
 
 // Helper for generating standard CRUD
 const generateCRUD = (Model, modelName) => ({
@@ -67,3 +70,6 @@ export const typeController = generateCRUD(VehicleType, "Type");
 export const destinationController = generateCRUD(VehiclePickUpDestination, "Destination");
 export const fuelTypeController = generateCRUD(VehicleFuelType, "Fuel Type");
 export const transmissionController = generateCRUD(VehicleTransmission, "Transmission");
+export const visaTypeController = generateCRUD(VisaType, "Visa Type");
+export const visaValidityController = generateCRUD(VisaValidity, "Visa Validity");
+export const visaDurationController = generateCRUD(VisaDuration, "Visa Duration");

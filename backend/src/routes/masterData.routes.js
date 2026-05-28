@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { brandController, typeController, destinationController, fuelTypeController, transmissionController } from "../controllers/masterData.controller.js";
+import { brandController, typeController, destinationController, fuelTypeController, transmissionController, visaTypeController, visaValidityController, visaDurationController } from "../controllers/masterData.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
 import { validateSession } from "../middleware/session.middleware.js";
@@ -40,5 +40,8 @@ applyRoutes("/type", typeController);
 applyRoutes("/pickup-destination", destinationController);
 applyRoutes("/fuel-type", fuelTypeController);
 applyRoutes("/transmission", transmissionController);
+applyRoutes("/visa-type", visaTypeController);
+applyRoutes("/visa-validity", visaValidityController);
+applyRoutes("/visa-duration", visaDurationController);
 
 export default masterDataRoutes;

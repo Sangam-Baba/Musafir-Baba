@@ -223,14 +223,31 @@ function VisaMainCard({ visa }: { visa: VisaInterface }) {
   return (
     <Card
       key={visa.id}
-      className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col relative group"
+      className="group relative bg-white rounded-xl border border-gray-200/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col overflow-hidden select-none"
     >
-      <Link href={`/visa/${visa.slug}`} className="absolute inset-0 z-10">
+      <Link href={`/visa/${visa.slug}`} className="absolute inset-0 z-20">
         <span className="sr-only">View {visa.country} Visa</span>
       </Link>
 
+      {/* Expanding Country Cover Image Bubble Background (stays completely still & stable on hover) */}
+      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-6 h-6 rounded-full overflow-hidden bg-white -translate-x-1/2 -translate-y-1/2 scale-0 group-hover:scale-[45] transition-transform duration-700 ease-out origin-top-left z-0">
+          {visa.coverImage?.url && (
+            <div className="absolute inset-0 opacity-[0.08] w-[270px] h-[180px]">
+              <Image
+                src={visa.coverImage.url}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* TOP */}
-      <div className="flex items-center justify-between px-3 pt-2 pb-0">
+      <div className="relative z-10 flex items-center justify-between px-3 pt-3 pb-0">
         <div className="flex items-center gap-2">
           <Image
             src={visa.coverImage?.url || ""}
@@ -244,13 +261,13 @@ function VisaMainCard({ visa }: { visa: VisaInterface }) {
           </h3>
         </div>
 
-        <div className="scale-[0.8] origin-right py-0 relative z-20">
+        <div className="scale-[0.8] origin-right py-0 relative z-30">
           <VisaTypesDialog type={visa.visaType} />
         </div>
       </div>
 
       {/* MIDDLE */}
-      <div className="px-3 pb-1 -mt-0.5 space-y-1">
+      <div className="relative z-10 px-3 pb-1.5 -mt-0.5 space-y-1">
         <p className="text-[12px] text-gray-600 leading-none">
           Get visa in{" "}
           <span className="text-[#FE5300] font-semibold">
@@ -270,7 +287,7 @@ function VisaMainCard({ visa }: { visa: VisaInterface }) {
       </div>
 
       {/* FOOTER */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-100 mt-auto bg-gray-50/40">
+      <div className="relative z-10 flex items-center justify-between px-3 py-2 border-t border-gray-100 mt-auto bg-gray-50/40">
         <div className="flex flex-col justify-center">
           <p className="text-[14px] font-bold text-[#FE5300] leading-none">
             ₹{visa.cost} <span className="text-[10px] text-gray-500 font-medium ml-1">+ service fee</span>

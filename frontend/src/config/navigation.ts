@@ -214,6 +214,24 @@ export const NAV_GROUPS = [
         icon: Users,
         permission: "master-sales-person",
       },
+      {
+        label: "Visa Purpose",
+        href: "/admin/master-data/visa-purpose",
+        icon: Rocket,
+        permission: "master-visa-type",
+      },
+      {
+        label: "Visa Validity",
+        href: "/admin/master-data/visa-validity",
+        icon: Database,
+        permission: "master-visa-validity",
+      },
+      {
+        label: "Visa Duration",
+        href: "/admin/master-data/visa-duration",
+        icon: Database,
+        permission: "master-visa-duration",
+      },
     ],
   },
   {

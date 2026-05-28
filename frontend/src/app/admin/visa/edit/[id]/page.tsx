@@ -19,7 +19,7 @@ import { useParams } from "next/navigation";
 import { Loader } from "@/components/custom/loader";
 import { useEffect } from "react";
 import BlogEditor from "@/components/admin/BlogEditor";
-import { X } from "lucide-react";
+import { X, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { Reviews } from "@/app/admin/holidays/new/page";
 import { deleteReview } from "@/app/admin/holidays/new/page";
@@ -28,6 +28,7 @@ import { Visa } from "../../new/page";
 import { Label } from "@/components/ui/label";
 import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
@@ -90,6 +91,7 @@ export default function CreateVisaPage() {
     duration: "",
     necessaryDocuments: ["Photo", "Passport"],
     process: [],
+    visas: [],
   };
   const form = useForm<Visa>({ defaultValues });
   const { data, isLoading, isError, error } = useQuery<Visa>({
@@ -97,6 +99,7 @@ export default function CreateVisaPage() {
     queryFn: () => getVisa(id, accessToken),
     staleTime: 1000 * 60 * 5,
     retry: 2,
+    enabled: !!accessToken && !!id,
   });
 
   const faqsArray = useFieldArray({
@@ -104,12 +107,63 @@ export default function CreateVisaPage() {
     name: "faqs",
   });
 
+  const visasArray = useFieldArray({
+    control: form.control,
+    name: "visas",
+  });
+
+  const [collapsedCards, setCollapsedCards] = useState<Record<number, boolean>>({});
+  const toggleCard = (index: number) => setCollapsedCards((prev) => ({ ...prev, [index]: !prev[index] }));
+
+  // Master data queries for dropdowns
+  const { data: visaPurposeData } = useQuery({
+    queryKey: ["master-data", "visa-type"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/visa-type`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+  const { data: visaValidityData } = useQuery({
+    queryKey: ["master-data", "visa-validity"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/visa-validity`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+  const { data: visaDurationData } = useQuery({
+    queryKey: ["master-data", "visa-duration"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/visa-duration`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+
+  const visaPurposeOptions = visaPurposeData?.data || [];
+  const visaValidityOptions = visaValidityData?.data || [];
+  const visaDurationOptions = visaDurationData?.data || [];
+
+  const formatDuration = (item: any) => {
+    const parts = [];
+    if (item.years) parts.push(`${item.years} Year${item.years > 1 ? 's' : ''}`);
+    if (item.months) parts.push(`${item.months} Month${item.months > 1 ? 's' : ''}`);
+    if (item.days) parts.push(`${item.days} Day${item.days > 1 ? 's' : ''}`);
+    return parts.join(' ') || '0 Days';
+  };
+
   useEffect(() => {
     if (data) {
       const reviewsIds = data.reviews?.map((b: string) => b) || [];
       form.reset({
         ...data,
         reviews: reviewsIds,
+        visas: (data.visas || []).map((v: any) => ({
+          ...v,
+          entryType: v.entryType || "",
+          processTime: v.processTime || "",
+        })),
       });
       if (reviewsIds.length > 0) {
         getReviewsByIds(accessToken, reviewsIds)
@@ -171,7 +225,21 @@ export default function CreateVisaPage() {
     setReviewsDetails(updatedDetails);
   };
   const onSubmit: SubmitHandler<Visa> = (values) => {
-    mutation.mutate(values);
+    const sanitizedVisas = values.visas?.map((v) => ({
+      ...v,
+      governmentFee: v.governmentFee === "" as any ? 0 : Number(v.governmentFee || 0),
+      serviceCharges: v.serviceCharges === "" as any ? 0 : Number(v.serviceCharges || 0),
+      gst: v.gst === "" as any ? 0 : Number(v.gst || 0),
+      expressGovernmentFee: v.expressGovernmentFee === "" as any ? 0 : Number(v.expressGovernmentFee || 0),
+      expressServiceCharges: v.expressServiceCharges === "" as any ? 0 : Number(v.expressServiceCharges || 0),
+    })) || [];
+
+    mutation.mutate({
+      ...values,
+      cost: values.cost === "" as any ? 0 : Number(values.cost || 0),
+      visaProcessed: values.visaProcessed === "" as any ? 0 : Number(values.visaProcessed || 0),
+      visas: sanitizedVisas,
+    });
   };
 
   const schemaTypes = ["FAQ", "Webpage", "Review"];
@@ -187,9 +255,10 @@ export default function CreateVisaPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="visas">Visas</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="media">Media</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO & Docs</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="faqs">FAQs & Review</TabsTrigger>
@@ -276,7 +345,14 @@ export default function CreateVisaPage() {
                       <FormItem className="space-y-0.5">
                         <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Fee</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="100" {...field} required />
+                          <Input
+                            className="h-7 text-xs px-2 rounded-sm"
+                            type="number"
+                            placeholder="100"
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                            required
+                          />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -291,7 +367,13 @@ export default function CreateVisaPage() {
                       <FormItem className="space-y-0.5">
                         <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Total Processed</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="100" {...field} />
+                          <Input
+                            className="h-7 text-xs px-2 rounded-sm"
+                            type="number"
+                            placeholder="100"
+                            value={field.value === 0 ? "" : field.value}
+                            onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                          />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -312,6 +394,335 @@ export default function CreateVisaPage() {
                       </FormItem>
                     )}
                   />
+                </div>
+              </TabsContent>
+
+              {/* TAB: VISAS */}
+              <TabsContent value="visas" className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Cards</FormLabel>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] font-semibold rounded-sm"
+                    onClick={() => visasArray.append({
+                      visaPurpose: "",
+                      visaType: "",
+                      governmentFee: 0,
+                      serviceCharges: 0,
+                      gst: 0,
+                      gstTypeOrPercentageText: "",
+                      documents: "",
+                      processSteps: "",
+                      visaValidity: "",
+                      visaDuration: "",
+                      entryType: "",
+                      processTime: "",
+                      isExpress: false,
+                      expressVisaDuration: "",
+                      expressGovernmentFee: 0,
+                      expressServiceCharges: 0,
+                    })}
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> Add Visa Card
+                  </Button>
+                </div>
+
+                {visasArray.fields.length === 0 && (
+                  <div className="text-center py-10 text-[11px] text-gray-500 border border-dashed rounded bg-white">
+                    No visa cards added yet. Click &quot;Add Visa Card&quot; to get started.
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  {visasArray.fields.map((field, index) => {
+                    const isCollapsed = collapsedCards[index];
+                    const purpose = form.watch(`visas.${index}.visaPurpose`);
+                    const vType = form.watch(`visas.${index}.visaType`);
+                    const isExpress = form.watch(`visas.${index}.isExpress`);
+                    return (
+                      <div key={field.id} className="border rounded-md bg-white shadow-sm">
+                        {/* Card Header */}
+                        <div
+                          className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b cursor-pointer rounded-t-md"
+                          onClick={() => toggleCard(index)}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-gray-500" /> : <ChevronUp className="w-3.5 h-3.5 text-gray-500" />}
+                            <span className="text-xs font-semibold text-gray-700">
+                              {purpose || vType ? `${purpose}${purpose && vType ? ' — ' : ''}${vType}` : `Visa Card #${index + 1}`}
+                            </span>
+                            {isExpress && <span className="text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-semibold">EXPRESS</span>}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="h-6 w-6 p-0 rounded-sm"
+                            onClick={(e) => { e.stopPropagation(); visasArray.remove(index); }}
+                          >
+                            <X size={12} />
+                          </Button>
+                        </div>
+
+                        {/* Card Body */}
+                        {!isCollapsed && (
+                          <div className="p-3 space-y-3">
+                            {/* Row 1: Purpose + Type */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.visaPurpose`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Purpose</FormLabel>
+                                    <FormControl>
+                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
+                                        <option value="">Select Purpose</option>
+                                        {visaPurposeOptions.map((opt: any) => (
+                                          <option key={opt._id} value={opt.name}>{opt.name}</option>
+                                        ))}
+                                      </select>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.visaType`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Type</FormLabel>
+                                    <FormControl>
+                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
+                                        <option value="">Select Type</option>
+                                        <option value="E-Visa">E-Visa</option>
+                                        <option value="DAC">DAC</option>
+                                        <option value="EVOA">EVOA</option>
+                                        <option value="Sticker">Sticker</option>
+                                        <option value="ETA">ETA</option>
+                                        <option value="PAR">PAR</option>
+                                      </select>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* Row 2: Gov Fee + Service Charges + GST */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.governmentFee`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Gov Fee</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        className="h-7 text-xs px-2 rounded-sm"
+                                        type="number"
+                                        placeholder="0"
+                                        value={field.value === 0 ? "" : field.value}
+                                        onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.serviceCharges`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Service Charges</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        className="h-7 text-xs px-2 rounded-sm"
+                                        type="number"
+                                        placeholder="0"
+                                        value={field.value === 0 ? "" : field.value}
+                                        onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.gst`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">GST</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        className="h-7 text-xs px-2 rounded-sm"
+                                        type="number"
+                                        placeholder="0"
+                                        value={field.value === 0 ? "" : field.value}
+                                        onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* Row 3: Validity + Duration + Entry Type + Process Time */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.visaValidity`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Validity</FormLabel>
+                                    <FormControl>
+                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
+                                        <option value="">Select Validity</option>
+                                        {visaValidityOptions.map((opt: any) => (
+                                          <option key={opt._id} value={formatDuration(opt)}>{formatDuration(opt)}</option>
+                                        ))}
+                                      </select>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.visaDuration`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Duration</FormLabel>
+                                    <FormControl>
+                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
+                                        <option value="">Select Duration</option>
+                                        {visaDurationOptions.map((opt: any) => (
+                                          <option key={opt._id} value={formatDuration(opt)}>{formatDuration(opt)}</option>
+                                        ))}
+                                      </select>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.entryType`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Entry Type</FormLabel>
+                                    <FormControl>
+                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
+                                        <option value="">Select Entry Type</option>
+                                        <option value="Single">Single</option>
+                                        <option value="Multiple">Multiple</option>
+                                      </select>
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`visas.${index}.processTime`}
+                                render={({ field }) => (
+                                  <FormItem className="space-y-0.5">
+                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Process Time</FormLabel>
+                                    <FormControl>
+                                      <Input className="h-7 text-xs px-2 rounded-sm" placeholder="e.g. 3-4 Days" {...field} />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* Row 4: Documents + Process Steps (Rich Text) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="space-y-0.5">
+                                <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Documents</Label>
+                                <div className="border rounded-sm overflow-hidden text-xs">
+                                  <SmallEditor
+                                    value={form.getValues(`visas.${index}.documents`) || ""}
+                                    onChange={(val) => form.setValue(`visas.${index}.documents`, val)}
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-0.5">
+                                <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Process Steps</Label>
+                                <div className="border rounded-sm overflow-hidden text-xs">
+                                  <SmallEditor
+                                    value={form.getValues(`visas.${index}.processSteps`) || ""}
+                                    onChange={(val) => form.setValue(`visas.${index}.processSteps`, val)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Row 5: Express Toggle */}
+                            <div className="flex items-center gap-3 pt-2 border-t">
+                              <Switch
+                                checked={isExpress}
+                                onCheckedChange={(checked) => form.setValue(`visas.${index}.isExpress`, checked)}
+                              />
+                              <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Express Visa</Label>
+                            </div>
+
+                            {/* Express Fields (conditional) */}
+                            {isExpress && (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-2 bg-orange-50/50 rounded border border-orange-100">
+                                 <FormField
+                                  control={form.control}
+                                  name={`visas.${index}.expressVisaDuration`}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0.5">
+                                      <FormLabel className="text-[11px] font-bold text-orange-700 uppercase tracking-widest">Express Process Time</FormLabel>
+                                      <FormControl>
+                                        <Input className="h-7 text-xs px-2 rounded-sm border-orange-200" placeholder="e.g. 1-2 Days" {...field} />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`visas.${index}.expressGovernmentFee`}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0.5">
+                                      <FormLabel className="text-[11px] font-bold text-orange-700 uppercase tracking-widest">Express Gov Fee</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          className="h-7 text-xs px-2 rounded-sm"
+                                          type="number"
+                                          placeholder="0"
+                                          value={field.value === 0 ? "" : field.value}
+                                          onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={`visas.${index}.expressServiceCharges`}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0.5">
+                                      <FormLabel className="text-[11px] font-bold text-orange-700 uppercase tracking-widest">Express Service Charges</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          className="h-7 text-xs px-2 rounded-sm"
+                                          type="number"
+                                          placeholder="0"
+                                          value={field.value === 0 ? "" : field.value}
+                                          onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </TabsContent>
 

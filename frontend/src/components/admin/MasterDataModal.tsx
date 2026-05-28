@@ -26,11 +26,14 @@ import {
 import { Loader } from "@/components/custom/loader";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().optional(),
   status: z.enum(["active", "inactive"]),
   // Optional fields for pickup destination
   city: z.string().optional(),
   state: z.string().optional(),
+  years: z.coerce.number().optional(),
+  months: z.coerce.number().optional(),
+  days: z.coerce.number().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -41,6 +44,7 @@ interface MasterDataModalProps {
   endpoint: string; // e.g., "brand", "type", "pickup-destination"
   title: string;
   showExtraFields?: boolean;
+  isNumericDuration?: boolean;
 }
 
 const fetchItem = async (accessToken: string, endpoint: string, id: string) => {
@@ -52,7 +56,7 @@ const fetchItem = async (accessToken: string, endpoint: string, id: string) => {
   return json.data;
 };
 
-export function MasterDataModal({ id, onClose, endpoint, title, showExtraFields }: MasterDataModalProps) {
+export function MasterDataModal({ id, onClose, endpoint, title, showExtraFields, isNumericDuration }: MasterDataModalProps) {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
 
@@ -63,6 +67,9 @@ export function MasterDataModal({ id, onClose, endpoint, title, showExtraFields 
       status: "active",
       city: "",
       state: "",
+      years: "" as any,
+      months: "" as any,
+      days: "" as any,
     },
   });
 
@@ -79,6 +86,9 @@ export function MasterDataModal({ id, onClose, endpoint, title, showExtraFields 
         status: item.status,
         city: item.city || "",
         state: item.state || "",
+        years: item.years ?? ("" as any),
+        months: item.months ?? ("" as any),
+        days: item.days ?? ("" as any),
       });
     }
   }, [item, form]);
@@ -122,19 +132,63 @@ export function MasterDataModal({ id, onClose, endpoint, title, showExtraFields 
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Enter name" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!isNumericDuration ? (
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Enter name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="years"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} value={field.value ?? ""} min={0} placeholder="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="months"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Months</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} value={field.value ?? ""} min={0} placeholder="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="days"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Days</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} value={field.value ?? ""} min={0} placeholder="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
 
           {showExtraFields && (
             <>

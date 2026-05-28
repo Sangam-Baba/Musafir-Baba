@@ -102,6 +102,26 @@ const visaSchema = new mongoose.Schema(
     childUrl: {
       type: String,
     },
+    visas: [
+      {
+        visaPurpose: { type: String },
+        visaType: { type: String },
+        governmentFee: { type: Number, default: 0 },
+        serviceCharges: { type: Number, default: 0 },
+        gst: { type: Number, default: 0 },
+        gstTypeOrPercentageText: { type: String },
+        documents: { type: String },
+        processSteps: { type: String },
+        visaValidity: { type: String },
+        visaDuration: { type: String },
+        entryType: { type: String },
+        processTime: { type: String },
+        isExpress: { type: Boolean, default: false },
+        expressVisaDuration: { type: String },
+        expressGovernmentFee: { type: Number, default: 0 },
+        expressServiceCharges: { type: Number, default: 0 },
+      },
+    ],
   },
   { timestamps: true }
 );
