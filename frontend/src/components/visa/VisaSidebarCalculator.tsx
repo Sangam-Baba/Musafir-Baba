@@ -7,18 +7,34 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-interface VisaCardData {
-  _id: string;
-  visaPurpose: string;
-  visaType: string;
-  governmentFee: number;
-  serviceCharges: number;
-  gst: number;
+interface ValidityEntry {
   visaValidity: string;
   visaDuration: string;
   entryType: string;
   processTime: string;
+  governmentFee: number;
+  serviceCharges: number;
+  gst: number;
+  expressVisaDuration?: string;
+  expressGovernmentFee?: number;
+  expressServiceCharges?: number;
+}
+
+interface VisaCardData {
+  _id: string;
+  visaPurpose: string;
+  visaType: string;
   isExpress: boolean;
+  validityEntries?: ValidityEntry[];
+  
+  // Legacy fields
+  governmentFee?: number;
+  serviceCharges?: number;
+  gst?: number;
+  visaValidity?: string;
+  visaDuration?: string;
+  entryType?: string;
+  processTime?: string;
   expressVisaDuration?: string;
   expressGovernmentFee?: number;
   expressServiceCharges?: number;
@@ -40,13 +56,15 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
   
   // Default to the first visa card if available
   const [selectedVisaIndex, setSelectedVisaIndex] = useState<number>(0);
+  const [selectedValidityIndex, setSelectedValidityIndex] = useState<number>(0);
   const [isExpress, setIsExpress] = useState<boolean>(false);
   const [travellers, setTravellers] = useState<number>(1);
 
   const selectedVisaCard = visasList[selectedVisaIndex] as VisaCardData | undefined;
 
-  // Reset express option if selected visa changes and doesn't support express
+  // Reset validity selection and express option when visa card changes
   useEffect(() => {
+    setSelectedValidityIndex(0);
     if (selectedVisaCard && !selectedVisaCard.isExpress) {
       setIsExpress(false);
     }
@@ -73,39 +91,44 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
     );
   }
 
+  const hasValidityEntries = selectedVisaCard.validityEntries && selectedVisaCard.validityEntries.length > 0;
+  const currentEntry = hasValidityEntries 
+    ? selectedVisaCard.validityEntries![selectedValidityIndex]
+    : selectedVisaCard; // Fallback to legacy structure
+
   // Fees calculation
   const govFee = (isExpress 
-    ? (selectedVisaCard.expressGovernmentFee || 0) 
-    : (selectedVisaCard.governmentFee || 0)) * travellers;
+    ? (currentEntry?.expressGovernmentFee || 0) 
+    : (currentEntry?.governmentFee || 0)) * travellers;
 
   const serviceCharge = (isExpress 
-    ? (selectedVisaCard.expressServiceCharges || 0) 
-    : (selectedVisaCard.serviceCharges || 0)) * travellers;
+    ? (currentEntry?.expressServiceCharges || 0) 
+    : (currentEntry?.serviceCharges || 0)) * travellers;
 
-  const gstPercentage = selectedVisaCard.gst || 0;
+  const gstPercentage = currentEntry?.gst || 0;
   const calculatedGst = Math.round((serviceCharge * gstPercentage) / 100);
   const totalCost = govFee + serviceCharge + calculatedGst;
 
   const processTime = isExpress 
-    ? (selectedVisaCard.expressVisaDuration || selectedVisaCard.processTime) 
-    : selectedVisaCard.processTime;
+    ? (currentEntry?.expressVisaDuration || currentEntry?.processTime) 
+    : currentEntry?.processTime;
 
   return (
     <div className="space-y-4">
       {/* Dynamic Visa Calculator Card */}
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100/90 overflow-hidden">
 
-        <div className="p-5 space-y-4">
-          {/* Interchange Select Option */}
+        <div className="p-4 space-y-3">
+          {/* Interchange Select Option for Visa Type */}
           <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-600 uppercase tracking-wider block">
+            <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">
               Choose Visa Type
             </label>
             <div className="relative">
               <select
                 value={selectedVisaIndex}
                 onChange={(e) => setSelectedVisaIndex(Number(e.target.value))}
-                className="w-full bg-gray-50/50 hover:bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#FE5300] focus:border-transparent transition-all cursor-pointer appearance-none"
+                className="w-full bg-gray-50/50 hover:bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#FE5300] focus:border-transparent transition-all cursor-pointer appearance-none"
               >
                 {visasList.map((v, index) => (
                   <option key={v._id || index} value={index}>
@@ -121,12 +144,39 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
             </div>
           </div>
 
+          {/* Validity Entries Dropdown (Only show if there are entries) */}
+          {hasValidityEntries && selectedVisaCard.validityEntries!.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">
+                Choose Validity
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedValidityIndex}
+                  onChange={(e) => setSelectedValidityIndex(Number(e.target.value))}
+                  className="w-full bg-gray-50/50 hover:bg-gray-50 border border-gray-200 text-gray-800 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#FE5300] focus:border-transparent transition-all cursor-pointer appearance-none"
+                >
+                  {selectedVisaCard.validityEntries!.map((entry, index) => (
+                    <option key={index} value={index}>
+                      {entry.visaValidity || "N/A"} Validity / {entry.visaDuration || "N/A"} Stay ({entry.entryType || "Single"})
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Traveller Count Selector */}
-          <div className="bg-gray-50/60 px-3 py-2 rounded-xl border border-gray-100/80 flex items-center justify-between">
-            <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1.5">
+          <div className="bg-gray-50/60 px-2.5 py-1.5 rounded-xl border border-gray-100/80 flex items-center justify-between">
+            <span className="text-[11px] font-extrabold text-gray-700 flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-[#FE5300] fill-current" /> Travellers
             </span>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setTravellers(prev => Math.max(1, prev - 1))}
@@ -147,8 +197,8 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
 
           {/* Express/Standard Toggle */}
           {selectedVisaCard.isExpress && (
-            <div className="bg-gray-50/60 px-3 py-2 rounded-xl border border-gray-100/80 flex items-center justify-between">
-              <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1.5">
+            <div className="bg-gray-50/60 px-2.5 py-1.5 rounded-xl border border-gray-100/80 flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-gray-700 flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-[#FE5300] fill-current" /> Express Processing
               </span>
               <div className="flex bg-white p-0.5 rounded-full border border-gray-200/80 text-[10px] font-bold shrink-0 shadow-xs">
@@ -176,21 +226,21 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
               <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
               <div>
                 <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Validity</span>
-                <span className="text-gray-800 font-extrabold text-[11px]">{selectedVisaCard.visaValidity || "N/A"}</span>
+                <span className="text-gray-800 font-extrabold text-[11px]">{currentEntry?.visaValidity || "N/A"}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-gray-400 shrink-0" />
               <div>
                 <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Stay Duration</span>
-                <span className="text-gray-800 font-extrabold text-[11px]">{selectedVisaCard.visaDuration || "N/A"}</span>
+                <span className="text-gray-800 font-extrabold text-[11px]">{currentEntry?.visaDuration || "N/A"}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-gray-400 shrink-0" />
               <div>
                 <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Entry Type</span>
-                <span className="text-gray-800 font-extrabold text-[11px]">{selectedVisaCard.entryType || "Single"}</span>
+                <span className="text-gray-800 font-extrabold text-[11px]">{currentEntry?.entryType || "Single"}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -203,9 +253,9 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
           </div>
 
           {/* Pricing Breakdown */}
-          <div className="space-y-2.5 pt-1">
+          <div className="space-y-2 pt-1">
             <div className="border-t border-dashed border-gray-200" />
-            <div className="space-y-1.5 text-xs">
+            <div className="space-y-1 text-[11px]">
               <div className="flex justify-between items-center text-gray-500">
                 <span>Government Fee {travellers > 1 ? `(x${travellers})` : ""}</span>
                 <span className="font-semibold text-gray-800">₹{govFee}</span>
@@ -219,18 +269,18 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
                 <span className="font-semibold text-gray-800">₹{calculatedGst}</span>
               </div>
             </div>
-            <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between items-center text-sm">
+            <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between items-center text-xs">
               <span className="font-bold text-gray-800">Total Fee {travellers > 1 ? `(${travellers} Pax)` : ""}</span>
-              <span className="text-2xl font-black text-[#FE5300]">₹{totalCost}</span>
+              <span className="text-xl font-black text-[#FE5300]">₹{totalCost}</span>
             </div>
           </div>
 
           {/* Apply Button */}
           <Link 
-            href={`/visa/${visa.slug}/apply?visaCardId=${selectedVisaCard._id}&express=${isExpress}&travellers=${travellers}`}
+            href={`/visa/${visa.slug}/apply?visaCardId=${selectedVisaCard._id}&validityIndex=${selectedValidityIndex}&express=${isExpress}&travellers=${travellers}`}
             className="block w-full pt-1"
           >
-            <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-6 rounded-xl text-lg font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-4 rounded-xl text-base font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
               Apply Now <ArrowRight className="w-5 h-5 animate-pulse" />
             </Button>
           </Link>

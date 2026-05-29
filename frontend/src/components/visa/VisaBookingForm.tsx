@@ -38,6 +38,7 @@ interface VisaBookingFormProps {
   visa: Visa;
   applicationId?: string;
   defaultVisaCardId?: string;
+  defaultValidityIndex?: number;
   defaultIsExpress?: boolean;
   defaultTravellerCount?: number;
 }
@@ -54,11 +55,13 @@ export default function VisaBookingForm({
   visa, 
   applicationId: initialApplicationId,
   defaultVisaCardId,
+  defaultValidityIndex = 0,
   defaultIsExpress,
   defaultTravellerCount = 1
 }: VisaBookingFormProps) {
   const [applicationId, setApplicationId] = useState<string | undefined>(initialApplicationId);
   const [selectedVisaId, setSelectedVisaId] = useState<string | undefined>(defaultVisaCardId);
+  const [selectedValidityIndex, setSelectedValidityIndex] = useState<number>(defaultValidityIndex);
   const [isExpress, setIsExpress] = useState<boolean>(!!defaultIsExpress);
   const router = useRouter();
   const token = useAuthStore((state) => state.accessToken);
@@ -153,6 +156,9 @@ export default function VisaBookingForm({
 
       if (app.selectedVisaId) {
         setSelectedVisaId(app.selectedVisaId);
+      }
+      if (app.selectedValidityIndex !== undefined) {
+        setSelectedValidityIndex(app.selectedValidityIndex);
       }
       if (app.isExpress !== undefined) {
         setIsExpress(app.isExpress);
@@ -254,18 +260,20 @@ export default function VisaBookingForm({
   
   // Dynamic cost calculation based on selected sub-visa card
   const selectedVisaCard = visa.visas?.find((v: any) => v._id === selectedVisaId);
-  const govFee = selectedVisaCard 
-    ? (isExpress ? (selectedVisaCard.expressGovernmentFee || 0) : (selectedVisaCard.governmentFee || 0)) 
+  const currentEntry = selectedVisaCard?.validityEntries?.[selectedValidityIndex] || selectedVisaCard;
+  
+  const govFee = currentEntry 
+    ? (isExpress ? (currentEntry.expressGovernmentFee || 0) : (currentEntry.governmentFee || 0)) 
     : 0;
 
-  const serviceCharge = selectedVisaCard 
-    ? (isExpress ? (selectedVisaCard.expressServiceCharges || 0) : (selectedVisaCard.serviceCharges || 0)) 
+  const serviceCharge = currentEntry 
+    ? (isExpress ? (currentEntry.expressServiceCharges || 0) : (currentEntry.serviceCharges || 0)) 
     : 0;
 
-  const gstPercentage = selectedVisaCard?.gst || 0;
+  const gstPercentage = currentEntry?.gst || 0;
   const calculatedGst = Math.round((serviceCharge * gstPercentage) / 100);
 
-  const singleCost = selectedVisaCard 
+  const singleCost = currentEntry 
     ? (govFee + serviceCharge + calculatedGst) 
     : visa.cost;
 
@@ -290,6 +298,7 @@ export default function VisaBookingForm({
           phone: contactInfo.phone || user?.phone || "",
           currentStep: nextStep,
           selectedVisaId,
+          selectedValidityIndex,
           isExpress,
           documents: Object.entries(documents).map(([key, data]) => {
             const [travellerId, ...nameParts] = key.split("_");
@@ -386,12 +395,12 @@ export default function VisaBookingForm({
   const primaryButtonStyles = "w-full bg-gradient-to-r from-[#FE5300] to-[#FF7A00] hover:from-[#e44a00] hover:to-[#e44a00] h-10.5 rounded-xl text-xs font-extrabold text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-98 cursor-pointer select-none gap-1.5";
   const secondaryButtonStyles = "h-10.5 px-5 rounded-xl font-bold bg-white border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 flex items-center justify-center transition-all active:scale-98 cursor-pointer select-none";
 
-  const displayDuration = selectedVisaCard 
-    ? (isExpress ? (selectedVisaCard.expressVisaDuration || selectedVisaCard.processTime) : selectedVisaCard.processTime)
+  const displayDuration = currentEntry 
+    ? (isExpress ? (currentEntry.expressVisaDuration || currentEntry.processTime) : currentEntry.processTime)
     : `${visa.duration || 30} Days`;
 
   const displayType = selectedVisaCard 
-    ? `${selectedVisaCard.visaPurpose} (${selectedVisaCard.visaType})` 
+    ? `${selectedVisaCard.visaPurpose} (${selectedVisaCard.visaType}) - ${currentEntry?.visaValidity || ''}` 
     : visa.visaType || "Tourist Visa";
 
   return (

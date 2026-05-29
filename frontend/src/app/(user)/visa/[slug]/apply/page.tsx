@@ -20,10 +20,10 @@ export default function VisaApplyPage({
   searchParams 
 }: { 
   params: Promise<{ slug: string }>,
-  searchParams: Promise<{ applicationId?: string; visaCardId?: string; express?: string; travellers?: string }>
+  searchParams: Promise<{ applicationId?: string; visaCardId?: string; validityIndex?: string; express?: string; travellers?: string }>
 }) {
   const { slug } = use(params);
-  const { applicationId, visaCardId, express, travellers } = use(searchParams);
+  const { applicationId, visaCardId, validityIndex, express, travellers } = use(searchParams);
 
   const { data: visa, isLoading, isError } = useQuery({
     queryKey: ["visa", slug],
@@ -36,24 +36,27 @@ export default function VisaApplyPage({
   // Find sub-visa card details if selected
   const selectedVisaCard = visa.visas?.find((v: any) => v._id === visaCardId);
   const isExpressSelected = express === "true";
+  const parsedValidityIndex = Number(validityIndex) || 0;
 
-  const govFee = selectedVisaCard 
-    ? (isExpressSelected ? (selectedVisaCard.expressGovernmentFee || 0) : (selectedVisaCard.governmentFee || 0)) 
+  const currentEntry = selectedVisaCard?.validityEntries?.[parsedValidityIndex] || selectedVisaCard;
+
+  const govFee = currentEntry 
+    ? (isExpressSelected ? (currentEntry.expressGovernmentFee || 0) : (currentEntry.governmentFee || 0)) 
     : 0;
-  const serviceCharge = selectedVisaCard 
-    ? (isExpressSelected ? (selectedVisaCard.expressServiceCharges || 0) : (selectedVisaCard.serviceCharges || 0)) 
+  const serviceCharge = currentEntry 
+    ? (isExpressSelected ? (currentEntry.expressServiceCharges || 0) : (currentEntry.serviceCharges || 0)) 
     : 0;
-  const gstPercentage = selectedVisaCard?.gst || 0;
+  const gstPercentage = currentEntry?.gst || 0;
   const calculatedGst = Math.round((serviceCharge * gstPercentage) / 100);
   
   const travellersCount = Number(travellers) || 1;
 
-  const displayCost = selectedVisaCard 
+  const displayCost = currentEntry 
     ? ((govFee + serviceCharge + calculatedGst) * travellersCount) 
     : (visa.cost * travellersCount);
 
-  const displayDuration = selectedVisaCard 
-    ? (isExpressSelected ? (selectedVisaCard.expressVisaDuration || selectedVisaCard.processTime) : selectedVisaCard.processTime)
+  const displayDuration = currentEntry 
+    ? (isExpressSelected ? (currentEntry.expressVisaDuration || currentEntry.processTime) : currentEntry.processTime)
     : `${visa.duration} Days`;
 
   const displayType = selectedVisaCard 
@@ -71,6 +74,7 @@ export default function VisaApplyPage({
           visa={visa} 
           applicationId={applicationId} 
           defaultVisaCardId={visaCardId}
+          defaultValidityIndex={parsedValidityIndex}
           defaultIsExpress={isExpressSelected}
           defaultTravellerCount={travellersCount}
         />

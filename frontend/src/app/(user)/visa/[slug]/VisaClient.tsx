@@ -19,19 +19,13 @@ interface Faq {
   answer: string;
 }
 
-function VisaCard({ visaCard, slug }: { visaCard: any; slug: string }) {
+function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: string }) {
   const [isExpressTab, setIsExpressTab] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
 
-  const govFee = isExpressTab ? (visaCard.expressGovernmentFee || 0) : (visaCard.governmentFee || 0);
-  const serviceCharge = isExpressTab ? (visaCard.expressServiceCharges || 0) : (visaCard.serviceCharges || 0);
+  const govFee = isExpressTab ? (entry.expressGovernmentFee ?? visaCard.expressGovernmentFee ?? 0) : (entry.governmentFee ?? visaCard.governmentFee ?? 0);
   
-  // Real-time GST calculation: GST % applied on Service Charges
-  const gstPercentage = visaCard.gst || 0;
-  const calculatedGst = Math.round((serviceCharge * gstPercentage) / 100);
-  const totalPrice = govFee + serviceCharge + calculatedGst;
-
-  const processTime = isExpressTab ? visaCard.expressVisaDuration : visaCard.processTime;
+  const processTime = isExpressTab ? (entry.expressVisaDuration || visaCard.expressVisaDuration) : (entry.processTime || visaCard.processTime);
 
   return (
     <>
@@ -146,38 +140,33 @@ function VisaCard({ visaCard, slug }: { visaCard: any; slug: string }) {
           )}
         </div>
 
-        {/* Pricing Summary Row (Large Elegant Prices - Mobile Stacking & No Overlap) */}
+        {/* Metadata & Pricing Row */}
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-2">
-          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-y-1 md:gap-y-0 gap-x-3 text-[11px] md:text-xs text-gray-500 font-medium leading-relaxed max-w-full md:max-w-none">
-            <span className="shrink-0">Govt Fee: <strong className="text-gray-800">₹{govFee}</strong></span>
-            <span className="text-gray-300 hidden sm:inline">|</span>
-            <span className="shrink-0">Service Charge: <strong className="text-gray-800">₹{serviceCharge}</strong></span>
-            <span className="text-gray-300 hidden sm:inline">|</span>
-            <span className="shrink-0">GST ({gstPercentage}%): <strong className="text-gray-800">₹{calculatedGst}</strong></span>
+          {/* Metadata: Validity Entry Data */}
+          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-y-3 gap-x-5 text-xs md:text-sm text-gray-500 font-medium w-full md:w-auto">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Val: <strong className="text-gray-800 font-extrabold">{entry.visaValidity || visaCard.visaValidity || "N/A"}</strong></span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Stay: <strong className="text-gray-800 font-extrabold">{entry.visaDuration || visaCard.visaDuration || "N/A"}</strong></span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Globe className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Entry: <strong className="text-gray-800 font-extrabold">{entry.entryType || visaCard.entryType || "Single"}</strong></span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Time: <strong className="text-gray-800 font-extrabold">{processTime || "N/A"}</strong></span>
+            </span>
           </div>
-          <div className="self-end md:self-auto text-right shrink-0">
-            <span className="text-lg md:text-2xl font-black text-[#FE5300]">₹{totalPrice}</span>
+          
+          {/* Govt Fee */}
+          <div className="self-end md:self-auto text-right shrink-0 mt-2 md:mt-0 flex flex-col items-end md:items-end">
+            <span className="uppercase font-bold tracking-wider text-gray-400 text-[10px] block mb-1 md:mb-0.5">Govt Fee</span>
+            <span className="text-lg md:text-2xl font-black text-[#FE5300] leading-none">₹{govFee}</span>
           </div>
-        </div>
-
-        {/* Metadata Inline List (Spacious & Highly Readable - Grid on Mobile & Row on Desktop) */}
-        <div className="relative z-10 pt-3 border-t border-gray-100 grid grid-cols-2 md:flex md:flex-wrap gap-y-3 gap-x-5 text-xs md:text-sm text-gray-500 font-medium">
-          <span className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
-            <span>Val: <strong className="text-gray-800 font-extrabold">{visaCard.visaValidity || "N/A"}</strong></span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-            <span>Stay: <strong className="text-gray-800 font-extrabold">{visaCard.visaDuration || "N/A"}</strong></span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-            <span>Entry: <strong className="text-gray-800 font-extrabold">{visaCard.entryType || "Single"}</strong></span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-            <span>Time: <strong className="text-gray-800 font-extrabold">{processTime || "N/A"}</strong></span>
-          </span>
         </div>
       </div>
 
@@ -314,9 +303,15 @@ export default function VisaClient({ visa }: { visa: any }) {
       <div className="mt-8 w-full">
         {active === "visasList" && visa.visas && visa.visas.length > 0 && (
           <div className="grid grid-cols-1 gap-4">
-            {visa.visas.map((visaCard: any, index: number) => (
-              <VisaCard key={index} visaCard={visaCard} slug={visa.slug} />
-            ))}
+            {visa.visas.flatMap((visaCard: any, index: number) => {
+              const entries = visaCard.validityEntries && visaCard.validityEntries.length > 0
+                ? visaCard.validityEntries
+                : [visaCard]; // Legacy fallback
+
+              return entries.map((entry: any, eIdx: number) => (
+                <VisaCard key={`${visaCard._id}-${eIdx}`} visaCard={visaCard} entry={entry} slug={visa.slug} />
+              ));
+            })}
           </div>
         )}
 

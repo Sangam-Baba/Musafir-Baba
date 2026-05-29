@@ -88,17 +88,20 @@ const testi = [
     name: "Poonom Ranjan",
     location: "Traveler",
     comment: `Musafirbaba provided excellent service in a highly professional manner. They went above and beyond to assist me, and I want to give a special shoutout to Anu, my tour manager.`,
+    "rating": 4
   },
   {
     id: 2,
     name: "Anupam Ray",
     location: "Traveler",
+    "rating": 4.6,
     comment: `I loved booking through Musafirbaba. I have recommended them to so many people! Great deals, easy to get things organised, had a great experience.`,
   },
   {
     id: 3,
     name: "Rohit Singh",
     location: "Traveler",
+    "rating": 5,
     comment:
       "Booking with Musafir Baba was the best decision for our family trip. Everything was perfectly organized — from comfortable stays to local guides who truly knew the hidden gems.",
   },
@@ -106,6 +109,7 @@ const testi = [
     id: 4,
     name: "Shubham Sharma",
     location: "Traveler",
+    "rating": 4,
     comment:
       "I was amazed at how easy Musafir Baba made the entire process. The itinerary was well-balanced, giving me enough time to explore and relax. It felt like I had a personal travel partner by my side throughout the journey.",
   },
@@ -113,6 +117,7 @@ const testi = [
     id: 5,
     name: "Dr. Ritu Mishra",
     location: "Traveler",
+    "rating": 4.9,
     comment:
       "The team at Musafir Baba is incredibly professional yet so friendly. They were always available for any questions, and every little detail was taken care of. I'll definitely be planning my next trip with them again!",
   },
