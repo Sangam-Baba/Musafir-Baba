@@ -91,9 +91,12 @@ const visaSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    documentsContent: {
+      type: String,
+    },
     process: {
-      type: [String],
-      default: [],
+      type: mongoose.Schema.Types.Mixed,
+      default: "",
     },
     isActive: {
       type: Boolean,

@@ -269,13 +269,18 @@ export default function VisaClient({ visa }: { visa: any }) {
   const [openItem, setOpenItem] = useState<string | undefined>(undefined);
 
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "description", label: "Description" },
+    { key: "description", label: "Visa Info" },
   ];
 
-  if (visa.process && visa.process.length > 0) {
+  if (
+    visa.process && 
+    (Array.isArray(visa.process) ? visa.process.length > 0 : typeof visa.process === "string" && visa.process.trim() !== "")
+  ) {
     tabs.push({ key: "process", label: "Process" });
   }
-  if (visa.necessaryDocuments && visa.necessaryDocuments.length > 0) {
+  if (
+    visa.documentsContent && typeof visa.documentsContent === "string" && visa.documentsContent.trim() !== ""
+  ) {
     tabs.push({ key: "documents", label: "Documents" });
   }
   if (visa.faqs && visa.faqs.length > 0) {
@@ -353,31 +358,33 @@ export default function VisaClient({ visa }: { visa: any }) {
           </Accordion>
         )}
 
-        {active === "documents" && visa.necessaryDocuments && visa.necessaryDocuments.length > 0 && (
+        {active === "documents" && visa.documentsContent && (
           <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Required Documents</h3>
-            <ul className="space-y-3">
-              {visa.necessaryDocuments.map((doc: string, idx: number) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-foreground">{doc}</span>
-                </li>
-              ))}
-            </ul>
+            <div 
+              className="prose prose-sm dark:prose-invert max-w-none text-sm text-foreground"
+              dangerouslySetInnerHTML={{ __html: visa.documentsContent }}
+            />
           </div>
         )}
 
-        {active === "process" && visa.process && visa.process.length > 0 && (
+        {active === "process" && visa.process && (
           <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
             <h3 className="text-lg font-semibold text-foreground mb-4">Step-by-Step Process</h3>
-            <ul className="space-y-3">
-              {visa.process.map((step: string, idx: number) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-foreground">{step}</span>
-                </li>
-              ))}
-            </ul>
+            {Array.isArray(visa.process) ? (
+              <ul className="space-y-3">
+                {visa.process.map((step: string, idx: number) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">{step}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div 
+                className="prose prose-sm dark:prose-invert max-w-none text-sm text-foreground"
+                dangerouslySetInnerHTML={{ __html: visa.process }} 
+              />
+            )}
           </div>
         )}
       </div>

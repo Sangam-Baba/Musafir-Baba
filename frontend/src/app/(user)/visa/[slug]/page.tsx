@@ -1,5 +1,5 @@
 import Hero from "@/components/custom/Hero";
-import QueryForm from "@/components/custom/QueryForm";
+import VisaSidebarCalculator from "@/components/visa/VisaSidebarCalculator";
 import { Metadata } from "next";
 import VisaClient from "./VisaClient";
 import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
@@ -88,40 +88,28 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
         <Breadcrumb title={visa.title} />
       </div>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 md:py-8 py-3">
-        <article className="w-full md:w-2/3 space-y-10">
+        <article className="w-full md:w-[73%] space-y-10">
           <VisaClient visa={visa} />
-        </article>
-        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start space-y-6 ">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 font-medium">Visa Fee</span>
-              <span className="text-2xl font-bold text-[#FE5300]">₹{visa.cost}</span>
-            </div>
-            <Link href={`/visa/${visa.slug}/apply`} className="w-full">
-              <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-6 rounded-xl text-lg font-bold transition-all shadow-md hover:shadow-lg">
-                Apply Now
-              </Button>
-            </Link>
-            <p className="text-xs text-center text-gray-400">
-              * Secure and encrypted application process
-            </p>
-          </div>
-          <QueryForm />
           {relatedPageArray.length > 0 && (
-            <ListBlogSidebar
-              blogs={relatedPageArray}
-              title="Related Pages"
-              type="latest"
-              url="visa"
-            />
+            <div className="pt-6 border-t border-gray-100">
+              <ListBlogSidebar
+                blogs={relatedPageArray}
+                title="Related Pages"
+                type="latest"
+                url="visa"
+              />
+            </div>
           )}
+          <div className="py-2">
+            <WhyChoose />
+          </div>
+          <section>
+            <Testimonial data={visa.reviews ?? []} />
+          </section>
+        </article>
+        <aside className="w-full md:w-[27%] md:sticky md:top-24 self-start space-y-6">
+          <VisaSidebarCalculator visa={visa} />
         </aside>
-      </div>
-      <div className="max-w-7xl mx-auto  gap-8 px-4 sm:px-6 lg:px-8 py-10">
-        <WhyChoose />
-        <section>
-          <Testimonial data={visa.reviews ?? []} />
-        </section>
       </div>
 
       <Script

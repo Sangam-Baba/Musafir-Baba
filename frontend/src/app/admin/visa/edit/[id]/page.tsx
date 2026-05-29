@@ -156,8 +156,20 @@ export default function CreateVisaPage() {
   useEffect(() => {
     if (data) {
       const reviewsIds = data.reviews?.map((b: string) => b) || [];
+      
+      let sanitizedProcess = "";
+      if (data.process) {
+        if (Array.isArray(data.process)) {
+          sanitizedProcess = data.process.map(step => `<p>${step}</p>`).join("");
+        } else {
+          sanitizedProcess = data.process;
+        }
+      }
+
       form.reset({
         ...data,
+        process: sanitizedProcess,
+        documentsContent: data.documentsContent || "",
         reviews: reviewsIds,
         visas: (data.visas || []).map((v: any) => ({
           ...v,
@@ -969,7 +981,7 @@ export default function CreateVisaPage() {
 
                   {/* necessaryDocuments */}
                   <div className="space-y-1">
-                    <Label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Necessary Documents</Label>
+                    <Label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Necessary Documents Checklist</Label>
                     <div className="flex flex-wrap gap-1 border border-gray-300 rounded-sm p-1 min-h-[30px] bg-white">
                       {form.watch("necessaryDocuments")?.map((doc, i) => (
                         <span key={i} className="flex items-center gap-0.5 bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] border border-blue-100">
@@ -1002,40 +1014,35 @@ export default function CreateVisaPage() {
                     </div>
                   </div>
 
-                  {/* process */}
-                  <div className="space-y-1">
-                    <Label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Process Steps</Label>
-                    <div className="flex flex-wrap gap-1 border border-gray-300 rounded-sm p-1 min-h-[30px] bg-white">
-                      {form.watch("process")?.map((step, i) => (
-                        <span key={i} className="flex items-center gap-0.5 bg-green-50 text-green-700 px-1.5 py-0.5 rounded text-[10px] border border-green-100">
-                          {i + 1}. {step}
-                          <button
-                            type="button"
-                            onClick={() => form.setValue("process", form.getValues("process")?.filter((_, idx) => idx !== i))}
-                            className="text-green-500 hover:text-red-500"
-                          >
-                            <X size={10} />
-                          </button>
-                        </span>
-                      ))}
+                  {/* documentsContent */}
+                  <FormField
+                    control={form.control}
+                    name="documentsContent"
+                    render={({ field }) => (
+                      <FormItem className="space-y-0.5 col-span-1 md:col-span-2">
+                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Documents Info</FormLabel>
+                        <FormControl className="text-xs bg-white">
+                          <SmallEditor value={field.value || ""} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
 
-                      <input
-                        type="text"
-                        className="flex-1 min-w-[100px] border-none focus:ring-0 focus:outline-none bg-transparent text-[11px] px-1 h-5"
-                        placeholder="Type & Enter..."
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            const val = (e.target as HTMLInputElement).value.trim();
-                            if (val) {
-                              form.setValue("process", [...(form.getValues("process") || []), val]);
-                              (e.target as HTMLInputElement).value = "";
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
+                  {/* process */}
+                  <FormField
+                    control={form.control}
+                    name="process"
+                    render={({ field }) => (
+                      <FormItem className="space-y-0.5 col-span-1 md:col-span-2 pt-2">
+                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Process Steps</FormLabel>
+                        <FormControl className="text-xs bg-white">
+                          <SmallEditor value={field.value || ""} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </TabsContent>
 
