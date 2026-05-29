@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { 
   Upload, CheckCircle, FileText, Loader2, ChevronRight, 
-  ChevronLeft, CreditCard, User as UserIcon, Plus, Trash2, Calendar, ShieldCheck
+  ChevronLeft, CreditCard, User as UserIcon, Plus, Trash2, Calendar, ShieldCheck, Lock, Shield, Globe,
+  ChevronDown, ChevronUp, Mail, Phone, FileCheck, AlertCircle
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +20,11 @@ interface Visa {
   cost: number;
   slug: string;
   necessaryDocuments: string[];
+  visas?: any[];
+  coverImage?: any;
+  bannerImage?: any;
+  duration?: number;
+  visaType?: string;
 }
 
 interface UploadedFile {
@@ -31,6 +37,10 @@ interface UploadedFile {
 interface VisaBookingFormProps {
   visa: Visa;
   applicationId?: string;
+  defaultVisaCardId?: string;
+  defaultValidityIndex?: number;
+  defaultIsExpress?: boolean;
+  defaultTravellerCount?: number;
 }
 
 interface Traveller {
@@ -41,8 +51,18 @@ interface Traveller {
   gender: string;
 }
 
-export default function VisaBookingForm({ visa, applicationId: initialApplicationId }: VisaBookingFormProps) {
+export default function VisaBookingForm({ 
+  visa, 
+  applicationId: initialApplicationId,
+  defaultVisaCardId,
+  defaultValidityIndex = 0,
+  defaultIsExpress,
+  defaultTravellerCount = 1
+}: VisaBookingFormProps) {
   const [applicationId, setApplicationId] = useState<string | undefined>(initialApplicationId);
+  const [selectedVisaId, setSelectedVisaId] = useState<string | undefined>(defaultVisaCardId);
+  const [selectedValidityIndex, setSelectedValidityIndex] = useState<number>(defaultValidityIndex);
+  const [isExpress, setIsExpress] = useState<boolean>(!!defaultIsExpress);
   const router = useRouter();
   const token = useAuthStore((state) => state.accessToken);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -51,13 +71,30 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
   const [uploading, setUploading] = useState<string | null>(null);
   const [documents, setDocuments] = useState<Record<string, UploadedFile>>({});
   
-  const [travellers, setTravellers] = useState<Traveller[]>([
-    { id: Date.now().toString(), firstName: "", lastName: "", dob: "", gender: "Male" }
-  ]);
+  const [travellers, setTravellers] = useState<Traveller[]>(() => {
+    const count = defaultTravellerCount || 1;
+    return Array.from({ length: count }, (_, i) => ({
+      id: (Date.now() + i).toString(),
+      firstName: "",
+      lastName: "",
+      dob: "",
+      gender: "Male"
+    }));
+  });
   const [contactInfo, setContactInfo] = useState({ phone: "", email: "" });
+  const [activeTravellerId, setActiveTravellerId] = useState<string>(() => {
+    return travellers[0]?.id || "";
+  });
+
+  useEffect(() => {
+    if (travellers.length > 0 && !travellers.some(t => t.id === activeTravellerId)) {
+      setActiveTravellerId(travellers[0].id);
+    }
+  }, [travellers, activeTravellerId]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState<string>("Pending");
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
 
   const formRef = useRef<HTMLFormElement | null>(null);
   const [paymentData, setPaymentData] = useState({
@@ -116,6 +153,16 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
         docsMap[key] = d.media;
       });
       setDocuments(docsMap);
+
+      if (app.selectedVisaId) {
+        setSelectedVisaId(app.selectedVisaId);
+      }
+      if (app.selectedValidityIndex !== undefined) {
+        setSelectedValidityIndex(app.selectedValidityIndex);
+      }
+      if (app.isExpress !== undefined) {
+        setIsExpress(app.isExpress);
+      }
     }
   }, [existingAppData]);
 
@@ -182,12 +229,18 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
   };
 
   const addTraveller = () => {
-    setTravellers([...travellers, { id: Date.now().toString(), firstName: "", lastName: "", dob: "", gender: "Male" }]);
+    const newId = Date.now().toString();
+    setTravellers([...travellers, { id: newId, firstName: "", lastName: "", dob: "", gender: "Male" }]);
+    setActiveTravellerId(newId);
   };
 
   const removeTraveller = (id: string) => {
     if (travellers.length > 1) {
-      setTravellers(travellers.filter(t => t.id !== id));
+      const filtered = travellers.filter(t => t.id !== id);
+      setTravellers(filtered);
+      if (activeTravellerId === id) {
+        setActiveTravellerId(filtered[0]?.id || "");
+      }
     }
   };
 
@@ -195,7 +248,9 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
     setTravellers(travellers.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
 
-  const isStep1Valid = travellers.every(t => t.firstName && t.lastName && t.dob && t.gender);
+  const isStep1Valid = travellers.every(t => t.firstName && t.lastName && t.dob && t.gender) && !!(contactInfo.email && contactInfo.phone);
+  const activeTraveller = travellers.find(t => t.id === activeTravellerId) || travellers[0];
+  const activeTravellerIndex = travellers.findIndex(t => t.id === activeTravellerId);
 
   const requiredDocs = Array.from(new Set(["Passport", "Photo", ...(visa.necessaryDocuments || [])]));
   
@@ -203,7 +258,26 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
     requiredDocs.every((doc) => documents[`${t.id}_${doc}`])
   );
   
-  const totalCost = visa.cost * travellers.length;
+  // Dynamic cost calculation based on selected sub-visa card
+  const selectedVisaCard = visa.visas?.find((v: any) => v._id === selectedVisaId);
+  const currentEntry = selectedVisaCard?.validityEntries?.[selectedValidityIndex] || selectedVisaCard;
+  
+  const govFee = currentEntry 
+    ? (isExpress ? (currentEntry.expressGovernmentFee || 0) : (currentEntry.governmentFee || 0)) 
+    : 0;
+
+  const serviceCharge = currentEntry 
+    ? (isExpress ? (currentEntry.expressServiceCharges || 0) : (currentEntry.serviceCharges || 0)) 
+    : 0;
+
+  const gstPercentage = currentEntry?.gst || 0;
+  const calculatedGst = Math.round((serviceCharge * gstPercentage) / 100);
+
+  const singleCost = currentEntry 
+    ? (govFee + serviceCharge + calculatedGst) 
+    : visa.cost;
+
+  const totalCost = singleCost * travellers.length;
 
   const saveProgress = async (nextStep: number, requireLogin = false) => {
     try {
@@ -223,6 +297,9 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
           email: contactInfo.email || user?.email || "",
           phone: contactInfo.phone || user?.phone || "",
           currentStep: nextStep,
+          selectedVisaId,
+          selectedValidityIndex,
+          isExpress,
           documents: Object.entries(documents).map(([key, data]) => {
             const [travellerId, ...nameParts] = key.split("_");
             const name = nameParts.join("_");
@@ -313,248 +390,597 @@ export default function VisaBookingForm({ visa, applicationId: initialApplicatio
     }
   };
 
-  const inputStyles = "flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#FE5300] focus-visible:border-[#FE5300]";
-  const cardStyles = "bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm";
-  const primaryButtonStyles = "w-full bg-[#FE5300] hover:bg-orange-600 h-10 sm:h-12 rounded-lg text-sm sm:text-base font-semibold text-white flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
-  const secondaryButtonStyles = "h-10 sm:h-12 px-6 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 flex items-center justify-center transition-colors";
+  const inputStyles = "flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs transition-all focus:outline-none focus:ring-2 focus:ring-[#FE5300]/20 focus:border-[#FE5300] placeholder-gray-400/80 shadow-xs hover:border-gray-300";
+  const cardStyles = "bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all hover:shadow-[0_12px_40px_rgb(0,0,0,0.04)] relative overflow-hidden group";
+  const primaryButtonStyles = "w-full bg-gradient-to-r from-[#FE5300] to-[#FF7A00] hover:from-[#e44a00] hover:to-[#e44a00] h-10.5 rounded-xl text-xs font-extrabold text-white flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-98 cursor-pointer select-none gap-1.5";
+  const secondaryButtonStyles = "h-10.5 px-5 rounded-xl font-bold bg-white border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 flex items-center justify-center transition-all active:scale-98 cursor-pointer select-none";
+
+  const displayDuration = currentEntry 
+    ? (isExpress ? (currentEntry.expressVisaDuration || currentEntry.processTime) : currentEntry.processTime)
+    : `${visa.duration || 30} Days`;
+
+  const displayType = selectedVisaCard 
+    ? `${selectedVisaCard.visaPurpose} (${selectedVisaCard.visaType}) - ${currentEntry?.visaValidity || ''}` 
+    : visa.visaType || "Tourist Visa";
 
   return (
-    <div className="w-full max-w-2xl mx-auto py-6 sm:py-8">
-      {/* Compact Step Indicator */}
-      <div className="flex justify-between items-center mb-6 sm:mb-8">
-        {[
-          { num: 1, label: "Travellers" },
-          { num: 2, label: "Documents" },
-          { num: 3, label: "Payment" }
-        ].map((s, i) => {
-          const isActive = step >= s.num;
-          return (
-            <React.Fragment key={s.num}>
-              <div className="flex flex-col items-center gap-1">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors
-                    ${isActive ? "bg-[#FE5300] text-white" : "bg-gray-100 text-gray-400"}
+    <div className="w-full pb-20 md:pb-6 max-w-7xl mx-auto">
+      {/* Modern Horizontal Circular Stepper */}
+      <div className="w-full max-w-2xl mx-auto mb-6 mt-1 px-4">
+        <div className="relative flex justify-between items-center w-full">
+          {/* Connecting line */}
+          <div className="absolute top-4 left-10 right-10 h-0.5 bg-gray-200 z-0">
+            <div 
+              className="h-full bg-[#22C55E] transition-all duration-500"
+              style={{ width: step === 1 ? "0%" : step === 2 ? "50%" : "100%" }}
+            />
+          </div>
+
+          {[
+            { num: 1, label: "Travellers", desc: "Details" },
+            { num: 2, label: "Documents", desc: "Uploads" },
+            { num: 3, label: "Review & Pay", desc: "Checkout" }
+          ].map((s) => {
+            const isCompleted = step > s.num;
+            const isActive = step === s.num;
+            return (
+              <div key={s.num} className="flex flex-col items-center gap-1.5 relative z-10 w-24">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 shadow-xs border
+                  ${isCompleted 
+                    ? "bg-[#22C55E] border-[#22C55E] text-white" 
+                    : isActive 
+                      ? "bg-[#FE5300] border-[#FE5300] text-white ring-4 ring-orange-500/15 scale-105" 
+                      : "bg-white text-gray-400 border-gray-250"}
                 `}>
-                  {step > s.num ? <CheckCircle size={16} /> : s.num}
+                  {isCompleted ? <CheckCircle size={13} className="stroke-[2.5]" /> : s.num}
                 </div>
-                <span className={`text-[10px] sm:text-xs font-semibold ${isActive ? "text-gray-900" : "text-gray-400"}`}>{s.label}</span>
+                <div className="text-center">
+                  <span className={`text-[10px] font-extrabold tracking-tight block ${isActive || isCompleted ? "text-gray-900 font-black" : "text-gray-400"}`}>
+                    {s.label}
+                  </span>
+                  <span className="text-[8px] text-gray-400 font-bold uppercase tracking-wider block mt-0.5 md:hidden lg:block">
+                    {s.desc}
+                  </span>
+                </div>
               </div>
-              {i < 2 && <div className={`flex-1 h-[2px] mx-2 sm:mx-4 ${step > s.num ? 'bg-[#FE5300]' : 'bg-gray-100'}`}></div>}
-            </React.Fragment>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {step === 1 && (
-          <>
-            {/* Primary Contact section removed as per requirement */}
+      {/* Main Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start px-4 sm:px-6 lg:px-8">
+        
+        {/* Left Column: Sticky Summary & Trust Info (4 cols) */}
+        <div className="lg:col-span-4 lg:sticky lg:top-6 space-y-6 w-full">
+          
+          {/* Card Left Premium combined sidebar */}
+          <div className="bg-white rounded-3xl border border-gray-150 shadow-[0_8px_30px_rgb(0,0,0,0.02)] overflow-hidden transition-all hover:shadow-[0_12px_40px_rgb(0,0,0,0.04)]">
+            {/* Country Banner Card */}
+            <div className="relative h-24 bg-gradient-to-br from-[#FE5300] via-[#FF7A00] to-[#E04700] p-4 flex flex-col justify-end overflow-hidden">
+              <div className="absolute -top-12 -left-12 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none" />
+              <div className="absolute -bottom-16 -right-16 w-36 h-36 rounded-full bg-orange-600/30 blur-2xl pointer-events-none" />
+              
+              <div className="relative z-10 flex justify-between items-end">
+                <div>
+                  <span className="text-[8px] text-white/75 font-extrabold uppercase tracking-widest bg-white/15 px-2 py-0.5 rounded-full border border-white/10 mb-1 inline-block">
+                    Visa Service
+                  </span>
+                  <h3 className="text-lg font-black text-white tracking-tight leading-none drop-shadow-xs">
+                    {visa.title}
+                  </h3>
+                </div>
+                <div className="bg-white/15 backdrop-blur-md border border-white/20 px-2 py-0.5 rounded-xl text-right">
+                  <span className="text-[7px] text-white/80 font-bold block uppercase tracking-wider">Duration</span>
+                  <span className="text-[10px] font-extrabold text-white">{displayDuration}</span>
+                </div>
+              </div>
+            </div>
 
-            <div className="space-y-4">
-              {travellers.map((traveller, index) => (
-                <div key={traveller.id} className={cardStyles}>
-                  <div className="flex justify-between items-center mb-3">
-                     <h3 className="font-bold text-sm text-gray-900">Traveller {index + 1}</h3>
-                     {travellers.length > 1 && (
-                       <button onClick={() => removeTraveller(traveller.id)} className="text-red-600 hover:text-red-700 p-1 text-xs font-medium flex items-center gap-1">
-                         <Trash2 size={12} /> Remove
-                       </button>
-                     )}
+            {/* Price Accordion Drawer on Mobile / Standard view on Desktop */}
+            <div className="p-4 space-y-3.5">
+              {/* Mobile collapse trigger button */}
+              <button 
+                onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                className="flex lg:hidden w-full items-center justify-between py-1 text-sm font-bold text-gray-800 border-b border-gray-100 mb-2 cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400 font-bold text-[10px] uppercase tracking-wider">Total Booking Cost</span>
+                  <span className="text-base font-black text-[#FE5300]">₹{totalCost}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 font-bold">
+                  {isSummaryExpanded ? "Hide Details" : "Show Details"}
+                  {isSummaryExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </div>
+              </button>
+
+              {/* Fee Breakdown Block */}
+              <div className={`${isSummaryExpanded ? "block" : "hidden lg:block"} space-y-4`}>
+                <h4 className="text-xs font-black text-gray-900 uppercase tracking-wider pb-1 border-b border-gray-50">Booking Breakdown</h4>
+                
+                <div className="space-y-3.5 text-xs sm:text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Visa Plan</span>
+                    <span className="font-extrabold text-gray-800 text-right max-w-[180px] truncate" title={displayType}>
+                      {displayType}
+                    </span>
                   </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Processing Time</span>
+                    <span className="font-extrabold text-gray-800">
+                      {displayDuration}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Visa Fee</span>
+                    <span className="font-extrabold text-gray-800">
+                      ₹{govFee + serviceCharge} <span className="text-gray-400 font-bold">x {travellers.length} Pax</span>
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">GST / Service Taxes ({gstPercentage}%)</span>
+                    <span className="font-extrabold text-gray-800">
+                      ₹{calculatedGst * travellers.length}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-dashed border-gray-200 my-4 pt-4" />
+
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <span className="text-xs font-extrabold text-gray-900">Total Payable</span>
+                      <span className="text-[9px] text-gray-400 font-bold mt-0.5 block">All taxes & platform charges included</span>
+                    </div>
+                    <span className="text-2xl font-black text-[#FE5300] tracking-tight">₹{totalCost}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons inside sidebar (Desktop only) */}
+              <div className="hidden lg:block pt-3 border-t border-gray-100">
+                <button
+                  onClick={handleProceedToPayment}
+                  disabled={isSubmitting || step < 3}
+                  className="w-full bg-gradient-to-r from-[#FE5300] to-[#FF7A00] hover:from-[#e44a00] hover:to-[#e44a00] text-white py-3.5 rounded-2xl text-sm font-extrabold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="animate-spin mr-1" size={16} />
+                  ) : !isAuthenticated && step >= 3 ? (
+                    <UserIcon className="mr-1" size={16} />
+                  ) : null}
+                  {step < 3 ? (
+                    "Complete Steps to Pay"
+                  ) : isAuthenticated ? (
+                    `Pay ₹${totalCost}`
+                  ) : (
+                    "Login to Pay"
+                  )}
+                </button>
+              </div>
+
+              {/* Secure Booking Details */}
+              <div className={`${isSummaryExpanded ? "block" : "hidden lg:block"} pt-3 border-t border-gray-100 space-y-1.5`}>
+                <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-wide">
+                  <Lock size={11} className="text-[#FE5300] shrink-0" />
+                  <span>Secure 256-bit SSL Gateway</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-500 text-[10px] font-bold uppercase tracking-wide">
+                  <Shield size={11} className="text-[#FE5300] shrink-0" />
+                  <span>Verified Safe Booking checkout</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Customer Assistance Card */}
+          <div className="bg-white rounded-2xl border border-gray-150 shadow-[0_8px_30px_rgb(0,0,0,0.015)] p-4 flex items-start gap-3 hover:shadow-[0_10px_35px_rgb(0,0,0,0.035)] transition-all">
+            <div className="w-8.5 h-8.5 rounded-xl bg-orange-50 border border-orange-100/60 flex items-center justify-center shrink-0">
+              <AlertCircle size={16} className="text-[#FE5300]" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-[11px] text-gray-900 uppercase tracking-wider mb-0.5">Need Assistance?</h4>
+              <p className="text-[10px] text-gray-500 leading-normal font-semibold">Have questions about scans or fees? Connect with our visa experts.</p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5 pt-1.5 border-t border-gray-50">
+                <a href="mailto:care@musafirbaba.com" className="flex items-center gap-1 text-[10px] text-gray-600 hover:text-[#FE5300] font-bold transition-colors select-none">
+                  <Mail size={10} /> care@musafirbaba.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Column: Multi-step Application Form (8 cols) */}
+        <div className="lg:col-span-8 bg-white border border-gray-150 rounded-3xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] w-full">
+          
+          <div className="mb-3">
+            <h2 className="text-lg font-black text-gray-950 tracking-tight leading-none">
+              {step === 1 ? "Traveller Information" : step === 2 ? "Upload Scanned Documents" : "Review Your Application"}
+            </h2>
+            <p className="text-[11px] text-gray-500 font-semibold mt-1 leading-normal">
+              {step === 1 ? "Provide traveler identity details as printed on the official passport page." : step === 2 ? "Attach clear scan copies matching the required checklist for active travellers." : "Double check and verify all applicant details before initiating payment."}
+            </p>
+          </div>
+
+          <div className="border-t border-gray-100 my-3" />
+
+          {/* Form Step Contents */}
+          <div className="space-y-6">
+            
+            {step === 1 && (
+              <>
+                {/* Dynamic Compact Traveller Tabs Selector */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Select Traveller Slot</label>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-700">First Name</label>
-                      <input 
-                        className={inputStyles}
-                        value={traveller.firstName}
-                        onChange={(e) => updateTraveller(traveller.id, "firstName", e.target.value)}
-                        placeholder="As per passport" 
-                      />
+                  {/* Horizontally scrollable switcher to prevent wrapping or breaking grid */}
+                  <div className="flex flex-row overflow-x-auto pb-2 gap-2 scrollbar-none snap-x -mx-1 px-1">
+                    {travellers.map((traveller, index) => {
+                      const isSelected = activeTravellerId === traveller.id;
+                      const isValid = !!(traveller.firstName.trim() && traveller.lastName.trim() && traveller.dob);
+                      return (
+                        <button
+                          key={traveller.id}
+                          type="button"
+                          onClick={() => setActiveTravellerId(traveller.id)}
+                          className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-2 cursor-pointer select-none active:scale-97 shrink-0 snap-align-start
+                            ${isSelected 
+                              ? "bg-[#FE5300]/10 border-[#FE5300] text-[#FE5300] shadow-xs" 
+                              : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"}
+                          `}
+                        >
+                          <UserIcon size={13} className={isSelected ? "text-[#FE5300]" : "text-gray-400"} />
+                          <span>
+                            {traveller.firstName ? `${traveller.firstName} ${traveller.lastName}`.trim() : `Traveller ${index + 1}`}
+                          </span>
+                          {isValid ? (
+                            <CheckCircle size={11} className="text-green-500 shrink-0" />
+                          ) : (
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+
+                    {/* Add Passenger Button */}
+                    <button 
+                      type="button"
+                      onClick={addTraveller}
+                      className="px-4 py-2.5 rounded-xl text-xs font-extrabold border border-dashed border-gray-300 text-gray-500 hover:border-[#FE5300] hover:text-[#FE5300] transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <Plus size={13} /> Add Traveller
+                    </button>
+                  </div>
+                </div>
+
+                {/* Single Active Traveller Inputs Section */}
+                {activeTraveller && (
+                  <div className="space-y-4 mt-2">
+                    <div className="flex justify-between items-center mb-3 pb-1.5 border-b border-gray-100">
+                      <h3 className="font-black text-xs text-gray-900 tracking-tight uppercase">
+                        Traveller {activeTravellerIndex !== -1 ? activeTravellerIndex + 1 : 1} Personal Info
+                      </h3>
+                      {travellers.length > 1 && (
+                        <button 
+                          type="button"
+                          onClick={() => removeTraveller(activeTraveller.id)} 
+                          className="text-red-500 hover:text-red-600 p-0.5 text-[10px] font-extrabold flex items-center gap-1 transition-colors hover:bg-red-50 px-2 py-0.5 rounded-lg border border-transparent hover:border-red-100 cursor-pointer select-none"
+                        >
+                          <Trash2 size={11} /> Remove Slot
+                        </button>
+                      )}
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-700">Last Name</label>
-                      <input 
-                        className={inputStyles}
-                        value={traveller.lastName}
-                        onChange={(e) => updateTraveller(traveller.id, "lastName", e.target.value)}
-                        placeholder="As per passport" 
-                      />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-700 tracking-wide block">First Name <span className="text-[#FE5300]">*</span></label>
+                        <input 
+                          className={inputStyles}
+                          value={activeTraveller.firstName}
+                          onChange={(e) => updateTraveller(activeTraveller.id, "firstName", e.target.value)}
+                          placeholder="As printed on passport" 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-700 tracking-wide block">Last Name <span className="text-[#FE5300]">*</span></label>
+                        <input 
+                          className={inputStyles}
+                          value={activeTraveller.lastName}
+                          onChange={(e) => updateTraveller(activeTraveller.id, "lastName", e.target.value)}
+                          placeholder="As printed on passport" 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-700 tracking-wide block">Date of Birth <span className="text-[#FE5300]">*</span></label>
+                        <input 
+                          type="date"
+                          className={inputStyles}
+                          value={activeTraveller.dob}
+                          onChange={(e) => updateTraveller(activeTraveller.id, "dob", e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-gray-700 tracking-wide block">Gender <span className="text-[#FE5300]">*</span></label>
+                        <select 
+                          className={inputStyles}
+                          value={activeTraveller.gender}
+                          onChange={(e) => updateTraveller(activeTraveller.id, "gender", e.target.value)}
+                          required
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1"><Calendar size={12}/> Date of Birth</label>
+                  </div>
+                )}
+
+                {/* Contact Information Section */}
+                <div className="space-y-3 mt-6 pt-5 border-t border-gray-100">
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-gray-100">
+                    <Mail size={13} className="text-[#FE5300]" />
+                    <h4 className="font-black text-xs text-gray-900 tracking-tight uppercase">Booking Contact Info</h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-gray-700 tracking-wide block">Email Address <span className="text-[#FE5300]">*</span></label>
                       <input 
-                        type="date"
+                        type="email"
                         className={inputStyles}
-                        value={traveller.dob}
-                        onChange={(e) => updateTraveller(traveller.id, "dob", e.target.value)}
+                        value={contactInfo.email}
+                        onChange={(e) => setContactInfo(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="you@example.com" 
+                        required
                       />
+                      <p className="text-[9px] text-gray-400 font-semibold leading-none">Official e-visa copy will be dispatched here.</p>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-700">Gender</label>
-                      <select 
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-gray-700 tracking-wide block">Phone Number <span className="text-[#FE5300]">*</span></label>
+                      <input 
+                        type="tel"
                         className={inputStyles}
-                        value={traveller.gender}
-                        onChange={(e) => updateTraveller(traveller.id, "gender", e.target.value)}
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
+                        value={contactInfo.phone}
+                        onChange={(e) => setContactInfo(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="10-digit mobile number" 
+                        required
+                      />
+                      <p className="text-[9px] text-gray-400 font-semibold leading-none">Real-time status updates via SMS notification.</p>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            <Button 
-              variant="outline" 
-              onClick={addTraveller}
-              className="w-full bg-white border border-dashed border-gray-300 py-6 rounded-xl text-gray-700 text-sm font-medium hover:bg-gray-50 hover:border-[#FE5300] hover:text-[#FE5300] transition-colors"
-            >
-              <Plus size={16} className="mr-1.5" /> Add Traveller
-            </Button>
+                {/* Advance triggers */}
+                <div className="pt-4">
+                  <button 
+                    onClick={() => saveProgress(2)} 
+                    disabled={!isStep1Valid}
+                    className={primaryButtonStyles}
+                  >
+                    Proceed to Documents <ChevronRight size={15} className="ml-1" />
+                  </button>
+                </div>
+              </>
+            )}
 
-            <div className="pt-2">
-              <button 
-                onClick={() => saveProgress(2)} 
-                disabled={!isStep1Valid}
-                className={primaryButtonStyles}
-              >
-                Proceed Setup <ChevronRight size={18} className="ml-1" />
-              </button>
-            </div>
-          </>
-        )}
+            {step === 2 && (
+              <>
+                {/* Dynamic Compact Traveller Tabs Selector for Step 2 */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Select Traveller Scans</label>
+                  
+                  <div className="flex flex-row overflow-x-auto pb-2 gap-2 scrollbar-none snap-x -mx-1 px-1">
+                    {travellers.map((traveller, index) => {
+                      const isSelected = activeTravellerId === traveller.id;
+                      const allDocsUploadedForTraveller = requiredDocs.every((doc) => documents[`${traveller.id}_${doc}`]);
+                      return (
+                        <button
+                          key={traveller.id}
+                          type="button"
+                          onClick={() => setActiveTravellerId(traveller.id)}
+                          className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-2 cursor-pointer select-none active:scale-97 shrink-0 snap-align-start
+                            ${isSelected 
+                              ? "bg-[#FE5300]/10 border-[#FE5300] text-[#FE5300] shadow-xs" 
+                              : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"}
+                          `}
+                        >
+                          <UserIcon size={13} className={isSelected ? "text-[#FE5300]" : "text-gray-400"} />
+                          <span>
+                            {traveller.firstName ? `${traveller.firstName} ${traveller.lastName}`.trim() : `Traveller ${index + 1}`}
+                          </span>
+                          {allDocsUploadedForTraveller ? (
+                            <CheckCircle size={11} className="text-green-500 shrink-0" />
+                          ) : (
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-        {step === 2 && (
-           <>
-             <div className="space-y-8">
-               {travellers.map((traveller, tIdx) => (
-                 <div key={traveller.id} className={cardStyles + " border-l-4 border-l-[#FE5300]"}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-[#FE5300] text-white flex items-center justify-center text-xs font-bold">
-                        {tIdx + 1}
-                      </div>
+                {/* Single Active Traveller Documents Scanner Section */}
+                {activeTraveller && (
+                  <div className="space-y-4 mt-2">
+                    <div className="flex justify-between items-center mb-3 pb-1.5 border-b border-gray-100">
                       <div>
-                        <h2 className="text-base font-bold text-gray-900 leading-none">
-                          {traveller.firstName ? `${traveller.firstName} ${traveller.lastName}` : `Traveller ${tIdx + 1}`}
+                        <h2 className="text-xs font-black text-gray-900 leading-none uppercase">
+                          {activeTraveller.firstName ? `${activeTraveller.firstName} ${activeTraveller.lastName}` : `Traveller ${activeTravellerIndex !== -1 ? activeTravellerIndex + 1 : 1}`}
                         </h2>
-                        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mt-1">Required Documents</p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1">Scanned Documents Checklist</p>
                       </div>
                     </div>
+
+                    <p className="text-[10px] text-gray-400 font-semibold mb-3 bg-gray-50 px-3 py-2 rounded-xl border border-gray-150 leading-relaxed">
+                      💡 <strong>Tip:</strong> Upload clear scanned copies (PDF, JPEG, or PNG, max 5MB) for active travellers.
+                    </p>
                     
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {requiredDocs.map((doc) => {
-                        const uploadKey = `${traveller.id}_${doc}`;
+                        const uploadKey = `${activeTraveller.id}_${doc}`;
+                        const isUploaded = !!documents[uploadKey];
                         return (
-                          <div key={doc} className="p-3 sm:p-4 rounded-lg border border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div>
-                              <p className="font-semibold text-sm text-gray-900 flex items-center gap-2">
-                                {doc}
-                                {documents[uploadKey] && <ShieldCheck size={14} className="text-green-600" />}
+                          <div key={doc} className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${isUploaded ? "border-green-150 bg-green-50/20" : "border-gray-200 bg-gray-50/50 hover:bg-gray-50"}`}>
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isUploaded ? "bg-green-100 text-green-600" : "bg-gray-200 text-gray-400"}`}>
+                                {isUploaded ? <CheckCircle size={11} className="stroke-[2.5]" /> : <FileText size={10} />}
+                              </div>
+                              <p className="font-bold text-[11px] text-gray-800 flex items-center gap-1.5">
+                                {doc} <span className="text-[#FE5300] font-black">*</span>
                               </p>
-                              <p className="text-[10px] text-gray-500 mt-0.5">Mandatory Piece</p>
                             </div>
                             <div className="relative shrink-0">
                               <input 
                                 type="file" 
                                 className="hidden" 
                                 id={`upload-${uploadKey}`}
-                                onChange={(e) => e.target.files?.[0] && handleFileUpload(doc, e.target.files[0], traveller.id)}
+                                onChange={(e) => e.target.files?.[0] && handleFileUpload(doc, e.target.files[0], activeTraveller.id)}
                                 disabled={!!uploading}
                               />
                               <label 
                                 htmlFor={`upload-${uploadKey}`}
-                                className={`w-full sm:w-auto px-4 py-2 rounded-md justify-center text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${documents[uploadKey] ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"}`}
+                                className={`px-3 py-1.5 rounded-lg justify-center text-[10px] font-black flex items-center gap-1.5 cursor-pointer transition-all shadow-xs ${isUploaded ? "bg-green-50 hover:bg-green-100 text-green-700 border border-green-200" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"}`}
                               >
-                                {uploading === uploadKey ? <Loader2 className="animate-spin" size={14} /> : documents[uploadKey] ? "Change File" : "Upload Scan"}
-                                {!uploading && !documents[uploadKey] && <Upload size={14} />}
+                                {uploading === uploadKey ? <Loader2 className="animate-spin" size={11} /> : isUploaded ? "Change" : "Upload"}
+                                {!uploading && !isUploaded && <Upload size={10} />}
                               </label>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                 </div>
-               ))}
-             </div>
-            
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-              <button onClick={() => saveProgress(1)} className={`sm:w-1/3 ${secondaryButtonStyles}`}>
-                Back
-              </button>
-              <button 
-                onClick={() => saveProgress(3)} 
-                disabled={!allDocumentsUploaded}
-                className={`sm:w-2/3 ${primaryButtonStyles}`}
-              >
-                Continue
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <div className={cardStyles}>
-              <h2 className="text-base font-bold mb-3 border-b border-gray-100 pb-2 text-gray-900">Summary</h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm mb-4">
-                <div className="bg-orange-50/50 p-3 rounded-lg border border-orange-100/50">
-                  <p className="text-gray-500 mb-0.5">Destination</p>
-                  <p className="font-bold text-gray-900 text-sm">{visa.title}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                   <p className="text-gray-500 mb-0.5">Contact</p>
-                   <p className="font-semibold text-gray-900">{contactInfo.email || user?.email || "Pending Login"}</p>
-                   <p className="font-semibold text-gray-900">{contactInfo.phone || user?.phone || "To be provided"}</p>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                 <p className="text-gray-900 mb-2 font-bold text-sm">Travellers ({travellers.length})</p>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                   {travellers.map((t, idx) => (
-                     <div key={t.id} className="bg-gray-50 px-3 py-2 rounded-md border border-gray-100 text-xs flex justify-between items-center">
-                       <span className="font-semibold text-gray-800">{t.firstName} {t.lastName}</span>
-                       <span className="text-gray-500">{t.gender}</span>
-                     </div>
-                   ))}
-                 </div>
-              </div>
-
-              <div className="border-t border-gray-100 pt-4 mt-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold text-sm text-gray-900">Total Payable</p>
-                    <p className="text-xs text-gray-500">₹{visa.cost} x {travellers.length} applicants</p>
                   </div>
-                  <span className="text-2xl font-bold text-[#FE5300]">₹{totalCost}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-              <button onClick={() => saveProgress(2)} className={`sm:w-1/3 ${secondaryButtonStyles}`}>
-                Modify
-              </button>
-              <button 
-                onClick={handleProceedToPayment} 
-                disabled={isSubmitting}
-                className={`sm:w-2/3 ${primaryButtonStyles}`}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="animate-spin mr-2" size={18} />
-                ) : !isAuthenticated && (
-                  <UserIcon className="mr-2" size={18} />
                 )}
-                {isAuthenticated ? `Pay ₹${totalCost}` : 'Login to Pay'}
-              </button>
-            </div>
-          </>
-        )}
+
+                {/* Back and Advance Buttons */}
+                <div className="flex flex-col-reverse sm:flex-row gap-2.5 pt-4">
+                  <button onClick={() => saveProgress(1)} className={`w-full sm:w-1/3 ${secondaryButtonStyles}`}>
+                    Back
+                  </button>
+                  <button 
+                    onClick={() => saveProgress(3)} 
+                    disabled={!allDocumentsUploaded}
+                    className={`w-full sm:w-2/3 ${primaryButtonStyles}`}
+                  >
+                    Proceed to Review <ChevronRight size={15} className="ml-1" />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <div className="space-y-4 mt-2">
+                  <div className="flex items-center gap-2 mb-3 pb-1.5 border-b border-gray-100">
+                    <ShieldCheck className="text-[#FE5300] w-5 h-5 shrink-0" />
+                    <h2 className="text-xs font-black text-gray-900 uppercase tracking-wider">Application Summary Review</h2>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs mb-4">
+                    <div className="bg-orange-50/40 p-3 rounded-xl border border-orange-100/50">
+                      <p className="text-gray-400 font-bold uppercase tracking-wider text-[8px] mb-1">Destination Country</p>
+                      <p className="font-extrabold text-gray-900 text-xs">{visa.title}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-150">
+                       <p className="text-gray-400 font-bold uppercase tracking-wider text-[8px] mb-1">Contact Information</p>
+                       <p className="font-extrabold text-gray-900 text-xs">{contactInfo.email || user?.email || "Pending"}</p>
+                       <p className="font-extrabold text-gray-900 text-xs mt-0.5">{contactInfo.phone || user?.phone || "Pending"}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                     <p className="text-gray-800 mb-2 font-black text-xs uppercase tracking-wider">Applicant Slots ({travellers.length})</p>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                       {travellers.map((t, idx) => (
+                         <div key={t.id} className="bg-gray-50/50 px-3 py-2 rounded-xl border border-gray-150 text-xs flex justify-between items-center hover:border-gray-250 transition-colors">
+                           <div className="flex items-center gap-2">
+                             <UserIcon size={12} className="text-gray-400" />
+                             <span className="font-extrabold text-gray-900">{t.firstName} {t.lastName}</span>
+                           </div>
+                           <span className="text-gray-400 font-bold text-[8px] uppercase tracking-wider bg-white px-2 py-0.5 rounded-md border border-gray-150">{t.gender}</span>
+                         </div>
+                       ))}
+                     </div>
+                  </div>
+
+                  <div className="border-t border-dashed border-gray-200 pt-4 mt-3">
+                    <div className="flex justify-between items-center bg-gray-50 p-3.5 rounded-2xl border border-gray-150">
+                      <div>
+                        <p className="font-extrabold text-xs text-gray-800">Total Payable Amount</p>
+                        <p className="text-[9px] text-gray-400 font-semibold mt-0.5">₹{singleCost} x {travellers.length} applicants</p>
+                      </div>
+                      <span className="text-xl font-black text-[#FE5300] tracking-tight">₹{totalCost}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Back and Desktop payment Trigger */}
+                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
+                  <button onClick={() => saveProgress(2)} className={`w-full sm:w-1/3 ${secondaryButtonStyles}`}>
+                    Modify Details
+                  </button>
+                  <button 
+                    onClick={handleProceedToPayment}
+                    disabled={isSubmitting}
+                    className={`w-full sm:w-2/3 ${primaryButtonStyles}`}
+                  >
+                    {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : <Lock size={15} />}
+                    {isAuthenticated ? `Pay ₹${totalCost}` : "Login & Submit Application"}
+                  </button>
+                </div>
+              </>
+            )}
+
+          </div>
+
+        </div>
+
       </div>
 
+      {/* Mobile Sticky Bottom CTA Checkout Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-150 px-5 py-4 z-40 flex items-center justify-between shadow-[0_-10px_35px_rgba(0,0,0,0.06)]">
+        <div className="flex flex-col">
+          <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total ({travellers.length} Pax)</span>
+          <span className="text-xl font-black text-[#FE5300]">₹{totalCost}</span>
+        </div>
+        <div className="w-[180px]">
+          {step === 1 ? (
+            <button 
+              onClick={() => saveProgress(2)}
+              disabled={!isStep1Valid}
+              className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+            >
+              Continue <ChevronRight size={14} />
+            </button>
+          ) : step === 2 ? (
+            <button 
+              onClick={() => saveProgress(3)}
+              disabled={!allDocumentsUploaded}
+              className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+            >
+              Continue <ChevronRight size={14} />
+            </button>
+          ) : (
+            <button 
+              onClick={handleProceedToPayment}
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-[#FE5300] to-[#FF7A00] text-white py-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer"
+            >
+              {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Lock size={12} />}
+              {isAuthenticated ? "Pay Now" : "Login to Pay"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Hidden PayU Form elements */}
       <form
         action="https://secure.payu.in/_payment"
         method="post"

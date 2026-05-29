@@ -3,8 +3,14 @@ import { verifyPreviewToken } from "../utils/tokens.js";
 
 const createVisa = async (req, res) => {
   try {
-    const { country, duration, cost, visaType, title } = req.body;
-    if (!country || !duration || !cost || !visaType || !title) {
+    const { country, duration, cost, visaType, title, visas } = req.body;
+    // If visas array is provided, cost/duration/visaType are optional (they live inside cards)
+    if (!country || !title) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Required things missing" });
+    }
+    if (!visas?.length && (!duration || !cost || !visaType)) {
       return res
         .status(400)
         .json({ success: false, message: "Required things missing" });

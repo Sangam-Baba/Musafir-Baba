@@ -91,9 +91,12 @@ const visaSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    documentsContent: {
+      type: String,
+    },
     process: {
-      type: [String],
-      default: [],
+      type: mongoose.Schema.Types.Mixed,
+      default: "",
     },
     isActive: {
       type: Boolean,
@@ -102,6 +105,42 @@ const visaSchema = new mongoose.Schema(
     childUrl: {
       type: String,
     },
+    visas: [
+      {
+        visaPurpose: { type: String },
+        visaType: { type: String },
+        governmentFee: { type: Number, default: 0 },
+        serviceCharges: { type: Number, default: 0 },
+        gst: { type: Number, default: 0 },
+        gstTypeOrPercentageText: { type: String },
+        documents: { type: String },
+        processSteps: { type: String },
+        // Legacy single fields (kept for backward compatibility)
+        visaValidity: { type: String },
+        visaDuration: { type: String },
+        entryType: { type: String },
+        processTime: { type: String },
+        // New: multiple validity entries per visa card
+        validityEntries: [
+          {
+            visaValidity: { type: String },
+            visaDuration: { type: String },
+            entryType: { type: String },
+            processTime: { type: String },
+            governmentFee: { type: Number, default: 0 },
+            serviceCharges: { type: Number, default: 0 },
+            gst: { type: Number, default: 0 },
+            expressVisaDuration: { type: String },
+            expressGovernmentFee: { type: Number, default: 0 },
+            expressServiceCharges: { type: Number, default: 0 },
+          },
+        ],
+        isExpress: { type: Boolean, default: false },
+        expressVisaDuration: { type: String },
+        expressGovernmentFee: { type: Number, default: 0 },
+        expressServiceCharges: { type: Number, default: 0 },
+      },
+    ],
   },
   { timestamps: true }
 );

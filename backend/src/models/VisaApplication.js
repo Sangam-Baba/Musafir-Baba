@@ -72,6 +72,13 @@ const visaApplicationSchema = new mongoose.Schema(
     returnReason: {
       type: String,
     },
+    selectedVisaId: {
+      type: String,
+    },
+    isExpress: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

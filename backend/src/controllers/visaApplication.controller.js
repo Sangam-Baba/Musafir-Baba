@@ -43,17 +43,37 @@ export const getApplicationById = async (req, res) => {
 export const saveDraftApplication = async (req, res) => {
   try {
     const { id } = req.params;
-    const { visaId, travellers, documents, currentStep, email, phone } = req.body;
+    const { visaId, travellers, documents, currentStep, email, phone, selectedVisaId, isExpress } = req.body;
     
     // Proactively link to user if authenticated (draft routes have no auth middleware)
     const userId = await extractUserIdFromHeader(req);
+
+    // Fetch existing application if we are updating, to inherit selectedVisaId/isExpress
+    let existingApp = null;
+    if (id) {
+      existingApp = await VisaApplication.findById(id);
+    }
+
+    const finalSelectedVisaId = selectedVisaId !== undefined ? selectedVisaId : (existingApp ? existingApp.selectedVisaId : undefined);
+    const finalIsExpress = isExpress !== undefined ? isExpress : (existingApp ? existingApp.isExpress : false);
 
     let totalCost = 0;
     if (visaId) {
       const visa = await Visa.findById(visaId);
       if (visa) {
+        let singleCost = visa.cost;
+        if (finalSelectedVisaId && visa.visas && visa.visas.length > 0) {
+          const selectedVisaCard = visa.visas.find(v => v._id.toString() === finalSelectedVisaId.toString());
+          if (selectedVisaCard) {
+            const govFee = finalIsExpress ? (selectedVisaCard.expressGovernmentFee || 0) : (selectedVisaCard.governmentFee || 0);
+            const serviceCharge = finalIsExpress ? (selectedVisaCard.expressServiceCharges || 0) : (selectedVisaCard.serviceCharges || 0);
+            const gstPercentage = selectedVisaCard.gst || 0;
+            const calculatedGst = Math.round((serviceCharge * gstPercentage) / 100);
+            singleCost = govFee + serviceCharge + calculatedGst;
+          }
+        }
         // Calculate total cost based on number of travellers
-        totalCost = visa.cost * (travellers ? travellers.length : 1);
+        totalCost = singleCost * (travellers ? travellers.length : 1);
       }
     }
 
@@ -71,6 +91,8 @@ export const saveDraftApplication = async (req, res) => {
           ...(email && { email }),
           ...(phone && { phone }),
           ...(userId && { userId }),
+          selectedVisaId: finalSelectedVisaId,
+          isExpress: finalIsExpress,
           totalCost
         },
         { new: true }
@@ -95,6 +117,8 @@ export const saveDraftApplication = async (req, res) => {
         email,
         phone,
         ...(userId && { userId }),
+        selectedVisaId: finalSelectedVisaId,
+        isExpress: finalIsExpress,
         totalCost
       });
       await application.save();
