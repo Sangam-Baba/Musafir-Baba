@@ -228,7 +228,12 @@ export const getAllAttendance = async (req, res, next) => {
     }
     targetDate.setHours(0, 0, 0, 0);
 
-    const records = await Attendance.find({ date: targetDate })
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const records = await Attendance.find({ date: { $gte: startOfDay, $lte: endOfDay } })
       .populate("staff", "name email role")
       .sort({ createdAt: -1 });
 
