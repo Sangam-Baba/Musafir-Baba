@@ -148,6 +148,9 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
         addAttributes() {
           return {
             ...this.parent?.(),
+            href: {
+              default: null,
+            },
             loading: {
               default: "lazy",
               renderHTML: () => ({ loading: "lazy" }),
@@ -157,6 +160,14 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
               renderHTML: () => ({ decoding: "async" }),
             },
           };
+        },
+        renderHTML({ HTMLAttributes }) {
+          const { href, ...rest } = HTMLAttributes;
+          const img = ["img", rest];
+          if (href) {
+            return ["a", { href, target: "_blank", rel: "noopener noreferrer" }, img];
+          }
+          return img;
         },
       }),
       Underline,
@@ -191,6 +202,18 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
   };
 
   const addLink = () => {
+    if (editor.isActive("image")) {
+      const currentHref = editor.getAttributes("image").href;
+      const url = prompt("Enter link URL for Image", currentHref || "");
+      if (url === null) return;
+      if (url === "") {
+        editor.chain().focus().updateAttributes("image", { href: null }).run();
+        return;
+      }
+      editor.chain().focus().updateAttributes("image", { href: url }).run();
+      return;
+    }
+
     const url = prompt("Enter link URL");
     let rel = "noopener noreferrer nofollow";
     if (url) {
@@ -364,7 +387,13 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
             />
 
             <ToolbarButton
-              onClick={() => editor.chain().focus().unsetLink().run()}
+              onClick={() => {
+                if (editor.isActive("image")) {
+                  editor.chain().focus().updateAttributes("image", { href: null }).run();
+                } else {
+                  editor.chain().focus().unsetLink().run();
+                }
+              }}
               icon={Unlink}
               tooltip="Remove Link"
             />
