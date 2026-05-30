@@ -16,35 +16,35 @@ reviewRoutes.post(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["user", "admin", "superadmin"]),
+  authorizedRoles(["user", "admin", "superadmin", "staff"]),
   createReviews
 );
 reviewRoutes.post(
   "/ids",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getReviewsByIds
 );
 reviewRoutes.get(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getReviewById
 );
 reviewRoutes.patch(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   updateReviews
 );
 reviewRoutes.delete(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   deleteReviews
 );
 export default reviewRoutes;
