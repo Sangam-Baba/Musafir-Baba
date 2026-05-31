@@ -33,7 +33,7 @@ export function extractHeadings(html: string): Heading[] {
     // Strip HTML tags from the content to get raw text
     const text = content.replace(/<\/?[^>]+(>|$)/g, "").trim();
     
-    if (text) {
+    if (text && level === 2) {
       const id = slugify(text);
       headings.push({ text, id, level });
     }

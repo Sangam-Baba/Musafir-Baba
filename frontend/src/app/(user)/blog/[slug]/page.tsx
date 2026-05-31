@@ -10,7 +10,7 @@ import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
-import { Clock, Folders, Share2, User, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Clock, Folders, Share2, User, Facebook, Twitter, Instagram, Linkedin, Trophy, Medal, Star } from "lucide-react";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
@@ -176,7 +176,7 @@ export default async function BlogDetailPage({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Left Column: Content */}
-            <div className="lg:col-span-4 space-y-8 animate-in fade-in slide-in-from-left duration-700">
+            <div className="lg:col-span-5 space-y-8 animate-in fade-in slide-in-from-left duration-700">
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
                   <Badge className="bg-[#FE5300] text-white hover:bg-[#FE5300]/90 border-none px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest rounded-full shadow-sm">
@@ -192,7 +192,7 @@ export default async function BlogDetailPage({
                   ))}
                 </div>
                 
-                <h1 className="text-3xl md:text-5xl lg:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight">
+                <h1 className="text-3xl md:text-4xl lg:text-3xl xl:text-4xl font-black text-gray-900 leading-[1.2] tracking-tight">
                   {blog.title}
                 </h1>
               </div>
@@ -222,7 +222,7 @@ export default async function BlogDetailPage({
             </div>
 
             {/* Right Column: Ultra-Wide Featured Image */}
-            <div className="lg:col-span-8 relative animate-in fade-in slide-in-from-right duration-1000">
+            <div className="lg:col-span-7 relative animate-in fade-in slide-in-from-right duration-1000">
               <div className="w-full overflow-hidden rounded-3xl shadow-2xl group">
                 <img
                   src={blog.coverImage.url}
@@ -243,7 +243,7 @@ export default async function BlogDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 relative font-sans">
           
           {/* Left Sidebar: Author & TOC (Desktop Only) */}
-          <aside className="hidden lg:block lg:col-span-3 sticky top-12 h-fit space-y-2">
+          <aside className="hidden lg:block lg:col-span-4 sticky top-12 h-fit space-y-2 lg:pl-4 xl:pl-8">
             
             {/* Written By Section */}
             <div className="space-y-6">
@@ -291,29 +291,49 @@ export default async function BlogDetailPage({
             {/* Table of Contents */}
             <TableOfContents headings={headings} />
             
-            {/* Social Share (Vertical) */}
-            <div className="pt-6 border-t">
-               <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">Share this article</h3>
-               <SocialShare
-                url={`https://musafirbaba.com/blog/${blog.slug}`}
-                title={blog.title}
-                type="vertical"
-              />
+            {/* Trusted Badges */}
+            <div className="pt-6 border-t space-y-3">
+              <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Why Choose Us</h3>
+              
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/30 border border-orange-100/50 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <Trophy className="w-5 h-5 text-[#FE5300]" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-[#FE5300] uppercase tracking-widest leading-none mb-1">Award Winning</span>
+                  <span className="text-[13px] font-bold text-gray-800 leading-tight">Top Rated Travel Experts</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/30 border border-blue-100/50 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <Medal className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-none mb-1">100% Authentic</span>
+                  <span className="text-[13px] font-bold text-gray-800 leading-tight">India's Most Trusted Tours</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/30 border border-emerald-100/50 shadow-sm group hover:shadow-md transition-all duration-300">
+                <div className="h-10 w-10 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <Star className="w-5 h-5 text-emerald-500 fill-emerald-500" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest leading-none mb-1">5 Star Rated</span>
+                  <span className="text-[13px] font-bold text-gray-800 leading-tight">Loved by 10k+ Explorers</span>
+                </div>
+              </div>
             </div>
           </aside>
 
           {/* Center Column: Main Article */}
-          <main className="lg:col-span-9 xl:col-span-9 2xl:col-span-9">
+          <main className="lg:col-span-8 xl:col-span-8 2xl:col-span-8 lg:pr-10 xl:pr-24 2xl:pr-32 lg:pl-4 xl:pl-8 2xl:pl-12">
             <article>
               
               {/* Summary Box (Excerpt Transformation) */}
-              <div className="relative py-6 px-6 md:px-8 mb-12 bg-[#e7f6ed] rounded-2xl border border-green-100 overflow-hidden shadow-sm group">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-xs font-bold text-green-800 tracking-widest uppercase">
-                    Quick Summary
-                  </span>
-                </div>
-                <p className="text-base md:text-lg font-normal leading-relaxed text-green-900/90 text-justify">
+              <div className="mb-14 pl-5 md:pl-6 border-l-4 border-[#FE5300] py-1">
+                <p className="text-base font-normal leading-[1.8] text-gray-700 italic">
                   {blog.excerpt}
                 </p>
               </div>
@@ -326,7 +346,7 @@ export default async function BlogDetailPage({
               {/* Main Content Body */}
               <section className="prose prose-lg md:prose-xl max-w-none 
                 prose-headings:text-gray-900 prose-headings:font-black prose-headings:tracking-tight
-                prose-p:text-gray-700/90 prose-p:leading-[1.8] prose-p:mb-8
+                prose-p:text-gray-700/90 prose-p:leading-[1.8] prose-p:mb-4
                 prose-a:text-[#FE5300] prose-a:no-underline hover:prose-a:underline
                 prose-img:rounded-[2rem] prose-img:shadow-2xl prose-img:my-16
                 prose-strong:text-gray-900
