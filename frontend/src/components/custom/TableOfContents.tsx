@@ -57,7 +57,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   }
 
   return (
-    <div className="py-4 px-4 w-full bg-[#e7f6ed] border border-green-100 shadow-sm rounded-2xl">
+    <div className="py-4 px-4 bg-[#e7f6ed] border border-green-100 shadow-sm rounded-2xl w-full">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[13px] font-bold text-gray-900 uppercase tracking-widest">
           On this page
