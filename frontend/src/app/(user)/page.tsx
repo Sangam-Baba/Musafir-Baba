@@ -3,7 +3,7 @@ import Image from "next/image";
 import Script from "next/script";
 
 // ─── Critical above-the-fold: direct imports (Server Components) ───────────
-import SearchBanner from "@/components/custom/Search";
+import GlobalSearch from "@/components/global-search/GlobalSearch";
 import SecondSectionServer from "@/components/custom/SecondSectionServer";
 import VisaHome from "@/components/custom/VisaHome";
 import { SevenSection } from "@/components/custom/SevenSection";
@@ -153,21 +153,42 @@ export default async function HomePage() {
           sizes="100vw"
           className="object-cover"
         />
-        <div className="flex flex-col ml-10 md:gap-10 gap-4 items-center z-10 w-[80%] md:w-[60%] lg:w-[55%] xl:w-[50%] relative">
-          <div className="text-center flex flex-col items-center justify-center">
-            <h1 className="text-xl font-poppins font-extrabold md:text-2xl lg:text-4xl xl:text-5xl text-inline leading-tight">
-              <span className="whitespace-nowrap">
-                Book your <span className="text-[#74ff18]">dream trip</span> in just
-              </span>
-              <br />
-              <span> 60 seconds</span>
-            </h1>
-            <p className="hidden md:block text-sm md:text-md xl:text-lg mt-1 font-poppins">
-              Get curated tours &amp; seamless visa assistance - all in one place
-            </p>
+        
+        {/* Searchbar positioned just below navbar */}
+        <div className="absolute top-4 md:top-8 left-0 right-0 z-50 flex justify-center px-4">
+          <div className="w-full max-w-[720px]">
+            <GlobalSearch />
           </div>
-          <div className="relative z-20 w-4/5 md:w-3/5 overflow-visible">
-            <SearchBanner />
+        </div>
+
+        <div className="flex flex-col ml-4 md:ml-8 lg:ml-12 gap-5 md:gap-7 items-center z-10 w-[90%] md:w-[70%] lg:w-[60%] xl:w-[55%] relative">
+          <div className="text-center flex flex-col items-center justify-center max-w-4xl mx-auto mt-4 md:mt-8">
+            {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-5 md:mb-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] md:text-xs font-semibold tracking-widest text-white shadow-xl hover:bg-white/15 transition-colors uppercase">
+              <span className="animate-pulse text-[#FE5300]">⚡</span> Instant Booking Platform
+            </div> */}
+            
+            <h1 className="text-[28px] font-poppins font-extrabold md:text-4xl lg:text-5xl xl:text-6xl leading-[1.15] md:leading-[1.1] tracking-tight text-white drop-shadow-lg">
+              Book your{" "}
+              <span className="relative inline-block whitespace-nowrap">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#74ff18] via-green-300 to-[#74ff18] bg-[length:200%_auto] animate-border-gradient">
+                  dream trip
+                </span>
+              </span>{" "}
+              in just
+              <br className="hidden md:block" />
+              <span className="inline-flex items-center mt-1 md:mt-3">
+                <span className="relative whitespace-nowrap">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FE5300] via-orange-300 to-[#FE5300] bg-[length:200%_auto] animate-border-gradient">
+                    60 seconds
+                  </span>
+                  <span className="absolute -bottom-1 md:-bottom-2 left-0 right-0 h-[3px] md:h-[4px] rounded-full bg-gradient-to-r from-transparent via-[#FE5300] to-transparent opacity-80 animate-pulse"></span>
+                </span>
+              </span>
+            </h1>
+            
+            <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light text-white/90 mt-5 md:mt-7 max-w-2xl mx-auto drop-shadow-md tracking-wide">
+              Get curated tours &amp; seamless visa assistance — <span className="font-medium text-white">all in one place.</span>
+            </p>
           </div>
         </div>
       </section>
