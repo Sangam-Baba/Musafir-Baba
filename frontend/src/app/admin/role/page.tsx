@@ -30,7 +30,8 @@ export interface ListUserInterface {
     multipleDevices: boolean;
     currentStatus: string;
   };
-  isActive: string;
+  onlineStatus?: string;
+  isActive: boolean;
 }
 
 interface QueryResponse {
@@ -128,6 +129,25 @@ function UsersPage() {
       toast.error("Something went wrong while deleting");
     }
   };
+
+  const handleToggleActive = async (id: string, currentStatus: boolean) => {
+    try {
+      const endpoint = searchRole === "admin" ? "admin" : "auth";
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/${endpoint}/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ isActive: !currentStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      toast.success(currentStatus ? "Account marked as inactive" : "Account marked as active");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    } catch (error) {
+      toast.error("Something went wrong while updating status");
+    }
+  };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
@@ -138,14 +158,14 @@ function UsersPage() {
   if (!permissions.includes("role"))
     return <div className="mx-auto text-2xl">Access Denied</div>;
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-[18px] font-bold text-slate-800">
           All {searchRole === "admin" ? "Staff" : "Users"}
         </h1>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center">
           <select
-            className="border border-gray-300 px-2 py-2 rounded-lg"
+            className="h-8 bg-slate-50 border-0 focus:ring-1 focus:ring-[#FE5300] focus:outline-none rounded px-3 text-[13px] text-slate-700 transition-shadow duration-300"
             value={searchRole}
             onChange={(e) => setSearchRole(e.target.value)}
           >
@@ -155,17 +175,19 @@ function UsersPage() {
           <input
             type="text"
             placeholder="user@gmail.com"
-            className="border border-gray-300 px-4 py-2 rounded-lg"
+            className="h-8 bg-slate-50 border-0 focus:ring-1 focus:ring-[#FE5300] focus:outline-none rounded px-3 text-[13px] text-slate-700 transition-shadow duration-300"
             value={email}
             onChange={handleChange}
           />
           <button
             onClick={handleSearch}
-            className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
+            className="h-8 bg-[#FE5300] text-white px-4 rounded text-[13px] font-medium shadow-sm hover:bg-[#e04a00] transition-colors duration-300"
           >
             Search
           </button>
-          <Button onClick={() => setIsOpen(true)}>+Add Staff</Button>
+          <Button onClick={() => setIsOpen(true)} className="h-8 bg-slate-800 hover:bg-slate-700 text-white px-4 rounded text-[13px] font-medium">
+            +Add Staff
+          </Button>
           {isOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <CreateEditStaff
@@ -194,13 +216,15 @@ function UsersPage() {
             email: b.email,
             role: b.role,
             loginInfo: b.loginInfo,
-            isActive:
+            onlineStatus:
               b.loginInfo?.currentStatus === "Online" ? "Online" : "Offline",
+            isActive: b.isActive ?? true,
           }))}
           onStatusChange={(id) => {
             setEditId(id);
             setIsOpen(true);
           }}
+          onToggleActive={handleToggleActive}
           onDelete={handleDelete}
         />
       )}

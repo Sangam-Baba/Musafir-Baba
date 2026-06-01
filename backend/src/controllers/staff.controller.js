@@ -144,6 +144,12 @@ const loginAdmin = async (req, res) => {
         .json({ success: false, message: "Staff not register" });
     }
 
+    if (user.isActive === false) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Account has been deactivated. Please contact an administrator." });
+    }
+
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res
