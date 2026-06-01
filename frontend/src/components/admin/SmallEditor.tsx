@@ -17,14 +17,35 @@ import {
   Bold,
   Italic,
   UnderlineIcon,
+  Strikethrough,
   Heading1,
   Heading2,
   Heading3,
   Heading4,
+  List,
+  ListOrdered,
+  Quote,
+  Code2,
+  ImageIcon,
   Link2,
   Unlink,
+  Undo,
+  Redo,
+  TableIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -84,7 +105,32 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
         codeBlock: {},
       }),
       Link.configure({ openOnClick: false }),
-      Image,
+      Image.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            href: {
+              default: null,
+            },
+            loading: {
+              default: "lazy",
+              renderHTML: () => ({ loading: "lazy" }),
+            },
+            decoding: {
+              default: "async",
+              renderHTML: () => ({ decoding: "async" }),
+            },
+          };
+        },
+        renderHTML({ HTMLAttributes }) {
+          const { href, ...rest } = HTMLAttributes;
+          const img = ["img", rest];
+          if (href) {
+            return ["a", { href, target: "_blank", rel: "noopener noreferrer" }, img];
+          }
+          return img;
+        },
+      }),
       Underline,
       TextAlign.configure({
         types: ["heading", "paragraph"],
@@ -112,7 +158,26 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
 
   if (!editor) return null;
 
+  const addImage = () => {
+    const url = prompt("Enter image URL");
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
   const addLink = () => {
+    if (editor.isActive("image")) {
+      const currentHref = editor.getAttributes("image").href;
+      const url = prompt("Enter link URL for Image", currentHref || "");
+      if (url === null) return;
+      if (url === "") {
+        editor.chain().focus().updateAttributes("image", { href: null }).run();
+        return;
+      }
+      editor.chain().focus().updateAttributes("image", { href: url }).run();
+      return;
+    }
+
     const url = prompt("Enter link URL");
     let rel = "noopener noreferrer nofollow";
     if (url) {
@@ -147,7 +212,15 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
               icon={UnderlineIcon}
               tooltip="Underline (Ctrl+U)"
             />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              isActive={editor.isActive("strike")}
+              icon={Strikethrough}
+              tooltip="Strikethrough (Ctrl+Shift+X)"
+            />
           </div>
+
+          <Separator orientation="vertical" className="h-8" />
 
           {/* Headings group */}
           <div className="flex items-center gap-1">
@@ -185,8 +258,79 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             />
           </div>
 
+          <Separator orientation="vertical" className="h-8" />
+
+          {/* Text alignment group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              isActive={editor.isActive({ textAlign: "left" })}
+              icon={AlignLeft}
+              tooltip="Align Left"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().setTextAlign("center").run()
+              }
+              isActive={editor.isActive({ textAlign: "center" })}
+              icon={AlignCenter}
+              tooltip="Align Center"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().setTextAlign("right").run()}
+              isActive={editor.isActive({ textAlign: "right" })}
+              icon={AlignRight}
+              tooltip="Align Right"
+            />
+            <ToolbarButton
+              onClick={() =>
+                editor.chain().focus().setTextAlign("justify").run()
+              }
+              isActive={editor.isActive({ textAlign: "justify" })}
+              icon={AlignJustify}
+              tooltip="Justify"
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-8" />
+
+          {/* Lists group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              isActive={editor.isActive("bulletList")}
+              icon={List}
+              tooltip="Bullet List"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              isActive={editor.isActive("orderedList")}
+              icon={ListOrdered}
+              tooltip="Numbered List"
+            />
+          </div>
+
+          <Separator orientation="vertical" className="h-8" />
+
           {/* Insert elements group */}
           <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              isActive={editor.isActive("blockquote")}
+              icon={Quote}
+              tooltip="Quote"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              isActive={editor.isActive("codeBlock")}
+              icon={Code2}
+              tooltip="Code Block"
+            />
+            <ToolbarButton
+              onClick={addImage}
+              icon={ImageIcon}
+              tooltip="Insert Image"
+            />
             <ToolbarButton
               onClick={addLink}
               isActive={editor.isActive("link")}
@@ -195,9 +339,97 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             />
 
             <ToolbarButton
-              onClick={() => editor.chain().focus().unsetLink().run()}
+              onClick={() => {
+                if (editor.isActive("image")) {
+                  editor.chain().focus().updateAttributes("image", { href: null }).run();
+                } else {
+                  editor.chain().focus().unsetLink().run();
+                }
+              }}
               icon={Unlink}
               tooltip="Remove Link"
+            />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <TableIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem
+                  onClick={() =>
+                    editor
+                      .chain()
+                      .focus()
+                      .insertTable({ rows: 3, cols: 3 })
+                      .run()
+                  }
+                >
+                  Insert Table
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addColumnBefore().run()}
+                >
+                  Add Column Before
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addColumnAfter().run()}
+                >
+                  Add Column After
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteColumn().run()}
+                >
+                  Delete Column
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addRowBefore().run()}
+                >
+                  Add Row Before
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().addRowAfter().run()}
+                >
+                  Add Row After
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteRow().run()}
+                >
+                  Delete Row
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => editor.chain().focus().deleteTable().run()}
+                >
+                  Delete Table
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <Separator orientation="vertical" className="h-8" />
+
+          {/* History group */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton
+              onClick={() => editor.chain().focus().undo().run()}
+              disabled={!editor.can().undo()}
+              icon={Undo}
+              tooltip="Undo (Ctrl+Z)"
+            />
+            <ToolbarButton
+              onClick={() => editor.chain().focus().redo().run()}
+              disabled={!editor.can().redo()}
+              icon={Redo}
+              tooltip="Redo (Ctrl+Y)"
             />
           </div>
         </div>
