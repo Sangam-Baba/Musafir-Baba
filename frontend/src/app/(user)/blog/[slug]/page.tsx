@@ -173,10 +173,10 @@ export default async function BlogDetailPage({
             <Breadcrumb title={blog.title} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left Column: Content */}
-            <div className="lg:col-span-5 space-y-8 animate-in fade-in slide-in-from-left duration-700">
+            <div className="lg:col-span-4 space-y-8 animate-in fade-in slide-in-from-left duration-700">
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
                   <Badge className="bg-[#FE5300] text-white hover:bg-[#FE5300]/90 border-none px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest rounded-full shadow-sm">
@@ -192,7 +192,7 @@ export default async function BlogDetailPage({
                   ))}
                 </div>
                 
-                <h1 className="text-3xl md:text-4xl lg:text-3xl xl:text-4xl font-black text-gray-900 leading-[1.2] tracking-tight">
+                <h1 className="text-3xl  font-black text-gray-900 leading-[1.2] tracking-tight">
                   {blog.title}
                 </h1>
               </div>
@@ -222,8 +222,8 @@ export default async function BlogDetailPage({
             </div>
 
             {/* Right Column: Ultra-Wide Featured Image */}
-            <div className="lg:col-span-7 relative animate-in fade-in slide-in-from-right duration-1000">
-              <div className="w-full overflow-hidden rounded-3xl shadow-2xl group">
+            <div className="lg:col-span-8 relative animate-in fade-in slide-in-from-right duration-1000">
+              <div className="w-full overflow-hidden rounded-3xl group">
                 <img
                   src={blog.coverImage.url}
                   alt={blog.title}
@@ -239,11 +239,11 @@ export default async function BlogDetailPage({
       </header>
 
       {/* Main Content & Sidebar Grid */}
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-8 md:py-10">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-16 xl:px-24 2xl:px-32 py-8 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 relative font-sans">
           
           {/* Left Sidebar: Author & TOC (Desktop Only) */}
-          <aside className="hidden lg:block lg:col-span-4 sticky top-12 h-fit space-y-2 lg:pl-4 xl:pl-8">
+          <aside className="hidden lg:block lg:col-span-4 sticky top-12 h-fit space-y-2">
             
             {/* Written By Section */}
             <div className="space-y-6">
@@ -328,7 +328,7 @@ export default async function BlogDetailPage({
           </aside>
 
           {/* Center Column: Main Article */}
-          <main className="lg:col-span-8 xl:col-span-8 2xl:col-span-8 lg:pr-10 xl:pr-24 2xl:pr-32 lg:pl-4 xl:pl-8 2xl:pl-12">
+          <main className="lg:col-span-8 xl:col-span-8 2xl:col-span-8">
             <article>
               
               {/* Summary Box (Excerpt Transformation) */}
