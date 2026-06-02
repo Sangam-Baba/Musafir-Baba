@@ -43,12 +43,17 @@ export const metadata: Metadata = {
   },
 };
 
-import { Poppins } from "next/font/google";
+import { Poppins, Inter } from "next/font/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export default function RootLayout({
@@ -57,8 +62,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${poppins.variable}`}>
-      <body className="min-h-screen flex flex-col">{children}</body>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${inter.variable}`}>
+      <body className="min-h-screen flex flex-col font-sans">{children}</body>
     </html>
   );
 }

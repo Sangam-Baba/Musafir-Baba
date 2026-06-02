@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Loader } from "@/components/custom/loader";
 import SmallEditor from "@/components/admin/SmallEditor";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const schema = z.object({
   name: z.string().optional(),
@@ -60,7 +61,7 @@ const fetchItem = async (accessToken: string, endpoint: string, id: string) => {
   return json.data;
 };
 
-export function MasterDataModal({ id, onClose, endpoint, title: modalTitle, showExtraFields, showTitleDescFields, isNumericDuration }: MasterDataModalProps) {
+export function MasterDataDrawer({ id, onClose, endpoint, title: modalTitle, showExtraFields, showTitleDescFields, isNumericDuration }: MasterDataModalProps) {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
 
@@ -135,11 +136,16 @@ export function MasterDataModal({ id, onClose, endpoint, title: modalTitle, show
   if (id && isLoading) return <Loader size="lg" />;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
-      <h2 className="text-xl font-semibold mb-6">{id ? `Edit ${modalTitle}` : `Add New ${modalTitle}`}</h2>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
+    <Sheet open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent className="overflow-y-auto sm:max-w-2xl bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-8 sm:p-10">
+        <SheetHeader className="mb-8">
+          <SheetTitle className="text-xl font-semibold">
+            {id ? `Edit ${modalTitle}` : `Add New ${modalTitle}`}
+          </SheetTitle>
+        </SheetHeader>
+        
+        <Form {...form}>
+        <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-8">
           {!isNumericDuration && !showTitleDescFields && (
             <FormField
               control={form.control}
@@ -178,7 +184,7 @@ export function MasterDataModal({ id, onClose, endpoint, title: modalTitle, show
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <div className="border rounded-sm overflow-hidden text-xs">
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden bg-white dark:bg-slate-950 min-h-[250px] shadow-sm">
                         <SmallEditor
                           value={field.value || ""}
                           onChange={(val) => field.onChange(val)}
@@ -289,8 +295,8 @@ export function MasterDataModal({ id, onClose, endpoint, title: modalTitle, show
             )}
           />
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={mutation.isPending}>
+          <div className="flex justify-end gap-4 pt-8 border-t border-slate-100 dark:border-slate-800 mt-10">
+            <Button type="button" variant="outline" onClick={onClose} disabled={mutation.isPending}>
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
@@ -299,6 +305,7 @@ export function MasterDataModal({ id, onClose, endpoint, title: modalTitle, show
           </div>
         </form>
       </Form>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }

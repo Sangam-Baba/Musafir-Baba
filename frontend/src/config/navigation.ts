@@ -232,6 +232,12 @@ export const NAV_GROUPS = [
         icon: Database,
         permission: "master-visa-duration",
       },
+      {
+        label: "Visa Rejections",
+        href: "/admin/master-data/visa-rejection-reasons",
+        icon: Rocket,
+        permission: "master-visa-rejection",
+      },
     ],
   },
   {

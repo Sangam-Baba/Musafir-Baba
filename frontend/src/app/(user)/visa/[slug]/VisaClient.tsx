@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Calendar, Clock, Globe, Zap, ChevronRight, Info } from "lucide-react";
 import Link from "next/link";
 
-type TabKey = "description" | "faqs" | "documents" | "process" | "visasList";
+type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons";
 
 interface Faq {
   question: string;
@@ -251,137 +251,231 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
   );
 }
 
-export default function VisaClient({ visa }: { visa: any }) {
+export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any, sidebar?: React.ReactNode, bottomContent?: React.ReactNode }) {
   const [active, setActive] = useState<TabKey>(
     visa.visas && visa.visas.length > 0 ? "visasList" : "description"
   );
   const [openItem, setOpenItem] = useState<string | undefined>(undefined);
 
-  const tabs: { key: TabKey; label: string }[] = [
-    { key: "description", label: "Visa Info" },
-  ];
+  const tabs: { key: TabKey; label: string }[] = [];
 
-  if (
-    visa.process && 
-    (Array.isArray(visa.process) ? visa.process.length > 0 : typeof visa.process === "string" && visa.process.trim() !== "")
-  ) {
-    tabs.push({ key: "process", label: "Process" });
-  }
-  if (
-    visa.documentsContent && typeof visa.documentsContent === "string" && visa.documentsContent.trim() !== ""
-  ) {
-    tabs.push({ key: "documents", label: "Documents" });
-  }
-  if (visa.faqs && visa.faqs.length > 0) {
-    tabs.push({ key: "faqs", label: "FAQs" });
-  }
-
-  // Prepend visasList if visas array exists
-  if (visa.visas && visa.visas.length > 0) {
-    tabs.unshift({ key: "visasList", label: "Visa Types" });
-  }
+  if (visa.visas && visa.visas.length > 0) tabs.push({ key: "visasList", label: "Visa Types" });
+  if (visa.highlights && visa.highlights.trim() !== "") tabs.push({ key: "highlights", label: "Highlights" });
+  if (visa.quickAnswer && visa.quickAnswer.trim() !== "") tabs.push({ key: "quickAnswer", label: "Quick Answers" });
+  if (visa.whyThisVisa && visa.whyThisVisa.trim() !== "") tabs.push({ key: "whyThisVisa", label: `Why Visit ${visa.country || 'Destination'}` });
+  if (visa.content) tabs.push({ key: "description", label: "Visa Overview" });
+  if (visa.eligibility && visa.eligibility.trim() !== "") tabs.push({ key: "eligibility", label: "Eligibility" });
+  if (visa.documentsContent && typeof visa.documentsContent === "string" && visa.documentsContent.trim() !== "") tabs.push({ key: "documents", label: "Documents Required" });
+  if (visa.feesAndCharges && visa.feesAndCharges.trim() !== "") tabs.push({ key: "feesAndCharges", label: "Fees & Charges" });
+  if (visa.howToApply && visa.howToApply.trim() !== "") tabs.push({ key: "howToApply", label: "How to Apply" });
+  if (visa.process && (Array.isArray(visa.process) ? visa.process.length > 0 : typeof visa.process === "string" && visa.process.trim() !== "")) tabs.push({ key: "process", label: "Process" });
+  if (visa.rejectionReasons && visa.rejectionReasons.length > 0) tabs.push({ key: "rejectionReasons", label: "Rejection Reasons" });
+  if (visa.faqs && visa.faqs.length > 0) tabs.push({ key: "faqs", label: "FAQs" });
+  if (visa.helpfulResources && visa.helpfulResources.trim() !== "") tabs.push({ key: "helpfulResources", label: "Helpful Resources" });
+  if (visa.cta && visa.cta.trim() !== "") tabs.push({ key: "cta", label: "CTA" });
 
   return (
     <div className="w-full">
-      <div className="flex md:flex-wrap w-full gap-2 overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => (
-          <Button
-            key={tab.key}
-            size="lg"
-            onClick={() => setActive(tab.key)}
-            className={`mt-4 ${
-              active === tab.key
-                ? "bg-[#FE5300] hover:bg-[#FE5300] text-white"
-                : "bg-white hover:bg-gray-50 text-black border border-[#FE5300]"
-            }`}
-          >
-            {tab.label}
-          </Button>
-        ))}
+      {/* Quick Summary Rendering Before Tabs */}
+      {visa.quickSummary && visa.quickSummary.trim() !== "" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 mt-4">
+          <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+            <BlogContent html={visa.quickSummary} />
+          </section>
+        </div>
+      )}
+
+      {/* 100% width Sticky Tab Bar Background */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] w-full mb-6">
+        {/* Constrained container for the tabs matching the site width */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-wrap w-full gap-2 pb-1">
+            {tabs.map((tab) => (
+              <Button
+                key={tab.key}
+                size="sm"
+                onClick={() => {
+                  setActive(tab.key);
+                  const el = document.getElementById(tab.key);
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className={`shrink-0 ${
+                  active === tab.key
+                    ? "bg-[#FE5300] hover:bg-[#FE5300] text-white"
+                    : "bg-white hover:bg-gray-50 text-black border border-[#FE5300]"
+                }`}
+              >
+                {tab.label}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="mt-8 w-full">
-        {active === "visasList" && visa.visas && visa.visas.length > 0 && (
-          <div className="grid grid-cols-1 gap-4">
-            {visa.visas.flatMap((visaCard: any, index: number) => {
-              const entries = visaCard.validityEntries && visaCard.validityEntries.length > 0
-                ? visaCard.validityEntries
-                : [visaCard]; // Legacy fallback
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8">
+        {/* Main Content Column */}
+        <article className="w-full md:w-[65%] space-y-10">
+          <div className="w-full space-y-12">
+        {(() => {
+          const sectionHeadings: Record<string, string> = {
+            highlights: "Highlights",
+            quickAnswer: "Quick Answers",
+            whyThisVisa: `Why Visit ${visa.country || 'Destination'}`,
+            eligibility: "Eligibility",
+            feesAndCharges: "Fees & Charges",
+            howToApply: "How to Apply",
+            helpfulResources: "Helpful Resources",
+            cta: "CTA"
+          };
+          
+          const renderDynamicSection = (key: string) => {
+            if (!visa[key]) return null;
+            return (
+              <div id={key} key={key} className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <h3 className="text-xl font-bold font-heading text-black mb-5">{sectionHeadings[key]}</h3>
+                <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                  <BlogContent html={visa[key]} />
+                </section>
+              </div>
+            );
+          };
 
-              return entries.map((entry: any, eIdx: number) => (
-                <VisaCard key={`${visaCard._id}-${eIdx}`} visaCard={visaCard} entry={entry} slug={visa.slug} />
-              ));
-            })}
+          return (
+            <>
+              {visa.visas && visa.visas.length > 0 && (
+                <div id="visasList" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">Visa Types</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    {visa.visas.flatMap((visaCard: any, index: number) => {
+                    const entries = visaCard.validityEntries && visaCard.validityEntries.length > 0
+                      ? visaCard.validityEntries
+                      : [visaCard]; // Legacy fallback
+
+                    return entries.map((entry: any, eIdx: number) => (
+                      <VisaCard key={`${visaCard._id}-${eIdx}`} visaCard={visaCard} entry={entry} slug={visa.slug} />
+                    ));
+                  })}
+                  </div>
+                </div>
+              )}
+
+              {renderDynamicSection("highlights")}
+              {renderDynamicSection("quickAnswer")}
+              {renderDynamicSection("whyThisVisa")}
+
+              {visa.content && (
+                <div id="description" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">Visa Overview</h3>
+                  <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                    <BlogContent html={visa.content} />
+                  </section>
+                </div>
+              )}
+
+              {renderDynamicSection("eligibility")}
+
+              {visa.documentsContent && (
+                <div id="documents" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">Documents Required</h3>
+                  <div 
+                    className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0"
+                    dangerouslySetInnerHTML={{ __html: visa.documentsContent }}
+                  />
+                </div>
+              )}
+
+              {renderDynamicSection("feesAndCharges")}
+              {renderDynamicSection("howToApply")}
+
+              {visa.process && (
+                <div id="process" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">Step-by-Step Process</h3>
+                  {Array.isArray(visa.process) ? (
+                    <ul className="space-y-1">
+                      {visa.process.map((step: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 text-[#FE5300] shrink-0 mt-0.5" />
+                          <span className="text-base text-black leading-relaxed">{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div 
+                      className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0"
+                      dangerouslySetInnerHTML={{ __html: visa.process }} 
+                    />
+                  )}
+                </div>
+              )}
+
+              {visa.rejectionReasons && visa.rejectionReasons.length > 0 && (
+                <div id="rejectionReasons" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">Common Rejection Reasons</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    {visa.rejectionReasons.map((reason: any, idx: number) => (
+                      <div key={idx} className="flex flex-col h-full border-l-2 border-red-500 pl-4 py-1">
+                        <h4 className="text-base font-bold font-heading text-black flex items-center gap-2 mb-2">
+                          {reason.title}
+                        </h4>
+                        <div className="prose prose-sm text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                          <BlogContent html={reason.description} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {visa.faqs && visa.faqs.length > 0 && (
+                <div id="faqs" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">FAQs</h3>
+                  <Accordion
+                    type="single"
+                    collapsible
+                    value={openItem}
+                    onValueChange={setOpenItem}
+                    className="w-full space-y-2"
+                  >
+                  {visa.faqs.map((faq: Faq, index: number) => {
+                    const isOpen = openItem === `faq-${index}`;
+                    return (
+                      <AccordionItem
+                        key={index}
+                        value={`faq-${index}`}
+                        className="border-b border-gray-200 py-2"
+                      >
+                        <AccordionTrigger className="text-sm font-bold font-heading text-black hover:text-[#FE5300] transition-colors hover:no-underline text-left">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-justify pt-3">
+                          <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                            <BlogContent html={faq.answer} />
+                          </section>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                  </Accordion>
+                </div>
+              )}
+
+              {renderDynamicSection("helpfulResources")}
+              {renderDynamicSection("cta")}
+            </>
+          );
+        })()}
           </div>
-        )}
 
-        {active === "description" && (
-          <div className="rounded-xl bg-[#87E87F]/20 px-8 py-6 shadow">
-            <section className="prose prose-lg max-w-none">
-              <BlogContent html={visa.content} />
-            </section>
-          </div>
-        )}
+          {/* Render extra content passed from page below the active tab content */}
+          {bottomContent}
+        </article>
 
-        {active === "faqs" && visa.faqs && visa.faqs.length > 0 && (
-          <Accordion
-            type="single"
-            collapsible
-            value={openItem}
-            onValueChange={setOpenItem}
-            className="w-full space-y-3 rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow"
-          >
-            {visa.faqs.map((faq: Faq, index: number) => {
-              const isOpen = openItem === `faq-${index}`;
-              return (
-                <AccordionItem
-                  key={index}
-                  value={`faq-${index}`}
-                  className="rounded-2xl shadow-sm p-4 bg-white"
-                >
-                  <AccordionTrigger className="text-base md:text-lg font-semibold hover:text-[#FE5300] transition-colors hover:no-underline">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-justify">
-                    <section className="prose prose-lg max-w-none text-gray-600">
-                      <BlogContent html={faq.answer} />
-                    </section>
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
-        )}
-
-        {active === "documents" && visa.documentsContent && (
-          <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
-            <div 
-              className="prose prose-sm dark:prose-invert max-w-none text-sm text-foreground"
-              dangerouslySetInnerHTML={{ __html: visa.documentsContent }}
-            />
-          </div>
-        )}
-
-        {active === "process" && visa.process && (
-          <div className="rounded-xl bg-[#87E87F]/20 px-4 py-6 shadow">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Step-by-Step Process</h3>
-            {Array.isArray(visa.process) ? (
-              <ul className="space-y-3">
-                {visa.process.map((step: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">{step}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div 
-                className="prose prose-sm dark:prose-invert max-w-none text-sm text-foreground"
-                dangerouslySetInnerHTML={{ __html: visa.process }} 
-              />
-            )}
-          </div>
-        )}
+        {/* Sidebar Column */}
+        <aside className="w-full md:w-[35%] md:sticky md:top-32 self-start space-y-6">
+          {sidebar}
+        </aside>
       </div>
     </div>
   );
