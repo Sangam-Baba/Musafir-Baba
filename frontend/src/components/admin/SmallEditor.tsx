@@ -190,10 +190,10 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
 
   return (
     <TooltipProvider>
-      <div className="w-full border rounded-lg bg-background shadow-sm flex flex-col h-[300px] overflow-hidden">
-        <div className="flex items-center gap-1 border-b bg-gray-400 z-20 p-2 flex-wrap shrink-0">
+      <div className="w-full border border-slate-200 dark:border-slate-800 rounded-lg bg-background shadow-sm flex flex-col h-[300px] overflow-hidden">
+        <div className="flex items-center gap-x-1 gap-y-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 z-20 p-2 flex-wrap shrink-0">
           {/* Text formatting group */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBold().run()}
               isActive={editor.isActive("bold")}
@@ -220,10 +220,10 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             />
           </div>
 
-          <Separator orientation="vertical" className="h-8" />
+          <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
           {/* Headings group */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <ToolbarButton
               onClick={() =>
                 editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -258,10 +258,10 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             />
           </div>
 
-          <Separator orientation="vertical" className="h-8" />
+          <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
           {/* Text alignment group */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <ToolbarButton
               onClick={() => editor.chain().focus().setTextAlign("left").run()}
               isActive={editor.isActive({ textAlign: "left" })}
@@ -292,10 +292,10 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             />
           </div>
 
-          <Separator orientation="vertical" className="h-8" />
+          <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
           {/* Lists group */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               isActive={editor.isActive("bulletList")}
@@ -310,10 +310,10 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             />
           </div>
 
-          <Separator orientation="vertical" className="h-8" />
+          <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
           {/* Insert elements group */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <ToolbarButton
               onClick={() => editor.chain().focus().toggleBlockquote().run()}
               isActive={editor.isActive("blockquote")}
@@ -415,10 +415,10 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
             </DropdownMenu>
           </div>
 
-          <Separator orientation="vertical" className="h-8" />
+          <Separator orientation="vertical" className="h-6 hidden sm:block mx-1" />
 
           {/* History group */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             <ToolbarButton
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().undo()}

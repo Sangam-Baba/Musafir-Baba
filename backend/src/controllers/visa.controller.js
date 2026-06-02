@@ -67,7 +67,7 @@ const getVisaBySlug = async (req, res) => {
     const { slug } = req.params;
     if (!slug)
       return res.status(400).json({ success: false, message: "Invalid Slug" });
-    const visa = await Visa.findOne({ slug }).populate("reviews").lean();
+    const visa = await Visa.findOne({ slug }).populate("reviews").populate("rejectionReasons").lean();
     if (!visa)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
     if (!visa.isActive && !verifyPreviewToken(req.query?.token)) {

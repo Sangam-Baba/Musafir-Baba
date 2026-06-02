@@ -16,6 +16,15 @@ const visaSchema = new mongoose.Schema(
     content: {
       type: String,
     },
+    quickSummary: { type: String },
+    highlights: { type: String },
+    quickAnswer: { type: String },
+    whyThisVisa: { type: String },
+    eligibility: { type: String },
+    feesAndCharges: { type: String },
+    howToApply: { type: String },
+    helpfulResources: { type: String },
+    cta: { type: String },
     excerpt: {
       type: String,
     },
@@ -105,6 +114,12 @@ const visaSchema = new mongoose.Schema(
     childUrl: {
       type: String,
     },
+    rejectionReasons: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "VisaRejectionReason",
+      },
+    ],
     visas: [
       {
         visaPurpose: { type: String },

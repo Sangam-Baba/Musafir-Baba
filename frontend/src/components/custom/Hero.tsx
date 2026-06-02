@@ -22,6 +22,8 @@ export interface HeroProps {
 
   overlayOpacity?: number;
 
+  aspectRatio?: string;
+
   className?: string;
 
   children?: React.ReactNode;
@@ -41,6 +43,7 @@ export default function Hero({
   align = "center",
   height = "md",
   overlayOpacity = 60,
+  aspectRatio = "aspect-5/2",
   className = "",
   children,
 }: HeroProps) {
@@ -48,7 +51,7 @@ export default function Hero({
 
   return (
     <section
-      className={`relative w-full aspect-5/2 flex justify-center  ${className}`}
+      className={`relative w-full ${aspectRatio} flex justify-center  ${className}`}
     >
       {/* Background image */}
       <div className="absolute inset-0">
@@ -75,7 +78,7 @@ export default function Hero({
 
       {/* Content */}
       <div
-        className={`absolute md:mt-25 z-10 h-full flex items-center ${
+        className={`relative z-10 w-full flex items-center py-10 md:py-14 md:pt-28 ${
           align === "left"
             ? "justify-start text-left"
             : align === "right"
@@ -89,17 +92,18 @@ export default function Hero({
           }`}
         >
           <h1
-            // initial={{ opacity: 0, y: 16 }}
-            // animate={{ opacity: 1, y: 0 }}
-            // transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-white text-xl sm:text-2xl md:text-5xl font-bold tracking-tight text-center"
+            className={`text-white text-xl sm:text-2xl md:text-5xl font-bold tracking-tight ${
+              align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center"
+            }`}
           >
             {title}
           </h1>
 
           {description && (
             <p
-              className="mt-3 md:mt-4  text-white/90 text-sm md:text-base  text-center hidden md:block"
+              className={`mt-3 md:mt-4 text-white/90 text-sm md:text-base hidden md:block ${
+                align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center"
+              }`}
             >
               {stripHtml(description)}
             </p>

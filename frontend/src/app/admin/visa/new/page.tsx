@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 interface Faq {
   question: string;
   answer: string;
@@ -70,6 +71,15 @@ export interface Visa {
   title: string;
   slug: string;
   content: string;
+  quickSummary?: string;
+  highlights?: string;
+  quickAnswer?: string;
+  whyThisVisa?: string;
+  eligibility?: string;
+  feesAndCharges?: string;
+  howToApply?: string;
+  helpfulResources?: string;
+  cta?: string;
   excerpt: string;
   schemaType?: string[];
   metaTitle: string;
@@ -97,6 +107,7 @@ export interface Visa {
   necessaryDocuments?: string[];
   documentsContent?: string;
   process?: any;
+  rejectionReasons?: string[];
   visas?: VisaCard[];
 }
 
@@ -129,6 +140,15 @@ export default function CreateVisaPage() {
     title: "",
     slug: "",
     content: "",
+    quickSummary: "",
+    highlights: "",
+    quickAnswer: "",
+    whyThisVisa: "",
+    eligibility: "",
+    feesAndCharges: "",
+    howToApply: "",
+    helpfulResources: "",
+    cta: "",
     excerpt: "",
     schemaType: [],
     metaTitle: "",
@@ -149,6 +169,7 @@ export default function CreateVisaPage() {
     necessaryDocuments: ["Photo", "Passport"],
     documentsContent: "",
     process: "",
+    rejectionReasons: [],
     visas: [],
   };
 
@@ -209,10 +230,19 @@ export default function CreateVisaPage() {
       return res.json();
     },
   });
+  const { data: visaRejectionReasonsData } = useQuery({
+    queryKey: ["master-data", "visa-rejection-reasons"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/visa-rejection-reasons?all=true`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
 
   const visaPurposeOptions = visaPurposeData?.data || [];
   const visaValidityOptions = visaValidityData?.data || [];
   const visaDurationOptions = visaDurationData?.data || [];
+  const visaRejectionReasonsOptions = visaRejectionReasonsData?.data || [];
 
   const formatDuration = (item: any) => {
     const parts = [];
@@ -432,8 +462,48 @@ export default function CreateVisaPage() {
               </TabsContent>
 
               {/* TAB: VISAS */}
-              <TabsContent value="visas" className="space-y-3">
-                <div className="flex justify-between items-center">
+              <TabsContent value="visas" className="space-y-5">
+                
+                {/* Rejection Reasons Multi-Select */}
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Rejection Reasons</FormLabel>
+                  {visaRejectionReasonsOptions.length === 0 ? (
+                    <div className="text-[11px] text-gray-400 italic">No rejection reasons found in Master Data.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {visaRejectionReasonsOptions.map((reason: any) => {
+                        const current = form.watch("rejectionReasons") || [];
+                        const isChecked = current.includes(reason._id);
+                        return (
+                          <div key={reason._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <Checkbox
+                              id={`reason-${reason._id}`}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  form.setValue("rejectionReasons", [...current, reason._id]);
+                                } else {
+                                  form.setValue("rejectionReasons", current.filter((id) => id !== reason._id));
+                                }
+                              }}
+                              className="mt-0.5"
+                            />
+                            <div className="space-y-1 leading-none">
+                              <label
+                                htmlFor={`reason-${reason._id}`}
+                                className="text-[11px] font-semibold text-slate-800 cursor-pointer"
+                              >
+                                {reason.title}
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
                   <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Cards</FormLabel>
                   <Button
                     type="button"
@@ -780,6 +850,88 @@ export default function CreateVisaPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Quick Summary */}
+                <FormField control={form.control} name="quickSummary" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Quick Summary</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* Highlights */}
+                <FormField control={form.control} name="highlights" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Highlights</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* Quick Answer */}
+                <FormField control={form.control} name="quickAnswer" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Quick Answer</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* Why This Visa */}
+                <FormField control={form.control} name="whyThisVisa" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Why This Visa</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* Eligibility */}
+                <FormField control={form.control} name="eligibility" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Eligibility</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* Fees and Charges */}
+                <FormField control={form.control} name="feesAndCharges" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Fees and Charges</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* How to Apply */}
+                <FormField control={form.control} name="howToApply" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">How to Apply</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* Helpful Resources */}
+                <FormField control={form.control} name="helpfulResources" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
+                {/* CTA */}
+                <FormField control={form.control} name="cta" render={({ field }) => (
+                  <FormItem className="space-y-0.5">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">CTA</FormLabel>
+                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormMessage className="text-[10px]" />
+                  </FormItem>
+                )} />
+
                 
                 {/* excerpt*/}
                 <FormField
