@@ -12,6 +12,7 @@ import {
   Linkedin,
   Menu,
   Phone,
+  Search,
 } from "lucide-react";
 import logo from "../../../public/logo.png";
 import Image from "next/image";
@@ -22,9 +23,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import GlobalSearch from "../global-search/GlobalSearch";
 
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
 
   return (
     <header className="w-full z-50">
@@ -102,6 +105,14 @@ export default function Header() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center mr-1"
+              aria-label="Open search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
             <Button className="hidden md:flex  text-white">
               <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
                 Pay Now
@@ -114,6 +125,33 @@ export default function Header() {
       </div>
 
       {sidebarOpen && <Sidebar />}
+
+      {/* SEARCH POPUP MODAL */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 px-4 md:px-0 bg-black/60 backdrop-blur-sm transition-opacity">
+          {/* Backdrop (click to close) */}
+          <div 
+            className="absolute inset-0 cursor-pointer" 
+            onClick={() => setIsSearchOpen(false)}
+            aria-label="Close search"
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-3xl animate-in fade-in slide-in-from-top-10 duration-200">
+            <GlobalSearch />
+            
+            {/* Mobile close hint */}
+            <div className="text-center mt-4 md:hidden">
+              <button 
+                onClick={() => setIsSearchOpen(false)}
+                className="px-4 py-2 bg-white/20 text-white rounded-full text-sm backdrop-blur-md border border-white/30"
+              >
+                Close Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

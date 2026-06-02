@@ -3,7 +3,6 @@ import Image from "next/image";
 import Script from "next/script";
 
 // ─── Critical above-the-fold: direct imports (Server Components) ───────────
-import GlobalSearch from "@/components/global-search/GlobalSearch";
 import SecondSectionServer from "@/components/custom/SecondSectionServer";
 import VisaHome from "@/components/custom/VisaHome";
 import { SevenSection } from "@/components/custom/SevenSection";
@@ -153,13 +152,6 @@ export default async function HomePage() {
           sizes="100vw"
           className="object-cover"
         />
-        
-        {/* Searchbar positioned just below navbar */}
-        <div className="absolute top-4 md:top-8 left-0 right-0 z-50 flex justify-center px-4">
-          <div className="w-full max-w-[720px]">
-            <GlobalSearch />
-          </div>
-        </div>
 
         <div className="flex flex-col ml-4 md:ml-8 lg:ml-12 gap-5 md:gap-7 items-center z-10 w-[90%] md:w-[70%] lg:w-[60%] xl:w-[55%] relative">
           <div className="text-center flex flex-col items-center justify-center max-w-4xl mx-auto mt-4 md:mt-8">
