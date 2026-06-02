@@ -17,12 +17,14 @@ import { ListUserInterface } from "@/app/admin/role/page";
 interface UsersTableProps {
   users: ListUserInterface[];
   onStatusChange: (id: string) => void;
+  onToggleActive: (id: string, currentStatus: boolean) => void;
   onDelete: (id: string) => void;
 }
 
 export default function UsersList({
   users,
   onStatusChange,
+  onToggleActive,
   onDelete,
 }: UsersTableProps) {
   return (
@@ -31,14 +33,15 @@ export default function UsersList({
       <div className="hidden md:block">
         <Table className="rounded-2xl shadow-md overflow-hidden">
           <TableHeader>
-            <TableRow className="bg-muted/40">
-              <TableHead className="w-[20%]">Name</TableHead>
-              <TableHead className="w-[20%]">Designation</TableHead>
-              <TableHead className="w-[20%]">E-mail</TableHead>
-              <TableHead className="w-[20%]">Last Login</TableHead>
-              <TableHead className="w-[20%]">Device</TableHead>
-              <TableHead className="w-[20%]">Status</TableHead>
-              <TableHead className="w-[20%] text-right">Action</TableHead>
+            <TableRow className="bg-slate-50 border-b border-slate-100">
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Name</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Designation</TableHead>
+              <TableHead className="w-[20%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">E-mail</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Last Login</TableHead>
+              <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Device</TableHead>
+              <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Status</TableHead>
+              <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Account</TableHead>
+              <TableHead className="w-[5%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -47,47 +50,79 @@ export default function UsersList({
                 key={cat._id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="border-b"
+                className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-300 group"
               >
-                <TableCell className="font-medium">{cat.name}</TableCell>
-                <TableCell className="font-medium text-slate-500">{cat.designation ?? "N/A"}</TableCell>
-                <TableCell className="font-medium">{cat.email}</TableCell>
-                <TableCell className="font-medium">
-                  {new Date(cat?.loginInfo?.lastLoginAt ?? "").toLocaleString(
-                    "en-IN",
-                    {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }
-                  )}
+                <TableCell className="py-2">
+                  <div className="text-[13px] font-semibold text-slate-700 tracking-tight group-hover:translate-x-[1px] transition-transform duration-300">
+                    {cat.name}
+                  </div>
                 </TableCell>
-                <TableCell className="font-medium">
-                  {cat.loginInfo?.device?.device ?? "Not Found"}
+                <TableCell className="py-2">
+                  <div className="text-[11px] font-medium text-slate-500 capitalize">
+                    {cat.designation ?? "N/A"}
+                  </div>
                 </TableCell>
-                <TableCell
-                  className={`font-medium ${
-                    cat.isActive == "Online" ? "text-green-600" : "text-red-400"
-                  }`}
-                >
-                  {cat.isActive}
+                <TableCell className="py-2">
+                  <div className="text-[10px] font-medium text-slate-400 lowercase font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {cat.email}
+                  </div>
                 </TableCell>
-                <TableCell className="font-medium">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => onStatusChange(cat._id)}
+                <TableCell className="py-2">
+                  <div className="text-[11px] font-medium text-slate-500">
+                    {new Date(cat?.loginInfo?.lastLoginAt ?? "").toLocaleString(
+                      "en-IN",
+                      {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="py-2">
+                  <div className="text-[11px] font-medium text-slate-500">
+                    {cat.loginInfo?.device?.device ?? "Not Found"}
+                  </div>
+                </TableCell>
+                <TableCell className="py-2">
+                  <div
+                    className={`text-[10px] font-black uppercase tracking-widest ${
+                      cat.onlineStatus === "Online" ? "text-green-500" : "text-slate-400"
+                    }`}
                   >
-                    <Edit className="w-4 h-4 mr-1" /> Edit
+                    {cat.onlineStatus}
+                  </div>
+                </TableCell>
+                <TableCell className="py-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-6 px-2 rounded-sm text-[9px] font-black uppercase tracking-widest ${
+                      cat.isActive
+                        ? "bg-green-50 text-green-600 hover:bg-green-100"
+                        : "bg-red-50 text-red-500 hover:bg-red-100"
+                    }`}
+                    onClick={() => onToggleActive(cat._id, cat.isActive)}
+                  >
+                    {cat.isActive ? "Active" : "Inactive"}
                   </Button>
                 </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant={cat.isActive ? "destructive" : "default"}
-                    size="sm"
-                    onClick={() => onDelete(cat._id)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                  </Button>
+                <TableCell className="py-2 text-right">
+                  <div className="flex justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-slate-400 hover:text-[#FE5300] hover:bg-orange-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => onStatusChange(cat._id)}
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="h-7 w-7 p-0 text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => onDelete(cat._id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </TableCell>
               </motion.tr>
             ))}
@@ -113,15 +148,23 @@ export default function UsersList({
                 <Button
                   variant="default"
                   size="sm"
-                  className="flex-1 w-1/2"
+                  className="flex-1 w-1/3"
                   onClick={() => onStatusChange(cat._id)}
                 >
                   <Edit className="w-4 h-4 mr-1" /> Edit
                 </Button>
                 <Button
-                  variant={cat.isActive ? "destructive" : "default"}
+                  variant={cat.isActive ? "default" : "secondary"}
                   size="sm"
-                  className="flex-1 w-1/2"
+                  className={`flex-1 w-1/3 ${cat.isActive ? "bg-green-600" : "text-red-600 bg-red-50"}`}
+                  onClick={() => onToggleActive(cat._id, cat.isActive)}
+                >
+                  {cat.isActive ? "Active" : "Inactive"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 w-1/3"
                   onClick={() => onDelete(cat._id)}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />

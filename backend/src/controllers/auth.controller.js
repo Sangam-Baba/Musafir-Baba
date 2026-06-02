@@ -110,6 +110,12 @@ const login = async (req, res) => {
         .json({ success: false, message: "Please verify your email first" });
     }
 
+    if (user.isActive === false) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Account has been deactivated. Please contact support." });
+    }
+
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       return res
