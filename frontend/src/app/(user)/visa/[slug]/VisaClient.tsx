@@ -13,6 +13,7 @@ import { Check, Calendar, Clock, Globe, Zap, ChevronRight, Info, AlertCircle, Li
 import Link from "next/link";
 import { Testimonial } from "@/components/custom/Testimonial";
 import HelpfulResources from "@/components/custom/HelpfulResources";
+import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
 
 type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips";
 
@@ -32,7 +33,7 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
   return (
     <>
       <div
-        className="group relative bg-white rounded-2xl border border-gray-200/90 p-5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col justify-between gap-3 select-none"
+        className="group relative bg-white rounded-2xl border border-gray-200/90 p-4 md:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col justify-between gap-3 select-none shrink-0 w-[85vw] snap-center md:w-auto md:shrink"
       >
         {/* Expanding Green Bubble Background Wrapper (stays fully still & solid when cursor is on the card) */}
         <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
@@ -145,7 +146,7 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
         {/* Metadata & Pricing Row */}
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-2">
           {/* Metadata: Validity Entry Data */}
-          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-y-3 gap-x-5 text-xs md:text-sm text-gray-500 font-medium w-full md:w-auto">
+          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-y-2 md:gap-y-3 gap-x-4 md:gap-x-5 text-xs md:text-sm text-gray-500 font-medium w-full md:w-auto">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
               <span>Val: <strong className="text-gray-800 font-extrabold">{entry.visaValidity || visaCard.visaValidity || "N/A"}</strong></span>
@@ -167,7 +168,7 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
           {/* Govt Fee */}
           <div className="self-end md:self-auto text-right shrink-0 mt-2 md:mt-0 flex flex-col items-end md:items-end">
             <span className="uppercase font-bold tracking-wider text-gray-400 text-[10px] block mb-1 md:mb-0.5">Govt Fee</span>
-            <span className="text-lg md:text-2xl font-black text-[#FE5300] leading-none">₹{govFee}</span>
+            <span className="text-lg md:text-2xl font-black text-[#FE5300] leading-none">₹{Number(govFee).toLocaleString('en-IN')}</span>
           </div>
         </div>
       </div>
@@ -258,6 +259,27 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
     visa.visas && visa.visas.length > 0 ? "visasList" : "description"
   );
   const [openItem, setOpenItem] = useState<string>("faq-0");
+  const [showMobileCalculator, setShowMobileCalculator] = useState(false);
+
+  let displayCost = visa.cost;
+  if (visa.visas && visa.visas.length > 0) {
+    let lowestGovFee = Infinity;
+    visa.visas.forEach((card: any) => {
+      const entries = card.validityEntries && card.validityEntries.length > 0 ? card.validityEntries : [card];
+      entries.forEach((entry: any) => {
+        const stdGovFee = entry.governmentFee ?? card.governmentFee;
+        const expGovFee = entry.expressGovernmentFee ?? card.expressGovernmentFee;
+        if (stdGovFee !== undefined && stdGovFee !== null && stdGovFee > 0 && stdGovFee < lowestGovFee) {
+          lowestGovFee = stdGovFee;
+          displayCost = stdGovFee;
+        }
+        if (expGovFee !== undefined && expGovFee !== null && expGovFee > 0 && expGovFee < lowestGovFee) {
+          lowestGovFee = expGovFee;
+          displayCost = expGovFee;
+        }
+      });
+    });
+  }
 
   const tabs: { key: TabKey; label: string }[] = [];
 
@@ -303,9 +325,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                   <h3 className="text-xl font-bold font-heading text-black">Visa at a Glance</h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
-                <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0 bg-[#fefce8] rounded-none border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] overflow-hidden font-mono [&_table]:w-full [&_table]:text-left [&_table]:border-collapse [&_table]:text-black [&_table]:m-0 [&_tr:first-child>th]:border-b-4 [&_tr:first-child>th]:border-black [&_tr:first-child>td]:border-b-4 [&_tr:first-child>td]:border-black [&_tr:first-child>th]:bg-rose-400 [&_tr:first-child>td]:bg-rose-400 [&_th]:py-3.5 [&_th]:px-4 [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:border-r-2 [&_th]:border-black [&_th:last-child]:border-r-0 [&_td]:py-3 [&_td]:px-4 [&_td]:text-sm [&_td]:border-b-2 [&_td]:border-r-2 [&_td]:border-black [&_td:last-child]:border-r-0 [&_tr:last-child>td]:border-b-0 [&_tr:not(:first-child)>td]:bg-amber-100/50 [&_tr:not(:first-child):hover>td]:!bg-teal-100 [&_td:first-child]:font-bold [&_td:first-child]:whitespace-nowrap [&_td:last-child]:font-medium [&_td]:transition-colors">
-                  <BlogContent html={visa.highlights} />
-                </section>
+                <VisaAtAGlance html={visa.highlights} />
               </div>
             )}
 
@@ -315,7 +335,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                   <h3 className="text-xl font-bold font-heading text-black">Quick Answers</h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
-                <section className="max-w-none text-black leading-relaxed [&_ul]:list-none [&_ul]:pl-0 [&_ul]:m-0 [&_ul]:grid [&_ul]:grid-cols-1 sm:[&_ul]:grid-cols-2 [&_ul]:gap-4 [&_li]:flex [&_li]:flex-col [&_li]:justify-center [&_li]:min-h-[130px] [&_li]:p-5 [&_li]:m-0 [&_li::marker]:hidden [&_li::before]:hidden [&_li]:bg-white [&_li]:border [&_li]:border-gray-100 [&_li]:rounded-xl [&_li]:shadow-sm [&_li]:transition-all [&_li]:duration-300 [&_li:hover]:-translate-y-1 [&_li:hover]:shadow-xl [&_li:hover]:border-[#FE5300]/40 [&_li_*]:!m-0 [&_li_*]:!leading-relaxed [&_li_strong]:block [&_li_strong]:mb-1.5 [&_li_strong]:text-base [&_li_strong]:text-gray-900 [&_li_strong]:transition-colors [&_li_b]:block [&_li_b]:mb-1.5 [&_li_b]:text-base [&_li_b]:text-gray-900 [&_li_b]:transition-colors [&_li:hover_strong]:text-[#FE5300] [&_li:hover_b]:text-[#FE5300] [&_li]:text-gray-600 [&_li]:text-sm [&_li_p]:text-gray-600 [&_li_p]:text-sm">
+                <section className="max-w-none text-black leading-relaxed [&_ul]:list-none [&_ul]:pl-0 [&_ul]:m-0 [&_ul]:flex [&_ul]:overflow-x-auto [&_ul]:no-scrollbar [&_ul]:snap-x [&_ul]:snap-mandatory md:[&_ul]:grid md:[&_ul]:grid-cols-2 [&_ul]:gap-4 [&_ul]:pb-4 md:[&_ul]:pb-0 [&_li]:flex [&_li]:flex-col [&_li]:justify-center [&_li]:min-h-[130px] [&_li]:p-5 [&_li]:m-0 [&_li]:shrink-0 [&_li]:snap-start [&_li]:w-[85vw] md:[&_li]:w-auto md:[&_li]:shrink [&_li::marker]:hidden [&_li::before]:hidden [&_li]:bg-white [&_li]:border [&_li]:border-gray-100 [&_li]:rounded-xl [&_li]:shadow-sm [&_li]:transition-all [&_li]:duration-300 [&_li:hover]:-translate-y-1 [&_li:hover]:shadow-xl [&_li:hover]:border-[#FE5300]/40 [&_li_*]:!m-0 [&_li_*]:!leading-relaxed [&_li_strong]:block [&_li_strong]:mb-1.5 [&_li_strong]:text-base [&_li_strong]:text-gray-900 [&_li_strong]:transition-colors [&_li_b]:block [&_li_b]:mb-1.5 [&_li_b]:text-base [&_li_b]:text-gray-900 [&_li_b]:transition-colors [&_li:hover_strong]:text-[#FE5300] [&_li:hover_b]:text-[#FE5300] [&_li]:text-gray-600 [&_li]:text-sm [&_li_p]:text-gray-600 [&_li_p]:text-sm">
                   <BlogContent html={visa.quickAnswer} />
                 </section>
               </div>
@@ -327,8 +347,8 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
       {/* 100% width Sticky Tab Bar Background */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] w-full mb-6">
         {/* Constrained container for the tabs matching the site width */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap w-full gap-2 pb-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+          <div className="flex flex-nowrap md:flex-wrap w-full gap-2 pb-1 overflow-x-auto no-scrollbar md:overflow-visible snap-x snap-mandatory md:snap-none">
             {tabs.map((tab) => (
               <Button
                 key={tab.key}
@@ -340,7 +360,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     el.scrollIntoView({ behavior: 'smooth' });
                   }
                 }}
-                className={`shrink-0 ${
+                className={`shrink-0 snap-start text-xs md:text-sm h-8 md:h-9 px-3 md:px-4 rounded-full ${
                   active === tab.key
                     ? "bg-[#FE5300] hover:bg-[#FE5300] text-white"
                     : "bg-white hover:bg-gray-50 text-black border border-[#FE5300]"
@@ -391,7 +411,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     <h3 className="text-xl font-bold font-heading text-black">Visa Types</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-1 md:overflow-visible md:snap-none md:pb-0">
                     {visa.visas.flatMap((visaCard: any, index: number) => {
                     const entries = visaCard.validityEntries && visaCard.validityEntries.length > 0
                       ? visaCard.validityEntries
@@ -467,9 +487,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     <h3 className="text-xl font-bold font-heading text-black">Common Rejection Reasons</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
                     {visa.rejectionReasons.map((reason: any, idx: number) => (
-                      <div key={idx} className="aspect-square bg-white border border-gray-200 p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
+                      <div key={idx} className="shrink-0 snap-start w-[70vw] md:w-auto md:shrink aspect-auto md:aspect-square bg-white border border-gray-200 p-3 md:p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
                         <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center mb-3 shrink-0">
                           <AlertCircle className="w-4 h-4 text-red-600" strokeWidth={2} />
                         </div>
@@ -491,9 +511,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     <h3 className="text-xl font-bold font-heading text-black">Expert Tips</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
                     {visa.expertTips.map((tip: any, idx: number) => (
-                      <div key={idx} className="aspect-square bg-white border border-gray-200 p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
+                      <div key={idx} className="shrink-0 snap-start w-[70vw] md:w-auto md:shrink aspect-auto md:aspect-square bg-white border border-gray-200 p-3 md:p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
                         <div className="w-8 h-8 rounded-full bg-[#FE5300]/10 flex items-center justify-center mb-3 shrink-0">
                           <Lightbulb className="w-4 h-4 text-[#FE5300]" strokeWidth={2} />
                         </div>
@@ -527,9 +547,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                       <AccordionItem
                         key={index}
                         value={`faq-${index}`}
-                        className="border-b border-gray-200 py-2"
+                        className="border-b border-gray-200 py-1 md:py-2"
                       >
-                        <AccordionTrigger className="text-sm font-bold font-heading text-black hover:text-[#FE5300] transition-colors hover:no-underline text-left">
+                        <AccordionTrigger className="text-xs md:text-sm font-bold font-heading text-black hover:text-[#FE5300] transition-colors hover:no-underline text-left">
                           {faq.question}
                         </AccordionTrigger>
                         <AccordionContent className="text-justify pt-3">
@@ -600,10 +620,54 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
         </article>
 
         {/* Sidebar Column */}
-        <aside className="w-full md:w-[35%] md:sticky md:top-32 self-start space-y-6">
+        <aside className="hidden md:block w-full md:w-[35%] md:sticky md:top-32 self-start space-y-6">
           {sidebar}
         </aside>
       </div>
+
+      {/* Mobile Sticky Bottom Bar */}
+      <div 
+        className="md:hidden fixed left-0 right-0 z-[60] bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] px-4 py-3 pb-safe flex justify-between items-center"
+        style={{ bottom: '65px' }}
+      >
+        <div className="flex flex-col">
+          <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Starting from</span>
+          <span className="text-xl font-black text-[#FE5300] leading-none mt-0.5">₹ {Number(displayCost).toLocaleString('en-IN')}/-</span>
+        </div>
+        <Button 
+          onClick={() => setShowMobileCalculator(true)}
+          className="bg-[#FE5300] hover:bg-[#e44a00] text-white px-6 py-5 rounded-xl font-bold shadow-md shadow-[#FE5300]/20 text-base"
+        >
+          Apply Visa
+        </Button>
+      </div>
+
+      {/* Mobile Calculator Modal */}
+      {showMobileCalculator && (
+        <div 
+          className="md:hidden fixed inset-0 z-[70] flex items-end justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowMobileCalculator(false)}
+        >
+          <div 
+            className="w-full bg-gray-50 rounded-t-3xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-full duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10 rounded-t-3xl shadow-sm">
+              <h3 className="font-bold text-lg text-gray-900">Apply Visa</h3>
+              <button
+                type="button"
+                onClick={() => setShowMobileCalculator(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              {sidebar}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -113,7 +113,7 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
         description={visa.excerpt}
         overlayOpacity={100}
       >
-        <div className="w-full flex flex-col gap-8 mt-6">
+        <div className="w-full flex flex-col gap-5 md:gap-8 mt-4 md:mt-6">
           {/* Ribbon Badge */}
           {visa.visaProcessed && (
             <div className="relative inline-flex items-center gap-2 bg-[#FE5300] text-white pl-3 pr-4 py-1.5 shadow-md self-start">
@@ -126,7 +126,7 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
           )}
 
           {/* Details Row */}
-          <div className="flex flex-wrap gap-12 md:gap-24">
+          <div className="flex flex-wrap gap-6 md:gap-24 mt-2 md:mt-0">
             {displayDuration && (
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm md:text-[15px] font-medium tracking-wide mb-1">Processing time</span>
@@ -136,7 +136,7 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
             {displayCost && (
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm md:text-[15px] font-medium tracking-wide mb-1">Starting from</span>
-                <span className="text-white text-xl md:text-2xl font-bold tracking-tight">₹ {displayCost}/-</span>
+                <span className="text-white text-xl md:text-2xl font-bold tracking-tight">₹ {Number(displayCost).toLocaleString('en-IN')}/-</span>
               </div>
             )}
           </div>
