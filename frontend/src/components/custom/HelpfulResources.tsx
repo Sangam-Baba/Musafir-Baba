@@ -9,7 +9,7 @@ function HelpfulResources({ data }: { data: ItemsInterface[] }) {
   return (
     <div className="border border-gray-400 px-4 py-8 flex flex-col gap-6 w-full rounded-md bg-gray-50">
       <h3 className="text-lg md:text-xl font-semibold text-center">
-        What To Read Next
+        Helpful Resources
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-[80%] mx-auto">

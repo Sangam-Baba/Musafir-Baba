@@ -38,13 +38,16 @@ function RelatedWebpage({ blogs, title, type }: ListBlogSidebarProps) {
             key={blog._id}
             className="flex flex-row items-center px-2 py-2 gap-2 border-none shadow-none "
           >
-            <div className="relative w-[120px] h-[80px] shrink-0">
+            <div 
+              className="relative shrink-0 overflow-hidden rounded-md border border-gray-200"
+              style={{ width: '80px', height: '54px', minWidth: '80px', minHeight: '54px', flexShrink: 0 }}
+            >
               <Image
                 src={blog.coverImage.url}
                 alt={blog.coverImage.alt || blog.title}
                 fill
                 unoptimized
-                className="rounded-md object-cover border border-gray-200"
+                style={{ objectFit: 'cover' }}
               />
             </div>
             <CardContent className="p-2">

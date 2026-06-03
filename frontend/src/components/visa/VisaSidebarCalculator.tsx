@@ -73,13 +73,13 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
   // If no specific visas are configured, fall back to simple cost display
   if (!selectedVisaCard) {
     return (
-      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6 border border-gray-100 flex flex-col gap-5">
+      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4 md:p-6 border border-gray-100 flex flex-col gap-4 md:gap-5">
         <div className="flex justify-between items-center">
           <span className="text-gray-500 font-semibold">Visa Fee</span>
-          <span className="text-3xl font-extrabold text-[#FE5300]">₹{visa.cost}</span>
+          <span className="text-3xl font-extrabold text-[#FE5300]">₹{Number(visa.cost).toLocaleString('en-IN')}</span>
         </div>
         <Link href={`/visa/${visa.slug}/apply`} className="w-full">
-          <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-6 rounded-xl text-lg font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+          <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-4 md:py-6 rounded-xl text-base md:text-lg font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
             Apply Now <ArrowRight className="w-5 h-5" />
           </Button>
         </Link>
@@ -139,7 +139,7 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
       {/* Dynamic Visa Calculator Card */}
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100/90 overflow-hidden relative z-0">
 
-        <div className="p-4 space-y-3">
+        <div className="p-3 md:p-4 space-y-2 md:space-y-3">
           {/* Interchange Select Option for Visa Type */}
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">
@@ -244,25 +244,25 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
           {/* Specifications removed as requested */}
 
           {/* Pricing Breakdown */}
-          <div className="space-y-3 pt-2">
+          <div className="space-y-2 md:space-y-3 pt-1 md:pt-2">
             <div className="border-t border-dashed border-gray-200" />
-            <div className="space-y-2 text-[13px]">
+            <div className="space-y-1 md:space-y-2 text-xs md:text-[13px]">
               <div className="flex justify-between items-center text-gray-500">
                 <span>Government Fee {travellers > 1 ? `(x${travellers})` : ""}</span>
-                <span className="font-bold text-gray-800">₹{govFee}</span>
+                <span className="font-bold text-gray-800">₹{Number(govFee).toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center text-gray-500">
                 <span>Service Charges {travellers > 1 ? `(x${travellers})` : ""}</span>
-                <span className="font-bold text-gray-800">₹{serviceCharge}</span>
+                <span className="font-bold text-gray-800">₹{Number(serviceCharge).toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between items-center text-gray-500">
                 <span>GST ({gstPercentage}%) {travellers > 1 ? `(x${travellers})` : ""}</span>
-                <span className="font-bold text-gray-800">₹{calculatedGst}</span>
+                <span className="font-bold text-gray-800">₹{Number(calculatedGst).toLocaleString('en-IN')}</span>
               </div>
             </div>
-            <div className="pt-3 border-t border-dashed border-gray-200 flex justify-between items-center text-sm">
+            <div className="pt-2 md:pt-3 border-t border-dashed border-gray-200 flex justify-between items-center text-xs md:text-sm">
               <span className="font-extrabold text-gray-900">Total Fee {travellers > 1 ? `(${travellers} Pax)` : ""}</span>
-              <span className="text-2xl font-black text-[#FE5300]">₹{totalCost}</span>
+              <span className="text-xl md:text-2xl font-black text-[#FE5300]">₹{Number(totalCost).toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -271,7 +271,7 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
             href={`/visa/${visa.slug}/apply?visaCardId=${selectedVisaCard._id}&validityIndex=${selectedValidityIndex}&express=${isExpress}&travellers=${travellers}`}
             className="block w-full pt-1"
           >
-            <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-4 rounded-xl text-base font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <Button className="w-full bg-[#FE5300] hover:bg-[#e44a00] text-white py-3 md:py-4 rounded-xl text-sm md:text-base font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
               Apply Now <ArrowRight className="w-5 h-5 animate-pulse" />
             </Button>
           </Link>
