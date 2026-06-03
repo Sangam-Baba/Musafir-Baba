@@ -63,13 +63,13 @@ export default function VisaWhyChoose() {
       </div>
 
       {/* Modern Centered Airy Grid */}
-      <div className="flex flex-wrap justify-center gap-x-12 gap-y-10 max-w-5xl mx-auto">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10 md:gap-x-12 max-w-5xl mx-auto">
         {points.map((pt, idx) => {
           const Icon = pt.icon;
           return (
             <div 
               key={idx}
-              className="group flex flex-col items-center text-center w-[240px] transition-all duration-300"
+              className="group flex flex-col items-center text-center w-full transition-all duration-300"
             >
               {/* Double-layered Curved Circular Icon Frame */}
               <div className="relative mb-4 flex items-center justify-center">

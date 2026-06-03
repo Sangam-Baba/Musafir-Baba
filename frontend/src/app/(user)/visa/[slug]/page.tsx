@@ -73,6 +73,35 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
   const faqSchema = getFAQSchema(visa?.faqs ?? []);
   const breadcrumbSchema = getBreadcrumbSchema("visa/" + slug);
   const webpageSchema = getWebPageSchema(visa.title, "visa/" + slug);
+
+  let displayDuration = visa.duration;
+  let displayCost = visa.cost;
+
+  if (visa.visas && visa.visas.length > 0) {
+    let lowestGovFee = Infinity;
+    
+    visa.visas.forEach((card: any) => {
+      const entries = card.validityEntries && card.validityEntries.length > 0 ? card.validityEntries : [card];
+      
+      entries.forEach((entry: any) => {
+        const stdGovFee = entry.governmentFee ?? card.governmentFee;
+        const expGovFee = entry.expressGovernmentFee ?? card.expressGovernmentFee;
+        
+        if (stdGovFee !== undefined && stdGovFee !== null && stdGovFee > 0 && stdGovFee < lowestGovFee) {
+          lowestGovFee = stdGovFee;
+          displayDuration = entry.processTime || card.processTime || entry.visaDuration || card.visaDuration || visa.duration;
+          displayCost = stdGovFee;
+        }
+        
+        if (expGovFee !== undefined && expGovFee !== null && expGovFee > 0 && expGovFee < lowestGovFee) {
+          lowestGovFee = expGovFee;
+          displayDuration = entry.expressVisaDuration || card.expressVisaDuration || entry.visaDuration || card.visaDuration || visa.duration;
+          displayCost = expGovFee;
+        }
+      });
+    });
+  }
+
   return (
     <section className="">
       <Hero
@@ -98,16 +127,16 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
 
           {/* Details Row */}
           <div className="flex flex-wrap gap-12 md:gap-24">
-            {visa.duration && (
+            {displayDuration && (
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm md:text-[15px] font-medium tracking-wide mb-1">Processing time</span>
-                <span className="text-white text-xl md:text-2xl font-bold tracking-tight">{visa.duration}</span>
+                <span className="text-white text-xl md:text-2xl font-bold tracking-tight">{displayDuration}</span>
               </div>
             )}
-            {visa.cost && (
+            {displayCost && (
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm md:text-[15px] font-medium tracking-wide mb-1">Starting from</span>
-                <span className="text-white text-xl md:text-2xl font-bold tracking-tight">₹ {visa.cost}/-</span>
+                <span className="text-white text-xl md:text-2xl font-bold tracking-tight">₹ {displayCost}/-</span>
               </div>
             )}
           </div>

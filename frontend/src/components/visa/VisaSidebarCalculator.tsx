@@ -114,9 +114,30 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
     : currentEntry?.processTime;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col">
+      <style>{`
+        @keyframes slide-gradient-infinite {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
+        }
+        .animate-slide-gradient {
+          background-size: 400% 100%;
+          animation: slide-gradient-infinite 10s linear infinite;
+        }
+      `}</style>
+      {/* Ribbon Badge */}
+      <div 
+        className="relative self-start inline-flex items-center gap-2 text-white pl-3 pr-[18px] py-1.5 w-max mb-[-4px] z-10 bg-[linear-gradient(90deg,#dc2626,#FE5300,#facc15,#FE5300,#dc2626)] animate-slide-gradient drop-shadow-md"
+        style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)" }}
+      >
+        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+        </svg>
+        <span className="font-bold text-xs tracking-wide">India&apos;s #1 Visa Agency</span>
+      </div>
+
       {/* Dynamic Visa Calculator Card */}
-      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100/90 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100/90 overflow-hidden relative z-0">
 
         <div className="p-4 space-y-3">
           {/* Interchange Select Option for Visa Type */}
