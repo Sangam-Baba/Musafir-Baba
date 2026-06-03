@@ -78,6 +78,7 @@ export default function GlobalSearch() {
         <input
           type="text"
           value={query}
+          autoFocus={true}
           onChange={(e) => {
             setQuery(e.target.value);
             setIsOpen(true);

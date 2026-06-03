@@ -7,6 +7,7 @@ import { VisaType } from "../models/VisaType.js";
 import { VisaValidity } from "../models/VisaValidity.js";
 import { VisaDuration } from "../models/VisaDuration.js";
 import { VisaRejectionReason } from "../models/VisaRejectionReason.js";
+import { VisaExpertTip } from "../models/VisaExpertTip.js";
 
 // Helper for generating standard CRUD
 const generateCRUD = (Model, modelName) => ({
@@ -75,3 +76,4 @@ export const visaTypeController = generateCRUD(VisaType, "Visa Type");
 export const visaValidityController = generateCRUD(VisaValidity, "Visa Validity");
 export const visaDurationController = generateCRUD(VisaDuration, "Visa Duration");
 export const visaRejectionReasonController = generateCRUD(VisaRejectionReason, "Visa Rejection Reason");
+export const visaExpertTipController = generateCRUD(VisaExpertTip, "Visa Expert Tip");

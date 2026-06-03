@@ -120,6 +120,12 @@ const visaSchema = new mongoose.Schema(
         ref: "VisaRejectionReason",
       },
     ],
+    expertTips: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "VisaExpertTip",
+      },
+    ],
     visas: [
       {
         visaPurpose: { type: String },

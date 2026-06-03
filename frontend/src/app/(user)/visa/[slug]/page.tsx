@@ -5,7 +5,6 @@ import VisaClient from "./VisaClient";
 import ListBlogSidebar from "@/components/custom/ListBlogSidebar";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import VisaWhyChoose from "@/components/visa/VisaWhyChoose";
-import { Testimonial } from "@/components/custom/Testimonial";
 import { notFound } from "next/navigation";
 import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
@@ -135,9 +134,6 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
               <div className="py-2">
                 <VisaWhyChoose />
               </div>
-              <section>
-                <Testimonial data={visa.reviews ?? []} />
-              </section>
             </>
           }
           sidebar={

@@ -238,6 +238,12 @@ export const NAV_GROUPS = [
         icon: Rocket,
         permission: "master-visa-rejection",
       },
+      {
+        label: "Visa Expert Tips",
+        href: "/admin/master-data/visa-expert-tips",
+        icon: Rocket,
+        permission: "master-visa-rejection",
+      },
     ],
   },
   {

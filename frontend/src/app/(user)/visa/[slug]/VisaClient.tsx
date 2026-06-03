@@ -9,10 +9,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Check, Calendar, Clock, Globe, Zap, ChevronRight, Info } from "lucide-react";
+import { Check, Calendar, Clock, Globe, Zap, ChevronRight, Info, AlertCircle, Lightbulb } from "lucide-react";
 import Link from "next/link";
+import { Testimonial } from "@/components/custom/Testimonial";
 
-type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons";
+type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips";
 
 interface Faq {
   question: string;
@@ -255,24 +256,31 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   const [active, setActive] = useState<TabKey>(
     visa.visas && visa.visas.length > 0 ? "visasList" : "description"
   );
-  const [openItem, setOpenItem] = useState<string | undefined>(undefined);
+  const [openItem, setOpenItem] = useState<string>("faq-0");
 
   const tabs: { key: TabKey; label: string }[] = [];
 
-  if (visa.visas && visa.visas.length > 0) tabs.push({ key: "visasList", label: "Visa Types" });
-  if (visa.highlights && visa.highlights.trim() !== "") tabs.push({ key: "highlights", label: "Highlights" });
-  if (visa.quickAnswer && visa.quickAnswer.trim() !== "") tabs.push({ key: "quickAnswer", label: "Quick Answers" });
-  if (visa.whyThisVisa && visa.whyThisVisa.trim() !== "") tabs.push({ key: "whyThisVisa", label: `Why Visit ${visa.country || 'Destination'}` });
-  if (visa.content) tabs.push({ key: "description", label: "Visa Overview" });
-  if (visa.eligibility && visa.eligibility.trim() !== "") tabs.push({ key: "eligibility", label: "Eligibility" });
-  if (visa.documentsContent && typeof visa.documentsContent === "string" && visa.documentsContent.trim() !== "") tabs.push({ key: "documents", label: "Documents Required" });
-  if (visa.feesAndCharges && visa.feesAndCharges.trim() !== "") tabs.push({ key: "feesAndCharges", label: "Fees & Charges" });
-  if (visa.howToApply && visa.howToApply.trim() !== "") tabs.push({ key: "howToApply", label: "How to Apply" });
-  if (visa.process && (Array.isArray(visa.process) ? visa.process.length > 0 : typeof visa.process === "string" && visa.process.trim() !== "")) tabs.push({ key: "process", label: "Process" });
-  if (visa.rejectionReasons && visa.rejectionReasons.length > 0) tabs.push({ key: "rejectionReasons", label: "Rejection Reasons" });
-  if (visa.faqs && visa.faqs.length > 0) tabs.push({ key: "faqs", label: "FAQs" });
-  if (visa.helpfulResources && visa.helpfulResources.trim() !== "") tabs.push({ key: "helpfulResources", label: "Helpful Resources" });
-  if (visa.cta && visa.cta.trim() !== "") tabs.push({ key: "cta", label: "CTA" });
+  const hasContent = (content: any) => {
+    if (!content) return false;
+    if (Array.isArray(content)) return content.length > 0;
+    if (typeof content !== 'string') return true;
+    const stripped = content.replace(/<[^>]*>?/gm, '').trim();
+    return stripped.length > 0;
+  };
+
+  if (hasContent(visa.visas)) tabs.push({ key: "visasList", label: "Visa Types" });
+  if (hasContent(visa.whyThisVisa)) tabs.push({ key: "whyThisVisa", label: `Why Visit ${visa.country || 'Destination'}` });
+  if (hasContent(visa.content)) tabs.push({ key: "description", label: "Visa Overview" });
+  if (hasContent(visa.eligibility)) tabs.push({ key: "eligibility", label: "Eligibility" });
+  if (hasContent(visa.documentsContent)) tabs.push({ key: "documents", label: "Documents Required" });
+  if (hasContent(visa.feesAndCharges)) tabs.push({ key: "feesAndCharges", label: "Fees & Charges" });
+  if (hasContent(visa.howToApply)) tabs.push({ key: "howToApply", label: "How to Apply" });
+  if (hasContent(visa.process)) tabs.push({ key: "process", label: "Process" });
+  if (hasContent(visa.rejectionReasons)) tabs.push({ key: "rejectionReasons", label: "Rejection Reasons" });
+  if (hasContent(visa.expertTips)) tabs.push({ key: "expertTips", label: "Visa Expert Tips" });
+  if (hasContent(visa.faqs)) tabs.push({ key: "faqs", label: "FAQs" });
+  if (hasContent(visa.helpfulResources)) tabs.push({ key: "helpfulResources", label: "Helpful Resources" });
+  if (hasContent(visa.cta)) tabs.push({ key: "cta", label: "CTA" });
 
   return (
     <div className="w-full">
@@ -282,6 +290,31 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
           <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
             <BlogContent html={visa.quickSummary} />
           </section>
+        </div>
+      )}
+
+      {/* Highlights & Quick Answers Above Tabs */}
+      {(visa.highlights?.trim() || visa.quickAnswer?.trim()) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
+            {visa.highlights && visa.highlights.trim() !== "" && (
+              <div>
+                <h3 className="text-xl font-bold font-heading text-black mb-3 uppercase">Visa at a Glance</h3>
+                <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0 bg-[#fefce8] rounded-none border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] overflow-hidden font-mono [&_table]:w-full [&_table]:text-left [&_table]:border-collapse [&_table]:text-black [&_table]:m-0 [&_tr:first-child>th]:border-b-4 [&_tr:first-child>th]:border-black [&_tr:first-child>td]:border-b-4 [&_tr:first-child>td]:border-black [&_tr:first-child>th]:bg-rose-400 [&_tr:first-child>td]:bg-rose-400 [&_th]:py-3.5 [&_th]:px-4 [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:border-r-2 [&_th]:border-black [&_th:last-child]:border-r-0 [&_td]:py-3 [&_td]:px-4 [&_td]:text-sm [&_td]:border-b-2 [&_td]:border-r-2 [&_td]:border-black [&_td:last-child]:border-r-0 [&_tr:last-child>td]:border-b-0 [&_tr:not(:first-child)>td]:bg-amber-100/50 [&_tr:not(:first-child):hover>td]:!bg-teal-100 [&_td:first-child]:font-bold [&_td:first-child]:whitespace-nowrap [&_td:last-child]:font-medium [&_td]:transition-colors">
+                  <BlogContent html={visa.highlights} />
+                </section>
+              </div>
+            )}
+
+            {visa.quickAnswer && visa.quickAnswer.trim() !== "" && (
+              <div>
+                <h3 className="text-xl font-bold font-heading text-black mb-3">Quick Answers</h3>
+                <section className="max-w-none text-black leading-relaxed [&_ul]:list-none [&_ul]:pl-0 [&_ul]:m-0 [&_ul]:grid [&_ul]:grid-cols-1 sm:[&_ul]:grid-cols-2 [&_ul]:gap-4 [&_li]:flex [&_li]:flex-col [&_li]:justify-center [&_li]:min-h-[130px] [&_li]:p-5 [&_li]:m-0 [&_li::marker]:hidden [&_li::before]:hidden [&_li]:bg-white [&_li]:border [&_li]:border-gray-100 [&_li]:rounded-xl [&_li]:shadow-sm [&_li]:transition-all [&_li]:duration-300 [&_li:hover]:-translate-y-1 [&_li:hover]:shadow-xl [&_li:hover]:border-[#FE5300]/40 [&_li_*]:!m-0 [&_li_*]:!leading-relaxed [&_li_strong]:block [&_li_strong]:mb-1.5 [&_li_strong]:text-base [&_li_strong]:text-gray-900 [&_li_strong]:transition-colors [&_li_b]:block [&_li_b]:mb-1.5 [&_li_b]:text-base [&_li_b]:text-gray-900 [&_li_b]:transition-colors [&_li:hover_strong]:text-[#FE5300] [&_li:hover_b]:text-[#FE5300] [&_li]:text-gray-600 [&_li]:text-sm [&_li_p]:text-gray-600 [&_li_p]:text-sm">
+                  <BlogContent html={visa.quickAnswer} />
+                </section>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -331,7 +364,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
           };
           
           const renderDynamicSection = (key: string) => {
-            if (!visa[key]) return null;
+            if (!hasContent(visa[key])) return null;
             return (
               <div id={key} key={key} className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
                 <h3 className="text-xl font-bold font-heading text-black mb-5">{sectionHeadings[key]}</h3>
@@ -361,11 +394,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
-              {renderDynamicSection("highlights")}
-              {renderDynamicSection("quickAnswer")}
               {renderDynamicSection("whyThisVisa")}
 
-              {visa.content && (
+              {hasContent(visa.content) && (
                 <div id="description" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
                   <h3 className="text-xl font-bold font-heading text-black mb-5">Visa Overview</h3>
                   <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
@@ -376,7 +407,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
 
               {renderDynamicSection("eligibility")}
 
-              {visa.documentsContent && (
+              {hasContent(visa.documentsContent) && (
                 <div id="documents" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
                   <h3 className="text-xl font-bold font-heading text-black mb-5">Documents Required</h3>
                   <div 
@@ -389,7 +420,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {renderDynamicSection("feesAndCharges")}
               {renderDynamicSection("howToApply")}
 
-              {visa.process && (
+              {hasContent(visa.process) && (
                 <div id="process" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
                   <h3 className="text-xl font-bold font-heading text-black mb-5">Step-by-Step Process</h3>
                   {Array.isArray(visa.process) ? (
@@ -410,16 +441,19 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
-              {visa.rejectionReasons && visa.rejectionReasons.length > 0 && (
+              {hasContent(visa.rejectionReasons) && (
                 <div id="rejectionReasons" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
                   <h3 className="text-xl font-bold font-heading text-black mb-5">Common Rejection Reasons</h3>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {visa.rejectionReasons.map((reason: any, idx: number) => (
-                      <div key={idx} className="flex flex-col h-full border-l-2 border-red-500 pl-4 py-1">
-                        <h4 className="text-base font-bold font-heading text-black flex items-center gap-2 mb-2">
+                      <div key={idx} className="aspect-square bg-white border border-gray-200 p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
+                        <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center mb-3 shrink-0">
+                          <AlertCircle className="w-4 h-4 text-red-600" strokeWidth={2} />
+                        </div>
+                        <h4 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
                           {reason.title}
                         </h4>
-                        <div className="prose prose-sm text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                        <div className="prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
                           <BlogContent html={reason.description} />
                         </div>
                       </div>
@@ -428,14 +462,34 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
-              {visa.faqs && visa.faqs.length > 0 && (
+              {hasContent(visa.expertTips) && (
+                <div id="expertTips" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <h3 className="text-xl font-bold font-heading text-black mb-5">Visa Expert Tips</h3>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {visa.expertTips.map((tip: any, idx: number) => (
+                      <div key={idx} className="aspect-square bg-white border border-gray-200 p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
+                        <div className="w-8 h-8 rounded-full bg-[#FE5300]/10 flex items-center justify-center mb-3 shrink-0">
+                          <Lightbulb className="w-4 h-4 text-[#FE5300]" strokeWidth={2} />
+                        </div>
+                        <h4 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
+                          {tip.title}
+                        </h4>
+                        <div className="prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
+                          <BlogContent html={tip.description} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {hasContent(visa.faqs) && (
                 <div id="faqs" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
                   <h3 className="text-xl font-bold font-heading text-black mb-5">FAQs</h3>
                   <Accordion
                     type="single"
-                    collapsible
                     value={openItem}
-                    onValueChange={setOpenItem}
+                    onValueChange={(val) => { if (val) setOpenItem(val); }}
                     className="w-full space-y-2"
                   >
                   {visa.faqs.map((faq: Faq, index: number) => {
@@ -461,6 +515,12 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
+              {visa.reviews && visa.reviews.length > 0 && (
+                <div id="testimonials" className="mb-16 pb-12 border-b border-gray-100 last:border-0">
+                  <Testimonial data={visa.reviews} />
+                </div>
+              )}
+
               {renderDynamicSection("helpfulResources")}
               {renderDynamicSection("cta")}
             </>
@@ -470,6 +530,25 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
 
           {/* Render extra content passed from page below the active tab content */}
           {bottomContent}
+
+          {/* About the Author Section */}
+          <div className="mt-12 p-6 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col sm:flex-row gap-6 items-start">
+            <div className="w-16 h-16 rounded-full bg-[#FE5300]/10 flex items-center justify-center shrink-0 border border-[#FE5300]/20">
+              <span className="text-[#FE5300] font-black text-2xl tracking-tighter">MB</span>
+            </div>
+            <div className="flex-1 space-y-2.5">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">About the Author</h4>
+              <h3 className="text-lg font-bold text-slate-900 font-heading">MusafirBaba Visa Team</h3>
+              <p className="text-[13px] text-slate-600 leading-relaxed">
+                Our visa specialists regularly assist travelers with tourist visa applications, documentation guidance, travel planning, and visa consultation for a wide range of international destinations.
+              </p>
+              <div className="pt-3 mt-3 border-t border-slate-200/60 flex flex-col sm:flex-row gap-2 sm:gap-6 text-[11px] text-slate-500 font-medium">
+                <span>Last Updated: <strong className="text-slate-700">June 2026</strong></span>
+                <span className="hidden sm:inline text-slate-300">|</span>
+                <span>Reviewed By: <strong className="text-slate-700">Senior Visa Consultants, MusafirBaba</strong></span>
+              </div>
+            </div>
+          </div>
         </article>
 
         {/* Sidebar Column */}

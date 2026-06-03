@@ -87,6 +87,8 @@ export interface Visa {
   canonicalUrl?: string;
   keywords: string[];
   reviews?: string[];
+  rejectionReasons?: string[];
+  expertTips?: string[];
   cost: number;
   visaType: string;
   bannerImage?: {
@@ -107,7 +109,6 @@ export interface Visa {
   necessaryDocuments?: string[];
   documentsContent?: string;
   process?: any;
-  rejectionReasons?: string[];
   visas?: VisaCard[];
 }
 
@@ -156,6 +157,8 @@ export default function CreateVisaPage() {
     canonicalUrl: "",
     keywords: [],
     reviews: [],
+    rejectionReasons: [],
+    expertTips: [],
     cost: 0,
     visaType: "DAC",
     faqs: [
@@ -169,7 +172,6 @@ export default function CreateVisaPage() {
     necessaryDocuments: ["Photo", "Passport"],
     documentsContent: "",
     process: "",
-    rejectionReasons: [],
     visas: [],
   };
 
@@ -238,11 +240,20 @@ export default function CreateVisaPage() {
       return res.json();
     },
   });
+  const { data: visaExpertTipsData } = useQuery({
+    queryKey: ["master-data", "visa-expert-tips"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/visa-expert-tips?all=true`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
 
   const visaPurposeOptions = visaPurposeData?.data || [];
   const visaValidityOptions = visaValidityData?.data || [];
   const visaDurationOptions = visaDurationData?.data || [];
   const visaRejectionReasonsOptions = visaRejectionReasonsData?.data || [];
+  const visaExpertTipsOptions = visaExpertTipsData?.data || [];
 
   const formatDuration = (item: any) => {
     const parts = [];
@@ -494,6 +505,45 @@ export default function CreateVisaPage() {
                                 className="text-[11px] font-semibold text-slate-800 cursor-pointer"
                               >
                                 {reason.title}
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expert Tips Multi-Select */}
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Expert Tips</FormLabel>
+                  {visaExpertTipsOptions.length === 0 ? (
+                    <div className="text-[11px] text-gray-400 italic">No expert tips found in Master Data.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {visaExpertTipsOptions.map((tip: any) => {
+                        const current = form.watch("expertTips") || [];
+                        const isChecked = current.includes(tip._id);
+                        return (
+                          <div key={tip._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <Checkbox
+                              id={`tip-${tip._id}`}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  form.setValue("expertTips", [...current, tip._id]);
+                                } else {
+                                  form.setValue("expertTips", current.filter((id) => id !== tip._id));
+                                }
+                              }}
+                              className="mt-0.5"
+                            />
+                            <div className="space-y-1 leading-none">
+                              <label
+                                htmlFor={`tip-${tip._id}`}
+                                className="text-[11px] font-semibold text-slate-800 cursor-pointer"
+                              >
+                                {tip.title}
                               </label>
                             </div>
                           </div>

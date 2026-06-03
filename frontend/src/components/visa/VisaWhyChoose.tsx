@@ -6,43 +6,43 @@ import { Globe, Award, MapPin, CheckCircle2, ShieldCheck, Truck, Lock } from "lu
 export default function VisaWhyChoose() {
   const points = [
     {
-      title: "Visa services for all countries",
+      title: "Visa Services for 180 Countries",
       icon: Globe,
       color: "text-blue-500",
       bgLight: "bg-blue-50/70"
     },
     {
-      title: "45+ years of experience in visa processing",
+      title: "End-to-End Visa Assistance",
       icon: Award,
       color: "text-amber-500",
       bgLight: "bg-amber-50/70"
     },
     {
-      title: "150+ branches worldwide",
+      title: "Safety and Confidentiality",
       icon: MapPin,
       color: "text-emerald-500",
       bgLight: "bg-emerald-50/70"
     },
     {
-      title: "99.8% visa success rate",
+      title: "No hidden charges",
       icon: CheckCircle2,
       color: "text-indigo-500",
       bgLight: "bg-indigo-50/70"
     },
     {
-      title: "Start-to-end visa assistance",
+      title: "99% on time delivery",
       icon: ShieldCheck,
       color: "text-red-500",
       bgLight: "bg-red-50/70"
     },
     {
-      title: "Pick up & drop of documents at your doorstep",
+      title: "10+ years of experience",
       icon: Truck,
       color: "text-orange-500",
       bgLight: "bg-orange-50/70"
     },
     {
-      title: "Trusted for safety and confidentiality",
+      title: "Transparency and hassle-free experience",
       icon: Lock,
       color: "text-teal-500",
       bgLight: "bg-teal-50/70"
@@ -54,11 +54,11 @@ export default function VisaWhyChoose() {
       {/* Premium Header */}
       <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-12">
         <h2 className="text-xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight">
-          Why choose us? <span className="text-[#FE5300]">Because we are Awesome!</span>
+          Why choose <span className="text-[#FE5300]">MusafirBaba</span>
         </h2>
         <div className="h-1 w-20 bg-[#FE5300] rounded-full mt-3.5 mb-3" />
         <p className="text-[13px] sm:text-[14px] text-slate-500 font-medium leading-relaxed">
-          We combine unmatched expertise, absolute transparency, and doorstep support to make your global travel smooth and worry-free.
+          MusafirBaba combine unmatched expertise, absolute transparency, and doorstep support to make your global travel smooth and worry-free.
         </p>
       </div>
 
