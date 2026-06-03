@@ -23,7 +23,12 @@ const visaSchema = new mongoose.Schema(
     eligibility: { type: String },
     feesAndCharges: { type: String },
     howToApply: { type: String },
-    helpfulResources: { type: String },
+    helpfulResources: [
+      {
+        title: String,
+        url: String,
+      },
+    ],
     cta: { type: String },
     excerpt: {
       type: String,
@@ -118,6 +123,12 @@ const visaSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "VisaRejectionReason",
+      },
+    ],
+    expertTips: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "VisaExpertTip",
       },
     ],
     visas: [

@@ -87,6 +87,8 @@ export interface Visa {
   canonicalUrl?: string;
   keywords: string[];
   reviews?: string[];
+  rejectionReasons?: string[];
+  expertTips?: string[];
   cost: number;
   visaType: string;
   bannerImage?: {
@@ -107,7 +109,6 @@ export interface Visa {
   necessaryDocuments?: string[];
   documentsContent?: string;
   process?: any;
-  rejectionReasons?: string[];
   visas?: VisaCard[];
 }
 
@@ -156,6 +157,8 @@ export default function CreateVisaPage() {
     canonicalUrl: "",
     keywords: [],
     reviews: [],
+    rejectionReasons: [],
+    expertTips: [],
     cost: 0,
     visaType: "DAC",
     faqs: [
@@ -169,7 +172,6 @@ export default function CreateVisaPage() {
     necessaryDocuments: ["Photo", "Passport"],
     documentsContent: "",
     process: "",
-    rejectionReasons: [],
     visas: [],
   };
 
@@ -200,6 +202,11 @@ export default function CreateVisaPage() {
   const visasArray = useFieldArray({
     control: form.control,
     name: "visas",
+  });
+
+  const helpfulResourcesArray = useFieldArray({
+    control: form.control,
+    name: "helpfulResources",
   });
 
   const [collapsedCards, setCollapsedCards] = useState<Record<number, boolean>>({});
@@ -238,11 +245,20 @@ export default function CreateVisaPage() {
       return res.json();
     },
   });
+  const { data: visaExpertTipsData } = useQuery({
+    queryKey: ["master-data", "visa-expert-tips"],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/visa-expert-tips?all=true`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
 
   const visaPurposeOptions = visaPurposeData?.data || [];
   const visaValidityOptions = visaValidityData?.data || [];
   const visaDurationOptions = visaDurationData?.data || [];
   const visaRejectionReasonsOptions = visaRejectionReasonsData?.data || [];
+  const visaExpertTipsOptions = visaExpertTipsData?.data || [];
 
   const formatDuration = (item: any) => {
     const parts = [];
@@ -494,6 +510,45 @@ export default function CreateVisaPage() {
                                 className="text-[11px] font-semibold text-slate-800 cursor-pointer"
                               >
                                 {reason.title}
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expert Tips Multi-Select */}
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Expert Tips</FormLabel>
+                  {visaExpertTipsOptions.length === 0 ? (
+                    <div className="text-[11px] text-gray-400 italic">No expert tips found in Master Data.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {visaExpertTipsOptions.map((tip: any) => {
+                        const current = form.watch("expertTips") || [];
+                        const isChecked = current.includes(tip._id);
+                        return (
+                          <div key={tip._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <Checkbox
+                              id={`tip-${tip._id}`}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  form.setValue("expertTips", [...current, tip._id]);
+                                } else {
+                                  form.setValue("expertTips", current.filter((id) => id !== tip._id));
+                                }
+                              }}
+                              className="mt-0.5"
+                            />
+                            <div className="space-y-1 leading-none">
+                              <label
+                                htmlFor={`tip-${tip._id}`}
+                                className="text-[11px] font-semibold text-slate-800 cursor-pointer"
+                              >
+                                {tip.title}
                               </label>
                             </div>
                           </div>
@@ -915,13 +970,37 @@ export default function CreateVisaPage() {
                 )} />
 
                 {/* Helpful Resources */}
-                <FormField control={form.control} name="helpfulResources" render={({ field }) => (
-                  <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )} />
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</Label>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => helpfulResourcesArray.append({ title: "", url: "" })}
+                      className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200"
+                    >
+                      + Add Resource
+                    </Button>
+                  </div>
+                  <div className="grid gap-2">
+                    {helpfulResourcesArray.fields.map((field, index) => (
+                      <div key={field.id} className="flex gap-2 items-center bg-slate-50/50 p-2 rounded-lg border border-slate-100 group">
+                        <Input {...form.register(`helpfulResources.${index}.title`)} placeholder="Link Title" className="h-8 text-[12px] bg-white border-slate-200" />
+                        <Input {...form.register(`helpfulResources.${index}.url`)} placeholder="https://..." className="h-8 text-[12px] bg-white border-slate-200" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => helpfulResourcesArray.remove(index)}
+                          className="text-slate-300 hover:text-red-400 h-8 w-8 shrink-0"
+                        >
+                          <X size={14} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
                 {/* CTA */}
                 <FormField control={form.control} name="cta" render={({ field }) => (

@@ -76,7 +76,7 @@ export default function Header() {
         className="w-full bg-white/70 shadow-sm md:shadow-none md:bg-transparent 
                       flex items-center justify-between md:px-10 px-4 py-4"
       >
-        <div className="flex md:justify-between items-center w-full">
+        <div className="flex md:justify-between items-center w-full md:gap-4 lg:gap-8">
           {/* Mobile menu */}
           <button
             aria-label="Open menu"
@@ -105,13 +105,16 @@ export default function Header() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center mr-1"
-              aria-label="Open search"
-            >
-              <Search className="w-5 h-5" />
-            </button>
+            <div className="mr-1 w-48 lg:w-64 p-[2px] rounded-full bg-[linear-gradient(90deg,#FE5300,#ff0080,#7928ca,#00dfd8,#74ff18,#FE5300)] animate-border-gradient hover:shadow-md transition-shadow">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="flex items-center gap-2 bg-white w-full h-full text-gray-400 px-4 py-1.5 rounded-full"
+                aria-label="Open search"
+              >
+                <Search className="w-4 h-4" />
+                <span className="text-sm font-medium text-gray-500">Search destinations...</span>
+              </button>
+            </div>
 
             <Button className="hidden md:flex  text-white">
               <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">

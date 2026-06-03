@@ -1,4 +1,5 @@
 export function fixInternalLinkRel(html: string) {
+  if (!html) return html || "";
   return html.replace(/<a\s+[^>]*href="([^"]+)"[^>]*>/gi, (anchor, href) => {
     const isInternal = href.startsWith("https://musafirbaba.com");
 

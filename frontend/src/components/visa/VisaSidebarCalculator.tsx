@@ -114,9 +114,30 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
     : currentEntry?.processTime;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col">
+      <style>{`
+        @keyframes slide-gradient-infinite {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
+        }
+        .animate-slide-gradient {
+          background-size: 400% 100%;
+          animation: slide-gradient-infinite 10s linear infinite;
+        }
+      `}</style>
+      {/* Ribbon Badge */}
+      <div 
+        className="relative self-start inline-flex items-center gap-2 text-white pl-3 pr-[18px] py-1.5 w-max mb-[-4px] z-10 bg-[linear-gradient(90deg,#dc2626,#FE5300,#facc15,#FE5300,#dc2626)] animate-slide-gradient drop-shadow-md"
+        style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)" }}
+      >
+        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+        </svg>
+        <span className="font-bold text-xs tracking-wide">India&apos;s #1 Visa Agency</span>
+      </div>
+
       {/* Dynamic Visa Calculator Card */}
-      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100/90 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.05)] border border-gray-100/90 overflow-hidden relative z-0">
 
         <div className="p-4 space-y-3">
           {/* Interchange Select Option for Visa Type */}
@@ -220,58 +241,28 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
             </div>
           )}
 
-          {/* Specifications Grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2 py-0.5 px-0.5 text-xs text-gray-600">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
-              <div>
-                <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Validity</span>
-                <span className="text-gray-800 font-extrabold text-[11px]">{currentEntry?.visaValidity || "N/A"}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-              <div>
-                <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Stay Duration</span>
-                <span className="text-gray-800 font-extrabold text-[11px]">{currentEntry?.visaDuration || "N/A"}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-              <div>
-                <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Entry Type</span>
-                <span className="text-gray-800 font-extrabold text-[11px]">{currentEntry?.entryType || "Single"}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#FE5300] shrink-0" />
-              <div>
-                <span className="text-[9px] text-gray-400 block uppercase font-bold tracking-wider">Processing</span>
-                <span className="text-[#FE5300] font-extrabold text-[11px]">{processTime || "N/A"}</span>
-              </div>
-            </div>
-          </div>
+          {/* Specifications removed as requested */}
 
           {/* Pricing Breakdown */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-3 pt-2">
             <div className="border-t border-dashed border-gray-200" />
-            <div className="space-y-1 text-[11px]">
+            <div className="space-y-2 text-[13px]">
               <div className="flex justify-between items-center text-gray-500">
                 <span>Government Fee {travellers > 1 ? `(x${travellers})` : ""}</span>
-                <span className="font-semibold text-gray-800">₹{govFee}</span>
+                <span className="font-bold text-gray-800">₹{govFee}</span>
               </div>
               <div className="flex justify-between items-center text-gray-500">
                 <span>Service Charges {travellers > 1 ? `(x${travellers})` : ""}</span>
-                <span className="font-semibold text-gray-800">₹{serviceCharge}</span>
+                <span className="font-bold text-gray-800">₹{serviceCharge}</span>
               </div>
               <div className="flex justify-between items-center text-gray-500">
                 <span>GST ({gstPercentage}%) {travellers > 1 ? `(x${travellers})` : ""}</span>
-                <span className="font-semibold text-gray-800">₹{calculatedGst}</span>
+                <span className="font-bold text-gray-800">₹{calculatedGst}</span>
               </div>
             </div>
-            <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between items-center text-xs">
-              <span className="font-bold text-gray-800">Total Fee {travellers > 1 ? `(${travellers} Pax)` : ""}</span>
-              <span className="text-xl font-black text-[#FE5300]">₹{totalCost}</span>
+            <div className="pt-3 border-t border-dashed border-gray-200 flex justify-between items-center text-sm">
+              <span className="font-extrabold text-gray-900">Total Fee {travellers > 1 ? `(${travellers} Pax)` : ""}</span>
+              <span className="text-2xl font-black text-[#FE5300]">₹{totalCost}</span>
             </div>
           </div>
 
