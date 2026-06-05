@@ -310,6 +310,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
     if (!content) return false;
     if (Array.isArray(content)) return content.length > 0;
     if (typeof content !== 'string') return true;
+    
+    // If content has an image, iframe, or video, it has valid visual content
+    if (/<img|<iframe|<video/i.test(content)) return true;
+
     const stripped = content.replace(/<[^>]*>?/gm, '').trim();
     return stripped.length > 0;
   };
@@ -325,7 +329,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   if (hasContent(visa.rejectionReasons)) tabs.push({ key: "rejectionReasons", label: "Rejection Reasons" });
   if (hasContent(visa.expertTips)) tabs.push({ key: "expertTips", label: "Expert Tips" });
   if (hasContent(visa.faqs)) tabs.push({ key: "faqs", label: "FAQs" });
-  if (hasContent(visa.cta)) tabs.push({ key: "cta", label: "CTA" });
+
 
   // ── Scroll spy: update active tab when sections scroll into view ──
   const tabKeys = tabs.map((t) => t.key);
@@ -665,7 +669,13 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                   )}
                 </div>
               )}
-              {renderDynamicSection("cta")}
+              {hasContent(visa.cta) && (
+                <div className="w-full mt-8 mb-8 flex justify-center items-center">
+                  <div className="text-center w-full [&_img]:mx-auto [&_img]:max-w-full hover:opacity-95 transition-opacity">
+                    <BlogContent html={visa.cta} />
+                  </div>
+                </div>
+              )}
             </>
           );
         })()}
