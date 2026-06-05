@@ -84,6 +84,12 @@ function SlugClients({
             packageId={pkg._id}
             itinerary={pkg.itinerary}
             duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
+            highlights={pkg.highlights}
+            destination={pkg.destination?.state || ''}
+            gallery={pkg?.gallery ?? []}
+            inclusions={pkg.inclusions || []}
+            exclusions={pkg.exclusions || []}
+            batch={pkg.batch || []}
           />
         </div>
         <Hero

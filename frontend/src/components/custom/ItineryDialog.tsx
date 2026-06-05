@@ -20,6 +20,8 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import { stripHtml } from "@/lib/utils";
+import { toJpeg } from "html-to-image";
+import { ItineraryTemplate } from "./ItineraryTemplate";
 const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
@@ -35,13 +37,31 @@ export interface ItineraryItem {
 type FormData = z.infer<typeof formSchema>;
 
 const createItinerary = async (data: FormData) => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/itinerary`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Failed to create contact");
-  return res.json();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000/api';
+  
+  try {
+    const res = await fetch(`${baseUrl}/itinerary`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn("Primary API endpoint failed, trying fallback:", err);
+  }
+
+  // Fallback to local port 8000 if primary fails
+  const fallbackUrl = 'http://localhost:8000/api';
+  if (baseUrl !== fallbackUrl) {
+    const res = await fetch(`${fallbackUrl}/itinerary`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) return await res.json();
+  }
+
+  throw new Error("Failed to create contact");
 };
 export function ItineryDialog({
   title,
@@ -51,6 +71,12 @@ export function ItineryDialog({
   packageId,
   itinerary,
   duration,
+  highlights,
+  destination,
+  gallery,
+  inclusions = [],
+  exclusions = [],
+  batch = [],
 }: {
   title: string;
   description: string;
@@ -59,12 +85,19 @@ export function ItineryDialog({
   packageId: string;
   itinerary?: ItineraryItem[];
   duration?: string;
+  highlights?: string[];
+  destination?: string;
+  gallery?: { url: string; alt: string }[];
+  inclusions?: string[];
+  exclusions?: string[];
+  batch?: any[];
 }) {
   const [data, setData] = React.useState<FormData>({
     email: "",
     packageId: packageId,
   });
   const [loading, setLoading] = React.useState(false);
+  const templateRef = React.useRef<HTMLDivElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({
@@ -82,134 +115,49 @@ export function ItineryDialog({
       .trim();
   };
 
-  const generateDynamicPDF = (
+  const generateDynamicPDF = async (
     docTitle: string, 
-    docDescription: string, 
-    items: ItineraryItem[], 
-    pkgDuration?: string
   ) => {
-    const doc = new jsPDF();
-    const margin = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const contentWidth = pageWidth - (margin * 2);
-    let yPos = margin;
-
-    const addHeader = (d: jsPDF) => {
-      // Reset spacing in case it was modified
-      d.setCharSpace(0);
-      
-      // Branding
-      d.setFontSize(22);
-      d.setTextColor(254, 83, 0); // #FE5300
-      d.setFont("helvetica", "bold");
-      d.text("Musafir Baba", margin, margin + 5);
-      
-      d.setFontSize(10);
-      d.setTextColor(100);
-      d.setFont("helvetica", "normal");
-      d.text("Premium Travel Experiences", margin, margin + 11);
-      
-      // Horizontal Line
-      d.setDrawColor(254, 83, 0);
-      d.setLineWidth(0.5);
-      d.line(margin, margin + 16, pageWidth - margin, margin + 16);
-      
-      return margin + 28;
-    };
-
-    const addFooter = (d: jsPDF, pageNum: number) => {
-      d.setCharSpace(0);
-      d.setFontSize(9);
-      d.setTextColor(150);
-      d.setFont("helvetica", "normal");
-      
-      d.setDrawColor(240);
-      d.line(margin, pageHeight - margin + 5, pageWidth - margin, pageHeight - margin + 5);
-      
-      d.text(`Page ${pageNum}`, pageWidth - margin, pageHeight - margin + 12, { align: "right" });
-      d.text("www.musafirbaba.com | +91 92896 02447", margin, pageHeight - margin + 12);
-    };
-
-    // Initial Header
-    yPos = addHeader(doc);
-
-    // Package Header Section
-    doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    const titleLines = doc.splitTextToSize(cleanPdfText(docTitle), contentWidth);
-    doc.text(titleLines, margin, yPos);
-    yPos += (titleLines.length * 8) + 4;
-
-    if (pkgDuration) {
-      doc.setFontSize(12);
-      doc.setTextColor(254, 83, 0);
-      doc.text(`Duration: ${pkgDuration}`, margin, yPos);
-      yPos += 10;
+    if (!templateRef.current) {
+      throw new Error("Template reference not found.");
     }
 
-    // Main Description
-    doc.setFontSize(11);
-    doc.setTextColor(80);
-    doc.setFont("helvetica", "normal");
-    const cleanDesc = cleanPdfText(docDescription);
-    const descLines = doc.splitTextToSize(cleanDesc, contentWidth);
-    doc.text(descLines, margin, yPos);
-    yPos += (descLines.length * 6) + 15;
+    // Give it a moment to ensure fonts and styles are fully rendered
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Itinerary Section Title
-    doc.setFontSize(14);
-    doc.setTextColor(254, 83, 0);
-    doc.setFont("helvetica", "bold");
-    doc.text("TOUR ITINERARY", margin, yPos);
-    yPos += 8;
-    doc.setDrawColor(254, 83, 0);
-    doc.setLineWidth(0.2);
-    doc.line(margin, yPos, margin + 40, yPos);
-    yPos += 12;
+    // The template has multiple A4-sized children (Cover + Pages)
+    // We capture each one and add it to the PDF
+    const pages = (Array.from(templateRef.current.children) as HTMLElement[]).filter(
+      (el) => el.tagName.toLowerCase() === "div"
+    );
+    if (pages.length === 0) return;
 
-    // Day-by-Day Content
-    items.forEach((item, index) => {
-      const cleanTitle = cleanPdfText(item.title);
-      const cleanInfo = cleanPdfText(item.description);
-      
-      const itemTitleLines = doc.splitTextToSize(cleanTitle, contentWidth - 5);
-      const itemDescLines = doc.splitTextToSize(cleanInfo, contentWidth - 10);
-      
-      const itemHeight = (itemTitleLines.length * 7) + (itemDescLines.length * 6) + 10;
-
-      // Page Break Check
-      if (yPos + itemHeight > pageHeight - margin - 15) {
-        addFooter(doc, doc.getNumberOfPages());
-        doc.addPage();
-        yPos = addHeader(doc);
-      }
-
-      // Day Title with Accent
-      doc.setCharSpace(0); // Ensure clean spacing for heading
-      doc.setFillColor(255, 245, 240); // Very light orange background
-      doc.rect(margin - 2, yPos - 5, contentWidth + 4, (itemTitleLines.length * 7) + 2, "F");
-      
-      doc.setFontSize(11);
-      doc.setTextColor(254, 83, 0);
-      doc.setFont("helvetica", "bold");
-      doc.text(itemTitleLines, margin, yPos);
-      yPos += (itemTitleLines.length * 7) + 4;
-
-      // Day Description
-      doc.setFontSize(10);
-      doc.setTextColor(60);
-      doc.setFont("helvetica", "normal");
-      doc.text(itemDescLines, margin + 5, yPos);
-      yPos += (itemDescLines.length * 6) + 12;
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [794, 1123], // A4 at 96 DPI
+      compress: true
     });
 
-    // Final Footer for all pages
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        addFooter(doc, i);
+    for (let i = 0; i < pages.length; i++) {
+      const pageElement = pages[i];
+      
+      const imgData = await toJpeg(pageElement, {
+        quality: 0.9,
+        pixelRatio: 2,
+        backgroundColor: "#fdfbf7",
+        skipFonts: true,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
+      });
+      
+      if (i > 0) {
+        doc.addPage([794, 1123]);
+      }
+      
+      doc.addImage(imgData, "JPEG", 0, 0, 794, 1123);
     }
 
     doc.save(`${docTitle.replace(/\s+/g, "_")}_Itinerary.pdf`);
@@ -242,7 +190,7 @@ export function ItineryDialog({
 
       // PRIORITY 1: Use textual itinerary data if it's available (prefer dynamic generation)
       if (hasItineraryText) {
-        generateDynamicPDF(title, description, itinerary!, duration);
+        await generateDynamicPDF(title);
         toast.success("Itinerary generated and downloaded!");
       } 
       // PRIORITY 2: Fallback to the provided URL if it's a real file and we have no text data
@@ -260,67 +208,86 @@ export function ItineryDialog({
          toast.error("Itinerary data is currently unavailable for this package.");
       }
     } catch (error: any) {
-      console.log(error);
-      toast.error(error.message || "Failed to submit. Please try again.");
+      console.error(error);
+      const errMsg = error?.message || String(error) || "Unknown error";
+      toast.error(`Failed: ${errMsg}`);
     } finally {
       setLoading(false);
     }
   };
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          size={"sm"}
-          className="bg-[#FE5300] hover:bg-[#e04a00] text-white hover:text-white text-xs md:text-sm"
-        >
-          Itinerary
-          <Download className="w-2 h-2 md:w-5 md:h-5 ml-2" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader className="flex flex-row gap-4">
-            <Image
-              src={img}
-              width={100}
-              height={100}
-              alt={title}
-              className="rounded-lg"
-            />
-            <div className="flex flex-col gap-2">
-              <DialogTitle>{title}</DialogTitle>
-              <DialogDescription className="line-clamp-2">
-                {stripHtml(description)}
-              </DialogDescription>
-            </div>
-          </DialogHeader>
+    <>
+      {/* HIDDEN RENDER TARGET FOR PDF - rendered at document root level so it is not clipped by Dialog transforms */}
+      <ItineraryTemplate 
+        ref={templateRef}
+        title={title}
+        description={description}
+        itinerary={itinerary || []}
+        duration={duration}
+        img={img}
+        highlights={highlights || []}
+        destination={destination || ''}
+        gallery={gallery}
+        inclusions={inclusions}
+        exclusions={exclusions}
+        batch={batch}
+      />
 
-          <div className="grid gap-4 mt-4">
-            <div className="grid gap-3">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={data.email}
-                onChange={handleChange}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            size={"sm"}
+            className="bg-[#FE5300] hover:bg-[#e04a00] text-white hover:text-white text-xs md:text-sm"
+          >
+            Itinerary
+            <Download className="w-2 h-2 md:w-5 md:h-5 ml-2" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader className="flex flex-row gap-4">
+              <Image
+                src={img}
+                width={100}
+                height={100}
+                alt={title}
+                className="rounded-lg"
               />
-            </div>
-          </div>
+              <div className="flex flex-col gap-2">
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription className="line-clamp-2">
+                  {stripHtml(description)}
+                </DialogDescription>
+              </div>
+            </DialogHeader>
 
-          <DialogFooter className="mt-4">
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Cancel
+            <div className="grid gap-4 mt-4">
+              <div className="grid gap-3">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={data.email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="mt-4">
+              <DialogClose asChild>
+                <Button variant="outline" type="button">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Processing..." : "Download"}
               </Button>
-            </DialogClose>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Processing..." : "Download"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
