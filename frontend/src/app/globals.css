@@ -291,3 +291,67 @@ input[type="number"] {
   animation: running-emote 0.35s infinite linear;
   display: inline-block;
 }
+
+/* ── Visa content: custom list item styling ── */
+.visa-prose ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.visa-prose ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Remove paragraph margins inside list items so prose-p:mb-4 doesn't cause gaps */
+.visa-prose ul li p,
+.visa-prose ol li p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.visa-prose ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #FE5300;
+  flex-shrink: 0;
+}
+
+.visa-prose ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: visa-counter;
+}
+
+.visa-prose ol li {
+  position: relative;
+  padding-left: 2rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  counter-increment: visa-counter;
+}
+
+.visa-prose ol li::before {
+  content: counter(visa-counter);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background-color: #FE5300;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

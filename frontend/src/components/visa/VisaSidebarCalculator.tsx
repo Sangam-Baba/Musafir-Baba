@@ -179,7 +179,13 @@ export default function VisaSidebarCalculator({ visa }: VisaSidebarCalculatorPro
                 >
                   {selectedVisaCard.validityEntries!.map((entry, index) => (
                     <option key={index} value={index}>
-                      {entry.visaValidity || "N/A"} Validity / {entry.visaDuration || "N/A"} Stay ({entry.entryType || "Single"})
+                      {entry.visaValidity || "N/A"} Validity / {entry.visaDuration || "N/A"} Stay ({(() => {
+                        const entryTypeVal = entry.entryType || "Single";
+                        if (entryTypeVal.toLowerCase().includes("entry")) {
+                          return entryTypeVal;
+                        }
+                        return `${entryTypeVal} Entry`;
+                      })()})
                     </option>
                   ))}
                 </select>

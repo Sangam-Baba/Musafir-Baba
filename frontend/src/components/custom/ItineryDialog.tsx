@@ -139,25 +139,26 @@ export function ItineryDialog({
       compress: true
     });
 
-    for (let i = 0; i < pages.length; i++) {
-      const pageElement = pages[i];
-      
-      const imgData = await toJpeg(pageElement, {
-        quality: 0.9,
-        pixelRatio: 2,
+    const imgPromises = pages.map((pageElement) =>
+      toJpeg(pageElement, {
+        quality: 0.65,
+        pixelRatio: 1.2,
         backgroundColor: "#fdfbf7",
         skipFonts: true,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left'
         }
-      });
-      
+      })
+    );
+
+    const imgDataArray = await Promise.all(imgPromises);
+
+    for (let i = 0; i < imgDataArray.length; i++) {
       if (i > 0) {
         doc.addPage([794, 1123]);
       }
-      
-      doc.addImage(imgData, "JPEG", 0, 0, 794, 1123);
+      doc.addImage(imgDataArray[i], "JPEG", 0, 0, 794, 1123, undefined, "FAST");
     }
 
     doc.save(`${docTitle.replace(/\s+/g, "_")}_Itinerary.pdf`);

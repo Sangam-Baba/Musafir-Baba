@@ -109,11 +109,11 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
         title={visa.title}
         height="lg"
         align="left"
-        aspectRatio="aspect-[21/5] min-h-[250px]"
+        aspectRatio="aspect-[21/5] min-h-[250px] md:min-h-[420px]"
         description={visa.excerpt}
         overlayOpacity={100}
       >
-        <div className="w-full flex flex-col gap-5 md:gap-8 mt-4 md:mt-6">
+        <div className="w-full flex flex-col gap-4 md:gap-5 mt-4 md:mt-6">
           {/* Ribbon Badge */}
           {visa.visaProcessed && (
             <div className="relative inline-flex items-center gap-2 bg-[#FE5300] text-white pl-3 pr-4 py-1.5 shadow-md self-start">
@@ -125,8 +125,8 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
             </div>
           )}
 
-          {/* Details Row */}
-          <div className="flex flex-wrap gap-6 md:gap-24 mt-2 md:mt-0">
+          {/* Details Row — fixed spacing, not dependent on H1 */}
+          <div className="flex flex-wrap gap-6 md:gap-24 mt-4 md:mt-6">
             {displayDuration && (
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm md:text-[15px] font-medium tracking-wide mb-1">Processing time</span>
