@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BlogContent } from "@/components/custom/BlogContent";
 import {
   Accordion,
@@ -33,142 +33,153 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
   return (
     <>
       <div
-        className="group relative bg-white rounded-2xl border border-gray-200/90 p-4 md:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col justify-between gap-3 select-none shrink-0 w-[85vw] snap-center md:w-auto md:shrink"
+        className="group relative bg-white rounded-2xl border border-gray-200/90 shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition-all duration-300 select-none shrink-0 w-[82vw] snap-center md:w-auto md:shrink"
       >
-        {/* Expanding Green Bubble Background Wrapper (stays fully still & solid when cursor is on the card) */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
+        {/* Expanding Green Bubble */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <div className="absolute top-0 left-0 w-6 h-6 rounded-full bg-[#87E87F]/12 -translate-x-1/2 -translate-y-1/2 scale-0 group-hover:scale-[45] transition-transform duration-700 ease-out origin-top-left" />
         </div>
 
-        {/* Top-Left Diagonal Brand Ribbon for Visa Type */}
+        {/* Top-Left Ribbon */}
         <div className="absolute top-0 left-0 overflow-hidden w-20 h-20 pointer-events-none z-20 rounded-tl-2xl">
           <div className="absolute top-4 -left-7 bg-[#FE5300] text-white text-[9px] font-black py-0.5 w-24 text-center transform -rotate-45 shadow-sm uppercase tracking-widest leading-none">
             {visaCard.visaType || "e-Visa"}
           </div>
         </div>
 
-        {/* Purpose, Type, Info Icon & Switcher */}
-        <div className="relative z-30 flex justify-between items-center gap-2">
-          <div className="flex items-center gap-2 min-w-0 pl-10 md:pl-8">
-            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#FE5300]/10 text-[#FE5300] uppercase tracking-wider shrink-0">
+        {/* ─── DESKTOP: single horizontal row ─── */}
+        <div className="hidden md:flex items-center gap-3 px-5 py-4 relative z-10 min-h-[68px]">
+
+          {/* Left: Purpose badge + Info btn */}
+          <div className="flex items-center gap-2 pl-8 shrink-0">
+            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#FE5300]/10 text-[#FE5300] uppercase tracking-wider whitespace-nowrap">
               {visaCard.visaPurpose || "Tourist"}
             </span>
-            
-            {/* Info Button with hover Popover and click Modal fallbacks */}
-            <div className="relative group/info">
-              <button
-                type="button"
-                onClick={() => setShowInfoModal(true)}
-                className="p-1 hover:bg-gray-150 rounded-full text-gray-400 hover:text-[#FE5300] transition-colors shrink-0"
-                title="View Details"
-              >
-                <Info className="w-4.5 h-4.5" />
-              </button>
 
-              {/* Hover Popover Box (visible on hover on desktop, micro-font size for maximum readability) */}
-              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-40 w-72 md:w-80 p-3.5 bg-white rounded-xl border border-gray-150 shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 pointer-events-auto">
-                {/* Micro CSS styles to force perfect rendering and tight line-heights inside parsed HTML lists */}
-                <style dangerouslySetInnerHTML={{__html: `
-                  .tooltip-content p, .tooltip-content li {
-                    font-size: 9px !important;
-                    line-height: 1.35 !important;
-                    margin: 2px 0 !important;
-                    color: #4b5563 !important;
-                  }
-                  .tooltip-content ul, .tooltip-content ol {
-                    padding-left: 12px !important;
-                    margin: 2px 0 !important;
-                  }
-                  .tooltip-content li::marker {
-                    color: #FE5300 !important;
-                    font-size: 8px !important;
-                  }
-                `}} />
-                
+            {/* Info popover */}
+            <div className="relative group/info">
+              <button type="button" onClick={() => setShowInfoModal(true)} className="p-1 rounded-full text-gray-400 hover:text-[#FE5300] transition-colors" title="View Details">
+                <Info className="w-4 h-4" />
+              </button>
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2.5 z-40 w-72 p-3.5 bg-white rounded-xl border border-gray-150 shadow-xl opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all duration-200 pointer-events-auto">
+                <style dangerouslySetInnerHTML={{__html: `.tooltip-content p,.tooltip-content li{font-size:9px!important;line-height:1.35!important;margin:2px 0!important;color:#4b5563!important}.tooltip-content ul,.tooltip-content ol{padding-left:12px!important;margin:2px 0!important}.tooltip-content li::marker{color:#FE5300!important;font-size:8px!important}`}} />
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-[7px] border-transparent border-b-white" />
-                <div className="space-y-2.5 text-[9px] text-gray-600 leading-normal">
+                <div className="space-y-2.5 text-[9px] text-gray-600">
                   <div className="border-b border-gray-100 pb-1.5 flex justify-between items-center">
                     <span className="font-extrabold text-gray-800 text-[10px]">{visaCard.visaType} Specifications</span>
-                    <span className="px-1.5 py-0.5 rounded text-[7px] font-bold bg-[#FE5300]/10 text-[#FE5300] uppercase">
-                      {visaCard.visaPurpose}
-                    </span>
+                    <span className="px-1.5 py-0.5 rounded text-[7px] font-bold bg-[#FE5300]/10 text-[#FE5300] uppercase">{visaCard.visaPurpose}</span>
                   </div>
-
-                  {visaCard.documents && (
-                    <div className="space-y-1">
-                      <h5 className="font-extrabold text-gray-800 flex items-center gap-1 text-[9px]">
-                        <Check className="w-2.5 h-2.5 text-green-600 shrink-0" /> Required Documents
-                      </h5>
-                      <div className="max-h-[75px] overflow-y-auto text-gray-500 bg-gray-50 p-2 rounded border border-gray-100/70 tooltip-content">
-                        <BlogContent html={visaCard.documents} />
-                      </div>
-                    </div>
-                  )}
-
-                  {visaCard.processSteps && (
-                    <div className="space-y-1">
-                      <h5 className="font-extrabold text-gray-800 flex items-center gap-1 text-[9px]">
-                        <Clock className="w-2.5 h-2.5 text-orange-600 shrink-0" /> Step-by-Step Process
-                      </h5>
-                      <div className="max-h-[75px] overflow-y-auto text-gray-500 bg-gray-50 p-2 rounded border border-gray-100/70 tooltip-content">
-                        <BlogContent html={visaCard.processSteps} />
-                      </div>
-                    </div>
-                  )}
-
-                  {(!visaCard.documents && !visaCard.processSteps) && (
-                    <p className="text-gray-400 text-center py-2">No additional specifications configured.</p>
-                  )}
+                  {visaCard.documents && (<div className="space-y-1"><h5 className="font-extrabold text-gray-800 flex items-center gap-1 text-[9px]"><Check className="w-2.5 h-2.5 text-green-600 shrink-0" /> Required Documents</h5><div className="max-h-[75px] overflow-y-auto text-gray-500 bg-gray-50 p-2 rounded border border-gray-100/70 tooltip-content"><BlogContent html={visaCard.documents} /></div></div>)}
+                  {visaCard.processSteps && (<div className="space-y-1"><h5 className="font-extrabold text-gray-800 flex items-center gap-1 text-[9px]"><Clock className="w-2.5 h-2.5 text-orange-600 shrink-0" /> Step-by-Step Process</h5><div className="max-h-[75px] overflow-y-auto text-gray-500 bg-gray-50 p-2 rounded border border-gray-100/70 tooltip-content"><BlogContent html={visaCard.processSteps} /></div></div>)}
+                  {(!visaCard.documents && !visaCard.processSteps) && (<p className="text-gray-400 text-center py-2">No additional specifications configured.</p>)}
                 </div>
               </div>
             </div>
           </div>
-          {visaCard.isExpress && (
-            <div className="flex bg-gray-100 p-0.5 rounded-full text-xs font-bold shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsExpressTab(false)}
-                className={`px-3 py-1 rounded-full transition-all ${!isExpressTab ? "bg-white text-gray-800 shadow-xs" : "text-gray-455"}`}
-              >
-                Std
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsExpressTab(true)}
-                className={`px-3 py-1 rounded-full transition-all flex items-center gap-0.5 ${isExpressTab ? "bg-[#FE5300] text-white shadow-xs" : "text-gray-455"}`}
-              >
-                <Zap className="w-3 h-3 fill-current" /> Exp
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* Metadata & Pricing Row */}
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-2">
-          {/* Metadata: Validity Entry Data */}
-          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-y-2 md:gap-y-3 gap-x-4 md:gap-x-5 text-xs md:text-sm text-gray-500 font-medium w-full md:w-auto">
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
-              <span>Val: <strong className="text-gray-800 font-extrabold">{entry.visaValidity || visaCard.visaValidity || "N/A"}</strong></span>
+          {/* Divider */}
+          <div className="w-px h-8 bg-gray-200 shrink-0" />
+
+          {/* Middle: 4 info chips in 2×2 grid — always fully visible, no scroll */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-1 text-xs text-gray-500 font-medium">
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Val: <strong className="text-gray-800 font-extrabold">{entry.visaValidity || visaCard.visaValidity || "N/A"}</strong>
             </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-              <span>Stay: <strong className="text-gray-800 font-extrabold">{entry.visaDuration || visaCard.visaDuration || "N/A"}</strong></span>
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Stay: <strong className="text-gray-800 font-extrabold">{entry.visaDuration || visaCard.visaDuration || "N/A"}</strong>
             </span>
-            <span className="flex items-center gap-1.5">
-              <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-              <span>Entry: <strong className="text-gray-800 font-extrabold">{entry.entryType || visaCard.entryType || "Single"}</strong></span>
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Globe className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Entry: <strong className="text-gray-800 font-extrabold">
+                {(() => {
+                  const v = entry.entryType || visaCard.entryType || "Single";
+                  return v.toLowerCase().includes("entry") ? v : `${v} Entry`;
+                })()}
+              </strong>
             </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-              <span>Time: <strong className="text-gray-800 font-extrabold">{processTime || "N/A"}</strong></span>
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Time: <strong className="text-gray-800 font-extrabold">{processTime || "N/A"}</strong>
             </span>
           </div>
-          
-          {/* Govt Fee */}
-          <div className="self-end md:self-auto text-right shrink-0 mt-2 md:mt-0 flex flex-col items-end md:items-end">
-            <span className="uppercase font-bold tracking-wider text-gray-400 text-[10px] block mb-1 md:mb-0.5">Govt Fee</span>
-            <span className="text-lg md:text-2xl font-black text-[#FE5300] leading-none">₹{Number(govFee).toLocaleString('en-IN')}</span>
+
+          {/* Express toggle */}
+          {visaCard.isExpress && (
+            <div className="flex bg-gray-100 p-0.5 rounded-full text-xs font-bold shrink-0">
+              <button type="button" onClick={() => setIsExpressTab(false)} className={`px-3 py-1 rounded-full transition-all ${!isExpressTab ? "bg-white text-gray-800 shadow-xs" : "text-gray-400"}`}>Std</button>
+              <button type="button" onClick={() => setIsExpressTab(true)} className={`px-3 py-1 rounded-full transition-all flex items-center gap-0.5 ${isExpressTab ? "bg-[#FE5300] text-white shadow-xs" : "text-gray-400"}`}><Zap className="w-3 h-3 fill-current" /> Exp</button>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="w-px h-8 bg-gray-200 shrink-0" />
+
+          {/* Right: Govt Fee */}
+          <div className="text-right shrink-0">
+            <span className="uppercase font-bold tracking-wider text-gray-400 text-[10px] block mb-0.5">Govt Fee</span>
+            <span className="text-2xl font-black text-[#FE5300] leading-none">₹{Number(govFee).toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+
+        {/* ─── MOBILE: compact card layout ─── */}
+        <div className="flex md:hidden flex-col gap-3 px-4 py-4 relative z-10">
+          {/* Top row: badge + express toggle + fee */}
+          <div className="flex items-center justify-between gap-2 pl-9">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#FE5300]/10 text-[#FE5300] uppercase tracking-wider">
+                {visaCard.visaPurpose || "Tourist"}
+              </span>
+              <button type="button" onClick={() => setShowInfoModal(true)} className="p-1 rounded-full text-gray-400 hover:text-[#FE5300] transition-colors">
+                <Info className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              {visaCard.isExpress && (
+                <div className="flex bg-gray-100 p-0.5 rounded-full text-[10px] font-bold">
+                  <button type="button" onClick={() => setIsExpressTab(false)} className={`px-2.5 py-1 rounded-full transition-all ${!isExpressTab ? "bg-white text-gray-800 shadow-xs" : "text-gray-400"}`}>Std</button>
+                  <button type="button" onClick={() => setIsExpressTab(true)} className={`px-2.5 py-1 rounded-full transition-all flex items-center gap-0.5 ${isExpressTab ? "bg-[#FE5300] text-white shadow-xs" : "text-gray-400"}`}><Zap className="w-3 h-3 fill-current" /> Exp</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-gray-100" />
+
+          {/* Info chips: 2 per row */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-500 font-medium">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Val: <strong className="text-gray-800 font-extrabold ml-0.5">{entry.visaValidity || visaCard.visaValidity || "N/A"}</strong>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Stay: <strong className="text-gray-800 font-extrabold ml-0.5">{entry.visaDuration || visaCard.visaDuration || "N/A"}</strong>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <span>Entry: <strong className="text-gray-800 font-extrabold">
+                {(() => {
+                  const v = entry.entryType || visaCard.entryType || "Single";
+                  return v.toLowerCase().includes("entry") ? v : `${v} Entry`;
+                })()}
+              </strong></span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              Time: <strong className="text-gray-800 font-extrabold ml-0.5">{processTime || "N/A"}</strong>
+            </span>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-gray-100" />
+
+          {/* Fee row */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Govt Fee</span>
+            <span className="text-xl font-black text-[#FE5300]">₹{Number(govFee).toLocaleString('en-IN')}</span>
           </div>
         </div>
       </div>
@@ -260,6 +271,18 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   );
   const [openItem, setOpenItem] = useState<string>("faq-0");
   const [showMobileCalculator, setShowMobileCalculator] = useState(false);
+  // Track whether a click-scroll is in progress so observer doesn't fight it
+  const isClickScrollingRef = useRef(false);
+  // Refs for each tab button so we can scroll it into view when active changes
+  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Scroll the active tab button into view in the tab bar
+  useEffect(() => {
+    const btn = tabButtonRefs.current[active];
+    if (btn) {
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+  }, [active]);
 
   let displayCost = visa.cost;
   if (visa.visas && visa.visas.length > 0) {
@@ -287,6 +310,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
     if (!content) return false;
     if (Array.isArray(content)) return content.length > 0;
     if (typeof content !== 'string') return true;
+    
+    // If content has an image, iframe, or video, it has valid visual content
+    if (/<img|<iframe|<video/i.test(content)) return true;
+
     const stripped = content.replace(/<[^>]*>?/gm, '').trim();
     return stripped.length > 0;
   };
@@ -302,14 +329,44 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   if (hasContent(visa.rejectionReasons)) tabs.push({ key: "rejectionReasons", label: "Rejection Reasons" });
   if (hasContent(visa.expertTips)) tabs.push({ key: "expertTips", label: "Expert Tips" });
   if (hasContent(visa.faqs)) tabs.push({ key: "faqs", label: "FAQs" });
-  if (hasContent(visa.cta)) tabs.push({ key: "cta", label: "CTA" });
+
+
+  // ── Scroll spy: update active tab when sections scroll into view ──
+  const tabKeys = tabs.map((t) => t.key);
+  useEffect(() => {
+    if (tabKeys.length === 0) return;
+    const observers: IntersectionObserver[] = [];
+    tabKeys.forEach((key) => {
+      const el = document.getElementById(key);
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            // Only change active tab from scroll if not in the middle of a click-scroll
+            if (entry.isIntersecting && !isClickScrollingRef.current) {
+              setActive(key as TabKey);
+            }
+          });
+        },
+        {
+          // Offset for sticky tab bar (~56px) + small buffer
+          rootMargin: "-80px 0px -60% 0px",
+          threshold: 0,
+        }
+      );
+      observer.observe(el);
+      observers.push(observer);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabKeys.join(',')]);
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-slate-50/60 min-h-screen pb-10">
       {/* Quick Summary Rendering Before Tabs */}
       {visa.quickSummary && visa.quickSummary.trim() !== "" && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 mt-4">
-          <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+          <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
             <BlogContent html={visa.quickSummary} />
           </section>
         </div>
@@ -335,7 +392,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                   <h3 className="text-xl font-bold font-heading text-black">Quick Answers</h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
-                <section className="max-w-none text-black leading-relaxed [&_ul]:list-none [&_ul]:pl-0 [&_ul]:m-0 [&_ul]:flex [&_ul]:overflow-x-auto [&_ul]:no-scrollbar [&_ul]:snap-x [&_ul]:snap-mandatory md:[&_ul]:grid md:[&_ul]:grid-cols-2 [&_ul]:gap-4 [&_ul]:pb-4 md:[&_ul]:pb-0 [&_li]:flex [&_li]:flex-col [&_li]:justify-center [&_li]:min-h-[130px] [&_li]:p-5 [&_li]:m-0 [&_li]:shrink-0 [&_li]:snap-start [&_li]:w-[85vw] md:[&_li]:w-auto md:[&_li]:shrink [&_li::marker]:hidden [&_li::before]:hidden [&_li]:bg-white [&_li]:border [&_li]:border-gray-100 [&_li]:rounded-xl [&_li]:shadow-sm [&_li]:transition-all [&_li]:duration-300 [&_li:hover]:-translate-y-1 [&_li:hover]:shadow-xl [&_li:hover]:border-[#FE5300]/40 [&_li_*]:!m-0 [&_li_*]:!leading-relaxed [&_li_strong]:block [&_li_strong]:mb-1.5 [&_li_strong]:text-base [&_li_strong]:text-gray-900 [&_li_strong]:transition-colors [&_li_b]:block [&_li_b]:mb-1.5 [&_li_b]:text-base [&_li_b]:text-gray-900 [&_li_b]:transition-colors [&_li:hover_strong]:text-[#FE5300] [&_li:hover_b]:text-[#FE5300] [&_li]:text-gray-600 [&_li]:text-sm [&_li_p]:text-gray-600 [&_li_p]:text-sm">
+                <section className="max-w-none text-black leading-relaxed [&_.prose]:!m-0 [&_.prose>ul]:!m-0 [&_p:empty]:hidden [&_ul]:!m-0 [&_ul]:list-none [&_ul]:pl-0 [&_ul]:flex [&_ul]:overflow-x-auto [&_ul]:no-scrollbar [&_ul]:snap-x [&_ul]:snap-mandatory md:[&_ul]:grid md:[&_ul]:grid-cols-2 lg:[&_ul]:grid-cols-2 [&_ul]:gap-3 md:[&_ul]:gap-4 [&_ul]:pb-4 md:[&_ul]:pb-0 [&_li]:relative [&_li]:p-3.5 md:[&_li]:p-4 [&_li]:pl-11 md:[&_li]:pl-12 [&_li]:!m-0 [&_li]:shrink-0 [&_li]:snap-start [&_li]:w-[85vw] md:[&_li]:w-auto md:[&_li]:shrink [&_li::marker]:hidden [&_li::before]:content-[''] [&_li::before]:absolute [&_li::before]:left-3 md:[&_li::before]:left-4 [&_li::before]:top-3.5 md:[&_li::before]:top-4 [&_li::before]:w-6 [&_li::before]:h-6 [&_li::before]:bg-orange-50 [&_li::before]:rounded-full [&_li::before]:transition-all [&_li::before]:duration-300 [&_li::before]:shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] [&_li::before]:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNGRTUzMDAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI5IDE4IDE1IDEyIDkgNiIvPjwvc3ZnPg==')] [&_li::before]:bg-no-repeat [&_li::before]:bg-center [&_li::before]:bg-[length:12px_12px] [&_li:hover::before]:bg-[#FE5300] [&_li:hover::before]:scale-110 [&_li:hover::before]:shadow-[0_4px_12px_rgba(254,83,0,0.3)] [&_li:hover::before]:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlsaW5lIHBvaW50cz0iOSAxOCAxNSAxMiA5IDYiLz48L3N2Zz4=')] [&_li]:bg-white [&_li]:border [&_li]:border-gray-100/80 [&_li]:rounded-2xl [&_li]:shadow-[0_4px_20px_rgba(0,0,0,0.03)] [&_li]:transition-all [&_li]:duration-400 [&_li:hover]:-translate-y-0.5 [&_li:hover]:shadow-[0_8px_30px_rgba(254,83,0,0.08)] [&_li:hover]:border-orange-200/60 [&_li_*]:!m-0 [&_li_*]:!leading-relaxed [&_li_strong]:block [&_li_strong]:mb-1 [&_li_strong]:text-[13px] md:[&_li_strong]:text-[14px] [&_li_strong]:text-gray-900 [&_li_strong]:transition-colors [&_li_strong]:leading-snug [&_li_b]:block [&_li_b]:mb-1 [&_li_b]:text-[13px] md:[&_li_b]:text-[14px] [&_li_b]:text-gray-900 [&_li_b]:transition-colors [&_li_b]:leading-snug [&_li:hover_strong]:text-[#FE5300] [&_li:hover_b]:text-[#FE5300] [&_li]:text-gray-500 [&_li]:text-[12px] md:[&_li]:text-[13px] [&_li_p]:text-gray-500 [&_li_p]:text-[12px] md:[&_li_p]:text-[13px] [&_li_p]:leading-relaxed">
                   <BlogContent html={visa.quickAnswer} />
                 </section>
               </div>
@@ -353,11 +410,15 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               <Button
                 key={tab.key}
                 size="sm"
+                ref={(el) => { tabButtonRefs.current[tab.key] = el as HTMLButtonElement | null; }}
                 onClick={() => {
                   setActive(tab.key);
                   const el = document.getElementById(tab.key);
                   if (el) {
+                    // Suppress scroll spy while click-scroll is animating
+                    isClickScrollingRef.current = true;
                     el.scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => { isClickScrollingRef.current = false; }, 800);
                   }
                 }}
                 className={`shrink-0 snap-start text-xs md:text-sm h-8 md:h-9 px-3 md:px-4 rounded-full ${
@@ -373,10 +434,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Content Column */}
-        <article className="w-full md:w-[65%] space-y-10">
-          <div className="w-full space-y-12">
+        <article className="w-full md:w-[65%]">
+          <div className="w-full">
         {(() => {
           const sectionHeadings: Record<string, string> = {
             highlights: "Highlights",
@@ -391,12 +452,12 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
           const renderDynamicSection = (key: string) => {
             if (!hasContent(visa[key])) return null;
             return (
-              <div id={key} key={key} className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+              <div id={key} key={key} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
                   <h3 className="text-xl font-bold font-heading text-black">{sectionHeadings[key]}</h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
-                <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
                   <BlogContent html={visa[key]} />
                 </section>
               </div>
@@ -406,7 +467,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
           return (
             <>
               {visa.visas && visa.visas.length > 0 && (
-                <div id="visasList" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="visasList" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">Visa Types</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
@@ -428,12 +489,12 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {renderDynamicSection("whyThisVisa")}
 
               {hasContent(visa.content) && (
-                <div id="description" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="description" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">Visa Info</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
-                  <section className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                  <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
                     <BlogContent html={visa.content} />
                   </section>
                 </div>
@@ -442,13 +503,13 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {renderDynamicSection("eligibility")}
 
               {hasContent(visa.documentsContent) && (
-                <div id="documents" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="documents" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">Documents</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div 
-                    className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0"
+                    className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4"
                     dangerouslySetInnerHTML={{ __html: visa.documentsContent }}
                   />
                 </div>
@@ -458,7 +519,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {renderDynamicSection("howToApply")}
 
               {hasContent(visa.process) && (
-                <div id="process" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="process" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">Step-by-Step Process</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
@@ -474,7 +535,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     </ul>
                   ) : (
                     <div 
-                      className="prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0"
+                      className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4"
                       dangerouslySetInnerHTML={{ __html: visa.process }} 
                     />
                   )}
@@ -482,7 +543,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               )}
 
               {hasContent(visa.rejectionReasons) && (
-                <div id="rejectionReasons" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="rejectionReasons" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">Common Rejection Reasons</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
@@ -506,7 +567,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               )}
 
               {hasContent(visa.expertTips) && (
-                <div id="expertTips" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="expertTips" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">Expert Tips</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
@@ -514,8 +575,8 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
                     {visa.expertTips.map((tip: any, idx: number) => (
                       <div key={idx} className="shrink-0 snap-start w-[70vw] md:w-auto md:shrink aspect-auto md:aspect-square bg-white border border-gray-200 p-3 md:p-4 flex flex-col justify-start text-left overflow-hidden rounded-xl">
-                        <div className="w-8 h-8 rounded-full bg-[#FE5300]/10 flex items-center justify-center mb-3 shrink-0">
-                          <Lightbulb className="w-4 h-4 text-[#FE5300]" strokeWidth={2} />
+                        <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mb-3 shrink-0">
+                          <Lightbulb className="w-4 h-4 text-emerald-500" strokeWidth={2} />
                         </div>
                         <h4 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
                           {tip.title}
@@ -530,7 +591,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               )}
 
               {hasContent(visa.faqs) && (
-                <div id="faqs" className="scroll-mt-40 mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="faqs" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h3 className="text-xl font-bold font-heading text-black">FAQs</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
@@ -553,7 +614,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                           {faq.question}
                         </AccordionTrigger>
                         <AccordionContent className="text-justify pt-3">
-                          <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0">
+                          <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
                             <BlogContent html={faq.answer} />
                           </section>
                         </AccordionContent>
@@ -601,14 +662,20 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                         </h3>
                         <div className="w-12 h-1 bg-[#FE5300] mx-auto"></div>
                       </div>
-                      <section className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:my-0 [&_a]:text-blue-500 [&_a]:hover:underline">
+                      <section className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 [&_a]:text-blue-500 [&_a]:hover:underline">
                         <BlogContent html={visa.helpfulResources} />
                       </section>
                     </div>
                   )}
                 </div>
               )}
-              {renderDynamicSection("cta")}
+              {hasContent(visa.cta) && (
+                <div className="w-full mt-8 mb-8 flex justify-center items-center">
+                  <div className="text-center w-full [&_img]:mx-auto [&_img]:max-w-full hover:opacity-95 transition-opacity">
+                    <BlogContent html={visa.cta} />
+                  </div>
+                </div>
+              )}
             </>
           );
         })()}

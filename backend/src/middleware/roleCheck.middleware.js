@@ -36,6 +36,8 @@ const ROUTE_PERMISSION_MAP = {
   "/api/master-data/visa-type": "master-visa-type",
   "/api/master-data/visa-validity": "master-visa-validity",
   "/api/master-data/visa-duration": "master-visa-duration",
+  "/api/master-data/visa-rejection-reasons": "master-visa-rejection",
+  "/api/master-data/visa-expert-tips": "master-visa-rejection",
   "/api/sales-person": "master-sales-person",
   "/api/admin/update-password": "change-password",
   "/api/admin": "role"
