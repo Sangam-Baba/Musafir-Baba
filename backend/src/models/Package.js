@@ -111,6 +111,16 @@ const packageSchema = new mongoose.Schema(
         ],
       },
     ],
+    packageEssentials: { type: String },
+    packageAtAGlance: { type: String },
+    whyChooseThisPackage: { type: String },
+    hotelsAndAccommodation: { type: String },
+    helpfulResources: [
+      {
+        title: { type: String },
+        url: { type: String },
+      },
+    ],
     isBestSeller: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
     status: { type: String, enum: ["draft", "published"], default: "draft" },

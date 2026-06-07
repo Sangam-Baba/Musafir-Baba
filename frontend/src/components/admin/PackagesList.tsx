@@ -37,16 +37,16 @@ export default function AuthorsList({
     <div className="w-full">
       {/* Desktop Table */}
       <div className="hidden md:block">
-        <Table className="rounded-2xl shadow-md overflow-hidden">
+        <Table className="border border-slate-100 shadow-sm rounded-xl overflow-hidden bg-white">
           <TableHeader>
-            <TableRow className="bg-muted/40">
-              <TableHead className="w-[5%]">Sr.No</TableHead>
-              <TableHead className="w-[15%]">Name</TableHead>
-              <TableHead className="w-[15%]">Location</TableHead>
-              <TableHead className="w-[15%]">Price</TableHead>
-              <TableHead className="w-[15%]">URL</TableHead>
-              <TableHead className="w-[15%]">Status</TableHead>
-              <TableHead className="w-[20%] text-right">Actions</TableHead>
+            <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
+              <TableHead className="w-[5%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10 px-4">Sr.No</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Name</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Location</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Price</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">URL</TableHead>
+              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Status</TableHead>
+              <TableHead className="w-[20%] text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right h-10 pr-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -55,39 +55,65 @@ export default function AuthorsList({
                 key={cat.id}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="border-b"
+                className="group border-b border-slate-50 hover:bg-slate-50/80 transition-colors duration-300 ease-in-out"
               >
-                <TableCell className="font-medium">{length - i}</TableCell>
-                <TableCell className="font-medium">{cat.name}</TableCell>
-                <TableCell className="font-medium">{cat.location}</TableCell>
-                <TableCell className="font-medium">Rs. {cat.price}</TableCell>
-                <TableCell>
+                <TableCell className="py-2 px-4">
+                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight block group-hover:translate-x-[1px] transition-transform duration-300 ease-in-out">
+                    {length - i}
+                  </span>
+                </TableCell>
+                <TableCell className="py-2">
+                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
+                    {cat.name}
+                  </span>
+                </TableCell>
+                <TableCell className="py-2">
+                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
+                    {cat.location}
+                  </span>
+                </TableCell>
+                <TableCell className="py-2">
+                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
+                    Rs. {cat.price}
+                  </span>
+                </TableCell>
+                <TableCell className="py-2">
                   <a
                     href={cat.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                    className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-400 lowercase font-mono group/link"
                   >
-                    <ExternalLink size={16} />
-                    Visit
+                    <ExternalLink size={12} className="opacity-40 group-hover/link:opacity-100 group-hover/link:scale-110 transition-all duration-300 ease-in-out" />
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out truncate max-w-[150px]">
+                      Visit
+                    </span>
                   </a>
                 </TableCell>
-                <TableCell className="font-medium">{cat.status}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(cat.id)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" /> Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onDelete(cat.id)}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                  </Button>
+                <TableCell className="py-2">
+                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded capitalize ${cat.status.toLowerCase() === 'active' ? 'text-green-600 bg-green-50/80' : 'text-slate-600 bg-slate-50/80'}`}>
+                    {cat.status}
+                  </span>
+                </TableCell>
+                <TableCell className="py-2 text-right pr-4">
+                  <div className="flex justify-end gap-1.5">
+                    <Button
+                      variant="outline"
+                      className="h-7 w-7 p-0 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      onClick={() => onEdit(cat.id)}
+                      title="Edit"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="h-7 w-7 p-0 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border-0 transition-colors"
+                      onClick={() => onDelete(cat.id)}
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </TableCell>
               </motion.tr>
             ))}

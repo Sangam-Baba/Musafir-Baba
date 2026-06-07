@@ -77,6 +77,11 @@ export interface GroupPackageInterface {
   itinerary: Itinerary[];
   itineraryDownload?: Image;
   faqs: Faqs[];
+  packageEssentials?: string;
+  packageAtAGlance?: string;
+  whyChooseThisPackage?: string;
+  hotelsAndAccommodation?: string;
+  helpfulResources?: { title: string; url: string }[];
   isFeatured: boolean;
   status: "draft" | "published";
   createdAt: string;
