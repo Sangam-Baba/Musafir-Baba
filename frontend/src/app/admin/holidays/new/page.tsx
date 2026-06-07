@@ -309,6 +309,10 @@ export default function CreatePackagePage() {
     control: form.control,
     name: "reviews",
   });
+  const bannerTextArray = useFieldArray({
+    control: form.control,
+    name: "banner_text" as any,
+  });
 
   const mutation = useMutation({
     mutationFn: (values: PackageFormValues) =>
@@ -467,6 +471,20 @@ export default function CreatePackagePage() {
                   <FormField control={form.control} name="hotelsAndAccommodation" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Hotels & Accommodation</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
+                  <FormField control={form.control} name="cta" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">CTA</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                </div>
+                
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Banner Text Rows</FormLabel>
+                  {bannerTextArray.fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2">
+                      <Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`banner_text.${index}` as const)} placeholder="Enter banner text row" />
+                      <Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => bannerTextArray.remove(index)}>Remove</Button>
+                    </div>
+                  ))}
+                  <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => bannerTextArray.append("")}>Add Banner Row</Button>
                 </div>
 
                 {/* Helpful Resources */}

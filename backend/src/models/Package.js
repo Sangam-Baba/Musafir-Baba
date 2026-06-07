@@ -115,6 +115,8 @@ const packageSchema = new mongoose.Schema(
     packageAtAGlance: { type: String },
     whyChooseThisPackage: { type: String },
     hotelsAndAccommodation: { type: String },
+    cta: { type: String },
+    banner_text: [String],
     helpfulResources: [
       {
         title: { type: String },

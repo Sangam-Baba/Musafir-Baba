@@ -140,10 +140,23 @@ function SlugClients({
           image={pkg.coverImage.url ?? ""}
           title={pkg.title}
           description=""
-          align="center"
-          height="lg"
+          align="left"
+          aspectRatio="min-h-[380px] md:min-h-[420px] lg:h-[450px]"
           overlayOpacity={100}
-        />
+        >
+          {pkg.banner_text && pkg.banner_text.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 w-full mt-4">
+              {pkg.banner_text.map((text, i) => (
+                <div key={i} className="flex items-center gap-2 drop-shadow-md">
+                  <Check className="w-4 h-4 text-[#FE5300] shrink-0" />
+                  <p className="text-white text-sm md:text-[15px] font-medium max-w-3xl text-left leading-tight">
+                    {text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </Hero>
       </div>
       <div className="w-full max-w-7xl mx-auto px-8  mt-4">
         <Breadcrumb title={pkg.title} />
