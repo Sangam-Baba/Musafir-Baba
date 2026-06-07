@@ -198,7 +198,7 @@ export const ItineraryTemplate = forwardRef<HTMLDivElement, ItineraryTemplatePro
       <div 
         ref={ref} 
         className="handwritten-container"
-        style={{ position: 'fixed', top: 0, left: 0, opacity: 0.01, zIndex: -9999, pointerEvents: 'none' }}
+        style={{ position: 'fixed', top: 0, left: '-9999px', opacity: 0.01, zIndex: -9999, pointerEvents: 'none' }}
       >
         <style dangerouslySetInnerHTML={{ __html: `
           @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');

@@ -31,6 +31,7 @@ import { duplicateBatch } from "../../new/page";
 import { schemaTypes } from "@/lib/schemaTypes";
 import { AddOnItems } from "../../new/AddOnItems";
 import SmallEditor from "@/components/admin/SmallEditor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface Image {
   url: string;
   alt: string;
@@ -89,6 +90,11 @@ interface PackageFormValues {
   faqs: Faq[];
   isFeatured?: boolean;
   isBestSeller?: boolean;
+  packageEssentials?: string;
+  packageAtAGlance?: string;
+  whyChooseThisPackage?: string;
+  hotelsAndAccommodation?: string;
+  helpfulResources?: { title: string; url: string }[];
   status: "draft" | "published";
 }
 
@@ -226,6 +232,11 @@ export default function CreatePackagePage() {
     isFeatured: false,
     isBestSeller: false,
     slug: "",
+    packageEssentials: "",
+    packageAtAGlance: "",
+    whyChooseThisPackage: "",
+    hotelsAndAccommodation: "",
+    helpfulResources: [],
   };
 
   const {
@@ -343,6 +354,7 @@ export default function CreatePackagePage() {
     }
   }, [pkg, form, accessToken]);
   const addOnsArray = useFieldArray({ control: form.control, name: "addOns" });
+  const helpfulResourcesArray = useFieldArray({ control: form.control, name: "helpfulResources" });
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
@@ -363,6 +375,10 @@ export default function CreatePackagePage() {
   const itineraryArray = useFieldArray({
     control: form.control,
     name: "itinerary",
+  });
+  const reviewsArray = useFieldArray({
+    control: form.control,
+    name: "reviews",
   });
 
   const mutation = useMutation({
@@ -391,845 +407,153 @@ export default function CreatePackagePage() {
 
   const schemaTypes = ["Collection", "Product", "FAQ", "Review"];
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-5xl rounded-2xl bg-white p-6 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold">Edit Package</h1>
+        <div className="w-full bg-gray-50/30 p-2 lg:p-4">
+      <div className="w-full rounded-md bg-white p-4 shadow border border-gray-100">
+        <h1 className="mb-3 text-center text-lg font-extrabold text-gray-800 tracking-tight">Edit Package</h1>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Title */}
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter Package Title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Permalink */}
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Permalink *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter Permalink..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="batch">Batch & Pricing</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="media">Media</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="faqs">FAQs & Review</TabsTrigger>
+              </TabsList>
 
-            {/* Description */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <BlogEditor value={field.value} onChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Batch Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Batch *</FormLabel>
-              {batchDetails.map((field, index) => (
-                <div key={field._id} className="grid grid-cols-2 gap-2 mb-2">
-                  {/* Batch Content */}
-                  <div className="flex  items-center text-left gap-2">
-                    <span className="font-medium">
-                      {field?.name || `Batch ${index + 1}`}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {field?.startDate
-                        ? `${new Date(
-                            field.startDate
-                          ).toLocaleDateString()} → ${new Date(
-                            field.endDate
-                          ).toLocaleDateString()}`
-                        : "No date info"}
-                    </span>
-                  </div>
+              {/* TAB 1: BASIC INFO */}
+              <TabsContent value="basic" className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FormField control={form.control} name="title" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Title *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" placeholder="Enter Package Title" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="slug" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Permalink *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" placeholder="Enter Permalink..." {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="destination" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Destination *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="" disabled>Select a destination</option>{destination?.map((dest: Destination) => (<option key={dest._id} value={dest._id}>{dest.state.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="mainCategory" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Main Category *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="" disabled>Select a category</option>{category?.map((cat: Category) => (<option key={cat._id} value={cat._id}>{cat.name.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="duration.days" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Days</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="Enter Days Duration" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="duration.nights" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Nights</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="Enter Nights Duration" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="isFeatured" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Featured</FormLabel><FormControl><select onChange={(e) => field.onChange(e.target.value === "true")} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="" disabled>Select</option><option value="true">True</option><option value="false">False</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="isBestSeller" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Best Seller</FormLabel><FormControl><select onChange={(e) => field.onChange(e.target.value === "true")} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="" disabled>Select</option><option value="true">True</option><option value="false">False</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="status" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Status</FormLabel><FormControl><select {...field} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="draft">Draft</option><option value="published">Published</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                </div>
+                <FormField control={form.control} name="otherCategory" render={({ field }) => (
+                  <FormItem className="space-y-0.5 mt-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Other Category</FormLabel><div className="flex flex-wrap gap-2 mt-1">{category?.map((cat: Category) => (<label key={cat._id} className="flex items-center space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors"><input type="checkbox" value={cat._id} checked={field.value?.includes(cat._id)} onChange={(e) => { if (e.target.checked) { field.onChange([...(field.value || []), cat._id]); } else { field.onChange(field.value?.filter((id) => id !== cat._id)); } }} className="mt-0.5" /><span className="text-[11px] font-semibold text-slate-800 cursor-pointer">{cat.name}</span></label>))}</div><FormMessage className="text-[10px]" /></FormItem>
+                )} />
+              </TabsContent>
 
-                  {/* Batch Actions */}
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="default"
-                      onClick={() => {
-                        handleBatchDuplicate(field._id);
-                      }}
-                    >
-                      Duplicate
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="default"
-                      onClick={() => handleBatchEdit(field._id)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={async () => {
-                        // const batchId = form.getValues(`batch.${index}`);
-                        const res = await deleteBatch(accessToken, field._id);
-                        if (res) {
-                          form.setValue(
-                            "batch",
-                            form
-                              .getValues("batch")
-                              .filter((id, i) => id !== field._id)
-                          );
-                          setBatchDetails((prev) =>
-                            prev.filter((item, i) => item._id !== field._id)
-                          );
-                        }
-                      }}
-                    >
-                      Delete
+              {/* TAB 2: CONTENT */}
+              <TabsContent value="content" className="space-y-5">
+                <FormField control={form.control} name="description" render={({ field }) => (
+                  <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Description</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                )} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Highlights</FormLabel>{highlightsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`highlights.${index}`)} placeholder="Enter highlight" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => highlightsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => highlightsArray.append("")}>Add Highlight</Button></div>
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Inclusions</FormLabel>{inclusionsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`inclusions.${index}`)} placeholder="Enter inclusion" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => inclusionsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => inclusionsArray.append("")}>Add Inclusion</Button></div>
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Exclusions</FormLabel>{exclusionsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`exclusions.${index}`)} placeholder="Enter exclusion" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => exclusionsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => exclusionsArray.append("")}>Add Exclusion</Button></div>
+                </div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Itinerary</FormLabel>{itineraryArray.fields.map((field, index) => (<div key={field.id} className="grid grid-cols-2 gap-2 mb-2 p-2 bg-gray-50 border rounded-md"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`itinerary.${index}.title`)} placeholder="Day Title" /><div className="flex flex-col gap-2"><Textarea className="text-xs p-2 min-h-[60px]" {...form.register(`itinerary.${index}.description`)} placeholder="Day Description" /><Button type="button" variant="destructive" size="sm" className="self-end h-7 text-[10px]" onClick={() => itineraryArray.remove(index)}>Remove Step</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => itineraryArray.append({ title: "", description: "" })}>Add Itinerary Step</Button></div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                {/* Additional Content Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="packageEssentials" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Package Essentials</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="packageAtAGlance" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Package At A Glance</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="whyChooseThisPackage" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Why Choose This Package</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="hotelsAndAccommodation" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Hotels & Accommodation</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                </div>
+
+                {/* Helpful Resources */}
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</FormLabel>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => helpfulResourcesArray.append({ title: "", url: "" })} className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200">
+                      + Add Resource
                     </Button>
                   </div>
-                </div>
-              ))}
-
-              <Button type="button" onClick={() => setShowBatchModal(true)}>
-                + Add New Batch
-              </Button>
-              {showBatchModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                  <CreateBatchModal
-                    onBatchCreated={handleBatchCreated}
-                    onClose={() => {
-                      setShowBatchModal(false);
-                      setEditBatchId(null);
-                    }}
-                    onBatchUpdated={handleBatchUpdated}
-                    existingBatch={editBatchId}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Duration */}
-            <div className="flex justify-between gap-4">
-              <FormField
-                control={form.control}
-                name="duration.days"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Days</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter Days Duration"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="duration.nights"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nights</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter Nights Duration"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Destination */}
-            <FormField
-              control={form.control}
-              name="destination"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Destination</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 p-2"
-                      value={field.value || ""}
-                    >
-                      <option value="" disabled>
-                        Select a destination
-                      </option>
-                      {destination?.map((dest: Destination) => (
-                        <option key={dest._id} value={dest._id}>
-                          {dest.state.toLocaleUpperCase()}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Main Categpry */}
-            <FormField
-              control={form.control}
-              name="mainCategory"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Main Category *</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 p-2"
-                      value={field.value || ""}
-                    >
-                      <option value="" disabled>
-                        Select a category
-                      </option>
-                      {category?.map((cat: Category) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name.toLocaleUpperCase()}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Other Category */}
-            <FormField
-              control={form.control}
-              name="otherCategory"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Other Category</FormLabel>
-                  <div className="flex flex-wrap space-y-2 gap-2 mt-2">
-                    {category?.map((cat: Category) => (
-                      <label
-                        key={cat._id}
-                        className="flex items-center space-x-2"
-                      >
-                        <input
-                          type="checkbox"
-                          value={cat._id}
-                          checked={field.value?.includes(cat._id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              field.onChange([...(field.value || []), cat._id]);
-                            } else {
-                              field.onChange(
-                                field.value?.filter((id) => id !== cat._id)
-                              );
-                            }
-                          }}
-                        />
-                        <span>{cat.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Cover Image */}
-            <FormField
-              control={form.control}
-              name="coverImage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cover Image</FormLabel>
-                  <FormControl>
-                    <ImageUploader
-                      initialImage={pkg?.coverImage}
-                      onUpload={(img) => {
-                        if (!img) return;
-                        const newImg = {
-                          url: img.url,
-                          public_id: img.public_id,
-                          alt: img.alt ?? form.getValues("title"),
-                          width: img.width,
-                          height: img.height,
-                        };
-                        form.setValue("coverImage", newImg, {
-                          shouldDirty: true,
-                        });
-                        field.onChange(newImg);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Input
-              placeholder="Cover alt"
-              value={form.watch("coverImage")?.alt ?? ""}
-              onChange={(e) =>
-                form.setValue(
-                  "coverImage.alt",
-                  e.target.value ?? form.getValues("title")
-                )
-              }
-            />
-            {/* Itinary Download */}
-            <FormField
-              control={form.control}
-              name="itineraryDownload"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Itinerary PDF Upload</FormLabel>
-                  <FormControl>
-                    <ImageUploader
-                      initialImage={pkg?.itineraryDownload}
-                      onUpload={(img) => {
-                        if (!img) return;
-                        form.setValue("itineraryDownload", {
-                          url: img.url,
-                          public_id: img.public_id,
-                          alt: img.alt ?? form.getValues("title"),
-                        });
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Gallery Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Image Gallery</FormLabel>
-              {coverImageArray.fields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 mb-2">
-                  <ImageUploader
-                    initialImage={form.watch(`gallery.${index}`)}
-                    onUpload={(img) => {
-                      if (!img) return;
-                      form.setValue(`gallery.${index}`, {
-                        url: img.url,
-                        public_id: img.public_id,
-                        alt: img.alt ?? form.getValues("title"),
-                        width: img.width,
-                        height: img.height,
-                      });
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => coverImageArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() =>
-                  coverImageArray.append({
-                    url: "",
-                    public_id: "",
-                    width: 0,
-                    height: 0,
-                    alt: "",
-                  })
-                }
-              >
-                Add Image Gallery
-              </Button>
-            </div>
-            {/* Highlights Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Highlights</FormLabel>
-              {highlightsArray.fields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 mb-2">
-                  <Input
-                    {...form.register(`highlights.${index}`)}
-                    placeholder="Enter highlight"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => highlightsArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button type="button" onClick={() => highlightsArray.append("")}>
-                Add Highlight
-              </Button>
-            </div>
-
-            {/* Inclusions Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Inclusions</FormLabel>
-              {inclusionsArray.fields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 mb-2">
-                  <Input
-                    {...form.register(`inclusions.${index}`)}
-                    placeholder="Enter inclusion"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => inclusionsArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button type="button" onClick={() => inclusionsArray.append("")}>
-                Add Inclusion
-              </Button>
-            </div>
-
-            {/* Exclusions Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Exclusions</FormLabel>
-              {exclusionsArray.fields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 mb-2">
-                  <Input
-                    {...form.register(`exclusions.${index}`)}
-                    placeholder="Enter exclusion"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => exclusionsArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button type="button" onClick={() => exclusionsArray.append("")}>
-                Add Exclusion
-              </Button>
-            </div>
-
-            {/* FAQs Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">FAQs</FormLabel>
-              {faqsArray.fields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 w-full">
-                  <div className="grid gap-2 mb-2 w-full">
-                    <Input
-                      {...form.register(`faqs.${index}.question`)}
-                      placeholder="Question"
-                    />
-                    <div className="border rounded p-2">
-                      <SmallEditor
-                        value={form.getValues(`faqs.${index}.answer`)}
-                        onChange={(val) =>
-                          form.setValue(`faqs.${index}.answer`, val)
-                        }
-                      />
+                  {helpfulResourcesArray.fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2">
+                      <Input className="h-7 text-xs px-2 rounded-sm flex-1" {...form.register(`helpfulResources.${index}.title`)} placeholder="Resource Title" />
+                      <Input className="h-7 text-xs px-2 rounded-sm flex-1" {...form.register(`helpfulResources.${index}.url`)} placeholder="Resource URL" />
+                      <Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => helpfulResourcesArray.remove(index)}>X</Button>
                     </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => faqsArray.remove(index)}
-                  >
-                    X
-                  </Button>
+                  ))}
                 </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() => faqsArray.append({ question: "", answer: "" })}
-              >
-                Add FAQ
+
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Add Ons</FormLabel>{addOnsArray.fields.map((field, index) => (<AddOnItems key={field.id} index={index} form={form} removeAddOn={() => addOnsArray.remove(index)} />))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => addOnsArray.append({ title: "", items: [{ title: "", price: 0 }] })}>+ Add Add-On</Button></div>
+              </TabsContent>
+
+              {/* TAB 3: BATCH & PRICING */}
+              <TabsContent value="batch" className="space-y-3">
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Batch & Pricing</FormLabel>
+                  {batchDetails.map((field, index) => (<div key={field._id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><div className="flex items-center text-left gap-2"><span className="font-medium text-xs">{field?.name || `Batch ${index + 1}`}</span><span className="text-[10px] text-gray-500">{field?.startDate ? `${new Date(field.startDate).toLocaleDateString()} → ${new Date(field.endDate).toLocaleDateString()}` : "No date info"}</span></div><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => { handleBatchDuplicate(field._id); }}>Duplicate</Button><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleBatchEdit(field._id)}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteBatch(accessToken, field._id); if (res) { form.setValue("batch", form.getValues("batch").filter((id, i) => id !== field._id)); setBatchDetails((prev) => prev.filter((item, i) => item._id !== field._id)); } }}>Delete</Button></div></div>))}
+                  <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowBatchModal(true)}>+ Add New Batch</Button>
+                  {showBatchModal && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><CreateBatchModal onBatchCreated={handleBatchCreated} onClose={() => { setShowBatchModal(false); setEditBatchId(null); }} onBatchUpdated={handleBatchUpdated} existingBatch={editBatchId} /></div>)}
+                </div>
+              </TabsContent>
+
+              {/* TAB 4: MEDIA */}
+              <TabsContent value="media" className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-2"><FormField control={form.control} name="coverImage" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Cover Image</FormLabel><FormControl><ImageUploader initialImage={pkg?.coverImage} onUpload={(img) => { if (!img) return; const newImg = { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }; form.setValue("coverImage", newImg, { shouldDirty: true }); field.onChange(newImg); }} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} /><Input className="h-7 text-xs px-2 rounded-sm" placeholder="Cover alt" value={form.watch("coverImage")?.alt ?? ""} onChange={(e) => form.setValue("coverImage.alt", e.target.value ?? form.getValues("title"))} /></div>
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-2"><FormField control={form.control} name="itineraryDownload" render={() => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Itinerary PDF Upload</FormLabel><FormControl><ImageUploader initialImage={pkg?.itineraryDownload} onUpload={(img) => { if (!img) return; form.setValue("itineraryDownload", { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title") }); }} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} /></div>
+                </div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Image Gallery</FormLabel><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">{coverImageArray.fields.map((field, index) => (<div key={field.id} className="flex flex-col items-center gap-2 p-2 border rounded bg-gray-50"><ImageUploader initialImage={form.watch(`gallery.${index}`)} onUpload={(img) => { if (!img) return; form.setValue(`gallery.${index}`, { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }); }} /><Button type="button" variant="destructive" size="sm" className="h-7 text-[10px] w-full" onClick={() => coverImageArray.remove(index)}>Remove</Button></div>))}</div><Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => coverImageArray.append({ url: "", public_id: "", width: 0, height: 0, alt: "" })}>Add Image to Gallery</Button></div>
+              </TabsContent>
+
+              {/* TAB 5: SEO */}
+              <TabsContent value="seo" className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FormField control={form.control} name="metaTitle" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Meta Title</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Enter SEO Meta Title" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} />
+                  <FormField control={form.control} name="metaDescription" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Meta Description</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Enter SEO Meta Description" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} />
+                  <FormField control={form.control} name="canonicalUrl" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Canonical URL</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Enter Canonical URL" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} />
+                  <FormField control={form.control} name="schemaType" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Schema Type</FormLabel><FormControl><select multiple value={field.value || []} onChange={(e) => { const values = Array.from(e.target.selectedOptions, (option) => option.value); field.onChange(values); }} className="w-full p-2 border rounded text-xs focus:ring-1 focus:ring-primary">{schemaTypes.map((schema) => (<option key={schema} value={schema}>{schema}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>)} />
+                </div>
+                <div className="flex gap-2">{form.watch("schemaType")?.map((option) => (<div key={option} className="flex items-center gap-1 bg-gray-100 rounded-lg px-2 py-1 text-xs">{option}<X className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => form.setValue("schemaType", form.getValues("schemaType")?.filter((item) => item !== option))} /></div>))}</div>
+                <FormField control={form.control} name="keywords" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Target Keywords (comma separated)</FormLabel><div className="flex flex-wrap gap-2 border border-gray-300 rounded-sm p-2 bg-white">{form.watch("keywords")?.map((kw, i) => (<span key={i} className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs">{kw}<button type="button" onClick={() => { const newKeywords = form.getValues("keywords")?.filter((_, idx) => idx !== i); form.setValue("keywords", newKeywords); }} className="text-gray-600 hover:text-red-500"><X size={12} /></button></span>))}<FormControl className="flex-1 min-w-[120px]"><Input type="text" className="h-7 text-xs px-2 border-none shadow-none focus-visible:ring-0 w-full" onBlur={(e) => { const arr = e.target.value.split(",").map((item) => item.trim()).filter(Boolean); form.setValue("keywords", [...(form.getValues("keywords") || []), ...arr]); e.target.value = ""; }} placeholder="Enter keywords" /></FormControl></div><FormMessage className="text-[10px]" /></FormItem>)} />
+              </TabsContent>
+
+              {/* TAB 6: FAQS & REVIEWS */}
+              <TabsContent value="faqs" className="space-y-5">
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">FAQs</FormLabel>{faqsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><div className="grid gap-2 mb-2 flex-1 border border-gray-100 p-2 rounded bg-gray-50"><Input className="h-7 text-xs px-2 rounded-sm bg-white" {...form.register(`faqs.${index}.question`)} placeholder="Question" /><div className="border border-gray-200 rounded p-2 bg-white"><SmallEditor value={form.getValues(`faqs.${index}.answer`)} onChange={(val) => form.setValue(`faqs.${index}.answer`, val)} /></div></div><Button type="button" variant="destructive" size="sm" className="h-7 px-2 mt-2" onClick={() => faqsArray.remove(index)}>X</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => faqsArray.append({ question: "", answer: "" })}>Add FAQ</Button></div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Reviews</FormLabel>{reviewsArray.fields.map((field, index) => (<div key={field.id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><span className="font-medium text-xs">{reviewsDetails[index]?.name || `Review ${index + 1}`}</span><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleReviewsEdit(form.getValues(`reviews.${index}`))}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteReview(accessToken, form.getValues(`reviews.${index}`)); if (res) reviewsArray.remove(index); }}>Delete</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={() => reviewsArray.remove(index)}>Remove Link</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowReviewsModal(true)}>+ Add New Review</Button>{showReviewsModal && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><CreateReviewsModal onReviewsCreated={handleReviewsCreated} onClose={() => { setShowReviewsModal(false); setEditReviewsId(null); }} onReviewsUpdated={handleReviewsUpdated} existingReviews={editReviewsId} type="package" /></div>)}</div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="pt-4 flex justify-end">
+              <Button type="submit" className="w-full md:w-auto h-9 text-xs px-6 font-bold" disabled={mutation.isPending}>
+                {mutation.isPending ? "Updating..." : "Update Package"}
               </Button>
             </div>
-            {/* Reviews */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Reviews</FormLabel>
-              {reviewsDetails.map((field, index) => (
-                <div key={field._id} className="grid grid-cols-2 gap-2 mb-2">
-                  {/* REVIEW Content */}
-                  <div className="flex  items-center text-left gap-2">
-                    <span className="font-medium">
-                      {field.name || `Reviews ${index + 1}`}
-                    </span>
-                  </div>
-
-                  {/* Batch Actions */}
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => {
-                        form.setValue(
-                          "reviews",
-                          form.getValues("reviews")?.filter((id) => id !== field._id)
-                        );
-                        setReviewsDetails((prev) =>
-                          prev.filter((item) => item._id !== field._id)
-                        );
-                      }}
-                    >
-                      Remove
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="default"
-                      onClick={() => handleReviewsEdit(field._id)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={async () => {
-                        const res = await deleteReview(accessToken, field._id);
-                        if (res) {
-                          form.setValue(
-                            "reviews",
-                            form.getValues("reviews")?.filter((id) => id !== field._id)
-                          );
-                          setReviewsDetails((prev) =>
-                            prev.filter((item) => item._id !== field._id)
-                          );
-                        }
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <Button type="button" onClick={() => setShowReviewsModal(true)}>
-                + Add New Review
-              </Button>
-              {showReviewsModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                  <CreateReviewsModal
-                    onReviewsCreated={handleReviewsCreated}
-                    onClose={() => {
-                      setShowReviewsModal(false);
-                      setEditReviewsId(null);
-                    }}
-                    onReviewsUpdated={handleReviewsUpdated}
-                    existingReviews={editReviewsId}
-                    type="package"
-                  />
-                </div>
-              )}
-            </div>
-            {/* Itinerary Dynamic */}
-            <div>
-              <FormLabel className="mb-2 text-lg">Itinerary</FormLabel>
-              {itineraryArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2 ">
-                  <Input
-                    {...form.register(`itinerary.${index}.title`)}
-                    placeholder="Day Title"
-                  />
-                  <Textarea
-                    {...form.register(`itinerary.${index}.description`)}
-                    placeholder="Day Description"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => itineraryArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() =>
-                  itineraryArray.append({ title: "", description: "" })
-                }
-              >
-                Add Itinerary Step
-              </Button>
-            </div>
-
-            {/* Add Ons */}
-            <div>
-              <label className="mb-2 block text-lg font-medium">Add Ons</label>
-
-              {addOnsArray.fields.map((field, index) => (
-                <AddOnItems
-                  key={field.id}
-                  index={index}
-                  form={form}
-                  removeAddOn={() => addOnsArray.remove(index)}
-                />
-              ))}
-
-              <Button
-                type="button"
-                variant="default"
-                onClick={() =>
-                  addOnsArray.append({
-                    title: "",
-                    items: [{ title: "", price: 0 }],
-                  })
-                }
-              >
-                + Add
-              </Button>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="metaTitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meta Title</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Enter SEO Meta Title"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="metaDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meta Description</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Enter SEO Meta Description"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Canoniuval URL */}
-            <FormField
-              control={form.control}
-              name="canonicalUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Canonical URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Enter Canonical URL"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Schema Type */}
-            <FormField
-              control={form.control}
-              name="schemaType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Schema Type</FormLabel>
-                  <FormControl>
-                    <select
-                      multiple
-                      value={field.value || []}
-                      onChange={(e) => {
-                        const values = Array.from(
-                          e.target.selectedOptions,
-                          (option) => option.value
-                        );
-                        field.onChange(values);
-                      }}
-                      className="w-full p-2 border rounded"
-                    >
-                      {schemaTypes.map((schema) => (
-                        <option key={schema} value={schema}>
-                          {schema}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex gap-2">
-              {form.watch("schemaType")?.map((option) => (
-                <p
-                  key={option}
-                  className="bg-gray-100 rounded-lg  p-2 w-[150px]"
-                >
-                  {option}
-                  <X
-                    className="float-right cursor-pointer hover:text-red-500"
-                    onClick={() =>
-                      form.setValue(
-                        "schemaType",
-                        form
-                          .getValues("schemaType")
-                          ?.filter((item) => item !== option)
-                      )
-                    }
-                  />
-                </p>
-              ))}
-            </div>
-
-            <FormField
-              control={form.control}
-              name="keywords"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Target Keywords (comma separated)</FormLabel>
-                  <div className="flex flex-wrap gap-2 border rounded p-2">
-                    {form.watch("keywords")?.map((kw, i) => (
-                      <span
-                        key={i}
-                        className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
-                      >
-                        {kw}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newKeywords = form
-                              .getValues("keywords")
-                              ?.filter((_, idx) => idx !== i);
-                            form.setValue("keywords", newKeywords);
-                          }}
-                          className="text-gray-600 hover:text-red-500"
-                        >
-                          <X size={14} />
-                        </button>
-                      </span>
-                    ))}
-                    <FormControl className="flex-1 min-w-[120px]">
-                      <Input
-                        type="text"
-                        className="border-none shadow-none focus-visible:ring-0 w-full"
-                        onBlur={(e) => {
-                          const arr = e.target.value
-                            .split(",")
-                            .map((item) => item.trim())
-                            .filter(Boolean);
-                          form.setValue("keywords", [
-                            ...(form.getValues("keywords") || []),
-                            ...arr,
-                          ]);
-                          e.target.value = "";
-                        }}
-                        placeholder="Enter SEO Meta Keywords"
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="isFeatured"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Featured</FormLabel>
-                  <FormControl>
-                    <select
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "true")
-                      }
-                      className="w-full rounded-md border p-2"
-                    >
-                      <option value="">Select</option>
-                      <option value="true">True</option>
-                      <option value="false">False</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="isBestSeller"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Best Seller</FormLabel>
-                  <FormControl>
-                    <select
-                      onChange={(e) =>
-                        field.onChange(e.target.value === "true")
-                      }
-                      className="w-full rounded-md border p-2"
-                    >
-                      <option value="">Select</option>
-                      <option value="true">True</option>
-                      <option value="false">False</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Status */}
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <FormControl>
-                    <select {...field} className="w-full rounded-md border p-2">
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                    </select>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? "Updating..." : "Upate Package"}
-            </Button>
           </form>
         </Form>
-        {mutation.isError && (
-          <p className="text-red-500">Somethings went wrong!</p>
-        )}
-        {mutation.isSuccess && (
-          <p className="text-green-500">Package updated successfully!</p>
-        )}
+        {mutation.isError && <p className="text-red-500 text-xs mt-2 text-center">Something went wrong!</p>}
+        {mutation.isSuccess && <p className="text-green-500 text-xs mt-2 text-center">Package updated successfully!</p>}
       </div>
     </div>
   );
