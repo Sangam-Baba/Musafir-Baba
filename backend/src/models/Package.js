@@ -125,6 +125,7 @@ const packageSchema = new mongoose.Schema(
     ],
     isBestSeller: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
+    packagePercent: { type: Number, min: 0, max: 100, default: 0 },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
   { timestamps: true },

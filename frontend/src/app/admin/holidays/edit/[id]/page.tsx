@@ -97,6 +97,7 @@ interface PackageFormValues {
   cta?: string;
   banner_text?: string;
   helpfulResources?: { title: string; url: string }[];
+  packagePercent: number;
   status: "draft" | "published";
 }
 
@@ -241,6 +242,7 @@ export default function CreatePackagePage() {
     cta: "",
     banner_text: "",
     helpfulResources: [],
+    packagePercent: 0,
   };
 
   const {
@@ -457,6 +459,9 @@ export default function CreatePackagePage() {
                   )} />
                   <FormField control={form.control} name="isBestSeller" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Best Seller</FormLabel><FormControl><select onChange={(e) => field.onChange(e.target.value === "true")} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="" disabled>Select</option><option value="true">True</option><option value="false">False</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="packagePercent" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Package Percent (%)</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" step="0.01" min="0" max="100" placeholder="0-100" {...field} onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
                   <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Status</FormLabel><FormControl><select {...field} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="draft">Draft</option><option value="published">Published</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>

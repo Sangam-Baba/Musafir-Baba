@@ -12,6 +12,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@radix-ui/react-accordion";
+import {
+  Accordion as FaqAccordion,
+  AccordionContent as FaqAccordionContent,
+  AccordionItem as FaqAccordionItem,
+  AccordionTrigger as FaqAccordionTrigger,
+} from "@/components/ui/accordion";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import QueryForm from "@/components/custom/QueryForm";
@@ -306,47 +312,90 @@ function SlugClients({
                 </section>
               </div>
 
-              <div id="itineraries" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
-                  <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Day-Wise Itinerary</h3>
+              <div id="itineraries" className="scroll-mt-40 mb-8 pb-6 border-b border-gray-200 last:border-0 overflow-hidden">
+                  <div className="flex flex-col gap-2 mb-6">
+                    <h3 className="text-xl font-bold font-heading text-black">Journey Route</h3>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
-                  <div className="relative pt-2 space-y-2">
-                    {/* Continuous Vertical Line */}
-                    <div className="absolute left-[19px] top-6 bottom-6 w-[2px] bg-orange-200/50"></div>
-                    
+                  
+                  <div className="relative pt-4 pb-4 w-full">
                     <Accordion
                       type="multiple"
-                      className="w-full relative z-10"
+                      className="w-full relative z-10 flex flex-col gap-0"
                     >
-                      {pkg.itinerary.map((item: Itinerary, i: number) => (
-                        <AccordionItem
-                          key={i}
-                          value={`itinerary-${i}`}
-                          className="relative border-b-0 group"
-                        >
-                          <AccordionTrigger
-                            className="text-lg font-semibold text-gray-800 hover:no-underline py-4 flex justify-between items-center transition-colors duration-200 focus-visible:ring-0 focus-visible:outline-none pl-[52px]"
+                      {pkg.itinerary.map((item: Itinerary, i: number) => {
+                        const isEven = i % 2 === 0;
+                        const isLast = i === pkg.itinerary.length - 1;
+
+                        return (
+                          <AccordionItem
+                            key={i}
+                            value={`itinerary-${i}`}
+                            className="relative border-b-0 group w-full"
                           >
-                            {/* Dot Marker */}
-                            <div className="absolute left-[11px] w-[18px] h-[18px] rounded-full border-[3px] border-[#FE5300] bg-white group-hover:bg-[#FE5300] transition-colors shadow-sm mt-0.5 z-10"></div>
-                            
-                            {/* Title Text */}
-                            <span className="text-left leading-snug group-hover:text-[#FE5300] transition-colors">
-                              {item.title}
-                            </span>
-                          </AccordionTrigger>
-                          <AccordionContent className="pl-[52px] pb-6">
-                            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 text-gray-600 leading-relaxed shadow-sm">
-                              <ul className="space-y-2 list-disc list-inside marker:text-[#FE5300]">
-                                {item.description.split("\n").map((line, idx) => (
-                                  line.trim() ? <li key={idx} className="text-[15px]">{line.trim()}</li> : null
-                                ))}
-                              </ul>
+                            {/* SVG Curved Route Line (Only drawn if not last item) */}
+                            {!isLast && (
+                              <div className="absolute top-[28px] left-[28px] w-[40px] h-full z-0 pointer-events-none">
+                                <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+                                  {isEven ? (
+                                    <path d="M 0 0 C 0 50, 100 50, 100 100" stroke="#FE5300" strokeWidth="2.5" strokeDasharray="6 6" fill="none" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+                                  ) : (
+                                    <path d="M 100 0 C 100 50, 0 50, 0 100" stroke="#FE5300" strokeWidth="2.5" strokeDasharray="6 6" fill="none" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+                                  )}
+                                </svg>
+                              </div>
+                            )}
+
+                            {/* Node Marker */}
+                            <div className={`absolute top-[20px] ${isEven ? 'left-[20px]' : 'left-[60px]'} w-[16px] h-[16px] rounded-full bg-white border-[3px] border-[#FE5300] shadow-md z-20 flex items-center justify-center group-hover:scale-125 transition-all duration-300`}>
+                               {i === 0 && <div className="w-[6px] h-[6px] bg-green-500 rounded-full"></div>}
+                               {isLast && i !== 0 && <div className="w-[6px] h-[6px] bg-red-500 rounded-full"></div>}
                             </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
+
+                            {/* Content Card */}
+                            <div className="ml-[90px] md:ml-[110px] relative z-30 pb-6 md:pb-8 pr-4 sm:pr-6 md:pr-8">
+                              <div className="bg-white border border-gray-100/80 hover:border-[#FE5300]/30 shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-300">
+                                <AccordionTrigger
+                                  className="text-sm font-semibold text-gray-800 hover:no-underline p-3 md:p-4 flex items-start transition-colors duration-200 focus-visible:ring-0 focus-visible:outline-none"
+                                >
+                                  <div className="leading-snug transition-colors flex flex-col gap-1 w-full text-left items-start">
+                                    {(() => {
+                                      const splitIndex = item.title.indexOf(':');
+                                      if (splitIndex !== -1) {
+                                        const dayPart = item.title.substring(0, splitIndex).trim();
+                                        const locationPart = item.title.substring(splitIndex + 1).trim();
+                                        return (
+                                          <>
+                                            <span className="text-[10px] font-bold text-[#FE5300] uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded border border-orange-100/50">{dayPart}</span>
+                                            <span className="text-[13px] md:text-[14px] font-semibold text-gray-800 group-hover:text-[#FE5300] transition-colors mt-0.5 leading-snug">{locationPart}</span>
+                                          </>
+                                        );
+                                      }
+                                      return <span className="text-[13px] md:text-[14px] font-semibold text-gray-800 group-hover:text-[#FE5300] transition-colors">{item.title}</span>;
+                                    })()}
+                                  </div>
+                                </AccordionTrigger>
+                                
+                                <AccordionContent className="px-3 md:px-4 pb-3 md:pb-4 pt-0 flex flex-col items-start">
+                                  <div className="bg-gray-50/60 rounded-lg p-3 md:p-4 text-gray-600 leading-relaxed text-left border border-gray-100/80 w-full">
+                                    <ul className="space-y-2 relative z-10 flex flex-col">
+                                      {item.description.split("\n").map((line, idx) => (
+                                        line.trim() ? (
+                                          <li key={idx} className="flex items-start gap-2 justify-start">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FE5300]/60 shrink-0 mt-1.5"></div>
+                                            <span className="text-[12px] md:text-[13px] leading-relaxed">{line.trim()}</span>
+                                          </li>
+                                        ) : null
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </AccordionContent>
+                              </div>
+                            </div>
+
+                          </AccordionItem>
+                        );
+                      })}
                     </Accordion>
                   </div>
               </div>
@@ -404,67 +453,36 @@ function SlugClients({
 
               {pkg.faqs && pkg.faqs.length > 0 && (
                 <div id="faqs" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
-                    <div className="flex flex-col gap-2 mb-5">
-                      <h3 className="text-xl font-bold font-heading text-black">FAQ</h3>
-                      <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
-                    </div>
-                    <Accordion
-                      type="single"
-                      collapsible
-                      value={openItem}
-                      onValueChange={setOpenItem}
-                      className="w-full space-y-3"
-                    >
-                      {pkg.faqs.map((faq, index) => {
-                        const isOpen = openItem === `faq-${index}`;
-                        return (
-                          <AccordionItem
-                            key={index}
-                            value={`faq-${index}`}
-                            className={`group overflow-hidden rounded-lg border transition-all duration-200 ${
-                              isOpen
-                                ? "border-1 border-[#FE5300] shadow-lg bg-white"
-                                : "border-gray-200 hover:border-[#FE5300] hover:shadow-md bg-white"
-                            }`}
-                          >
-                            <AccordionTrigger
-                              className={`px-6 py-4 text-left font-semibold transition-colors ${
-                                isOpen
-                                  ? "text-blue-600"
-                                  : "text-gray-900 hover:text-[#FE5300]"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3 flex-1">
-                                <div
-                                  className={`flex-shrink-0 rounded-full p-2 transition-colors ${
-                                    isOpen
-                                      ? "bg-blue-100"
-                                      : "bg-gray-100 group-hover:bg-blue-50"
-                                  }`}
-                                >
-                                  <ChevronDown
-                                    className={`h-5 w-5 transition-transform duration-300 ${
-                                      isOpen ? "rotate-180" : ""
-                                    }`}
-                                  />
-                                </div>
-                                <span className="text-base md:text-lg">
-                                  {faq.question}
-                                </span>
-                              </div>
-                            </AccordionTrigger>
-
-                            <AccordionContent className="px-6 pb-4 pt-0">
-                              <div className="ml-11 space-y-3 text-gray-600 leading-relaxed">
-                                <section className="prose prose-lg max-w-none">
-                                  <BlogContent html={faq.answer} />
-                                </section>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        );
-                      })}
-                    </Accordion>
+                  <div className="flex flex-col gap-2 mb-5">
+                    <h3 className="text-xl font-bold font-heading text-black">FAQs</h3>
+                    <div className="w-12 h-1 bg-[#FE5300]"></div>
+                  </div>
+                  <FaqAccordion
+                    type="single"
+                    value={openItem}
+                    onValueChange={(val) => { if (val) setOpenItem(val); }}
+                    className="w-full space-y-2"
+                  >
+                  {pkg.faqs.map((faq, index) => {
+                    const isOpen = openItem === `faq-${index}`;
+                    return (
+                      <FaqAccordionItem
+                        key={index}
+                        value={`faq-${index}`}
+                        className="border-b border-gray-200 py-1 md:py-2"
+                      >
+                        <FaqAccordionTrigger className="text-xs md:text-sm font-bold font-heading text-black hover:text-[#FE5300] transition-colors hover:no-underline text-left">
+                          {faq.question}
+                        </FaqAccordionTrigger>
+                        <FaqAccordionContent className="text-justify pt-3">
+                          <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                            <BlogContent html={faq.answer} />
+                          </section>
+                        </FaqAccordionContent>
+                      </FaqAccordionItem>
+                    );
+                  })}
+                  </FaqAccordion>
                 </div>
               )}
 
