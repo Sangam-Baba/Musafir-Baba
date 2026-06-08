@@ -65,6 +65,7 @@ interface Package {
 
   addOns: AddOns[];
   batch: Batch[];
+  packagePercent?: number;
 }
 
 const formSchema = z.object({
@@ -148,19 +149,41 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
   const totalPrice = useMemo(() => {
     if (!confirmedBatch) return 0;
 
-    const basePrice =
+    const y = pkg.packagePercent || 0;
+    const totalAdults = travellers.quad + travellers.triple + travellers.double;
+    const applyMarkup = totalAdults < 4; // If 4 or more adults, waive the extra markup
+
+    const baseAdults =
       travellers.quad * confirmedBatch.quad +
       travellers.triple * confirmedBatch.triple +
-      travellers.double * confirmedBatch.double +
-      travellers.child * confirmedBatch.child;
+      travellers.double * confirmedBatch.double;
+
+    let adultsTotal = 0;
+    if (totalAdults > 0) {
+      if (applyMarkup) {
+        adultsTotal = baseAdults + (baseAdults * y) / 100;
+      } else {
+        adultsTotal = baseAdults;
+      }
+    }
+
+    const baseChild = travellers.child * confirmedBatch.child;
+    let childTotal = 0;
+    if (baseChild > 0) {
+      if (applyMarkup) {
+        childTotal = baseChild + (baseChild * y) / 100;
+      } else {
+        childTotal = baseChild;
+      }
+    }
 
     const addOnPrice = addOns.reduce(
       (sum, a) => sum + a.price * a.noOfPeople,
       0,
     );
 
-    return basePrice + addOnPrice;
-  }, [travellers, confirmedBatch, addOns]);
+    return Math.round(adultsTotal + childTotal + addOnPrice);
+  }, [travellers, confirmedBatch, addOns, pkg.packagePercent]);
 
   const confirmSelection = (batch: Batch) => {
     setConfirmedBatch(batch);
@@ -592,6 +615,9 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                       </div>
                     ))}
                   </div>
+                  <p className="text-xs text-muted-foreground italic mt-2">
+                    *These prices are valid for a minimum group of 4 persons.
+                  </p>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="mt-6 space-y-4"
@@ -614,24 +640,32 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                         </div>
 
                         {(["quad", "triple", "double", "child"] as const).map(
-                          (type) => (
-                            <div key={type} className="mb-2">
-                              {confirmedBatch
-                                ? travellers?.[type] > 0 && (
-                                    <div className="flex justify-between">
-                                      <p className="capitalize">{type}</p>
-                                      <p className="text-sm text-gray-500">
-                                        ₹
-                                        {confirmedBatch?.[
-                                          type
-                                        ].toLocaleString()}{" "}
-                                        X {travellers?.[type]}
-                                      </p>
-                                    </div>
-                                  )
-                                : null}
-                            </div>
-                          ),
+                          (type) => {
+                            if (!confirmedBatch || travellers?.[type] === 0) return null;
+
+                            const y = pkg.packagePercent || 0;
+                            const totalAdults = travellers.quad + travellers.triple + travellers.double;
+                            const applyMarkup = totalAdults < 4; // Markup is waived if 4 or more adults
+                            let base = confirmedBatch[type];
+                            let markedUp = base;
+
+                            if (applyMarkup) {
+                                markedUp = base + (base * y) / 100;
+                            }
+
+                            markedUp = Math.round(markedUp);
+
+                            return (
+                              <div key={type} className="mb-2">
+                                <div className="flex justify-between">
+                                  <p className="capitalize">{type === 'child' ? 'Child' : `${type} Sharing`}</p>
+                                  <p className="text-sm text-gray-500">
+                                    ₹{markedUp.toLocaleString()} X {travellers[type]}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          }
                         )}
                         <div className="flex justify-between border-t pt-4">
                           <p>Total Travellers</p>

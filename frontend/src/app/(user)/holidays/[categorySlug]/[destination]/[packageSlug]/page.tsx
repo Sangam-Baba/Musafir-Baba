@@ -81,6 +81,8 @@ export interface GroupPackageInterface {
   packageAtAGlance?: string;
   whyChooseThisPackage?: string;
   hotelsAndAccommodation?: string;
+  cta?: string;
+  banner_text?: string[];
   helpfulResources?: { title: string; url: string }[];
   isFeatured: boolean;
   status: "draft" | "published";

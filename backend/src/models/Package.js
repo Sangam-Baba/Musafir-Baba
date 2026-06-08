@@ -115,6 +115,8 @@ const packageSchema = new mongoose.Schema(
     packageAtAGlance: { type: String },
     whyChooseThisPackage: { type: String },
     hotelsAndAccommodation: { type: String },
+    cta: { type: String },
+    banner_text: [String],
     helpfulResources: [
       {
         title: { type: String },
@@ -123,6 +125,7 @@ const packageSchema = new mongoose.Schema(
     ],
     isBestSeller: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
+    packagePercent: { type: Number, min: 0, max: 100, default: 0 },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
   },
   { timestamps: true },

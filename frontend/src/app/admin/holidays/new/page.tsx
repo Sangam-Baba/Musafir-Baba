@@ -102,6 +102,7 @@ interface PackageFormValues {
   whyChooseThisPackage?: string;
   hotelsAndAccommodation?: string;
   helpfulResources?: { title: string; url: string }[];
+  packagePercent: number;
   status: "draft" | "published";
 }
 
@@ -260,6 +261,7 @@ export default function CreatePackagePage() {
     whyChooseThisPackage: "",
     hotelsAndAccommodation: "",
     helpfulResources: [],
+    packagePercent: 0,
   };
 
   const {
@@ -308,6 +310,10 @@ export default function CreatePackagePage() {
   const reviewsArray = useFieldArray({
     control: form.control,
     name: "reviews",
+  });
+  const bannerTextArray = useFieldArray({
+    control: form.control,
+    name: "banner_text" as any,
   });
 
   const mutation = useMutation({
@@ -432,6 +438,9 @@ export default function CreatePackagePage() {
                   <FormField control={form.control} name="isBestSeller" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Best Seller</FormLabel><FormControl><select onChange={(e) => field.onChange(e.target.value === "true")} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="" disabled>Select</option><option value="true">True</option><option value="false">False</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
+                  <FormField control={form.control} name="packagePercent" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Package Percent (%)</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" step="0.01" min="0" max="100" placeholder="0-100" {...field} onChange={(e) => field.onChange(e.target.value === "" ? 0 : parseFloat(e.target.value))} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
                   <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Status</FormLabel><FormControl><select {...field} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="draft">Draft</option><option value="published">Published</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
@@ -467,6 +476,20 @@ export default function CreatePackagePage() {
                   <FormField control={form.control} name="hotelsAndAccommodation" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Hotels & Accommodation</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
+                  <FormField control={form.control} name="cta" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">CTA</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                </div>
+                
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Banner Text Rows</FormLabel>
+                  {bannerTextArray.fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2">
+                      <Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`banner_text.${index}` as const)} placeholder="Enter banner text row" />
+                      <Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => bannerTextArray.remove(index)}>Remove</Button>
+                    </div>
+                  ))}
+                  <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => bannerTextArray.append("")}>Add Banner Row</Button>
                 </div>
 
                 {/* Helpful Resources */}
