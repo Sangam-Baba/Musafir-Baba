@@ -54,8 +54,8 @@ export default function PackageEssentialsList({ html }: { html: string }) {
   };
 
   // Helper to check if value should be rendered as chips (if comma separated)
-  const renderValue = (value: string) => {
-    if (value.includes(',') && !value.toLowerCase().includes('price')) {
+  const renderValue = (value: string, label: string) => {
+    if (value.includes(',') && !label.toLowerCase().includes('price') && !label.toLowerCase().includes('cost')) {
       const items = value.split(',').map(s => s.trim()).filter(Boolean);
       return (
         <div className="flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ export default function PackageEssentialsList({ html }: { html: string }) {
           <div className="w-[62%] md:w-2/3 flex items-start">
             {getIconForLabel(row.label)}
             <div className="flex-1 min-w-0">
-              {renderValue(row.value)}
+              {renderValue(row.value, row.label)}
             </div>
           </div>
         </div>
