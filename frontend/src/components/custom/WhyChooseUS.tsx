@@ -1,100 +1,91 @@
-import Image from "next/image";
+"use client";
+
 import React from "react";
+import { Globe, MapPin, Sliders, ShieldCheck, Users, Headset } from "lucide-react";
 
 function WhyChooseUs() {
-  const data = [
+  const points = [
     {
-      id: 1,
-      title: "Personalised Trips Crafted by Experts",
-      description:
-        "Every itinerary is designed by professional travel planners who understand your interests, budget, and travel style.",
-      url: "https://cdn.musafirbaba.com/images/planning_1980949-new_yjy4vw.png",
+      title: "500+ Travel Experiences",
+      description: "A diverse portfolio of domestic, international, religious, adventure, honeymoon, family, and customised holiday packages.",
+      icon: Globe,
+      color: "text-blue-500",
+      bgLight: "bg-blue-50/70"
     },
     {
-      id: 2,
-      title: "Transparent Pricing - No Hidden Charges",
-      description:
-        "You always know what you’re paying for. All our packages come with clear inclusions and honest pricing.",
-      url: "https://cdn.musafirbaba.com/images/price_13080043_d7lyms.png",
+      title: "Destination Expertise",
+      description: "Carefully planned itineraries designed using local destination knowledge, travel insights, and customer preferences.",
+      icon: MapPin,
+      color: "text-amber-500",
+      bgLight: "bg-amber-50/70"
     },
     {
-      id: 3,
-      title: "Complete Visa & Documentation Support",
-      description:
-        "Our dedicated visa experts assist with paperwork, submissions, and guidance to ensure a smooth approval process",
-      url: "https://cdn.musafirbaba.com/images/citizenship_7550833_yxp6f5.png",
+      title: "Flexible Customisation Options",
+      description: "Tailor hotels, sightseeing, transportation, activities, and travel duration according to your needs.",
+      icon: Sliders,
+      color: "text-emerald-500",
+      bgLight: "bg-emerald-50/70"
     },
     {
-      id: 4,
-      title: "24×7 On-Trip Assistance",
-      description:
-        "From minor questions to last-minute changes, our support team stays connected with you throughout the journey.",
-      url: "https://cdn.musafirbaba.com/images/24-7-service_17062434-new_cw1xje.png",
+      title: "Trusted Travel Partner Network",
+      description: "Working with reliable hotels, transport providers, guides, and local partners to enhance your travel experience.",
+      icon: ShieldCheck,
+      color: "text-indigo-500",
+      bgLight: "bg-indigo-50/70"
     },
     {
-      id: 5,
-      title: "Trusted by Thousands of Travellers",
-      description:
-        "With strong Google ratings and repeat customers, we’re proud of the trust we’ve built over the years.",
-      url: "https://cdn.musafirbaba.com/images/customer_18482548_tax102.png",
+      title: "Travel Solutions For Every Traveller",
+      description: "Packages designed for couples, families, groups, solo travellers, senior citizens, and corporate travellers.",
+      icon: Users,
+      color: "text-red-500",
+      bgLight: "bg-red-50/70"
     },
     {
-      id: 6,
-      title: "Handpicked Hotels, Guides & Experiences",
-      description:
-        "We partner only with verified hotels, transport providers, and local experts to ensure safety and quality.",
-      url: "https://cdn.musafirbaba.com/images/experts_15108104-new_q5uy6p.png",
-    },
+      title: "Dedicated Travel Assistance",
+      description: "Support before, during, and after your journey to help ensure a smooth and memorable travel experience.",
+      icon: Headset,
+      color: "text-orange-500",
+      bgLight: "bg-orange-50/70"
+    }
   ];
-  return (
-    <section className="w-full ">
-      <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mt-8 w-full justify-center items-center">
-        {data.map((data) => (
-          <div
-            key={data.id}
-            className="flex-1 flex flex-col gap-2 items-center"
-          >
-            <Image
-              src={data.url}
-              width={500}
-              height={500}
-              alt={data.title}
-              sizes="(max-width: 768px) 150px, 200px"
-              className="rounded-2xl w-25 h-25 hover:scale-105  hover:shadow-xl transition duration-500"
-            />
-            <div className="h-25 space-y-1">
-              <p className="text-lg font-semibold text-center">{data.title}</p>
-              <p className="text-sm text-center">{data.description}</p>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* CSS Scroll Carousel for Mobile */}
-      <div className="md:hidden flex gap-4 mt-8 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 pb-4">
-        {data.map((data, i) => (
-          <div
-            key={`choose-${i}-${data.id}`}
-            className="flex flex-col gap-2 items-center min-w-[200px] snap-start"
-          >
-            <Image
-              src={data.url}
-              width={150}
-              height={150}
-              alt={data.title}
-              sizes="(max-width: 768px) 150px, 150px"
-              className="rounded-2xl w-[100px] h-[100px] md:w-15 md:h-15"
-            />
-            <div className="space-y-1 mt-2">
-              <p className="text-md font-semibold text-center leading-tight">
-                {data.title}
-              </p>
-              <p className="text-sm text-center text-gray-600 line-clamp-3">
-                {data.description}
-              </p>
+  return (
+    <section className="w-full max-w-7xl mx-auto py-2 px-4 md:px-6">
+      {/* Modern Centered Airy Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 max-w-6xl mx-auto mt-6">
+        {points.map((pt, idx) => {
+          const Icon = pt.icon;
+          return (
+            <div 
+              key={idx}
+              className="group flex flex-col items-center text-center w-full transition-all duration-300"
+            >
+              {/* Double-layered Curved Circular Icon Frame */}
+              <div className="relative mb-5 flex items-center justify-center">
+                {/* Subtle soft gradient background glow */}
+                <div className={`absolute inset-0 rounded-full ${pt.bgLight} scale-90 blur-md opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 ease-out`} />
+                
+                {/* Solid Circular Frame */}
+                <div className="relative h-20 w-20 rounded-full border border-slate-100 bg-white shadow-xs flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-slate-200 group-hover:shadow-sm">
+                  {/* Inner color circle */}
+                  <div className={`h-14 w-14 rounded-full ${pt.bgLight} flex items-center justify-center transition-transform duration-500 ease-out group-hover:rotate-12`}>
+                    <Icon className={`h-6 w-6 ${pt.color} transition-transform duration-300 group-hover:scale-110`} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Title description */}
+              <div className="flex flex-col gap-2 px-4">
+                <p className="text-[16px] font-bold text-slate-800 leading-snug tracking-tight group-hover:text-[#FE5300] transition-colors duration-300">
+                  {pt.title}
+                </p>
+                <p className="text-[14px] text-slate-500 font-medium leading-relaxed">
+                  {pt.description}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

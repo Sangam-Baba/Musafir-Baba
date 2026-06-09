@@ -77,7 +77,13 @@ function SlugClients({
   const isClickScrollingRef = useRef(false);
   const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     const btn = tabButtonRefs.current[active];
     if (btn) {
       btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -125,43 +131,49 @@ function SlugClients({
   return (
     <section className="w-full bg-slate-50 min-h-screen pb-10">
       <div className="relative">
-        <div className="absolute z-20 w-full flex justify-center md:bottom-14 bottom-2 px-4">
-          <ItineryDialog
-            title={pkg.title}
-            description={pkg.description.slice(0, 50)}
-            url={pkg.itineraryDownload?.url ?? ""}
-            img={pkg.coverImage?.url}
-            packageId={pkg._id}
-            itinerary={pkg.itinerary}
-            duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
-            highlights={pkg.highlights}
-            destination={pkg.destination?.state || ''}
-            gallery={pkg?.gallery ?? []}
-            inclusions={pkg.inclusions || []}
-            exclusions={pkg.exclusions || []}
-            batch={pkg.batch || []}
-          />
-        </div>
         <Hero
           image={pkg.coverImage.url ?? ""}
+          images={[
+            pkg.coverImage?.url,
+            ...(pkg.gallery?.map((g: any) => g.url) || [])
+          ].filter(Boolean)}
           title={pkg.title}
           description=""
           align="left"
-          aspectRatio="min-h-[380px] md:min-h-[420px] lg:h-[450px]"
+          aspectRatio="min-h-[380px] md:min-h-[420px] lg:min-h-[550px]"
           overlayOpacity={100}
         >
-          {pkg.banner_text && pkg.banner_text.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 w-full mt-4">
-              {pkg.banner_text.map((text, i) => (
-                <div key={i} className="flex items-center gap-2 drop-shadow-md">
-                  <Check className="w-4 h-4 text-[#FE5300] shrink-0" />
-                  <p className="text-white text-sm md:text-[15px] font-medium max-w-3xl text-left leading-tight">
-                    {text}
-                  </p>
-                </div>
-              ))}
+          <div className="flex flex-col gap-5 w-full mt-4">
+            {pkg.banner_text && pkg.banner_text.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 w-full">
+                {pkg.banner_text.map((text, i) => (
+                  <div key={i} className="flex items-center gap-2 drop-shadow-md">
+                    <Check className="w-4 h-4 text-[#FE5300] shrink-0" />
+                    <p className="text-white text-sm md:text-[15px] font-medium max-w-3xl text-left leading-tight">
+                      {text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex justify-start">
+              <ItineryDialog
+                title={pkg.title}
+                description={pkg.description.slice(0, 50)}
+                url={pkg.itineraryDownload?.url ?? ""}
+                img={pkg.coverImage?.url}
+                packageId={pkg._id}
+                itinerary={pkg.itinerary}
+                duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
+                highlights={pkg.highlights}
+                destination={pkg.destination?.state || ''}
+                gallery={pkg?.gallery ?? []}
+                inclusions={pkg.inclusions || []}
+                exclusions={pkg.exclusions || []}
+                batch={pkg.batch || []}
+              />
             </div>
-          )}
+          </div>
         </Hero>
       </div>
       <div className="w-full max-w-7xl mx-auto px-8  mt-4">
@@ -182,7 +194,7 @@ function SlugClients({
               <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
               
               <div className="flex flex-col gap-2 mb-8 relative z-10">
-                <h3 className="text-2xl md:text-3xl font-black font-heading text-gray-900 tracking-tight">Tour Highlights</h3>
+                <h2 className="text-2xl md:text-3xl font-black font-heading text-gray-900 tracking-tight">Tour Highlights</h2>
                 <div className="w-16 h-1.5 bg-[#FE5300] rounded-full"></div>
               </div>
               
@@ -201,12 +213,12 @@ function SlugClients({
 
           {/* Row 2: Tables Side by Side */}
           {(pkg.packageAtAGlance || pkg.packageEssentials) && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
               
               {pkg.packageAtAGlance && pkg.packageAtAGlance.trim() !== "" && (
-                <div className="bg-white p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="w-full flex flex-col pt-2 px-4 md:px-4">
                   <div className="flex flex-col gap-2 mb-6">
-                    <h3 className="text-xl font-bold font-heading text-black">At a Glance</h3>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">At a Glance</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <div className="mt-4">
@@ -216,9 +228,9 @@ function SlugClients({
               )}
 
               {pkg.packageEssentials && pkg.packageEssentials.trim() !== "" && (
-                <div className="bg-white p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="w-full flex flex-col pt-2 px-4 md:px-4">
                   <div className="flex flex-col gap-2 mb-6">
-                    <h3 className="text-xl font-bold font-heading text-black">Package Essentials</h3>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Package Essentials</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <div className="mt-4">
@@ -290,7 +302,7 @@ function SlugClients({
               {pkg.whyChooseThisPackage && (
                 <div id="whychoose" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Why Choose This Char Dham Yatra Package?</h3>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Why Choose This Char Dham Yatra Package?</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <section className="prose prose-base max-w-none text-gray-600 leading-relaxed">
@@ -301,7 +313,7 @@ function SlugClients({
 
               <div id="description" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
-                  <h3 className="text-xl font-bold font-heading text-black">Package Overview</h3>
+                  <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Package Overview</h2>
                   <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                 </div>
                 <div className="md:hidden text-gray-600 leading-relaxed text-base">
@@ -314,13 +326,14 @@ function SlugClients({
 
               <div id="itineraries" className="scroll-mt-40 mb-8 pb-6 border-b border-gray-200 last:border-0 overflow-hidden">
                   <div className="flex flex-col gap-2 mb-6">
-                    <h3 className="text-xl font-bold font-heading text-black">Journey Route</h3>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Journey Route</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   
                   <div className="relative pt-4 pb-4 w-full">
                     <Accordion
                       type="multiple"
+                      defaultValue={["itinerary-0"]}
                       className="w-full relative z-10 flex flex-col gap-0"
                     >
                       {pkg.itinerary.map((item: Itinerary, i: number) => {
@@ -403,7 +416,7 @@ function SlugClients({
               {pkg.hotelsAndAccommodation && (
                 <div id="hotels" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Hotels & Accommodation</h3>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Hotels & Accommodation</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <section className="prose prose-base max-w-none text-gray-600 leading-relaxed">
@@ -416,7 +429,7 @@ function SlugClients({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <div className="flex flex-col gap-2 mb-5">
-                      <h3 className="text-xl font-bold font-heading text-black">{`Inclusions`}</h3>
+                      <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{`Inclusions`}</h2>
                       <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                     </div>
                     <ul className="space-y-3">
@@ -430,7 +443,7 @@ function SlugClients({
                   </div>
                   <div>
                     <div className="flex flex-col gap-2 mb-5">
-                      <h3 className="text-xl font-bold font-heading text-black">{`Exclusions`}</h3>
+                      <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{`Exclusions`}</h2>
                       <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                     </div>
                     <ul className="space-y-3">
@@ -447,14 +460,10 @@ function SlugClients({
                 </div>
               </div>
 
-              <div id="whychoosemusafirbaba" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0 -mx-4 md:-mx-8">
-                <WhyChoose />
-              </div>
-
               {pkg.faqs && pkg.faqs.length > 0 && (
                 <div id="faqs" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">FAQs</h3>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">FAQs</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <FaqAccordion
@@ -486,12 +495,6 @@ function SlugClients({
                 </div>
               )}
 
-              {pkg.helpfulResources && pkg.helpfulResources.length > 0 && (
-                <div id="helpfulresources" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0 w-full">
-                  <HelpfulResources data={pkg.helpfulResources} />
-                </div>
-              )}
-
               <div id="author" className="scroll-mt-40 mb-8">
                 <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-3 shadow-sm">
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
@@ -502,6 +505,12 @@ function SlugClients({
                   </div>
                 </div>
               </div>
+
+              {pkg.helpfulResources && pkg.helpfulResources.length > 0 && (
+                <div id="helpfulresources" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0 w-full">
+                  <HelpfulResources data={pkg.helpfulResources} />
+                </div>
+              )}
 
             </div>
           </div>
@@ -545,9 +554,10 @@ function SlugClients({
         </div>
       </div>
 
-      <ImageGallery title="Memories in Motion" data={pkg?.gallery ?? []} />
-      <Testimonial data={pkg?.reviews ?? []} />
-      <div className="w-full max-w-7xl mx-auto px-8  mt-4 flex flex-col items-center">
+      <div className="flex flex-col gap-12 md:gap-20 mt-12 md:mt-16 pb-16">
+
+        <Testimonial data={pkg?.reviews ?? []} />
+        <div className="w-full max-w-7xl mx-auto px-8 flex flex-col items-center">
         <h2 className="text-2xl font-bold">Related Packages</h2>
         <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
         {relatedGroupPackages && relatedGroupPackages.length > 0 && (
@@ -578,6 +588,13 @@ function SlugClients({
           </>
         )}
       </div>
+      </div>
+
+      {/* Why Choose MusafirBaba - Full Width */}
+      <div id="whychoosemusafirbaba" className="w-full border-t border-gray-200 pt-12 pb-16 mt-8">
+        <WhyChoose />
+      </div>
+
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-between items-end bg-white md:hidden mb-13 py-2 px-4 border-b border-gray-400">
         <CardHeader className="flex flex-col justify-between  ">
           <p className="whitespace-nowrap">

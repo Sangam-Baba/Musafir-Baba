@@ -33,6 +33,7 @@ Allow: *
 
 User-agent: *
 Allow: /
+Disallow: /_next/
 Disallow: /admin
 Disallow: /user
 Disallow: /membership/
