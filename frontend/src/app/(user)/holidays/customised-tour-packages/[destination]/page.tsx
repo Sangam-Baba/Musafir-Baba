@@ -26,6 +26,7 @@ export interface CustomizedPackageInterface {
   title: string;
   slug: string;
   coverImage: CoverImage;
+  coverImages?: CoverImage[];
   plans: Plan[];
   duration: {
     days: number;
@@ -118,7 +119,7 @@ async function DestinationPage({
   return (
     <section>
       <Hero
-        image={packages[0]?.coverImage?.url}
+        image={packages[0]?.coverImages?.[0]?.url || packages[0]?.coverImage?.url}
         title={`Explore Customised Packages in ${
           destination.charAt(0).toUpperCase() + destination.slice(1)
         }`}

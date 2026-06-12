@@ -74,6 +74,7 @@ interface PackageFormValues {
   otherCategory: string[];
   addOns?: AddOns[];
   coverImage: Image;
+  coverImages?: Image[];
   gallery?: Image[];
   duration: { days: number; nights: number };
   metaTitle: string;
@@ -219,6 +220,7 @@ export default function CreatePackagePage() {
     status: "draft",
     keywords: [],
     coverImage: { url: "", alt: "", public_id: "" },
+    coverImages: [],
     gallery: [],
     batch: [],
     destination: "",
@@ -334,6 +336,7 @@ export default function CreatePackagePage() {
         destination: pkg.destination?._id.toString() || "",
         batch: batchIds,
         reviews: reviewsIds,
+        coverImages: pkg.coverImages?.length ? pkg.coverImages : (pkg.coverImage?.url ? [pkg.coverImage] : []),
       });
       if (batchIds.length > 0) {
         getBatchByIds(accessToken, batchIds)
@@ -364,6 +367,11 @@ export default function CreatePackagePage() {
   const coverImageArray = useFieldArray({
     control: form.control,
     name: "gallery",
+  });
+
+  const coverImagesArray = useFieldArray({
+    control: form.control,
+    name: "coverImages",
   });
   const highlightsArray = useFieldArray({
     control: form.control,
@@ -546,8 +554,25 @@ export default function CreatePackagePage() {
 
               {/* TAB 4: MEDIA */}
               <TabsContent value="media" className="space-y-3">
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Cover Images</FormLabel>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {coverImagesArray.fields.map((field, index) => (
+                      <div key={field.id} className="flex flex-col items-center gap-2 p-2 border rounded bg-gray-50">
+                        <ImageUploader initialImage={form.watch(`coverImages.${index}`)} onUpload={(img) => { if (!img) return; form.setValue(`coverImages.${index}`, { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }); }} />
+                        {form.watch(`coverImages.${index}.url`) && (
+                          <div className="w-full flex flex-col items-center gap-2">
+                            <Input className="h-7 text-xs px-2 rounded-sm w-full" placeholder="Cover alt" value={form.watch(`coverImages.${index}.alt`) ?? ""} onChange={(e) => form.setValue(`coverImages.${index}.alt`, e.target.value ?? form.getValues("title"))} />
+                          </div>
+                        )}
+                        <Button type="button" variant="destructive" size="sm" className="h-7 text-[10px] w-full" onClick={() => coverImagesArray.remove(index)}>Remove</Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => coverImagesArray.append({ url: "", public_id: "", width: 0, height: 0, alt: "" })}>Add Cover Image</Button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-2"><FormField control={form.control} name="coverImage" render={({ field }) => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Cover Image</FormLabel><FormControl><ImageUploader initialImage={pkg?.coverImage} onUpload={(img) => { if (!img) return; const newImg = { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }; form.setValue("coverImage", newImg, { shouldDirty: true }); field.onChange(newImg); }} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} /><Input className="h-7 text-xs px-2 rounded-sm" placeholder="Cover alt" value={form.watch("coverImage")?.alt ?? ""} onChange={(e) => form.setValue("coverImage.alt", e.target.value ?? form.getValues("title"))} /></div>
                   <div className="bg-white p-3 border rounded-md shadow-sm space-y-2"><FormField control={form.control} name="itineraryDownload" render={() => (<FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Itinerary PDF Upload</FormLabel><FormControl><ImageUploader initialImage={pkg?.itineraryDownload} onUpload={(img) => { if (!img) return; form.setValue("itineraryDownload", { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title") }); }} /></FormControl><FormMessage className="text-[10px]" /></FormItem>)} /></div>
                 </div>
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Image Gallery</FormLabel><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">{coverImageArray.fields.map((field, index) => (<div key={field.id} className="flex flex-col items-center gap-2 p-2 border rounded bg-gray-50"><ImageUploader initialImage={form.watch(`gallery.${index}`)} onUpload={(img) => { if (!img) return; form.setValue(`gallery.${index}`, { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }); }} /><Button type="button" variant="destructive" size="sm" className="h-7 text-[10px] w-full" onClick={() => coverImageArray.remove(index)}>Remove</Button></div>))}</div><Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => coverImageArray.append({ url: "", public_id: "", width: 0, height: 0, alt: "" })}>Add Image to Gallery</Button></div>

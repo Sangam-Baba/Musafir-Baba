@@ -38,6 +38,7 @@ type BookingApiResponse = {
     _id: string;
     title: string;
     coverImage: Image;
+    coverImages?: Image[];
   };
   userId: {
     _id: string;
@@ -205,12 +206,12 @@ export default function CheckoutButton() {
   const booking = formData;
   let totalPrice = booking.totalPrice;
   useEffect(() => {
-    // console.log("pkg data:", pkg);
     if (booking && pkg) {
       const plans = pkg.plans.find((item: any) => item.title === booking.plan);
       setPlan({ title: plans.title, price: plans.price });
-      totalPrice = booking.noOfPeople * plans.price;
-      setFinalAmount(Math.ceil(totalPrice * 1.05));
+      const baseCost = (booking.noOfPeople * plans.price) + ((booking.noOfChildren || 0) * plans.price * 0.6);
+      totalPrice = baseCost;
+      setFinalAmount(Math.ceil(baseCost * 1.05));
     }
   }, [booking, pkg]);
 
@@ -343,9 +344,9 @@ export default function CheckoutButton() {
               <div className="md:col-span-2 grid grid-cols-5 gap-4 md:gap-0">
                 {/* Image Section */}
                 <div className="col-span-2 md:col-span-5 relative h-full">
-                  {pkg?.coverImage?.url ? (
+                  {pkg?.coverImages?.[0]?.url || pkg?.coverImage?.url ? (
                     <Image
-                      src={pkg.coverImage.url}
+                      src={pkg.coverImages?.[0]?.url || pkg.coverImage?.url}
                       alt={pkg.title}
                       fill
                       className="object-cover  "
@@ -475,11 +476,19 @@ export default function CheckoutButton() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Package Price</span>
+                    <span className="text-muted-foreground">Adult Price</span>
                     <span className="font-semibold text-foreground">
-                      ₹{plan.price} X{booking?.noOfPeople}
+                      ₹{plan.price.toLocaleString('en-IN')} x {booking?.noOfPeople}
                     </span>
                   </div>
+                  {booking?.noOfChildren > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Child Price (60%)</span>
+                      <span className="font-semibold text-foreground">
+                        ₹{(plan.price * 0.6).toLocaleString('en-IN')} x {booking?.noOfChildren}
+                      </span>
+                    </div>
+                  )}
 
                   {/* GST */}
                   <div className="flex justify-between items-center">
@@ -487,7 +496,7 @@ export default function CheckoutButton() {
                       @GST 5%
                     </span>
                     <span className="font-semibold text-foreground">
-                      ₹{Math.ceil(totalPrice * 0.05).toLocaleString()}
+                      ₹{Math.ceil(((booking?.noOfPeople * plan.price) + ((booking?.noOfChildren || 0) * plan.price * 0.6)) * 0.05).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>

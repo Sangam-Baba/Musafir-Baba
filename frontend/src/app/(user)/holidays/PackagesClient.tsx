@@ -20,6 +20,7 @@ import {
 
 interface CombinedInterface extends Package {
   price?: number;
+  coverImages?: { url: string; public_id: string; alt?: string; width?: number; height?: number }[];
 }
 
 export default function MixedPackagesClient({
@@ -238,7 +239,7 @@ export default function MixedPackagesClient({
                   id: pkg._id,
                   name: pkg.title,
                   slug: pkg.slug,
-                  image: pkg.coverImage?.url ?? "/Hero1.jpg",
+                  image: pkg.coverImages?.[0]?.url || pkg.coverImage?.url || "/Hero1.jpg",
                   price: pkg?.price ?? 9999,
                   duration: pkg.duration?.nights
                     ? `${pkg.duration?.nights ?? 0}N/${pkg.duration.days}D`

@@ -188,12 +188,9 @@ const getPackages = async (req, res) => {
       query.destination = dest._id;
     }
 
-    // ✅ Search filter (title or description)
+    // ✅ Search filter (title only)
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
+      query.title = { $regex: search, $options: "i" };
     }
     // console.log(query);
     // ✅ Query execution

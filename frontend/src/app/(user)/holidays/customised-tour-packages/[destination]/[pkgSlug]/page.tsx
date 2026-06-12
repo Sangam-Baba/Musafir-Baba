@@ -75,7 +75,7 @@ export async function generateMetadata({
       images: [
         {
           url:
-            pkg?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+            pkg?.coverImages?.[0]?.url || pkg?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
         },
       ],
     },
@@ -112,7 +112,7 @@ export default async function Page({
       pkg.destination.state +
       "/" +
       pkgSlug,
-    pkg.coverImage?.url || "https://musafirbaba.com/homebanner.webp"
+    pkg?.coverImages?.[0]?.url || pkg.coverImage?.url || "https://musafirbaba.com/homebanner.webp"
   );
   const faqSchema = getFAQSchema(pkg.faqs ?? []);
   const collectionSchema = getCollectionSchema(

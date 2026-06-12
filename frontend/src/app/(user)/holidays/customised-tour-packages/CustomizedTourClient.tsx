@@ -186,8 +186,8 @@ function CustomizedTourClient({
                 {/* Image + Price tag */}
                 <div className="relative h-56 w-full">
                   <Image
-                    src={pkg.coverImage?.url}
-                    alt={pkg.coverImage?.alt}
+                    src={pkg.coverImages?.[0]?.url || pkg.coverImage?.url || "/Hero1.jpg"}
+                    alt={pkg.coverImages?.[0]?.alt || pkg.coverImage?.alt || "Cover Image"}
                     width={500}
                     height={500}
                     className="h-full w-full object-cover"

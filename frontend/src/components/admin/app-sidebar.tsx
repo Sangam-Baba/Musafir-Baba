@@ -68,19 +68,19 @@ export function AdminSidebar() {
               <SidebarMenu>
                 <Collapsible defaultOpen className="group/collapsible">
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full hover:bg-white dark:hover:bg-slate-800/40 flex items-center justify-between px-4 py-2.5 transition-all duration-300 rounded-xl group-data-[state=open]/collapsible:bg-[#87E87F]/5 group-data-[state=open]/collapsible:shadow-sm">
+                    <SidebarMenuButton className="w-full hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center justify-between px-4 py-2.5 transition-all duration-300 rounded-full group-data-[state=open]/collapsible:bg-[#f4fcf4] group-data-[state=open]/collapsible:shadow-sm">
                       <div className="flex gap-3.5 items-center">
                         <div className={`p-1.5 rounded-lg transition-colors duration-300 ${
                           "group-data-[state=open]/collapsible:bg-[#87E87F]/20 group-data-[state=open]/collapsible:text-[#2d5a27]"
                         }`}>
                           <group.icon className="h-4.5 w-4.5 shrink-0 transition-transform duration-300 group-hover/collapsible:scale-110" />
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 text-[11px] font-bold tracking-[0.1em] uppercase group-data-[collapsible=icon]:hidden group-data-[state=open]/collapsible:text-slate-900 dark:group-data-[state=open]/collapsible:text-white transition-colors">
+                        <span className="text-slate-600 dark:text-slate-400 text-[11px] font-bold tracking-[0.1em] uppercase group-data-[collapsible=icon]:hidden group-data-[state=open]/collapsible:text-slate-900 dark:group-data-[state=open]/collapsible:text-white transition-colors">
                           {group.label}
                         </span>
                       </div>
 
-                      <FaChevronCircleDown className="ml-2 h-4 w-4 text-slate-400 transition-all duration-500 group-data-[state=open]/collapsible:rotate-180 group-data-[state=open]/collapsible:text-[#87E87F] group-data-[collapsible=icon]:hidden" />
+                      <FaChevronCircleDown className="ml-2 h-4 w-4 text-slate-400 bg-white rounded-full transition-all duration-500 group-data-[state=open]/collapsible:rotate-180 group-data-[state=open]/collapsible:text-[#87E87F] group-data-[collapsible=icon]:hidden" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
 
@@ -93,7 +93,7 @@ export function AdminSidebar() {
                           <SidebarMenuSubItem key={item.href}>
                             <Link
                               href={item.href}
-                              className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-300 text-sm group/item relative ${
+                              className={`flex items-center gap-3 rounded-full px-3.5 py-2 transition-all duration-300 text-[13px] font-semibold group/item relative ${
                                 active
                                   ? "bg-gradient-to-r from-[#FE5300] to-[#ff7a3d] text-white shadow-lg shadow-orange-500/30 scale-[1.02]"
                                   : "text-slate-600 dark:text-slate-400 hover:bg-[#87E87F]/10 hover:text-slate-900 dark:hover:text-white active:scale-[0.98]"
@@ -102,11 +102,11 @@ export function AdminSidebar() {
                               <Icon className={`h-4.5 w-4.5 shrink-0 transition-all duration-300 ${
                                 active ? "text-white scale-110" : "text-slate-400 group-hover/item:text-[#87E87F] group-hover/item:scale-110"
                               }`} />
-                              <span className="group-data-[collapsible=icon]:hidden font-medium">
+                              <span className="group-data-[collapsible=icon]:hidden">
                                 {item.label}
                               </span>
                               {active && (
-                                <div className="absolute left-[-22px] w-1.5 h-6 bg-[#FE5300] rounded-r-full shadow-[2px_0_8px_rgba(254,83,0,0.5)]" />
+                                <div className="absolute left-[-17px] w-[3px] h-6 bg-[#FE5300] rounded-r-full shadow-[2px_0_8px_rgba(254,83,0,0.5)]" />
                               )}
                             </Link>
                           </SidebarMenuSubItem>
