@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import Pagination from "@/components/common/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
@@ -81,9 +82,9 @@ interface Package {
   status: "draft" | "published";
   image: string;
 }
-const getAllPackages = async () => {
+const getAllPackages = async (page: number, search: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?status=`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=10&status=`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -92,37 +93,36 @@ const getAllPackages = async () => {
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
   const data = await res.json();
-  // console.log("All packages is: ",data.data);
-  return data?.data;
+  return data;
 };
 function PackagePage() {
-  const [filter, setFilter] = React.useState({ search: "" });
+  const [filter, setFilter] = useState({ search: "" });
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(filter.search);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [filter.search]);
 
   const router = useRouter();
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
     (state) => state.permissions
   ) as string[];
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["packages"],
-    queryFn: getAllPackages,
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["packages", page, debouncedSearch],
+    queryFn: () => getAllPackages(page, debouncedSearch),
     enabled: permissions.includes("holidays"),
   });
 
-  const packages = React.useMemo(() => data ?? [], [data]);
-
-  const [filteredPackages, setFilteredPackages] = React.useState(packages);
-  useEffect(() => {
-    const result = packages.filter((pkg: Package) => {
-      return (
-        pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
-        pkg.destination?.state
-          ?.toLowerCase()
-          .includes(filter.search.toLowerCase())
-      );
-    });
-    setFilteredPackages(result);
-  }, [filter, packages]);
+  const packages = data?.data ?? [];
+  const meta = {
+    total: data?.total ?? 0,
+    totalPages: data?.pages ?? 1,
+  };
   const handleEdit = (id: string) => {
     router.push(`/admin/holidays/edit/${id}`);
   };
@@ -165,7 +165,10 @@ function PackagePage() {
             placeholder="Search by name or destination"
             className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-[300px]"
             value={filter.search}
-            onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+            onChange={(e) => {
+              setFilter({ search: e.target.value });
+              setPage(1);
+            }}
           />
         </div>
         <button
@@ -181,27 +184,39 @@ function PackagePage() {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <PackagesList
-          packages={
-            Array.isArray(filteredPackages)
-              ? filteredPackages.map((b: Package) => ({
-                  id: b._id as string,
-                  name: b.title as string,
-                  location:
-                    (b.destination?.state.charAt(0).toUpperCase() as string) +
-                    b.destination?.state.slice(1),
-                  slug: b.slug as string,
-                  price: b.batch?.length
-                    ? b.batch[0].quad.toLocaleString()
-                    : "0",
-                  url: `/holidays/${b.mainCategory?.slug}/${b.destination?.state}/${b.slug}`,
-                  status: b.status === "published" ? "Published" : "Draft",
-                }))
-              : []
-          }
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <div className="space-y-4">
+          <PackagesList
+            packages={
+              Array.isArray(packages)
+                ? packages.map((b: Package) => ({
+                    id: b._id as string,
+                    name: b.title as string,
+                    location:
+                      b.destination?.state ? (b.destination?.state.charAt(0).toUpperCase() as string) +
+                      b.destination?.state.slice(1) : "",
+                    slug: b.slug as string,
+                    price: b.batch?.length
+                      ? b.batch[0].quad.toLocaleString()
+                      : "0",
+                    url: `/holidays/${b.mainCategory?.slug}/${b.destination?.state}/${b.slug}`,
+                    status: b.status === "published" ? "Published" : "Draft",
+                  }))
+                : []
+            }
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+          <div className="flex items-center justify-between px-2 py-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              Showing {((page - 1) * 10) + 1} - {Math.min(page * 10, meta.total)} of {meta.total}
+            </p>
+            <Pagination 
+              currentPage={page}
+              totalPages={meta.totalPages}
+              onPageChange={(p) => setPage(p)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

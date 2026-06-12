@@ -13,7 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { format, parseISO, isAfter } from "date-fns";
+import { format, parseISO, isAfter, parse, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isBefore } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useGroupBookingStore } from "@/store/useBookingStore";
 import { AddOns } from "@/app/admin/holidays/new/page";
@@ -336,6 +336,11 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                   <Calendar className="w-5 h-5 text-primary" />
                   <h2 className="text-xl font-semibold">Select Travel Dates</h2>
                 </div>
+                
+                <div className="flex items-center gap-2 mt-1 mb-2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 shadow-sm" />
+                  <span className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">Available Starting Dates</span>
+                </div>
 
                 <Tabs
                   defaultValue={Object.keys(batchesByMonth)[0]}
@@ -357,95 +362,145 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                     </TabsList>
                   </div>
 
-                  {Object.entries(batchesByMonth).map(([month, list]) => (
+                  {Object.entries(batchesByMonth).map(([month, list]) => {
+                    const monthDate = parse(month, "MMM ''yy", new Date());
+                    const firstDay = startOfMonth(monthDate);
+                    const lastDay = endOfMonth(monthDate);
+                    const days = eachDayOfInterval({ start: firstDay, end: lastDay });
+                    const startingDayIndex = getDay(firstDay); // 0 = Sunday, 1 = Monday, etc.
+                    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                    return (
                     <TabsContent key={month} value={month} className="w-full">
-                      <div className="grid gap-3">
-                        {list.map((b) => {
-                          const start = parseISO(
-                            b.startDate,
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          });
-
-                          const end = parseISO(b.endDate).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            },
-                          );
-                          const isSelected = selectedBatch?._id === b._id;
-
-                          return (
-                            <div
-                              key={b._id}
-                              onClick={() => {
-                                setSelectedBatch(b);
-                                confirmSelection(b);
-                                const el =
-                                  document.getElementById("calculator");
-                                el?.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "start",
-                                });
-                              }}
-                              className={`group relative flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                                isSelected
-                                  ? "border-primary bg-primary/5 shadow-inner"
-                                  : "border-transparent bg-secondary/50 hover:bg-secondary/80 hover:border-primary/20"
-                              }`}
-                            >
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold md:text-lg text-md">
-                                    {start}
-                                  </span>
-                                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                  <span className="font-semibold md:text-lg text-md">
-                                    {end}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge
-                                    // variant="outline"
-                                    className="text-[10px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20"
-                                  >
-                                    Available
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    Industry Best Price
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="">
-                                <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
-                                  From{" "}
-                                  <span className="text-sm text-muted-foreground line-through">
-                                    ₹{b.quadDiscount.toLocaleString()}
-                                  </span>
-                                </p>
-                                <div className="flex items-baseline justify-start sm:justify-end gap-2">
-                                  <p className="text-2xl font-bold text-primary">
-                                    ₹{b.quad.toLocaleString()}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {isSelected && (
-                                <CheckCircle2 className="absolute -top-2 -right-2 w-6 h-6 text-primary fill-background shadow-sm rounded-full" />
-                              )}
+                      <div className="bg-white border rounded-xl p-4 shadow-sm">
+                        <div className="grid grid-cols-7 gap-1 text-center mb-2">
+                          {weekDays.map(day => (
+                            <div key={day} className="text-xs font-semibold text-gray-500 uppercase tracking-wider py-2">
+                              {day}
                             </div>
-                          );
-                        })}
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-7 gap-1 md:gap-2 text-center">
+                          {Array.from({ length: startingDayIndex }).map((_, i) => (
+                            <div key={`empty-${i}`} className="p-2 md:p-3" />
+                          ))}
+                          {days.map(day => {
+                            const batchForDay = list.find(b => isSameDay(parseISO(b.startDate), day));
+                            
+                            const isSelectedRange = selectedBatch && (
+                              isSameDay(day, parseISO(selectedBatch.startDate)) ||
+                              isSameDay(day, parseISO(selectedBatch.endDate)) ||
+                              (isAfter(day, parseISO(selectedBatch.startDate)) && isBefore(day, parseISO(selectedBatch.endDate)))
+                            );
+
+                            const isSelectedStart = selectedBatch && isSameDay(day, parseISO(selectedBatch.startDate));
+                            const isSelectedEnd = selectedBatch && isSameDay(day, parseISO(selectedBatch.endDate));
+                            
+                            return (
+                              <div
+                                key={day.toString()}
+                                onClick={() => {
+                                  if (batchForDay) {
+                                    setSelectedBatch(batchForDay);
+                                    confirmSelection(batchForDay);
+                                    const el = document.getElementById("calculator");
+                                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                  }
+                                }}
+                                className={`relative p-0.5 md:p-1 rounded-lg border flex flex-col items-center justify-center transition-all min-h-[28px] md:min-h-[32px] ${
+                                  isSelectedRange
+                                    ? "border-blue-500 bg-blue-500/10 " + (isSelectedStart ? "ring-1 ring-blue-500" : "")
+                                    : batchForDay
+                                      ? "border-green-200 bg-green-50/50 hover:border-green-500 hover:bg-green-100 cursor-pointer hover:shadow-sm"
+                                      : "border-transparent bg-gray-50 text-gray-400 opacity-50 cursor-not-allowed"
+                                } ${batchForDay ? "cursor-pointer" : ""}`}
+                              >
+                                <span className={`text-[10px] md:text-xs font-semibold leading-none ${batchForDay && !isSelectedStart ? 'text-gray-900' : ''} ${isSelectedRange ? 'text-blue-600' : ''}`}>
+                                  {format(day, 'd')}
+                                </span>
+                                {batchForDay && (
+                                  <span className={`text-[8px] md:text-[9px] font-medium leading-none mt-1 ${isSelectedRange ? 'text-blue-700/70' : 'text-green-700/70'}`}>
+                                    ₹{Math.floor(batchForDay.quad / 1000)}k
+                                  </span>
+                                )}
+                                {batchForDay && !isSelectedStart && (
+                                  <div className="absolute top-1 right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full shadow-sm" />
+                                )}
+                                {isSelectedStart && (
+                                  <CheckCircle2 className="absolute -top-1 -right-1 w-3 h-3 text-blue-500 fill-white rounded-full bg-white" />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
+
                     </TabsContent>
-                  ))}
+                  )})}
                 </Tabs>
+
+                {/* Details of Selected Batch - Moved outside Tabs so it stays visible across months */}
+                {selectedBatch && (
+                  <div className="mt-2 p-2 md:p-3 border-2 border-green-500/20 bg-green-500/5 rounded-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm md:text-base">
+                          {format(parseISO(selectedBatch.startDate), "MMMM d, yyyy")}
+                        </span>
+                        <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                        <span className="font-semibold text-sm md:text-base">
+                          {format(parseISO(selectedBatch.endDate), "MMMM d, yyyy")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="text-[9px] font-bold uppercase tracking-wider bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20">
+                          Available
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Industry Best Price
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-left lg:text-right">
+                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                        From{" "}
+                        <span className="text-xs line-through">
+                          ₹{selectedBatch.quadDiscount.toLocaleString()}
+                        </span>
+                      </p>
+                      <p className="text-lg md:text-xl font-bold text-green-600">
+                        ₹{selectedBatch.quad.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Disclaimer */}
+                <div className="mt-4 p-4 bg-gray-50 border rounded-xl text-xs text-muted-foreground space-y-1.5">
+                  <h3 className="font-semibold text-sm text-gray-900 mb-3">Disclaimer</h3>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✓</span>
+                    <span>Booking amount is non-refundable.</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✓</span>
+                    <span>Package cost is based on a minimum of 4 travellers.</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✓</span>
+                    <span>Trip may be rescheduled if minimum group size is not met.</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✓</span>
+                    <span>Prices are subject to availability and confirmation.</span>
+                  </p>
+                  <p className="flex items-start gap-2">
+                    <span className="text-green-600 font-bold">✓</span>
+                    <span>By submitting this form, you agree to the applicable booking T&C.</span>
+                  </p>
+                </div>
               </section>
+
 
               {/* Add Ons */}
               {pkg.addOns?.length > 0 && (

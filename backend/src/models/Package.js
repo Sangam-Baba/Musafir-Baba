@@ -22,6 +22,15 @@ const packageSchema = new mongoose.Schema(
       width: Number,
       height: Number,
     },
+    coverImages: [
+      {
+        url: String,
+        alt: String,
+        public_id: String,
+        width: Number,
+        height: Number,
+      },
+    ],
     gallery: [
       {
         url: String,

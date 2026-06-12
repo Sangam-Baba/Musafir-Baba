@@ -44,6 +44,15 @@ const customizedTourPackageSchema = new mongoose.Schema(
       width: Number,
       height: Number,
     },
+    coverImages: [
+      {
+        url: String,
+        alt: String,
+        public_id: String,
+        width: Number,
+        height: Number,
+      },
+    ],
     gallery: [
       {
         url: String,
@@ -79,6 +88,19 @@ const customizedTourPackageSchema = new mongoose.Schema(
       },
     ],
     status: { type: String, enum: ["draft", "published"], default: "draft" },
+    experienceAtAGlance: { type: String },
+    aboutThisExperience: { type: String },
+    placesCovered: { type: String },
+    whoIsThisExperienceFor: { type: String },
+    customizationOptions: { type: String },
+    inclusions: [{ type: String }],
+    exclusions: [{ type: String }],
+    helpfulResources: [
+      {
+        title: { type: String },
+        url: { type: String },
+      },
+    ],
   },
   { timestamps: true },
 );

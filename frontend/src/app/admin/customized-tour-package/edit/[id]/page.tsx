@@ -27,6 +27,8 @@ import { Reviews } from "@/app/admin/holidays/new/page";
 import { getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { CustomizedPackageValues } from "@/app/admin/customized-tour-package/new/page";
 import SmallEditor from "@/components/admin/SmallEditor";
+import BlogEditor from "@/components/admin/BlogEditor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Destination {
   _id: string;
@@ -111,6 +113,14 @@ export default function CreatePackagePage() {
     faqs: [],
     slug: "",
     status: "draft",
+    experienceAtAGlance: "",
+    aboutThisExperience: "",
+    placesCovered: "",
+    whoIsThisExperienceFor: "",
+    inclusions: [],
+    exclusions: [],
+    customizationOptions: "",
+    helpfulResources: [],
   };
 
   const {
@@ -136,6 +146,7 @@ export default function CreatePackagePage() {
         ...packageData,
         destination: packageData.destination._id,
         reviews: reviewsIds,
+        coverImages: packageData.coverImages?.length ? packageData.coverImages : (packageData.coverImage ? [packageData.coverImage] : []),
       });
       if (packageData.reviews?.length > 0) {
         getReviewsByIds(accessToken, reviewsIds)
@@ -154,6 +165,10 @@ export default function CreatePackagePage() {
     control: form.control,
     name: "gallery",
   });
+  const coverImagesArray = useFieldArray({
+    control: form.control,
+    name: "coverImages",
+  });
   const highlightsArray = useFieldArray({
     control: form.control,
     name: "highlight",
@@ -163,6 +178,18 @@ export default function CreatePackagePage() {
   const itineraryArray = useFieldArray({
     control: form.control,
     name: "itinerary",
+  });
+  const inclusionsArray = useFieldArray({
+    control: form.control,
+    name: "inclusions",
+  });
+  const exclusionsArray = useFieldArray({
+    control: form.control,
+    name: "exclusions",
+  });
+  const helpfulResourcesArray = useFieldArray({
+    control: form.control,
+    name: "helpfulResources",
   });
 
   const mutation = useMutation({
@@ -224,218 +251,103 @@ export default function CreatePackagePage() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Title */}
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter Package Title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Parmalink */}
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Permalink *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter Permalink..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="media">Media</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO & Reviews</TabsTrigger>
+              </TabsList>
 
-            {/* Description */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Describe the package" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Duration */}
-            <div className="flex justify-between gap-4">
-              <FormField
-                control={form.control}
-                name="duration.days"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Days *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter Days Duration"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="duration.nights"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nights *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter Nights Duration"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="time.startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Time *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="time.endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Destination */}
-            <FormField
-              control={form.control}
-              name="destination"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Destination *</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 p-2"
-                      value={field.value || ""}
-                    >
-                      <option value="" disabled>
-                        Select a destination
-                      </option>
-                      {destination?.map((dest: Destination) => (
-                        <option key={dest._id} value={dest._id}>
-                          {dest.state.toLocaleUpperCase()}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Cover Image */}
-            <FormField
-              control={form.control}
-              name="coverImage"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Cover Image</FormLabel>
-                  <FormControl>
-                    <ImageUploader
-                      onUpload={(img) => {
-                        if (!img) return null;
-                        form.setValue("coverImage", {
-                          url: img.url,
-                          public_id: img.public_id,
-                          alt: img.alt ?? form.getValues("title"),
-                          width: img.width,
-                          height: img.height,
-                        });
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* Gallery Dynamic */}
-            <div className="mb-4">
-              <FormLabel className="mb-2 text-lg">Image Gallery</FormLabel>
-              {coverImageArray.fields.map((field, index) => (
-                <div key={field.id} className="flex items-center gap-2 mb-2">
-                  <ImageUploader
-                    onUpload={(img) => {
-                      if (!img) return null;
-                      form.setValue(`gallery.${index}`, {
-                        url: img.url,
-                        public_id: img.public_id,
-                        alt: img.alt ?? form.getValues("title"),
-                        width: img.width,
-                        height: img.height,
-                      });
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => coverImageArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
+              <TabsContent value="basic" className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FormField control={form.control} name="title" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Title *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" placeholder="Enter Package Title" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="slug" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Permalink *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" placeholder="Enter Permalink..." {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="destination" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Destination *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="" disabled>Select a destination</option>{destination?.map((dest: Destination) => (<option key={dest._id} value={dest._id}>{dest.state.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="duration.days" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Days *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="Enter Days Duration" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="duration.nights" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Nights *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="Enter Nights Duration" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="time.startTime" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Start Time *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="time" value={field.value || ""} onChange={(e) => field.onChange(e.target.value)} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="time.endTime" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">End Time</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="time" value={field.value || ""} onChange={(e) => field.onChange(e.target.value)} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
                 </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() =>
-                  coverImageArray.append({
-                    url: "",
-                    public_id: "",
-                    width: 0,
-                    height: 0,
-                    alt: "",
-                  })
-                }
-              >
-                Add Image Gallery
-              </Button>
-            </div>
+              </TabsContent>
+
+              <TabsContent value="media" className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Cover Images</FormLabel>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {coverImagesArray.fields.map((field, index) => (
+                        <div key={field.id} className="flex flex-col items-center gap-2 p-2 border rounded bg-gray-50">
+                          <ImageUploader initialImage={packageData?.coverImages?.[index] || form.getValues(`coverImages.${index}`) || (index === 0 && !packageData?.coverImages?.length ? packageData?.coverImage : undefined)} onUpload={(img) => { if (!img) return null; form.setValue(`coverImages.${index}`, { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }); }} />
+                          <Button type="button" variant="destructive" size="sm" className="h-7 text-[10px] w-full" onClick={() => coverImagesArray.remove(index)}>Remove</Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => coverImagesArray.append({ url: "", public_id: "", width: 0, height: 0, alt: "" })}>Add Cover Image</Button>
+                  </div>
+                </div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Image Gallery</FormLabel>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {coverImageArray.fields.map((field, index) => (
+                      <div key={field.id} className="flex flex-col items-center gap-2 p-2 border rounded bg-gray-50">
+                        <ImageUploader initialImage={packageData?.gallery?.[index] || form.getValues(`gallery.${index}`)} onUpload={(img) => { if (!img) return null; form.setValue(`gallery.${index}`, { url: img.url, public_id: img.public_id, alt: img.alt ?? form.getValues("title"), width: img.width, height: img.height }); }} />
+                        <Button type="button" variant="destructive" size="sm" className="h-7 text-[10px] w-full" onClick={() => coverImageArray.remove(index)}>Remove</Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => coverImageArray.append({ url: "", public_id: "", width: 0, height: 0, alt: "" })}>Add Image to Gallery</Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="content" className="space-y-6">
+                <div className="grid grid-cols-1 gap-6">
+                  <FormField control={form.control} name="experienceAtAGlance" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Experience At A Glance</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="aboutThisExperience" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">About This Experience</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="placesCovered" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Places Covered</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="whoIsThisExperienceFor" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Who Is This Experience For</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Inclusions</FormLabel>{inclusionsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`inclusions.${index}` as const)} placeholder="Enter inclusion" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => inclusionsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => inclusionsArray.append("")}>Add Inclusion</Button></div>
+                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Exclusions</FormLabel>{exclusionsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`exclusions.${index}` as const)} placeholder="Enter exclusion" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => exclusionsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => exclusionsArray.append("")}>Add Exclusion</Button></div>
+                </div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</FormLabel>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => helpfulResourcesArray.append({ title: "", url: "" })} className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200">
+                      + Add Resource
+                    </Button>
+                  </div>
+                  {helpfulResourcesArray.fields.map((field, index) => (
+                    <div key={field.id} className="flex gap-2">
+                      <Input className="h-7 text-xs px-2 rounded-sm flex-1" {...form.register(`helpfulResources.${index}.title` as const)} placeholder="Resource Title" />
+                      <Input className="h-7 text-xs px-2 rounded-sm flex-1" {...form.register(`helpfulResources.${index}.url` as const)} placeholder="Resource URL" />
+                      <Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => helpfulResourcesArray.remove(index)}>X</Button>
+                    </div>
+                  ))}
+                </div>
 
             {/* Highlights Dynamic */}
             <div>
@@ -566,7 +478,9 @@ export default function CreatePackagePage() {
                 Add Itinerary Step
               </Button>
             </div>
+              </TabsContent>
 
+              <TabsContent value="seo" className="space-y-6">
             <FormField
               control={form.control}
               name="metaTitle"
@@ -717,6 +631,8 @@ export default function CreatePackagePage() {
                 </div>
               )}
             </div>
+              </TabsContent>
+            </Tabs>
             {/* Status */}
             <FormField
               control={form.control}

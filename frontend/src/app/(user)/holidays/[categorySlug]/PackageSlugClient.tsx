@@ -39,6 +39,7 @@ export interface Package {
   title: string;
   slug: string;
   coverImage: CoverImage;
+  coverImages?: CoverImage[];
   mainCategory: Category;
   batch: Batch[];
   duration: {
@@ -228,7 +229,7 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
                 id: pkg._id,
                 name: pkg.title,
                 slug: pkg.slug,
-                image: pkg.coverImage?.url ?? "",
+                image: pkg.coverImages?.[0]?.url || pkg.coverImage?.url || "",
                 price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
                 duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
                 destination: pkg.destination?.name ?? "",

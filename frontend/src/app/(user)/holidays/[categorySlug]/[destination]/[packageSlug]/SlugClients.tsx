@@ -1,11 +1,15 @@
 "use client";
 
-import Hero from "@/components/custom/Hero";
 import React, { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ImageGallery } from "@/components/custom/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
 import {
   Accordion,
   AccordionContent,
@@ -130,51 +134,112 @@ function SlugClients({
 
   return (
     <section className="w-full bg-slate-50 min-h-screen pb-10">
-      <div className="relative">
-        <Hero
-          image={pkg.coverImage.url ?? ""}
-          images={[
-            pkg.coverImage?.url,
-            ...(pkg.gallery?.map((g: any) => g.url) || [])
-          ].filter(Boolean)}
-          title={pkg.title}
-          description=""
-          align="left"
-          aspectRatio="min-h-[380px] md:min-h-[420px] lg:min-h-[550px]"
-          overlayOpacity={100}
-        >
-          <div className="flex flex-col gap-5 w-full mt-4">
-            {pkg.banner_text && pkg.banner_text.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 w-full">
-                {pkg.banner_text.map((text, i) => (
-                  <div key={i} className="flex items-center gap-2 drop-shadow-md">
-                    <Check className="w-4 h-4 text-[#FE5300] shrink-0" />
-                    <p className="text-white text-sm md:text-[15px] font-medium max-w-3xl text-left leading-tight">
-                      {text}
-                    </p>
-                  </div>
-                ))}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="flex flex-col gap-4">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Left Col: Main Slider */}
+            <div className="lg:col-span-9 h-[250px] md:h-[400px] relative rounded-2xl overflow-hidden shadow-md">
+              <Swiper
+                pagination={{ clickable: true }}
+                modules={[Pagination, Autoplay]}
+                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                loop={true}
+                className="w-full h-full [&_.swiper-pagination-bullet-active]:bg-white [&_.swiper-pagination-bullet]:bg-white/70"
+              >
+                {[...(pkg?.coverImages?.map((img: any) => img.url) || (pkg?.coverImage?.url ? [pkg.coverImage.url] : [])), ...(pkg.gallery?.map((g: any) => g.url) || [])]
+                  .filter(Boolean)
+                  .map((img, i) => (
+                    <SwiperSlide key={i}>
+                      <Image
+                        src={img}
+                        alt={`${pkg.title} image ${i + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </SwiperSlide>
+                  ))}
+              </Swiper>
+              <div className="absolute bottom-4 left-4 z-10">
+                <ItineryDialog
+                  title={pkg.title}
+                  description={pkg.description.slice(0, 50)}
+                  url={pkg.itineraryDownload?.url ?? ""}
+                  img={pkg.coverImages?.[0]?.url || pkg.coverImage?.url}
+                  packageId={pkg._id}
+                  itinerary={pkg.itinerary}
+                  duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
+                  highlights={pkg.highlights}
+                  destination={pkg.destination?.state || ''}
+                  gallery={pkg?.gallery ?? []}
+                  inclusions={pkg.inclusions || []}
+                  exclusions={pkg.exclusions || []}
+                  batch={pkg.batch || []}
+                />
               </div>
-            )}
-            <div className="flex justify-start">
-              <ItineryDialog
-                title={pkg.title}
-                description={pkg.description.slice(0, 50)}
-                url={pkg.itineraryDownload?.url ?? ""}
-                img={pkg.coverImage?.url}
-                packageId={pkg._id}
-                itinerary={pkg.itinerary}
-                duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
-                highlights={pkg.highlights}
-                destination={pkg.destination?.state || ''}
-                gallery={pkg?.gallery ?? []}
-                inclusions={pkg.inclusions || []}
-                exclusions={pkg.exclusions || []}
-                batch={pkg.batch || []}
-              />
             </div>
+
+            {/* Right Col: Vertical Infinite Slider */}
+            <div className="hidden lg:block lg:col-span-3 h-[400px] relative">
+              <Swiper
+                direction="vertical"
+                slidesPerView={3}
+                spaceBetween={16}
+                loop={true}
+                modules={[Autoplay]}
+                autoplay={{ delay: 3000, disableOnInteraction: false, reverseDirection: true }}
+                className="w-full h-full"
+              >
+                {[...(pkg?.gallery?.map((g: any) => g.url) || []), ...(pkg?.coverImages?.map((img: any) => img.url) || (pkg?.coverImage?.url ? [pkg.coverImage.url] : [])), "/Hero1.jpg", "/Hero2.jpg"]
+                  .filter(Boolean)
+                  .map((img, i) => (
+                    <SwiperSlide key={i} className="rounded-2xl overflow-hidden relative shadow-sm">
+                      <Image
+                        src={img}
+                        alt={`${pkg.title} side image ${i + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </SwiperSlide>
+                  ))}
+              </Swiper>
+            </div>
+
+            {/* Right Col: Price and Features */}
+            {/* <div className="lg:col-span-3 flex flex-col gap-4">
+              <Card className="shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] border border-gray-100 rounded-2xl">
+                <CardHeader className="pb-4 pt-5 px-6">
+                  <p className="text-sm text-gray-500 font-medium">From</p>
+                  <CardTitle className="text-2xl font-bold tracking-tight text-gray-900 mt-1">
+                    ₹ {price.toLocaleString()}{" "}
+                    <span className="text-[13px] font-normal text-gray-500 ml-1">
+                      per person
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <div className="px-6 pb-6">
+                  <Button
+                    onClick={() => {
+                      if (!auth.isAuthenticated) {
+                        useAuthDialogStore
+                          .getState()
+                          .openDialog("login", undefined, `${pathName}/${pkg._id}`);
+                      } else {
+                        router.push(`./${pkg.slug}/${pkg._id}`);
+                      }
+                    }}
+                    className="w-full bg-[#008f7a] hover:bg-[#007b69] text-white font-semibold rounded-lg h-11 text-sm shadow-sm"
+                  >
+                    Check availability
+                  </Button>
+                </div>
+              </Card>
+
+
+            </div> */}
           </div>
-        </Hero>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{pkg.title}</h1>
+        </div>
       </div>
       <div className="w-full max-w-7xl mx-auto px-8  mt-4">
         <Breadcrumb title={pkg.title} />
