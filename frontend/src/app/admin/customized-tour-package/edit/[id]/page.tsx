@@ -283,9 +283,6 @@ export default function CreatePackagePage() {
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">End Time</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="time" value={field.value || ""} onChange={(e) => field.onChange(e.target.value)} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
                 </div>
-                <FormField control={form.control} name="description" render={({ field }) => (
-                  <FormItem className="space-y-0.5 mt-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Description</FormLabel><FormControl><Textarea className="min-h-[80px] text-xs px-2 rounded-sm" placeholder="Describe the package" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
-                )} />
               </TabsContent>
 
               <TabsContent value="media" className="space-y-3">
@@ -318,7 +315,7 @@ export default function CreatePackagePage() {
               </TabsContent>
 
               <TabsContent value="content" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-6">
                   <FormField control={form.control} name="experienceAtAGlance" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Experience At A Glance</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
@@ -330,9 +327,6 @@ export default function CreatePackagePage() {
                   )} />
                   <FormField control={form.control} name="whoIsThisExperienceFor" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Who Is This Experience For</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="customizationOptions" render={({ field }) => (
-                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Customization Options</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
