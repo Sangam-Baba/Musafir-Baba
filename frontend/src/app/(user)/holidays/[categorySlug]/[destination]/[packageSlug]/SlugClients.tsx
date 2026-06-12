@@ -136,14 +136,15 @@ function SlugClients({
     <section className="w-full bg-slate-50 min-h-screen pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         <div className="flex flex-col gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{pkg.title}</h1>
+          
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* Left Col: Main Slider */}
-            <div className="lg:col-span-6 h-[250px] md:h-[400px] relative rounded-2xl overflow-hidden shadow-md">
+            <div className="lg:col-span-9 h-[250px] md:h-[400px] relative rounded-2xl overflow-hidden shadow-md">
               <Swiper
                 pagination={{ clickable: true }}
                 modules={[Pagination, Autoplay]}
                 autoplay={{ delay: 3000, disableOnInteraction: false }}
+                loop={true}
                 className="w-full h-full [&_.swiper-pagination-bullet-active]:bg-white [&_.swiper-pagination-bullet]:bg-white/70"
               >
                 {[...(pkg?.coverImages?.map((img: any) => img.url) || (pkg?.coverImage?.url ? [pkg.coverImage.url] : [])), ...(pkg.gallery?.map((g: any) => g.url) || [])]
@@ -178,37 +179,34 @@ function SlugClients({
               </div>
             </div>
 
-            {/* Middle Col: Stacked Images */}
-            <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-[400px]">
-              {pkg.gallery?.slice(0, 2).map((g: any, i: number) => (
-                <div key={i} className="flex-1 relative rounded-2xl overflow-hidden shadow-md">
-                  <Image
-                    src={g.url}
-                    alt={`${pkg.title} secondary image ${i + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-              {(!pkg.gallery || pkg.gallery.length < 1) && (
-                <>
-                  <div className="flex-1 relative rounded-2xl overflow-hidden shadow-md bg-gray-100">
-                    <Image src="/Hero1.jpg" alt="Fallback 1" fill className="object-cover opacity-80" />
-                  </div>
-                  <div className="flex-1 relative rounded-2xl overflow-hidden shadow-md bg-gray-100">
-                    <Image src="/Hero2.jpg" alt="Fallback 2" fill className="object-cover opacity-80" />
-                  </div>
-                </>
-              )}
-              {pkg.gallery?.length === 1 && (
-                <div className="flex-1 relative rounded-2xl overflow-hidden shadow-md bg-gray-100">
-                  <Image src="/Hero2.jpg" alt="Fallback" fill className="object-cover opacity-80" />
-                </div>
-              )}
+            {/* Right Col: Vertical Infinite Slider */}
+            <div className="hidden lg:block lg:col-span-3 h-[400px] relative">
+              <Swiper
+                direction="vertical"
+                slidesPerView={3}
+                spaceBetween={16}
+                loop={true}
+                modules={[Autoplay]}
+                autoplay={{ delay: 3000, disableOnInteraction: false, reverseDirection: true }}
+                className="w-full h-full"
+              >
+                {[...(pkg?.gallery?.map((g: any) => g.url) || []), ...(pkg?.coverImages?.map((img: any) => img.url) || (pkg?.coverImage?.url ? [pkg.coverImage.url] : [])), "/Hero1.jpg", "/Hero2.jpg"]
+                  .filter(Boolean)
+                  .map((img, i) => (
+                    <SwiperSlide key={i} className="rounded-2xl overflow-hidden relative shadow-sm">
+                      <Image
+                        src={img}
+                        alt={`${pkg.title} side image ${i + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </SwiperSlide>
+                  ))}
+              </Swiper>
             </div>
 
             {/* Right Col: Price and Features */}
-            <div className="lg:col-span-3 flex flex-col gap-4">
+            {/* <div className="lg:col-span-3 flex flex-col gap-4">
               <Card className="shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] border border-gray-100 rounded-2xl">
                 <CardHeader className="pb-4 pt-5 px-6">
                   <p className="text-sm text-gray-500 font-medium">From</p>
@@ -237,56 +235,10 @@ function SlugClients({
                 </div>
               </Card>
 
-              <Card className="shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] border border-gray-100 rounded-2xl flex-1">
-                <CardHeader className="pb-3 pt-5 px-6">
-                  <CardTitle className="text-[17px] font-bold text-gray-900 leading-tight">
-                    Exclusively with MusafirBaba
-                  </CardTitle>
-                </CardHeader>
-                <div className="px-6 pb-6 flex flex-col gap-4">
-                  {pkg.banner_text && pkg.banner_text.length > 0 ? (
-                    pkg.banner_text.map((text, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <div className="rounded-full border border-[#008f7a] p-[3px] mt-[3px] shrink-0 bg-[#e6f4f1]">
-                           <Check className="w-3 h-3 text-[#008f7a]" strokeWidth={3} />
-                        </div>
-                        <p className="text-gray-600 text-[14px] leading-snug">
-                          {text}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-full border border-[#008f7a] p-[3px] mt-[3px] shrink-0 bg-[#e6f4f1]">
-                           <Check className="w-3 h-3 text-[#008f7a]" strokeWidth={3} />
-                        </div>
-                        <p className="text-gray-600 text-[14px] leading-snug">
-                          Grab great deals before they're gone.
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-full border border-[#008f7a] p-[3px] mt-[3px] shrink-0 bg-[#e6f4f1]">
-                           <Check className="w-3 h-3 text-[#008f7a]" strokeWidth={3} />
-                        </div>
-                        <p className="text-gray-600 text-[14px] leading-snug">
-                          Book instantly — no waiting, no hassle.
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-full border border-[#008f7a] p-[3px] mt-[3px] shrink-0 bg-[#e6f4f1]">
-                           <Check className="w-3 h-3 text-[#008f7a]" strokeWidth={3} />
-                        </div>
-                        <p className="text-gray-600 text-[14px] leading-snug">
-                          Join top experiences loved by real travelers.
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </Card>
-            </div>
+
+            </div> */}
           </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{pkg.title}</h1>
         </div>
       </div>
       <div className="w-full max-w-7xl mx-auto px-8  mt-4">
