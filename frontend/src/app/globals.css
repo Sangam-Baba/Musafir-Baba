@@ -81,60 +81,136 @@
   overflow-x: auto;
 }
 
-/* Table itself */
-.prose table,
-.ProseMirror table {
-  width: 100% !important; /* stretch full container */
-  max-width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* Wikipedia-like */
-  margin: 1rem 0;
-  border: 1px solid #a2a9b1; /* Wikipedia gray */
-  font-size: 0.95rem;
-}
+/* =========================================================
+   PREMIUM INTERACTIVE TABLE OVERRIDES FOR PROSE 
+   (High Specificity + !important to override Tailwind Typography)
+   ========================================================= */
 
-/* Remove colgroup width forcing */
-.prose table colgroup,
-.prose table col,
-.ProseMirror table colgroup,
-.ProseMirror table col {
-  width: auto !important;
+.prose :where(table):not(:where([class~="not-prose"] *)),
+.ProseMirror table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  overflow: visible !important;
+  margin: 2.5rem 0 !important;
+  box-shadow: 0 10px 30px -10px rgba(254, 83, 0, 0.15) !important;
+  background: white !important;
 }
 
 /* Header */
-.prose th,
+.prose :where(th):not(:where([class~="not-prose"] *)),
 .ProseMirror th {
-  background: #eaecf0; /* Wikipedia header */
-  border: 1px solid #a2a9b1;
-  padding: 8px 10px;
-  text-align: center;
-  font-weight: 600;
+  background: linear-gradient(135deg, #FE5300 0%, #ea4c00 100%) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+  padding: 0.75rem 1rem !important;
+  border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+  text-align: left !important;
+}
+.prose :where(th:first-child):not(:where([class~="not-prose"] *)) {
+  border-top-left-radius: 0.75rem !important;
+}
+.prose :where(th:last-child):not(:where([class~="not-prose"] *)),
+.ProseMirror th:last-child {
+  border-right: none !important;
+  border-top-right-radius: 0.75rem !important;
 }
 
-/* Cells */
-.prose td,
+/* Body Cells */
+.prose :where(tbody td):not(:where([class~="not-prose"] *)),
 .ProseMirror td {
-  border: 1px solid #a2a9b1;
-  padding: 8px 10px;
-  vertical-align: top;
+  padding: 0.75rem 1rem !important;
+  border: none !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  color: #475569 !important;
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+  vertical-align: middle !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  word-break: break-word !important;
+}
+.prose :where(tbody td:last-child):not(:where([class~="not-prose"] *)),
+.ProseMirror td:last-child {
+  border-right: none !important;
+}
+.prose :where(tbody tr:last-child td):not(:where([class~="not-prose"] *)),
+.ProseMirror tr:last-child td {
+  border-bottom: none !important;
 }
 
-/* Zebra rows */
-.prose tbody tr:nth-child(even),
+/* Row Styling & Hover */
+.prose :where(tbody tr):not(:where([class~="not-prose"] *)),
+.ProseMirror tbody tr {
+  transition: all 0.3s ease !important;
+  background: white !important;
+}
+.prose :where(tbody tr:nth-child(even)):not(:where([class~="not-prose"] *)),
 .ProseMirror tbody tr:nth-child(even) {
-  background: #f8f9fa;
+  background: #fafaf9 !important;
+}
+.prose :where(tbody tr:hover td):not(:where([class~="not-prose"] *)),
+.ProseMirror tbody tr:hover td {
+  background: #fffaf7 !important;
+  color: #1e293b !important;
+}
+
+/* Individual Cell Hover interaction - The "Interactive Pop" */
+.prose :where(tbody td:hover):not(:where([class~="not-prose"] *)),
+.ProseMirror tbody td:hover {
+  background: #ffe3d1 !important;
+  transform: translateY(-2px) scale(1.01) !important;
+  box-shadow: 0 4px 10px rgba(254, 83, 0, 0.15), inset 0 0 0 1px #FE5300 !important;
+  border-radius: 0.375rem !important;
+  color: #FE5300 !important;
+  font-weight: 600 !important;
+  z-index: 20 !important;
 }
 
 /* Links inside table */
 .prose table a,
 .ProseMirror table a {
-  color: #0645ad;
+  color: #FE5300;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .prose table a:hover,
 .ProseMirror table a:hover {
   text-decoration: underline;
+}
+
+/* =========================================================
+   MOBILE RESPONSIVENESS FOR TABLES
+   ========================================================= */
+@media (max-width: 768px) {
+  .prose :where(table):not(:where([class~="not-prose"] *)),
+  .ProseMirror table {
+    width: 100% !important;
+    table-layout: fixed !important; 
+    margin: 1.5rem 0 !important;
+  }
+  
+  .prose :where(th):not(:where([class~="not-prose"] *)),
+  .ProseMirror th {
+    padding: 0.5rem !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .prose :where(tbody td):not(:where([class~="not-prose"] *)),
+  .ProseMirror td {
+    padding: 0.5rem !important;
+    font-size: 0.75rem !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
+  }
 }
 @custom-variant dark (&:is(.dark *));
 
