@@ -14,6 +14,21 @@ const webPageSchema = new mongoose.Schema(
     content: {
       type: String,
     },
+    quickSummary: {
+      type: String,
+    },
+    quickFacts: {
+      type: String,
+    },
+    quickAnswers: {
+      type: String,
+    },
+    helpfulResources: [
+      {
+        title: String,
+        url: String,
+      },
+    ],
     coverImage: {
       url: String,
       alt: String,

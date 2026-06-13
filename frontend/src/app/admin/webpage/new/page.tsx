@@ -23,6 +23,9 @@ import { Textarea } from "@/components/ui/textarea";
 export interface WebpageFormData {
   title: string;
   content: string;
+  quickSummary?: string;
+  quickFacts?: string;
+  quickAnswers?: string;
   slug: string;
   parent?: string;
   parentModel?: string;
@@ -48,6 +51,7 @@ export interface WebpageFormData {
     answer: string;
   }[];
   footerLinks?: { title: string; url: string }[];
+  helpfulResources?: { title: string; url: string }[];
 }
 
 const createPage = async (values: WebpageFormData, token: string) => {
@@ -106,6 +110,9 @@ export default function CreateWebpage() {
   const defaultValues: WebpageFormData = {
     title: "",
     content: "",
+    quickSummary: "",
+    quickFacts: "",
+    quickAnswers: "",
     slug: "",
     isParent: false,
     metaTitle: "",
@@ -119,6 +126,7 @@ export default function CreateWebpage() {
     excerpt: "",
     faqs: [],
     footerLinks: [],
+    helpfulResources: [],
   };
 
   const form = useForm<WebpageFormData>({
@@ -129,6 +137,10 @@ export default function CreateWebpage() {
   const footerLinksArray = useFieldArray({
     control: form.control,
     name: "footerLinks",
+  });
+  const helpfulResourcesArray = useFieldArray({
+    control: form.control,
+    name: "helpfulResources",
   });
   const { data: allparents, isLoading } = useQuery({
     queryKey: ["all-parents"],
@@ -268,6 +280,62 @@ export default function CreateWebpage() {
                       placeholder="Brief summary..."
                       className="min-h-[80px] bg-white border-slate-200 focus:border-[#FE5300] focus:ring-1 focus:ring-[#FE5300]/10 rounded-md text-[13px]"
                     />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Quick Summary</Label>
+                    <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                      <SmallEditor
+                        value={form.watch("quickSummary")}
+                        onChange={(val) => form.setValue("quickSummary", val, { shouldDirty: true })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Quick Facts</Label>
+                    <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                      <SmallEditor
+                        value={form.watch("quickFacts")}
+                        onChange={(val) => form.setValue("quickFacts", val, { shouldDirty: true })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Quick Answers</Label>
+                    <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                      <SmallEditor
+                        value={form.watch("quickAnswers")}
+                        onChange={(val) => form.setValue("quickAnswers", val, { shouldDirty: true })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">Helpful Resources</Label>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => helpfulResourcesArray.append({ title: "", url: "" })}
+                        className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200"
+                      >
+                        + Add Resource
+                      </Button>
+                    </div>
+                    <div className="grid gap-2">
+                      {helpfulResourcesArray.fields.map((field, index) => (
+                        <div key={field.id} className="flex gap-2 items-center">
+                          <Input className="h-9 text-[13px] px-3 rounded-md flex-1 bg-white border-slate-200" {...form.register(`helpfulResources.${index}.title` as const)} placeholder="Resource Title" />
+                          <Input className="h-9 text-[13px] px-3 rounded-md flex-1 bg-white border-slate-200" {...form.register(`helpfulResources.${index}.url` as const)} placeholder="Resource URL" />
+                          <Button type="button" variant="ghost" size="icon" className="text-slate-300 hover:text-red-400 h-8 w-8" onClick={() => helpfulResourcesArray.remove(index)}>
+                            <X size={16} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </TabsContent>
 

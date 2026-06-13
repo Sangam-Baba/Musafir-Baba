@@ -57,15 +57,18 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
   }
 
   return (
-    <div className="py-4 px-4 bg-[#e7f6ed] border border-green-100 shadow-sm rounded-2xl w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[13px] font-bold text-gray-900 uppercase tracking-widest">
-          On this page
-        </h2>
+    <div className="w-full pt-2">
+      <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-3">
+        <div className="flex items-center gap-2">
+          <List size={16} className="text-[#FE5300]" />
+          <h2 className="text-[12px] font-black text-gray-900 uppercase tracking-widest">
+            On this page
+          </h2>
+        </div>
         <button
           type="button"
           onClick={() => setIsGlobalCollapsed(!isGlobalCollapsed)}
-          className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-400 hover:text-[#FE5300]"
+          className="p-1.5 hover:bg-orange-50 rounded-lg transition-colors text-gray-400 hover:text-[#FE5300]"
           title={isGlobalCollapsed ? "Expand table of contents" : "Collapse table of contents"}
         >
           {isGlobalCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
@@ -73,21 +76,21 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
       </div>
 
       {!isGlobalCollapsed && (
-        <nav className="relative max-h-[60vh] overflow-y-auto overscroll-contain pr-1">
+        <nav className="relative max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
           {/* Vertical accent line */}
-          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gray-100 rounded-full" />
+          <div className="absolute left-[2px] top-2 bottom-2 w-[2px] bg-gray-100/80 rounded-full" />
           
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-0.5 mt-1">
             {visibleHeadings.map((heading) => (
               <a
                 key={`${heading.id}-${heading.originalIndex}`}
                 href={`#${heading.id}`}
                 className={cn(
-                  "group relative py-2 pr-4 transition-all duration-200 border-l-2 border-transparent -ml-[2px] flex items-start justify-between gap-2",
-                  "hover:border-[#FE5300] hover:text-[#FE5300] text-gray-500",
-                  heading.level === 2 ? "pl-4 text-[12px] font-normal" : "",
-                  heading.level === 3 ? "pl-8 text-[11px] font-normal" : "",
-                  heading.level >= 4 ? "pl-12 text-[10px] font-normal" : ""
+                  "group relative py-2 pr-3 transition-all duration-200 border-l-[3px] border-transparent flex items-start justify-between gap-2 rounded-r-lg",
+                  "hover:border-[#FE5300] hover:text-[#FE5300] hover:bg-orange-50/50 text-gray-600",
+                  heading.level === 2 ? "pl-4 text-[13px] font-semibold" : "",
+                  heading.level === 3 ? "pl-8 text-[12px] font-medium text-gray-500" : "",
+                  heading.level >= 4 ? "pl-11 text-[11px] font-normal text-gray-400" : ""
                 )}
                 onClick={(e) => {
                   e.preventDefault();
@@ -99,12 +102,16 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                   }
                 }}
               >
-                <span className="relative z-10 flex-1 leading-relaxed" title={heading.text}>{heading.text}</span>
+                <span 
+                  className="relative z-10 flex-1 leading-snug" 
+                  title={heading.text.replace(/<[^>]*>?/gm, '')}
+                  dangerouslySetInnerHTML={{ __html: heading.text }}
+                />
                 {heading.isParent && (
                   <button
                     type="button"
                     onClick={(e) => toggleSection(heading.id, e)}
-                    className="p-1 hover:bg-gray-100 rounded-md transition-colors relative z-20 text-gray-400 group-hover:text-[#FE5300]"
+                    className="p-1 hover:bg-white/80 rounded-md transition-colors relative z-20 text-gray-400 group-hover:text-[#FE5300]"
                   >
                     {heading.isCollapsed ? (
                       <ChevronRight size={14} />
