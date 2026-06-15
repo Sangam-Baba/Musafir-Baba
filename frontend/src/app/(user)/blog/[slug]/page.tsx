@@ -3,10 +3,13 @@ import { BlogContent } from "@/components/custom/BlogContent";
 import Link from "next/link";
 import NotFoundPage from "@/components/common/Not-Found";
 import CategorySidebar from "@/components/custom/CategorySidebar";
-import BlogViewTracker from "@/components/custom/BlogViewTracker";
+import dynamic from "next/dynamic";
+
+const BlogViewTracker = dynamic(() => import("@/components/custom/BlogViewTracker"));
+const SocialShare = dynamic(() => import("@/components/custom/SocialSharing"));
+
 // import BlogLikes from "@/components/custom/BlogLikes";
 import { BlogComments } from "@/components/custom/BuildCommentTree";
-import SocialShare from "@/components/custom/SocialSharing";
 import Script from "next/script";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
@@ -15,9 +18,10 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
 import { notFound } from "next/navigation";
 import HelpfulResources from "@/components/custom/HelpfulResources";
-import LatestBlog from "@/components/common/LatestBlog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CommentDailog } from "@/components/custom/CommentDailog";
+
+const LatestBlog = dynamic(() => import("@/components/common/LatestBlog"));
+const CommentDailog = dynamic(() => import("@/components/custom/CommentDailog").then(mod => mod.CommentDailog));
 import { TableOfContents } from "@/components/custom/TableOfContents";
 import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
 import ReadingProgressBar from "@/components/custom/ReadingProgressBar";
@@ -38,7 +42,7 @@ async function getBlog(slug: string, token?: string) {
 }
 
 async function getLatestBlog() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs?limit=5`, {
     next: { revalidate: 60 },
   });
   if (!res.ok) return null;
@@ -137,8 +141,13 @@ export default async function BlogDetailPage({
   if (!blog) return <NotFoundPage />;
   const readTime = readingTime(blog.content || "");
 
-  const latestBlogs = await getLatestBlog();
-  const trandingBlogs = await getTrandingBlogs();
+  const [latestBlogsResponse, trandingBlogsResponse] = await Promise.all([
+    getLatestBlog(),
+    getTrandingBlogs()
+  ]);
+
+  const latestBlogs = latestBlogsResponse || [];
+  const trandingBlogs = trandingBlogsResponse || [];
   const filteredLatestBlog = latestBlogs.filter(
     (blog: any) => blog.slug !== slug,
   );
@@ -224,9 +233,14 @@ export default async function BlogDetailPage({
             {/* Right Column: Ultra-Wide Featured Image */}
             <div className="lg:col-span-8 relative animate-in fade-in slide-in-from-right duration-1000">
               <div className="w-full overflow-hidden rounded-3xl group">
-                <img
+                <Image
                   src={blog.coverImage.url}
                   alt={blog.title}
+                  width={1200}
+                  height={800}
+                  priority
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 66vw"
                   className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>

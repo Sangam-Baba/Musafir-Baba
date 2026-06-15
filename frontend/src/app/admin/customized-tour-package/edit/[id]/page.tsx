@@ -141,12 +141,14 @@ export default function CreatePackagePage() {
 
   useEffect(() => {
     if (packageData) {
-      const reviewsIds = packageData.reviews?.map((b: string) => b) || [];
+      const draftData = packageData.pendingUpdates?.data || {};
+      const mergedData = { ...packageData, ...draftData };
+      const reviewsIds = mergedData.reviews?.map((b: string) => b) || [];
       form.reset({
-        ...packageData,
-        destination: packageData.destination._id,
+        ...mergedData,
+        destination: mergedData.destination._id || mergedData.destination,
         reviews: reviewsIds,
-        coverImages: packageData.coverImages?.length ? packageData.coverImages : (packageData.coverImage ? [packageData.coverImage] : []),
+        coverImages: mergedData.coverImages?.length ? mergedData.coverImages : (mergedData.coverImage ? [mergedData.coverImage] : []),
       });
       if (packageData.reviews?.length > 0) {
         getReviewsByIds(accessToken, reviewsIds)
@@ -248,6 +250,30 @@ export default function CreatePackagePage() {
         <h1 className="mb-6 text-center text-2xl font-bold">
           Edit Customized Package
         </h1>
+
+        {packageData?.pendingUpdates && (
+          <div className="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800">
+                  Viewing Unapproved Draft
+                </h3>
+                <div className="mt-2 text-sm text-amber-700">
+                  <p>
+                    This customized package has pending modifications made by <b>{packageData.pendingUpdates.updatedBy}</b>. 
+                    You are currently viewing and editing the draft version. 
+                    Saving will update the draft. It will not go live until an Admin approves it from the packages list.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

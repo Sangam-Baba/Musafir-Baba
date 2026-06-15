@@ -92,8 +92,8 @@ async function MainWebPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb title={page.title} />
       </div>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 md:py-10 py-5">
-        <article className="w-full md:w-2/3 space-y-10">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 lg:gap-16 px-4 sm:px-6 lg:px-8 md:py-10 py-5">
+        <article className="w-full md:w-7/10 space-y-10">
           {/* <header className="">
             <h1 className="text-3xl md:text-4xl font-bold"></h1>
           </header> */}
@@ -229,7 +229,7 @@ async function MainWebPage({
             </span>
           </div>
         </article>
-        <aside className="w-full md:w-1/3 md:sticky md:top-10 self-start ">
+        <aside className="w-full md:w-3/10 md:sticky md:top-10 self-start ">
           <div className="hidden md:block">
             <TableOfContents headings={headings} />
           </div>

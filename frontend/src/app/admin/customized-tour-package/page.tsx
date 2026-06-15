@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import PackagesList from "@/components/admin/PackagesList";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import CustomizedPreviewDrawer from "@/components/admin/CustomizedPreviewDrawer";
+import { useState } from "react";
 
 interface Package {
   _id: string;
@@ -30,6 +32,9 @@ interface Package {
   slug: string;
   status: string;
   canonicalUrl?: string;
+  pendingUpdates?: {
+    updatedBy?: string;
+  };
 }
 const getAllPackages = async (accessToken: string) => {
   const res = await fetch(
@@ -50,10 +55,13 @@ const getAllPackages = async (accessToken: string) => {
 function PackagePage() {
   const router = useRouter();
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const role = useAdminAuthStore((state) => state.role) as string;
   const permissions = useAdminAuthStore(
     (state) => state.permissions
   ) as string[];
-  const { data, isLoading, isError, error } = useQuery({
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["customizedpackage"],
     queryFn: () => getAllPackages(accessToken),
     enabled: permissions.includes("customized-tour-package"),
@@ -63,6 +71,55 @@ function PackagePage() {
   const packages = data ?? [];
   const handleEdit = (id: string) => {
     router.push(`/admin/customized-tour-package/edit/${id}`);
+  };
+
+  const handlePreview = (id: string) => {
+    setPreviewId(id);
+    setIsPreviewOpen(true);
+  };
+
+  const handleApprove = async (id: string) => {
+    if (!confirm("Are you sure you want to approve these changes?")) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}/approve`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to approve package updates");
+      toast.success("Package updates approved successfully");
+      refetch();
+    } catch (error) {
+      console.log("error in approving", error);
+      toast.error("Something went wrong while approving package");
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    if (!confirm("Are you sure you want to reject these changes?")) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage/${id}/reject`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to reject package updates");
+      toast.success("Package updates rejected successfully");
+      refetch();
+    } catch (error) {
+      console.log("error in rejecting", error);
+      toast.error("Something went wrong while rejecting package updates");
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -118,14 +175,19 @@ function PackagePage() {
                   price: b.plans[0]?.price?.toLocaleString("en-US"),
                   url: b.canonicalUrl || `/holidays/customised-tour-packages/${b.destination?.state?.toLowerCase().replace(/ /g, '-')}/${b.slug}`,
                   slug: b.slug as string,
-                  status: b.status === "published" ? "Published" : "Draft",
+                  status: b.pendingUpdates ? (b.pendingUpdates.updatedBy ? `Pending Updates by ${b.pendingUpdates.updatedBy}` : "Pending Updates") : (b.status === "published" ? "Published" : "Draft"),
                 }))
               : []
           }
+          role={role}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onPreview={handlePreview}
         />
       )}
+      <CustomizedPreviewDrawer id={previewId} isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setPreviewId(null); }} />
     </div>
   );
 }

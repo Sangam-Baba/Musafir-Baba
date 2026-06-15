@@ -18,7 +18,7 @@ export default function BlogCard({
   type,
 }: BlogCardProps) {
   return (
-    <Link href={`/${type}/${slug}`}>
+    <Link href={`/${type}/${slug}`} prefetch={true}>
       <div className="rounded-2xl overflow-hidden shadow hover:shadow-lg transition bg-white relative">
         <Image
           src={coverImage}
