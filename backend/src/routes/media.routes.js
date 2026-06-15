@@ -16,35 +16,35 @@ mediaRoutes.post(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   createMedia
 );
 mediaRoutes.get(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getAllMedia
 );
 mediaRoutes.get(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getMediaById
 );
 mediaRoutes.patch(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   updateMedia
 );
 mediaRoutes.delete(
   "/:id",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   deleteMedia
 );
 export default mediaRoutes;

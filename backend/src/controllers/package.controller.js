@@ -1,6 +1,7 @@
 import { Package } from "../models/Package.js";
 import { Category } from "../models/Category.js";
 import { Destination } from "../models/Destination.js";
+import { Staff } from "../models/Staff.js";
 import mongoose from "mongoose";
 const createPackage = async (req, res) => {
   try {
@@ -9,6 +10,11 @@ const createPackage = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
+
+    if (req.user && req.user.role === "staff") {
+      req.body.status = "draft";
+    }
+
     const pkg = new Package({ ...req.body });
     await pkg.save();
 
@@ -45,6 +51,36 @@ const deletePackage = async (req, res) => {
 
 const editPackage = async (req, res) => {
   try {
+    if (req.user && req.user.role === "staff") {
+      const existingPkg = await Package.findById(req.params.id);
+      if (!existingPkg) {
+        return res.status(404).json({ success: false, message: "Package not found" });
+      }
+
+      if (existingPkg.status === "published") {
+        let staffName = "Unknown Staff";
+        if (req.user && req.user.sub) {
+          const staffObj = await Staff.findById(req.user.sub).select("name");
+          if (staffObj) {
+            staffName = staffObj.name;
+          }
+        }
+
+        existingPkg.pendingUpdates = {
+          data: { ...req.body },
+          updatedBy: req.user.name || staffName,
+          updatedAt: new Date()
+        };
+        await existingPkg.save();
+
+        return res.json({
+          success: true,
+          message: "Package edits saved as pending for admin approval",
+          data: existingPkg,
+        });
+      }
+    }
+
     const pkg = await Package.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -63,6 +99,61 @@ const editPackage = async (req, res) => {
   } catch (error) {
     console.log("Package Editing failed ", error.message);
     res.status(500).json({ success: false, message: "Package Editing failed" });
+  }
+};
+
+const approvePackageUpdates = async (req, res) => {
+  try {
+    const pkg = await Package.findById(req.params.id);
+    if (!pkg) {
+      return res.status(404).json({ success: false, message: "Package not found" });
+    }
+
+    let updateData = { status: "published" };
+    if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
+      updateData = { ...pkg.pendingUpdates.data, status: "published" };
+    } else if (pkg.pendingUpdates) {
+      updateData = { ...pkg.pendingUpdates, status: "published" };
+    }
+
+    const updatedPkg = await Package.findByIdAndUpdate(
+      req.params.id,
+      { ...updateData, pendingUpdates: null },
+      { new: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Package published successfully",
+      data: updatedPkg,
+    });
+  } catch (error) {
+    console.log("Package approval failed ", error.message);
+    res.status(500).json({ success: false, message: "Package approval failed" });
+  }
+};
+
+const rejectPackageUpdates = async (req, res) => {
+  try {
+    const pkg = await Package.findById(req.params.id);
+    if (!pkg) {
+      return res.status(404).json({ success: false, message: "Package not found" });
+    }
+
+    const updatedPkg = await Package.findByIdAndUpdate(
+      req.params.id,
+      { pendingUpdates: null },
+      { new: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Package updates rejected successfully",
+      data: updatedPkg,
+    });
+  } catch (error) {
+    console.log("Package rejection failed ", error.message);
+    res.status(500).json({ success: false, message: "Package rejection failed" });
   }
 };
 
@@ -301,6 +392,8 @@ export {
   createPackage,
   deletePackage,
   editPackage,
+  approvePackageUpdates,
+  rejectPackageUpdates,
   getPackageBySlug,
   getPackages,
   getAllPackages,
