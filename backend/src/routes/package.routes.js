@@ -2,6 +2,8 @@ import {
   createPackage,
   deletePackage,
   editPackage,
+  approvePackageUpdates,
+  rejectPackageUpdates,
   getPackageBySlug,
   getPackages,
   getAllPackages,
@@ -41,6 +43,20 @@ pkgRoute.patch(
   validateSession,
   authorizedRoles(["admin", "superadmin"], "holidays"),
   editPackage
+);
+pkgRoute.patch(
+  "/:id/approve",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"], "holidays"),
+  approvePackageUpdates
+);
+pkgRoute.patch(
+  "/:id/reject",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"], "holidays"),
+  rejectPackageUpdates
 );
 pkgRoute.get("/", getPackages);
 

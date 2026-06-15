@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import PackagesList from "@/components/admin/PackagesList";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
+import PreviewDrawer from "@/components/admin/PreviewDrawer";
 interface Batch {
   startDate: string;
   endDate: string;
@@ -81,6 +82,7 @@ interface Package {
   isFeatured: boolean;
   status: "draft" | "published";
   image: string;
+  pendingUpdates?: any;
 }
 const getAllPackages = async (page: number, search: string) => {
   const res = await fetch(
@@ -109,6 +111,9 @@ function PackagePage() {
 
   const router = useRouter();
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const role = useAdminAuthStore((state) => state.role) as string;
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const permissions = useAdminAuthStore(
     (state) => state.permissions
   ) as string[];
@@ -125,6 +130,11 @@ function PackagePage() {
   };
   const handleEdit = (id: string) => {
     router.push(`/admin/holidays/edit/${id}`);
+  };
+
+  const handlePreview = (id: string) => {
+    setPreviewId(id);
+    setIsPreviewOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -146,6 +156,49 @@ function PackagePage() {
     } catch (error) {
       console.log("error in deleting", error);
       toast.error("Something went wrong while deleting package");
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/packages/${id}/approve`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to approve package");
+      toast.success("Package approved successfully");
+      refetch();
+    } catch (error) {
+      console.log("error in approving", error);
+      toast.error("Something went wrong while approving package");
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    if (!confirm("Are you sure you want to reject these changes?")) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/packages/${id}/reject`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to reject package updates");
+      toast.success("Package updates rejected successfully");
+      refetch();
+    } catch (error) {
+      console.log("error in rejecting", error);
+      toast.error("Something went wrong while rejecting package updates");
     }
   };
 
@@ -199,12 +252,16 @@ function PackagePage() {
                       ? b.batch[0].quad.toLocaleString()
                       : "0",
                     url: `/holidays/${b.mainCategory?.slug}/${b.destination?.state}/${b.slug}`,
-                    status: b.status === "published" ? "Published" : "Draft",
+                    status: b.pendingUpdates ? (b.pendingUpdates.updatedBy ? `Pending Updates by ${b.pendingUpdates.updatedBy}` : "Pending Updates") : (b.status === "published" ? "Published" : "Draft"),
                   }))
                 : []
             }
+            role={role}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            onPreview={handlePreview}
           />
           <div className="flex items-center justify-between px-2 py-4">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
@@ -218,6 +275,7 @@ function PackagePage() {
           </div>
         </div>
       )}
+      <PreviewDrawer id={previewId} isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setPreviewId(null); }} />
     </div>
   );
 }

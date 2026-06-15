@@ -136,6 +136,7 @@ const packageSchema = new mongoose.Schema(
     isFeatured: { type: Boolean, default: false },
     packagePercent: { type: Number, min: 0, max: 100, default: 0 },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
+    pendingUpdates: { type: mongoose.Schema.Types.Mixed, default: null },
   },
   { timestamps: true },
 );

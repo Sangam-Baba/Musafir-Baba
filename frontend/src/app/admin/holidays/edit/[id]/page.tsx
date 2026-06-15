@@ -329,14 +329,15 @@ export default function CreatePackagePage() {
   // const batchArray = useFieldArray({ control: form.control, name: "batch" });
   useEffect(() => {
     if (pkg) {
-      const batchIds = pkg.batch?.map((b: Batch) => b._id) || [];
-      const reviewsIds = pkg.reviews?.map((b: string) => b) || [];
+      const sourceData = pkg.pendingUpdates?.data || pkg;
+      const batchIds = sourceData.batch?.map((b: any) => b._id || b) || [];
+      const reviewsIds = sourceData.reviews?.map((b: any) => b._id || b) || [];
       form.reset({
-        ...pkg,
-        destination: pkg.destination?._id.toString() || "",
+        ...sourceData,
+        destination: sourceData.destination?._id?.toString() || sourceData.destination || "",
         batch: batchIds,
         reviews: reviewsIds,
-        coverImages: pkg.coverImages?.length ? pkg.coverImages : (pkg.coverImage?.url ? [pkg.coverImage] : []),
+        coverImages: sourceData.coverImages?.length ? sourceData.coverImages : (sourceData.coverImage?.url ? [sourceData.coverImage] : []),
       });
       if (batchIds.length > 0) {
         getBatchByIds(accessToken, batchIds)
@@ -428,7 +429,13 @@ export default function CreatePackagePage() {
         <div className="w-full bg-gray-50/30 p-2 lg:p-4">
       <div className="w-full rounded-md bg-white p-4 shadow border border-gray-100">
         <h1 className="mb-3 text-center text-lg font-extrabold text-gray-800 tracking-tight">Edit Package</h1>
-
+        {pkg?.pendingUpdates && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-xs flex items-center justify-between">
+            <div>
+              <strong>Pending Updates:</strong> Viewing unapproved changes made by {pkg.pendingUpdates.updatedBy} on {new Date(pkg.pendingUpdates.updatedAt).toLocaleString()}.
+            </div>
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <Tabs defaultValue="basic" className="w-full">

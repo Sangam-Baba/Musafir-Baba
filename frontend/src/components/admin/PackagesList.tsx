@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ExternalLink } from "lucide-react";
+import { Edit, Trash2, ExternalLink, CheckCircle, XCircle, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 interface Package {
   id: string;
@@ -23,14 +23,22 @@ interface Package {
 }
 interface PackageTableProps {
   packages: Package[];
+  role?: string;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  onPreview?: (id: string) => void;
 }
 
 export default function AuthorsList({
   packages,
+  role,
   onEdit,
   onDelete,
+  onApprove,
+  onReject,
+  onPreview,
 }: PackageTableProps) {
   const length = packages.length;
   return (
@@ -91,12 +99,46 @@ export default function AuthorsList({
                   </a>
                 </TableCell>
                 <TableCell className="py-2">
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded capitalize ${cat.status.toLowerCase() === 'active' ? 'text-green-600 bg-green-50/80' : 'text-slate-600 bg-slate-50/80'}`}>
+                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded capitalize ${cat.status.toLowerCase() === 'published' ? 'text-green-600 bg-green-50/80' : cat.status.toLowerCase().includes('pending updates') ? 'text-amber-600 bg-amber-50/80' : 'text-slate-600 bg-slate-50/80'}`}>
                     {cat.status}
                   </span>
                 </TableCell>
                 <TableCell className="py-2 text-right pr-4">
                   <div className="flex justify-end gap-1.5">
+                    {(cat.status.toLowerCase() === 'draft' || cat.status.toLowerCase().includes('pending updates')) && role && ['admin', 'superadmin'].includes(role) && (
+                      <>
+                        {onApprove && (
+                          <Button
+                            variant="outline"
+                            className="h-7 w-7 p-0 border-slate-200 text-green-500 hover:text-green-700 hover:bg-green-50 transition-colors"
+                            onClick={() => onApprove(cat.id)}
+                            title="Approve & Publish"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                        {onReject && cat.status.toLowerCase().includes('pending updates') && (
+                          <Button
+                            variant="outline"
+                            className="h-7 w-7 p-0 border-slate-200 text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                            onClick={() => onReject(cat.id)}
+                            title="Reject Changes"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                    {onPreview && (
+                      <Button
+                        variant="outline"
+                        className="h-7 w-7 p-0 border-slate-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                        onClick={() => onPreview(cat.id)}
+                        title="Preview"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="h-7 w-7 p-0 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
@@ -140,6 +182,40 @@ export default function AuthorsList({
               </a>
               <h3 className="font-semibold text-lg">{cat.status}</h3>
               <div className="flex gap-2 pt-2">
+                {(cat.status.toLowerCase() === 'draft' || cat.status.toLowerCase().includes('pending updates')) && role && ['admin', 'superadmin'].includes(role) && (
+                  <>
+                    {onApprove && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-green-600 border-green-200 hover:bg-green-50"
+                        onClick={() => onApprove(cat.id)}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" /> Approve
+                      </Button>
+                    )}
+                    {onReject && cat.status.toLowerCase().includes('pending updates') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => onReject(cat.id)}
+                      >
+                        <XCircle className="w-4 h-4 mr-1" /> Reject
+                      </Button>
+                    )}
+                  </>
+                )}
+                {onPreview && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    onClick={() => onPreview(cat.id)}
+                  >
+                    <Eye className="w-4 h-4 mr-1" /> Preview
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

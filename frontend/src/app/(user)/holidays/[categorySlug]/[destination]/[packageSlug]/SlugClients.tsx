@@ -129,8 +129,8 @@ function SlugClients({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabKeys.join(',')]);
 
-  const price = pkg.batch?.length ? pkg?.batch[0].quad : 3999;
-  const dicountedPrice = pkg.batch?.length ? pkg?.batch[0].quadDiscount : 5999;
+  const price = (pkg.batch?.length && pkg.batch[0]?.quad) ? Number(pkg.batch[0].quad) : 3999;
+  const dicountedPrice = (pkg.batch?.length && pkg.batch[0]?.quadDiscount) ? Number(pkg.batch[0].quadDiscount) : 5999;
 
   return (
     <section className="w-full bg-slate-50 min-h-screen pb-10">
@@ -190,7 +190,7 @@ function SlugClients({
                 autoplay={{ delay: 3000, disableOnInteraction: false, reverseDirection: true }}
                 className="w-full h-full"
               >
-                {[...(pkg?.gallery?.map((g: any) => g.url) || []), ...(pkg?.coverImages?.map((img: any) => img.url) || (pkg?.coverImage?.url ? [pkg.coverImage.url] : [])), "/Hero1.jpg", "/Hero2.jpg"]
+                {[...(pkg?.gallery?.map((g: any) => g.url) || []), ...(pkg?.coverImages?.map((img: any) => img.url) || (pkg?.coverImage?.url ? [pkg.coverImage.url] : []))]
                   .filter(Boolean)
                   .map((img, i) => (
                     <SwiperSlide key={i} className="rounded-2xl overflow-hidden relative shadow-sm">
@@ -349,8 +349,8 @@ function SlugClients({
               <div className="flex gap-2">
                 <span className="flex md:text-xl items-center gap-1 px-3 py-3 rounded-md">
                   <MapPin color="#FE5300" size={24} />{" "}
-                  {pkg.destination.state.charAt(0).toUpperCase() +
-                    pkg.destination.state.slice(1)}
+                  {pkg?.destination?.state ? pkg.destination.state.charAt(0).toUpperCase() +
+                    pkg.destination.state.slice(1) : ""}
                 </span>
                 <span className="flex md:text-xl items-center gap-1 px-3 py-3 rounded-md">
                   <Clock color="#FE5300" size={24} /> {pkg.duration.nights}N/

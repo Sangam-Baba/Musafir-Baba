@@ -14,7 +14,7 @@ uploadRoutes.post(
 uploadRoutes.get(
   "/signature",
   isAuthenticated,
-  authorizedRoles(["admin", "superadmin", "user"]),
+  authorizedRoles(["admin", "superadmin", "user", "staff"]),
   getSignature
 );
 
