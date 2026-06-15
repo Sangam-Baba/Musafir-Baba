@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 import { BlogContent } from "@/components/custom/BlogContent";
 import Link from "next/link";
 import NotFoundPage from "@/components/common/Not-Found";
@@ -141,20 +142,6 @@ export default async function BlogDetailPage({
   if (!blog) return <NotFoundPage />;
   const readTime = readingTime(blog.content || "");
 
-  const [latestBlogsResponse, trandingBlogsResponse] = await Promise.all([
-    getLatestBlog(),
-    getTrandingBlogs()
-  ]);
-
-  const latestBlogs = latestBlogsResponse || [];
-  const trandingBlogs = trandingBlogsResponse || [];
-  const filteredLatestBlog = latestBlogs.filter(
-    (blog: any) => blog.slug !== slug,
-  );
-  const filteredTrandingBlogs = trandingBlogs.filter(
-    (blog: any) => blog.slug !== slug,
-  );
-
   const breadcrumbSchema = getBreadcrumbSchema("blog/" + blog.slug);
   const blogSchema = getBlogSchema(
     blog.title,
@@ -185,7 +172,7 @@ export default async function BlogDetailPage({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left Column: Content */}
-            <div className="lg:col-span-4 space-y-8 animate-in fade-in slide-in-from-left duration-700">
+            <div className="lg:col-span-4 space-y-8 md:animate-in md:fade-in md:slide-in-from-left md:duration-700">
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
                   <Badge className="bg-[#FE5300] text-white hover:bg-[#FE5300]/90 border-none px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest rounded-full shadow-sm">
@@ -231,7 +218,7 @@ export default async function BlogDetailPage({
             </div>
 
             {/* Right Column: Ultra-Wide Featured Image */}
-            <div className="lg:col-span-8 relative animate-in fade-in slide-in-from-right duration-1000">
+            <div className="lg:col-span-8 relative md:animate-in md:fade-in md:slide-in-from-right md:duration-1000">
               <div className="w-full overflow-hidden rounded-3xl group">
                 <Image
                   src={blog.coverImage.url}
@@ -240,6 +227,7 @@ export default async function BlogDetailPage({
                   height={800}
                   priority
                   fetchPriority="high"
+                  decoding="async"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 66vw"
                   className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -406,28 +394,9 @@ export default async function BlogDetailPage({
             <section className="mt-24 space-y-12">
               <Separator className="bg-gray-100" />
               <div className="flex flex-col gap-10">
-                <Tabs defaultValue="latest" className="w-full">
-                  <TabsList className="bg-gray-50 border p-1 rounded-xl mb-10 inline-flex">
-                    <TabsTrigger
-                      value="latest"
-                      className="rounded-lg px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm font-bold transition-all text-sm"
-                    >
-                      Latest Blog
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="trending"
-                      className="rounded-lg px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm font-bold transition-all text-sm"
-                    >
-                      Trending Articles
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="latest" className="animate-in fade-in zoom-in-95 duration-500">
-                    <LatestBlog blogs={filteredLatestBlog} title="Latest Blog" type="latest" url="blog" />
-                  </TabsContent>
-                  <TabsContent value="trending" className="animate-in fade-in zoom-in-95 duration-500">
-                    <LatestBlog blogs={filteredTrandingBlogs} title="Trending Blog" type="trending" url="blog" />
-                  </TabsContent>
-                </Tabs>
+                <Suspense fallback={<div className="h-[400px] w-full animate-pulse bg-gray-50 rounded-xl border border-gray-100"></div>}>
+                  <DeferredWidgets slug={slug} />
+                </Suspense>
               </div>
             </section>
 
@@ -454,5 +423,46 @@ export default async function BlogDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
     </div>
+  );
+}
+
+async function DeferredWidgets({ slug }: { slug: string }) {
+  const [latestBlogsResponse, trandingBlogsResponse] = await Promise.all([
+    getLatestBlog(),
+    getTrandingBlogs()
+  ]);
+
+  const latestBlogs = latestBlogsResponse || [];
+  const trandingBlogs = trandingBlogsResponse || [];
+  const filteredLatestBlog = latestBlogs.filter(
+    (blog: any) => blog.slug !== slug,
+  );
+  const filteredTrandingBlogs = trandingBlogs.filter(
+    (blog: any) => blog.slug !== slug,
+  );
+
+  return (
+    <Tabs defaultValue="latest" className="w-full">
+      <TabsList className="bg-gray-50 border p-1 rounded-xl mb-10 inline-flex">
+        <TabsTrigger
+          value="latest"
+          className="rounded-lg px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm font-bold transition-all text-sm"
+        >
+          Latest Blog
+        </TabsTrigger>
+        <TabsTrigger
+          value="trending"
+          className="rounded-lg px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm font-bold transition-all text-sm"
+        >
+          Trending Articles
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="latest" className="animate-in fade-in zoom-in-95 duration-500">
+        <LatestBlog blogs={filteredLatestBlog} title="Latest Blog" type="latest" url="blog" />
+      </TabsContent>
+      <TabsContent value="trending" className="animate-in fade-in zoom-in-95 duration-500">
+        <LatestBlog blogs={filteredTrandingBlogs} title="Trending Blog" type="trending" url="blog" />
+      </TabsContent>
+    </Tabs>
   );
 }
