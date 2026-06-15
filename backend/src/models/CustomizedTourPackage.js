@@ -101,6 +101,7 @@ const customizedTourPackageSchema = new mongoose.Schema(
         url: { type: String },
       },
     ],
+    pendingUpdates: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true },
 );

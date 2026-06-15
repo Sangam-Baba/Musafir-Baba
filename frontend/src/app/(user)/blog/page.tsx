@@ -258,6 +258,7 @@ export default async function BlogPage({
             {/* LEFT BIG IMAGE */}
             <Link
               href={`/blog/${mainBlogs[0].slug}`}
+              prefetch={true}
               className="relative h-[480px] lg:col-span-2 overflow-hidden group rounded-3xl shadow-2xl transition-all duration-500 hover:shadow-[#FE5300]/10"
             >
               {/* Main Image */}
@@ -311,7 +312,7 @@ export default async function BlogPage({
             {/* RIGHT COLUMN */}
             <div className="grid grid-rows-2 gap-2 h-[480px] lg:col-span-1">
               {/* TOP RIGHT */}
-              <Link href={`/blog/${mainBlogs[1].slug}`} className="relative overflow-hidden group rounded-2xl shadow-xl">
+              <Link href={`/blog/${mainBlogs[1].slug}`} prefetch={true} className="relative overflow-hidden group rounded-2xl shadow-xl">
                 {/* Main Image */}
                 <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-110">
                   <Image
@@ -341,7 +342,7 @@ export default async function BlogPage({
               </Link>
 
               {/* BOTTOM RIGHT */}
-              <Link href={`/blog/${mainBlogs[2].slug}`} className="relative overflow-hidden group rounded-2xl shadow-lg">
+              <Link href={`/blog/${mainBlogs[2].slug}`} prefetch={true} className="relative overflow-hidden group rounded-2xl shadow-lg">
                 {/* Main Image */}
                 <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-110">
                   <Image

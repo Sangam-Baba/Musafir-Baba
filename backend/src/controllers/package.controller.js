@@ -13,6 +13,16 @@ const createPackage = async (req, res) => {
 
     if (req.user && req.user.role === "staff") {
       req.body.status = "draft";
+      let staffName = "Unknown Staff";
+      if (req.user.sub) {
+        const staffObj = await Staff.findById(req.user.sub).select("name");
+        if (staffObj) staffName = staffObj.name;
+      }
+      req.body.pendingUpdates = {
+        data: { ...req.body },
+        updatedBy: req.user.name || staffName,
+        updatedAt: new Date(),
+      };
     }
 
     const pkg = new Package({ ...req.body });
@@ -112,8 +122,6 @@ const approvePackageUpdates = async (req, res) => {
     let updateData = { status: "published" };
     if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
       updateData = { ...pkg.pendingUpdates.data, status: "published" };
-    } else if (pkg.pendingUpdates) {
-      updateData = { ...pkg.pendingUpdates, status: "published" };
     }
 
     const updatedPkg = await Package.findByIdAndUpdate(

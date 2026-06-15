@@ -7,6 +7,8 @@ import {
   deleteCustomizedTourPackage,
   getCustomizedTourPackageBySlug,
   getRelatedTour,
+  approveCustomizedTourUpdates,
+  rejectCustomizedTourUpdates,
 } from "../controllers/customizedTourPackage.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -37,6 +39,20 @@ customizedTourPackageRoute.delete(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   deleteCustomizedTourPackage
+);
+customizedTourPackageRoute.patch(
+  "/:id/approve",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  approveCustomizedTourUpdates
+);
+customizedTourPackageRoute.patch(
+  "/:id/reject",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  rejectCustomizedTourUpdates
 );
 
 export default customizedTourPackageRoute;

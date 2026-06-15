@@ -1,12 +1,26 @@
 import { CustomizedTourPackage } from "../models/CustomizedTourPackage.js";
 import mongoose from "mongoose";
 import { Destination } from "../models/Destination.js";
+import { Staff } from "../models/Staff.js";
 
 const createCustomizedTourPackage = async (req, res) => {
   try {
     const { title, slug, plans, destination } = req.body;
     if (!title || !slug || !plans || !destination) {
       return res.status(400).json({ message: "ooops!Missing required fields" });
+    }
+    if (req.user && req.user.role === "staff") {
+      req.body.status = "draft";
+      let staffName = "Unknown Staff";
+      if (req.user.sub) {
+        const staffObj = await Staff.findById(req.user.sub).select("name");
+        if (staffObj) staffName = staffObj.name;
+      }
+      req.body.pendingUpdates = {
+        data: { ...req.body },
+        updatedBy: req.user.name || staffName,
+        updatedAt: new Date(),
+      };
     }
     const customizedTourPackage = await CustomizedTourPackage.create({
       ...req.body,
@@ -28,6 +42,34 @@ const updateCustomizedTourPackage = async (req, res) => {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, message: "Invalid Id" });
     }
+    const existingPkg = await CustomizedTourPackage.findById(id);
+    if (!existingPkg) {
+      return res.status(404).json({ message: "Customized tour package not found" });
+    }
+
+    if (existingPkg.status === "published") {
+      let staffName = "Unknown Staff";
+      if (req.user && req.user.sub) {
+        const staffObj = await Staff.findById(req.user.sub).select("name");
+        if (staffObj) {
+          staffName = staffObj.name;
+        }
+      }
+
+      existingPkg.pendingUpdates = {
+        data: { ...req.body },
+        updatedBy: req.user.name || staffName,
+        updatedAt: new Date()
+      };
+      await existingPkg.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Updates saved as draft pending admin approval.",
+        data: existingPkg,
+      });
+    }
+
     const customizedTourPackage = await CustomizedTourPackage.findByIdAndUpdate(
       id,
       req.body,
@@ -165,6 +207,75 @@ const deleteCustomizedTourPackage = async (req, res) => {
   }
 };
 
+const approveCustomizedTourUpdates = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID" });
+    }
+
+    const pkg = await CustomizedTourPackage.findById(id);
+    if (!pkg) {
+      return res.status(404).json({ success: false, message: "Package not found" });
+    }
+
+    if (!pkg.pendingUpdates || !pkg.pendingUpdates.data) {
+      return res.status(400).json({ success: false, message: "No pending updates to approve" });
+    }
+
+    let updateData = { status: "published" };
+    if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
+      updateData = { ...pkg.pendingUpdates.data, status: "published" };
+    }
+    
+    // Clear pendingUpdates before applying
+    updateData.$unset = { pendingUpdates: 1 };
+
+    const updatedPkg = await CustomizedTourPackage.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Package updates approved successfully",
+      data: updatedPkg,
+    });
+  } catch (error) {
+    console.log("Error approving package updates:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const rejectCustomizedTourUpdates = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID" });
+    }
+
+    const updatedPkg = await CustomizedTourPackage.findByIdAndUpdate(
+      id,
+      { $unset: { pendingUpdates: 1 } },
+      { new: true }
+    );
+
+    if (!updatedPkg) {
+      return res.status(404).json({ success: false, message: "Package not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Package updates rejected successfully",
+      data: updatedPkg,
+    });
+  } catch (error) {
+    console.log("Error rejecting package updates:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getRelatedTour = async (req, res) => {
   try {
     const { slug } = req.params;
@@ -203,4 +314,6 @@ export {
   deleteCustomizedTourPackage,
   getCustomizedTourPackageBySlug,
   getRelatedTour,
+  approveCustomizedTourUpdates,
+  rejectCustomizedTourUpdates,
 };
