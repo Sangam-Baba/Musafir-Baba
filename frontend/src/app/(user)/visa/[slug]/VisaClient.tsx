@@ -472,7 +472,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     <h3 className="text-xl font-bold font-heading text-black">Visa Types</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
-                  <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-1 md:overflow-visible md:snap-none md:pb-0">
+                  <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-5 pb-4 md:grid md:grid-cols-1 md:gap-6 md:overflow-visible md:snap-none md:pb-0">
                     {visa.visas.flatMap((visaCard: any, index: number) => {
                     const entries = visaCard.validityEntries && visaCard.validityEntries.length > 0
                       ? visaCard.validityEntries
