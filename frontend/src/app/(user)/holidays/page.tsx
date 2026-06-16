@@ -216,7 +216,7 @@ export default async function PackagesPage() {
 </p>
 `;
   return (
-    <div>
+    <>
       <Hero
         image="https://cdn.musafirbaba.com/images/tour_package_k5ijnt.webp"
         title="Holidays"
@@ -244,6 +244,6 @@ export default async function PackagesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
-    </div>
+    </>
   );
 }
