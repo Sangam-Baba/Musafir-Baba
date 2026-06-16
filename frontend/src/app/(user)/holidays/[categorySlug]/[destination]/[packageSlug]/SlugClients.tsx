@@ -367,7 +367,7 @@ function SlugClients({
               {pkg.whyChooseThisPackage && (
                 <div id="whychoose" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Why Choose This Char Dham Yatra Package?</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Why Choose This Package?</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <section className="prose prose-base max-w-none text-gray-600 leading-relaxed">
