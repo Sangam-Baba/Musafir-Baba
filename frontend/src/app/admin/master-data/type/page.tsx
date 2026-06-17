@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { MasterDataModal } from "@/components/admin/MasterDataModal";
 
+import { useRouter } from "next/navigation";
+
 const fetchTypes = async (accessToken: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/type?all=true`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -24,8 +26,7 @@ const fetchTypes = async (accessToken: string) => {
 };
 
 export default function TypePage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
+  const router = useRouter();
   const accessToken = useAdminAuthStore((s) => s.accessToken) as string;
   const queryClient = useQueryClient();
 
@@ -62,7 +63,7 @@ export default function TypePage() {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Vehicle Types</h1>
-        <Button onClick={() => setIsOpen(true)}>
+        <Button onClick={() => router.push("/admin/master-data/type/create")}>
           <Plus className="w-4 h-4 mr-2" /> Add Type
         </Button>
       </div>
@@ -93,7 +94,7 @@ export default function TypePage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditId(type._id); setIsOpen(true); }}>
+                    <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/master-data/type/edit/${type._id}`)}>
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(type._id)}>
@@ -111,17 +112,6 @@ export default function TypePage() {
               )}
             </TableBody>
           </Table>
-        </div>
-      )}
-
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <MasterDataModal
-            endpoint="type"
-            title="Type"
-            id={editId}
-            onClose={() => { setIsOpen(false); setEditId(null); }}
-          />
         </div>
       )}
     </div>

@@ -1151,7 +1151,7 @@ export const CreateEditVehicle = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold text-gray-700">Canonical URL</FormLabel>
-                      <FormControl><Input placeholder="https://musafirbaba.com/rental/..." {...field} /></FormControl>
+                      <FormControl><Input placeholder="https://musafirbaba.com/rental/car-rentals/delhi/..." {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

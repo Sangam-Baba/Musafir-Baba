@@ -85,7 +85,11 @@ const getAllSitemapData = cache(async () => {
         });
       }
     });
-    vehicles.data?.forEach((v: any) => items.push({ title: v.title, url: `/rental/${v.slug}`, category: "vehicle" }));
+    vehicles.data?.forEach((v: any) => {
+      const type = v.vehicleType?.toLowerCase() || 'other';
+      const dest = v.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any';
+      items.push({ title: v.title, url: `/rental/${type}/${dest}/${v.slug}`, category: "vehicle" });
+    });
     aboutus.data?.forEach((a: any) => items.push({ title: a.title, url: `/about-us`, category: "aboutus" }));
 
     return items;

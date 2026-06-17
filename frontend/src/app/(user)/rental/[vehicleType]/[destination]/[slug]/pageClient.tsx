@@ -22,7 +22,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { secureFetch } from "@/lib/secureFetch";
-import { getUser } from "../../holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
+import { getUser } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
 import Link from "next/link";
 import { IVehicleUserData } from "./page";
 type TabKey = "description" | "features" | "includeexclude" | "faqs";
@@ -174,7 +174,7 @@ export default function RentalPageClient({
     if (!accessToken) {
       useAuthDialogStore
         .getState()
-        .openDialog("login", undefined, `/rental/${vehicle.slug}`);
+        .openDialog("login", undefined, `/rental/${vehicle.vehicleType?.toLowerCase() || 'other'}/${vehicle.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any'}/${vehicle.slug}`);
       return;
     }
     if (data.policyAccepted === false)
@@ -617,7 +617,7 @@ export default function RentalPageClient({
                     price: veh.price,
                     vehicleBrand: veh.vehicleBrand,
                     vehicleYear: veh.vehicleYear,
-                    url: `/rental/${veh.slug}`,
+                    url: `/rental/${veh.vehicleType?.toLowerCase() || 'other'}/${veh.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any'}/${veh.slug}`,
                     pricingType: veh.pricingType,
                     seatingOptions: veh.seatingOptions,
                   }}

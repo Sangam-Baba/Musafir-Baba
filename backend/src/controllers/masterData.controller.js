@@ -42,6 +42,23 @@ const generateCRUD = (Model, modelName) => ({
       res.status(500).json({ success: false, message: "Server Error", error: error.message });
     }
   },
+  getBySlug: async (req, res) => {
+    try {
+      const { slug } = req.params;
+      let data = await Model.findOne({ slug });
+      
+      // Fallback for older existing items that don't have a slug yet
+      if (!data) {
+        const regex = new RegExp(`^${slug.replace(/-/g, " ")}$`, "i");
+        data = await Model.findOne({ name: regex });
+      }
+
+      if (!data) return res.status(404).json({ success: false, message: `${modelName} not found` });
+      res.status(200).json({ success: true, message: `Successfully fetched ${modelName}`, data });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Server Error", error: error.message });
+    }
+  },
   update: async (req, res) => {
     try {
       const { id } = req.params;

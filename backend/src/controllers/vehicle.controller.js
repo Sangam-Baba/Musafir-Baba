@@ -235,6 +235,7 @@ const getRelatedVehicle = async (req, res) => {
       status: "published", // only published for users
       $or: [{ seats: vehicle.seats }, { vehicleType: vehicle.vehicleType }],
     })
+      .populate("location", "name city state")
       .limit(6) // limit results
       .sort({ createdAt: -1 });
 

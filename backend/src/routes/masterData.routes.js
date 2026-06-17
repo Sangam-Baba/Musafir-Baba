@@ -18,6 +18,7 @@ const applyRoutes = (path, controller) => {
   // Publicly accessible for frontend fetching (or require auth if you prefer, but usually frontends need this list for dropdowns if available publicly, though here we will use it for admin and public)
   masterDataRoutes.get(path, controller.getAll);
   masterDataRoutes.get(`${path}/:id`, controller.getById);
+  masterDataRoutes.get(`${path}/slug/:slug`, controller.getBySlug);
   
   masterDataRoutes.patch(
     `${path}/:id`,

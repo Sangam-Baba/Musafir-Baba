@@ -69,7 +69,7 @@ const getRelatedVehicles = async (slug: string) => {
   return data?.data;
 };
 
-async function page({ params }: { params: Promise<{ slug: string }> }) {
+async function page({ params }: { params: Promise<{ vehicleType: string, destination: string, slug: string }> }) {
   const { slug } = await params;
   const relatedVehicles = await getRelatedVehicles(slug);
 
