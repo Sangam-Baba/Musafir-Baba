@@ -171,18 +171,18 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6 w-full max-w-full">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+      <h2 className="text-[18px] font-bold mb-6 text-slate-800">
         {id ? "Edit Pickup Destination" : "Create Pickup Destination"}
       </h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid grid-cols-4 w-full mb-6 max-w-3xl">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsList className="grid grid-cols-4 w-full mb-6 max-w-3xl bg-slate-100 p-1">
+              <TabsTrigger value="general" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">General</TabsTrigger>
+              <TabsTrigger value="content" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">Content</TabsTrigger>
+              <TabsTrigger value="media" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">Media</TabsTrigger>
+              <TabsTrigger value="seo" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">SEO</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" forceMount className="space-y-6 data-[state=inactive]:hidden">
@@ -192,9 +192,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination Name *</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Destination Name *</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Delhi" {...field} />
+                        <Input 
+                          placeholder="e.g. Delhi" 
+                          {...field} 
+                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -205,9 +209,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Page Title (H1)</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Page Title (H1)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Rental Services in Delhi" {...field} />
+                        <Input 
+                          placeholder="e.g. Rental Services in Delhi" 
+                          {...field} 
+                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -221,9 +229,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">City</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. New Delhi" {...field} />
+                        <Input 
+                          placeholder="e.g. New Delhi" 
+                          {...field} 
+                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -234,9 +246,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">State</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Delhi" {...field} />
+                        <Input 
+                          placeholder="e.g. Delhi" 
+                          {...field} 
+                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -247,9 +263,12 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Status</FormLabel>
                       <FormControl>
-                        <select {...field} className="w-full rounded-md border border-gray-300 p-2 text-sm h-10">
+                        <select 
+                          {...field} 
+                          className="w-full rounded-md bg-slate-50 border-transparent shadow-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] h-8 px-3"
+                        >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
                         </select>
@@ -267,9 +286,9 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Page Content</FormLabel>
+                    <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Page Content</FormLabel>
                     <FormControl>
-                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="border border-slate-200 rounded-lg overflow-hidden">
                         <BlogEditor value={field.value || ""} onChange={field.onChange} />
                       </div>
                     </FormControl>
@@ -285,9 +304,9 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                 name="bannerImage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Banner Image (Recommended 1920x600)</FormLabel>
+                    <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Banner Image (Recommended 1920x600)</FormLabel>
                     <FormControl>
-                      <div className="w-full">
+                      <div className="w-full bg-slate-50 p-4 rounded-lg border border-slate-100">
                         <ImageUploader
                           initialImage={field.value}
                           onUpload={(img) => {
@@ -317,9 +336,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="metaTitle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Meta Title</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Meta Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter SEO Title" {...field} />
+                        <Input 
+                          placeholder="Enter SEO Title" 
+                          {...field} 
+                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,9 +353,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="canonicalUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Canonical URL</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Canonical URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://musafirbaba.com/rental/..." {...field} />
+                        <Input 
+                          placeholder="https://musafirbaba.com/rental/..." 
+                          {...field} 
+                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -346,9 +373,14 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="metaDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Meta Description</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Meta Description</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Enter SEO Description" {...field} rows={3} />
+                        <Textarea 
+                          placeholder="Enter SEO Description" 
+                          {...field} 
+                          rows={3} 
+                          className="bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] resize-none"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -359,9 +391,14 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="excerpt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Excerpt (Short Description)</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Excerpt (Short Description)</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Short snippet for previews" {...field} rows={3} />
+                        <Textarea 
+                          placeholder="Short snippet for previews" 
+                          {...field} 
+                          rows={3} 
+                          className="bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] resize-none"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -374,12 +411,13 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                 name="keywords"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Keywords (Comma separated)</FormLabel>
+                    <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Keywords (Comma separated)</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="e.g. car rentals delhi, cheap cars" 
                         value={keywordsString || ""}
                         onChange={(e) => field.onChange(e.target.value)}
+                        className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
                       />
                     </FormControl>
                     <FormMessage />
@@ -389,11 +427,20 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-4 border-t pt-6">
-            <Button type="button" variant="outline" onClick={() => router.push("/admin/master-data/pickup-destination")}>
+          <div className="flex justify-end gap-3 border-t pt-5 mt-8">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => router.push("/admin/master-data/pickup-destination")}
+              className="h-8 px-4 text-[13px] font-medium text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 shadow-none"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={mutation.isPending} className="bg-[#FE5300] hover:bg-[#e14a00] text-white px-8">
+            <Button 
+              type="submit" 
+              disabled={mutation.isPending} 
+              className="h-8 px-6 text-[13px] font-medium bg-[#FE5300] hover:bg-[#e14a00] text-white shadow-none transition-colors"
+            >
               {mutation.isPending ? "Saving..." : "Save Destination"}
             </Button>
           </div>

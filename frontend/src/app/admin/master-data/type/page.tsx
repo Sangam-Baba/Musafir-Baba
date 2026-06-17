@@ -60,10 +60,10 @@ export default function TypePage() {
   const types = data?.data || [];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Vehicle Types</h1>
-        <Button onClick={() => router.push("/admin/master-data/type/create")}>
+        <h1 className="text-[18px] font-bold text-slate-800 dark:text-white">Vehicle Types</h1>
+        <Button onClick={() => router.push("/admin/master-data/type/create")} className="bg-[#FE5300] hover:bg-[#e14a00]">
           <Plus className="w-4 h-4 mr-2" /> Add Type
         </Button>
       </div>
@@ -73,39 +73,53 @@ export default function TypePage() {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-950 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-slate-950 rounded-lg border shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Name</TableHead>
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Status</TableHead>
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {types.map((type: any) => (
-                <TableRow key={type._id}>
-                  <TableCell className="font-medium">{type.name}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      type.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                <TableRow key={type._id} className="group hover:bg-slate-50/80 transition-colors duration-300">
+                  <TableCell className="py-2">
+                    <span className="text-[13px] font-semibold text-slate-700 tracking-tight transition-transform duration-300 group-hover:translate-x-[1px] inline-block">
+                      {type.name}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-2">
+                    <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-widest ${
+                      type.status === "active" ? "bg-green-50 text-green-600" : "bg-slate-100 text-slate-400"
                     }`}>
                       {type.status}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/master-data/type/edit/${type._id}`)}>
-                      <Edit className="w-4 h-4" />
+                  <TableCell className="py-2 text-right space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-slate-400 hover:text-indigo-500 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => router.push(`/admin/master-data/type/edit/${type._id}`)}
+                    >
+                      <Edit className="w-3.5 h-3.5" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(type._id)}>
-                      <Trash2 className="w-4 h-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => handleDelete(type._id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
               {types.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center py-10 text-muted-foreground text-[13px]">
                     No types found.
                   </TableCell>
                 </TableRow>

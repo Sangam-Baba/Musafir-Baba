@@ -7,7 +7,7 @@ export default async function EditVehicleTypePage({
 }) {
   const { id } = await params;
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <CreateEditVehicleType id={id} />
     </div>
   );

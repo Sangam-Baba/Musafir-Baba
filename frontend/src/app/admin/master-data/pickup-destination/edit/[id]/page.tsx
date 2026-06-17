@@ -7,7 +7,7 @@ export default async function EditPickupDestinationPage({
 }) {
   const { id } = await params;
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <CreateEditPickupDestination id={id} />
     </div>
   );

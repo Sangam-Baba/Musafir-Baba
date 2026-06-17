@@ -234,16 +234,15 @@ export default function RentalPageClient({
 
   return (
     <div className="space-y-0">
-      {/* Banner Carousel */}
-      <div className="relative">
-        <RentalCarousal
-          gallery={vehicle?.gallery}
-          fullWidth={true}
-          title={vehicle?.title}
-        />
+      {/* Banner Carousel & Title */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="flex flex-col gap-4">
+          <RentalCarousal gallery={vehicle?.gallery} />
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{vehicle?.title}</h1>
+        </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4 mt-8">
+      <div className="w-full max-w-7xl mx-auto px-8 mt-4">
         <Breadcrumb title={vehicle?.title} />
       </div>
 

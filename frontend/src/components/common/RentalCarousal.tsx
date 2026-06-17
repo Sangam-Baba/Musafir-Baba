@@ -1,132 +1,94 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import type { Swiper as SwiperType } from "swiper";
 
 import "swiper/css";
-import "swiper/css/navigation";
-
-import { Navigation, Thumbs, Autoplay } from "swiper/modules";
-import Image from "next/image";
+import "swiper/css/pagination";
 import "swiper/css/autoplay";
+
+import { Pagination, Autoplay } from "swiper/modules";
+import Image from "next/image";
+import { MapPin, Car } from "lucide-react";
 
 export default function RentalCarousal({
   gallery,
-  fullWidth = false,
   title,
+  location,
+  vehicleType
 }: {
   gallery: { url: string; alt: string }[];
-  fullWidth?: boolean;
   title?: string;
+  location?: string;
+  vehicleType?: string;
+  fullWidth?: boolean; // kept for backwards compatibility but unused
 }) {
-  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
-
   if (!gallery || gallery.length === 0) return null;
 
   return (
-    <div className="w-full overflow-hidden">
-      {/* Desktop Layout */}
-      <div className={`hidden md:grid gap-2 ${fullWidth ? 'grid-cols-4 w-full h-[60vh] md:h-[75vh]' : 'grid-cols-3 h-[500px] max-w-7xl mx-auto px-4'}`}>
-        {/* Main Large Image */}
-        <div className={`${fullWidth ? 'col-span-3' : 'col-span-2'} relative ${!fullWidth ? 'rounded-2xl overflow-hidden' : ''}`}>
-          <Swiper
-            loop
-            navigation
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-            }}
-            thumbs={{ swiper: thumbsSwiper }}
-            modules={[Navigation, Thumbs, Autoplay]}
-            className="w-full h-full"
-          >
-            {gallery.map((image) => (
-              <SwiperSlide key={image.url}>
-                <div className="relative w-full h-full">
-                  <Image
-                    src={image.url}
-                    alt={image.alt}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  {fullWidth && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end justify-start p-10 md:p-16">
-                      <div className="max-w-4xl">
-                        <h1 className="text-white text-4xl md:text-7xl font-black uppercase tracking-tight drop-shadow-2xl">
-                          {title}
-                        </h1>
-                        <div className="w-24 h-2 bg-[#FE5300] mt-4 rounded-full" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-
-        {/* Right Side Stacked Images */}
-        <div className="grid grid-rows-3 gap-2 h-full">
-          {gallery.slice(0, 3).map((image, index) => (
-            <div
-              key={image.url}
-              className={`relative ${!fullWidth ? 'rounded-2xl' : ''} overflow-hidden cursor-pointer group`}
-            >
-              <Image
-                src={image.url}
-                alt={image.alt}
-                fill
-                className="object-cover group-hover:scale-110 transition duration-700"
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition duration-500" />
-              
-              {/* Overlay for "More Images" on the last thumbnail slot */}
-              {index === 2 && gallery.length > 3 && (
-                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white backdrop-blur-[2px] group-hover:bg-black/40 transition-colors">
-                  <span className="text-2xl font-black">+ {gallery.length - 3}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest">More Photos</span>
-                </div>
-              )}
-            </div>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* Left Col: Main Slider */}
+      <div className="lg:col-span-9 h-[250px] md:h-[400px] relative rounded-2xl overflow-hidden shadow-md">
+        <Swiper
+          pagination={{ clickable: true }}
+          modules={[Pagination, Autoplay]}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
+          loop={true}
+          className="w-full h-full [&_.swiper-pagination-bullet-active]:bg-white [&_.swiper-pagination-bullet]:bg-white/70"
+        >
+          {gallery.map((image, i) => (
+            <SwiperSlide key={`slide-${i}`}>
+              <div className="relative w-full h-full">
+                <Image
+                  src={image.url}
+                  alt={image.alt || "Vehicle image"}
+                  fill
+                  className="object-cover"
+                  priority={i === 0}
+                />
+                {/* Overlay Gradient for readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              </div>
+            </SwiperSlide>
           ))}
+        </Swiper>
+
+        {/* Floating Badges on Main Image */}
+        <div className="absolute bottom-6 left-6 z-10 flex items-center gap-2 text-sm font-medium text-white">
+          {vehicleType && (
+            <span className="bg-[#FE5300] px-3 py-1 rounded-full flex items-center gap-1.5 capitalize shadow-sm">
+              <Car className="w-3.5 h-3.5" /> {vehicleType}
+            </span>
+          )}
+          {location && (
+            <span className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+              <MapPin className="w-3.5 h-3.5" /> {location}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Mobile Slider */}
-      <div className={`md:hidden ${fullWidth ? 'relative w-full h-[50vh]' : 'max-w-7xl mx-auto px-4 h-[300px] mt-4'}`}>
-        <div className={`w-full h-full relative ${!fullWidth ? 'rounded-2xl overflow-hidden shadow-lg' : ''}`}>
-          <Swiper
-            loop
-            navigation
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-            }}
-            modules={[Navigation, Autoplay]}
-            className="w-full h-full"
-          >
-            {gallery.map((image) => (
-              <SwiperSlide key={image.url}>
-                <div className="relative w-full h-full">
-                  <Image
-                    src={image.url}
-                    alt={image.alt}
-                    fill
-                    className="object-cover"
-                  />
-                  {fullWidth && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-6">
-                      <h1 className="text-white text-3xl font-bold text-center drop-shadow-lg uppercase">
-                        {title}
-                      </h1>
-                    </div>
-                  )}
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
+      {/* Right Col: Vertical Infinite Slider */}
+      <div className="hidden lg:block lg:col-span-3 h-[400px] relative">
+        <Swiper
+          direction="vertical"
+          slidesPerView={3}
+          spaceBetween={16}
+          loop={true}
+          modules={[Autoplay]}
+          autoplay={{ delay: 3000, disableOnInteraction: false, reverseDirection: true }}
+          className="w-full h-full"
+        >
+          {gallery.map((image, i) => (
+            <SwiperSlide key={i} className="rounded-2xl overflow-hidden relative shadow-sm">
+              <Image
+                src={image.url}
+                alt={`side image ${i + 1}`}
+                fill
+                className="object-cover"
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
     </div>
   );
