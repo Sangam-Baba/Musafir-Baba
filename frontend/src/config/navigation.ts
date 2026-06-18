@@ -298,6 +298,12 @@ export const NAV_GROUPS = [
         icon: KeyRound,
         permission: "change-password",
       },
+      {
+        label: "Sales Record",
+        href: "/admin/sales-record",
+        icon: ScrollText,
+        permission: "sales-record",
+      },
     ],
   },
 ];
