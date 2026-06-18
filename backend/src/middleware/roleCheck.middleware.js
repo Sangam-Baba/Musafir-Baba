@@ -40,7 +40,8 @@ const ROUTE_PERMISSION_MAP = {
   "/api/master-data/visa-expert-tips": "master-visa-rejection",
   "/api/sales-person": "master-sales-person",
   "/api/admin/update-password": "change-password",
-  "/api/admin": "role"
+  "/api/admin": "role",
+  "/api/sales-record": "sales-record"
 };
 
 const authorizedRoles = (roles, permission = null) => {

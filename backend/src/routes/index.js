@@ -48,6 +48,7 @@ import salesPersonRoutes from "./salesPerson.routes.js";
 import attendanceRoutes from "./attendance.routes.js";
 import auditRoutes from "./audit.routes.js";
 import searchRoutes from "./search.routes.js";
+import salesRecordRoutes from "./salesRecord.routes.js";
 
 const router = Router();
 
@@ -100,4 +101,5 @@ router.use("/sales-person", salesPersonRoutes);
 router.use("/attendance", attendanceRoutes);
 router.use("/audit", auditRoutes);
 router.use("/search", searchRoutes);
+router.use("/sales-record", salesRecordRoutes);
 export default router;
