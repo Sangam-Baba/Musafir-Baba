@@ -99,6 +99,17 @@ const vehicleSchema = new mongoose.Schema(
         answer: { type: String },
       },
     ],
+    vehicleAtAGlance: { type: String },
+    quickAnswers: { type: String },
+    availableFor: { type: String },
+    rentalOptions: { type: String },
+    howBookingWorks: { type: String },
+    helpfulResources: [
+      {
+        title: String,
+        url: String,
+      },
+    ],
     status: {
       type: String,
       enum: ["draft", "published"],

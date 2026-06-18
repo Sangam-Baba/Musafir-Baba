@@ -118,6 +118,19 @@ export const vehicleSchema = z.object({
       }),
     )
     .optional(),
+  helpfulResources: z
+    .array(
+      z.object({
+        title: z.string().min(1, "Title is required"),
+        url: z.string().min(1, "URL is required"),
+      })
+    )
+    .optional(),
+  vehicleAtAGlance: z.string().optional(),
+  quickAnswers: z.string().optional(),
+  availableFor: z.string().optional(),
+  rentalOptions: z.string().optional(),
+  howBookingWorks: z.string().optional(),
   pricingType: z.enum(["single", "multiple"]).default("single"),
   status: z.enum(["draft", "published"]).default("published"),
 });
@@ -173,7 +186,6 @@ export const CreateEditVehicle = ({
   onClose: () => void;
   id: string | null;
 }) => {
-  const [isFullScreen, setIsFullScreen] = useState(false);
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
   const form = useForm<FormData>({
@@ -207,6 +219,12 @@ export const CreateEditVehicle = ({
       inclusions: [{ value: "" }],
       exclusions: [{ value: "" }],
       seatingOptions: [],
+      helpfulResources: [],
+      vehicleAtAGlance: "",
+      quickAnswers: "",
+      availableFor: "",
+      rentalOptions: "",
+      howBookingWorks: "",
       pricingType: "single",
       status: "draft",
     },
@@ -273,6 +291,10 @@ export const CreateEditVehicle = ({
     control: form.control,
     name: "seatingOptions",
   });
+  const helpfulResourcesArray = useFieldArray({
+    control: form.control,
+    name: "helpfulResources",
+  });
   useEffect(() => {
     if (id && vehicle) {
       // Find case-insensitive matches from master data for consistent selection
@@ -318,6 +340,12 @@ export const CreateEditVehicle = ({
         convenienceFee: vehicle.convenienceFee,
         vehicleTransmission: matchedTransmission ? matchedTransmission.name : vehicle.vehicleTransmission,
         seatingOptions: vehicle.seatingOptions || [],
+        helpfulResources: vehicle.helpfulResources || [],
+        vehicleAtAGlance: vehicle.vehicleAtAGlance || "",
+        quickAnswers: vehicle.quickAnswers || "",
+        availableFor: vehicle.availableFor || "",
+        rentalOptions: vehicle.rentalOptions || "",
+        howBookingWorks: vehicle.howBookingWorks || "",
         pricingType: vehicle.pricingType || "single",
         status: vehicle.status,
       });
@@ -370,30 +398,12 @@ export const CreateEditVehicle = ({
   };
 
   return (
-    <div
-      className={`bg-white shadow-2xl overflow-y-auto transition-all duration-300 ease-in-out ${
-        isFullScreen 
-          ? "fixed inset-0 w-full h-full max-w-none max-h-none rounded-none z-[60] p-8" 
-          : "rounded-xl w-full max-w-4xl max-h-[90vh] p-6"
-      }`}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="flex items-center justify-between mb-6 sticky top-0 bg-white z-30 pb-2 border-b">
-        <div className="w-10"></div> {/* Spacer for balance */}
-        <h2 className="text-2xl font-semibold text-center text-gray-800">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full">
+      <div className="flex items-center justify-between mb-6 pb-2 border-b">
+        <h2 className="text-2xl font-semibold text-gray-800">
           {id ? "Update Vehicle" : "Create Vehicle"}
         </h2>
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-gray-500 hover:text-[#FE5300] hover:bg-[#FE5300]/5"
-            onClick={() => setIsFullScreen(!isFullScreen)}
-            title={isFullScreen ? "Minimize" : "Full Screen"}
-          >
-            {isFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
-          </Button>
           <Button
             type="button"
             variant="ghost"
@@ -1113,6 +1123,90 @@ export const CreateEditVehicle = ({
                   onClick={() => faqsArray.append({ question: "", answer: "" })}
                 >
                   + Add Question & Answer
+                </Button>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t mt-4">
+                {/* <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Rich Text Details</Label> */}
+                <div className="space-y-6">
+                  {[
+                    { name: "vehicleAtAGlance", label: "Vehicle At A Glance" },
+                    { name: "quickAnswers", label: "Quick Answers" },
+                    { name: "availableFor", label: "Available For" },
+                    { name: "rentalOptions", label: "Rental Options" },
+                    { name: "howBookingWorks", label: "How Booking Works" },
+                  ].map((field) => (
+                    <FormField
+                      key={field.name}
+                      control={form.control}
+                      name={field.name as any}
+                      render={({ field: formField }) => (
+                        <FormItem>
+                          <FormLabel className="text-md font-semibold text-gray-700">{field.label}</FormLabel>
+                          <FormControl>
+                            <div className="border rounded-lg overflow-hidden min-h-[200px]">
+                              <SmallEditor
+                                value={formField.value || ""}
+                                onChange={formField.onChange}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t mt-4">
+                <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Helpful Resources</Label>
+                <div className="space-y-4">
+                  {helpfulResourcesArray.fields.map((field, index) => (
+                    <div key={field.id} className="p-5 border rounded-2xl bg-white shadow-sm space-y-4 relative group hover:border-[#FE5300]/50 transition-colors border-gray-100">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`helpfulResources.${index}.title`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-bold text-gray-700">Title</FormLabel>
+                              <FormControl><Input placeholder="e.g. Terms and Conditions" {...field} className="bg-gray-50/30" /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`helpfulResources.${index}.url`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-bold text-gray-700">URL</FormLabel>
+                              <FormControl><Input placeholder="https://..." {...field} className="bg-gray-50/30" /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => helpfulResourcesArray.remove(index)}
+                      >
+                        <X className="w-4 h-4 mr-1" /> Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 dashed font-semibold hover:bg-[#FE5300]/5 hover:text-[#FE5300] border-2 border-dashed border-gray-200"
+                  onClick={() => helpfulResourcesArray.append({ title: "", url: "" })}
+                >
+                  + Add Helpful Resource
                 </Button>
               </div>
             </TabsContent>

@@ -8,7 +8,7 @@ import UsersList from "@/components/admin/UsersList";
 import CreateEditStaff from "@/components/auth/CreateEditStaff";
 import { Button } from "@/components/ui/button";
 import VehiclesList from "@/components/admin/VehicleList";
-import { CreateEditVehicle } from "@/components/admin/CreateEditVehicle";
+import { useRouter } from "next/navigation";
 export interface IVehicleData {
   _id: string;
   vehicleName: string;
@@ -35,6 +35,12 @@ export interface IVehicleData {
     title?: string;
     alt: string;
   };
+  vehicleAtAGlance?: string;
+  quickAnswers?: string;
+  availableFor?: string;
+  rentalOptions?: string;
+  howBookingWorks?: string;
+  helpfulResources?: { title: string; url: string; }[];
   status: string;
 }
 
@@ -55,8 +61,7 @@ const getAllVehicle = async (accessToken: string) => {
   return data;
 };
 function VehiclePage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
+  const router = useRouter();
   const queryClient = useQueryClient();
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore(
@@ -105,20 +110,8 @@ function VehiclePage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Your Vehicles</h1>
         <div>
-          <Button onClick={() => setIsOpen(true)}>Add Vehicle</Button>
+          <Button onClick={() => router.push("/admin/vehicle/new")}>Add Vehicle</Button>
         </div>
-        {/* Modal */}
-        {isOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <CreateEditVehicle
-              id={editId}
-              onClose={() => {
-                setIsOpen(false);
-                setEditId(null);
-              }}
-            />
-          </div>
-        )}
       </div>
 
       {isLoading ? (
@@ -136,8 +129,7 @@ function VehiclePage() {
             status: b.status,
           }))}
           onStatusChange={(id) => {
-            setEditId(id);
-            setIsOpen(true);
+            router.push(`/admin/vehicle/edit/${id}`);
           }}
           onDelete={handleDelete}
         />

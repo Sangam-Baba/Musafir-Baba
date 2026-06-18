@@ -46,6 +46,12 @@ export interface IVehicleUserData {
   features: string[];
   inclusions: string[];
   exclusions: string[];
+  vehicleAtAGlance?: string;
+  quickAnswers?: string;
+  availableFor?: string;
+  rentalOptions?: string;
+  howBookingWorks?: string;
+  helpfulResources?: { title: string; url: string; }[];
   status: string;
   availableStock: number;
 }
