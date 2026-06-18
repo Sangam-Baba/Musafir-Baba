@@ -46,6 +46,12 @@ export interface IVehicleUserData {
   features: string[];
   inclusions: string[];
   exclusions: string[];
+  vehicleAtAGlance?: string;
+  quickAnswers?: string;
+  availableFor?: string;
+  rentalOptions?: string;
+  howBookingWorks?: string;
+  helpfulResources?: { title: string; url: string; }[];
   status: string;
   availableStock: number;
 }
@@ -69,7 +75,7 @@ const getRelatedVehicles = async (slug: string) => {
   return data?.data;
 };
 
-async function page({ params }: { params: Promise<{ slug: string }> }) {
+async function page({ params }: { params: Promise<{ vehicleType: string, destination: string, slug: string }> }) {
   const { slug } = await params;
   const relatedVehicles = await getRelatedVehicles(slug);
 

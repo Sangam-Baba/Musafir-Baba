@@ -25,9 +25,11 @@ export interface UploadedFile {
 export default function ImageUploader({
   initialImage,
   onUpload,
+  className,
 }: {
   initialImage?: UploadedFile | null;
   onUpload: (img: UploadedFile | null) => void;
+  className?: string;
 }) {
   const token = useAdminAuthStore((state) => state.accessToken) as string;
   const [files, setFiles] = useState<FileList | null>(null);
@@ -53,7 +55,7 @@ export default function ImageUploader({
   };
 
   return (
-    <div className="relative w-full aspect-square bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#FE5300]/50 transition-colors group">
+    <div className={`relative w-full ${className || 'aspect-square'} bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#FE5300]/50 transition-colors group`}>
       {uploadedImages.length > 0 ? (
         <div className="w-full h-full relative">
           {uploadedImages[0].resource_type === "video" ? (

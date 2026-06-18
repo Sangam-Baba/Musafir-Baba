@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table";
 import { MasterDataModal } from "@/components/admin/MasterDataModal";
 
+import { useRouter } from "next/navigation";
+
 const fetchDestinations = async (accessToken: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/master-data/pickup-destination?all=true`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -24,8 +26,7 @@ const fetchDestinations = async (accessToken: string) => {
 };
 
 export default function PickupDestinationPage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
+  const router = useRouter();
   const accessToken = useAdminAuthStore((s) => s.accessToken) as string;
   const queryClient = useQueryClient();
 
@@ -59,10 +60,10 @@ export default function PickupDestinationPage() {
   const destinations = data?.data || [];
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Pickup Destinations</h1>
-        <Button onClick={() => setIsOpen(true)}>
+        <h1 className="text-[18px] font-bold text-slate-800 dark:text-white">Pickup Destinations</h1>
+        <Button onClick={() => router.push("/admin/master-data/pickup-destination/create")} className="bg-[#FE5300] hover:bg-[#e14a00]">
           <Plus className="w-4 h-4 mr-2" /> Add Destination
         </Button>
       </div>
@@ -72,61 +73,63 @@ export default function PickupDestinationPage() {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-950 rounded-lg border shadow-sm">
+        <div className="bg-white dark:bg-slate-950 rounded-lg border shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Name</TableHead>
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">City</TableHead>
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">State</TableHead>
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Status</TableHead>
+                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {destinations.map((dest: any) => (
-                <TableRow key={dest._id}>
-                  <TableCell className="font-medium">{dest.name}</TableCell>
-                  <TableCell>{dest.city}</TableCell>
-                  <TableCell>{dest.state}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      dest.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                <TableRow key={dest._id} className="group hover:bg-slate-50/80 transition-colors duration-300">
+                  <TableCell className="py-2">
+                    <span className="text-[13px] font-semibold text-slate-700 tracking-tight transition-transform duration-300 group-hover:translate-x-[1px] inline-block">
+                      {dest.name}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-2 text-[13px] text-slate-600">{dest.city}</TableCell>
+                  <TableCell className="py-2 text-[13px] text-slate-600 capitalize">{dest.state}</TableCell>
+                  <TableCell className="py-2">
+                    <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-widest ${
+                      dest.status === "active" ? "bg-green-50 text-green-600" : "bg-slate-100 text-slate-400"
                     }`}>
                       {dest.status}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditId(dest._id); setIsOpen(true); }}>
-                      <Edit className="w-4 h-4" />
+                  <TableCell className="py-2 text-right space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-slate-400 hover:text-indigo-500 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => router.push(`/admin/master-data/pickup-destination/edit/${dest._id}`)}
+                    >
+                      <Edit className="w-3.5 h-3.5" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(dest._id)}>
-                      <Trash2 className="w-4 h-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => handleDelete(dest._id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
               {destinations.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-10 text-muted-foreground text-[13px]">
                     No destinations found.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </div>
-      )}
-
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <MasterDataModal
-            endpoint="pickup-destination"
-            title="Pickup Destination"
-            id={editId}
-            showExtraFields={true}
-            onClose={() => { setIsOpen(false); setEditId(null); }}
-          />
         </div>
       )}
     </div>

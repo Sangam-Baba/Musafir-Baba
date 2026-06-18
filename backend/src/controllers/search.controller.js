@@ -53,7 +53,7 @@ export const globalSearch = async (req, res) => {
         .select("title categoryId destinationId")
         .limit(limit)
         .lean(),
-      Vehicle.find({ title: regex }).select("title slug").limit(limit).lean(),
+      Vehicle.find({ title: regex }).populate("location", "name").select("title slug vehicleType location").limit(limit).lean(),
       AboutUs.find({ title: regex }).select("title").limit(limit).lean(),
     ]);
 
@@ -88,7 +88,11 @@ export const globalSearch = async (req, res) => {
       }
     });
 
-    vehicles.forEach((i) => results.push({ title: i.title, url: `/rental/${i.slug}`, type: "Vehicle" }));
+    vehicles.forEach((i) => {
+      const type = i.vehicleType?.toLowerCase() || 'other';
+      const dest = i.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any';
+      results.push({ title: i.title, url: `/rental/${type}/${dest}/${i.slug}`, type: "Vehicle" });
+    });
     aboutus.forEach((i) => results.push({ title: i.title, url: `/about-us`, type: "About Us" }));
 
     // Shuffle slightly or sort by relevance? For now, we will sort alphabetically or just slice to top 15
