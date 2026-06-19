@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AttendanceView from "@/components/admin/AttendanceView";
 import AdminAttendanceTable from "@/components/admin/AdminAttendanceTable";
 import AdminUserwiseAttendanceTable from "@/components/admin/AdminUserwiseAttendanceTable";
+import AdminLeaveTable from "@/components/admin/AdminLeaveTable";
 
 export default function AttendancePage() {
   const role = useAdminAuthStore((state) => state.role);
@@ -25,9 +26,10 @@ export default function AttendancePage() {
 
       {isAdmin ? (
         <Tabs defaultValue="my-attendance" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-6">
             <TabsTrigger value="my-attendance">My Attendance</TabsTrigger>
             <TabsTrigger value="all-attendance">All Staff Records</TabsTrigger>
+            <TabsTrigger value="leave-applications">Leave Applications</TabsTrigger>
           </TabsList>
           
           <TabsContent value="my-attendance" className="mt-0">
@@ -37,6 +39,10 @@ export default function AttendancePage() {
           <TabsContent value="all-attendance" className="mt-0 space-y-8">
             <AdminAttendanceTable />
             <AdminUserwiseAttendanceTable />
+          </TabsContent>
+
+          <TabsContent value="leave-applications" className="mt-0">
+            <AdminLeaveTable />
           </TabsContent>
         </Tabs>
       ) : (

@@ -1,7 +1,17 @@
-export const getAttendanceStatus = (checkInTime: string | null | undefined, recordDate: string | Date = new Date()) => {
+export const getAttendanceStatus = (checkInTime: string | null | undefined, recordDate: string | Date = new Date(), leaveType?: string, leaveStatus?: string) => {
   const targetDate = new Date(recordDate);
   const now = new Date();
-  
+
+  if (leaveType && leaveType !== "none") {
+    if (leaveStatus === "Approved") {
+      return { label: `On ${leaveType}`, color: "bg-purple-50 text-purple-600 border-purple-200" };
+    } else if (leaveStatus === "Pending") {
+      return { label: `${leaveType} (Pending)`, color: "bg-orange-50 text-orange-600 border-orange-200" };
+    } else if (leaveStatus === "Rejected") {
+      return { label: `${leaveType} (Rejected)`, color: "bg-red-50 text-red-600 border-red-200" };
+    }
+  }
+
   if (!checkInTime) {
     const isToday = targetDate.toDateString() === now.toDateString();
     if (isToday) {

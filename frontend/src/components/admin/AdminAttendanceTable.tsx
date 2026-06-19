@@ -21,6 +21,13 @@ export default function AdminAttendanceTable() {
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedBreaks, setSelectedBreaks] = useState<any[] | null>(null);
+  const [showMarkLeaveModal, setShowMarkLeaveModal] = useState(false);
+  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
+  const [leaveDate, setLeaveDate] = useState("");
+  const [leaveEndDate, setLeaveEndDate] = useState("");
+  const [leaveType, setLeaveType] = useState("Leave");
+  const [leaveReason, setLeaveReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchRecords();
@@ -38,6 +45,27 @@ export default function AdminAttendanceTable() {
       console.error("Failed to fetch attendance records:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMarkLeave = async () => {
+    if (!selectedStaffId) return;
+    try {
+      setActionLoading(true);
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/attendance/leave/mark`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ staffId: selectedStaffId, date: leaveDate || dateFilter, endDate: leaveEndDate, leaveType, reason: leaveReason }),
+      });
+      const res = await response.json();
+      if (res && res.success) {
+        setShowMarkLeaveModal(false);
+        fetchRecords();
+      }
+    } catch (error) {
+      console.error("Failed to mark leave:", error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -107,23 +135,24 @@ export default function AdminAttendanceTable() {
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Distance (In/Out)</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Total Hrs</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Working Hrs</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {records.map((record) => (
-                  <TableRow key={record._id} className="hover:bg-orange-50/50 transition-all duration-300 hover:translate-x-[1px] group cursor-default border-slate-100">
+                  <TableRow key={record._id} className="hover:bg-slate-50/80 transition-all duration-300 group cursor-default border-slate-100">
                     <TableCell className="py-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 group-hover:translate-x-[1px] transition-transform duration-300">
                         <div className="text-[13px] font-semibold text-slate-700">{record.staff?.name || 'Unknown'}</div>
                         {record.breaks?.some((b: any) => !b.end) && (
                           <span className="bg-orange-100 text-orange-600 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase whitespace-nowrap">On Break</span>
                         )}
                       </div>
-                      <div className="text-[10px] font-medium text-slate-400 lowercase">{record.staff?.email}</div>
+                      <div className="text-[10px] font-medium text-slate-400 lowercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">{record.staff?.email}</div>
                     </TableCell>
                     <TableCell className="py-2">
                       {(() => {
-                        const status = getAttendanceStatus(record.checkInTime, record.date);
+                        const status = getAttendanceStatus(record.checkInTime, record.date, record.leaveType, record.leaveStatus);
                         return (
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${status.color}`}>
                             {status.label}
@@ -187,6 +216,25 @@ export default function AdminAttendanceTable() {
                         )}
                       </div>
                     </TableCell>
+                    <TableCell className="py-2 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {(!record.leaveType || record.leaveType === "none" || record.leaveStatus === "none") && record.staff && (
+                          <button 
+                            onClick={() => {
+                              setSelectedStaffId(record.staff._id || record.staff.id || (record._id.startsWith("absent_") ? record._id.replace("absent_", "") : record.staff));
+                              setLeaveDate(dateFilter);
+                              setLeaveEndDate("");
+                              setLeaveReason("");
+                              setShowMarkLeaveModal(true);
+                            }}
+                            disabled={actionLoading}
+                            className="text-[10px] bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition-colors"
+                          >
+                            Mark Leave
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -234,6 +282,67 @@ export default function AdminAttendanceTable() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {showMarkLeaveModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in duration-200">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800">Mark Leave</h3>
+              <button onClick={() => setShowMarkLeaveModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-600 mb-1">Start Date</label>
+                  <input 
+                    type="date" 
+                    value={leaveDate}
+                    onChange={(e) => setLeaveDate(e.target.value)}
+                    className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-600 mb-1">End Date (Optional)</label>
+                  <input 
+                    type="date" 
+                    value={leaveEndDate}
+                    onChange={(e) => setLeaveEndDate(e.target.value)}
+                    min={leaveDate}
+                    className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Leave Type</label>
+                <select 
+                  value={leaveType}
+                  onChange={(e) => setLeaveType(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                >
+                  <option value="Leave">Leave</option>
+                  <option value="Short Leave">Short Leave</option>
+                  <option value="Half Day">Half Day</option>
+                  <option value="WFH">Work From Home (WFH)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Reason (Optional)</label>
+                <textarea 
+                  value={leaveReason}
+                  onChange={(e) => setLeaveReason(e.target.value)}
+                  placeholder="Reason for leave..."
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300] min-h-[80px]"
+                />
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-2">
+              <button className="px-4 py-2 rounded text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition-colors" onClick={() => setShowMarkLeaveModal(false)}>Cancel</button>
+              <button className="px-4 py-2 rounded text-sm font-semibold bg-[#FE5300] text-white hover:bg-orange-600 transition-colors" onClick={handleMarkLeave} disabled={actionLoading}>
+                Submit
+              </button>
             </div>
           </div>
         </div>

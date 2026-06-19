@@ -4,9 +4,14 @@ import {
   checkOut,
   startBreak,
   endBreak,
-  getTodayAttendance,
   getAllAttendance,
   getUserwiseAttendance,
+  applyLeave,
+  approveLeave,
+  markLeave,
+  getAllLeaves,
+  getMyLeaves,
+  getTodayAttendance,
 } from "../controllers/attendance.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -55,6 +60,22 @@ attendanceRouter.post(
   endBreak
 );
 
+attendanceRouter.post(
+  "/leave/apply",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin", "staff"]),
+  applyLeave
+);
+
+attendanceRouter.get(
+  "/leave/my",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin", "staff"]),
+  getMyLeaves
+);
+
 // Admin endpoints for all attendance
 attendanceRouter.get(
   "/",
@@ -65,11 +86,35 @@ attendanceRouter.get(
 );
 
 attendanceRouter.get(
+  "/leave",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getAllLeaves
+);
+
+attendanceRouter.get(
   "/userwise",
   isAuthenticated,
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getUserwiseAttendance
+);
+
+attendanceRouter.post(
+  "/leave/approve",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  approveLeave
+);
+
+attendanceRouter.post(
+  "/leave/mark",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  markLeave
 );
 
 export default attendanceRouter;

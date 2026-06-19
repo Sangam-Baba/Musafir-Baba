@@ -182,9 +182,9 @@ export default function AdminUserwiseAttendanceTable() {
               </TableHeader>
               <TableBody>
                 {records.map((record) => (
-                  <TableRow key={record._id} className="hover:bg-orange-50/50 transition-all duration-300 hover:translate-x-[1px] group cursor-default border-slate-100">
+                  <TableRow key={record._id} className="hover:bg-slate-50/80 transition-all duration-300 group cursor-default border-slate-100">
                     <TableCell className="py-2">
-                      <div className="text-[13px] font-semibold text-slate-700">{formatDate(record.date)}</div>
+                      <div className="text-[13px] font-semibold text-slate-700 group-hover:translate-x-[1px] transition-transform duration-300">{formatDate(record.date)}</div>
                     </TableCell>
                     <TableCell className="py-2">
                       {(() => {

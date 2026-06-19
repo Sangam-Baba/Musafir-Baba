@@ -252,7 +252,9 @@ export const getAllAttendance = async (req, res, next) => {
         checkOutTime: null,
         breaks: [],
         totalOfficeHours: 0,
-        totalWorkingHours: 0
+        totalWorkingHours: 0,
+        leaveType: "none",
+        leaveStatus: "none"
       };
     });
 
@@ -285,6 +287,163 @@ export const getUserwiseAttendance = async (req, res, next) => {
     })
       .populate("staff", "name email role")
       .sort({ date: -1 });
+
+    return res.status(200).json({ success: true, data: records });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const applyLeave = async (req, res, next) => {
+  try {
+    const { date, endDate, leaveType, reason } = req.body;
+    if (!date || !leaveType || leaveType === "none") {
+      return res.status(400).json({ success: false, message: "Date and valid leaveType are required." });
+    }
+
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      return res.status(400).json({ success: false, message: "Cannot apply for leave on past dates." });
+    }
+
+    const end = endDate ? new Date(endDate) : new Date(date);
+    end.setHours(0, 0, 0, 0);
+
+    if (end < start) {
+      return res.status(400).json({ success: false, message: "End date cannot be before start date." });
+    }
+
+    const dates = [];
+    let current = new Date(start);
+    while (current <= end) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+
+    const attendanceRecords = [];
+    for (const d of dates) {
+      let attendance = await Attendance.findOne({
+        staff: req.user.sub,
+        date: d,
+      });
+
+      if (!attendance) {
+        attendance = new Attendance({
+          staff: req.user.sub,
+          date: d,
+        });
+      }
+
+      attendance.leaveType = leaveType;
+      attendance.leaveStatus = "Pending";
+      attendance.leaveReason = reason || "";
+      await attendance.save();
+      attendanceRecords.push(attendance);
+    }
+
+    return res.status(200).json({ success: true, message: "Leave applied successfully.", attendanceRecords });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const approveLeave = async (req, res, next) => {
+  try {
+    const { attendanceId, status } = req.body; // status: "Approved" or "Rejected"
+    if (!attendanceId || !["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Attendance ID and valid status are required." });
+    }
+
+    const attendance = await Attendance.findById(attendanceId);
+    if (!attendance) {
+      return res.status(404).json({ success: false, message: "Attendance record not found." });
+    }
+
+    attendance.leaveStatus = status;
+    await attendance.save();
+
+    return res.status(200).json({ success: true, message: `Leave ${status.toLowerCase()} successfully.`, attendance });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markLeave = async (req, res, next) => {
+  try {
+    const { staffId, date, endDate, leaveType, reason } = req.body;
+    if (!staffId || !date || !leaveType) {
+      return res.status(400).json({ success: false, message: "Staff ID, date, and leaveType are required." });
+    }
+
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = endDate ? new Date(endDate) : new Date(date);
+    end.setHours(0, 0, 0, 0);
+
+    if (end < start) {
+      return res.status(400).json({ success: false, message: "End date cannot be before start date." });
+    }
+
+    const dates = [];
+    let current = new Date(start);
+    while (current <= end) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+
+    const attendanceRecords = [];
+    for (const d of dates) {
+      let attendance = await Attendance.findOne({
+        staff: staffId,
+        date: d,
+      });
+
+      if (!attendance) {
+        attendance = new Attendance({
+          staff: staffId,
+          date: d,
+        });
+      }
+
+      attendance.leaveType = leaveType;
+      attendance.leaveStatus = "Approved"; // Directly approved by admin
+      attendance.leaveReason = reason || "";
+      await attendance.save();
+      attendanceRecords.push(attendance);
+    }
+
+    return res.status(200).json({ success: true, message: "Leave marked successfully.", attendanceRecords });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllLeaves = async (req, res, next) => {
+  try {
+    const records = await Attendance.find({
+      leaveType: { $in: ["Leave", "Short Leave", "Half Day", "WFH"] }
+    })
+      .populate("staff", "name email role")
+      .sort({ date: -1, createdAt: -1 });
+
+    return res.status(200).json({ success: true, data: records });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyLeaves = async (req, res, next) => {
+  try {
+    const records = await Attendance.find({
+      staff: req.user.sub,
+      leaveType: { $in: ["Leave", "Short Leave", "Half Day", "WFH"] }
+    }).sort({ date: -1, createdAt: -1 });
 
     return res.status(200).json({ success: true, data: records });
   } catch (error) {

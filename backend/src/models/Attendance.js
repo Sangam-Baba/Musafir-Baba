@@ -39,6 +39,20 @@ const attendanceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    leaveType: {
+      type: String,
+      enum: ["none", "Leave", "Short Leave", "Half Day", "WFH"],
+      default: "none",
+    },
+    leaveStatus: {
+      type: String,
+      enum: ["none", "Pending", "Approved", "Rejected"],
+      default: "none",
+    },
+    leaveReason: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
