@@ -8,6 +8,14 @@ import { toast } from "sonner";
 import { MapPin, Clock, Coffee, CheckCircle2, PlayCircle, StopCircle, LogOut } from "lucide-react";
 import { getAttendanceStatus } from "@/lib/attendanceUtils";
 import { CameraModal } from "./CameraModal";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function AttendanceView() {
   const [attendance, setAttendance] = useState<any>(null);
@@ -15,9 +23,17 @@ export default function AttendanceView() {
   const [actionLoading, setActionLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cameraConfig, setCameraConfig] = useState<{ action: "check-in" | "check-out" | null, title: string }>({ action: null, title: "" });
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [leaveDate, setLeaveDate] = useState(new Date().toISOString().split("T")[0]);
+  const [leaveEndDate, setLeaveEndDate] = useState("");
+  const [leaveType, setLeaveType] = useState("Leave");
+  const [leaveReason, setLeaveReason] = useState("");
+  const [myLeaves, setMyLeaves] = useState<any[]>([]);
+  const [loadingLeaves, setLoadingLeaves] = useState(false);
 
   useEffect(() => {
     fetchTodayAttendance();
+    fetchMyLeaves();
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
@@ -34,6 +50,21 @@ export default function AttendanceView() {
       console.error("Failed to fetch attendance:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMyLeaves = async () => {
+    try {
+      setLoadingLeaves(true);
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/attendance/leave/my`);
+      const res = await response.json();
+      if (res && res.success) {
+        setMyLeaves(res.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch my leaves:", error);
+    } finally {
+      setLoadingLeaves(false);
     }
   };
 
@@ -95,6 +126,32 @@ export default function AttendanceView() {
     }
   };
 
+  const handleApplyLeave = async () => {
+    try {
+      setActionLoading(true);
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/attendance/leave/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: leaveDate, endDate: leaveEndDate, leaveType, reason: leaveReason }),
+      });
+      const res = await response.json();
+      if (res && res.success) {
+        toast.success(res.message);
+        setShowLeaveModal(false);
+        fetchTodayAttendance();
+        fetchMyLeaves();
+        setLeaveDate(new Date().toISOString().split("T")[0]);
+        setLeaveEndDate("");
+      } else {
+        toast.error(res?.message || "Action failed");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8 text-center animate-pulse">Loading attendance data...</div>;
   }
@@ -108,7 +165,7 @@ export default function AttendanceView() {
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
-  const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date());
+  const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date(), attendance?.leaveType, attendance?.leaveStatus);
 
   const getOngoingStats = () => {
     const formatMsToHHMM = (ms: number) => {
@@ -225,7 +282,12 @@ export default function AttendanceView() {
 
           {/* Right Column: Actions */}
           <div className="w-full md:w-2/5 p-5 bg-slate-50/50 flex flex-col justify-center">
-            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Quick Actions</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</h3>
+              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2" onClick={() => setShowLeaveModal(true)}>
+                Apply Leave
+              </Button>
+            </div>
             
             <div className="space-y-3">
               {!isCheckedIn ? (
@@ -314,6 +376,67 @@ export default function AttendanceView() {
           </CardContent>
         </Card>
       )}
+      
+      <Card className="shadow-lg border-none mt-6">
+        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
+          <CardTitle className="text-[18px] font-bold text-slate-800 flex items-center gap-2">
+            My Leave History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loadingLeaves ? (
+            <div className="text-center py-8 text-muted-foreground animate-pulse">Loading leave history...</div>
+          ) : myLeaves.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-500">
+              No leave applications found.
+            </div>
+          ) : (
+            <div className="rounded-xl border overflow-hidden mt-4">
+              <Table>
+                <TableHeader className="bg-slate-50">
+                  <TableRow className="border-none">
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Date</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Leave Type</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Reason</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {myLeaves.map((record) => (
+                    <TableRow key={record._id} className="hover:bg-slate-50/50 transition-all border-slate-100">
+                      <TableCell className="py-2 text-[13px] font-medium text-slate-600">
+                        {new Date(record.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <span className="text-[12px] font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded">
+                          {record.leaveType}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <p className="text-[12px] text-slate-600 max-w-[200px] truncate" title={record.leaveReason || "No reason provided"}>
+                          {record.leaveReason || "-"}
+                        </p>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        {record.leaveStatus === "Approved" ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-purple-50 text-purple-600 border-purple-200">Approved</span>
+                        ) : record.leaveStatus === "Pending" ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-orange-50 text-orange-600 border-orange-200">Pending</span>
+                        ) : record.leaveStatus === "Rejected" ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-red-50 text-red-600 border-red-200">Rejected</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-200">{record.leaveStatus}</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {cameraConfig.action && (
         <CameraModal 
           title={cameraConfig.title}
@@ -324,6 +447,68 @@ export default function AttendanceView() {
             if (action) handleAction(action, base64);
           }}
         />
+      )}
+      {showLeaveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in duration-200">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800">Apply Leave</h3>
+              <button onClick={() => setShowLeaveModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-600 mb-1">Start Date</label>
+                  <input 
+                    type="date" 
+                    value={leaveDate}
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => setLeaveDate(e.target.value)}
+                    className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-600 mb-1">End Date (Optional)</label>
+                  <input 
+                    type="date" 
+                    value={leaveEndDate}
+                    onChange={(e) => setLeaveEndDate(e.target.value)}
+                    min={leaveDate}
+                    className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Leave Type</label>
+                <select 
+                  value={leaveType}
+                  onChange={(e) => setLeaveType(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                >
+                  <option value="Leave">Leave</option>
+                  <option value="Short Leave">Short Leave</option>
+                  <option value="Half Day">Half Day</option>
+                  <option value="WFH">Work From Home (WFH)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Reason (Optional)</label>
+                <textarea 
+                  value={leaveReason}
+                  onChange={(e) => setLeaveReason(e.target.value)}
+                  placeholder="Reason for leave..."
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300] min-h-[80px]"
+                />
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowLeaveModal(false)}>Cancel</Button>
+              <Button className="bg-[#FE5300] hover:bg-orange-600" onClick={handleApplyLeave} disabled={actionLoading}>
+                Submit
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
