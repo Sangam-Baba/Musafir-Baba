@@ -49,6 +49,7 @@ import attendanceRoutes from "./attendance.routes.js";
 import auditRoutes from "./audit.routes.js";
 import searchRoutes from "./search.routes.js";
 import salesRecordRoutes from "./salesRecord.routes.js";
+import chatbotRoutes from "./chatbotRoutes.js";
 
 const router = Router();
 
@@ -102,4 +103,5 @@ router.use("/attendance", attendanceRoutes);
 router.use("/audit", auditRoutes);
 router.use("/search", searchRoutes);
 router.use("/sales-record", salesRecordRoutes);
+router.use("/chatbot", chatbotRoutes);
 export default router;
