@@ -12,7 +12,7 @@ const LazyChatWidget = dynamic(() => import("./ChatWidget"), {
 });
 
 export default function FloatingButton() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <>
