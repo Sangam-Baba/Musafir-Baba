@@ -56,6 +56,8 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+import FloatingButton from "@/components/chatbot/FloatingButton";
+
 export default function RootLayout({
   children,
 }: {
@@ -63,7 +65,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${inter.variable}`}>
-      <body className="min-h-screen flex flex-col font-sans">{children}</body>
+      <body className="min-h-screen flex flex-col font-sans">
+        {children}
+        <FloatingButton />
+      </body>
     </html>
   );
 }
