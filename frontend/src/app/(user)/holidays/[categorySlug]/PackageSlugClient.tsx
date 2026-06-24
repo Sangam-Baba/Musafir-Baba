@@ -80,21 +80,21 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
     const result = packagesData
       .filter((pkg: Package) => {
         return (
-          (pkg.title.toLowerCase().includes(filter.search.toLowerCase()) ||
+          (pkg.title?.toLowerCase().includes(filter.search.toLowerCase()) ||
             pkg.destination?.state
               ?.toLowerCase()
               .includes(filter.search.toLowerCase()) ||
             pkg.destination?.country
-              .toLowerCase()
+              ?.toLowerCase()
               .includes(filter.search.toLowerCase())) &&
-          pkg.batch[0].quad <= filter.price &&
-          pkg.duration?.days <= filter.duration
+          (pkg.batch?.[0]?.quad ?? 0) <= filter.price &&
+          (pkg.duration?.days ?? 0) <= filter.duration
         );
       })
       .sort((a, b) =>
         filter.sort === "asc"
-          ? (a.batch[0].quad ?? 0) - (b.batch[0].quad ?? 0)
-          : (b.batch[0].quad ?? 0) - (a.batch[0].quad ?? 0),
+          ? (a.batch?.[0]?.quad ?? 0) - (b.batch?.[0]?.quad ?? 0)
+          : (b.batch?.[0]?.quad ?? 0) - (a.batch?.[0]?.quad ?? 0),
       );
     setFilteredPkgs(result);
   }, [filter, packagesData]);
@@ -229,9 +229,9 @@ function GroupPkgClient({ packagesData }: { packagesData: Package[] }) {
                 id: pkg._id,
                 name: pkg.title,
                 slug: pkg.slug,
-                image: pkg.coverImages?.[0]?.url || pkg.coverImage?.url || "",
-                price: pkg?.batch ? pkg?.batch[0]?.quad : 9999,
-                duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
+                image: pkg.coverImages?.[0]?.url || pkg.coverImage?.url || "https://musafirbaba.com/logo.svg",
+                price: pkg?.batch?.[0]?.quad ?? 9999,
+                duration: `${pkg.duration?.nights ?? 0}N/${pkg.duration?.days ?? 0}D`,
                 destination: pkg.destination?.name ?? "",
                 batch: pkg?.batch ? pkg?.batch : [],
               }}

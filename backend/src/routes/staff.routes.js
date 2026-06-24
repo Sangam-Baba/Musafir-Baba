@@ -11,6 +11,7 @@ import {
   me,
   previewToken,
   adminUpdatePassword,
+  adjustLeaveBalance,
 } from "../controllers/staff.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -74,4 +75,12 @@ staffRouter.delete(
   authorizedRoles(["admin", "superadmin"]),
   deleteAdmin,
 );
+staffRouter.patch(
+  "/:id/leave-balance",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  adjustLeaveBalance
+);
+
 export default staffRouter;

@@ -103,20 +103,20 @@ export default function AdminAttendanceTable() {
   };
 
   return (
-    <Card className="shadow-lg border-none">
-      <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
-        <CardTitle className="text-[18px] font-bold text-slate-800">All Staff Attendance</CardTitle>
+    <div className="w-full mt-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+        <h2 className="text-[18px] font-bold text-slate-800">Daily Attendance Overview</h2>
         <div className="flex items-center gap-2">
           <CalendarIcon className="w-4 h-4 text-slate-400" />
           <Input 
             type="date" 
             value={dateFilter} 
             onChange={(e) => setDateFilter(e.target.value)}
-            className="w-auto h-8 bg-slate-50 border-0 shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] font-semibold text-slate-700"
+            className="w-auto h-8 bg-slate-50 border-0 shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] font-medium text-slate-700"
           />
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="pt-4">
         {loading ? (
           <div className="text-center py-8 text-muted-foreground animate-pulse">Loading records...</div>
         ) : records.length === 0 ? (
@@ -152,7 +152,7 @@ export default function AdminAttendanceTable() {
                     </TableCell>
                     <TableCell className="py-2">
                       {(() => {
-                        const status = getAttendanceStatus(record.checkInTime, record.date, record.leaveType, record.leaveStatus);
+                        const status = getAttendanceStatus(record.checkInTime, record.date, record.leaveType, record.leaveStatus, record.attendanceStatus);
                         return (
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${status.color}`}>
                             {status.label}
@@ -241,7 +241,7 @@ export default function AdminAttendanceTable() {
             </Table>
           </div>
         )}
-      </CardContent>
+      </div>
       {previewImage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreviewImage(null)}>
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
@@ -347,6 +347,6 @@ export default function AdminAttendanceTable() {
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 }

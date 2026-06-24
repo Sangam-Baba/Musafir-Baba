@@ -12,6 +12,8 @@ import {
   getAllLeaves,
   getMyLeaves,
   getTodayAttendance,
+  adminMarkAttendance,
+  getMonthlyReport
 } from "../controllers/attendance.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -115,6 +117,22 @@ attendanceRouter.post(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   markLeave
+);
+
+attendanceRouter.post(
+  "/admin-mark",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  adminMarkAttendance
+);
+
+attendanceRouter.get(
+  "/monthly-report",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getMonthlyReport
 );
 
 export default attendanceRouter;

@@ -10,9 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Settings } from "lucide-react";
 import { motion } from "framer-motion";
 import { ListUserInterface } from "@/app/admin/role/page";
+import { useState } from "react";
+import LeaveConfigModal from "./LeaveConfigModal";
 
 interface UsersTableProps {
   users: ListUserInterface[];
@@ -27,8 +29,17 @@ export default function UsersList({
   onToggleActive,
   onDelete,
 }: UsersTableProps) {
+  const [configUser, setConfigUser] = useState<ListUserInterface | null>(null);
+
   return (
     <div className="w-full">
+      {configUser && (
+        <LeaveConfigModal
+          user={configUser}
+          onClose={() => setConfigUser(null)}
+          onSuccess={() => window.location.reload()} // Quick way to refresh data
+        />
+      )}
       {/* Desktop Table */}
       <div className="hidden md:block">
         <Table className="rounded-2xl shadow-md overflow-hidden">
@@ -41,7 +52,7 @@ export default function UsersList({
               <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Device</TableHead>
               <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Status</TableHead>
               <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Account</TableHead>
-              <TableHead className="w-[5%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Action</TableHead>
+              <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -110,6 +121,15 @@ export default function UsersList({
                   <div className="flex justify-end gap-1">
                     <Button
                       variant="ghost"
+                      title="Leave Config"
+                      className="h-7 w-7 p-0 text-slate-400 hover:text-blue-500 hover:bg-blue-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
+                      onClick={() => setConfigUser(cat)}
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      title="Edit Profile"
                       className="h-7 w-7 p-0 text-slate-400 hover:text-[#FE5300] hover:bg-orange-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
                       onClick={() => onStatusChange(cat._id)}
                     >
@@ -117,6 +137,7 @@ export default function UsersList({
                     </Button>
                     <Button
                       variant="ghost"
+                      title="Delete User"
                       className="h-7 w-7 p-0 text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
                       onClick={() => onDelete(cat._id)}
                     >
@@ -144,11 +165,19 @@ export default function UsersList({
                 )}
               </div>
               <h3 className="text-sm text-slate-500">{cat.email}</h3>
-              <div className="flex gap-2 pt-2">
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 w-[48%]"
+                  onClick={() => setConfigUser(cat)}
+                >
+                  <Settings className="w-4 h-4 mr-1" /> Config
+                </Button>
                 <Button
                   variant="default"
                   size="sm"
-                  className="flex-1 w-1/3"
+                  className="flex-1 w-[48%]"
                   onClick={() => onStatusChange(cat._id)}
                 >
                   <Edit className="w-4 h-4 mr-1" /> Edit
@@ -156,7 +185,7 @@ export default function UsersList({
                 <Button
                   variant={cat.isActive ? "default" : "secondary"}
                   size="sm"
-                  className={`flex-1 w-1/3 ${cat.isActive ? "bg-green-600" : "text-red-600 bg-red-50"}`}
+                  className={`flex-1 w-[48%] ${cat.isActive ? "bg-green-600" : "text-red-600 bg-red-50"}`}
                   onClick={() => onToggleActive(cat._id, cat.isActive)}
                 >
                   {cat.isActive ? "Active" : "Inactive"}
@@ -164,7 +193,7 @@ export default function UsersList({
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="flex-1 w-1/3"
+                  className="flex-1 w-[48%]"
                   onClick={() => onDelete(cat._id)}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />

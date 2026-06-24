@@ -60,6 +60,7 @@ import { LazyAuthDialog } from "@/components/auth/LazyAuthDialog";
 import { QueryDailogBox } from "@/components/common/QueryDailogBox";
 import PlanMyTrip from "@/components/common/Plan-My-Trip";
 import GTMInjector from "@/components/common/GTMInjector";
+import FloatingButton from "@/components/chatbot/FloatingButton";
 
 
 export default function UserLayout({
@@ -86,6 +87,7 @@ export default function UserLayout({
           <QueryDailogBox />
           <WhatsAppButton />
           <MobileBottom />
+          <FloatingButton />
         </main>
         <LazyAuthDialog />
         <Footer />
