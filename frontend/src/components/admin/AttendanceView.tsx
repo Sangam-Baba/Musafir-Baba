@@ -30,6 +30,8 @@ export default function AttendanceView() {
   const [leaveReason, setLeaveReason] = useState("");
   const [myLeaves, setMyLeaves] = useState<any[]>([]);
   const [loadingLeaves, setLoadingLeaves] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchTodayAttendance();
@@ -215,6 +217,12 @@ export default function AttendanceView() {
 
   const stats = getOngoingStats();
 
+  const totalPages = Math.ceil(myLeaves.length / itemsPerPage);
+  const paginatedLeaves = myLeaves.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="w-full space-y-4">
       {/* Unified Dashboard Card */}
@@ -352,13 +360,14 @@ export default function AttendanceView() {
         </Card>
       )}
       
-      <Card className="shadow-lg border-none mt-6">
-        <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
-          <CardTitle className="text-[18px] font-bold text-slate-800 flex items-center gap-2">
-            My Leave History
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="w-full mt-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+          <div className="flex items-center gap-2">
+            <LogOut className="w-5 h-5 text-[#FE5300]" />
+            <h2 className="text-[18px] font-bold text-slate-800">My Leave History</h2>
+          </div>
+        </div>
+        <div className="pt-4">
           {loadingLeaves ? (
             <div className="text-center py-8 text-muted-foreground animate-pulse">Loading leave history...</div>
           ) : myLeaves.length === 0 ? (
@@ -366,33 +375,35 @@ export default function AttendanceView() {
               No leave applications found.
             </div>
           ) : (
-            <div className="rounded-xl border overflow-hidden mt-4">
+            <div className="rounded-xl border overflow-hidden">
               <Table>
                 <TableHeader className="bg-slate-50">
                   <TableRow className="border-none">
-                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Date</TableHead>
-                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Leave Type</TableHead>
-                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Reason</TableHead>
-                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Status</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-3">Date</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-3">Leave Type</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-3">Reason</TableHead>
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-3">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {myLeaves.map((record) => (
-                    <TableRow key={record._id} className="hover:bg-slate-50/50 transition-all border-slate-100">
-                      <TableCell className="py-2 text-[13px] font-medium text-slate-600">
-                        {new Date(record.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                  {paginatedLeaves.map((record) => (
+                    <TableRow key={record._id} className="hover:bg-slate-50/80 transition-colors border-slate-100">
+                      <TableCell className="py-3">
+                        <div className="text-[13px] font-semibold text-slate-700">
+                          {new Date(record.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         <span className="text-[12px] font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded">
-                          {record.leaveType}
+                          {record.leaveType || (record.attendanceStatus === "Absent" ? "Absent" : "N/A")}
                         </span>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         <p className="text-[12px] text-slate-600 max-w-[200px] truncate" title={record.leaveReason || "No reason provided"}>
                           {record.leaveReason || "-"}
                         </p>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         {record.leaveStatus === "Approved" ? (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-purple-50 text-purple-600 border-purple-200">Approved</span>
                         ) : record.leaveStatus === "Pending" ? (
@@ -400,17 +411,44 @@ export default function AttendanceView() {
                         ) : record.leaveStatus === "Rejected" ? (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-red-50 text-red-600 border-red-200">Rejected</span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-200">{record.leaveStatus}</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-200">{record.leaveStatus || (record.attendanceStatus === "Absent" ? "Absent" : "")}</span>
                         )}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              {totalPages > 1 && (
+                <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[12px] font-medium text-slate-500">
+                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, myLeaves.length)} of {myLeaves.length} entries
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-[12px] px-3 font-semibold text-slate-600 border-slate-200"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-[12px] px-3 font-semibold text-slate-600 border-slate-200"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {cameraConfig.action && (
         <CameraModal 

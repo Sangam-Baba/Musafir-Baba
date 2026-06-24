@@ -58,9 +58,20 @@ export default function AttendancePage() {
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="pt-4">
-          <AttendanceView />
-        </div>
+        <Tabs defaultValue="my-attendance" className="w-full">
+          <TabsList className="grid grid-cols-2 max-w-[400px] w-full bg-slate-100/50 p-0.5 rounded-lg h-auto md:h-9 mb-6">
+            <TabsTrigger value="my-attendance" className="rounded-md text-[13px] font-medium data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm py-1.5 md:py-0">My Attendance</TabsTrigger>
+            <TabsTrigger value="staff-record" className="rounded-md text-[13px] font-medium data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm py-1.5 md:py-0">Staff Record</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="my-attendance" className="mt-0">
+            <AttendanceView />
+          </TabsContent>
+
+          <TabsContent value="staff-record" className="mt-0">
+            <AdminUserwiseAttendanceTable />
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );

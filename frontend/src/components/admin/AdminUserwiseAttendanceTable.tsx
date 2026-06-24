@@ -16,9 +16,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar as CalendarIcon, MapPin, Info, Coffee, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+
 export default function AdminUserwiseAttendanceTable() {
+  const role = useAdminAuthStore((state) => state.role);
+  const isAdmin = role === "admin" || role === "superadmin";
+
   const [staffList, setStaffList] = useState<any[]>([]);
-  const [selectedStaff, setSelectedStaff] = useState<string>("");
+  const [selectedStaff, setSelectedStaff] = useState<string>(isAdmin ? "" : "me");
   const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -191,18 +196,20 @@ export default function AdminUserwiseAttendanceTable() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
         <h2 className="text-[18px] font-bold text-slate-800">User-wise Monthly Breakdown</h2>
         <div className="flex items-center gap-4">
-          <Select value={selectedStaff} onValueChange={setSelectedStaff}>
-            <SelectTrigger className="w-[200px] h-8 bg-slate-50 border-0 shadow-none focus:ring-1 focus:ring-[#FE5300] text-[13px] font-semibold text-slate-700">
-              <SelectValue placeholder="Select Staff Member" />
-            </SelectTrigger>
-            <SelectContent>
-              {staffList.map((staff) => (
-                <SelectItem key={staff._id} value={staff._id}>
-                  {staff.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isAdmin && (
+            <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+              <SelectTrigger className="w-[200px] h-8 bg-slate-50 border-0 shadow-none focus:ring-1 focus:ring-[#FE5300] text-[13px] font-semibold text-slate-700">
+                <SelectValue placeholder="Select Staff Member" />
+              </SelectTrigger>
+              <SelectContent>
+                {staffList.map((staff) => (
+                  <SelectItem key={staff._id} value={staff._id}>
+                    {staff.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-4 h-4 text-slate-400" />
             <Input 
