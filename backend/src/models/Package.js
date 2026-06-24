@@ -137,6 +137,10 @@ const packageSchema = new mongoose.Schema(
     packagePercent: { type: Number, min: 0, max: 100, default: 0 },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
     pendingUpdates: { type: mongoose.Schema.Types.Mixed, default: null },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Author",
+    },
   },
   { timestamps: true },
 );

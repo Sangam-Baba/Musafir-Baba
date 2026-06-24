@@ -27,6 +27,7 @@ export interface WebpageFormData {
   quickFacts?: string;
   quickAnswers?: string;
   slug: string;
+  author?: string;
   parent?: string;
   parentModel?: string;
   isParent: boolean;
@@ -96,6 +97,13 @@ export const getParents = async (token: string) => {
   return data?.data;
 };
 
+export const getAllAuthors = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`);
+  if (!res.ok) throw new Error("Failed to fetch authors");
+  const data = await res.json();
+  return data?.data || [];
+};
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layout, Search, Settings, MessageSquarePlus } from "lucide-react";
 
@@ -145,6 +153,10 @@ export default function CreateWebpage() {
   const { data: allparents, isLoading } = useQuery({
     queryKey: ["all-parents"],
     queryFn: () => getParents(token),
+  });
+  const { data: allauthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: getAllAuthors,
   });
   const mutation = useMutation({
     mutationFn: (values: WebpageFormData) => createPage(values, token),
@@ -471,6 +483,19 @@ export default function CreateWebpage() {
                       >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Author</Label>
+                      <select
+                        {...form.register("author")}
+                        className="w-full border border-slate-200 rounded-lg p-3 text-[13px] font-medium bg-white"
+                      >
+                        <option value="">No Author Assigned</option>
+                        {allauthors?.map((author: any) => (
+                          <option key={author._id} value={author._id}>{author.name}</option>
+                        ))}
                       </select>
                     </div>
                   </div>

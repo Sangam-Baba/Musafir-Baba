@@ -32,6 +32,7 @@ import { schemaTypes } from "@/lib/schemaTypes";
 import { AddOnItems } from "../../new/AddOnItems";
 import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAllAuthors } from "../../../webpage/new/page";
 interface Image {
   url: string;
   alt: string;
@@ -65,6 +66,7 @@ interface Batch {
 }
 interface PackageFormValues {
   title: string;
+  author?: string;
   description: string;
   batch: string[];
   reviews?: string[];
@@ -212,6 +214,7 @@ export default function CreatePackagePage() {
 
   const defaultValues: PackageFormValues = {
     title: "",
+    author: "",
     description: "",
     metaTitle: "",
     metaDescription: "",
@@ -274,6 +277,11 @@ export default function CreatePackagePage() {
     queryKey: ["category"],
     queryFn: getCategory,
   });
+  
+  const { data: allauthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: getAllAuthors,
+  });
 
   const form = useForm<PackageFormValues>({
     defaultValues,
@@ -335,6 +343,7 @@ export default function CreatePackagePage() {
       form.reset({
         ...sourceData,
         destination: sourceData.destination?._id?.toString() || sourceData.destination || "",
+        author: sourceData.author?._id?.toString() || sourceData.author || "",
         batch: batchIds,
         reviews: reviewsIds,
         coverImages: sourceData.coverImages?.length ? sourceData.coverImages : (sourceData.coverImage?.url ? [sourceData.coverImage] : []),
@@ -480,6 +489,9 @@ export default function CreatePackagePage() {
                   )} />
                   <FormField control={form.control} name="status" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Status</FormLabel><FormControl><select {...field} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"><option value="draft">Draft</option><option value="published">Published</option></select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="author" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Author</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="">No Author Assigned</option>{allauthors?.map((author: any) => (<option key={author._id} value={author._id}>{author.name}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
                 </div>
                 <FormField control={form.control} name="otherCategory" render={({ field }) => (

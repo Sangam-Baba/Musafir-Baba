@@ -26,6 +26,7 @@ import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getAllAuthors } from "../../webpage/new/page";
 interface Faq {
   question: string;
   answer: string;
@@ -110,6 +111,7 @@ export interface Visa {
   documentsContent?: string;
   process?: any;
   visas?: VisaCard[];
+  author?: string;
 }
 
 async function createVisa(values: Visa, accessToken: string) {
@@ -173,6 +175,7 @@ export default function CreateVisaPage() {
     documentsContent: "",
     process: "",
     visas: [],
+    author: "",
   };
 
   const form = useForm<Visa>({ defaultValues });
@@ -220,6 +223,10 @@ export default function CreateVisaPage() {
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
+  });
+  const { data: allauthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: () => getAllAuthors(),
   });
   const { data: visaValidityData } = useQuery({
     queryKey: ["master-data", "visa-validity"],
@@ -410,6 +417,31 @@ export default function CreateVisaPage() {
                             <option value="EVOA">EVOA</option>
                             <option value="PAR">PAR</option>
                             <option value="Sticker">Sticker</option>
+                          </select>
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Author */}
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem className="space-y-0.5">
+                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Author</FormLabel>
+                        <FormControl>
+                          <select
+                            className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            {...field}
+                          >
+                            <option value="">Select Author</option>
+                            {allauthors?.map((author: any) => (
+                              <option key={author._id} value={author._id}>
+                                {author.name}
+                              </option>
+                            ))}
                           </select>
                         </FormControl>
                         <FormMessage className="text-[10px]" />

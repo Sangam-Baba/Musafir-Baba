@@ -48,7 +48,7 @@ const getVisaById = async (req, res) => {
     const { id } = req.params;
     if (!id)
       return res.status(400).json({ success: false, message: "Invalid Id" });
-    const visa = await Visa.findById(id);
+    const visa = await Visa.findById(id).populate("author", "name role about avatar");
     if (!visa)
       return res.status(404).json({ success: false, message: "Invalid Id" });
     res.status(200).json({
@@ -67,7 +67,7 @@ const getVisaBySlug = async (req, res) => {
     const { slug } = req.params;
     if (!slug)
       return res.status(400).json({ success: false, message: "Invalid Slug" });
-    const visa = await Visa.findOne({ slug }).populate("reviews").populate("rejectionReasons").populate("expertTips").lean();
+    const visa = await Visa.findOne({ slug }).populate("reviews").populate("rejectionReasons").populate("expertTips").populate("author", "name role about avatar").lean();
     if (!visa)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
     if (!visa.isActive && !verifyPreviewToken(req.query?.token)) {

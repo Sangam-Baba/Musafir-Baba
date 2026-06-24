@@ -28,6 +28,7 @@ import {
 import SmallEditor from "@/components/admin/SmallEditor";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAllAuthors } from "../../webpage/new/page";
 
 interface Image {
   url: string;
@@ -54,6 +55,7 @@ interface Highlight {
 }
 export interface CustomizedPackageValues {
   title: string;
+  author?: string;
   description?: string;
   slug: string;
   plans: Plans[];
@@ -134,6 +136,7 @@ export default function CreatePackagePage() {
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const defaultValues: CustomizedPackageValues = {
     title: "",
+    author: "",
     description: "",
     metaTitle: "",
     metaDescription: "",
@@ -173,6 +176,10 @@ export default function CreatePackagePage() {
   } = useQuery({
     queryKey: ["destination"],
     queryFn: getDestination,
+  });
+  const { data: allauthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: getAllAuthors,
   });
   const form = useForm<CustomizedPackageValues>({ defaultValues });
 
@@ -284,6 +291,9 @@ export default function CreatePackagePage() {
                   )} />
                   <FormField control={form.control} name="destination" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Destination *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="" disabled>Select a destination</option>{destination?.map((dest: Destination) => (<option key={dest._id} value={dest._id}>{dest.state.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="author" render={({ field }) => (
+                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Author</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="">No Author Assigned</option>{allauthors?.map((author: any) => (<option key={author._id} value={author._id}>{author.name}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
                   <FormField control={form.control} name="duration.days" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Days *</FormLabel><FormControl><Input className="h-7 text-xs px-2 rounded-sm" type="number" placeholder="Enter Days Duration" {...field} /></FormControl><FormMessage className="text-[10px]" /></FormItem>

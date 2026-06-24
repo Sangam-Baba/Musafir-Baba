@@ -172,6 +172,7 @@ const getPackageBySlug = async (req, res) => {
       status: "published",
     })
       .populate("destination", "_id name country state city slug coverImage")
+      .populate("author", "name role about avatar")
       .lean();
 
     if (!pkg) {
@@ -196,6 +197,7 @@ const getPackageById = async (req, res) => {
     const pkg = await Package.findById({ _id: id, status: "published" })
       .populate("destination", "_id name country state city slug coverImage")
       .populate("batch")
+      .populate("author", "name role about avatar")
       .lean();
 
     if (!pkg) {
@@ -216,6 +218,7 @@ const getAllPackages = async (req, res) => {
     const packages = await Package.find({ status: "published" })
       .select("_id title batch duration coverImage slug isFeatured status")
       .populate("batch")
+      .populate("author", "name role about avatar")
       .lean();
 
     if (!packages)
@@ -300,6 +303,7 @@ const getPackages = async (req, res) => {
       )
       .populate("batch")
       .populate("mainCategory", "_id name slug")
+      .populate("author", "name role about avatar")
       .populate("reviews")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -351,6 +355,7 @@ const getPackageByCategorySlug = async (req, res) => {
     query = query
       .populate("destination", "_id name country state city slug")
       .populate("batch")
+      .populate("author", "name role about avatar")
       .populate("mainCategory", "name slug");
 
     if (limit) {
@@ -379,6 +384,7 @@ const getBestSeller = async (req, res) => {
       .populate("destination", "_id name country state")
       .populate("batch", "quad")
       .populate("mainCategory", "name slug")
+      .populate("author", "name role about avatar")
       .select("title destination batch mainCategory slug coverImage ")
       .lean();
 

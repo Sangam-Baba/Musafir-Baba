@@ -102,6 +102,10 @@ const webPageSchema = new mongoose.Schema(
         url: String,
       },
     ],
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Author",
+    },
   },
   { timestamps: true },
 );
