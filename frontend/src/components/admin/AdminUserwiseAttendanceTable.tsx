@@ -244,7 +244,7 @@ export default function AdminUserwiseAttendanceTable() {
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Distance (In/Out)</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Total Hrs</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Working Hrs</TableHead>
-                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Actions</TableHead>
+                  {isAdmin && <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -319,20 +319,22 @@ export default function AdminUserwiseAttendanceTable() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-2 text-right">
-                      <button 
-                        onClick={() => {
-                          const dt = record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() - (new Date(record.date).getTimezoneOffset() * 60000)).toISOString().split('T')[0] : record.date) : "";
-                          setSelectedDate(dt);
-                          setMarkStatus("Present");
-                          setMarkReason("");
-                          setShowMarkStatusModal(true);
-                        }}
-                        className="text-[10px] bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition-colors"
-                      >
-                        Override Status
-                      </button>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="py-2 text-right">
+                        <button 
+                          onClick={() => {
+                            const dt = record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() - (new Date(record.date).getTimezoneOffset() * 60000)).toISOString().split('T')[0] : record.date) : "";
+                            setSelectedDate(dt);
+                            setMarkStatus("Present");
+                            setMarkReason("");
+                            setShowMarkStatusModal(true);
+                          }}
+                          className="text-[10px] bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition-colors"
+                        >
+                          Override Status
+                        </button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
