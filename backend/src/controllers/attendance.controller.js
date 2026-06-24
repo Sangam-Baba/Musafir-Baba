@@ -3,6 +3,7 @@ import { Staff } from "../models/Staff.js";
 import { AuditLog } from "../models/AuditLog.js";
 import { Holiday } from "../models/Holiday.js";
 import { uploadToR2 } from "../services/fileUpload.service.js";
+import sendEmail from "../services/email.service.js";
 
 // Utility function to calculate distance using Haversine formula (returns distance in km)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -316,7 +317,11 @@ export const getAllAttendance = async (req, res, next) => {
 
 export const getUserwiseAttendance = async (req, res, next) => {
   try {
-    const { userId, month } = req.query; 
+    let { userId, month } = req.query; 
+
+    if (req.user.role === "staff") {
+      userId = req.user.sub;
+    }
 
     if (!userId || !month) {
       return res.status(400).json({ success: false, message: "userId and month are required" });
@@ -381,35 +386,23 @@ export const applyLeave = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Staff not found" });
     }
 
+    // Auto-replenish balance logic removed since we now allow low balances
+
     let actualLeaveType = leaveType;
     let actualLeaveStatus = "Pending";
     let appliedAttendanceStatus = "Absent";
 
-    // Deduct balances based on leaveType
+    // Deduct balances based on leaveType (allowing negative balances since handled in working days)
     if (leaveType === "Leave") {
-      if (staff.availableLeaveBalance < totalDays) {
-        return res.status(400).json({ success: false, message: "Insufficient leave balance." });
-      }
       staff.availableLeaveBalance -= totalDays;
     } else if (leaveType === "Half Day") {
       const deductAmt = totalDays * 0.5;
-      if (staff.availableLeaveBalance < deductAmt) {
-        return res.status(400).json({ success: false, message: "Insufficient leave balance." });
-      }
       staff.availableLeaveBalance -= deductAmt;
     } else if (leaveType === "Short Leave") {
-      if (staff.availableShortLeaveBalance >= totalDays) {
-        staff.availableShortLeaveBalance -= totalDays;
-      } else if (staff.availableShortLeaveBalance === 0) {
-        actualLeaveType = "Half Day";
-        const deductAmt = totalDays * 0.5;
-        if (staff.availableLeaveBalance < deductAmt) {
-          return res.status(400).json({ success: false, message: "Insufficient leave balance for Half-Day conversion." });
-        }
-        staff.availableLeaveBalance -= deductAmt;
-      } else {
+      if (staff.availableShortLeaveBalance < totalDays) {
         return res.status(400).json({ success: false, message: "Insufficient short leave balance." });
       }
+      staff.availableShortLeaveBalance -= totalDays;
     } else if (leaveType === "WFH") {
       // WFH has no balance deduction typically, and is generally requested or marked
       appliedAttendanceStatus = "WFH";
@@ -449,6 +442,34 @@ export const applyLeave = async (req, res, next) => {
       await attendance.save();
       attendanceRecords.push(attendance);
     }
+
+    // Send Emails asynchronously without blocking the response
+    const dateRangeStr = dates.length > 1 ? `${dates[0].toDateString()} to ${dates[dates.length - 1].toDateString()}` : dates[0].toDateString();
+    
+    const adminEmailHtml = `
+      <h3>New Leave Application</h3>
+      <p><strong>Staff Member:</strong> ${staff.name} (${staff.email})</p>
+      <p><strong>Leave Type:</strong> ${actualLeaveType}</p>
+      <p><strong>Dates:</strong> ${dateRangeStr} (${totalDays} days)</p>
+      <p><strong>Reason:</strong> ${reason || "N/A"}</p>
+      <br>
+      <p>Please log in to the admin panel to approve or reject this request.</p>
+    `;
+
+    const userEmailHtml = `
+      <h3>Leave Application Received</h3>
+      <p>Hi ${staff.name},</p>
+      <p>Your leave application has been successfully submitted and is currently pending approval.</p>
+      <p><strong>Leave Type:</strong> ${actualLeaveType}</p>
+      <p><strong>Dates:</strong> ${dateRangeStr} (${totalDays} days)</p>
+      <p><strong>Reason:</strong> ${reason || "N/A"}</p>
+      <br>
+      <p>You will receive an email once it is processed.</p>
+    `;
+
+    const adminEmail = process.env.NODE_ENV === "production" ? "care@musafirbaba.com" : "shubham.jauhari@musafirbaba.com";
+    sendEmail(adminEmail, `Leave Application - ${staff.name}`, adminEmailHtml).catch(e => console.error("Admin Email Error:", e));
+    sendEmail(staff.email, "Leave Application Received", userEmailHtml).catch(e => console.error("User Email Error:", e));
 
     return res.status(200).json({ success: true, message: "Leave applied successfully.", attendanceRecords });
   } catch (error) {
@@ -510,6 +531,22 @@ export const approveLeave = async (req, res, next) => {
       moduleName: "Leave",
       description: `Leave ${status} for ${attendance.staff.name}`,
     });
+
+    const userEmailHtml = `
+      <h3>Leave Application Update</h3>
+      <p>Hi ${attendance.staff.name},</p>
+      <p>Your leave application for <strong>${new Date(attendance.date).toDateString()}</strong> (${attendance.leaveType}) has been <strong>${status}</strong>.</p>
+      <br>
+      <p>Regards,<br>MusafirBaba Admin Team</p>
+    `;
+    
+    try {
+      console.log(`Attempting to send ${status} email to ${attendance.staff.email}`);
+      await sendEmail(attendance.staff.email, `Leave Application ${status}`, userEmailHtml);
+      console.log(`Email successfully sent to ${attendance.staff.email}`);
+    } catch (e) {
+      console.error("User Email Error on Approve/Reject:", e);
+    }
 
     return res.status(200).json({ success: true, message: `Leave ${status.toLowerCase()} successfully.`, attendance });
   } catch (error) {
@@ -661,7 +698,10 @@ export const getMyLeaves = async (req, res, next) => {
   try {
     const records = await Attendance.find({
       staff: req.user.sub,
-      leaveType: { $in: ["Leave", "Short Leave", "Half Day", "WFH"] }
+      $or: [
+        { leaveType: { $in: ["Leave", "Short Leave", "Half Day", "WFH"] } },
+        { attendanceStatus: "Absent" }
+      ]
     }).sort({ date: -1, createdAt: -1 });
 
     return res.status(200).json({ success: true, data: records });
@@ -681,25 +721,37 @@ export const getMonthlyReport = async (req, res, next) => {
     const year = parseInt(yearStr);
     const m = parseInt(monthStr);
 
+    // Expand the date range slightly to prevent missing records saved at 18:30 UTC (midnight IST of the 1st)
     const startDate = new Date(year, m - 1, 1);
+    startDate.setDate(startDate.getDate() - 1);
     const endDate = new Date(year, m, 0, 23, 59, 59, 999);
+    endDate.setDate(endDate.getDate() + 1);
     
     // Determine the end day for the loop
     const now = new Date();
     let daysToCalculate = new Date(year, m, 0).getDate(); // Default to last day of month
 
     // If the requested month is the current ongoing month, only calculate up to today's date
-    if (year === now.getFullYear() && m === (now.getMonth() + 1)) {
-      daysToCalculate = now.getDate();
+    // Note: Use IST date for today to match accurate days
+    const nowIST = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    if (year === nowIST.getFullYear() && m === (nowIST.getMonth() + 1)) {
+      daysToCalculate = nowIST.getDate();
     }
 
     // Fetch all staff eligible for attendance
-    const allStaff = await Staff.find({
+    let staffQuery = {
       isActive: true,
       role: { $in: ["staff", "admin", "superadmin"] },
       attendanceEligible: { $ne: false },
       email: { $ne: "admin@musafirbaba.com" }
-    }).select("name email totalLeaveBalance");
+    };
+    
+    // If a normal staff member requests the report, only fetch their own data
+    if (req.user.role === "staff") {
+      staffQuery._id = req.user.sub;
+    }
+
+    const allStaff = await Staff.find(staffQuery).select("name email totalLeaveBalance");
 
     // Fetch all attendance records for the month
     const records = await Attendance.find({
@@ -710,7 +762,7 @@ export const getMonthlyReport = async (req, res, next) => {
     const holidays = await Holiday.find({
       date: { $gte: startDate, $lte: endDate }
     });
-    const holidayDates = holidays.map(h => h.date.toISOString().split("T")[0]);
+    const holidayDates = holidays.map(h => h.date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
 
     const reportData = allStaff.map(staffMember => {
       let presentCount = 0;
@@ -723,14 +775,13 @@ export const getMonthlyReport = async (req, res, next) => {
       let wfhCount = 0;
 
       for (let i = 1; i <= daysToCalculate; i++) {
-        const currentDate = new Date(year, m - 1, i);
-        // Correct timezone offset for comparing
-        const localDateStr = new Date(currentDate.getTime() - (currentDate.getTimezoneOffset() * 60000)).toISOString().split("T")[0];
+        // Target IST date string (YYYY-MM-DD)
+        const targetDateStr = `${year}-${String(m).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
         
         const existingRecord = records.find(r => 
           r.staff && 
           r.staff._id.toString() === staffMember._id.toString() && 
-          (r.date.toISOString().split("T")[0] === localDateStr || new Date(r.date.getTime() - (r.date.getTimezoneOffset() * 60000)).toISOString().split("T")[0] === localDateStr)
+          r.date && new Date(r.date).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) === targetDateStr
         );
 
         let finalStatus = "Absent";
@@ -739,8 +790,9 @@ export const getMonthlyReport = async (req, res, next) => {
           finalStatus = existingRecord.attendanceStatus || "Absent";
         } else {
           // Fallback logic
-          const isSunday = currentDate.getDay() === 0;
-          const isPublicHoliday = holidayDates.includes(localDateStr);
+          // Determine if targetDateStr is a Sunday
+          const isSunday = new Date(year, m - 1, i).getDay() === 0;
+          const isPublicHoliday = holidayDates.includes(targetDateStr);
           if (isSunday || isPublicHoliday) {
             finalStatus = "Holiday";
           }

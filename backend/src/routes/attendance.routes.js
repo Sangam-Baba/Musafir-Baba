@@ -99,7 +99,7 @@ attendanceRouter.get(
   "/userwise",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getUserwiseAttendance
 );
 
@@ -131,7 +131,7 @@ attendanceRouter.get(
   "/monthly-report",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin", "staff"]),
   getMonthlyReport
 );
 
