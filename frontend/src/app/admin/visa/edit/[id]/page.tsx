@@ -22,10 +22,10 @@ import BlogEditor from "@/components/admin/BlogEditor";
 import { X, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { Reviews } from "@/app/admin/holidays/new/page";
-import { deleteReview } from "@/app/admin/holidays/new/page";
-import { getReviewsByIds } from "@/app/admin/holidays/new/page";
+import { deleteReview, getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { Visa } from "../../new/page";
 import { Label } from "@/components/ui/label";
+import { getAllAuthors } from "../../../webpage/new/page";
 import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -142,6 +142,10 @@ export default function CreateVisaPage() {
       return res.json();
     },
   });
+  const { data: allauthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: () => getAllAuthors(),
+  });
   const { data: visaValidityData } = useQuery({
     queryKey: ["master-data", "visa-validity"],
     queryFn: async () => {
@@ -204,6 +208,7 @@ export default function CreateVisaPage() {
 
       form.reset({
         ...data,
+        author: typeof data.author === "object" ? data.author?._id : data.author || "",
         keywords: data.keywords || [],
         reviews: Array.isArray(data.reviews) ? data.reviews.map((r: any) => (typeof r === 'object' ? r._id : r)) : [],
         rejectionReasons: data.rejectionReasons || [],
@@ -416,6 +421,31 @@ export default function CreateVisaPage() {
                             <option value="EVOA">EVOA</option>
                             <option value="PAR">PAR</option>
                             <option value="Sticker">Sticker</option>
+                          </select>
+                        </FormControl>
+                        <FormMessage className="text-[10px]" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Author */}
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem className="space-y-0.5">
+                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Author</FormLabel>
+                        <FormControl>
+                          <select
+                            className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            {...field}
+                          >
+                            <option value="">Select Author</option>
+                            {allauthors?.map((author: any) => (
+                              <option key={author._id} value={author._id}>
+                                {author.name}
+                              </option>
+                            ))}
                           </select>
                         </FormControl>
                         <FormMessage className="text-[10px]" />

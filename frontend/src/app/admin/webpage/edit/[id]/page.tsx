@@ -20,7 +20,7 @@ import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { Reviews } from "../../../holidays/new/page";
 import { deleteReview } from "../../../holidays/new/page";
 import { getReviewsByIds } from "../../../holidays/new/page";
-import { WebpageFormData } from "../../new/page";
+import { WebpageFormData, getAllAuthors } from "../../new/page";
 import { getParents } from "../../new/page";
 import SmallEditor from "@/components/admin/SmallEditor";
 import { Textarea } from "@/components/ui/textarea";
@@ -75,6 +75,10 @@ export default function UpdateWebpage() {
     queryKey: ["all-parents"],
     queryFn: () => getParents(token),
   });
+  const { data: allauthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: getAllAuthors,
+  });
 
   const defaultValues: WebpageFormData = {
     title: "",
@@ -107,7 +111,8 @@ export default function UpdateWebpage() {
       const reviewsIds = webpage.reviews?.map((r: string) => r) || [];
       form.reset({
         ...webpage,
-        parent: webpage.parent,
+        parent: webpage.parent?._id || webpage.parent,
+        author: webpage.author?._id || webpage.author,
         reviews: reviewsIds,
       });
       if (reviewsIds.length > 0) {
@@ -459,6 +464,19 @@ export default function UpdateWebpage() {
                       >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Author</Label>
+                      <select
+                        {...form.register("author")}
+                        className="w-full border border-slate-200 rounded-lg p-3 text-[13px] font-medium bg-white"
+                      >
+                        <option value="">No Author Assigned</option>
+                        {allauthors?.map((author: any) => (
+                          <option key={author._id} value={author._id}>{author.name}</option>
+                        ))}
                       </select>
                     </div>
                   </div>

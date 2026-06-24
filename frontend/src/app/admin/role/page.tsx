@@ -32,6 +32,11 @@ export interface ListUserInterface {
   };
   onlineStatus?: string;
   isActive: boolean;
+  attendanceEligible?: boolean;
+  totalLeaveBalance?: number;
+  availableLeaveBalance?: number;
+  totalShortLeaveBalance?: number;
+  availableShortLeaveBalance?: number;
 }
 
 interface QueryResponse {
@@ -219,6 +224,11 @@ function UsersPage() {
             onlineStatus:
               b.loginInfo?.currentStatus === "Online" ? "Online" : "Offline",
             isActive: b.isActive ?? true,
+            attendanceEligible: b.attendanceEligible,
+            totalLeaveBalance: b.totalLeaveBalance,
+            availableLeaveBalance: b.availableLeaveBalance,
+            totalShortLeaveBalance: b.totalShortLeaveBalance,
+            availableShortLeaveBalance: b.availableShortLeaveBalance,
           }))}
           onStatusChange={(id) => {
             setEditId(id);

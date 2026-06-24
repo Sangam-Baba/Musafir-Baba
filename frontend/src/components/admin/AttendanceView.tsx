@@ -165,7 +165,7 @@ export default function AttendanceView() {
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
-  const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date(), attendance?.leaveType, attendance?.leaveStatus);
+  const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date(), attendance?.leaveType, attendance?.leaveStatus, attendance?.attendanceStatus);
 
   const getOngoingStats = () => {
     const formatMsToHHMM = (ms: number) => {
@@ -233,112 +233,87 @@ export default function AttendanceView() {
           </CardTitle>
         </CardHeader>
         
-        <div className="flex flex-col md:flex-row">
-          {/* Left Column: Status Data */}
-          <div className="w-full md:w-3/5 p-5 border-b md:border-b-0 md:border-r border-slate-100">
-            <div className="flex flex-col mb-6 gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Today's Summary</h3>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
-                  {isCheckedOut ? (
-                    <><CheckCircle2 className="w-3.5 h-3.5 text-[#FE5300]" /> <span>Checked Out</span></>
-                  ) : isOnBreak ? (
-                    <><Coffee className="w-3.5 h-3.5 text-orange-500" /> <span className="text-orange-600">On Break</span></>
-                  ) : isCheckedIn ? (
-                    <><PlayCircle className="w-3.5 h-3.5 text-blue-500" /> <span className="text-blue-600">Working</span></>
-                  ) : (
-                    <><Clock className="w-3.5 h-3.5" /> <span>Not Checked In</span></>
-                  )}
-                </div>
+        <div className="p-6">
+          {/* Top Section: Times & Actions */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+            <div className="flex items-center gap-8 md:gap-12 w-full md:w-auto">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-1.5"><LogOut className="w-3.5 h-3.5 rotate-180 text-blue-500" /> Check In</p>
+                <p className="text-xl md:text-2xl font-bold text-slate-800">{formatTime(attendance?.checkInTime)}</p>
               </div>
-              
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Office Hrs</span>
-                  <span className="text-xl md:text-2xl font-bold text-slate-800">{stats.office} <span className="text-[11px] text-slate-500 font-semibold">h</span></span>
-                </div>
-                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Working Hrs</span>
-                  <span className="text-xl md:text-2xl font-bold text-[#FE5300]">{stats.working} <span className="text-[11px] text-[#FE5300]/70 font-semibold">h</span></span>
-                </div>
-                <div className="bg-orange-50/50 rounded-md p-3 border border-orange-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Break Time</span>
-                  <span className="text-xl md:text-2xl font-bold text-orange-500">{stats.breaks} <span className="text-[11px] text-orange-500/70 font-semibold">h</span></span>
-                </div>
+              <div className="h-10 w-px bg-slate-200 hidden md:block"></div>
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-1.5"><LogOut className="w-3.5 h-3.5 text-orange-500" /> Check Out</p>
+                <p className="text-xl md:text-2xl font-bold text-slate-800">{formatTime(attendance?.checkOutTime)}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-50 rounded-md p-3 border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-1"><LogOut className="w-3 h-3 rotate-180" /> Check In</p>
-                <p className="text-[14px] font-semibold text-slate-800">{formatTime(attendance?.checkInTime)}</p>
-              </div>
-              <div className="bg-slate-50 rounded-md p-3 border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1 mb-1"><LogOut className="w-3 h-3" /> Check Out</p>
-                <p className="text-[14px] font-semibold text-slate-800">{formatTime(attendance?.checkOutTime)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Actions */}
-          <div className="w-full md:w-2/5 p-5 bg-slate-50/50 flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</h3>
-              <Button size="sm" variant="outline" className="h-7 text-[10px] px-2" onClick={() => setShowLeaveModal(true)}>
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+              <Button variant="outline" className="h-10 text-[13px] px-4 font-semibold border-slate-200" onClick={() => setShowLeaveModal(true)}>
                 Apply Leave
               </Button>
-            </div>
-            
-            <div className="space-y-3">
+              
               {!isCheckedIn ? (
                 <Button 
-                  size="sm" 
-                  className="w-full h-10 text-[12px] font-bold bg-[#FE5300] hover:bg-orange-600 transition-colors shadow-sm rounded-md" 
+                  className="h-10 text-[13px] px-6 font-bold bg-[#FE5300] hover:bg-orange-600 transition-colors shadow-sm" 
                   onClick={() => setCameraConfig({ action: "check-in", title: "Take a photo to Check In" })}
                   disabled={actionLoading}
                 >
-                  <MapPin className="mr-1.5 h-4 w-4" /> Check In
+                  <MapPin className="mr-2 h-4 w-4" /> Check In
                 </Button>
               ) : !isCheckedOut ? (
                 <>
                   {!isOnBreak ? (
                     <Button 
-                      size="sm" 
                       variant="outline"
-                      className="w-full h-10 text-[12px] font-semibold border-orange-200 text-[#FE5300] hover:bg-orange-50 transition-colors rounded-md" 
+                      className="h-10 text-[13px] px-6 font-semibold border-orange-200 text-[#FE5300] hover:bg-orange-50 transition-colors" 
                       onClick={() => handleAction("break/start")}
                       disabled={actionLoading}
                     >
-                      <Coffee className="mr-1.5 h-4 w-4" /> Start Break
+                      <Coffee className="mr-2 h-4 w-4" /> Start Break
                     </Button>
                   ) : (
                     <Button 
-                      size="sm" 
                       variant="outline"
-                      className="w-full h-10 text-[12px] font-semibold border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors rounded-md" 
+                      className="h-10 text-[13px] px-6 font-semibold border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors" 
                       onClick={() => handleAction("break/end")}
                       disabled={actionLoading}
                     >
-                      <PlayCircle className="mr-1.5 h-4 w-4" /> End Break
+                      <PlayCircle className="mr-2 h-4 w-4" /> End Break
                     </Button>
                   )}
                   
                   <Button 
-                    size="sm" 
                     variant="destructive"
-                    className="w-full h-10 text-[12px] font-bold rounded-md" 
+                    className="h-10 text-[13px] px-6 font-bold" 
                     onClick={() => setCameraConfig({ action: "check-out", title: "Take a photo to Check Out" })}
                     disabled={actionLoading || isOnBreak}
                   >
-                    <StopCircle className="mr-1.5 h-4 w-4" /> Check Out
+                    <StopCircle className="mr-2 h-4 w-4" /> Check Out
                   </Button>
                 </>
               ) : (
-                <div className="flex items-center justify-center gap-2 p-4 bg-orange-50 text-[#FE5300] rounded-md border border-orange-100">
-                  <CheckCircle2 className="w-5 h-5 opacity-70" />
+                <div className="flex items-center justify-center gap-2 px-4 h-10 bg-orange-50 text-[#FE5300] rounded-md border border-orange-100">
+                  <CheckCircle2 className="w-4 h-4 opacity-70" />
                   <p className="text-[12px] font-bold uppercase tracking-wide">Shift completed</p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Bottom Section: Stats */}
+          <div className="flex flex-wrap gap-8 md:gap-16 pt-6 border-t border-slate-100">
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Office Hrs</span>
+              <span className="text-xl font-bold text-slate-800">{stats.office} <span className="text-[12px] text-slate-400 font-semibold">h</span></span>
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Working Hrs</span>
+              <span className="text-xl font-bold text-[#FE5300]">{stats.working} <span className="text-[12px] text-[#FE5300]/70 font-semibold">h</span></span>
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Break Time</span>
+              <span className="text-xl font-bold text-orange-500">{stats.breaks} <span className="text-[12px] text-orange-500/70 font-semibold">h</span></span>
             </div>
           </div>
         </div>
@@ -488,7 +463,6 @@ export default function AttendanceView() {
                   <option value="Leave">Leave</option>
                   <option value="Short Leave">Short Leave</option>
                   <option value="Half Day">Half Day</option>
-                  <option value="WFH">Work From Home (WFH)</option>
                 </select>
               </div>
               <div>

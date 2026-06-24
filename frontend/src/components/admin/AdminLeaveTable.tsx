@@ -57,14 +57,14 @@ export default function AdminLeaveTable() {
   };
 
   return (
-    <Card className="shadow-lg border-none">
-      <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-slate-100">
-        <CardTitle className="text-[18px] font-bold text-slate-800 flex items-center gap-2">
+    <div className="w-full mt-4">
+      <div className="flex flex-row items-center justify-between pb-4 border-b border-slate-200">
+        <h2 className="text-[18px] font-bold text-slate-800 flex items-center gap-2">
           <CalendarIcon className="w-5 h-5 text-[#FE5300]" />
           Leave Applications
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </h2>
+      </div>
+      <div className="pt-4">
         {loading ? (
           <div className="text-center py-8 text-muted-foreground animate-pulse">Loading leave applications...</div>
         ) : records.length === 0 ? (
@@ -143,7 +143,7 @@ export default function AdminLeaveTable() {
             </Table>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

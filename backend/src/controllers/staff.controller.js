@@ -1,6 +1,7 @@
 import { Staff } from "../models/Staff.js";
 import bcrypt from "bcrypt";
 import { AuthLog } from "../models/AuthLog.js";
+import { AuditLog } from "../models/AuditLog.js";
 import { Session } from "../models/AuthSession.js";
 import { v4 as uuid } from "uuid";
 import {
@@ -464,6 +465,78 @@ const adminUpdatePassword = async (req, res) => {
   }
 };
 
+const adjustLeaveBalance = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      totalLeaveBalance,
+      availableLeaveBalance,
+      totalShortLeaveBalance,
+      availableShortLeaveBalance,
+      attendanceEligible,
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Invalid Id" });
+    }
+
+    const staff = await Staff.findById(id);
+    if (!staff) {
+      return res.status(404).json({ success: false, message: "Staff not found" });
+    }
+
+    const oldValues = {
+      totalLeaveBalance: staff.totalLeaveBalance,
+      availableLeaveBalance: staff.availableLeaveBalance,
+      totalShortLeaveBalance: staff.totalShortLeaveBalance,
+      availableShortLeaveBalance: staff.availableShortLeaveBalance,
+      attendanceEligible: staff.attendanceEligible,
+    };
+
+    if (totalLeaveBalance !== undefined) staff.totalLeaveBalance = totalLeaveBalance;
+    if (availableLeaveBalance !== undefined) staff.availableLeaveBalance = availableLeaveBalance;
+    if (totalShortLeaveBalance !== undefined) staff.totalShortLeaveBalance = totalShortLeaveBalance;
+    if (availableShortLeaveBalance !== undefined) staff.availableShortLeaveBalance = availableShortLeaveBalance;
+    if (attendanceEligible !== undefined) staff.attendanceEligible = attendanceEligible;
+
+    await staff.save();
+
+    await AuditLog.create({
+      userId: req.user.sub,
+      userName: req.user.name || "Admin", // Fallback, could also fetch current admin
+      role: req.user.role || "admin",
+      actionType: "UPDATE",
+      moduleName: "Staff Configuration",
+      entityId: staff._id,
+      documentTitle: staff.name,
+      description: `Updated leave balances or attendance eligibility for ${staff.name}`,
+      changes: {
+        oldValue: oldValues,
+        newValue: {
+          totalLeaveBalance: staff.totalLeaveBalance,
+          availableLeaveBalance: staff.availableLeaveBalance,
+          totalShortLeaveBalance: staff.totalShortLeaveBalance,
+          availableShortLeaveBalance: staff.availableShortLeaveBalance,
+          attendanceEligible: staff.attendanceEligible,
+        }
+      },
+      metadata: {
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"]
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Staff balances updated successfully",
+      data: staff,
+    });
+  } catch (error) {
+    console.error("Adjust Leave Balance Error:", error.message);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export {
   registerAdmin,
   updateAdmin,
@@ -476,4 +549,5 @@ export {
   me,
   previewToken,
   adminUpdatePassword,
+  adjustLeaveBalance,
 };

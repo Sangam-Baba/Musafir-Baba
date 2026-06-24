@@ -120,6 +120,7 @@ const getAllCustomizedTourPackages = async (req, res) => {
     if (req.query?.status) filter.status = req.query.status;
     const customizedTourPackages = await CustomizedTourPackage.find(filter)
       .populate("destination", "_id name country state city slug")
+      .populate("author", "name role about avatar")
       .populate("plans")
       .lean();
     res.status(200).json({
@@ -141,6 +142,7 @@ const getCustomizedTourPackageById = async (req, res) => {
     }
     const customizedTourPackage = await CustomizedTourPackage.findById(id)
       .populate("destination", "_id name country state city slug")
+      .populate("author", "name role about avatar")
       .lean();
     if (!customizedTourPackage) {
       return res
@@ -165,6 +167,7 @@ const getCustomizedTourPackageBySlug = async (req, res) => {
       slug,
     })
       .populate("destination", "_id name country state city slug")
+      .populate("author", "name role about avatar")
       .populate("reviews")
       .lean();
     if (!customizedTourPackage) {

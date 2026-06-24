@@ -24,9 +24,17 @@ export default function AdminUserwiseAttendanceTable() {
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedBreaks, setSelectedBreaks] = useState<any[] | null>(null);
+  const [holidays, setHolidays] = useState<any[]>([]);
+
+    const [showMarkStatusModal, setShowMarkStatusModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [markStatus, setMarkStatus] = useState("Present");
+  const [markReason, setMarkReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchStaffList();
+    fetchHolidays();
   }, []);
 
   useEffect(() => {
@@ -42,10 +50,22 @@ export default function AdminUserwiseAttendanceTable() {
       const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin`);
       const res = await response.json();
       if (res && res.success) {
-        setStaffList(res.data);
+        setStaffList(res.data.filter((s: any) => s.attendanceEligible !== false && s.email !== "admin@musafirbaba.com" && s.isActive !== false));
       }
     } catch (error) {
       console.error("Failed to fetch staff:", error);
+    }
+  };
+
+  const fetchHolidays = async () => {
+    try {
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/holidays`);
+      const res = await response.json();
+      if (res && res.success) {
+        setHolidays(res.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch holidays:", error);
     }
   };
 
@@ -62,11 +82,26 @@ export default function AdminUserwiseAttendanceTable() {
         const completeRecords = [];
         for (let i = 1; i <= daysInMonth; i++) {
           const dateStr = `${year}-${month}-${String(i).padStart(2, '0')}`;
-          // Ensure exact match by mapping to ISO string date parts
-          const existingRecord = res.data.find((r: any) => r.date.startsWith(dateStr));
+          
+          // Get the record for this specific day using proper timezone offset logic
+          const existingRecord = res.data.find((r: any) => {
+            if (!r.date) return false;
+            const d = new Date(r.date);
+            const localDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            return localDate === dateStr;
+          });
+
           if (existingRecord) {
             completeRecords.push(existingRecord);
           } else {
+            const localDateObj = new Date(dateStr);
+            const isSunday = localDateObj.getDay() === 0;
+            const isPublicHoliday = holidays.some(h => {
+              const hDate = new Date(h.date);
+              return hDate.toISOString().split('T')[0] === dateStr;
+            });
+            const fallbackStatus = (isSunday || isPublicHoliday) ? "Holiday" : "Absent";
+
             completeRecords.push({
               _id: `absent_${dateStr}`,
               date: dateStr,
@@ -74,7 +109,10 @@ export default function AdminUserwiseAttendanceTable() {
               checkOutTime: null,
               breaks: [],
               totalOfficeHours: 0,
-              totalWorkingHours: 0
+              totalWorkingHours: 0,
+              leaveType: "none",
+              leaveStatus: "none",
+              attendanceStatus: fallbackStatus
             });
           }
         }
@@ -86,6 +124,27 @@ export default function AdminUserwiseAttendanceTable() {
       console.error("Failed to fetch userwise attendance:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMarkStatus = async () => {
+    if (!selectedStaff || !selectedDate) return;
+    try {
+      setActionLoading(true);
+      const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/attendance/admin-mark`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ staffId: selectedStaff, date: selectedDate, status: markStatus, reason: markReason }),
+      });
+      const res = await response.json();
+      if (res && res.success) {
+        setShowMarkStatusModal(false);
+        fetchRecords();
+      }
+    } catch (error) {
+      console.error("Failed to mark status:", error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -128,10 +187,10 @@ export default function AdminUserwiseAttendanceTable() {
   };
 
   return (
-    <Card className="shadow-lg border-none mt-8">
-      <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
-        <CardTitle className="text-[18px] font-bold text-slate-800">User-Wise Records</CardTitle>
-        <div className="flex flex-wrap items-center gap-4">
+    <div className="w-full mt-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+        <h2 className="text-[18px] font-bold text-slate-800">User-wise Monthly Breakdown</h2>
+        <div className="flex items-center gap-4">
           <Select value={selectedStaff} onValueChange={setSelectedStaff}>
             <SelectTrigger className="w-[200px] h-8 bg-slate-50 border-0 shadow-none focus:ring-1 focus:ring-[#FE5300] text-[13px] font-semibold text-slate-700">
               <SelectValue placeholder="Select Staff Member" />
@@ -154,8 +213,8 @@ export default function AdminUserwiseAttendanceTable() {
             />
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="pt-4">
         {!selectedStaff ? (
           <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-xl text-slate-500">
             Please select a staff member to view their records.
@@ -178,6 +237,7 @@ export default function AdminUserwiseAttendanceTable() {
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Distance (In/Out)</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Total Hrs</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Working Hrs</TableHead>
+                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -188,7 +248,7 @@ export default function AdminUserwiseAttendanceTable() {
                     </TableCell>
                     <TableCell className="py-2">
                       {(() => {
-                        const status = getAttendanceStatus(record.checkInTime, record.date);
+                        const status = getAttendanceStatus(record.checkInTime, record.date, record.leaveType, record.leaveStatus, record.attendanceStatus);
                         return (
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${status.color}`}>
                             {status.label}
@@ -252,13 +312,27 @@ export default function AdminUserwiseAttendanceTable() {
                         )}
                       </div>
                     </TableCell>
+                    <TableCell className="py-2 text-right">
+                      <button 
+                        onClick={() => {
+                          const dt = record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() - (new Date(record.date).getTimezoneOffset() * 60000)).toISOString().split('T')[0] : record.date) : "";
+                          setSelectedDate(dt);
+                          setMarkStatus("Present");
+                          setMarkReason("");
+                          setShowMarkStatusModal(true);
+                        }}
+                        className="text-[10px] bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition-colors"
+                      >
+                        Override Status
+                      </button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
         )}
-      </CardContent>
+      </div>
       {previewImage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPreviewImage(null)}>
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
@@ -303,6 +377,60 @@ export default function AdminUserwiseAttendanceTable() {
           </div>
         </div>
       )}
-    </Card>
+      {showMarkStatusModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in duration-200">
+            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800">Override Attendance Status</h3>
+              <button onClick={() => setShowMarkStatusModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Date</label>
+                <input 
+                  type="date" 
+                  value={selectedDate}
+                  readOnly
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none bg-slate-50 cursor-not-allowed text-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Attendance Status</label>
+                <select 
+                  value={markStatus}
+                  onChange={(e) => setMarkStatus(e.target.value)}
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300]"
+                >
+                  <option value="Present">Present</option>
+                  <option value="Late">Late</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Leave">Leave</option>
+                  <option value="Short Leave">Short Leave</option>
+                  <option value="Half Day">Half Day</option>
+                  <option value="WFH">WFH (Work From Home)</option>
+                  <option value="Holiday">Holiday</option>
+                  <option value="Weekend">Weekend</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-slate-600 mb-1">Reason / Note (Optional)</label>
+                <textarea 
+                  value={markReason}
+                  onChange={(e) => setMarkReason(e.target.value)}
+                  placeholder="Enter a reason..."
+                  className="w-full p-2 border border-slate-200 rounded text-sm outline-none focus:border-[#FE5300] min-h-[80px]"
+                />
+              </div>
+            </div>
+            <div className="p-4 border-t border-slate-100 flex justify-end gap-2">
+              <button className="px-4 py-2 rounded text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition-colors" onClick={() => setShowMarkStatusModal(false)}>Cancel</button>
+              <button className="px-4 py-2 rounded text-sm font-semibold bg-[#FE5300] text-white hover:bg-orange-600 transition-colors flex items-center justify-center" onClick={handleMarkStatus} disabled={actionLoading}>
+                {actionLoading ? "Saving..." : "Save Status"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

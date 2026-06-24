@@ -114,16 +114,27 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
         overlayOpacity={100}
       >
         <div className="w-full flex flex-col gap-4 md:gap-5 mt-4 md:mt-6">
-          {/* Ribbon Badge */}
-          {visa.visaProcessed && (
-            <div className="relative inline-flex items-center gap-2 bg-[#FE5300] text-white pl-3 pr-4 py-1.5 shadow-md self-start">
-              <div className="absolute top-0 right-[-12px] h-full border-y-[16px] border-y-transparent border-l-[12px] border-l-[#FE5300]"></div>
-              <svg className="w-4 h-4 text-yellow-300" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-13 5l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+          {/* Ribbon Badges */}
+          <div className="flex flex-wrap gap-5 items-center self-start">
+            {visa.visaProcessed && (
+              <div className="relative inline-flex items-center gap-2 bg-[#FE5300] text-white pl-3 pr-4 py-1.5 shadow-md">
+                <div className="absolute top-0 right-[-12px] h-full border-y-[16px] border-y-transparent border-l-[12px] border-l-[#FE5300]"></div>
+                <svg className="w-4 h-4 text-yellow-300" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23 12l-2.44-2.78.34-3.68-3.61-.82-1.89-3.18L12 3 8.6 1.54 6.71 4.72l-3.61.81.34 3.68L1 12l2.44 2.78-.34 3.69 3.61.82 1.89 3.18L12 21l3.4 1.46 1.89-3.18 3.61-.82-.34-3.68L23 12zm-13 5l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                </svg>
+                <span className="font-medium text-xs md:text-sm tracking-wide">{visa.visaProcessed}+ Visas Approved</span>
+              </div>
+            )}
+            
+            <div className="relative inline-flex items-center gap-2 bg-[#008f7a] text-white pl-3 pr-4 py-1.5 shadow-md">
+              <div className="absolute top-0 right-[-12px] h-full border-y-[16px] border-y-transparent border-l-[12px] border-l-[#008f7a]"></div>
+              <svg className="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                <path d="M9 12l2 2 4-4"></path>
               </svg>
-              <span className="font-medium text-xs md:text-sm tracking-wide">{visa.visaProcessed}+ Visas Approved</span>
+              <span className="font-medium text-xs md:text-sm tracking-wide">99.34% Approval Rate</span>
             </div>
-          )}
+          </div>
 
           {/* Details Row — fixed spacing, not dependent on H1 */}
           <div className="flex flex-wrap gap-6 md:gap-24 mt-4 md:mt-6">

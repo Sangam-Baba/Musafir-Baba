@@ -379,7 +379,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
             {visa.highlights && visa.highlights.trim() !== "" && (
               <div>
                 <div className="flex flex-col gap-2 mb-3">
-                  <h3 className="text-xl font-bold font-heading text-black">Visa at a Glance</h3>
+                  <h2 className="text-xl font-bold font-heading text-black">Visa at a Glance</h2>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
                 <VisaAtAGlance html={visa.highlights} />
@@ -389,7 +389,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
             {visa.quickAnswer && visa.quickAnswer.trim() !== "" && (
               <div>
                 <div className="flex flex-col gap-2 mb-3">
-                  <h3 className="text-xl font-bold font-heading text-black">Quick Answers</h3>
+                  <h2 className="text-xl font-bold font-heading text-black">Quick Answers</h2>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
                 <section className="max-w-none text-black leading-relaxed [&_.prose]:!m-0 [&_.prose>ul]:!m-0 [&_p:empty]:hidden [&_ul]:!m-0 [&_ul]:list-none [&_ul]:pl-0 [&_ul]:flex [&_ul]:overflow-x-auto [&_ul]:no-scrollbar [&_ul]:snap-x [&_ul]:snap-mandatory md:[&_ul]:grid md:[&_ul]:grid-cols-2 lg:[&_ul]:grid-cols-2 [&_ul]:gap-3 md:[&_ul]:gap-4 [&_ul]:pb-4 md:[&_ul]:pb-0 [&_li]:relative [&_li]:p-3.5 md:[&_li]:p-4 [&_li]:pl-11 md:[&_li]:pl-12 [&_li]:!m-0 [&_li]:shrink-0 [&_li]:snap-start [&_li]:w-[85vw] md:[&_li]:w-auto md:[&_li]:shrink [&_li::marker]:hidden [&_li::before]:content-[''] [&_li::before]:absolute [&_li::before]:left-3 md:[&_li::before]:left-4 [&_li::before]:top-3.5 md:[&_li::before]:top-4 [&_li::before]:w-6 [&_li::before]:h-6 [&_li::before]:bg-orange-50 [&_li::before]:rounded-full [&_li::before]:transition-all [&_li::before]:duration-300 [&_li::before]:shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] [&_li::before]:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNGRTUzMDAiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI5IDE4IDE1IDEyIDkgNiIvPjwvc3ZnPg==')] [&_li::before]:bg-no-repeat [&_li::before]:bg-center [&_li::before]:bg-[length:12px_12px] [&_li:hover::before]:bg-[#FE5300] [&_li:hover::before]:scale-110 [&_li:hover::before]:shadow-[0_4px_12px_rgba(254,83,0,0.3)] [&_li:hover::before]:bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBvbHlsaW5lIHBvaW50cz0iOSAxOCAxNSAxMiA5IDYiLz48L3N2Zz4=')] [&_li]:bg-white [&_li]:border [&_li]:border-gray-100/80 [&_li]:rounded-2xl [&_li]:shadow-[0_4px_20px_rgba(0,0,0,0.03)] [&_li]:transition-all [&_li]:duration-400 [&_li:hover]:-translate-y-0.5 [&_li:hover]:shadow-[0_8px_30px_rgba(254,83,0,0.08)] [&_li:hover]:border-orange-200/60 [&_li_*]:!m-0 [&_li_*]:!leading-relaxed [&_li_strong]:block [&_li_strong]:mb-1 [&_li_strong]:text-[13px] md:[&_li_strong]:text-[14px] [&_li_strong]:text-gray-900 [&_li_strong]:transition-colors [&_li_strong]:leading-snug [&_li_b]:block [&_li_b]:mb-1 [&_li_b]:text-[13px] md:[&_li_b]:text-[14px] [&_li_b]:text-gray-900 [&_li_b]:transition-colors [&_li_b]:leading-snug [&_li:hover_strong]:text-[#FE5300] [&_li:hover_b]:text-[#FE5300] [&_li]:text-gray-500 [&_li]:text-[12px] md:[&_li]:text-[13px] [&_li_p]:text-gray-500 [&_li_p]:text-[12px] md:[&_li_p]:text-[13px] [&_li_p]:leading-relaxed">
@@ -454,7 +454,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
             return (
               <div id={key} key={key} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
-                  <h3 className="text-xl font-bold font-heading text-black">{sectionHeadings[key]}</h3>
+                  <h2 className="text-xl font-bold font-heading text-black">{sectionHeadings[key]}</h2>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
                 <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -469,7 +469,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {visa.visas && visa.visas.length > 0 && (
                 <div id="visasList" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Visa Types</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">Visa Types</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-5 pb-4 md:grid md:grid-cols-1 md:gap-6 md:overflow-visible md:snap-none md:pb-0">
@@ -491,7 +491,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {hasContent(visa.content) && (
                 <div id="description" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Visa Info</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">Visa Info</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -505,7 +505,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {hasContent(visa.documentsContent) && (
                 <div id="documents" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Documents</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">Documents</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div 
@@ -521,7 +521,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {hasContent(visa.process) && (
                 <div id="process" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Step-by-Step Process</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">Step-by-Step Process</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   {Array.isArray(visa.process) ? (
@@ -545,7 +545,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {hasContent(visa.rejectionReasons) && (
                 <div id="rejectionReasons" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Common Rejection Reasons</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">Common Rejection Reasons</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
@@ -554,9 +554,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                         <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center mb-3 shrink-0">
                           <AlertCircle className="w-4 h-4 text-red-600" strokeWidth={2} />
                         </div>
-                        <h4 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
+                        <h3 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
                           {reason.title}
-                        </h4>
+                        </h3>
                         <div className="prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
                           <BlogContent html={reason.description} />
                         </div>
@@ -569,7 +569,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {hasContent(visa.expertTips) && (
                 <div id="expertTips" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Expert Tips</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">Expert Tips</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
@@ -578,9 +578,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                         <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mb-3 shrink-0">
                           <Lightbulb className="w-4 h-4 text-emerald-500" strokeWidth={2} />
                         </div>
-                        <h4 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
+                        <h3 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
                           {tip.title}
-                        </h4>
+                        </h3>
                         <div className="prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
                           <BlogContent html={tip.description} />
                         </div>
@@ -593,7 +593,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {hasContent(visa.faqs) && (
                 <div id="faqs" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">FAQs</h3>
+                    <h2 className="text-xl font-bold font-heading text-black">FAQs</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <Accordion
@@ -627,19 +627,23 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
 
               {/* About the Author Section moved above Testimonials */}
               <div className="mt-12 mb-16 p-6 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col sm:flex-row gap-6 items-start">
-                <div className="w-16 h-16 rounded-full bg-[#FE5300]/10 flex items-center justify-center shrink-0 border border-[#FE5300]/20">
-                  <span className="text-[#FE5300] font-black text-2xl tracking-tighter">MB</span>
-                </div>
+                {visa.author?.avatar?.url ? (
+                  <img src={visa.author.avatar.url} alt={visa.author.name} className="w-16 h-16 rounded-full object-cover shrink-0 border border-slate-200" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-[#FE5300]/10 flex items-center justify-center shrink-0 border border-[#FE5300]/20">
+                    <span className="text-[#FE5300] font-black text-2xl tracking-tighter">{visa.author?.name ? visa.author.name.charAt(0).toUpperCase() : "MB"}</span>
+                  </div>
+                )}
                 <div className="flex-1 space-y-2.5">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">About the Author</h4>
-                  <h3 className="text-lg font-bold text-slate-900 font-heading">MusafirBaba Visa Team</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">About the Author</p>
+                  <h2 className="text-lg font-bold text-slate-900 font-heading">{visa.author?.name || "MusafirBaba Visa Team"} {visa.author?.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm ml-2 font-normal lowercase capitalize">{visa.author.role}</span>}</h2>
                   <p className="text-[13px] text-slate-600 leading-relaxed">
-                    Our visa specialists regularly assist travelers with tourist visa applications, documentation guidance, travel planning, and visa consultation for a wide range of international destinations.
+                    {visa.author?.about || "Our visa specialists regularly assist travelers with tourist visa applications, documentation guidance, travel planning, and visa consultation for a wide range of international destinations."}
                   </p>
                   <div className="pt-3 mt-3 border-t border-slate-200/60 flex flex-col sm:flex-row gap-2 sm:gap-6 text-[11px] text-slate-500 font-medium">
                     <span>Last Updated: <strong className="text-slate-700">June 2026</strong></span>
                     <span className="hidden sm:inline text-slate-300">|</span>
-                    <span>Reviewed By: <strong className="text-slate-700">Senior Visa Consultants, MusafirBaba</strong></span>
+                    <span>Reviewed By: <strong className="text-slate-700">{visa.author?.name ? "MusafirBaba Visa Team" : "Senior Visa Consultants, MusafirBaba"}</strong></span>
                   </div>
                 </div>
               </div>
@@ -657,9 +661,9 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                   ) : (
                     <div className="border border-gray-200 px-6 py-8 flex flex-col gap-6 w-full rounded-xl bg-gray-50 shadow-sm">
                       <div className="flex flex-col gap-2 mb-2">
-                        <h3 className="text-lg md:text-xl font-bold font-heading text-center text-gray-900">
+                        <h2 className="text-lg md:text-xl font-bold font-heading text-center text-gray-900">
                           Helpful Resources
-                        </h3>
+                        </h2>
                         <div className="w-12 h-1 bg-[#FE5300] mx-auto"></div>
                       </div>
                       <section className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 [&_a]:text-blue-500 [&_a]:hover:underline">

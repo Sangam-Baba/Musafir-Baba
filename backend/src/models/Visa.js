@@ -13,6 +13,10 @@ const visaSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Author",
+    },
     content: {
       type: String,
     },

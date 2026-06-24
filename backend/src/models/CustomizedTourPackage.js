@@ -102,6 +102,10 @@ const customizedTourPackageSchema = new mongoose.Schema(
       },
     ],
     pendingUpdates: { type: mongoose.Schema.Types.Mixed },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Author",
+    },
   },
   { timestamps: true },
 );

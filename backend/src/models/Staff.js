@@ -43,6 +43,26 @@ const staffSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    attendanceEligible: {
+      type: Boolean,
+      default: true,
+    },
+    totalLeaveBalance: {
+      type: Number,
+      default: 0,
+    },
+    availableLeaveBalance: {
+      type: Number,
+      default: 0,
+    },
+    totalShortLeaveBalance: {
+      type: Number,
+      default: 0,
+    },
+    availableShortLeaveBalance: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
