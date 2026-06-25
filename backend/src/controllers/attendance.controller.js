@@ -5,6 +5,15 @@ import { Holiday } from "../models/Holiday.js";
 import { uploadToR2 } from "../services/fileUpload.service.js";
 import sendEmail from "../services/email.service.js";
 
+// Helper to parse YYYY-MM-DD safely into local timezone
+const parseLocalDateStr = (dateStr) => {
+  if (typeof dateStr === 'string' && dateStr.includes('-')) {
+    const [y, m, d] = dateStr.split('T')[0].split('-');
+    return new Date(y, m - 1, d);
+  }
+  return new Date(dateStr);
+};
+
 // Utility function to calculate distance using Haversine formula (returns distance in km)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -266,7 +275,7 @@ export const getAllAttendance = async (req, res, next) => {
     
     let targetDate = new Date();
     if (date) {
-      targetDate = new Date(date);
+      targetDate = parseLocalDateStr(date);
     }
     targetDate.setHours(0, 0, 0, 0);
 
@@ -356,7 +365,7 @@ export const applyLeave = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Date and valid leaveType are required." });
     }
 
-    const start = new Date(date);
+    const start = parseLocalDateStr(date);
     start.setHours(0, 0, 0, 0);
 
     const today = new Date();
@@ -366,7 +375,7 @@ export const applyLeave = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Cannot apply for leave on past dates." });
     }
 
-    const end = endDate ? new Date(endDate) : new Date(date);
+    const end = endDate ? parseLocalDateStr(endDate) : parseLocalDateStr(date);
     end.setHours(0, 0, 0, 0);
 
     if (end < start) {
@@ -561,10 +570,10 @@ export const markLeave = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Staff ID, date, and leaveType are required." });
     }
 
-    const start = new Date(date);
+    const start = parseLocalDateStr(date);
     start.setHours(0, 0, 0, 0);
 
-    const end = endDate ? new Date(endDate) : new Date(date);
+    const end = endDate ? parseLocalDateStr(endDate) : parseLocalDateStr(date);
     end.setHours(0, 0, 0, 0);
 
     if (end < start) {
@@ -636,9 +645,9 @@ export const adminMarkAttendance = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Staff ID, date, and status are required." });
     }
 
-    const targetDateStart = new Date(date);
+    const targetDateStart = parseLocalDateStr(date);
     targetDateStart.setHours(0, 0, 0, 0);
-    const targetDateEnd = new Date(date);
+    const targetDateEnd = parseLocalDateStr(date);
     targetDateEnd.setHours(23, 59, 59, 999);
 
     let attendance = await Attendance.findOne({
