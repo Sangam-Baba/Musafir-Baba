@@ -5,13 +5,14 @@ import { Holiday } from "../models/Holiday.js";
 import { uploadToR2 } from "../services/fileUpload.service.js";
 import sendEmail from "../services/email.service.js";
 
-// Helper to parse YYYY-MM-DD safely into local timezone
 const parseLocalDateStr = (dateStr) => {
-  if (typeof dateStr === 'string' && dateStr.includes('-')) {
-    const [y, m, d] = dateStr.split('T')[0].split('-');
-    return new Date(y, m - 1, d);
-  }
-  return new Date(dateStr);
+  const dStr = dateStr.split('T')[0];
+  return new Date(`${dStr}T00:00:00.000+05:30`);
+};
+
+const getISTEndOfDay = (dateStr) => {
+  const dStr = dateStr.split('T')[0];
+  return new Date(`${dStr}T23:59:59.999+05:30`);
 };
 
 // Utility function to calculate distance using Haversine formula (returns distance in km)
@@ -36,9 +37,9 @@ const OFFICE_LAT = process.env.OFFICE_LAT || 28.611123809619; // Exact office La
 const OFFICE_LNG = process.env.OFFICE_LNG || 76.9749109459618; // Exact office Lng
 
 const getStartOfDay = () => {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  return now;
+  // Calculate current IST date string, then return its 00:00:00 equivalent
+  const istDateStr = new Date(Date.now() + 5.5 * 3600000).toISOString().split('T')[0];
+  return new Date(`${istDateStr}T00:00:00.000+05:30`);
 };
 
 const checkEligibility = async (userId) => {
@@ -273,16 +274,16 @@ export const getAllAttendance = async (req, res, next) => {
   try {
     const { date } = req.query; // Optional date filter (YYYY-MM-DD)
     
-    let targetDate = new Date();
+    let targetDateStart = getStartOfDay();
+    let targetDateEnd = new Date(targetDateStart.getTime() + 86399999);
+    
     if (date) {
-      targetDate = parseLocalDateStr(date);
+      targetDateStart = parseLocalDateStr(date);
+      targetDateEnd = getISTEndOfDay(date);
     }
-    targetDate.setHours(0, 0, 0, 0);
 
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = targetDateStart;
+    const endOfDay = targetDateEnd;
 
     const records = await Attendance.find({ date: { $gte: startOfDay, $lte: endOfDay } })
       .populate("staff", "name email role attendanceEligible")
@@ -306,7 +307,7 @@ export const getAllAttendance = async (req, res, next) => {
       return {
         _id: "absent_" + staffMember._id,
         staff: staffMember,
-        date: targetDate,
+        date: targetDateStart,
         checkInTime: null,
         checkOutTime: null,
         breaks: [],
@@ -342,8 +343,9 @@ export const getUserwiseAttendance = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid month format. Use YYYY-MM" });
     }
 
-    const startDate = new Date(year, m - 1, 1);
-    const endDate = new Date(year, m, 0, 23, 59, 59, 999);
+    const lastDay = new Date(year, m, 0).getDate();
+    const startDate = new Date(`${year}-${m}-01T00:00:00.000+05:30`);
+    const endDate = new Date(`${year}-${m}-${String(lastDay).padStart(2, '0')}T23:59:59.999+05:30`);
 
     const records = await Attendance.find({
       staff: userId,
@@ -366,17 +368,13 @@ export const applyLeave = async (req, res, next) => {
     }
 
     const start = parseLocalDateStr(date);
-    start.setHours(0, 0, 0, 0);
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getStartOfDay();
 
     if (start < today) {
       return res.status(400).json({ success: false, message: "Cannot apply for leave on past dates." });
     }
 
     const end = endDate ? parseLocalDateStr(endDate) : parseLocalDateStr(date);
-    end.setHours(0, 0, 0, 0);
 
     if (end < start) {
       return res.status(400).json({ success: false, message: "End date cannot be before start date." });
@@ -571,10 +569,7 @@ export const markLeave = async (req, res, next) => {
     }
 
     const start = parseLocalDateStr(date);
-    start.setHours(0, 0, 0, 0);
-
     const end = endDate ? parseLocalDateStr(endDate) : parseLocalDateStr(date);
-    end.setHours(0, 0, 0, 0);
 
     if (end < start) {
       return res.status(400).json({ success: false, message: "End date cannot be before start date." });
@@ -646,9 +641,7 @@ export const adminMarkAttendance = async (req, res, next) => {
     }
 
     const targetDateStart = parseLocalDateStr(date);
-    targetDateStart.setHours(0, 0, 0, 0);
-    const targetDateEnd = parseLocalDateStr(date);
-    targetDateEnd.setHours(23, 59, 59, 999);
+    const targetDateEnd = getISTEndOfDay(date);
 
     let attendances = await Attendance.find({
       staff: staffId,
@@ -745,11 +738,9 @@ export const getMonthlyReport = async (req, res, next) => {
     const year = parseInt(yearStr);
     const m = parseInt(monthStr);
 
-    // Expand the date range slightly to prevent missing records saved at 18:30 UTC (midnight IST of the 1st)
-    const startDate = new Date(year, m - 1, 1);
-    startDate.setDate(startDate.getDate() - 1);
-    const endDate = new Date(year, m, 0, 23, 59, 59, 999);
-    endDate.setDate(endDate.getDate() + 1);
+    const lastDay = new Date(year, m, 0).getDate();
+    const startDate = new Date(`${yearStr}-${monthStr}-01T00:00:00.000+05:30`);
+    const endDate = new Date(`${yearStr}-${monthStr}-${String(lastDay).padStart(2, '0')}T23:59:59.999+05:30`);
     
     // Determine the end day for the loop
     const now = new Date();
