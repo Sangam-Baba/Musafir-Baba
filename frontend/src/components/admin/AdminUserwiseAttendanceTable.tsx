@@ -92,7 +92,8 @@ export default function AdminUserwiseAttendanceTable() {
           const existingRecord = res.data.find((r: any) => {
             if (!r.date) return false;
             const d = new Date(r.date);
-            const localDate = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            const istTime = new Date(d.getTime() + 5.5 * 3600000);
+            const localDate = istTime.toISOString().split('T')[0];
             return localDate === dateStr;
           });
 
@@ -323,7 +324,7 @@ export default function AdminUserwiseAttendanceTable() {
                       <TableCell className="py-2 text-right">
                         <button 
                           onClick={() => {
-                            const dt = record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() - (new Date(record.date).getTimezoneOffset() * 60000)).toISOString().split('T')[0] : record.date) : "";
+                            const dt = record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() + 5.5 * 3600000).toISOString().split('T')[0] : record.date) : "";
                             setSelectedDate(dt);
                             setMarkStatus("Present");
                             setMarkReason("");
