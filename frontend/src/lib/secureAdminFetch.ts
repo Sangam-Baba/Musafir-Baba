@@ -7,8 +7,11 @@ export async function secureAdminFetch(
   const { accessToken, logout, refreshAccessToken } = useAdminAuthStore.getState();
 
   let response = await fetch(input, {
+    cache: "no-store",
     ...init,
     headers: {
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
       ...init.headers,
       Authorization: `Bearer ${accessToken}`,
     },
@@ -25,8 +28,11 @@ export async function secureAdminFetch(
     const newAccessToken = useAdminAuthStore.getState().accessToken;
 
     response = await fetch(input, {
+      cache: "no-store",
       ...init,
       headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
         ...init.headers,
         Authorization: `Bearer ${newAccessToken}`,
       },
