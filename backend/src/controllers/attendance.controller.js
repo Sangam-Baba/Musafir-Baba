@@ -650,30 +650,42 @@ export const adminMarkAttendance = async (req, res, next) => {
     const targetDateEnd = parseLocalDateStr(date);
     targetDateEnd.setHours(23, 59, 59, 999);
 
-    let attendance = await Attendance.findOne({
+    let attendances = await Attendance.find({
       staff: staffId,
       date: { $gte: targetDateStart, $lte: targetDateEnd },
     });
 
-    if (!attendance) {
-      attendance = new Attendance({
+    if (attendances.length === 0) {
+      let attendance = new Attendance({
         staff: staffId,
         date: targetDateStart,
       });
-    }
-
-    attendance.attendanceStatus = status;
-    if (reason) attendance.leaveReason = reason;
-    
-    if (["WFH", "Leave", "Short Leave", "Half Day"].includes(status)) {
-      attendance.leaveType = status;
-      attendance.leaveStatus = "Approved";
+      attendance.attendanceStatus = status;
+      if (reason) attendance.leaveReason = reason;
+      
+      if (["WFH", "Leave", "Short Leave", "Half Day"].includes(status)) {
+        attendance.leaveType = status;
+        attendance.leaveStatus = "Approved";
+      } else {
+        attendance.leaveType = "none";
+        attendance.leaveStatus = "none";
+      }
+      await attendance.save();
     } else {
-      attendance.leaveType = "none";
-      attendance.leaveStatus = "none";
+      for (let attendance of attendances) {
+        attendance.attendanceStatus = status;
+        if (reason) attendance.leaveReason = reason;
+        
+        if (["WFH", "Leave", "Short Leave", "Half Day"].includes(status)) {
+          attendance.leaveType = status;
+          attendance.leaveStatus = "Approved";
+        } else {
+          attendance.leaveType = "none";
+          attendance.leaveStatus = "none";
+        }
+        await attendance.save();
+      }
     }
-
-    await attendance.save();
 
     await AuditLog.create({
       userId: req.user.sub,
@@ -683,7 +695,10 @@ export const adminMarkAttendance = async (req, res, next) => {
       description: `Admin marked attendance as ${status} for staff ${staffId} on ${date}`,
     });
 
-    return res.status(200).json({ success: true, message: "Attendance marked successfully.", attendance });
+    // Provide the first updated attendance just for the response format
+    const returnedAttendance = attendances.length > 0 ? attendances[0] : await Attendance.findOne({ staff: staffId, date: targetDateStart });
+
+    return res.status(200).json({ success: true, message: "Attendance marked successfully.", attendance: returnedAttendance });
   } catch (error) {
     next(error);
   }
