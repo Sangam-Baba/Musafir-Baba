@@ -294,9 +294,9 @@ export const getAllAttendance = async (req, res, next) => {
     // Exclude users who are not eligible for attendance or are the superadmin email
     const allStaff = allStaffRaw.filter(staff => staff.attendanceEligible !== false && staff.email !== "admin@musafirbaba.com");
 
-    // Check if targetDate is Sunday or a registered public holiday
-    const isSunday = targetDate.getDay() === 0;
-    const holidayRecord = await Holiday.findOne({ date: targetDate });
+    // Check if targetDateStart is Sunday or a registered public holiday
+    const isSunday = targetDateStart.getDay() === 0;
+    const holidayRecord = await Holiday.findOne({ date: targetDateStart });
     const isHoliday = isSunday || !!holidayRecord;
 
     const fullData = allStaff.map(staffMember => {
