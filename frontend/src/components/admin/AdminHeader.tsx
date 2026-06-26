@@ -13,7 +13,8 @@ Moon,
 LogOut,
 } from "lucide-react";
 import { useUIStore } from "@/store/useUIStore";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { useRouter } from "next/navigation";
 
 
 // Small helper for conditional classes
@@ -26,7 +27,6 @@ return parts.filter(Boolean).join(" ");
 // DarkModeToggle
 // -----------------------------
 export function DarkModeToggle({ className }: { className?: string }) {
-    const logout=useAuthStore((s)=> s.logout)
 const { theme, setTheme, resolvedTheme } = useTheme();
 const [mounted, setMounted] = useState(false);
 
@@ -59,6 +59,8 @@ className
 export function AdminHeader() {
 const toggleSidebar = useUIStore((s) => s.toggleSidebar);
 const closeSidebar = useUIStore((s) => s.closeSidebar);
+const { logout, accessToken } = useAdminAuthStore();
+const router = useRouter();
 
 
 return (
@@ -99,8 +101,11 @@ aria-label="Search"
 aria-label="Logout"
 title="Logout"
 className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition"
-onClick={() => { 
-    console.log("logout clicked");
+onClick={async () => { 
+    if (accessToken) {
+        await logout(accessToken);
+    }
+    router.replace("/admin/login");
 }}
 >
 <LogOut />
