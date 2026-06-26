@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Testimonial } from "@/components/custom/Testimonial";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
+import TextToSpeech from "@/components/custom/TextToSpeech";
 
 type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips";
 
@@ -362,13 +363,20 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   }, [tabKeys.join(',')]);
 
   return (
-    <div className="w-full bg-slate-50/60 min-h-screen pb-10">
+    <div id="tts-content" className="w-full bg-slate-50/60 min-h-screen pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <TextToSpeech targetId="tts-content" />
+      </div>
       {/* Quick Summary Rendering Before Tabs */}
       {visa.quickSummary && visa.quickSummary.trim() !== "" && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 mt-4">
-          <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
-            <BlogContent html={visa.quickSummary} />
-          </section>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 mt-4">
+          <div className="bg-gradient-to-br from-orange-50/80 to-orange-100/40 p-6 md:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-orange-200/50 relative overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/60 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
+            <section className="relative z-10 visa-prose prose prose-base max-w-none text-gray-800 leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 font-medium text-[15px] md:text-base [&_p:last-child]:mb-0">
+              <BlogContent html={visa.quickSummary} />
+            </section>
+          </div>
         </div>
       )}
 
