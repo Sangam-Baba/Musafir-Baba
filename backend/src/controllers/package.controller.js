@@ -11,6 +11,8 @@ const createPackage = async (req, res) => {
         .status(400)
         .json({ success: false, message: "All fields are required" });
 
+    if (req.body.author === "") req.body.author = null;
+
     if (req.user && req.user.role === "staff") {
       req.body.status = "draft";
       let staffName = "Unknown Staff";
@@ -61,6 +63,8 @@ const deletePackage = async (req, res) => {
 
 const editPackage = async (req, res) => {
   try {
+    if (req.body.author === "") req.body.author = null;
+
     if (req.user && req.user.role === "staff") {
       const existingPkg = await Package.findById(req.params.id);
       if (!existingPkg) {
@@ -122,6 +126,7 @@ const approvePackageUpdates = async (req, res) => {
     let updateData = { status: "published" };
     if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
       updateData = { ...pkg.pendingUpdates.data, status: "published" };
+      if (updateData.author === "") updateData.author = null;
     }
 
     const updatedPkg = await Package.findByIdAndUpdate(
@@ -137,7 +142,7 @@ const approvePackageUpdates = async (req, res) => {
     });
   } catch (error) {
     console.log("Package approval failed ", error.message);
-    res.status(500).json({ success: false, message: "Package approval failed" });
+    res.status(500).json({ success: false, message: "Package approval failed", error: error.message, stack: error.stack });
   }
 };
 

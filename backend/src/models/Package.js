@@ -176,6 +176,8 @@ packageSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
   const existing = await this.model.findOne(this.getQuery()).lean();
 
+  if (!existing) return next();
+
   // 🔹 Compute final slug
   const finalSlug = update.slug
     ? slugify(update.slug, { lower: true, strict: true })
@@ -195,7 +197,7 @@ packageSchema.pre("findOneAndUpdate", async function (next) {
   // 🔹 Detect manual canonical edit
   const canonicalEdited =
     !!update.canonicalUrl &&
-    update.canonicalUrl.toString() !== existing.canonicalUrl.toString();
+    update.canonicalUrl.toString() !== existing.canonicalUrl?.toString();
 
   // 🔹 Auto-generate canonical if needed
   if (
@@ -208,17 +210,21 @@ packageSchema.pre("findOneAndUpdate", async function (next) {
     const categoryId = update.mainCategory ?? existing.mainCategory;
     const destinationId = update.destination ?? existing.destination;
 
-    const [category, destination] = await Promise.all([
-      Category.findById(categoryId).select("slug"),
-      Destination.findById(destinationId).select("slug"),
-    ]);
+    if (categoryId && destinationId) {
+      const [category, destination] = await Promise.all([
+        Category.findById(categoryId).select("slug"),
+        Destination.findById(destinationId).select("slug"),
+      ]);
 
-    if (category && destination) {
-      update.canonicalUrl = `/holidays/${category.slug}/${destination.slug}/${finalSlug}`;
+      if (category && destination && finalSlug) {
+        update.canonicalUrl = `/holidays/${category.slug}/${destination.slug}/${finalSlug}`;
+      }
     }
   }
 
-  update.slug = finalSlug;
+  if (finalSlug) {
+    update.slug = finalSlug;
+  }
   this.setUpdate(update);
   next();
 });
