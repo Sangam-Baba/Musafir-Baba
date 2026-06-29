@@ -32,7 +32,7 @@ export default function Header() {
   return (
     <header className="w-full z-50">
       {/* ===== TOP SOCIAL BAR ===== */}
-      <div className="hidden md:flex justify-between items-center w-full px-8 py-3 bg-gradient-to-r from-[#eb3b23] to-[#f8b914] text-white">
+      <div className="hidden md:flex justify-between items-center w-full px-8 py-1.5 bg-gradient-to-r from-[#eb3b23] to-[#f8b914] text-white">
         <div className="flex gap-5 items-center">
           <Link href="https://www.youtube.com/@musafirbabatravels">
             <Youtube className="w-5 h-5" />
@@ -50,24 +50,34 @@ export default function Header() {
             <Linkedin fill="white" className="w-5 h-5" />
           </Link>
         </div>
-        <div className="flex gap-2 items-center text-sm font-medium">
+        <div className="flex gap-6 items-center text-sm font-medium">
           <Tooltip>
             <TooltipTrigger asChild>
               <a
                 href="tel:+919289602447"
-                className="flex items-center gap-1 text-inherit"
+                className="flex items-center gap-1.5 text-inherit hover:text-white/80 transition-colors"
               >
                 <Phone fill="white" className="w-4 h-4" />
-                Tour: +91 92896 02447
+                <span className="pt-[1px] tracking-wide">+91 92896 02447</span>
               </a>
             </TooltipTrigger>
             <TooltipContent>
               <p>Talk to our travel experts</p>
             </TooltipContent>
           </Tooltip>
-
-          {/* <span className="mx-1">|</span> */}
           
+          <div className="flex items-center gap-3">
+            <Button 
+              asChild
+              className="hidden md:flex h-8 w-28 bg-white text-[#eb3b23] hover:bg-gray-100 hover:text-[#eb3b23] rounded-full font-bold shadow-sm transition-all border-2 border-transparent"
+            >
+              <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
+                Pay Now
+              </Link>
+            </Button>
+
+            <AccountIcon />
+          </div>
         </div>
       </div>
 
@@ -116,13 +126,13 @@ export default function Header() {
               </button>
             </div>
 
-            <Button className="hidden md:flex  text-white">
+            {/* <Button className="hidden md:flex  text-white">
               <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
                 Pay Now
               </Link>
             </Button>
 
-            <AccountIcon />
+            <AccountIcon /> */}
           </div>
         </div>
       </div>

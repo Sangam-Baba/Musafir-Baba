@@ -126,13 +126,13 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
               </div>
             )}
             
-            <div className="relative inline-flex items-center gap-2 bg-[#008f7a] text-white pl-3 pr-4 py-1.5 shadow-md">
-              <div className="absolute top-0 right-[-12px] h-full border-y-[16px] border-y-transparent border-l-[12px] border-l-[#008f7a]"></div>
-              <svg className="w-4 h-4 text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="relative inline-flex items-center gap-2 bg-[#39FF14] text-gray-900 pl-3 pr-4 py-1.5 shadow-[0_0_20px_rgba(57,255,20,0.6)]">
+              <div className="absolute top-0 right-[-12px] h-full border-y-[16px] border-y-transparent border-l-[12px] border-l-[#39FF14]"></div>
+              <svg className="w-4 h-4 text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
                 <path d="M9 12l2 2 4-4"></path>
               </svg>
-              <span className="font-medium text-xs md:text-sm tracking-wide">99.34% Approval Rate</span>
+              <span className="font-extrabold text-xs md:text-sm tracking-wide">99.34% Approval Rate</span>
             </div>
           </div>
 
