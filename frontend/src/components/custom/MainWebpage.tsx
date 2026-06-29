@@ -19,6 +19,7 @@ import SocialShare from "./SocialSharing";
 import { Share2, Trophy, Medal, Star, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { TableOfContents } from "@/components/custom/TableOfContents";
 import { Heading } from "@/utils/blogUtils";
+import TextToSpeech from "@/components/custom/TextToSpeech";
 
 interface Faq {
   question: string;
@@ -82,7 +83,7 @@ async function MainWebPage({
   contentWithIds?: string;
 }) {
   return (
-    <section className="">
+    <section id="tts-content" className="">
       <Hero
         image={page?.coverImage?.url || "/Hero2.jpg"}
         title={page?.title || " "}
@@ -92,7 +93,12 @@ async function MainWebPage({
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 mt-5">
         <Breadcrumb title={page.title} />
       </div>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 lg:gap-16 px-4 sm:px-6 lg:px-8 md:py-10 py-5">
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <TextToSpeech targetId="tts-content" />
+      </div>
+
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 lg:gap-16 px-4 sm:px-6 lg:px-8 md:py-8 py-5">
         <article className="w-full md:w-7/10 space-y-10">
           {/* <header className="">
             <h1 className="text-3xl md:text-4xl font-bold"></h1>

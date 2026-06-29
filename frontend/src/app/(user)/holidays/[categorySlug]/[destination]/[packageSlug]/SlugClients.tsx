@@ -38,6 +38,7 @@ import { GroupPackageInterface } from "./page";
 import ReadMore from "@/components/common/ReadMore";
 import EffectCardRelatedPackages from "@/components/custom/EffectCardRelatedPackages";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
+import TextToSpeech from "@/components/custom/TextToSpeech";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import PackageEssentialsList from "@/components/custom/PackageEssentialsList";
 
@@ -135,7 +136,7 @@ function SlugClients({
   return (
     <section className="w-full bg-slate-50 min-h-screen pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 mt-4">
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             {/* Left Col: Main Slider */}
@@ -245,9 +246,12 @@ function SlugClients({
         <Breadcrumb title={pkg.title} />
       </div>
 
-      
-      
-      {/* Sections Above Tab Bar */}
+      <div id="tts-content">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+          <TextToSpeech targetId="tts-content" />
+        </div>
+        
+        {/* Sections Above Tab Bar */}
       {(pkg.highlights?.length > 0 || pkg.packageAtAGlance || pkg.packageEssentials) && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 mt-8 flex flex-col gap-8">
           
@@ -586,7 +590,6 @@ function SlugClients({
                   <HelpfulResources data={pkg.helpfulResources} />
                 </div>
               )}
-
             </div>
           </div>
         </section>
@@ -704,6 +707,7 @@ function SlugClients({
       </div>
 
       <AuthDialog />
+      </div>
     </section>
   );
 }

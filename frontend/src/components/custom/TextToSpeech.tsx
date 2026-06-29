@@ -225,16 +225,10 @@ export default function TextToSpeech({ targetId }: TextToSpeechProps) {
       
       const voices = synthRef.current.getVoices();
       
-      // Strictly prioritize Female Indian English voices and avoid male ones like Rishi
+      // Prioritize premium female English voices (like Samantha, Google UK Female, etc.)
       const preferredVoice = 
-        voices.find(v => v.name.includes("Veena")) ||
-        voices.find(v => v.name.includes("Aditi")) ||
-        voices.find(v => v.name.includes("Lekha")) ||
-        voices.find(v => v.name.includes("Heera")) ||
-        voices.find(v => v.lang.includes("en-IN") && (v.name.includes("Female") || v.name.includes("Google"))) || 
-        voices.find(v => v.lang.includes("en-IN") && !v.name.includes("Rishi") && !v.name.includes("Male")) ||
-        // If absolutely no Indian female is found, fallback to a premium English female voice
-        voices.find(v => v.lang.includes("en") && (v.name.includes("Samantha") || v.name.includes("Victoria") || v.name.includes("Google UK English Female") || v.name.includes("Female"))) || 
+        voices.find(v => v.lang.includes("en") && (v.name.includes("Samantha") || v.name.includes("Google UK English Female") || v.name.includes("Victoria") || v.name.includes("Female"))) ||
+        voices.find(v => v.lang.includes("en") && (v.name.includes("Google") || v.name.includes("Premium"))) ||
         voices.find(v => v.lang.includes("en"));
         
       if (preferredVoice) {
