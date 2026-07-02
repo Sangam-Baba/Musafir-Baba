@@ -84,6 +84,11 @@ const updateVisa = async (req, res) => {
     const { id } = req.params;
     if (!id)
       return res.status(400).json({ success: false, message: "Invalid Id" });
+      
+    if (req.body.author === "") {
+      req.body.author = null; // or delete req.body.author;
+    }
+    
     const visa = await Visa.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
@@ -95,6 +100,7 @@ const updateVisa = async (req, res) => {
       .json({ success: true, message: "Update successful", data: visa });
   } catch (error) {
     console.log("Visa update failed", error.message);
+    import("fs").then(fs => fs.appendFileSync("error.log", error.message + "\n" + error.stack + "\n\n"));
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
