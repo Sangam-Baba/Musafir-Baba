@@ -183,19 +183,31 @@ visaSchema.pre("save", function (next) {
   next();
 });
 
-visaSchema.pre("findOneAndUpdate", function (next) {
+visaSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  const existindDoc = this.model.findOne(this.getQuery()).lean();
-  const finalSlug = update.slug
-    ? slugify(update.slug || update.title, { lower: true, strict: true })
-    : existindDoc.slug;
+  const existindDoc = await this.model.findOne(this.getQuery()).lean();
+  
+  // Extract fields whether they are in $set or top-level
+  const updatedSlug = update.$set?.slug !== undefined ? update.$set.slug : update.slug;
+  const updatedTitle = update.$set?.title !== undefined ? update.$set.title : update.title;
+  const updatedCanonicalUrl = update.$set?.canonicalUrl !== undefined ? update.$set.canonicalUrl : update.canonicalUrl;
+
+  const finalSlug = updatedSlug
+    ? slugify(updatedSlug || updatedTitle, { lower: true, strict: true })
+    : existindDoc?.slug;
 
   const changeCanonical =
-    update.canonicalUrl && update.canonicalUrl !== existindDoc.canonicalUrl;
-  const changeSlug = update.slug && update.slug !== existindDoc.slug;
+    updatedCanonicalUrl && updatedCanonicalUrl !== existindDoc?.canonicalUrl;
+  const changeSlug = updatedSlug && updatedSlug !== existindDoc?.slug;
+  
   if (!changeCanonical || changeSlug) {
-    update.canonicalUrl = `/visa/${finalSlug}`;
+    if (update.$set) {
+      update.$set.canonicalUrl = `/visa/${finalSlug}`;
+    } else {
+      update.canonicalUrl = `/visa/${finalSlug}`;
+    }
   }
+  
   this.setUpdate(update);
   next();
 });
