@@ -165,6 +165,7 @@ function SlugClients({
                 <ItineryDialog
                   title={pkg.title}
                   description={pkg.description.slice(0, 50)}
+                  fullDescription={pkg.description}
                   url={pkg.itineraryDownload?.url ?? ""}
                   img={pkg.coverImages?.[0]?.url || pkg.coverImage?.url}
                   packageId={pkg._id}
@@ -172,10 +173,11 @@ function SlugClients({
                   duration={`${pkg.duration.nights}N/${pkg.duration.days}D`}
                   highlights={pkg.highlights}
                   destination={pkg.destination?.state || ''}
-                  gallery={pkg?.gallery ?? []}
+                  gallery={[...(pkg?.coverImages || (pkg?.coverImage ? [pkg.coverImage] : [])), ...(pkg?.gallery || [])]}
                   inclusions={pkg.inclusions || []}
                   exclusions={pkg.exclusions || []}
                   batch={pkg.batch || []}
+                  packageEssentials={pkg.packageEssentials || ""}
                 />
               </div>
             </div>

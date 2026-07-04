@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { z } from "zod";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
@@ -66,6 +66,7 @@ const createItinerary = async (data: FormData) => {
 export function ItineryDialog({
   title,
   description,
+  fullDescription,
   url,
   img,
   packageId,
@@ -77,9 +78,11 @@ export function ItineryDialog({
   inclusions = [],
   exclusions = [],
   batch = [],
+  packageEssentials,
 }: {
   title: string;
   description: string;
+  fullDescription?: string;
   url: string;
   img: string;
   packageId: string;
@@ -91,13 +94,19 @@ export function ItineryDialog({
   inclusions?: string[];
   exclusions?: string[];
   batch?: any[];
+  packageEssentials?: string;
 }) {
   const [data, setData] = React.useState<FormData>({
     email: "",
     packageId: packageId,
   });
-  const [loading, setLoading] = React.useState(false);
-  const templateRef = React.useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const templateRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({
@@ -123,7 +132,8 @@ export function ItineryDialog({
     }
 
     // Give it a moment to ensure fonts and styles are fully rendered
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await document.fonts.ready;
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // The template has multiple A4-sized children (Cover + Pages)
     // We capture each one and add it to the PDF
@@ -141,8 +151,8 @@ export function ItineryDialog({
 
     const imgPromises = pages.map((pageElement) =>
       toJpeg(pageElement, {
-        quality: 0.65,
-        pixelRatio: 1.2,
+        quality: 0.85,
+        pixelRatio: 1.5,
         backgroundColor: "#fdfbf7",
         skipFonts: true,
         style: {
@@ -159,6 +169,25 @@ export function ItineryDialog({
         doc.addPage([794, 1123]);
       }
       doc.addImage(imgDataArray[i], "JPEG", 0, 0, 794, 1123, undefined, "FAST");
+
+      // Extract and map HTML links to PDF clickable areas
+      const pageElement = pages[i];
+      const pageRect = pageElement.getBoundingClientRect();
+      const links = pageElement.querySelectorAll('a[href]');
+      
+      links.forEach((link) => {
+        const linkRect = link.getBoundingClientRect();
+        
+        // Ensure the link is actually visible and has dimensions
+        if (linkRect.width > 0 && linkRect.height > 0) {
+          // Calculate coordinates relative to the top-left of the A4 page container
+          const x = linkRect.left - pageRect.left;
+          const y = linkRect.top - pageRect.top;
+          
+          // Map to PDF units (which is 1:1 since we configured jsPDF to use 'px' with [794, 1123])
+          doc.link(x, y, linkRect.width, linkRect.height, { url: (link as HTMLAnchorElement).href });
+        }
+      });
     }
 
     doc.save(`${docTitle.replace(/\s+/g, "_")}_Itinerary.pdf`);
@@ -179,15 +208,16 @@ export function ItineryDialog({
       
       // Check if we have meaningful itinerary data in text form
       const hasItineraryText = itinerary && itinerary.length > 0 && 
-        itinerary.some(item => item.title.trim() !== "" || item.description.trim() !== "");
+        itinerary.some(item => (item.title && typeof item.title === 'string' && item.title.trim() !== "") || (item.description && typeof item.description === 'string' && item.description.trim() !== ""));
 
       // Check if the provided URL is valid and not a known placeholder/dummy
       const isPlaceholderUrl = (u: string) => {
+        if (!u || typeof u !== 'string') return false;
         const lower = u.toLowerCase();
         return lower.includes("test.pdf") || lower.includes("tesst.pdf") || lower.endsWith(".jpg") || lower.endsWith(".png");
       };
       
-      const hasValidUrl = url && url.trim() !== "" && !isPlaceholderUrl(url);
+      const hasValidUrl = url && typeof url === 'string' && url.trim() !== "" && !isPlaceholderUrl(url);
 
       // PRIORITY 1: Use textual itinerary data if it's available (prefer dynamic generation)
       if (hasItineraryText) {
@@ -209,13 +239,28 @@ export function ItineryDialog({
          toast.error("Itinerary data is currently unavailable for this package.");
       }
     } catch (error: any) {
-      console.error(error);
-      const errMsg = error?.message || String(error) || "Unknown error";
+      console.error("PDF Gen Error:", error);
+      let errMsg = "Unknown error";
+      if (error instanceof Error) errMsg = error.message;
+      else if (typeof error === 'string') errMsg = error;
+      else if (error && typeof error === 'object') errMsg = JSON.stringify(error, Object.getOwnPropertyNames(error));
       toast.error(`Failed: ${errMsg}`);
     } finally {
       setLoading(false);
     }
   };
+  if (!mounted) {
+    return (
+      <Button
+        size={"sm"}
+        className="bg-[#FE5300] hover:bg-[#e04a00] text-white hover:text-white text-xs md:text-sm"
+      >
+        Itinerary
+        <Download className="w-2 h-2 md:w-5 md:h-5 ml-2" />
+      </Button>
+    );
+  }
+
   return (
     <>
       {/* HIDDEN RENDER TARGET FOR PDF - rendered at document root level so it is not clipped by Dialog transforms */}
@@ -232,6 +277,8 @@ export function ItineryDialog({
         inclusions={inclusions}
         exclusions={exclusions}
         batch={batch}
+        packageEssentials={packageEssentials}
+        fullDescription={fullDescription || description}
       />
 
       <Dialog>
@@ -247,13 +294,19 @@ export function ItineryDialog({
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader className="flex flex-row gap-4">
-              <Image
-                src={img}
-                width={100}
-                height={100}
-                alt={title}
-                className="rounded-lg"
-              />
+              {img ? (
+                <Image
+                  src={img}
+                  width={100}
+                  height={100}
+                  alt={title}
+                  className="rounded-lg object-cover"
+                />
+              ) : (
+                <div className="w-[100px] h-[100px] bg-slate-100 rounded-lg shrink-0 flex items-center justify-center">
+                  <span className="text-xs text-slate-400">No Image</span>
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <DialogTitle>{title}</DialogTitle>
                 <DialogDescription className="line-clamp-2">

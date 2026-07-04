@@ -64,14 +64,18 @@ export default function PackageCard({
     <Link href={url} className="min-w-[280px] sm:min-w-[300px] md:min-w-0">
       <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
         {/* Image + Price tag */}
-        <div className="relative h-56 w-full">
-          <Image
-            src={pkg.image}
-            alt={pkg.name}
-            width={500}
-            height={500}
-            className="h-full w-full object-cover"
-          />
+        <div className="relative h-56 w-full bg-slate-100 flex items-center justify-center">
+          {pkg.image ? (
+            <Image
+              src={pkg.image}
+              alt={pkg.name}
+              width={500}
+              height={500}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-sm text-slate-400">No Image</span>
+          )}
           <div className="absolute top-3 right-3 bg-[#FE5300] text-white px-3 py-1 rounded-full font-semibold text-sm shadow">
             ₹{Number(pkg?.price ?? 9999).toLocaleString("en-IN")}/- onwards
           </div>
