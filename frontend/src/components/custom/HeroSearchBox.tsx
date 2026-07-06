@@ -20,7 +20,7 @@ export default function HeroSearchBox() {
   };
 
   return (
-    <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-lg p-1 flex items-center gap-1 shadow-sm mt-8 md:mt-12 lg:mt-16 mb-4 relative z-20">
+    <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-lg p-1 flex items-center gap-1 shadow-sm mt-4 md:mt-6 lg:mt-8 mb-2 md:mb-4 relative z-20">
       <div className="flex-1 w-full relative flex items-center bg-transparent px-2 md:px-3">
         <select
           value={selected}

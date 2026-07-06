@@ -148,7 +148,7 @@ export default async function HomePage() {
   return (
     <main>
       {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
-      <section className="w-full px-4 md:px-10 py-6 lg:py-8 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[550px] overflow-hidden">
+      <section className="w-full px-4 md:px-10 py-3 md:py-4 lg:py-6 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[480px] overflow-hidden">
         <Image
           src="/homebanner11.avif"
           alt="Home Banner"
@@ -157,7 +157,7 @@ export default async function HomePage() {
           className="object-cover -z-10"
         />
 
-        <div className="w-full max-w-full mx-auto flex flex-col items-start mt-4 md:mt-8 relative z-10">
+        <div className="w-full max-w-full mx-auto flex flex-col items-start mt-2 md:mt-4 relative z-10">
           
           <style dangerouslySetInnerHTML={{__html: `
             @keyframes customBlink {
@@ -201,11 +201,11 @@ export default async function HomePage() {
             </span>
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-[64px] font-medium text-white leading-[1.1] tracking-tight mb-2 w-full">
+          <h1 className="text-4xl md:text-5xl lg:text-[60px] font-medium text-white leading-[1.1] tracking-tight mb-1 md:mb-2 w-full">
             Book your <span className="italic font-serif text-[#FE5300]">dream trip</span><br className="hidden md:block"/> in just 60 seconds
           </h1>
           
-          <p className="text-sm md:text-base text-gray-200 font-light max-w-2xl mb-8 md:mb-12">
+          <p className="text-sm md:text-base text-gray-200 font-light max-w-2xl mb-4 md:mb-8">
             Curated tours and seamless visa assistance — all in one place.
           </p>
 
@@ -242,8 +242,8 @@ export default async function HomePage() {
         </div>
 
         {/* Bottom Stats Banner */}
-        <div className="w-full mx-auto border-t border-white/20 pt-6 pb-2 mt-auto relative z-20">
-          <div className="flex flex-wrap justify-center items-center gap-y-6 md:gap-y-0 w-full max-w-6xl mx-auto">
+        <div className="w-full mx-auto border-t border-white/20 pt-4 pb-2 mt-auto relative z-20">
+          <div className="flex flex-wrap justify-center items-center gap-y-4 md:gap-y-0 w-full max-w-6xl mx-auto">
             
             {/* Stat 1 */}
             <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
