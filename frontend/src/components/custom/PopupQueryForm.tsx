@@ -7,8 +7,17 @@ import { SquarePen } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import React from "react";
 
-export default function PopupQueryForm() {
+export default function PopupQueryForm({
+  triggerText = "Apply Now",
+  triggerClassName,
+  icon
+}: {
+  triggerText?: string;
+  triggerClassName?: string;
+  icon?: React.ElementType | null;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -16,13 +25,22 @@ export default function PopupQueryForm() {
     setIsOpen(false);
   }, [pathname]);
 
+  const IconComponent = icon === undefined ? SquarePen : icon;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <SquarePen />
-          Apply Now
-        </Button>
+        {triggerClassName ? (
+          <button className={triggerClassName}>
+            {IconComponent && <IconComponent className="w-4 h-4 mr-2 inline" />}
+            {triggerText}
+          </button>
+        ) : (
+          <Button>
+            {IconComponent && <IconComponent className="mr-2 h-4 w-4" />}
+            {triggerText}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] md:max-w-[900px] p-0 border-none shadow-none bg-transparent">
         <DialogTitle className="sr-only">Apply Now</DialogTitle>

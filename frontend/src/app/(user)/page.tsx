@@ -1,6 +1,8 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
+import { Users, Star, Briefcase, Globe, Search, ChevronDown } from "lucide-react";
 
 // ─── Critical above-the-fold: direct imports (Server Components) ───────────
 import SecondSectionServer from "@/components/custom/SecondSectionServer";
@@ -8,6 +10,7 @@ import VisaHome from "@/components/custom/VisaHome";
 import { SevenSection } from "@/components/custom/SevenSection";
 import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
 import BlogsHome from "@/components/custom/BlogsHome";
+import HeroSearchBox from "@/components/custom/HeroSearchBox";
 
 // ─── Below-the-fold Server Components (direct imports) ───────────────
 import SectionFour from "@/components/custom/SectionFour";
@@ -36,6 +39,10 @@ const PopupBanner = dynamic(
 const Partners = dynamic(
   () => import("@/components/custom/Partners"),
   { loading: () => <div className="h-40 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
+);
+const Newslatter = dynamic(
+  () => import("@/components/common/Newslatter"),
+  { loading: () => <div className="h-40 animate-pulse bg-[#FE5300] rounded-xl mx-4 my-2" /> }
 );
 
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
@@ -140,62 +147,149 @@ export default async function HomePage() {
 
   return (
     <main>
-      {/* ── Hero Banner (LCP) ─────────────────────────────────────────── */}
-      <section className="w-full flex px-4 md:px-8 lg:px-30 py-16 relative bg-cover bg-center bg-no-repeat text-white h-[400px] md:h-[600px] 2xl:h-[800px] items-center">
+      {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
+      <section className="w-full px-4 md:px-10 py-6 lg:py-8 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[500px] max-h-[850px] overflow-hidden">
         <Image
-          src="/homebanner.webp"
-          alt="Home Banner MusafirBaba"
+          src="/homebanner11.avif"
+          alt="Home Banner"
           fill
           priority
-          fetchPriority="high"
-          quality={70}
-          sizes="100vw"
-          className="object-cover"
+          className="object-cover -z-10"
         />
 
-        <div className="flex flex-col ml-4 md:ml-8 lg:ml-12 gap-5 md:gap-7 items-center z-10 w-[90%] md:w-[70%] lg:w-[60%] xl:w-[55%] relative">
-          <div className="text-center flex flex-col items-center justify-center max-w-4xl mx-auto mt-4 md:mt-8">
-            {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-5 md:mb-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] md:text-xs font-semibold tracking-widest text-white shadow-xl hover:bg-white/15 transition-colors uppercase">
-              <span className="animate-pulse text-[#FE5300]">⚡</span> Instant Booking Platform
-            </div> */}
+        <div className="w-full max-w-full mx-auto flex flex-col items-start mt-4 md:mt-8 relative z-10">
+          
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes customBlink {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0; }
+            }
+            .animate-custom-blink {
+              animation: customBlink 1.2s ease-in-out infinite;
+            }
+            @keyframes customBreathe {
+              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+              50% { transform: scale(1.02); box-shadow: 0 0 10px 0 rgba(16, 185, 129, 0.2); }
+            }
+            .animate-custom-breathe {
+              animation: customBreathe 3s ease-in-out infinite;
+            }
+            @keyframes mountainBreathe {
+              0%, 100% { transform: scaleY(1); }
+              50% { transform: scaleY(1.05); }
+            }
+            .animate-mountain-breathe-1 {
+              animation: mountainBreathe 8s ease-in-out infinite;
+              transform-origin: bottom;
+            }
+            .animate-mountain-breathe-2 {
+              animation: mountainBreathe 12s ease-in-out infinite;
+              transform-origin: bottom;
+              animation-delay: -4s;
+            }
+            .animate-mountain-breathe-3 {
+              animation: mountainBreathe 15s ease-in-out infinite;
+              transform-origin: bottom;
+              animation-delay: -8s;
+            }
+          `}} />
+
+          <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-md border border-emerald-200 mb-4 shadow-sm animate-custom-breathe">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-custom-blink"></span>
+            <span className="text-[10px] md:text-xs font-bold tracking-[0.12em] text-emerald-700 uppercase pt-[1px]">
+              India's Trusted Travel Partner
+            </span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-[64px] font-medium text-white leading-[1.1] tracking-tight mb-2 w-full">
+            Book your <span className="italic font-serif text-[#FE5300]">dream trip</span><br className="hidden md:block"/> in just 60 seconds
+          </h1>
+          
+          <p className="text-sm md:text-base text-gray-200 font-light max-w-2xl mb-8 md:mb-12">
+            Curated tours and seamless visa assistance — all in one place.
+          </p>
+
+          {/* Search Interface Container */}
+          <HeroSearchBox />
+
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full mb-4 relative z-20">
+            {[
+              { label: "Mountain treks", slug: "mountain-treks" },
+              { label: "Honeymoon", slug: "honeymoon-packages" },
+              { label: "Religious tours", slug: "religious-tours" },
+              { label: "Weekend trips", slug: "weekend-getaways" },
+              { label: "Family Tours", slug: "family-tours" },
+              { label: "Group Tour", slug: "group-tour-packages" },
+              { label: "International Tour", slug: "international-tour-packages" },
+            ].map((pill, idx) => {
+              const isActive = pill.label === "Religious tours";
+              return (
+                <Link 
+                  href={`/holidays/${pill.slug}`}
+                  key={idx}
+                  className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[11px] md:text-[13px] font-medium transition-all ${
+                    isActive 
+                      ? "border border-[#FE5300] text-[#FE5300] bg-white shadow-sm" 
+                      : "border border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 bg-white"
+                  }`}
+                >
+                  {pill.label}
+                </Link>
+              );
+            })}
+          </div>
+
+        </div>
+
+        {/* Bottom Stats Banner */}
+        <div className="w-full mx-auto border-t border-white/20 pt-6 pb-2 mt-auto relative z-20">
+          <div className="flex flex-wrap justify-center items-center gap-y-6 md:gap-y-0 w-full max-w-6xl mx-auto">
             
-            <h1 className="text-[28px] font-poppins font-extrabold md:text-4xl lg:text-5xl xl:text-6xl leading-[1.15] md:leading-[1.1] tracking-tight text-white drop-shadow-lg">
-              Book your{" "}
-              <span className="relative inline-block whitespace-nowrap">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#74ff18] via-green-300 to-[#74ff18] bg-[length:200%_auto] animate-border-gradient">
-                  dream trip
-                </span>
-              </span>{" "}
-              in just
-              <br className="hidden md:block" />
-              <span className="inline-flex items-center mt-1 md:mt-3">
-                <span className="relative whitespace-nowrap">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FE5300] via-orange-300 to-[#FE5300] bg-[length:200%_auto] animate-border-gradient">
-                    60 seconds
-                  </span>
-                  <span className="absolute -bottom-1 md:-bottom-2 left-0 right-0 h-[3px] md:h-[4px] rounded-full bg-gradient-to-r from-transparent via-[#FE5300] to-transparent opacity-80 animate-pulse"></span>
-                </span>
-              </span>
-            </h1>
-            
-            <p className="hidden md:block text-sm md:text-lg lg:text-xl font-light text-white/90 mt-5 md:mt-7 max-w-2xl mx-auto drop-shadow-md tracking-wide">
-              Get curated tours &amp; seamless visa assistance — <span className="font-medium text-white">all in one place.</span>
-            </p>
+            {/* Stat 1 */}
+            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
+              <Users className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
+              <div className="flex flex-col">
+                <span className="text-lg md:text-[22px] font-semibold text-white leading-tight">24,247</span>
+                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Happy travellers</span>
+              </div>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
+              <Star className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
+              <div className="flex flex-col">
+                <span className="text-lg md:text-[22px] font-semibold text-white flex items-center gap-1.5 leading-tight">4.8 <Star className="w-3.5 h-3.5 fill-white text-white" /></span>
+                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Google rating</span>
+              </div>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
+              <Briefcase className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
+              <div className="flex flex-col">
+                <span className="text-lg md:text-[22px] font-semibold text-white leading-tight">500+</span>
+                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Tour packages</span>
+              </div>
+            </div>
+
+            {/* Stat 4 */}
+            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4">
+              <Globe className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
+              <div className="flex flex-col">
+                <span className="text-lg md:text-[22px] font-semibold text-white leading-tight">180+</span>
+                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Visa countries</span>
+              </div>
+            </div>
+
           </div>
         </div>
+
       </section>
 
       {/* ── Above-the-fold Server Sections (streamed) ─────────────────── */}
-      <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
-        <SecondSectionServer />
-      </Suspense>
-
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
         <VisaHome />
-      </Suspense>
-
-      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
-        <SevenSection />
       </Suspense>
 
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
@@ -203,23 +297,17 @@ export default async function HomePage() {
       </Suspense>
 
       {/* ── Below-the-fold Components (Server & Client interweaved) ──────── */}
-      <SectionFour />
-      <SectionFive />
       <DestinationSection />
-      <LazyVideoSection />
       <WhyChoose />
       <LazyTestimonial data={testi} />
-      <LazyImageGallery
-        title="Memories in Motion"
-        description="Picture Perfect Moments with the Best Travel Agency in India"
-        data={images}
-      />
-      <HomeBooking />
+      <SectionFive />
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
         <BlogsHome />
       </Suspense>
       <Partners />
       <Faqs faqs={faqs} />
+      <Newslatter />
+      
       <Suspense fallback={null}>
         <LoginAutoOpen />
       </Suspense>

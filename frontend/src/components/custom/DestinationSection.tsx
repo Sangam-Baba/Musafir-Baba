@@ -1,162 +1,121 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "../ui/button";
 import Image from "next/image";
 import jaipur from "../../../public/jaipur.jpg";
 import badrinath from "../../../public/badrinath.jpg";
 import kashmir from "../../../public/kashmir.jpg";
 import himachal from "../../../public/Himachal.jpg";
 import Link from "next/link";
-// import { Card } from "../ui/card";
+import { ArrowRight } from "lucide-react";
+
 export function DestinationSection() {
   const [active, setActive] = useState<"domestic" | "international">(
     "domestic",
   );
 
-  // const destinations = [
-  //   {
-  //     name: "Jaipur",
-  //     image: jaipur,
-  //     url: "jaipur",
-  //   },
-  //   {
-  //     name: "Badrinath",
-  //     image: badrinath,
-  //     url: "badrinath",
-  //   },
-  //   {
-  //     name: "Kashmir",
-  //     image: kashmir,
-  //     url: "kashmir",
-  //   },
-  //   {
-  //     name: "Himachal",
-  //     image: himachal,
-  //     url: "himachal",
-  //   },
-  //   {
-  //     name: "Jaipur",
-  //     image: jaipur,
-  //     url: "jaipur",
-  //   },
-  //   {
-  //     name: "Badrinath",
-  //     image: badrinath,
-  //     url: "badrinath",
-  //   },
-  //   {
-  //     name: "Kashmir",
-  //     image: kashmir,
-  //     url: "kashmir",
-  //   },
-  //   {
-  //     name: "Himachal",
-  //     image: himachal,
-  //     url: "himachal",
-  //   },
-  // ];
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-8 md:py-16 ">
-      <div className="flex flex-col gap-2 items-center max-w-7xl mx-auto">
-        {/* Heading */}
-        <div className="flex flex-col gap-5 items-center w-full">
-          <div className="flex flex-col items-center space-y-2">
-            <h2 className="text-lg md:text-3xl font-bold text-center">
-              Top Destinations in India & Around the World
+    <section className="w-full bg-white px-4 md:px-10 py-12 md:py-20 border-t border-gray-100">
+      <div className="flex flex-col items-start max-w-7xl mx-auto w-full">
+        
+        {/* Header Section */}
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div className="flex flex-col gap-1 items-start">
+            <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+              TRENDING DESTINATIONS
+            </span>
+            <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
+              <span className="relative inline-block whitespace-nowrap">Top destinations<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> in India and around the world
             </h2>
-            <div className="w-20 h-1 bg-[#FE5300] "></div>
-            <p className="text-center">
-              Discover trending destinations across India and abroad
+            <p className="text-[15px] md:text-[17px] text-gray-600 mt-1">
+              Discover trending destinations across India and abroad.
             </p>
           </div>
-
-          <div className="flex gap-4">
-            <Button
-              size="lg"
-              onClick={() => setActive("domestic")}
-              className={`mt-4 ${
-                active === "domestic"
-                  ? "bg-[#FE5300]"
-                  : "bg-white shadow-md text-black border border-[#FE5300]"
-              }`}
-            >
-              Domestic Trips
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => setActive("international")}
-              className={`mt-4 ${
-                active === "international"
-                  ? "bg-[#FE5300]"
-                  : "bg-white shadow-md text-black border border-[#FE5300]"
-              }`}
-            >
-              <h3>International Trips</h3>
-            </Button>
-          </div>
+          
+          <Link 
+            href="/destinations" 
+            className="flex items-center gap-1 text-[#FE5300] font-medium hover:text-[#e04800] transition-colors shrink-0 mb-1 pb-1"
+          >
+            View all <ArrowRight className="w-4 h-4 ml-1" />
+          </Link>
         </div>
-        <div className="flex  justify-end  items-center w-full p-2">
-          <div>
-            <Link
-              href={`/${
-                active === "domestic" ? "destinations" : "destinations"
+
+        {/* Toggle Pill */}
+        <div className="w-full flex items-center mb-8">
+          <div className="inline-flex items-center bg-[#F8F9FA] border border-gray-200 rounded-lg p-0.5">
+            <button
+              onClick={() => setActive("domestic")}
+              className={`px-4 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200 ${
+                active === "domestic" 
+                  ? "bg-[#FE5300] text-white shadow-sm" 
+                  : "text-slate-600 hover:text-slate-900"
               }`}
-              className="text-[#FE5300] font-semibold"
             >
-              {" "}
-              View All →
-            </Link>
+              Domestic trips
+            </button>
+            <button
+              onClick={() => setActive("international")}
+              className={`px-4 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200 ${
+                active === "international" 
+                  ? "bg-[#FE5300] text-white shadow-sm" 
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              International trips
+            </button>
           </div>
         </div>
 
         {/* Content Section */}
         {active === "domestic" && (
-          <div className="hidden md:flex md:flex-row gap-4 mt-10 w-full">
+          <div className="hidden md:flex md:flex-row gap-4 w-full">
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl">
                   <Link href="/destinations/uttarakhand">
                     <Image
                       src={badrinath}
                       alt="Uttarakhand"
                       loading="lazy"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="rounded-2xl w-full h-56 object-cover"
+                      className="rounded-2xl w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Uttarakhand
                   </h4>
                 </div>
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl">
                   <Link href="/destinations/rajasthan">
                     <Image
                       src={jaipur}
                       alt="Rajasthan"
                       loading="lazy"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="rounded-2xl w-full h-56 object-cover"
+                      className="rounded-2xl w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Rajasthan
                   </h4>
                 </div>
               </div>
               <div className="md:w-1/2">
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl h-full">
                   <Link href="/destinations/kerala">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Untitled_design_5_hgguwf.jpg"
                       alt="Kerala"
-                      className="rounded-2xl w-full md:h-118 h-56 object-cover"
+                      className="rounded-2xl w-full md:h-118 h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Kerala
                   </h4>
                 </div>
@@ -164,48 +123,51 @@ export function DestinationSection() {
             </div>
             <div className="flex flex-col gap-4 md:w-1/2">
               <div className="w-full">
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl">
                   <Link href="/destinations/meghalaya">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Untitled_design_6_mggpgh.jpg"
                       alt="meghalaya"
-                      className="rounded-2xl w-full h-56 object-cover"
+                      className="rounded-2xl w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Meghalaya
                   </h4>
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-4 w-full">
-                <div className="relative md:w-1/2">
+                <div className="relative group overflow-hidden rounded-2xl md:w-1/2">
                   <Link href="/destinations/himachal-pradesh">
                     <Image
                       src={himachal}
                       alt="himachal"
                       loading="lazy"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="rounded-2xl  h-56 object-cover"
+                      className="rounded-2xl h-56 object-cover group-hover:scale-105 transition-transform duration-700 w-full"
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Himachal Pradesh
                   </h4>
                 </div>
-                <div className="relative md:w-1/2">
+                <div className="relative group overflow-hidden rounded-2xl md:w-1/2">
                   <Link href="/destinations/jammu-and-kashmir">
                     <Image
                       src={kashmir}
-                      alt="Kerala"
+                      alt="Kashmir"
                       loading="lazy"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="rounded-2xl h-56 object-cover"
+                      className="rounded-2xl h-56 object-cover group-hover:scale-105 transition-transform duration-700 w-full"
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Kashmir
                   </h4>
                 </div>
@@ -215,53 +177,56 @@ export function DestinationSection() {
         )}
 
         {active === "international" && (
-          <div className="md:flex hidden md:flex-row gap-4 mt-10 w-full ">
+          <div className="hidden md:flex md:flex-row gap-4 w-full ">
             <div className="flex flex-col md:flex-row gap-4 md:w-1/2">
               <div className="flex flex-col gap-4 md:w-1/2">
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl">
                   <Link href="/destinations/singapore">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Singapore_bdsaps.jpg"
                       alt="Singapore"
-                      className="rounded-2xl w-full h-56 object-cover"
+                      className="rounded-2xl w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Singapore
                   </h4>
                 </div>
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl">
                   <Link href="/destinations/dubai">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Untitled_design_4_yrnksb.jpg"
                       alt="Dubai"
-                      className="rounded-2xl w-full h-56 object-cover"
+                      className="rounded-2xl w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Dubai
                   </h4>
                 </div>
               </div>
               <div className="md:w-1/2">
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl h-full">
                   <Link href="/destinations/bali">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Bali_sc5oct.jpg"
                       alt="Bali"
-                      className="rounded-2xl w-full md:h-118 h-56 object-center"
+                      className="rounded-2xl w-full md:h-118 h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Bali
                   </h4>
                 </div>
@@ -269,50 +234,53 @@ export function DestinationSection() {
             </div>
             <div className="flex flex-col gap-4 md:w-1/2">
               <div className="w-full">
-                <div className="relative">
+                <div className="relative group overflow-hidden rounded-2xl">
                   <Link href="/destinations/thailand">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Thailand_btmxk6.jpg"
                       alt="Thailand"
-                      className="rounded-2xl w-full h-56 "
+                      className="rounded-2xl w-full h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Thailand
                   </h4>
                 </div>
               </div>
               <div className="flex flex-col md:flex-row gap-4 w-full">
-                <div className="relative md:w-1/2">
+                <div className="relative group overflow-hidden rounded-2xl md:w-1/2">
                   <Link href="/destinations/japan">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Untitled_design_3_g8ok0g.jpg"
                       alt="Japan"
-                      className="rounded-2xl  h-56 "
+                      className="rounded-2xl h-56 object-cover group-hover:scale-105 transition-transform duration-700 w-full"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Japan
                   </h4>
                 </div>
-                <div className="relative md:w-1/2 ">
+                <div className="relative group overflow-hidden rounded-2xl md:w-1/2 ">
                   <Link href="/destinations/maldives">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Untitled_design_2_rrfsvj.jpg"
                       alt="Maldives"
-                      className="rounded-2xl h-56"
+                      className="rounded-2xl h-56 object-cover group-hover:scale-105 transition-transform duration-700 w-full"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
                       height={500}
                     />
                   </Link>
-                  <h4 className="absolute bottom-2 left-0 right-0 bg-black/50 text-white text-center py-1 font-semibold ">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                  <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
                     Maldives
                   </h4>
                 </div>
@@ -321,7 +289,7 @@ export function DestinationSection() {
           </div>
         )}
         {active === "domestic" && (
-          <div className="flex md:hidden gap-4 mt-10 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory">
+          <div className="flex md:hidden gap-4 mt-4 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4">
             {[
               {
                 title: "Uttarakhand",
@@ -356,7 +324,7 @@ export function DestinationSection() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="relative min-w-[260px] snap-start "
+                className="relative min-w-[260px] snap-start group overflow-hidden rounded-2xl"
               >
                 <Link href={item.href} className="z-10">
                   <Image
@@ -365,12 +333,12 @@ export function DestinationSection() {
                     width={260}
                     height={224}
                     sizes="(max-width: 768px) 260px, 33vw"
-                    className="rounded-2xl h-56 object-cover"
+                    className="rounded-2xl h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </Link>
 
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 to-transparent rounded-2xl " />
-                <h4 className="pointer-events-none absolute bottom-2 inset-x-0  text-white text-center py-1 font-semibold">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[18px] font-semibold tracking-wide">
                   {item.title}
                 </h4>
               </div>
@@ -379,7 +347,7 @@ export function DestinationSection() {
         )}
 
         {active === "international" && (
-          <div className="flex md:hidden gap-4 mt-10 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory">
+          <div className="flex md:hidden gap-4 mt-4 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4">
             {[
               {
                 title: "Singapore",
@@ -414,7 +382,7 @@ export function DestinationSection() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="relative min-w-[260px] md:min-w-0 md:flex-1 snap-start"
+                className="relative min-w-[260px] md:min-w-0 md:flex-1 snap-start group overflow-hidden rounded-2xl"
               >
                 <Link href={item.href} className="z-10">
                   <Image
@@ -423,11 +391,11 @@ export function DestinationSection() {
                     width={500}
                     height={500}
                     sizes="(max-width: 768px) 260px, 33vw"
-                    className="rounded-2xl h-56 w-full object-cover"
+                    className="rounded-2xl h-56 w-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 </Link>
-                <div className=" pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 to-transparent rounded-2xl " />
-                <h4 className=" pointer-events-none absolute bottom-2 inset-x-0 text-white text-center py-1 font-semibold">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
+                <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[18px] font-semibold tracking-wide">
                   {item.title}
                 </h4>
               </div>

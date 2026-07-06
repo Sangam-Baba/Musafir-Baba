@@ -50,24 +50,27 @@ export const ContactUsPage = () => {
             </div>
             
             {/* Elegant Linear Landscape Accent */}
-            <div style={{ position: 'absolute', bottom: '8px', left: '24px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: '9999px', border: '1px solid rgba(254,223,206,0.6)', fontSize: '9px', fontWeight: 700, color: luxuryTheme.orange, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <div style={{ position: 'absolute', bottom: '12px', right: '24px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)', padding: '6px 14px', borderRadius: '9999px', border: '1px solid rgba(254,223,206,0.6)', fontSize: '10px', fontWeight: 700, color: luxuryTheme.orange, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 10 }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: luxuryTheme.orange }}></span>
                 Custom Expeditions
             </div>
         </div>
 
         {/* CHARACTER PLACEMENT OVERLAY */}
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginTop: '-120px', marginBottom: '-40px', position: 'relative', zIndex: 20, pointerEvents: 'none' }}>
-            <div style={{ position: 'relative', width: '170px', minWidth: '170px', maxWidth: '170px' }}>
-                <img src="/Itinerary/baba.png" 
-                     width={170}
-                     style={{ width: '170px', height: 'auto', display: 'block', filter: 'drop-shadow(0 10px 15px rgba(224,90,54,0.15))' }} 
-                     alt="Musafir Baba" />
+        <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '-80px', marginBottom: '-80px', position: 'relative', zIndex: 5, pointerEvents: 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div style={{ position: 'relative', width: '170px', minWidth: '170px', maxWidth: '170px' }}>
+                    <img src="/Itinerary/baba.png" 
+                         width={170}
+                         style={{ width: '170px', height: 'auto', display: 'block', filter: 'drop-shadow(0 10px 15px rgba(224,90,54,0.15))' }} 
+                         alt="Musafir Baba" />
+                </div>
             </div>
+            <div></div>
         </div>
 
         {/* GRID WRAPPER */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', position: 'relative', zIndex: 10, paddingTop: '16px', marginTop: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', position: 'relative', zIndex: 20, paddingTop: '16px', marginTop: '0' }}>
             
             {/* Left Contact Info */}
             <div style={{ backgroundColor: '#FFF', border: '2px solid rgba(254,223,206,0.5)', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '20px', paddingTop: '24px' }}>

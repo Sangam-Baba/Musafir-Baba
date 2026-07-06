@@ -9,8 +9,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { CarouselDots } from "../ui/carousel-indicators";
-import { MapPin, Quote } from "lucide-react";
-import StarRating from "./Star";
+import { MapPin } from "lucide-react";
 
 export interface TestiProps {
   _id?: string;
@@ -20,124 +19,128 @@ export interface TestiProps {
   rating?: number;
 }
 
+const GoogleIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+);
+
+const GoogleStars = ({ count }: { count: number }) => (
+  <div className="flex gap-[2px]">
+    {[...Array(5)].map((_, i) => (
+      <svg 
+        key={i} 
+        className={`w-4 h-4 ${i < Math.floor(count) ? 'text-[#FBBC05] fill-[#FBBC05]' : 'text-gray-300 fill-gray-300'}`} 
+        viewBox="0 0 20 20" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    ))}
+  </div>
+);
+
 export function Testimonial({ data }: { data: TestiProps[] }) {
   const plugin = React.useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true }),
+    Autoplay({ delay: 3500, stopOnInteraction: false }),
   );
-  const testiData = data;
-
-  // Curated soft background avatar colors for handcrafted human touch
+  
+  // High contrast avatar colors commonly seen in Google Reviews
   const avatarColors = [
-    "bg-orange-50 text-orange-600 border-orange-100/50",
-    "bg-blue-50 text-blue-600 border-blue-100/50",
-    "bg-teal-50 text-teal-600 border-teal-100/50",
-    "bg-purple-50 text-purple-600 border-purple-100/50",
-    "bg-amber-50 text-amber-600 border-amber-100/50"
+    "bg-[#d93025] text-white", // Red
+    "bg-[#188038] text-white", // Green
+    "bg-[#1967d2] text-white", // Blue
+    "bg-[#e37400] text-white", // Orange
+    "bg-[#8e24aa] text-white"  // Purple
   ];
 
-  // Subtle border variations to create dynamic visual rhythm
-  const borderThemes = [
-    "border-slate-100/80 hover:border-orange-200/60",
-    "border-slate-100/80 hover:border-blue-200/60",
-    "border-slate-100/80 hover:border-teal-200/60"
-  ];
+  if (!data || data.length === 0) return null;
 
   return (
-    data.length > 0 && (
-      <section className="w-full py-12 flex flex-col items-center">
-        {/* Headheading Area */}
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-10 px-4">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block">
-            Traveller Voices
+    <section className="w-full bg-white px-4 md:px-10 py-10 md:py-14 border-t border-gray-100">
+      <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
+        
+        {/* Left-Aligned Header Section matching site design */}
+        <div className="w-full flex flex-col gap-1 items-start mb-8">
+          <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+            TESTIMONIALS
           </span>
-          <h2 className="text-xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight">
-            Loved by Happy Travellers
+          <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
+            <span className="relative inline-block whitespace-nowrap">Loved by<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> happy travellers
           </h2>
-          <div className="h-1 w-16 bg-[#FE5300] rounded-full mt-2.5 mb-3" />
-          <p className="text-[13px] sm:text-[14px] text-slate-500 font-medium leading-relaxed">
-            Real stories, authentic experiences, and unforgettable journeys planned by our global visa experts.
-          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[14px] md:text-[15px] text-gray-600 font-medium">Excellent 4.8 out of 5 based on</span>
+            <div className="scale-[0.8] origin-center -mx-1">
+              <GoogleIcon />
+            </div>
+            <span className="text-[14px] md:text-[15px] text-gray-900 font-semibold">Reviews</span>
+          </div>
         </div>
 
         {/* Carousel Slider */}
-        <div className="w-full max-w-6xl px-4 mx-auto relative">
+        <div className="w-full">
           <Carousel
             plugins={[plugin.current]}
             className="w-full"
+            opts={{ align: "start", loop: true }}
             onMouseEnter={plugin.current.stop}
             onMouseLeave={plugin.current.reset}
           >
             <CarouselContent className="-ml-4">
-              {testiData?.map((item, i) => {
+              {data.map((item, i) => {
                 const initial = item.name ? item.name.charAt(0).toUpperCase() : "T";
                 const avTheme = avatarColors[i % avatarColors.length];
-                const borderTheme = borderThemes[i % borderThemes.length];
-                
-                // Human-centric location fallback for clean interface
                 const isLocationValid = item.location && item.location !== "0" && item.location.toLowerCase() !== "undefined";
 
                 return (
                   <CarouselItem
                     key={`test-${i}-${item._id}`}
-                    className="pl-4 md:basis-1/2 lg:basis-1/3 flex"
+                    className="pl-4 basis-[85%] sm:basis-[48%] md:basis-[33%] lg:basis-[28%] flex"
                   >
-                    <div className="p-1 w-full flex">
-                      <Card className={`relative bg-white rounded-2xl border ${borderTheme} shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_-4px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 ease-in-out h-full flex flex-col justify-between overflow-hidden w-full`}>
+                    <div className="py-2 w-full flex">
+                      <Card className="bg-white rounded-[12px] border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 w-full h-full flex flex-col p-4">
                         
-                        {/* Soft quote sign backdrop */}
-                        <div className="absolute top-5 right-5 text-slate-100 pointer-events-none select-none">
-                          <Quote className="h-8 w-8 opacity-30 transform scale-x-[-1]" />
+                        {/* Google Review Header */}
+                        <div className="flex items-start justify-between w-full mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium text-[15px] shrink-0 ${avTheme}`}>
+                              {initial}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-[13px] text-gray-900 leading-tight">
+                                {item.name}
+                              </span>
+                              <span className="text-[11px] text-gray-500 font-normal flex items-center gap-1">
+                                {isLocationValid ? (
+                                  <>
+                                    <MapPin className="w-2.5 h-2.5" />
+                                    {item.location}
+                                  </>
+                                ) : (
+                                  "Verified Traveller"
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="scale-[0.75] origin-top-right -mr-1 -mt-1">
+                            <GoogleIcon />
+                          </div>
                         </div>
 
-                        <CardContent className="p-6 flex flex-col justify-between h-full gap-6">
-                          
-                          {/* Testimonial body text */}
-                          <div className="relative">
-                            <p className="text-slate-600 text-[13.5px] leading-relaxed font-medium italic">
-                              “{item.comment}”
-                            </p>
-                          </div>
+                        {/* Stars */}
+                        <div className="mb-2">
+                          <GoogleStars count={item.rating || 5} />
+                        </div>
 
-                          {/* Identity area */}
-                          <div className="pt-4 border-t border-slate-50 flex flex-col gap-3">
-                            <div className="flex items-center gap-3">
-                              {/* Curved Dynamic Initial Avatar badge */}
-                              <div className={`h-9 w-9 rounded-full border ${avTheme} font-black text-xs flex items-center justify-center shrink-0 tracking-wider shadow-2xs`}>
-                                {initial}
-                              </div>
-
-                              <div className="flex flex-col min-w-0">
-                                <span className="font-bold text-slate-800 text-[13.5px] leading-tight truncate">
-                                  {item.name}
-                                </span>
-                                
-                                {isLocationValid ? (
-                                  <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                                    <MapPin size={11} className="text-slate-300 shrink-0" />
-                                    <span className="truncate">{item.location}</span>
-                                  </span>
-                                ) : (
-                                  <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                    Verified Traveller
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Ratings section */}
-                            {item.rating && (
-                              <div className="flex items-center gap-2 mt-1">
-                                <StarRating rating={item.rating || 4.5} />
-                                <span className="text-[10px] font-black text-slate-400 font-mono mt-0.5 tracking-wider">
-                                  {Number(item.rating).toFixed(1)} / 5.0
-                                </span>
-                              </div>
-                            )}
-
-                          </div>
-
-                        </CardContent>
+                        {/* Review Body */}
+                        <div className="relative flex-1">
+                          <p className="text-gray-700 text-[13px] leading-[1.6] line-clamp-4">
+                            {item.comment}
+                          </p>
+                        </div>
                       </Card>
                     </div>
                   </CarouselItem>
@@ -145,13 +148,12 @@ export function Testimonial({ data }: { data: TestiProps[] }) {
               })}
             </CarouselContent>
             
-            {/* Dots paginator */}
-            <div className="mt-6">
+            <div className="mt-4 flex justify-center w-full">
               <CarouselDots />
             </div>
           </Carousel>
         </div>
-      </section>
-    )
+      </div>
+    </section>
   );
 }
