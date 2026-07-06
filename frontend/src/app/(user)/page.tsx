@@ -148,7 +148,7 @@ export default async function HomePage() {
   return (
     <main>
       {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
-      <section className="w-full px-4 md:px-10 py-6 lg:py-8 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[500px] max-h-[850px] overflow-hidden">
+      <section className="w-full px-4 md:px-10 py-6 lg:py-8 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[550px] overflow-hidden">
         <Image
           src="/homebanner11.avif"
           alt="Home Banner"
@@ -221,7 +221,6 @@ export default async function HomePage() {
               { label: "Weekend trips", slug: "weekend-getaways" },
               { label: "Family Tours", slug: "family-tours" },
               { label: "Group Tour", slug: "group-tour-packages" },
-              { label: "International Tour", slug: "international-tour-packages" },
             ].map((pill, idx) => {
               const isActive = pill.label === "Religious tours";
               return (
