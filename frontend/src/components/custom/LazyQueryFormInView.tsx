@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import LazyQueryForm from "./LazyQueryForm";
 
-export default function LazyQueryFormInView() {
+export default function LazyQueryFormInView({ variant = "default" }: { variant?: "default" | "minimal" }) {
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -26,8 +26,8 @@ export default function LazyQueryFormInView() {
   }, []);
 
   return (
-    <div ref={ref} className="w-full min-h-[400px]">
-      {inView ? <LazyQueryForm /> : null}
+    <div ref={ref} className="w-full h-full min-h-[400px]">
+      {inView ? <LazyQueryForm variant={variant} /> : null}
     </div>
   );
 }

@@ -19,7 +19,7 @@ export function AccountIcon() {
       {isAuthenticated ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-all cursor-pointer select-none border border-white/20 shadow-sm">
+            <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md transition-all cursor-pointer select-none border border-white/20 shadow-sm">
               <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
                 <User size={14} className="text-[#FE5300]" />
               </div>
@@ -47,7 +47,7 @@ export function AccountIcon() {
       ) : (
         <div className="group">
           <Button
-            className="h-8 w-28 bg-[#FE5300] border-2 border-[#FE5300] text-white hover:bg-white hover:text-[#FE5300] rounded-full font-bold shadow-sm transition-all"
+            className="h-8 w-28 bg-[#FE5300] border-2 border-[#FE5300] text-white hover:bg-white hover:text-[#FE5300] rounded-md font-bold shadow-sm transition-all"
             onClick={() => openDialog("login", undefined)}
           >
             Login

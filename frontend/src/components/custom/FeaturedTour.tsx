@@ -2,14 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Button } from "../ui/button";
 import PackageCard from "./PackageCard";
+import { ArrowRight } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { CarouselDots } from "../ui/carousel-indicators";
 
@@ -40,39 +38,57 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
   const [active, setActive] = useState(categoriesPkg[0]?.slug);
 
   return (
-    <section className="w-full px-4 md:px-8 lg:px-20 py-4 md:py-16">
-      <div className="flex flex-col gap-2 max-w-7xl mx-auto">
-        {/* Heading */}
-        <div className="flex flex-col gap-2 items-center w-full text-center">
-          <h2 className="text-lg md:text-3xl font-bold">
-            Featured Group Tour Packages
-          </h2>
-          <div className="w-20 h-1 bg-[#FE5300]" />
-          <p>Top-rated holiday packages curated for every journey</p>
+    <section className="w-full bg-white px-4 md:px-10 py-12 md:py-20 border-t border-gray-100">
+      <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
+        
+        {/* Header Section */}
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div className="flex flex-col gap-1 items-start">
+            <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+              TOP-RATED PACKAGES
+            </span>
+            <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
+              <span className="relative inline-block whitespace-nowrap">Featured<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> group tour packages
+            </h2>
+            <p className="text-[15px] md:text-[17px] text-gray-600 mt-1">
+              Top-rated holiday packages curated for every journey.
+            </p>
+          </div>
+          
+          <Link 
+            href={`/holidays/${active}`} 
+            className="flex items-center gap-1 text-[#FE5300] font-medium hover:text-[#e04800] transition-colors shrink-0 mb-1 pb-1"
+          >
+            View all <ArrowRight className="w-4 h-4 ml-1" />
+          </Link>
         </div>
 
         {/* Tabs */}
-        <div className="flex md:justify-center gap-3 mt-6 mx-5 overflow-x-auto no-scrollbar">
-          {categoriesPkg.map((tab) => (
-            <Button
-              key={tab.slug}
-              size="lg"
-              onClick={() => setActive(tab.slug)}
-              className={` ${
-                active === tab.slug
-                  ? "bg-[#FE5300]"
-                  : "bg-white shadow-md text-black border border-[#FE5300]"
-              }`}
-            >
-              {tab.label}
-            </Button>
-          ))}
+        <div className="flex w-full overflow-x-auto no-scrollbar border-b border-gray-200 mb-8 gap-4 md:gap-8">
+          {categoriesPkg.map((tab) => {
+            const isActive = active === tab.slug;
+            return (
+              <button
+                key={tab.slug}
+                onClick={() => setActive(tab.slug)}
+                className={`px-1 py-3 whitespace-nowrap text-[15px] md:text-base font-medium transition-colors relative ${
+                  isActive
+                    ? "text-gray-900"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {tab.label}
+                {isActive && (
+                  <div className="absolute bottom-[-1px] left-0 w-full h-[2px] bg-[#FE5300]" />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Packages */}
-        <div className="mt-4">
+        <div className="w-full">
           {categoriesPkg.map((tab) => {
-            // const category = tab.category;
             const isActive = active === tab.slug;
 
             if (!tab.categoryPackages || !tab.categoryPackages?.length)
@@ -83,21 +99,9 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                 key={tab.slug}
                 className={`${
                   isActive ? "block" : "hidden"
-                } transition-opacity duration-300`}
+                } transition-opacity duration-300 w-full`}
               >
-                <div className="flex justify-end items-center mb-6">
-                  {/* <h3 className="text-xl font-semibold text-[#FE5300]">
-                    {tab.label}
-                  </h3> */}
-                  <Link
-                    href={`/holidays/${tab.slug}`}
-                    className="text-[#FE5300] font-semibold"
-                  >
-                    View All →
-                  </Link>
-                </div>
-
-                <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
                   {tab.categoryPackages.slice(0, 4).map((pkg) => (
                     <PackageCard
                       key={pkg._id}
@@ -117,7 +121,8 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                     />
                   ))}
                 </div>
-                <div className="md:hidden flex flex-col items-center mx-auto px-6">
+                
+                <div className="md:hidden flex flex-col items-center mx-auto px-2 w-full">
                   <Carousel
                     opts={{
                       align: "start",
@@ -153,8 +158,6 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                           </CarouselItem>
                         ))}
                     </CarouselContent>
-                    {/* <CarouselPrevious className="ml-4" />
-                    <CarouselNext className="mr-4" /> */}
                     <CarouselDots />
                   </Carousel>
                 </div>

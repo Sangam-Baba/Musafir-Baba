@@ -30,35 +30,28 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
 
   return (
-    <header className="w-full z-50">
-      {/* ===== TOP SOCIAL BAR ===== */}
-      <div className="hidden md:flex justify-between items-center w-full px-8 py-1.5 bg-gradient-to-r from-[#eb3b23] to-[#f8b914] text-white">
-        <div className="flex gap-5 items-center">
-          <Link href="https://www.youtube.com/@musafirbabatravels">
-            <Youtube className="w-5 h-5" />
-          </Link>
-          <Link href="http://facebook.com/hellomusafirbaba">
-            <Facebook fill="white" className="w-5 h-5" />
-          </Link>
-          <Link href="https://x.com/itsmusafirbaba">
-            <LucideTwitter fill="white" className="w-5 h-5" />
-          </Link>
-          <Link href="https://www.instagram.com/hello_musafirbaba">
-            <Instagram className="w-5 h-5" />
-          </Link>
-          <Link href="https://in.linkedin.com/company/musafirbaba">
-            <Linkedin fill="white" className="w-5 h-5" />
-          </Link>
+    <header className="w-full z-50 bg-white border-b border-gray-200">
+      {/* ===== TOP BAR ===== */}
+      <div className="hidden md:flex justify-between items-center w-full px-8 py-2 bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12]">
+        {/* Social Links */}
+        <div className="flex items-center gap-4 text-white">
+          <Link href="https://www.youtube.com/@musafirbabatravels" aria-label="YouTube"><Youtube className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="http://facebook.com/hellomusafirbaba" aria-label="Facebook"><Facebook className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://x.com/itsmusafirbaba" aria-label="Twitter"><LucideTwitter className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://www.instagram.com/hello_musafirbaba" aria-label="Instagram"><Instagram className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://in.linkedin.com/company/musafirbaba" aria-label="LinkedIn"><Linkedin className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
         </div>
-        <div className="flex gap-6 items-center text-sm font-medium">
+
+        {/* Contact & Actions */}
+        <div className="flex gap-4 items-center text-sm font-medium">
           <Tooltip>
             <TooltipTrigger asChild>
               <a
                 href="tel:+919289602447"
-                className="flex items-center gap-1.5 text-inherit hover:text-white/80 transition-colors"
+                className="flex items-center gap-1.5 text-white hover:text-white/80 transition-colors"
               >
-                <Phone fill="white" className="w-4 h-4" />
-                <span className="pt-[1px] tracking-wide">+91 92896 02447</span>
+                <Phone className="w-4 h-4 text-white" />
+                <span className="pt-[1px] tracking-wide font-semibold">+91 92896 02447</span>
               </a>
             </TooltipTrigger>
             <TooltipContent>
@@ -66,10 +59,10 @@ export default function Header() {
             </TooltipContent>
           </Tooltip>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 ml-2">
             <Button 
               asChild
-              className="hidden md:flex h-8 w-28 bg-white text-[#eb3b23] hover:bg-gray-100 hover:text-[#eb3b23] rounded-full font-bold shadow-sm transition-all border-2 border-transparent"
+              className="hidden md:flex h-8 px-5 rounded-md font-bold text-[#d35400] bg-white hover:bg-gray-100 transition-all shadow-sm"
             >
               <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
                 Pay Now
@@ -82,10 +75,7 @@ export default function Header() {
       </div>
 
       {/* ===== MAIN NAVIGATION BAR ===== */}
-      <div
-        className="w-full bg-white/70 shadow-sm md:shadow-none md:bg-transparent 
-                      flex items-center justify-between md:px-10 px-4 py-4"
-      >
+      <div className="w-full bg-white flex items-center justify-between md:px-10 px-4 py-2 md:py-0">
         <div className="flex md:justify-between items-center w-full md:gap-4 lg:gap-8">
           {/* Mobile menu */}
           <button
@@ -97,42 +87,32 @@ export default function Header() {
           </button>
 
           {/* LOGO */}
-          <div className="flex items-center ml-20 md:ml-0">
-            <Link href="/" className="block w-32 md:w-40">
+          <div className="flex items-center ml-2 md:ml-0 py-2 md:py-4">
+            <Link href="/" className="block w-32 md:w-44">
               <Image
                 src={logo}
                 alt="Musafir Baba Logo"
                 style={{ width: '100%', height: 'auto' }}
-                priority // Critical for LCP as it's at the top
+                priority 
               />
             </Link>
           </div>
 
           {/* NAVBAR (desktop only) */}
-          <nav className="hidden md:flex md:flex-1 md:justify-center">
+          <nav className="hidden md:flex md:flex-1 md:justify-center self-stretch">
             <Navbar />
           </nav>
 
-          {/* Right side buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="mr-1 w-48 lg:w-64 p-[2px] rounded-full bg-[linear-gradient(90deg,#FE5300,#ff0080,#7928ca,#00dfd8,#74ff18,#FE5300)] animate-border-gradient hover:shadow-md transition-shadow">
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 bg-white w-full h-full text-gray-400 px-4 py-1.5 rounded-full"
-                aria-label="Open search"
-              >
-                <Search className="w-4 h-4" />
-                <span className="text-sm font-medium text-gray-500">Search destinations...</span>
-              </button>
-            </div>
-
-            {/* <Button className="hidden md:flex  text-white">
-              <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
-                Pay Now
-              </Link>
-            </Button>
-
-            <AccountIcon /> */}
+          {/* Right side search */}
+          <div className="hidden md:flex items-center gap-3 py-2 md:py-4">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="flex items-center gap-2 bg-white text-gray-500 px-4 py-2 rounded-md border border-gray-300 hover:border-gray-400 hover:shadow-sm transition-all w-48 lg:w-64"
+              aria-label="Open search"
+            >
+              <Search className="w-4 h-4 text-gray-500" />
+              <span className="text-[14px] font-normal truncate">Search destinations...</span>
+            </button>
           </div>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import React from "react";
 import { VisaInterface } from "@/app/(user)/visa/visaClient";
 import Link from "next/link";
-import Image from "next/image";
-import { Globe } from "lucide-react";
+import { 
+  Building2, Globe, Flag, Crown, Leaf, Anchor, 
+  Sun, Mountain, Umbrella, Castle, TreePine, Moon, ArrowRight 
+} from "lucide-react";
 import PopupQueryForm from "./PopupQueryForm";
 
 const getVisa = async (search: string) => {
@@ -16,151 +18,133 @@ const getVisa = async (search: string) => {
   const data = await res.json();
   return data?.data; // []
 };
+
+// Map each country to an icon
+const VISA_METADATA: Record<string, { icon: any }> = {
+  "UAE": { icon: Building2 },
+  "Schengen": { icon: Globe },
+  "USA": { icon: Flag },
+  "UK": { icon: Crown },
+  "Canada": { icon: Leaf },
+  "Singapore": { icon: Anchor },
+  "Australia": { icon: Sun },
+  "Japan": { icon: Mountain },
+  "Vietnam": { icon: Umbrella },
+  "China": { icon: Castle },
+  "New Zealand": { icon: TreePine },
+  "Turkey": { icon: Moon },
+};
+
+function getDisplayDuration(visa: VisaInterface) {
+  let displayDuration = visa.duration;
+  if (visa.visas && Array.isArray(visa.visas) && visa.visas.length > 0) {
+    let minFee = Infinity;
+    let minFeeProcessTime = "";
+    visa.visas.forEach((v) => {
+      if (v.validityEntries && Array.isArray(v.validityEntries)) {
+        v.validityEntries.forEach((entry: any) => {
+          if (entry.governmentFee !== undefined && entry.governmentFee < minFee) {
+            minFee = entry.governmentFee;
+            minFeeProcessTime = entry.processTime || minFeeProcessTime;
+          }
+        });
+      }
+    });
+    if (minFee !== Infinity && minFeeProcessTime) {
+      displayDuration = minFeeProcessTime;
+    }
+  }
+  return displayDuration || "TBD";
+}
+
 async function VisaHome() {
   const visa: VisaInterface[] = await getVisa("");
+  
   const finalVisa = [
-    "UAE",
-    "Schengen",
-    "USA",
-    "UK",
-    "Canada",
-    "Australia",
-    "Singapore",
-    "Japan",
-    "Vietnam",
-    "China",
-    "New Zealand",
-    "Turkey",
+    "UAE", "Schengen", "USA", "UK", "Canada", "Singapore",
+    "Australia", "Japan", "Vietnam", "China", "New Zealand", "Turkey"
   ];
+  
   const shownVisa = visa
-    .filter((visa) => finalVisa.includes(visa.country))
-    .sort(
-      (a, b) => finalVisa.indexOf(a.country) - finalVisa.indexOf(b.country),
-    );
+    .filter((v) => finalVisa.includes(v.country))
+    .sort((a, b) => finalVisa.indexOf(a.country) - finalVisa.indexOf(b.country));
+
   return (
-    <section className="w-full mx-auto px-4 md:px-8 lg:px-20 md:py-16 py-4">
-      <div className="max-w-7xl mx-auto flex flex-col items-center">
-        <div className="flex flex-col gap-2 items-center">
-          <h2 className="text-lg md:text-3xl font-bold text-center">
-            Popular Visa Services for Indian Travellers
-          </h2>
-          <p className="w-20 h-1 bg-[#FE5300] text-center"></p>
-          <p className=" text-center">
-            Fast, reliable visa assistance for top travel destinations.
-          </p>
-        </div>
-        <div className="flex  justify-end  items-center w-full p-2">
-          <div>
-            <Link href="/visa" className="text-[#FE5300] font-semibold">
-              {" "}
-              View All →
-            </Link>
+    <section className="w-full bg-white px-4 md:px-10 py-12 md:py-20 border-t border-gray-100">
+      <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
+        
+        {/* Header Section */}
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div className="flex flex-col gap-1 items-start">
+            <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+              VISA ASSISTANCE
+            </span>
+            <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
+              <span className="relative inline-block whitespace-nowrap">Popular<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> visa services for Indian travellers
+            </h2>
+            <p className="text-[15px] md:text-[17px] text-gray-600 mt-1">
+              Fast, reliable visa assistance for top travel destinations.
+            </p>
           </div>
+          
+          <Link href="/visa" className="flex items-center gap-1 text-[#FE5300] font-medium hover:text-[#e04800] transition-colors shrink-0 mb-1 pb-1">
+            View all <ArrowRight className="w-4 h-4 ml-1" />
+          </Link>
         </div>
-        <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-6 gap-6 mt-8 px-4">
+
+        {/* Grid Section */}
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 mb-10">
           {shownVisa.slice(0, 12).map((data, i) => {
+            const meta = VISA_METADATA[data.country] || { icon: Globe };
+            const Icon = meta.icon;
+            const displayDuration = getDisplayDuration(data);
+            
             return (
-              <Link key={i} href={`/visa/${data.slug}`}>
-                <div className="group relative  overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400">
-                  {/* Flag Image */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src={data.bannerImage?.url || data.coverImage?.url || ""}
-                      alt={data.bannerImage?.alt || "Musafirbaba Visa"}
-                      width={200}
-                      height={50}
-                      loading="lazy"
-                      sizes="(max-width: 768px) 50vw, 16vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="flex flex-col justify-between p-4 ">
-                    {/* Header with country name and icon */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        {/* <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                          Visa
-                        </p> */}
-                        <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors mt-1 line-clamp-1">
-                          {data.country}
-                        </h3>
-                      </div>
-                      <Globe className="w-5 h-5 text-neutral-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-1" />
-                    </div>
-
-                    {/* Pricing and CTA */}
-                    {/* <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-xs text-neutral-500 mb-1">
-                          Starting from
-                        </p>
-                        <p className="text-md font-bold text-neutral-900">
-                          {data.cost}
-                          <span className="text-xs text-neutral-500 font-normal ml-1">
-                            + fees
-                          </span>
-                        </p>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-blue-600 transform group-hover:translate-x-1 transition-transform" />
-                    </div> */}
-                  </div>
-
-                  {/* Hover effect border */}
-                  <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-400/30 transition-colors pointer-events-none" />
+              <Link key={i} href={`/visa/${data.slug}`} className="block">
+                <div className="flex flex-col items-center justify-center p-5 md:p-7 bg-white border border-gray-200 rounded-2xl hover:border-[#FE5300] hover:shadow-sm transition-all duration-200 h-full gap-1">
+                  <Icon className="w-7 h-7 md:w-8 md:h-8 text-[#FE5300] mb-3" strokeWidth={1.5} />
+                  <h3 className="text-[15px] md:text-base font-medium text-gray-900 text-center">
+                    {data.country}
+                  </h3>
+                  <span className="text-[13px] text-[#FE5300] font-normal text-center mt-1">
+                    {displayDuration}
+                  </span>
                 </div>
               </Link>
             );
           })}
         </div>
 
-        <div className="flex md:hidden gap-4 mt-8 w-full overflow-x-auto no-scrollbar snap-x snap-mandatory px-4">
-          {shownVisa.slice(0, 12).map((data, i) => (
-            <div key={i} className="relative min-w-[260px] snap-start">
-              <Link href={`/visa/${data.slug}`}>
-                <div className="group relative overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:border-blue-400 h-full">
-                  {/* Background gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Flag Image */}
-                  <div className="relative h-32 w-full overflow-hidden bg-neutral-100">
-                    <Image
-                      src={data.bannerImage?.url || "/placeholder.svg"}
-                      alt={data.bannerImage?.alt || "Musafirbaba Visa"}
-                      width={260}
-                      height={128}
-                      loading="lazy"
-                      sizes="(max-width: 768px) 260px, 16vw"
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-emerald-500" />
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="flex flex-col justify-between p-4">
-                    {/* Header with country name and icon */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-blue-600 transition-colors mt-1 line-clamp-1">
-                          {data.country}
-                        </h3>
-                      </div>
-                      <Globe className="w-5 h-5 text-neutral-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-1" />
-                    </div>
-                  </div>
-
-                  {/* Hover effect border */}
-                  <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-blue-400/30 transition-colors pointer-events-none" />
-                </div>
-              </Link>
-            </div>
-          ))}
+        {/* Bottom Banner */}
+        <div className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex flex-col">
+            <h3 className="text-lg md:text-[20px] font-medium text-gray-900 mb-1">
+              Not sure which visa you need?
+            </h3>
+            <p className="text-[14px] md:text-[16px] text-gray-600">
+              Free consultation — document checklist included, no hidden fees.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">
+            <Link 
+              href="https://wa.me/918744000999"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-6 py-3 rounded-xl font-medium text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>
+              WhatsApp
+            </Link>
+            <PopupQueryForm 
+              triggerText="Talk to a visa expert" 
+              triggerClassName="w-full sm:w-auto bg-[#FE5300] hover:bg-[#e04800] text-white px-6 py-3 rounded-xl font-medium text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap transition-all duration-300" 
+              icon={null} 
+            />
+          </div>
         </div>
-        <div className="mt-6">
-          <PopupQueryForm />
-        </div>
+
       </div>
     </section>
   );

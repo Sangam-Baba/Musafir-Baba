@@ -1,0 +1,15 @@
+export { CoverPage } from './CoverPage';
+export { ThankYouPage } from './ThankYouPage';
+export { OverviewPage } from './OverviewPage';
+export { BriefItineraryPage } from './BriefItineraryPage';
+export { DetailedItineraryPage } from './DetailedItineraryPage';
+export { InclusionsExclusionsPage } from './InclusionsExclusionsPage';
+export { WhyTravelWithUsPage } from './WhyTravelWithUsPage';
+export { PricingPaymentTermsPage } from './PricingPaymentTermsPage';
+export { GroupDeparturePage } from './GroupDeparturePage';
+export { BookingProcessPage } from './BookingProcessPage';
+export { TermsConditionsPage } from './TermsConditionsPage';
+export { CancellationPolicyPage } from './CancellationPolicyPage';
+export { RegistrationsPage } from './RegistrationsPage';
+export { TestimonialsPage } from './TestimonialsPage';
+export { ContactUsPage } from './ContactUsPage';
