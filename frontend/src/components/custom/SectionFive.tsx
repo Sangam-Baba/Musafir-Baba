@@ -8,14 +8,14 @@ function SectionFive() {
       <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
         
         {/* Header */}
-        <div className="w-full flex flex-col gap-1 items-start mb-8">
-          <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+        <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left mb-6">
+          <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
             PLAN YOUR TRIP
           </span>
-          <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900 mt-2">
-            <span className="relative inline-block whitespace-nowrap">Get a<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> free quote
+          <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+            <span>Get a</span> free quote
           </h2>
-          <p className="text-[15px] md:text-[17px] text-gray-600 mt-2 max-w-3xl">
+          <p className="text-[14px] md:text-[16px] text-gray-600 max-w-3xl">
             Share trip details — get a custom plan within 24 hours.
           </p>
         </div>
@@ -27,7 +27,7 @@ function SectionFive() {
           <div className="flex flex-col w-full lg:w-[55%] pb-8 lg:pb-0 lg:pr-12">
             
             {/* Top Row: Decorative Mountain Graphic */}
-            <div className="w-full h-32 md:h-40 bg-gradient-to-b from-blue-50 to-white rounded-2xl relative overflow-hidden mb-6 border border-gray-100 flex-shrink-0">
+            <div className="w-full flex-1 min-h-[200px] bg-gradient-to-b from-blue-50 to-white rounded-2xl relative overflow-hidden mb-8 border border-gray-100">
               <style dangerouslySetInnerHTML={{__html: `
                 @keyframes mountainBreathe {
                   0%, 100% { transform: scaleY(1); }
@@ -81,9 +81,6 @@ function SectionFive() {
 
             {/* Bottom Row: Text Content */}
             <div className="flex flex-col">
-              <h3 className="text-[22px] md:text-[28px] font-medium text-gray-900 mb-4">
-                Talk to a travel expert
-              </h3>
               <p className="text-[15px] text-gray-600 leading-relaxed mb-8">
                 Our team will get back to you with a personalised itinerary, pricing, and availability — no commitment required.
               </p>
@@ -111,7 +108,10 @@ function SectionFive() {
 
           {/* Right Form Container */}
           <div className="w-full lg:w-[45%] flex flex-col justify-center pt-8 lg:pt-0 lg:pl-12">
-            <div className="w-full xl:max-w-xl mx-auto">
+            <div className="w-full xl:max-w-xl mx-auto flex flex-col">
+              <h3 className="text-[22px] md:text-[28px] font-medium text-gray-900 mb-6">
+                Talk to a travel expert
+              </h3>
               <LazyQueryFormInView variant="minimal" />
             </div>
           </div>

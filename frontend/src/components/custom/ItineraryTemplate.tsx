@@ -43,7 +43,6 @@ export const ItineraryTemplate = forwardRef<HTMLDivElement, ItineraryTemplatePro
         <InclusionsExclusionsPage {...commonProps} />
         <PricingPaymentTermsPage {...commonProps} />
         <GroupDeparturePage {...commonProps} />
-        <BookingProcessPage {...commonProps} />
         <TermsConditionsPage {...commonProps} />
         <CancellationPolicyPage {...commonProps} />
         <RegistrationsPage {...commonProps} />

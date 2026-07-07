@@ -32,14 +32,14 @@ export default function Header() {
   return (
     <header className="w-full z-50 bg-white border-b border-gray-200">
       {/* ===== TOP BAR ===== */}
-      <div className="hidden md:flex justify-between items-center w-full px-8 py-2 bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12]">
+      <div className="hidden md:flex justify-between items-center w-full md:px-10 px-4 py-2 bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12]">
         {/* Social Links */}
         <div className="flex items-center gap-4 text-white">
-          <Link href="https://www.youtube.com/@musafirbabatravels" aria-label="YouTube"><Youtube className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
-          <Link href="http://facebook.com/hellomusafirbaba" aria-label="Facebook"><Facebook className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
-          <Link href="https://x.com/itsmusafirbaba" aria-label="Twitter"><LucideTwitter className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
-          <Link href="https://www.instagram.com/hello_musafirbaba" aria-label="Instagram"><Instagram className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
-          <Link href="https://in.linkedin.com/company/musafirbaba" aria-label="LinkedIn"><Linkedin className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://www.youtube.com/@musafirbabatravels" aria-label="YouTube" className="flex items-center justify-center"><Youtube className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="http://facebook.com/hellomusafirbaba" aria-label="Facebook" className="flex items-center justify-center"><Facebook className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://x.com/itsmusafirbaba" aria-label="Twitter" className="flex items-center justify-center"><LucideTwitter className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://www.instagram.com/hello_musafirbaba" aria-label="Instagram" className="flex items-center justify-center"><Instagram className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
+          <Link href="https://in.linkedin.com/company/musafirbaba" aria-label="LinkedIn" className="flex items-center justify-center"><Linkedin className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
         </div>
 
         {/* Contact & Actions */}

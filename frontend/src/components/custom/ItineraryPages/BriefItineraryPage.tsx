@@ -32,31 +32,27 @@ export const BriefItineraryPage = ({ title, itinerary, img, gallery = [] }: any)
   return (
     <PageWrapper style={{ backgroundColor: '#FFFDFB', padding: '32px 48px' }}>
       
-      {/* Page Header (Standardized) */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${luxuryTheme.gold}33`, paddingBottom: '12px', fontSize: '10.5px', letterSpacing: '0.1em', color: luxuryTheme.gray, fontWeight: 600 }}>
-        <span style={{ fontFamily: "'Playfair Display', serif", textTransform: 'uppercase', color: luxuryTheme.dark }}>{title}</span>
-        <span>SECTION 02 / PAGE 3</span>
-      </div>
+
 
       {/* Page Title Area */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '16px', paddingBottom: '8px', borderBottom: `1px dashed ${luxuryTheme.gold}55`, marginTop: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '16px', paddingBottom: '12px', borderBottom: `1px dashed ${luxuryTheme.gold}55`, marginTop: '32px' }}>
           <div>
               <span style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.2em', color: luxuryTheme.orange, display: 'block', marginBottom: '4px' }}>JOURNEY AT A GLANCE</span>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '28px', color: luxuryTheme.dark, margin: '0 0 8px 0', lineHeight: 1 }}>Brief Agenda</h2>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '28px', color: luxuryTheme.dark, margin: '0 0 8px 0', lineHeight: 1 }}>Day Wise Planner</h2>
               <div style={{ width: '64px', height: '2.5px', backgroundColor: luxuryTheme.orange, borderRadius: '2px' }}></div>
           </div>
           <div style={{ textAlign: 'right', maxWidth: '300px' }}>
               <p style={{ fontSize: '12px', color: luxuryTheme.gray, fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
-                  "A curated summary of your day-by-day customized transit and scenic explorations across the majestic landscape."
+                  "A curated summary of your day-by-day group transit and scenic explorations across the majestic landscape."
               </p>
           </div>
       </div>
 
       {/* Split Two-Column Layout */}
-      <div style={{ display: 'flex', gap: '32px', marginTop: '16px', flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', gap: '32px', marginTop: '24px', flex: 1, overflow: 'hidden' }}>
           
           {/* Left Column: Agenda Timeline (Takes ~58% width) */}
-          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '12px', flex: '0 0 58%', paddingLeft: '4px', overflowY: 'hidden' }}>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '18px', flex: '0 0 58%', paddingLeft: '4px', overflowY: 'hidden' }}>
               
               {/* Continuous track line */}
               <div style={{ position: 'absolute', top: '20px', bottom: '20px', left: '22px', width: '1.5px', background: `linear-gradient(to bottom, ${luxuryTheme.orange}40 0%, ${luxuryTheme.orange} 50%, ${luxuryTheme.orange}40 100%)`, zIndex: 0 }}></div>
@@ -80,7 +76,7 @@ export const BriefItineraryPage = ({ title, itinerary, img, gallery = [] }: any)
                       </div>
 
                       {/* Center Panel */}
-                      <div style={{ flexGrow: 1, backgroundColor: '#FFF', border: `1px solid ${luxuryTheme.gold}33`, borderRadius: '12px', padding: '10px 14px', boxShadow: '0 4px 20px -4px rgba(224, 90, 54, 0.04), 0 2px 10px -2px rgba(0, 0, 0, 0.02)', display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
+                      <div style={{ flexGrow: 1, backgroundColor: '#FFF', border: `1px solid ${luxuryTheme.gold}33`, borderRadius: '12px', padding: '16px 20px', boxShadow: '0 4px 20px -4px rgba(224, 90, 54, 0.04), 0 2px 10px -2px rgba(0, 0, 0, 0.02)', display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                               <h4 style={{ fontSize: '12.5px', fontWeight: 700, color: luxuryTheme.dark, margin: 0, lineHeight: 1.3, flex: 1 }}>
                                   {clean}
@@ -99,9 +95,7 @@ export const BriefItineraryPage = ({ title, itinerary, img, gallery = [] }: any)
                                 </div>
                               )}
                           </div>
-                          <p style={{ fontSize: '10px', color: luxuryTheme.gray, fontWeight: 500, margin: 0, lineHeight: 1.4 }}>
-                              {getSubTitle(idx, itinerary.length)}
-                          </p>
+
                       </div>
                   </div>
                 );
@@ -109,7 +103,7 @@ export const BriefItineraryPage = ({ title, itinerary, img, gallery = [] }: any)
           </div>
 
           {/* Right Column: Postcards (Takes ~42% width) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: '1', paddingTop: '4px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '1', paddingTop: '4px' }}>
               
               {/* Postcard 1 */}
               <div style={{ backgroundColor: '#FFF', padding: '8px 8px 14px 8px', borderRadius: '4px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: `1px solid ${luxuryTheme.gold}22`, transform: 'rotate(-2deg)', position: 'relative' }}>
@@ -166,8 +160,8 @@ export const BriefItineraryPage = ({ title, itinerary, img, gallery = [] }: any)
                       <Shield size={18} />
                   </div>
                   <div>
-                      <span style={{ display: 'block', fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: luxuryTheme.orange, marginBottom: '2px' }}>Premium Safety Guarantee</span>
-                      <span style={{ display: 'block', fontSize: '10px', color: luxuryTheme.gray, lineHeight: 1.3 }}>Every customized package includes round-the-clock ground backup, certified drivers, and premium vetted hotels.</span>
+                      <span style={{ display: 'block', fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: luxuryTheme.orange, marginBottom: '2px' }}>Maximum Safety Guarantee</span>
+                      <span style={{ display: 'block', fontSize: '10px', color: luxuryTheme.gray, lineHeight: 1.3 }}>Every group package includes round-the-clock ground backup, certified drivers, and premium vetted hotels.</span>
                   </div>
               </div>
               

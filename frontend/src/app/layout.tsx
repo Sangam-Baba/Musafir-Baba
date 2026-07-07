@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
 };
 
-import { Poppins, Inter } from "next/font/google";
+import { Poppins, Inter, Playfair_Display } from "next/font/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -56,13 +56,18 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+});
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${inter.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen flex flex-col font-sans">
         {children}
       </body>

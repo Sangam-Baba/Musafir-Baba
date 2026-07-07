@@ -44,13 +44,13 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
         {/* Header Section */}
         <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div className="flex flex-col gap-1 items-start">
-            <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+            <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
               TOP-RATED PACKAGES
             </span>
-            <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
-              <span className="relative inline-block whitespace-nowrap">Featured<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> group tour packages
+            <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+              <span>Featured</span> group tour packages
             </h2>
-            <p className="text-[15px] md:text-[17px] text-gray-600 mt-1">
+            <p className="text-[14px] md:text-[16px] text-gray-600">
               Top-rated holiday packages curated for every journey.
             </p>
           </div>

@@ -4,18 +4,12 @@ import { PageWrapper, luxuryTheme, PageFooter } from './shared';
 export const RegistrationsPage = () => {
   return (
     <PageWrapper>
-      {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${luxuryTheme.gold}33`, paddingBottom: '12px', fontSize: '10.5px', letterSpacing: '0.1em', color: luxuryTheme.gray, fontWeight: 600 }}>
-        <span style={{ fontFamily: "'Playfair Display', serif", textTransform: 'uppercase', color: luxuryTheme.dark }}>Recognized Excellence</span>
-        <span>SECTION 11 / PAGE 12</span>
-      </div>
+
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ color: luxuryTheme.orange, fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Recognized Excellence</p>
           <h2 style={{ fontSize: '36px', fontWeight: 300, fontFamily: "'Playfair Display', serif", color: luxuryTheme.dark, margin: 0, lineHeight: 1.2 }}>
-            Accreditations & <br/>
-            <span style={{ fontStyle: 'italic', color: luxuryTheme.gold }}>Certifications</span>
+            Accreditations & <span style={{ fontStyle: 'italic', color: luxuryTheme.gold }}>Certifications</span>
           </h2>
           <div style={{ width: '64px', height: '2.5px', backgroundColor: luxuryTheme.orange, margin: '8px 0 12px' }}></div>
         </div>

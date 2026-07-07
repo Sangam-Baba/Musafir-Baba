@@ -7,7 +7,7 @@ import badrinath from "../../../public/badrinath.jpg";
 import kashmir from "../../../public/kashmir.jpg";
 import himachal from "../../../public/Himachal.jpg";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Mountain, Globe } from "lucide-react";
 
 export function DestinationSection() {
   const [active, setActive] = useState<"domestic" | "international">(
@@ -21,13 +21,13 @@ export function DestinationSection() {
         {/* Header Section */}
         <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div className="flex flex-col gap-1 items-start">
-            <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+            <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
               TRENDING DESTINATIONS
             </span>
-            <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
-              <span className="relative inline-block whitespace-nowrap">Top destinations<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> in India and around the world
+            <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+              <span>Top destinations</span> in India and around the world
             </h2>
-            <p className="text-[15px] md:text-[17px] text-gray-600 mt-1">
+            <p className="text-[14px] md:text-[16px] text-gray-600">
               Discover trending destinations across India and abroad.
             </p>
           </div>
@@ -42,26 +42,30 @@ export function DestinationSection() {
 
         {/* Toggle Pill */}
         <div className="w-full flex items-center mb-8">
-          <div className="inline-flex items-center bg-[#F8F9FA] border border-gray-200 rounded-lg p-0.5">
+          <div className="relative bg-[#F8F9FA] p-1 rounded-2xl flex w-full max-w-[340px] border border-gray-200/60">
+            
+            {/* Slide dynamic bubble helper background */}
+            <div 
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gradient-to-r from-[#FE5300] to-orange-500 rounded-xl transition-all duration-300 ease-out shadow-md shadow-[#FE5300]/20 ${
+                active === "domestic" ? "left-1" : "left-1/2"
+              }`}
+            ></div>
+            
             <button
               onClick={() => setActive("domestic")}
-              className={`px-4 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200 ${
-                active === "domestic" 
-                  ? "bg-[#FE5300] text-white shadow-sm" 
-                  : "text-slate-600 hover:text-slate-900"
+              className={`z-10 flex-1 flex items-center justify-center py-2.5 text-center text-[13px] font-bold transition-colors duration-300 ${
+                active === 'domestic' ? 'text-white' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Domestic trips
+              <Mountain className="w-[15px] h-[15px] mr-1.5" strokeWidth={2.5} /> Domestic trips
             </button>
             <button
               onClick={() => setActive("international")}
-              className={`px-4 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200 ${
-                active === "international" 
-                  ? "bg-[#FE5300] text-white shadow-sm" 
-                  : "text-slate-600 hover:text-slate-900"
+              className={`z-10 flex-1 flex items-center justify-center py-2.5 text-center text-[13px] font-bold transition-colors duration-300 ${
+                active === 'international' ? 'text-white' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              International trips
+              <Globe className="w-[15px] h-[15px] mr-1.5" strokeWidth={2.5} /> International trips
             </button>
           </div>
         </div>

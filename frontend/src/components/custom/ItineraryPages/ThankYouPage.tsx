@@ -8,9 +8,8 @@ export const ThankYouPage = () => {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', padding: '32px 64px', flex: 1 }}>
         
         {/* Centered Logo Block */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: `1px solid ${luxuryTheme.gold}33`, paddingBottom: '24px', width: '100%', marginBottom: '40px' }}>
-          <img src="/Itinerary/highqualitylogo.png" alt="Musafir Baba" style={{ height: '42px', objectFit: 'contain', marginBottom: '12px' }} />
-          <span style={{ fontSize: '8px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.25em', whiteSpace: 'nowrap' }}>Exclusive Custom Travel Ledger</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: `1px solid ${luxuryTheme.gold}33`, paddingBottom: '16px', width: '100%', marginBottom: '16px' }}>
+          <img src="/Itinerary/highqualitylogo.png" alt="Musafir Baba" style={{ height: '42px', objectFit: 'contain' }} />
         </div>
 
         {/* Heading */}
@@ -20,15 +19,17 @@ export const ThankYouPage = () => {
           fontSize: '44px', 
           color: luxuryTheme.orange, 
           lineHeight: 1.2, 
-          marginBottom: '32px',
+          marginBottom: '16px',
           fontWeight: 500,
           textAlign: 'center'
         }}>
           Thank you for choosing<br/>Musafirbaba
         </h1>
 
+
+
         {/* Content */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', color: luxuryTheme.gray, fontSize: '11px', lineHeight: 1.8, fontFamily: "'Playfair Display', serif", textAlign: 'center', maxWidth: '90%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', color: luxuryTheme.gray, fontSize: '11px', lineHeight: 1.8, fontFamily: "'Playfair Display', serif", textAlign: 'center', maxWidth: '90%' }}>
           <p>
             We believe that an exceptional, unforgettable expedition begins long before you arrive at your destination. It begins as a spark of wanderlust, and our lifelong passion is turning that unique dream into a beautifully polished, completely effortless reality.
           </p>
@@ -40,11 +41,16 @@ export const ThankYouPage = () => {
           </p>
         </div>
 
+        {/* Team Image (Wide Format) */}
+        <div style={{ margin: '16px auto 0', width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
+          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop" alt="Musafirbaba Team" style={{ width: '100%', height: '140px', objectFit: 'cover', display: 'block' }} />
+        </div>
+
         {/* Flexible Spacer to push signature down */}
         <div style={{ flexGrow: 1 }} />
 
-        {/* Signature & Award Block */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '48px', width: '100%', marginBottom: '40px' }}>
+        {/* Signature Block */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '48px', width: '100%', marginBottom: '24px' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ width: '120px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -60,21 +66,12 @@ export const ThankYouPage = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: '#FFFDFB', border: `1px solid ${luxuryTheme.orange}22`, padding: '12px 20px', borderRadius: '12px' }}>
-            <div style={{ backgroundColor: `${luxuryTheme.orange}1a`, padding: '8px', borderRadius: '50%' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={luxuryTheme.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15l-3 3-3-3m6-6l-3-3-3 3M2 12h20"></path></svg>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '7px', fontWeight: 800, color: luxuryTheme.orange, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Awarded Brand</span>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: luxuryTheme.dark, fontFamily: "'Playfair Display', serif" }}>The Best Premium Custom<br/>Travel Operator</span>
-            </div>
-          </div>
-
         </div>
 
         {/* Badges Block */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', width: '100%', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', width: '100%', marginBottom: '24px' }}>
           
+          {/* Google */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', backgroundColor: '#FFF', borderRadius: '12px', border: `1px solid ${luxuryTheme.gold}33`, width: '260px' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: '#4285F4', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px', fontFamily: 'sans-serif' }}>G</div>
@@ -90,6 +87,7 @@ export const ThankYouPage = () => {
             </div>
           </div>
 
+          {/* Facebook */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', backgroundColor: '#FFF', borderRadius: '12px', border: `1px solid ${luxuryTheme.gold}33`, width: '260px' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                <div style={{ width: '18px', height: '18px', borderRadius: '4px', backgroundColor: '#1877F2', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px', fontFamily: 'serif' }}>f</div>
@@ -105,26 +103,56 @@ export const ThankYouPage = () => {
             </div>
           </div>
 
+          {/* JD Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', backgroundColor: '#FFF', borderRadius: '12px', border: `1px solid ${luxuryTheme.gold}33`, width: '260px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <div style={{ width: '18px', height: '18px', borderRadius: '4px', backgroundColor: '#FF7A00', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '9px', fontFamily: 'sans-serif' }}>JD</div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: luxuryTheme.dark }}>4.8/5</span>
+                <div style={{ display: 'flex', gap: '2px', color: '#FBBF24', fontSize: '12px' }}>
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>8,500+ JD Reviews</div>
+            </div>
+          </div>
+
+          {/* TripAdvisor Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', backgroundColor: '#FFF', borderRadius: '12px', border: `1px solid ${luxuryTheme.gold}33`, width: '260px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <div style={{ width: '18px', height: '18px', borderRadius: '4px', backgroundColor: '#00AA6C', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '9px', fontFamily: 'sans-serif' }}>TA</div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: luxuryTheme.dark }}>5.0/5</span>
+                <div style={{ display: 'flex', gap: '2px', color: '#FBBF24', fontSize: '12px' }}>
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>4,200+ Tripadvisor Reviews</div>
+            </div>
+          </div>
+
+          {/* Trustpilot Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 24px', backgroundColor: '#FFF', borderRadius: '12px', border: `1px solid ${luxuryTheme.gold}33`, width: '260px' }}>
+            <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <div style={{ width: '18px', height: '18px', borderRadius: '4px', backgroundColor: '#00B67A', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px', fontFamily: 'sans-serif' }}>★</div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontWeight: 800, fontSize: '14px', color: luxuryTheme.dark }}>4.9/5</span>
+                <div style={{ display: 'flex', gap: '2px', color: '#FBBF24', fontSize: '12px' }}>
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                </div>
+              </div>
+              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>3,100+ Trustpilot Reviews</div>
+            </div>
+          </div>
+
         </div>
 
-      </div>
-      
-      {/* Footer Banner */}
-      <div style={{ borderTop: `1px solid ${luxuryTheme.gold}33`, padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={luxuryTheme.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Fully Verified Visas</span>
-        </div>
-        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: luxuryTheme.gray, opacity: 0.3 }}></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={luxuryTheme.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Trusted By Celebrities</span>
-        </div>
-        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: luxuryTheme.gray, opacity: 0.3 }}></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={luxuryTheme.orange} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          <span style={{ fontSize: '10px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.15em' }}>100% Customized Trips</span>
-        </div>
       </div>
     </PageWrapper>
   );
