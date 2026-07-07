@@ -67,18 +67,12 @@ export const GroupDeparturePage = ({ batch }: any) => {
 
   return (
     <PageWrapper>
-      {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${luxuryTheme.gold}33`, paddingBottom: '12px', fontSize: '10.5px', letterSpacing: '0.1em', color: luxuryTheme.gray, fontWeight: 600 }}>
-        <span style={{ fontFamily: "'Playfair Display', serif", textTransform: 'uppercase', color: luxuryTheme.dark }}>Plan Your Journey</span>
-        <span>SECTION 07 / PAGE 8</span>
-      </div>
+
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '24px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ color: luxuryTheme.orange, fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Plan Your Journey</p>
           <h2 style={{ fontSize: '36px', fontWeight: 300, fontFamily: "'Playfair Display', serif", color: luxuryTheme.dark, margin: 0, lineHeight: 1.2 }}>
-            Departure <br/>
-            <span style={{ fontStyle: 'italic', color: luxuryTheme.gold }}>Schedule 2026</span>
+            Departure <span style={{ fontStyle: 'italic', color: luxuryTheme.gold }}>Schedule 2026</span>
           </h2>
           <div style={{ width: '64px', height: '2.5px', backgroundColor: luxuryTheme.orange, margin: '8px 0 12px' }}></div>
         </div>
@@ -88,7 +82,7 @@ export const GroupDeparturePage = ({ batch }: any) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ color: luxuryTheme.gold }}><Users size={20} /></div>
             <div>
-              <p style={{ fontSize: '10px', color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Total Departures</p>
+              <p style={{ fontSize: '10px', color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, whiteSpace: 'nowrap' }}>Total Departures</p>
               <p style={{ fontSize: '18px', fontWeight: 700, color: luxuryTheme.dark, margin: 0 }}>{totalDeparturesCount || 18}</p>
             </div>
           </div>
@@ -96,7 +90,7 @@ export const GroupDeparturePage = ({ batch }: any) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ color: luxuryTheme.gold }}><Calendar size={20} /></div>
             <div>
-              <p style={{ fontSize: '10px', color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Months Active</p>
+              <p style={{ fontSize: '10px', color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0, whiteSpace: 'nowrap' }}>Months Active</p>
               <p style={{ fontSize: '18px', fontWeight: 700, color: luxuryTheme.dark, margin: 0 }}>{activeMonthsCount || 8}</p>
             </div>
           </div>
@@ -125,17 +119,12 @@ export const GroupDeparturePage = ({ batch }: any) => {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {(month.departures || []).slice(0, 2).map((dep: any, dIdx: number) => (
-                      <div key={dIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', borderBottom: dIdx === 0 && (month.departures || []).length > 1 ? '1px dotted #e2e8f0' : 'none', paddingBottom: '4px' }}>
-                        <div><span style={{ color: luxuryTheme.gray, fontWeight: 700 }}>DEP:</span> <span style={{ color: luxuryTheme.dark, fontWeight: 600 }}>{dep.dep.split(' ').slice(0, 2).join(' ')}</span></div>
-                        <div><span style={{ color: luxuryTheme.gray, fontWeight: 700 }}>RET:</span> <span style={{ color: luxuryTheme.dark, fontWeight: 600 }}>{dep.ret.split(' ').slice(0, 2).join(' ')}</span></div>
+                    {(month.departures || []).map((dep: any, dIdx: number) => (
+                      <div key={dIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', borderBottom: dIdx !== (month.departures || []).length - 1 ? '1px dotted #e2e8f0' : 'none', paddingBottom: '4px' }}>
+                        <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: luxuryTheme.gray, fontWeight: 700 }}>DEP:</span> <span style={{ color: luxuryTheme.dark, fontWeight: 600 }}>{dep.dep.split(' ').slice(0, 2).join(' ')}</span></div>
+                        <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: luxuryTheme.gray, fontWeight: 700 }}>RET:</span> <span style={{ color: luxuryTheme.dark, fontWeight: 600 }}>{dep.ret.split(' ').slice(0, 2).join(' ')}</span></div>
                       </div>
                     ))}
-                    {(month.departures || []).length > 2 && (
-                      <div style={{ fontSize: '9px', color: luxuryTheme.orange, fontWeight: 600, textAlign: 'center' }}>
-                        + {(month.departures || []).length - 2} more batches
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -150,7 +139,7 @@ export const GroupDeparturePage = ({ batch }: any) => {
              <div>
                 <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Travel Advisory</h4>
                 <p style={{ fontSize: '11px', color: luxuryTheme.gray, margin: 0, lineHeight: 1.5 }}>
-                  This yatra involves high-altitude travel and trekking; participants should be medically fit and prepared for changing terrain and weather conditions.
+                  This Package Involves high-altitude travel and trekking; participants should be medically fit and prepared for changing terrain and weather conditions.
                 </p>
              </div>
           </div>

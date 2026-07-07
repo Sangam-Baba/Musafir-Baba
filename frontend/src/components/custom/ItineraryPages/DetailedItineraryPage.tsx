@@ -37,7 +37,7 @@ export const DetailedItineraryPage = ({ itineraryPages, gallery, img }: any) => 
                   <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%' }}>
                   
                   {/* Curved Main Destination Banner Box */}
-                  <div style={{ position: 'relative', width: '100%', height: '260px', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(254,223,206,0.5)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', marginBottom: '32px' }}>
+                  <div style={{ position: 'relative', width: '100%', height: '320px', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(254,223,206,0.5)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', marginBottom: '32px' }}>
                     <img 
                       src={getDayImage(globalIndex, gallery, img)} 
                       alt={cleanTitle} 
@@ -67,7 +67,7 @@ export const DetailedItineraryPage = ({ itineraryPages, gallery, img }: any) => 
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         
                         {/* Main Header Title */}
-                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '28px', fontWeight: 700, color: luxuryTheme.dark, lineHeight: 1.3, letterSpacing: '-0.025em', margin: '0 0 8px 0' }}>
+                        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '32px', fontWeight: 700, color: luxuryTheme.dark, lineHeight: 1.3, letterSpacing: '-0.025em', margin: '0 0 8px 0' }}>
                             {cleanTitle}
                         </h1>
 
@@ -76,7 +76,7 @@ export const DetailedItineraryPage = ({ itineraryPages, gallery, img }: any) => 
                             {badgeVal && badgeVal.split('/').map((d, bIdx) => {
                                 const innerVal = d.trim();
                                 return (
-                                    <div key={bIdx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', backgroundColor: '#FFF3E8', border: '1px solid rgba(254,223,206,1)', borderRadius: '9999px', fontSize: '10px', fontWeight: 700, color: luxuryTheme.orange, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    <div key={bIdx} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', backgroundColor: '#FFF3E8', border: '1px solid rgba(254,223,206,1)', borderRadius: '9999px', fontSize: '10px', fontWeight: 700, color: luxuryTheme.orange, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                                         <Route size={10} style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
                                         <span>{innerVal}</span>
                                     </div>
@@ -94,7 +94,7 @@ export const DetailedItineraryPage = ({ itineraryPages, gallery, img }: any) => 
                                         <div style={{ position: 'absolute', left: '-47px', top: '2px', width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF3E8', border: `1px solid rgba(254,223,206,1)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', color: luxuryTheme.orange }}>
                                             {getPointIcon(pt)}
                                         </div>
-                                        <div style={{ fontSize: '14px', color: '#4B5563', lineHeight: 1.6 }}>
+                                        <div style={{ fontSize: '15.5px', color: '#4B5563', lineHeight: 1.6 }}>
                                             {formatDescription(pt, { fontWeight: 700, color: luxuryTheme.dark, marginRight: '6px' })}
                                         </div>
                                     </div>
@@ -105,7 +105,7 @@ export const DetailedItineraryPage = ({ itineraryPages, gallery, img }: any) => 
                                     <div style={{ position: 'absolute', left: '-47px', top: '2px', width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#FFF3E8', border: `1px solid rgba(254,223,206,1)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', color: luxuryTheme.orange }}>
                                         <Route size={12} />
                                     </div>
-                                    <div style={{ fontSize: '14px', color: '#4B5563', lineHeight: 1.6 }}>
+                                    <div style={{ fontSize: '15.5px', color: '#4B5563', lineHeight: 1.6 }}>
                                         {stripHtml(item.description) || cleanTitle}
                                     </div>
                                 </div>

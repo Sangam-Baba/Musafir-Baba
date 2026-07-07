@@ -1,18 +1,14 @@
 import React from 'react';
 import { PageWrapper, luxuryTheme, getInclusionIcon, getExclusionIcon, PageFooter } from './shared';
 import { stripHtml } from '@/lib/utils';
-import { Check, X, Shield, Star, UserCheck, Headset } from 'lucide-react';
+import { Check, X, Shield, Star, UserCheck, Headset, Globe, MapPin, Sliders } from 'lucide-react';
 
 export const InclusionsExclusionsPage = ({ inclusions, exclusions, title }: any) => {
   if ((!inclusions || inclusions.length === 0) && (!exclusions || exclusions.length === 0)) return null;
 
   return (
     <PageWrapper>
-      {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${luxuryTheme.gold}33`, paddingBottom: '12px', fontSize: '10.5px', letterSpacing: '0.1em', color: luxuryTheme.gray, fontWeight: 600 }}>
-        <span style={{ fontFamily: "'Playfair Display', serif", textTransform: 'uppercase', color: luxuryTheme.dark }}>{title}</span>
-        <span>SECTION 04 / PAGE 5</span>
-      </div>
+
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
         
@@ -75,43 +71,57 @@ export const InclusionsExclusionsPage = ({ inclusions, exclusions, title }: any)
           </div>
         </div>
 
-        {/* WHY TRAVEL WITH US SECTION */}
+        {/* WHY CHOOSE US SECTION */}
         <div style={{ marginTop: '32px', borderTop: `1px dashed ${luxuryTheme.gold}55`, paddingTop: '32px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <p style={{ color: luxuryTheme.orange, fontWeight: 700, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>The Musafir Baba Advantage</p>
             <h2 style={{ fontSize: '28px', fontWeight: 300, fontFamily: "'Playfair Display', serif", color: luxuryTheme.dark, margin: 0, lineHeight: 1.2 }}>
-              Why Travel <span style={{ fontStyle: 'italic', color: luxuryTheme.gold }}>With Us</span>
+              Why Choose <span style={{ fontStyle: 'italic', color: luxuryTheme.gold }}>Us</span>
             </h2>
             <div style={{ width: '40px', height: '2px', backgroundColor: luxuryTheme.orange, margin: '4px 0 8px' }}></div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 32px', marginTop: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 32px', marginTop: '8px' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ color: luxuryTheme.gold }}><Shield size={24} strokeWidth={1.5} /></div>
+              <div style={{ color: luxuryTheme.gold }}><Globe size={20} strokeWidth={1.5} /></div>
               <div>
-                <h4 style={{ fontSize: '13px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', marginTop: 0 }}>Trusted & Safe</h4>
-                <p style={{ fontSize: '11px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Over 16,000+ travelers have trusted us with their spiritual journeys. Your safety and peace of mind are our paramount concern.</p>
+                <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: 0 }}>500+ travel experiences</h4>
+                <p style={{ fontSize: '10.5px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Domestic, international, religious, adventure, honeymoon, family, and customised holiday packages.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ color: luxuryTheme.gold }}><Star size={24} strokeWidth={1.5} /></div>
+              <div style={{ color: luxuryTheme.gold }}><MapPin size={20} strokeWidth={1.5} /></div>
               <div>
-                <h4 style={{ fontSize: '13px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', marginTop: 0 }}>Premium Experience</h4>
-                <p style={{ fontSize: '11px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>From carefully vetted boutique hotels to private luxury transport, we ensure every touchpoint feels exclusive.</p>
+                <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: 0 }}>Destination expertise</h4>
+                <p style={{ fontSize: '10.5px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Carefully planned itineraries using local knowledge, travel insights, and customer preferences.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ color: luxuryTheme.gold }}><UserCheck size={24} strokeWidth={1.5} /></div>
+              <div style={{ color: luxuryTheme.gold }}><Sliders size={20} strokeWidth={1.5} /></div>
               <div>
-                <h4 style={{ fontSize: '13px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', marginTop: 0 }}>Expert Guides</h4>
-                <p style={{ fontSize: '11px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Our local guides aren't just knowledgeable; they are passionate storytellers who bring the destination's rich history to life.</p>
+                <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: 0 }}>Flexible customisation</h4>
+                <p style={{ fontSize: '10.5px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Tailor hotels, sightseeing, transportation, activities, and travel duration to your needs.</p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ color: luxuryTheme.gold }}><Headset size={24} strokeWidth={1.5} /></div>
+              <div style={{ color: luxuryTheme.gold }}><Shield size={20} strokeWidth={1.5} /></div>
               <div>
-                <h4 style={{ fontSize: '13px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', marginTop: 0 }}>24/7 Concierge</h4>
-                <p style={{ fontSize: '11px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>A dedicated travel concierge is available around the clock to assist you with any request, no matter how small.</p>
+                <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: 0 }}>Trusted partner network</h4>
+                <p style={{ fontSize: '10.5px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Reliable hotels, transport providers, guides, and local partners to enhance your experience.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ color: luxuryTheme.gold }}><UserCheck size={20} strokeWidth={1.5} /></div>
+              <div>
+                <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: 0 }}>Travel solutions for everyone</h4>
+                <p style={{ fontSize: '10.5px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Packages for couples, families, groups, solo travellers, senior citizens, and corporates.</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ color: luxuryTheme.gold }}><Headset size={20} strokeWidth={1.5} /></div>
+              <div>
+                <h4 style={{ fontSize: '12px', fontWeight: 700, color: luxuryTheme.dark, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: 0 }}>Dedicated travel assistance</h4>
+                <p style={{ fontSize: '10.5px', color: luxuryTheme.gray, lineHeight: 1.4, margin: 0 }}>Support before, during, and after your journey for a smooth and memorable experience.</p>
               </div>
             </div>
           </div>
