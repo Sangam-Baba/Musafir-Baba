@@ -28,14 +28,14 @@ export function Faqs({ faqs }: FaqsProps) {
     <section className="w-full px-4 md:px-8 lg:px-10 py-12 md:py-16">
       <div className="flex flex-col items-start max-w-7xl mx-auto">
         {/* Section Title */}
-        <div className="space-y-1.5 mb-8">
-          <span className="text-[#FE5300] text-[10px] md:text-[11px] font-bold uppercase tracking-widest">
+        <div className="w-full flex flex-col gap-1 items-center text-center mb-10 md:mb-14">
+          <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
             COMMON QUESTIONS
           </span>
-          <h2 className="text-2xl md:text-[32px] font-medium text-gray-900 tracking-tight leading-tight">
-            <span className="relative inline-block whitespace-nowrap">Frequently asked<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> questions
+          <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+            <span>Frequently asked</span> questions
           </h2>
-          <p className="text-gray-600 text-[14px] md:text-[15px]">
+          <p className="text-[14px] md:text-[16px] text-gray-600">
             Find quick answers to your travel and visa queries.
           </p>
         </div>

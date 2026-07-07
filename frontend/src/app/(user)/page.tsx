@@ -148,9 +148,9 @@ export default async function HomePage() {
   return (
     <main>
       {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
-      <section className="w-full px-4 md:px-10 py-3 md:py-4 lg:py-6 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[480px] overflow-hidden">
+      <section className="w-full px-6 md:px-14 lg:px-20 py-3 md:py-4 lg:py-6 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[480px] overflow-hidden">
         <Image
-          src="/homebanner11.avif"
+          src="/homebanner32.avif"
           alt="Home Banner"
           fill
           priority
@@ -213,7 +213,7 @@ export default async function HomePage() {
           <HeroSearchBox />
 
           {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full mb-4 relative z-20">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full max-w-[530px] mb-4 relative z-20">
             {[
               { label: "Mountain treks", slug: "mountain-treks" },
               { label: "Honeymoon", slug: "honeymoon-packages" },

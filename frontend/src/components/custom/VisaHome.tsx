@@ -74,15 +74,15 @@ async function VisaHome() {
       <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
         
         {/* Header Section */}
-        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div className="flex flex-col gap-1 items-start">
-            <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+            <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
               VISA ASSISTANCE
             </span>
-            <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
-              <span className="relative inline-block whitespace-nowrap">Popular<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> visa services for Indian travellers
+            <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+              <span>Popular</span> visa services for Indian travellers
             </h2>
-            <p className="text-[15px] md:text-[17px] text-gray-600 mt-1">
+            <p className="text-[14px] md:text-[16px] text-gray-600">
               Fast, reliable visa assistance for top travel destinations.
             </p>
           </div>
@@ -93,7 +93,7 @@ async function VisaHome() {
         </div>
 
         {/* Grid Section */}
-        <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 mb-10">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 mb-2 md:mb-3">
           {shownVisa.slice(0, 12).map((data, i) => {
             const meta = VISA_METADATA[data.country] || { icon: Globe };
             const Icon = meta.icon;
@@ -116,7 +116,7 @@ async function VisaHome() {
         </div>
 
         {/* Bottom Banner */}
-        <div className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex flex-col">
             <h3 className="text-lg md:text-[20px] font-medium text-gray-900 mb-1">
               Not sure which visa you need?

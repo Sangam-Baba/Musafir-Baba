@@ -4,10 +4,10 @@ import { User, CreditCard, Building, Check, Scan } from 'lucide-react';
 
 export const PricingPaymentTermsPage = ({ batch }: any) => {
   const activeBatch = batch && batch.length > 0 ? batch[0] : null;
-  const quadPrice = activeBatch?.quad ? `₹${activeBatch.quad.toLocaleString()}/-` : '₹26,999/-';
-  const triplePrice = activeBatch?.triple ? `₹${activeBatch.triple.toLocaleString()}/-` : '₹27,999/-';
-  const doublePrice = activeBatch?.double ? `₹${activeBatch.double.toLocaleString()}/-` : '₹31,999/-';
-  const childPrice = activeBatch?.child ? `₹${activeBatch.child.toLocaleString()}/-` : '₹14,999/-';
+  const quadPrice = activeBatch?.quad ? `₹${Number(activeBatch.quad).toLocaleString('en-IN')}/-` : '₹26,999/-';
+  const triplePrice = activeBatch?.triple ? `₹${Number(activeBatch.triple).toLocaleString('en-IN')}/-` : '₹27,999/-';
+  const doublePrice = activeBatch?.double ? `₹${Number(activeBatch.double).toLocaleString('en-IN')}/-` : '₹31,999/-';
+  const childPrice = activeBatch?.child ? `₹${Number(activeBatch.child).toLocaleString('en-IN')}/-` : '₹14,999/-';
 
   return (
     <PageWrapper>

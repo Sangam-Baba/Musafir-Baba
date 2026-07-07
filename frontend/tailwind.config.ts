@@ -11,6 +11,7 @@ module.exports = {
         sans: ["var(--font-inter)", "sans-serif"],
         heading: ["var(--font-poppins)", "sans-serif"],
         poppins: ["var(--font-poppins)", "sans-serif"],
+        serif: ["var(--font-playfair)", "serif"],
       },
       animation: {
         'drift-cloud': 'driftCloud 45s linear infinite',

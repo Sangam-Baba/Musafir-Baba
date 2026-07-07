@@ -575,15 +575,13 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                 )}
             </div>
 
-            {isHumanVerified && (
-              <Button
-                type="submit"
-                disabled={mutation.isPending}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
-              >
-                {mutation.isPending ? "Sending..." : "Send Enquiry"}
-              </Button>
-            )}
+            <Button
+              type="submit"
+              disabled={!isHumanVerified || mutation.isPending}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
+            >
+              {mutation.isPending ? "Sending..." : "Send Enquiry"}
+            </Button>
           </form>
         </Form>
       </CardContent>

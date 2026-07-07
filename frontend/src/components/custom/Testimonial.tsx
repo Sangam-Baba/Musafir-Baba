@@ -63,20 +63,21 @@ export function Testimonial({ data }: { data: TestiProps[] }) {
     <section className="w-full bg-white px-4 md:px-10 py-10 md:py-14 border-t border-gray-100">
       <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
         
-        {/* Left-Aligned Header Section matching site design */}
-        <div className="w-full flex flex-col gap-1 items-start mb-8">
-          <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
-            TESTIMONIALS
-          </span>
-          <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
-            <span className="relative inline-block whitespace-nowrap">Loved by<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> happy travellers
-          </h2>
-          <div className="flex items-center gap-2 mt-2">
+        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div className="flex flex-col gap-1 items-start">
+            <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
+              TESTIMONIALS
+            </span>
+            <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+              <span>Loved by</span> happy travellers
+            </h2>
+            <div className="flex items-center gap-2">
             <span className="text-[14px] md:text-[15px] text-gray-600 font-medium">Excellent 4.8 out of 5 based on</span>
             <div className="scale-[0.8] origin-center -mx-1">
               <GoogleIcon />
             </div>
             <span className="text-[14px] md:text-[15px] text-gray-900 font-semibold">Reviews</span>
+          </div>
           </div>
         </div>
 

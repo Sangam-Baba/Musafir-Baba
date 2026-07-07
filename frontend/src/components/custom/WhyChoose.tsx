@@ -7,14 +7,14 @@ function WhyChoose() {
       <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
         
         {/* Header Section */}
-        <div className="w-full flex flex-col gap-1 items-start mb-10">
-          <span className="text-[11px] md:text-[13px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase mb-2">
+        <div className="w-full flex flex-col gap-1 items-start mb-6">
+          <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
             WHY TRAVEL WITH US
           </span>
-          <h2 className="text-3xl md:text-[40px] leading-tight font-medium text-gray-900">
-            <span className="relative inline-block whitespace-nowrap">Why choose<span className="absolute -bottom-1 left-0 w-10 md:w-12 h-[3px] md:h-[4px] bg-[#FE5300] rounded-full"></span></span> MusafirBaba
+          <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+            <span>Why choose</span> MusafirBaba
           </h2>
-          <p className="text-[15px] md:text-[17px] text-gray-600 mt-2 max-w-3xl">
+          <p className="text-[14px] md:text-[16px] text-gray-600 max-w-3xl text-left">
             We combine expertise, transparency, and personalised planning to deliver unforgettable journeys.
           </p>
         </div>

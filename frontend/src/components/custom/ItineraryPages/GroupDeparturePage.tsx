@@ -51,6 +51,7 @@ export const GroupDeparturePage = ({ batch }: any) => {
       const depDate = new Date(b.startDate);
       const retDate = b.endDate ? new Date(b.endDate) : new Date(depDate.getTime() + 10 * 24 * 60 * 60 * 1000);
       const fmt = (d: Date) => {
+        if (isNaN(d.getTime())) return "TBD";
         const day = String(d.getDate()).padStart(2, '0');
         const mStr = d.toLocaleString('en-US', { month: 'short' });
         const yStr = d.getFullYear();
