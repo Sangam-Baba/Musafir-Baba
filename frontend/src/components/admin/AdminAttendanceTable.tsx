@@ -14,8 +14,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Calendar as CalendarIcon, MapPin, Camera, Info, Coffee, X } from "lucide-react";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 export default function AdminAttendanceTable() {
+  const role = useAdminAuthStore((state) => state.role);
+  const isAdmin = role === "admin" || role === "superadmin";
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split("T")[0]);
@@ -135,7 +138,9 @@ export default function AdminAttendanceTable() {
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Distance (In/Out)</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Total Hrs</TableHead>
                   <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2">Working Hrs</TableHead>
-                  <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Actions</TableHead>
+                  {isAdmin && (
+                    <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2 text-right">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -216,25 +221,27 @@ export default function AdminAttendanceTable() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-2 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {(!record.leaveType || record.leaveType === "none" || record.leaveStatus === "none") && record.staff && (
-                          <button 
-                            onClick={() => {
-                              setSelectedStaffId(record.staff._id || record.staff.id || (record._id.startsWith("absent_") ? record._id.replace("absent_", "") : record.staff));
-                              setLeaveDate(dateFilter);
-                              setLeaveEndDate("");
-                              setLeaveReason("");
-                              setShowMarkLeaveModal(true);
-                            }}
-                            disabled={actionLoading}
-                            className="text-[10px] bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition-colors"
-                          >
-                            Mark Leave
-                          </button>
-                        )}
-                      </div>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="py-2 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {(!record.leaveType || record.leaveType === "none" || record.leaveStatus === "none") && record.staff && (
+                            <button 
+                              onClick={() => {
+                                setSelectedStaffId(record.staff._id || record.staff.id || (record._id.startsWith("absent_") ? record._id.replace("absent_", "") : record.staff));
+                                setLeaveDate(dateFilter);
+                                setLeaveEndDate("");
+                                setLeaveReason("");
+                                setShowMarkLeaveModal(true);
+                              }}
+                              disabled={actionLoading}
+                              className="text-[10px] bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition-colors"
+                            >
+                              Mark Leave
+                            </button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

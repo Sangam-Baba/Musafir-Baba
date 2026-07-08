@@ -57,7 +57,7 @@ staffRouter.get(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], ["role", "view-all-attendance"]),
   getAllAdmin,
 );
 staffRouter.post("/login", loginAdmin);

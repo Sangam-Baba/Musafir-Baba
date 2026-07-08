@@ -81,8 +81,13 @@ const authorizedRoles = (roles, permission = null) => {
         }
       }
 
-      if (user.role === "staff" && permissionToCheck && user.permissions?.includes(permissionToCheck)) {
-        return next();
+      if (user.role === "staff" && permissionToCheck) {
+        if (Array.isArray(permissionToCheck)) {
+          const hasAny = permissionToCheck.some(p => user.permissions?.includes(p));
+          if (hasAny) return next();
+        } else if (user.permissions?.includes(permissionToCheck)) {
+          return next();
+        }
       }
 
       return res.status(403).json({ message: "You are not allowed" });
