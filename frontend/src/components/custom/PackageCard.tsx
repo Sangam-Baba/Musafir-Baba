@@ -50,9 +50,11 @@ function groupBatchesByMonth(batches: Batch[]) {
 export default function PackageCard({
   pkg,
   url,
+  priority = false,
 }: {
   pkg: Package;
   url: string;
+  priority?: boolean;
 }) {
   const batchesByMonth = useMemo(
     () => groupBatchesByMonth(pkg.batch ? pkg.batch : []),
@@ -72,6 +74,7 @@ export default function PackageCard({
             src={pkg.image}
             alt={pkg.name}
             fill
+            priority={priority}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
         ) : (

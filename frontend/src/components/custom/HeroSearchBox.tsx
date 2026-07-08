@@ -23,6 +23,7 @@ export default function HeroSearchBox() {
     <div className="w-full max-w-[530px] bg-white border border-gray-300 rounded-lg p-1 flex items-center gap-1 shadow-sm mt-4 md:mt-6 lg:mt-8 mb-2 md:mb-4 relative z-20">
       <div className="flex-1 relative flex items-center px-3 md:px-4">
         <select
+          aria-label="Select Service"
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
           className="w-full bg-transparent text-gray-700 text-[11px] md:text-[13px] font-medium outline-none cursor-pointer py-1 md:py-1.5 appearance-none pr-6"

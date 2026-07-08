@@ -12,15 +12,12 @@ import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
 import BlogsHome from "@/components/custom/BlogsHome";
 import HeroSearchBox from "@/components/custom/HeroSearchBox";
 
-// ─── Below-the-fold Server Components (direct imports) ───────────────
-import SectionFour from "@/components/custom/SectionFour";
-import SectionFive from "@/components/custom/SectionFive";
-import WhyChoose from "@/components/custom/WhyChoose";
-import HomeBooking from "@/components/custom/HomeBooking";
-
-
 // ─── Below-the-fold Client Components (dynamic imports to defer JS) ──
 import dynamic from "next/dynamic";
+
+
+const WhyChoose = dynamic(() => import("@/components/custom/WhyChoose").then(mod => ({ default: mod.default })));
+const SectionFive = dynamic(() => import("@/components/custom/SectionFive").then(mod => ({ default: mod.default })));
 const DestinationSection = dynamic(
   () => import("@/components/custom/DestinationSection").then((mod) => ({ default: mod.DestinationSection })),
   { loading: () => <div className="h-64 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
@@ -130,14 +127,14 @@ const testi = [
 ];
 
 const images = [
-  { id: 1, url: "/frame1.webp", alt: "" },
-  { id: 2, url: "/frame2.jpg", alt: "" },
-  { id: 3, url: "/frame3.jpg", alt: "" },
-  { id: 4, url: "/frame4.webp", alt: "" },
-  { id: 5, url: "/frame5.jpg", alt: "" },
-  { id: 6, url: "/frame6.jpg", alt: "" },
-  { id: 7, url: "/frame7.jpg", alt: "" },
-  { id: 8, url: "/frame8.webp", alt: "" },
+  { id: 1, url: "/frame1.webp", alt: "Tour destination scenery" },
+  { id: 2, url: "/frame2.jpg", alt: "Travelers exploring nature" },
+  { id: 3, url: "/frame3.jpg", alt: "Beautiful landscape view" },
+  { id: 4, url: "/frame4.webp", alt: "Cultural heritage site" },
+  { id: 5, url: "/frame5.jpg", alt: "Scenic mountain peak" },
+  { id: 6, url: "/frame6.jpg", alt: "Relaxing beach destination" },
+  { id: 7, url: "/frame7.jpg", alt: "Historic architecture" },
+  { id: 8, url: "/frame8.webp", alt: "Group tour adventure" },
 ];
 
 export default async function HomePage() {
@@ -291,7 +288,7 @@ export default async function HomePage() {
         <VisaHome />
       </Suspense>
 
-      <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+      <Suspense fallback={<div className="min-h-[600px] bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
         <FeaturedTourSSG />
       </Suspense>
 
