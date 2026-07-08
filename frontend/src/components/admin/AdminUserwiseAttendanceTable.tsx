@@ -20,10 +20,12 @@ import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 export default function AdminUserwiseAttendanceTable() {
   const role = useAdminAuthStore((state) => state.role);
+  const permissions = useAdminAuthStore((state) => state.permissions) || [];
   const isAdmin = role === "admin" || role === "superadmin";
+  const canViewAll = isAdmin || permissions.includes("view-all-attendance");
 
   const [staffList, setStaffList] = useState<any[]>([]);
-  const [selectedStaff, setSelectedStaff] = useState<string>(isAdmin ? "" : "me");
+  const [selectedStaff, setSelectedStaff] = useState<string>(canViewAll ? "" : "me");
   const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
   const [records, setRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -197,7 +199,7 @@ export default function AdminUserwiseAttendanceTable() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
         <h2 className="text-[18px] font-bold text-slate-800">User-wise Monthly Breakdown</h2>
         <div className="flex items-center gap-4">
-          {isAdmin && (
+          {canViewAll && (
             <Select value={selectedStaff} onValueChange={setSelectedStaff}>
               <SelectTrigger className="w-[200px] h-8 bg-slate-50 border-0 shadow-none focus:ring-1 focus:ring-[#FE5300] text-[13px] font-semibold text-slate-700">
                 <SelectValue placeholder="Select Staff Member" />

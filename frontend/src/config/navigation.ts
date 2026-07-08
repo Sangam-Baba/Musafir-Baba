@@ -257,6 +257,13 @@ export const NAV_GROUPS = [
         permission: "attendance",
       },
       {
+        label: "View All Attendance (Read Only)",
+        href: "/admin/attendance",
+        icon: UserRoundCheck,
+        permission: "view-all-attendance",
+        hideInSidebar: true,
+      },
+      {
         label: "Authors",
         href: "/admin/authors",
         icon: Users,

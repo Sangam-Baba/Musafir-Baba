@@ -83,7 +83,7 @@ attendanceRouter.get(
   "/",
   isAuthenticated,
   validateSession,
-  authorizedRoles(["admin", "superadmin"]),
+  authorizedRoles(["admin", "superadmin"], "view-all-attendance"),
   getAllAttendance
 );
 

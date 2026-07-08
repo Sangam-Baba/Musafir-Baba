@@ -330,7 +330,10 @@ export const getUserwiseAttendance = async (req, res, next) => {
     let { userId, month } = req.query; 
 
     if (req.user.role === "staff") {
-      userId = req.user.sub;
+      const staffUser = await Staff.findById(req.user.sub).select("permissions");
+      if (!staffUser || !staffUser.permissions?.includes("view-all-attendance")) {
+        userId = req.user.sub;
+      }
     }
 
     if (!userId || !month) {

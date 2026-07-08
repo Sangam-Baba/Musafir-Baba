@@ -1,6 +1,30 @@
 import { SalesRecord } from "../models/SalesRecord.js";
 import { SalesRecordComment } from "../models/SalesRecordComment.js";
 import { Staff } from "../models/Staff.js";
+import sendEmail from "../services/email.service.js";
+
+const getAdminEmail = () => process.env.NODE_ENV === "production" ? "care@musafirbaba.com" : "shubham.jauhari@musafirbaba.com";
+const getFrontendUrl = () => process.env.FRONTEND_URL || "https://musafirbaba.com";
+
+const getEmailTemplate = (title, content, link) => `
+  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 500px; margin: 40px auto; border: 1px solid #eaeaea; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04); background-color: #ffffff;">
+    <div style="padding: 24px 24px 16px; border-bottom: 1px solid #f0f0f0;">
+      <h2 style="color: #111827; margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
+        <span style="display: inline-block; width: 8px; height: 8px; background-color: #FE5300; border-radius: 50%; margin-right: 12px;"></span>
+        ${title}
+      </h2>
+    </div>
+    <div style="padding: 24px; color: #4b5563; line-height: 1.6; font-size: 15px;">
+      ${content}
+      <div style="margin-top: 32px;">
+        <a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #111827; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 14px; transition: background-color 0.2s;">Review in Portal &rarr;</a>
+      </div>
+    </div>
+    <div style="background-color: #f9fafb; padding: 16px 24px; color: #9ca3af; font-size: 12px; border-top: 1px solid #eaeaea;">
+      MusafirBaba Admin Portal &bull; Automated Notification
+    </div>
+  </div>
+`;
 
 // Create a new Sales Record
 export const createRecord = async (req, res) => {
@@ -17,6 +41,18 @@ export const createRecord = async (req, res) => {
     });
 
     await record.save();
+
+    // Async Email Notification
+    Staff.findById(req.user.sub).select("name").then(staff => {
+      if (staff) {
+        const adminEmail = getAdminEmail();
+        const redirectionLink = `${getFrontendUrl()}/admin/sales-record`;
+        const subject = `New Sales Record by ${staff.name}`;
+        const content = `<p style="margin:0;">A new Sales Record was just created by <strong>${staff.name}</strong>.</p><p style="margin-top:10px;">Please log in to the admin portal to review it securely.</p>`;
+        const body = getEmailTemplate(subject, content, redirectionLink);
+        sendEmail(adminEmail, subject, body).catch(e => console.error("Sales Record Create Email Error:", e));
+      }
+    }).catch(console.error);
 
     res.status(201).json({
       success: true,
@@ -113,6 +149,14 @@ export const updateStatus = async (req, res) => {
 
     await record.save();
 
+    // Async Email Notification
+    const adminEmail = getAdminEmail();
+    const redirectionLink = `${getFrontendUrl()}/admin/sales-record`;
+    const subject = `Record marked as ${status}`;
+    const content = `<p style="margin:0;">A Sales Record status was updated to <strong style="color: #FE5300;">${status}</strong>.</p><p style="margin-top:10px;">Please log in to the admin portal to review the changes securely.</p>`;
+    const body = getEmailTemplate(subject, content, redirectionLink);
+    sendEmail(adminEmail, subject, body).catch(e => console.error("Sales Record Status Email Error:", e));
+
     res.status(200).json({
       success: true,
       message: `Record ${status.toLowerCase()} successfully`,
@@ -149,6 +193,18 @@ export const addComment = async (req, res) => {
     });
 
     await comment.save();
+
+    // Async Email Notification
+    Staff.findById(req.user.sub).select("name").then(staff => {
+      if (staff) {
+        const adminEmail = getAdminEmail();
+        const redirectionLink = `${getFrontendUrl()}/admin/sales-record`;
+        const subject = `New Comment by ${staff.name}`;
+        const content = `<p style="margin:0;"><strong>${staff.name}</strong> has added a new comment to a Sales Record.</p><p style="margin-top:10px;">Please log in to the admin portal to review it securely.</p>`;
+        const body = getEmailTemplate(subject, content, redirectionLink);
+        sendEmail(adminEmail, subject, body).catch(e => console.error("Sales Record Comment Email Error:", e));
+      }
+    }).catch(console.error);
 
     const populatedComment = await SalesRecordComment.findById(comment._id).populate(
       "authorId",

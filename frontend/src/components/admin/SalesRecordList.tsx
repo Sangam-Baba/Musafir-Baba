@@ -25,6 +25,11 @@ const SalesRecordList: React.FC<Props> = ({ records, isAdmin }) => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [createdByFilter, setCreatedByFilter] = useState("All");
+
+  const uniqueCreators = Array.from(new Set(records.map((r) => r.createdBy?._id))).map(id => {
+    return records.find(r => r.createdBy?._id === id)?.createdBy;
+  }).filter(Boolean);
 
   const filteredRecords = records.filter((r) => {
     const matchSearch =
@@ -33,7 +38,8 @@ const SalesRecordList: React.FC<Props> = ({ records, isAdmin }) => {
       r.packageName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchStatus = statusFilter === "All" || r.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchCreator = createdByFilter === "All" || r.createdBy?._id === createdByFilter;
+    return matchSearch && matchStatus && matchCreator;
   });
 
   return (
@@ -49,16 +55,32 @@ const SalesRecordList: React.FC<Props> = ({ records, isAdmin }) => {
             className="w-full pl-9 pr-4 h-8 text-[13px] bg-slate-50 border-none rounded focus:outline-none focus:ring-1 focus:ring-[#FE5300] transition-all duration-300"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full sm:w-auto px-4 h-8 text-[13px] bg-slate-50 border-none rounded focus:outline-none focus:ring-1 focus:ring-[#FE5300] transition-all duration-300 cursor-pointer"
-        >
-          <option value="All">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-        </select>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {isAdmin && (
+            <select
+              value={createdByFilter}
+              onChange={(e) => setCreatedByFilter(e.target.value)}
+              className="w-full sm:w-auto px-4 h-8 text-[13px] bg-slate-50 border-none rounded focus:outline-none focus:ring-1 focus:ring-[#FE5300] transition-all duration-300 cursor-pointer"
+            >
+              <option value="All">All Creators</option>
+              {uniqueCreators.map((creator) => (
+                <option key={creator?._id} value={creator?._id}>
+                  {creator?.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-auto px-4 h-8 text-[13px] bg-slate-50 border-none rounded focus:outline-none focus:ring-1 focus:ring-[#FE5300] transition-all duration-300 cursor-pointer"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
       </div>
 
       <div className="overflow-x-auto">

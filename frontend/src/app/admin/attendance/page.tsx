@@ -11,6 +11,7 @@ import AdminMonthlyReport from "@/components/admin/AdminMonthlyReport";
 
 export default function AttendancePage() {
   const role = useAdminAuthStore((state) => state.role);
+  const permissions = useAdminAuthStore((state) => state.permissions) || [];
   const isAdmin = role === "admin" || role === "superadmin";
 
   return (
@@ -59,9 +60,12 @@ export default function AttendancePage() {
         </Tabs>
       ) : (
         <Tabs defaultValue="my-attendance" className="w-full">
-          <TabsList className="grid grid-cols-2 max-w-[400px] w-full bg-slate-100/50 p-0.5 rounded-lg h-auto md:h-9 mb-6">
+          <TabsList className="grid grid-cols-2 max-w-[600px] w-full bg-slate-100/50 p-0.5 rounded-lg h-auto md:h-9 mb-6" style={{ gridTemplateColumns: `repeat(${permissions.includes('view-all-attendance') ? 3 : 2}, minmax(0, 1fr))` }}>
             <TabsTrigger value="my-attendance" className="rounded-md text-[13px] font-medium data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm py-1.5 md:py-0">My Attendance</TabsTrigger>
             <TabsTrigger value="staff-record" className="rounded-md text-[13px] font-medium data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm py-1.5 md:py-0">Staff Record</TabsTrigger>
+            {permissions.includes('view-all-attendance') && (
+              <TabsTrigger value="all-attendance" className="rounded-md text-[13px] font-medium data-[state=active]:bg-white data-[state=active]:text-[#FE5300] data-[state=active]:shadow-sm py-1.5 md:py-0">All Staff Records</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="my-attendance" className="mt-0">
@@ -71,6 +75,13 @@ export default function AttendancePage() {
           <TabsContent value="staff-record" className="mt-0">
             <AdminUserwiseAttendanceTable />
           </TabsContent>
+
+          {permissions.includes('view-all-attendance') && (
+            <TabsContent value="all-attendance" className="mt-0 space-y-8">
+              <AdminAttendanceTable />
+              <AdminUserwiseAttendanceTable />
+            </TabsContent>
+          )}
         </Tabs>
       )}
     </div>

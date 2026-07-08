@@ -37,7 +37,8 @@ export function AdminSidebar() {
       if (item.label === "Change Password") {
         return role === "admin" || role === "superadmin";
       }
-      return role === "superadmin" || role === "admin" || permissions.includes(item.permission);
+      const hasPermission = role === "superadmin" || role === "admin" || permissions.includes(item.permission);
+      return hasPermission && !(item as any).hideInSidebar;
     }),
   })).filter((group) => group.items.length > 0);
   return (

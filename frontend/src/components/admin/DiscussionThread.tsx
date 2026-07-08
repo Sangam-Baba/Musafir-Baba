@@ -84,8 +84,8 @@ const DiscussionThread: React.FC<Props> = ({ recordId, accessToken }) => {
   const topLevelComments = comments?.filter((c) => !c.parentId) || [];
   const getReplies = (parentId: string) => comments?.filter((c) => c.parentId === parentId) || [];
 
-  const CommentNode = ({ comment }: { comment: Comment }) => (
-    <div className="bg-slate-50 border border-slate-100 p-4 rounded-lg space-y-3">
+  const renderCommentNode = (comment: Comment) => (
+    <div key={comment._id} className="bg-slate-50 border border-slate-100 p-4 rounded-lg space-y-3">
       <div className="flex justify-between items-start">
         <div>
           <span className="font-semibold text-slate-800">{comment.authorId?.name || "Unknown"}</span>
@@ -139,9 +139,7 @@ const DiscussionThread: React.FC<Props> = ({ recordId, accessToken }) => {
       {/* Render Replies */}
       {getReplies(comment._id).length > 0 && (
         <div className="pl-6 border-l-2 border-slate-200 mt-4 space-y-4">
-          {getReplies(comment._id).map((reply) => (
-            <CommentNode key={reply._id} comment={reply} />
-          ))}
+          {getReplies(comment._id).map((reply) => renderCommentNode(reply))}
         </div>
       )}
     </div>
@@ -174,9 +172,7 @@ const DiscussionThread: React.FC<Props> = ({ recordId, accessToken }) => {
         {topLevelComments.length === 0 ? (
           <p className="text-sm text-slate-500 italic">No comments yet. Start the discussion!</p>
         ) : (
-          topLevelComments.map((comment) => (
-            <CommentNode key={comment._id} comment={comment} />
-          ))
+          topLevelComments.map((comment) => renderCommentNode(comment))
         )}
       </div>
     </div>
