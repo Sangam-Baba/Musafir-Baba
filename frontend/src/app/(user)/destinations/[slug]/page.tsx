@@ -144,16 +144,16 @@ async function DestinationPage({
   const destination = await getDestinationBySlug(slug);
   const packages = await getGroupPackageByDestinationSlug(slug);
   const customizedPkg = await getPackageByDestinationSlug(slug);
-  const newCustomizedPkg = customizedPkg.map(
+  const newCustomizedPkg = (customizedPkg || []).map(
     (pkg: CustomizedPackageInterface) => ({
       ...pkg,
-      price: pkg.plans[0].price,
+      price: pkg?.plans?.[0]?.price || 0,
       mainCategory: { slug: "customised-tour-packages" },
     }),
   );
-  const newGroupPkg = packages.map((pkg: Package) => ({
+  const newGroupPkg = (packages || []).map((pkg: Package) => ({
     ...pkg,
-    price: pkg.batch[0].quad,
+    price: pkg?.batch?.[0]?.quad || 0,
   }));
 
   const categorydata = await getCategory();
@@ -166,7 +166,7 @@ async function DestinationPage({
   const collectionSchema = getCollectionSchema(
     "Explore Packages in " + slug,
     `https://musafirbaba.com/destinations/${slug}`,
-    packages.map((pkg: Package) => ({
+    (packages || []).map((pkg: Package) => ({
       url: `https://musafirbaba.com/holidays/${pkg.mainCategory.slug}/${slug}/${pkg.slug}`,
     })),
   );
