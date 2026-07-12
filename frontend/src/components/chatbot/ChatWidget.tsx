@@ -45,6 +45,12 @@ export default function ChatWidget({ onClose }) {
       const res = await fetch(`${baseUrl}/chatbot/history/${sid}`);
       const data = await res.json();
       setMessages(data);
+      if (data.length > 0) {
+        const lastMsg = data[data.length - 1];
+        if (lastMsg.quickReplies && lastMsg.quickReplies.length > 0) {
+          setQuickReplies(lastMsg.quickReplies);
+        }
+      }
     } catch (err) {
       console.error(err);
     }

@@ -20,8 +20,8 @@ const KEYWORDS = {
   VISA_INQUIRY: ["visa", "permit", "evisa", "immigration"],
   PACKAGE_INQUIRY: ["package", "tour", "holiday", "trip", "vacation"],
   RENTAL_INQUIRY: ["rental", "car", "cab", "vehicle", "hire", "taxi"],
-  CONTACT: ["human", "agent", "contact", "support", "call", "representative"],
-  CANCEL: ["cancel", "stop", "reset", "start over", "clear", "quit", "exit"],
+  CONTACT: ["human", "agent", "contact", "support", "call", "representative", "talk", "someone", "person", "speak", "connect", "team"],
+  CANCEL: ["cancel", "stop", "reset", "start over", "clear", "quit", "exit", "another question", "something else"],
   UNCERTAIN: ["no idea", "not sure", "haven't figured", "don't know", "not decided", "no location", "nothing", "no", "nope", "nevermind", "not yet"],
 };
 

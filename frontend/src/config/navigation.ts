@@ -300,6 +300,12 @@ export const NAV_GROUPS = [
         permission: "dashboard",
       },
       {
+        label: "Auth Logs",
+        href: "/admin/auth-logs",
+        icon: KeyRound,
+        permission: "dashboard",
+      },
+      {
         label: "Change Password",
         href: "/admin/update-password",
         icon: KeyRound,

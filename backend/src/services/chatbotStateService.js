@@ -13,42 +13,24 @@ import { thankYouEnquirySubmit } from "../utils/thankYouEnquirySubmit.js";
 const STATES = {
   IDLE: "IDLE",
   // Visa Flow
-  VISA_AWAITING_DESTINATION: "VISA_AWAITING_DESTINATION",
-  VISA_AWAITING_PURPOSE: "VISA_AWAITING_PURPOSE",
+  VISA_AWAITING_COUNTRY: "VISA_AWAITING_COUNTRY",
+  VISA_AWAITING_TYPE: "VISA_AWAITING_TYPE",
+  VISA_AWAITING_TOURIST_CONFIRM: "VISA_AWAITING_TOURIST_CONFIRM",
+  VISA_AWAITING_DATES: "VISA_AWAITING_DATES",
   // Package Flow
-  PKG_AWAITING_DESTINATION: "PKG_AWAITING_DESTINATION",
+  PKG_AWAITING_TRIP_TYPE: "PKG_AWAITING_TRIP_TYPE",
+  PKG_AWAITING_DESTINATION_CHOICE: "PKG_AWAITING_DESTINATION_CHOICE",
+  PKG_AWAITING_DESTINATION_NAME: "PKG_AWAITING_DESTINATION_NAME",
+  PKG_AWAITING_SUGGESTION: "PKG_AWAITING_SUGGESTION",
   PKG_AWAITING_BUDGET: "PKG_AWAITING_BUDGET",
-  PKG_AWAITING_TRAVELERS: "PKG_AWAITING_TRAVELERS",
+  PKG_AWAITING_DATES: "PKG_AWAITING_DATES",
   // Rental Flow
+  RENTAL_AWAITING_TYPE: "RENTAL_AWAITING_TYPE",
   RENTAL_AWAITING_LOCATION: "RENTAL_AWAITING_LOCATION",
+  RENTAL_AWAITING_DATE: "RENTAL_AWAITING_DATE",
   // Contact Flow
   CONTACT_AWAITING_NAME: "CONTACT_AWAITING_NAME",
   CONTACT_AWAITING_PHONE: "CONTACT_AWAITING_PHONE",
-  CONTACT_AWAITING_EMAIL: "CONTACT_AWAITING_EMAIL",
-};
-
-const isValidName = (name) => {
-  if (!/^[a-zA-Z\s]{2,50}$/.test(name)) return false;
-  
-  const lower = name.toLowerCase();
-  
-  // Must have at least one vowel if it's more than 2 chars
-  if (lower.length > 2 && !/[aeiouy]/.test(lower)) return false;
-  
-  // Reject 4 consecutive identical characters (e.g. aaaa)
-  if (/(.)\1{3,}/.test(lower)) return false;
-  
-  // Reject 5 or more consecutive consonants
-  if (/[bcdfghjklmnpqrstvwxz]{5,}/.test(lower)) return false;
-  
-  // Reject common keyboard mashing sequences
-  if (/(asdf|fdsa|qwer|rewq|zxcv|vcxz|hjkl|lkjh|tyui|iuyt)/.test(lower)) return false;
-  
-  // Reject if it has more than one occurrence of 4 consecutive consonants
-  const fourConsonants = lower.match(/[bcdfghjklmnpqrstvwxz]{4}/g);
-  if (fourConsonants && fourConsonants.length > 1) return false;
-
-  return true;
 };
 
 export const processState = async (session, message, entities, intent) => {
@@ -60,14 +42,21 @@ export const processState = async (session, message, entities, intent) => {
   const { currentState, context } = session;
 
   // Handle uncertain/negative intent during a flow gracefully
-  if (intent === "UNCERTAIN") {
+  const excludedUncertainStates = [
+    STATES.VISA_AWAITING_TOURIST_CONFIRM,
+    STATES.VISA_AWAITING_TYPE,
+    STATES.PKG_AWAITING_DESTINATION_CHOICE,
+    STATES.PKG_AWAITING_BUDGET
+  ];
+
+  if (intent === "UNCERTAIN" && !excludedUncertainStates.includes(currentState)) {
     if (currentState.startsWith("VISA_") || currentState.startsWith("PKG_") || currentState.startsWith("RENTAL_")) {
       session.currentState = STATES.CONTACT_AWAITING_NAME;
       session.context = {};
       session.markModified("context");
       await session.save();
       return {
-        responseText: "No worries! Since you haven't decided yet, I can arrange a call with our travel experts to help you figure it out. May I have your name?",
+        responseText: "No worries! Since you haven't decided yet, I can arrange a call with our travel experts to help you figure it out.\n\nMay I have your name?",
         quickReplies: [],
         responseUrl: "",
         isFlowComplete: false,
@@ -77,17 +66,40 @@ export const processState = async (session, message, entities, intent) => {
 
   switch (currentState) {
     // --- VISA FLOW ---
-    case STATES.VISA_AWAITING_DESTINATION:
-      if (entities.destination || message) {
-        context.destination = entities.destination || message;
-        session.currentState = STATES.VISA_AWAITING_PURPOSE;
-        responseText = `Got it. What is the purpose of your travel to ${context.destination}? (e.g., Tourist, Business, Transit)`;
-        quickReplies = ["Tourist", "Business", "Transit"];
+    case STATES.VISA_AWAITING_COUNTRY:
+      context.destination = entities.destination || message;
+      session.currentState = STATES.VISA_AWAITING_TYPE;
+      responseText = `Got it!\n\nWhat type of visa do you need for ${context.destination}?`;
+      quickReplies = ["Tourist Visa", "Business Visa", "Transit Visa", "Not sure — Help me decide"];
+      break;
+
+    case STATES.VISA_AWAITING_TYPE:
+      context.purpose = message;
+      if (message.toLowerCase().includes("not sure")) {
+        session.currentState = STATES.VISA_AWAITING_TOURIST_CONFIRM;
+        responseText = "For travel and holidays, a Tourist visa is usually the right one.\n\nShall I proceed with that?";
+        quickReplies = ["Yes, proceed", "No, I need something else"];
+      } else {
+        session.currentState = STATES.VISA_AWAITING_DATES;
+        responseText = "When are you planning to travel?\n\nThis helps me check if processing time works for your trip.";
+        quickReplies = ["Within 2 weeks", "In 3–4 weeks", "In 1–2 months", "More than 2 months away", "Not decided yet"];
       }
       break;
 
-    case STATES.VISA_AWAITING_PURPOSE:
-      context.purpose = message;
+    case STATES.VISA_AWAITING_TOURIST_CONFIRM:
+      if (message.toLowerCase().includes("yes") || intent === "GREETING") {
+        context.purpose = "Tourist Visa";
+        session.currentState = STATES.VISA_AWAITING_DATES;
+        responseText = "When are you planning to travel?\n\nThis helps me check if processing time works for your trip.";
+        quickReplies = ["Within 2 weeks", "In 3–4 weeks", "In 1–2 months", "More than 2 months away", "Not decided yet"];
+      } else {
+        session.currentState = STATES.CONTACT_AWAITING_NAME;
+        responseText = "No problem! To connect you with our visa experts to find the right visa, I just need your name.";
+      }
+      break;
+
+    case STATES.VISA_AWAITING_DATES:
+      context.travelDate = message;
       session.currentState = STATES.IDLE;
       isFlowComplete = true;
       
@@ -98,121 +110,152 @@ export const processState = async (session, message, entities, intent) => {
 
       if (visaSearch.length > 0) {
         const snippet = visaSearch[0].content.length > 150 ? visaSearch[0].content.substring(0, 150) + "..." : visaSearch[0].content;
-        responseText = `Perfect. I found details for ${context.destination}:\n\n${snippet}`;
+        responseText = `Perfect. I found details for ${context.destination}:\n\n${snippet}\n\nWe handle the full application for you — no embassy visits needed. Want me to get the process started?`;
         responseUrl = visaSearch[0].url;
       } else {
-        responseText = `I have noted you need a ${context.purpose} visa for ${context.destination}. Our agent will contact you with exact details.`;
-        quickReplies = ["Talk to an Agent"];
+        responseText = `I have noted you need a ${context.purpose || "Tourist"} visa for ${context.destination} traveling ${context.travelDate}. Our agent will contact you with exact details.`;
       }
+      quickReplies = ["Connect with team"];
       break;
 
     // --- PACKAGE FLOW ---
-    case STATES.PKG_AWAITING_DESTINATION:
-      if (entities.destination || message) {
+    case STATES.PKG_AWAITING_TRIP_TYPE:
+      context.tripType = message;
+      session.currentState = STATES.PKG_AWAITING_DESTINATION_CHOICE;
+      responseText = "Perfect! Do you have a destination in mind, or would you like me to suggest something?";
+      quickReplies = ["I have a destination", "Suggest something"];
+      break;
+
+    case STATES.PKG_AWAITING_DESTINATION_CHOICE:
+      const msgLower = message.toLowerCase();
+      if (msgLower.includes("suggest") || intent === "UNCERTAIN" || msgLower === "no" || msgLower.includes("don't")) {
+        session.currentState = STATES.PKG_AWAITING_SUGGESTION;
+        responseText = "No problem!\n\nAre you thinking domestic — somewhere in India — or an international trip?";
+        quickReplies = ["Within India", "International", "Open to both"];
+      } else if (entities.destination || (!msgLower.includes("have a destination") && msgLower.length > 2)) {
+        // User typed a destination directly (e.g. "Dubai") instead of clicking "I have a destination"
         context.destination = entities.destination || message;
         session.currentState = STATES.PKG_AWAITING_BUDGET;
-        responseText = `Great choice! What is your estimated budget per person for ${context.destination}?`;
+        responseText = `Got it! ${context.destination} is a great choice.\n\nWhat's your approximate budget per person?`;
+        quickReplies = ["Under ₹15,000", "₹15,000 – ₹30,000", "₹30,000 – ₹60,000", "Above ₹60,000", "Not sure yet"];
+      } else {
+        session.currentState = STATES.PKG_AWAITING_DESTINATION_NAME;
+        responseText = "Which destination are you thinking of?\n\nYou can type it or pick a popular one below.";
+        quickReplies = ["Kashmir", "Meghalaya", "Kerala", "Rajasthan", "Himachal", "Bali", "Dubai", "Europe"];
       }
+      break;
+
+    case STATES.PKG_AWAITING_SUGGESTION:
+    case STATES.PKG_AWAITING_DESTINATION_NAME:
+      context.destination = entities.destination || message;
+      session.currentState = STATES.PKG_AWAITING_BUDGET;
+      responseText = "Good to know!\n\nWhat's your approximate budget per person?";
+      quickReplies = ["Under ₹15,000", "₹15,000 – ₹30,000", "₹30,000 – ₹60,000", "Above ₹60,000", "Not sure yet"];
       break;
 
     case STATES.PKG_AWAITING_BUDGET:
       context.budget = message;
-      session.currentState = STATES.PKG_AWAITING_TRAVELERS;
-      responseText = "Noted. How many people are traveling?";
-      quickReplies = ["1", "2", "3-5", "6+"];
+      session.currentState = STATES.PKG_AWAITING_DATES;
+      responseText = "When are you planning to travel?";
+      quickReplies = ["This month", "Next month", "In 2–3 months", "Flexible / Not decided"];
       break;
 
-    case STATES.PKG_AWAITING_TRAVELERS:
-      context.travelers = message;
+    case STATES.PKG_AWAITING_DATES:
+      context.travelDate = message;
       session.currentState = STATES.IDLE;
       isFlowComplete = true;
 
       const pkgSearch = await KnowledgeBase.find(
         { $text: { $search: `${context.destination} holiday package` }, category: "package" },
         { score: { $meta: "textScore" } }
-      ).sort({ score: { $meta: "textScore" } }).limit(1);
+      ).sort({ score: { $meta: "textScore" } }).limit(2);
 
       if (pkgSearch.length > 0) {
-        const snippet = pkgSearch[0].content.length > 150 ? pkgSearch[0].content.substring(0, 150) + "..." : pkgSearch[0].content;
-        responseText = `Awesome. Searching for packages to ${context.destination} within ${context.budget}...\n\nHere is a great option:\n${snippet}`;
-        responseUrl = pkgSearch[0].url;
+        responseText = `Based on what you've told me, here are our top picks for you:\n\n`;
+        pkgSearch.forEach((pkg, index) => {
+          const absoluteUrl = pkg.url ? (process.env.NEXT_PUBLIC_BASE_URL || "https://musafirbaba.com") + pkg.url : "";
+          responseText += `${index + 1}. ${pkg.title}\n${absoluteUrl}\n\n`;
+        });
+        responseText += `Would you like more details on any of these, or shall I connect you with our team to customise one for you?`;
       } else {
         responseText = `Awesome. I have noted your requirements for ${context.destination}. Our holiday experts will contact you with the best packages matching your budget.`;
-        quickReplies = ["Talk to an Agent"];
       }
+      quickReplies = ["Connect with team"];
       break;
 
     // --- RENTAL FLOW ---
+    case STATES.RENTAL_AWAITING_TYPE:
+      context.rentalType = message;
+      session.currentState = STATES.RENTAL_AWAITING_LOCATION;
+      responseText = "Got it!\n\nWhere do you need the car from? (e.g., Delhi, Mumbai, Airport)";
+      break;
+
     case STATES.RENTAL_AWAITING_LOCATION:
-      context.location = entities.destination || message;
+      context.location = message;
+      session.currentState = STATES.RENTAL_AWAITING_DATE;
+      responseText = "Perfect! What date and for how many days?";
+      quickReplies = ["Tomorrow", "This weekend", "Next week", "Not decided yet"];
+      break;
+
+    case STATES.RENTAL_AWAITING_DATE:
+      context.date = message;
       session.currentState = STATES.IDLE;
       isFlowComplete = true;
 
-      const rentalSearch = await KnowledgeBase.find(
-        { $text: { $search: `${context.location} rental car vehicle cab` }, category: "rental" },
-        { score: { $meta: "textScore" } }
-      ).sort({ score: { $meta: "textScore" } }).limit(1);
-
-      if (rentalSearch.length > 0) {
-        const snippet = rentalSearch[0].content.length > 150 ? rentalSearch[0].content.substring(0, 150) + "..." : rentalSearch[0].content;
-        responseText = `Great! I found some vehicle rental options in ${context.location}:\n\n${snippet}`;
-        responseUrl = rentalSearch[0].url;
-      } else {
-        responseText = `I've noted that you're looking for a vehicle rental in ${context.location}. Our team will contact you shortly with available options!`;
-        quickReplies = ["Talk to an Agent"];
-      }
+      responseText = `Thanks!\n\nLet me check availability for a ${context.rentalType} in ${context.location} based on those details. Our team will confirm pricing within 1–2 hours.`;
+      quickReplies = ["Connect me now", "Send details on WhatsApp"];
       break;
 
     // --- CONTACT FLOW ---
     case STATES.CONTACT_AWAITING_NAME:
-      if (!isValidName(message)) {
-        responseText = "Please enter a valid real name using only letters (keyboard mashing is not allowed).";
+      if (message.trim().length < 2) {
+        responseText = "Please provide a valid name.";
         quickReplies = [];
         break;
       }
-      context.name = message;
+      context.name = message.trim();
       session.currentState = STATES.CONTACT_AWAITING_PHONE;
-      responseText = `Nice to meet you, ${context.name}. What is your phone number with country code so our team can reach you?`;
+      responseText = `Thanks ${context.name}!\n\nWhat is your WhatsApp number? Please include the country code (e.g., +91 9876543210 or +1 234567890).`;
+      quickReplies = [];
       break;
 
     case STATES.CONTACT_AWAITING_PHONE:
-      if (!/^\+?[0-9\s-]{8,15}$/.test(message)) {
-        responseText = "Please enter a valid phone number (e.g., +919876543210).";
+      // Extract phone number with optional country code, allows various formats
+      const phoneMatch = message.match(/(?:\+?\d{1,4}[\s\-]?)?(?:\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{3,4}[\s\-]?\d{0,4}/);
+      
+      // Simple validation: must contain at least 7 digits in total
+      const digitCount = message.replace(/\D/g, "").length;
+      if (!phoneMatch || digitCount < 7) {
+        responseText = "Please provide a valid phone number with your country code (e.g., +91 9876543210).";
         quickReplies = [];
         break;
       }
-      context.phone = message;
-      session.currentState = STATES.CONTACT_AWAITING_EMAIL;
-      responseText = "Got it! Lastly, what is your email address?";
-      break;
-
-    case STATES.CONTACT_AWAITING_EMAIL:
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(message)) {
-        responseText = "Please enter a valid email address.";
-        quickReplies = [];
-        break;
-      }
-      context.email = message;
+      
+      context.phone = phoneMatch[0].trim();
       session.currentState = STATES.IDLE;
       isFlowComplete = true;
-      responseText = "Thank you! I have saved your details. Our representative will contact you shortly.";
+      responseText = `Got it, ${context.name}!\n\nYour enquiry has been sent to our team. One of our travel experts will contact you on WhatsApp within 1–2 hours during business hours.\n\nIs there anything else I can help you with?`;
+      quickReplies = ["I have another question", "Open WhatsApp directly"];
       
       // Save Lead
       try {
-        let leadMessage = "Chatbot Enquiry";
+        let leadMessage = "Chatbot Enquiry\n";
         if (context.serviceType) {
-          leadMessage = `Service: ${context.serviceType}\n`;
+          leadMessage += `Service: ${context.serviceType}\n`;
         } else {
-          leadMessage = `Service: General Enquiry\n`;
+          leadMessage += `Service: General Enquiry\n`;
         }
+        if (context.tripType) leadMessage += `Trip Type: ${context.tripType}\n`;
         if (context.destination) leadMessage += `Destination: ${context.destination}\n`;
+        if (context.rentalType) leadMessage += `Rental: ${context.rentalType}\n`;
         if (context.location) leadMessage += `Location: ${context.location}\n`;
+        if (context.date) leadMessage += `Date: ${context.date}\n`;
         if (context.budget) leadMessage += `Budget: ${context.budget}\n`;
+        if (context.travelDate) leadMessage += `Travel Dates: ${context.travelDate}\n`;
 
         const contact = await ContactEnquiry.create({
           name: context.name,
           phone: context.phone,
-          email: context.email,
           message: leadMessage,
           source: "chatbot",
         });
@@ -239,13 +282,7 @@ export const processState = async (session, message, entities, intent) => {
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">${contact.name || "N/A"}</td>
                   </tr>
                   <tr>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Email</td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2;">
-                      <a href="mailto:${contact.email}" style="color: #111111; text-decoration: none;">${contact.email || "N/A"}</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Phone</td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">WhatsApp</td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">
                       ${contact.phone || "N/A"} 
                     </td>
@@ -263,24 +300,14 @@ export const processState = async (session, message, entities, intent) => {
               <div style="margin-top: 30px;">
                 <p style="font-size: 14px; font-weight: 500; color: #888888; margin-bottom: 10px;">Interests & Message</p>
                 <div style="font-size: 14px; color: #111111; line-height: 1.8; background-color: #fafafa; padding: 20px; border-radius: 6px;">
-                  ${contact.message}
+                  ${contact.message.replace(/\n/g, '<br/>')}
                 </div>
               </div>
-            </div>
-            
-            <!-- Footer -->
-            <div style="text-align: center; padding: 30px 20px; border-top: 1px solid #eaeaea; margin-top: 20px;">
-              <p style="font-size: 12px; color: #999999; margin: 0;">Automated notification from MusafirBaba Chatbot</p>
             </div>
           </div>
         `;
         const toEmail = process.env.NODE_ENV === "development" ? "shubham.jauhari@musafirbaba.com" : "care@musafirbaba.com";
         await sendEmail(toEmail, subject, emailBody);
-
-        // Send Email to Client
-        const clientSubject = "Thank you for reaching out to us.";
-        const clientEmailBody = thankYouEnquirySubmit(context.name);
-        await sendEmail(context.email, clientSubject, clientEmailBody);
 
       } catch (err) {
         console.error("Failed to save and send chatbot lead", err);

@@ -5,6 +5,29 @@ import { cn } from "@/lib/utils";
 export const ChatMessage = ({ sender, message, url }) => {
   const isBot = sender === "bot";
   
+  const renderTextWithLinks = (text) => {
+    if (!text) return null;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, i) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a 
+            key={i} 
+            href={part} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={cn("underline font-medium hover:opacity-80 transition-opacity break-all", isBot ? "text-orange-600" : "text-orange-100")}
+          >
+            {part}
+          </a>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
   return (
     <div className={cn("flex w-full mb-4", isBot ? "justify-start" : "justify-end")}>
       <div
@@ -15,7 +38,7 @@ export const ChatMessage = ({ sender, message, url }) => {
             : "bg-gradient-to-tr from-orange-500 to-amber-500 text-white rounded-br-none shadow-orange-500/20" 
         )}
       >
-        {message}
+        {renderTextWithLinks(message)}
         {url && (
           <div className="mt-3">
             <Link href={url} className="inline-block bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium text-xs px-4 py-2 rounded-full shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:scale-105 transition-all duration-200">
