@@ -20,7 +20,7 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import { stripHtml } from "@/lib/utils";
-import { toJpeg } from "html-to-image";
+import html2canvas from "html2canvas";
 import { ItineraryTemplate } from "./ItineraryTemplate";
 const formSchema = z.object({
   email: z.string().email({
@@ -149,18 +149,15 @@ export function ItineryDialog({
       compress: true
     });
 
-    const imgPromises = pages.map((pageElement) =>
-      toJpeg(pageElement, {
-        quality: 0.85,
-        pixelRatio: 1.5,
+    const imgPromises = pages.map(async (pageElement) => {
+      const canvas = await html2canvas(pageElement, {
+        scale: 1.5,
         backgroundColor: "#fdfbf7",
-        skipFonts: true,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
-        }
-      })
-    );
+        useCORS: true,
+        logging: false,
+      });
+      return canvas.toDataURL("image/jpeg", 0.85);
+    });
 
     const imgDataArray = await Promise.all(imgPromises);
 
@@ -239,7 +236,20 @@ export function ItineryDialog({
          toast.error("Itinerary data is currently unavailable for this package.");
       }
     } catch (error: any) {
-      console.error("PDF Gen Error:", error);
+      console.error("=== PDF GENERATION ERROR DETAILS ===");
+      console.error("Raw Error Object:", error);
+      try {
+        console.dir(error);
+        console.error("Error Properties:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      } catch (e) {
+        console.error("Could not stringify error properties.");
+      }
+      if (error instanceof Error) {
+        console.error("Error Message:", error.message);
+        console.error("Error Stack:", error.stack);
+      }
+      console.error("=====================================");
+
       let errMsg = "Unknown error";
       if (error instanceof Error) errMsg = error.message;
       else if (typeof error === 'string') errMsg = error;
