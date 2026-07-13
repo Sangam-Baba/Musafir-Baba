@@ -114,14 +114,14 @@ export const PricingPaymentTermsPage = ({ batch }: any) => {
           <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.7)', padding: '24px', borderRadius: '12px', border: `1px solid ${luxuryTheme.gold}33`, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ position: 'relative', width: '160px', height: '160px', backgroundColor: '#FFF', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', padding: '12px' }}>
               {/* Corner Accents */}
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '16px', height: '16px', borderTop: `3px solid ${luxuryTheme.dark}`, borderLeft: `3px solid ${luxuryTheme.dark}`, borderRadius: '12px 0 0 0' }} />
-              <div style={{ position: 'absolute', top: 0, right: 0, width: '16px', height: '16px', borderTop: `3px solid ${luxuryTheme.dark}`, borderRight: `3px solid ${luxuryTheme.dark}`, borderRadius: '0 12px 0 0' }} />
-              <div style={{ position: 'absolute', bottom: 0, left: 0, width: '16px', height: '16px', borderBottom: `3px solid ${luxuryTheme.dark}`, borderLeft: `3px solid ${luxuryTheme.dark}`, borderRadius: '0 0 0 12px' }} />
-              <div style={{ position: 'absolute', bottom: 0, right: 0, width: '16px', height: '16px', borderBottom: `3px solid ${luxuryTheme.dark}`, borderRight: `3px solid ${luxuryTheme.dark}`, borderRadius: '0 0 12px 0' }} />
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '20px', height: '20px', borderTop: `4px solid ${luxuryTheme.dark}`, borderLeft: `4px solid ${luxuryTheme.dark}`, borderRadius: '8px 0 0 0' }} />
+              <div style={{ position: 'absolute', top: 0, right: 0, width: '20px', height: '20px', borderTop: `4px solid ${luxuryTheme.dark}`, borderRight: `4px solid ${luxuryTheme.dark}`, borderRadius: '0 8px 0 0' }} />
+              <div style={{ position: 'absolute', bottom: 0, left: 0, width: '20px', height: '20px', borderBottom: `4px solid ${luxuryTheme.dark}`, borderLeft: `4px solid ${luxuryTheme.dark}`, borderRadius: '0 0 0 8px' }} />
+              <div style={{ position: 'absolute', bottom: 0, right: 0, width: '20px', height: '20px', borderBottom: `4px solid ${luxuryTheme.dark}`, borderRight: `4px solid ${luxuryTheme.dark}`, borderRadius: '0 0 8px 0' }} />
               
-              {/* Fake QR */}
-              <div style={{ width: '100%', height: '100%', border: `1px dashed ${luxuryTheme.gray}`, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}>
-                <Scan size={36} color={luxuryTheme.gray} strokeWidth={1} />
+              {/* Actual QR */}
+              <div style={{ width: '100%', height: '100%', border: `1.5px dashed #D1D5DB`, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', overflow: 'hidden' }}>
+                <img src="/Itinerary/paymentbarcode.jpeg" alt="Payment Barcode" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             </div>
             <h3 style={{ fontSize: '13px', fontWeight: 700, color: luxuryTheme.dark, marginTop: '16px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Scan to Pay</h3>
