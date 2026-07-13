@@ -51,7 +51,7 @@ export const CoverPage = ({ title, description, duration, destination, packageEs
       <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
         {/* Full Bleed Background Image - Forced to absolute bounds to prevent flex stretching */}
         <img 
-          src="/Itinerary/coverImage.png" 
+          src="/Itinerary/coverimage.png" 
           alt="Musafir Baba Cover" 
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'fill', display: 'block', backgroundColor: '#fdfaf3' }} 
         />
