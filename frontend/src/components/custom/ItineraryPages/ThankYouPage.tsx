@@ -1,5 +1,5 @@
 import React from 'react';
-import { PageWrapper, luxuryTheme } from './shared';
+import { PageWrapper, PageFooter, luxuryTheme } from './shared';
 import { Compass } from 'lucide-react';
 
 export const ThankYouPage = () => {
@@ -43,30 +43,13 @@ export const ThankYouPage = () => {
 
         {/* Team Image (Wide Format) */}
         <div style={{ margin: '16px auto 0', width: '100%', maxWidth: '600px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop" alt="Musafirbaba Team" style={{ width: '100%', height: '140px', objectFit: 'cover', display: 'block' }} />
+          <img src="/Itinerary/employees.png" alt="Musafirbaba Team" style={{ width: '100%', height: 'auto', display: 'block' }} />
         </div>
 
         {/* Flexible Spacer to push signature down */}
         <div style={{ flexGrow: 1 }} />
 
-        {/* Signature Block */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '48px', width: '100%', marginBottom: '24px' }}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ width: '120px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="100%" height="100%" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85, transform: 'rotate(-2deg)' }}>
-                <path d="M 30,45 C 20,40 10,25 25,15 C 40,5 50,30 35,45 C 30,50 45,35 60,20 C 65,15 70,25 65,35 C 60,45 80,25 90,20 C 100,15 95,35 90,45 C 85,55 110,20 125,10 C 140,0 130,30 115,45 C 110,50 140,25 150,20 C 160,15 155,35 150,45 C 145,55 180,30 190,25" stroke={luxuryTheme.dark} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <path d="M 20,25 L 50,20" stroke={luxuryTheme.dark} strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 125,50 L 135,45" stroke={luxuryTheme.dark} strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-            </div>
-            <div style={{ borderLeft: `1px solid ${luxuryTheme.gold}55`, paddingLeft: '16px', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontWeight: 800, color: luxuryTheme.dark, fontSize: '13px' }}>Ashutosh Rai</div>
-              <div style={{ fontWeight: 700, color: luxuryTheme.gray, fontSize: '7px', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '4px' }}>Founder,<br/>Musafirbaba</div>
-            </div>
-          </div>
 
-        </div>
 
         {/* Badges Block */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', width: '100%', marginBottom: '24px' }}>
@@ -154,6 +137,7 @@ export const ThankYouPage = () => {
         </div>
 
       </div>
+      <PageFooter />
     </PageWrapper>
   );
 };

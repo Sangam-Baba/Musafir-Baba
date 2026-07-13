@@ -85,6 +85,12 @@ const customizedTourPackageSchema = new mongoose.Schema(
       {
         title: { type: String },
         description: { type: String },
+        locationImage: {
+          url: String,
+          public_id: String,
+          alt: String,
+        },
+        tip: { type: String },
       },
     ],
     status: { type: String, enum: ["draft", "published"], default: "draft" },

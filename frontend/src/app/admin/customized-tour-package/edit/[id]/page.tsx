@@ -487,22 +487,51 @@ export default function CreatePackagePage() {
             <div>
               <FormLabel className="mb-2 text-lg">Itinerary</FormLabel>
               {itineraryArray.fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-2 gap-2 mb-2 ">
-                  <Input
-                    {...form.register(`itinerary.${index}.title`)}
-                    placeholder="Day Title"
-                  />
-                  <Textarea
-                    {...form.register(`itinerary.${index}.description`)}
-                    placeholder="Day Description"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => itineraryArray.remove(index)}
-                  >
-                    Remove
-                  </Button>
+                <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2 p-3 bg-gray-50 border rounded-md">
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      className="h-7 text-xs px-2 rounded-sm"
+                      {...form.register(`itinerary.${index}.title` as const)}
+                      placeholder="Day Title"
+                    />
+                    <Textarea
+                      className="text-xs p-2 min-h-[60px]"
+                      {...form.register(`itinerary.${index}.description` as const)}
+                      placeholder="Day Description"
+                    />
+                    <Input
+                      className="h-7 text-xs px-2 rounded-sm"
+                      {...form.register(`itinerary.${index}.tip` as const)}
+                      placeholder="Day Tip (Optional)"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 justify-between">
+                    <div>
+                      <FormLabel className="text-[10px] font-bold text-gray-500 uppercase block mb-1">
+                        Location Image (Optional)
+                      </FormLabel>
+                      <ImageUploader
+                        initialImage={form.watch(`itinerary.${index}.locationImage` as any)}
+                        onUpload={(img) => {
+                          if (!img) return null;
+                          form.setValue(`itinerary.${index}.locationImage` as const, {
+                            url: img.url,
+                            public_id: img.public_id,
+                            alt: img.alt ?? "Itinerary Image",
+                          });
+                        }}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="self-end h-7 text-[10px] w-full mt-2"
+                      onClick={() => itineraryArray.remove(index)}
+                    >
+                      Remove Step
+                    </Button>
+                  </div>
                 </div>
               ))}
               <Button
