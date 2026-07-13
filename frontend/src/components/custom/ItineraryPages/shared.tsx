@@ -6,13 +6,14 @@ export const A4_WIDTH = 794;
 export const A4_HEIGHT = 1123;
 
 export const luxuryTheme = {
-  dark: '#0B2F20',     // Deep Forest Green
-  medium: '#154A33',   // Medium Sage Green
-  gold: '#D4AF37',     // Saffron Gold
-  orange: '#FE5300',   // Musafir Baba Vibrant Orange
-  lightGold: '#ECF3F0',// Pale Mint White
-  cream: '#F9FBFA',    // Neutral Delicate Mint-Cream
-  gray: '#667C70'      // Clean Slate Gray
+  dark: '#1b3a5c',     // Deep Blue
+  medium: '#4a8c3f',   // Green
+  gold: '#f39a2b',     // Orange/Amber
+  orange: '#f39a2b',   // Orange/Amber (Keep alias)
+  lightGold: '#e8ecef',// Light mute
+  cream: '#f0f6fe',    // Icy blue cream
+  bgGradient: 'linear-gradient(135deg, #ffffff 0%, #f0f6fe 100%)',
+  gray: '#666666'      // Gray text
 };
 
 export const PremiumPattern = () => (
@@ -40,21 +41,20 @@ export const FrameCorners = () => (
   </>
 );
 
-export const PageFooter = () => (
-  <div style={{
-    borderTop: `1px solid ${luxuryTheme.gold}33`,
-    paddingTop: '12px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '9px',
-    color: luxuryTheme.gray,
-    letterSpacing: '0.1em',
-    fontWeight: 600,
-    fontFamily: "'Inter', sans-serif"
+export const PageFooter = ({ style = {} }: { style?: React.CSSProperties }) => (
+  <div style={{ 
+    position: 'absolute', 
+    bottom: '-16mm', 
+    left: '-14mm', 
+    width: 'calc(100% + 28mm)', 
+    zIndex: 50,
+    ...style 
   }}>
-    <span>© MUSAFIR BABA - BESPOKE JOURNEYS</span>
-    <span>CARE@MUSAFIRBABA.COM</span>
+    <img 
+      src="/Itinerary/footer.png" 
+      alt="Musafir Baba Footer" 
+      style={{ width: '100%', height: 'auto', display: 'block' }} 
+    />
   </div>
 );
 
@@ -66,12 +66,12 @@ export const PageWrapper = ({ children, style = {} }: { children: React.ReactNod
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    background: 'linear-gradient(135deg, #FFFDFC 0%, #FFF3E5 55%, #FFE5CE 100%)',
+    background: luxuryTheme.bgGradient,
     boxSizing: 'border-box',
     overflow: 'hidden',
     padding: '16mm 14mm',
-    fontFamily: "'Inter', sans-serif",
-    border: `1px solid ${luxuryTheme.gold}33`,
+    fontFamily: "'Inter', 'Poppins', sans-serif",
+    border: `1px solid ${luxuryTheme.dark}33`,
     color: '#292524',
     ...style
   }}>
@@ -229,7 +229,7 @@ export const getPointIcon = (text: string) => {
   return <Star size={12} color="#ffffff" />;
 };
 
-export const formatDescription = (descText: string) => {
+export const formatDescription = (descText: string, p0: { fontWeight: number; color: string; marginRight: string; }) => {
   const clean = stripHtml(descText).trim();
   const words = clean.split(/\s+/);
   if (words.length <= 2) {

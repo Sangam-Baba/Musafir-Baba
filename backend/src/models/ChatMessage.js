@@ -19,6 +19,10 @@ const chatMessageSchema = new mongoose.Schema(
     url: {
       type: String,
     },
+    quickReplies: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

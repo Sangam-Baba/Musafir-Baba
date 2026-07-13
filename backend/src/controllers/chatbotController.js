@@ -46,7 +46,7 @@ export const queryChatbot = async (req, res) => {
       await session.save();
       responseText = "Sure, I've cleared the context. How can I help you now?";
       await ChatMessage.create({ sessionId: sid, sender: "bot", message: responseText });
-      return res.json({ sessionId: sid, response: responseText, quickReplies: ["Need a Visa", "Holiday Packages", "Vehicle Rentals"] });
+      return res.json({ sessionId: sid, response: responseText, quickReplies: ["Plan a holiday trip", "Apply for a visa", "Book a car rental", "Something else"] });
     }
 
     // 3. Process State Machine
@@ -61,57 +61,63 @@ export const queryChatbot = async (req, res) => {
       // If IDLE, check intent to start a flow
       switch (intent) {
         case INTENTS.GREETING:
-          responseText = "Hello! I am your Musafir Baba travel assistant. How can I help you today?";
-          quickReplies = ["Need a Visa", "Holiday Packages", "Vehicle Rentals", "Talk to an Agent"];
+          responseText = "Namaste! I'm Baba — your travel assistant from MusafirBaba.\n\nI can help you plan a holiday, apply for a visa, or arrange a car rental. What are you looking for today?";
+          quickReplies = ["Plan a holiday trip", "Apply for a visa", "Book a car rental", "Something else"];
           break;
         case INTENTS.VISA_INQUIRY:
-          session.currentState = STATES.VISA_AWAITING_DESTINATION;
           session.context = { serviceType: "Visa" };
-          await session.save();
           if (entities.destination) {
-            // fast-forward
-            const stateResult = await processState(session, message, entities, intent);
-            responseText = stateResult.responseText;
-            quickReplies = stateResult.quickReplies;
+            session.currentState = STATES.VISA_AWAITING_TYPE;
+            session.context.destination = entities.destination;
+            await session.save();
+            responseText = `Sure, I can help with a visa for ${entities.destination}!\n\nWhat type of visa do you need?`;
+            quickReplies = ["Tourist Visa", "Business Visa", "Transit Visa", "Not sure — Help me decide"];
           } else {
-            responseText = "I can help with Visas. Which country are you planning to visit?";
+            session.currentState = STATES.VISA_AWAITING_COUNTRY;
+            await session.save();
+            responseText = "Sure, I can help with that!\n\nWhich country do you need a visa for?\nYou can type the country name or pick one below.";
+            quickReplies = ["UAE / Dubai", "Schengen / Europe", "USA", "UK", "Canada", "Australia", "Singapore", "Japan", "Vietnam", "Other Country"];
           }
           break;
         case INTENTS.PACKAGE_INQUIRY:
-          session.currentState = STATES.PKG_AWAITING_DESTINATION;
           session.context = { serviceType: "Package" };
-          await session.save();
           if (entities.destination) {
-            // fast-forward
-            const stateResult = await processState(session, message, entities, intent);
-            responseText = stateResult.responseText;
-            quickReplies = stateResult.quickReplies;
+            session.currentState = STATES.PKG_AWAITING_BUDGET;
+            session.context.destination = entities.destination;
+            await session.save();
+            responseText = `Great choice! I can help you plan a trip to ${entities.destination}.\n\nWhat's your approximate budget per person?`;
+            quickReplies = ["Under ₹15,000", "₹15,000 – ₹30,000", "₹30,000 – ₹60,000", "Above ₹60,000", "Not sure yet"];
           } else {
-            responseText = "Looking for a holiday? Which destination do you have in mind?";
+            session.currentState = STATES.PKG_AWAITING_TRIP_TYPE;
+            await session.save();
+            responseText = "Great choice! Let me find the best options for you.\n\nFirst — what kind of trip are you planning?";
+            quickReplies = ["Honeymoon", "Family vacation", "Group tour", "Solo / Friends", "Religious / Pilgrimage", "Adventure / Trek"];
           }
           break;
         case INTENTS.RENTAL_INQUIRY:
-          session.currentState = STATES.RENTAL_AWAITING_LOCATION;
           session.context = { serviceType: "Rental" };
-          await session.save();
           if (entities.destination) {
-            // fast-forward
-            const stateResult = await processState(session, message, entities, intent);
-            responseText = stateResult.responseText;
-            quickReplies = stateResult.quickReplies;
+            session.currentState = STATES.RENTAL_AWAITING_TYPE;
+            session.context.locationDate = entities.destination;
+            await session.save();
+            responseText = `Happy to help with a car rental for ${entities.destination}!\n\nWhat kind of rental are you looking for?`;
+            quickReplies = ["Airport Pickup / Drop", "Outstation Trip", "Local Rental (Full Day)", "Hill Station Drive"];
           } else {
-            responseText = "I can help you find a rental vehicle. Which city or location do you need it for?";
+            session.currentState = STATES.RENTAL_AWAITING_TYPE;
+            await session.save();
+            responseText = "Happy to help with a car rental!\n\nWhat kind of rental are you looking for?";
+            quickReplies = ["Airport Pickup / Drop", "Outstation Trip", "Local Rental (Full Day)", "Hill Station Drive"];
           }
           break;
         case INTENTS.CONTACT:
           session.currentState = STATES.CONTACT_AWAITING_NAME;
           await session.save();
-          responseText = "I can arrange a call with our travel experts. May I have your name?";
+          responseText = "I can arrange a call with our travel experts.\n\nMay I have your name?";
           break;
         case INTENTS.UNCERTAIN:
           session.currentState = STATES.CONTACT_AWAITING_NAME;
           await session.save();
-          responseText = "No worries! Our travel experts can help you figure it out. May I have your name so we can arrange a callback?";
+          responseText = "No worries! Our travel experts can help you figure it out.\n\nMay I have your name so we can arrange a callback?";
           break;
         default:
           // 4. Fallback: Native MongoDB Text Search
@@ -122,7 +128,7 @@ export const queryChatbot = async (req, res) => {
           .sort({ score: { $meta: "textScore" } })
           .limit(1);
 
-          if (searchResults.length > 0) {
+          if (searchResults.length > 0 && searchResults[0]._doc.score > 1.2) {
             const kbTitle = searchResults[0].title || "this topic";
             const snippet = searchResults[0].content.length > 150 
               ? searchResults[0].content.substring(0, 150) + "..." 
@@ -142,7 +148,13 @@ export const queryChatbot = async (req, res) => {
     }
 
     // Save Bot Message
-    await ChatMessage.create({ sessionId: sid, sender: "bot", message: responseText, url: responseUrl || undefined });
+    await ChatMessage.create({ 
+      sessionId: sid, 
+      sender: "bot", 
+      message: responseText, 
+      url: responseUrl || undefined,
+      quickReplies: quickReplies.length > 0 ? quickReplies : undefined
+    });
 
     // Update last activity
     session.lastActivity = new Date();

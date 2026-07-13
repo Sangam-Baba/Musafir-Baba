@@ -537,6 +537,75 @@ const adjustLeaveBalance = async (req, res) => {
   }
 };
 
+const getStaffAuthLogs = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const { eventType, search, sort } = req.query;
+
+    // 1. Fetch all staff to get their IDs and map them for quick lookup
+    const staffQuery = {};
+    if (search) {
+      staffQuery.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+    const staffMembers = await Staff.find(staffQuery).select("name email role designation").lean();
+    const staffIds = staffMembers.map(s => s._id);
+    const staffMap = staffMembers.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr;
+      return acc;
+    }, {});
+
+    // 2. Query AuthLog using staff IDs
+    const logQuery = { userId: { $in: staffIds } };
+    if (eventType && eventType !== "all") {
+      logQuery.eventType = eventType;
+    }
+
+    let sortOption = { timestamp: -1 };
+    if (sort === "asc") {
+      sortOption = { timestamp: 1 };
+    }
+
+    const totalLogs = await AuthLog.countDocuments(logQuery);
+    const logs = await AuthLog.find(logQuery)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // 3. Manually map staff details onto the logs (since AuthLog.userId refs "User")
+    const enrichedLogs = logs.map(log => {
+      const staffInfo = staffMap[log.userId.toString()] || { name: "Unknown", email: "Unknown", role: "Unknown" };
+      return {
+        ...log,
+        user: {
+          name: staffInfo.name,
+          email: staffInfo.email,
+          role: staffInfo.role,
+          designation: staffInfo.designation,
+        },
+        device: parseUserAgent(log.userAgent),
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: enrichedLogs.length,
+      total: totalLogs,
+      page,
+      totalPages: Math.ceil(totalLogs / limit),
+      data: enrichedLogs,
+    });
+  } catch (error) {
+    console.error("Get Staff Auth Logs Error:", error.message);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export {
   registerAdmin,
   updateAdmin,
@@ -550,4 +619,5 @@ export {
   previewToken,
   adminUpdatePassword,
   adjustLeaveBalance,
+  getStaffAuthLogs,
 };

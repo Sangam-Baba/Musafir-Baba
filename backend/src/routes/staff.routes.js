@@ -12,6 +12,7 @@ import {
   previewToken,
   adminUpdatePassword,
   adjustLeaveBalance,
+  getStaffAuthLogs,
 } from "../controllers/staff.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -45,6 +46,13 @@ staffRouter.get(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   previewToken,
+);
+staffRouter.get(
+  "/auth-logs",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getStaffAuthLogs,
 );
 staffRouter.get(
   "/:id",

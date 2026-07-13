@@ -102,6 +102,12 @@ const packageSchema = new mongoose.Schema(
       {
         title: { type: String },
         description: { type: String },
+        locationImage: {
+          url: String,
+          public_id: String,
+          alt: String,
+        },
+        tip: { type: String },
       },
     ],
     itineraryDownload: {

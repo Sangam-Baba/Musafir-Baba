@@ -51,6 +51,8 @@ import searchRoutes from "./search.routes.js";
 import salesRecordRoutes from "./salesRecord.routes.js";
 import chatbotRoutes from "./chatbotRoutes.js";
 import holidayRoutes from "./holiday.routes.js";
+import partnerAuthRoutes from "./partner/partnerAuth.routes.js";
+import partnerRoutes from "./partner/partner.routes.js";
 
 const router = Router();
 
@@ -106,4 +108,6 @@ router.use("/search", searchRoutes);
 router.use("/sales-record", salesRecordRoutes);
 router.use("/chatbot", chatbotRoutes);
 router.use("/holidays", holidayRoutes);
+router.use("/partner/auth", partnerAuthRoutes);
+router.use("/partner", partnerRoutes);
 export default router;
