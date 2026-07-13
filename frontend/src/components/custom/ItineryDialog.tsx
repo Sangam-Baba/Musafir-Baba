@@ -20,7 +20,7 @@ import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import { stripHtml } from "@/lib/utils";
-import html2canvas from "html2canvas";
+import { toJpeg } from "html-to-image";
 import { ItineraryTemplate } from "./ItineraryTemplate";
 const formSchema = z.object({
   email: z.string().email({
@@ -149,17 +149,26 @@ export function ItineryDialog({
       compress: true
     });
 
-    const imgPromises = pages.map(async (pageElement) => {
-      const canvas = await html2canvas(pageElement, {
-        scale: 1.5,
+    const imgDataArray: string[] = [];
+    
+    // Process pages sequentially to prevent memory leaks and Out-of-Memory (OOM) crashes.
+    // html2canvas is extremely memory-intensive. Running it in parallel across multiple 
+    // pages will instantly crash the browser tab on heavy itinerary documents.
+    for (const pageElement of pages) {
+      const dataUrl = await toJpeg(pageElement, {
+        quality: 0.85,
+        pixelRatio: 1.5,
         backgroundColor: "#fdfbf7",
-        useCORS: true,
-        logging: false,
+        skipFonts: true,
+        cacheBust: true,
+        imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
       });
-      return canvas.toDataURL("image/jpeg", 0.85);
-    });
-
-    const imgDataArray = await Promise.all(imgPromises);
+      imgDataArray.push(dataUrl);
+    }
 
     for (let i = 0; i < imgDataArray.length; i++) {
       if (i > 0) {
