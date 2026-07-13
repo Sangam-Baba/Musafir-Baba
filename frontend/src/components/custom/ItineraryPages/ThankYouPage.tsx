@@ -66,7 +66,7 @@ export const ThankYouPage = () => {
                   <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                 </div>
               </div>
-              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>12,400+ Google Reviews</div>
+              {/* <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>12,400+ Google Reviews</div> */}
             </div>
           </div>
 
@@ -82,7 +82,7 @@ export const ThankYouPage = () => {
                   <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                 </div>
               </div>
-              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>2,100+ FB Recommendations</div>
+              {/* <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>2,100+ FB Recommendations</div> */}
             </div>
           </div>
 
@@ -98,7 +98,7 @@ export const ThankYouPage = () => {
                   <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                 </div>
               </div>
-              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>8,500+ JD Reviews</div>
+              {/* <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>8,500+ JD Reviews</div> */}
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export const ThankYouPage = () => {
                   <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                 </div>
               </div>
-              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>4,200+ Tripadvisor Reviews</div>
+              {/* <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>4,200+ Tripadvisor Reviews</div> */}
             </div>
           </div>
 
@@ -130,7 +130,7 @@ export const ThankYouPage = () => {
                   <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                 </div>
               </div>
-              <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>3,100+ Trustpilot Reviews</div>
+              {/* <div style={{ fontSize: '7px', fontWeight: 700, color: luxuryTheme.gray, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px' }}>3,100+ Trustpilot Reviews</div> */}
             </div>
           </div>
 
