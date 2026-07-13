@@ -228,7 +228,7 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
                   <h4 className="font-bold text-[#FE5300] text-xs border-b border-dashed border-gray-100 pb-1 flex items-center gap-1.5">
                     <Check className="w-4 h-4 text-green-600" /> Required Documents
                   </h4>
-                  <div className="prose prose-sm max-w-none text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-100 max-h-[25vh] overflow-y-auto">
+                  <div className="detail-content-headings prose prose-sm max-w-none text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-100 max-h-[25vh] overflow-y-auto">
                     <BlogContent html={visaCard.documents} />
                   </div>
                 </div>
@@ -240,7 +240,7 @@ function VisaCard({ visaCard, entry, slug }: { visaCard: any; entry: any; slug: 
                   <h4 className="font-bold text-[#FE5300] text-xs border-b border-dashed border-gray-100 pb-1 flex items-center gap-1.5">
                     <Clock className="w-4 h-4 text-orange-600" /> Step-by-Step Process
                   </h4>
-                  <div className="prose prose-sm max-w-none text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-100 max-h-[25vh] overflow-y-auto">
+                  <div className="detail-content-headings prose prose-sm max-w-none text-gray-600 bg-gray-50/50 p-3 rounded-xl border border-gray-100 max-h-[25vh] overflow-y-auto">
                     <BlogContent html={visaCard.processSteps} />
                   </div>
                 </div>
@@ -565,7 +565,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                         <h3 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
                           {reason.title}
                         </h3>
-                        <div className="prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
+                        <div className="detail-content-headings prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
                           <BlogContent html={reason.description} />
                         </div>
                       </div>
@@ -589,7 +589,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                         <h3 className="text-sm font-bold font-heading text-gray-900 mb-1.5 leading-tight">
                           {tip.title}
                         </h3>
-                        <div className="prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
+                        <div className="detail-content-headings prose text-[12px] text-gray-500 leading-snug line-clamp-5 prose-ul:pl-4 prose-ol:pl-4 prose-li:my-0 prose-p:my-0">
                           <BlogContent html={tip.description} />
                         </div>
                       </div>
@@ -622,7 +622,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                           {faq.question}
                         </AccordionTrigger>
                         <AccordionContent className="text-justify pt-3">
-                          <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                          <section className="detail-content-headings prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
                             <BlogContent html={faq.answer} />
                           </section>
                         </AccordionContent>
@@ -674,7 +674,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                         </h2>
                         <div className="w-12 h-1 bg-[#FE5300] mx-auto"></div>
                       </div>
-                      <section className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 [&_a]:text-blue-500 [&_a]:hover:underline">
+                      <section className="detail-content-headings prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 [&_a]:text-blue-500 [&_a]:hover:underline">
                         <BlogContent html={visa.helpfulResources} />
                       </section>
                     </div>

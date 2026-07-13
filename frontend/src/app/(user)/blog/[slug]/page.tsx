@@ -346,8 +346,8 @@ export default async function BlogDetailPage({
               </div>
 
               {/* Main Content Body */}
-              <section className="prose prose-lg md:prose-xl max-w-none 
-                prose-headings:text-gray-900 prose-headings:font-black prose-headings:tracking-tight
+              <section className="detail-content-headings prose prose-lg md:prose-xl max-w-none 
+                prose-headings:font-black prose-headings:tracking-tight
                 prose-p:text-gray-700/90 prose-p:leading-[1.8] prose-p:mb-4
                 prose-a:text-[#FE5300] prose-a:no-underline hover:prose-a:underline
                 prose-img:rounded-[2rem] prose-img:shadow-2xl prose-img:my-16

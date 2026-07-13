@@ -333,6 +333,33 @@
   }
 }
 
+/* Dedicated utility class for lightening heading colors on detailed pages only */
+.detail-content-headings h2,
+.detail-content-headings h3,
+.detail-content-headings h4,
+.detail-content-headings h5,
+.detail-content-headings h6,
+.detail-content-headings h2 *,
+.detail-content-headings h3 *,
+.detail-content-headings h4 *,
+.detail-content-headings h5 *,
+.detail-content-headings h6 * {
+  color: #414c5a !important;
+}
+
+.dark .detail-content-headings h2,
+.dark .detail-content-headings h3,
+.dark .detail-content-headings h4,
+.dark .detail-content-headings h5,
+.dark .detail-content-headings h6,
+.dark .detail-content-headings h2 *,
+.dark .detail-content-headings h3 *,
+.dark .detail-content-headings h4 *,
+.dark .detail-content-headings h5 *,
+.dark .detail-content-headings h6 * {
+  color: #e2e8f0 !important;
+}
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

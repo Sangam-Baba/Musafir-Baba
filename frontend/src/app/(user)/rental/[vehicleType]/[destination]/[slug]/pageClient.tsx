@@ -509,7 +509,7 @@ export default function RentalPageClient({
                         {faq.question}
                       </AccordionTrigger>
                       <AccordionContent className="text-justify pt-3">
-                        <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                        <section className="detail-content-headings prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
                           <BlogContent html={faq.answer} />
                         </section>
                       </AccordionContent>

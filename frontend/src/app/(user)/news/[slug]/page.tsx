@@ -220,7 +220,7 @@ export default async function NewsDetailPage({
           <TableOfContents headings={headings} />
 
           {/* Blog Content */}
-          <section className="prose prose-lg max-w-none mt-6">
+          <section className="detail-content-headings prose prose-lg max-w-none mt-6">
             <BlogContent html={contentWithIds} />
           </section>
 

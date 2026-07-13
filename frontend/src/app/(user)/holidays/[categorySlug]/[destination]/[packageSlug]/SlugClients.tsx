@@ -376,7 +376,7 @@ function SlugClients({
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Why Choose This Package?</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
-                  <section className="prose prose-base max-w-none text-gray-600 leading-relaxed">
+                  <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">
                     <BlogContent html={pkg.whyChooseThisPackage} />
                   </section>
                 </div>
@@ -490,7 +490,7 @@ function SlugClients({
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Hotels & Accommodation</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
-                  <section className="prose prose-base max-w-none text-gray-600 leading-relaxed">
+                  <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">
                     <BlogContent html={pkg.hotelsAndAccommodation} />
                   </section>
                 </div>
@@ -555,7 +555,7 @@ function SlugClients({
                           {faq.question}
                         </FaqAccordionTrigger>
                         <FaqAccordionContent className="text-justify pt-3">
-                          <section className="prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                          <section className="detail-content-headings prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
                             <BlogContent html={faq.answer} />
                           </section>
                         </FaqAccordionContent>
