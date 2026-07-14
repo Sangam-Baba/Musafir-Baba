@@ -13,6 +13,7 @@ import Script from "next/script";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, HelpCircle } from "lucide-react";
+import { CONTACT_INFO } from "@/config/contact";
 const getVisaBySlug = async (slug: string, token?: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/slug/${slug}?token=${token}`,
@@ -187,11 +188,11 @@ async function VisaWebPage({ params }: { params: Promise<{ slug: string }> }) {
                   <h3 className="font-bold font-heading tracking-tight text-gray-900 text-sm">Need Help with Visa?</h3>
                 </div>
                 
-                <a href="tel:+919289602447" className="flex items-center gap-3 group">
+                <a href={`tel:${CONTACT_INFO.PHONE_NUMBER}`} className="flex items-center gap-3 group">
                   <div className="w-8 h-8 rounded-full bg-[#FE5300]/10 flex items-center justify-center shrink-0 group-hover:bg-[#FE5300] transition-colors">
                     <Phone className="w-4 h-4 text-[#FE5300] group-hover:text-white transition-colors" />
                   </div>
-                  <span className="text-[14px] font-bold text-gray-900 group-hover:text-[#FE5300] transition-colors tracking-tight">+91 92896 02447</span>
+                  <span className="text-[14px] font-bold text-gray-900 group-hover:text-[#FE5300] transition-colors tracking-tight">{CONTACT_INFO.PHONE_NUMBER_FORMATTED}</span>
                 </a>
                 
                 <a href="mailto:care@musafirbaba.com" className="flex items-center gap-3 group">

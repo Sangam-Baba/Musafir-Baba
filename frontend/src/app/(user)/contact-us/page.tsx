@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import { getWebPageBySlug } from "@/app/(user)/[...slug]/page";
+import { CONTACT_INFO } from "@/config/contact";
 
 export async function generateMetadata() {
   const data = await getWebPageBySlug("contact-us");
@@ -73,10 +74,10 @@ async function VisaWebPage() {
               </div>
               <h3 className="font-bold text-lg font-heading text-gray-900">Phone</h3>
               <div className="text-[13px] text-gray-500 leading-relaxed flex flex-col gap-1.5 w-full">
-                <a href="tel:+919289602447" className="hover:text-[#FE5300] hover:bg-orange-50 py-1.5 px-3 rounded-lg transition-colors flex justify-center items-center gap-2">
-                  <span className="font-semibold text-gray-700">Tour:</span> +91 92896 02447
+                <a href={`tel:${CONTACT_INFO.PHONE_NUMBER}`} className="hover:text-[#FE5300] hover:bg-orange-50 py-1.5 px-3 rounded-lg transition-colors flex justify-center items-center gap-2">
+                  <span className="font-semibold text-gray-700">Tour:</span> {CONTACT_INFO.PHONE_NUMBER_FORMATTED}
                 </a>
-                <a href="tel:+919355663591" className="hover:text-[#FE5300] hover:bg-orange-50 py-1.5 px-3 rounded-lg transition-colors flex justify-center items-center gap-2">
+                <a href={`tel:${CONTACT_INFO.PHONE_NUMBER_SECONDARY}`} className="hover:text-[#FE5300] hover:bg-orange-50 py-1.5 px-3 rounded-lg transition-colors flex justify-center items-center gap-2">
                   <span className="font-semibold text-gray-700">Visa:</span> +91 93556 63591
                 </a>
               </div>

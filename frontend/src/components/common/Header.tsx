@@ -24,6 +24,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import GlobalSearch from "../global-search/GlobalSearch";
+import { CONTACT_INFO } from "@/config/contact";
 
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
@@ -47,11 +48,11 @@ export default function Header() {
           <Tooltip>
             <TooltipTrigger asChild>
               <a
-                href="tel:+919289602447"
+                href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
                 className="flex items-center gap-1.5 text-white hover:text-white/80 transition-colors"
               >
                 <Phone className="w-4 h-4 text-white" />
-                <span className="pt-[1px] tracking-wide font-semibold">+91 92896 02447</span>
+                <span className="pt-[1px] tracking-wide font-semibold">{CONTACT_INFO.PHONE_NUMBER_FORMATTED}</span>
               </a>
             </TooltipTrigger>
             <TooltipContent>

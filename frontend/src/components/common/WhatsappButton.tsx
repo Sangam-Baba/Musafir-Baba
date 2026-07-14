@@ -1,11 +1,10 @@
 "use client";
 import React from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { getWhatsAppLink } from "@/config/contact";
 
 export default function WhatsAppButton() {
-  const whatsappNumber = "919289602447";
-
-  const whatsappLink = `https://wa.me/${whatsappNumber}`;
+  const whatsappLink = getWhatsAppLink();
 
   return (
     <div className="hidden md:flex fixed bottom-6 right-6 z-50 items-center gap-2">

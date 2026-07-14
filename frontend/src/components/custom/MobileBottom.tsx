@@ -9,16 +9,15 @@ import { SquarePen } from "lucide-react";
 import { Dialog } from "@radix-ui/react-dialog";
 import { DialogContent, DialogTrigger } from "../ui/dialog";
 import LazyQueryForm from "./LazyQueryForm";
+import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
 
 function MobileBottom() {
   const [isOpen, setIsOpen] = useState(false);
-  const whatsappNumber = "919289602447";
-
-  const whatsappLink = `https://wa.me/${whatsappNumber}`;
+  const whatsappLink = getWhatsAppLink();
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-[65] grid grid-cols-3 w-full h-[65px] bg-white border-t border-gray-100 shadow-[0_-8px_20px_rgba(0,0,0,0.05)] pb-safe">
       <Link
-        href="tel:+919289602447"
+        href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
         className="flex flex-row items-end justify-center pb-1.5 h-full transition-colors hover:bg-gray-50 relative"
       >
         <div className="flex flex-col items-center justify-end h-full w-full">

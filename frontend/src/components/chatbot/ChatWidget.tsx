@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, RefreshCcw } from "lucide-react";
+import { Bot, X, RefreshCcw } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { QuickReplies } from "./QuickReplies";
+import { getWhatsAppLink } from "@/config/contact";
 
 const WhatsappIcon = ({ size = 20 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={size} height={size} fill="currentColor">
@@ -84,9 +85,8 @@ export default function ChatWidget({ onClose }) {
   };
 
   const openWhatsApp = () => {
-    const waNumber = "919831881510"; // Can be replaced by ENV variable
-    const text = encodeURIComponent("Hi Musafir Baba, I need help with my travel plans!");
-    window.open(`https://wa.me/${waNumber}?text=${text}`, "_blank");
+    const text = "Hi Musafir Baba, I need help with my travel plans!";
+    window.open(getWhatsAppLink(text), "_blank");
   };
 
   const sendMessage = async (text) => {
@@ -123,21 +123,21 @@ export default function ChatWidget({ onClose }) {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_-12px_rgba(249,115,22,0.3)] flex flex-col z-50 border border-white/50 overflow-hidden animate-in zoom-in-95 duration-300 slide-in-from-bottom-5">
+    <div className="fixed bottom-20 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] bg-white/80 backdrop-blur-3xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col z-50 border border-white overflow-hidden animate-in zoom-in-95 duration-300 slide-in-from-bottom-5">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-4 text-white flex justify-between items-center shrink-0 shadow-sm">
+      <div className="bg-white/90 backdrop-blur-xl border-b border-gray-100 p-4 text-gray-800 flex justify-between items-center shrink-0 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] z-10">
         <div className="flex items-center gap-2">
-          <MessageSquare size={20} />
-          <span className="font-semibold">Musafir Baba</span>
+          <Bot size={20} className="text-[#FE5300]" />
+          <span className="font-bold tracking-wide text-gray-900">Musafir Baba</span>
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={openWhatsApp} title="Chat on WhatsApp" className="hover:bg-white/20 p-1.5 rounded-xl transition-all duration-200">
+        <div className="flex items-center gap-1 text-gray-500">
+          <button onClick={openWhatsApp} title="Chat on WhatsApp" className="hover:bg-gray-100 hover:text-[#FE5300] p-1.5 rounded-xl transition-all duration-200">
             <WhatsappIcon size={18} />
           </button>
-          <button onClick={resetChat} title="New Chat" className="hover:bg-white/20 p-1.5 rounded-xl transition-all duration-200">
+          <button onClick={resetChat} title="New Chat" className="hover:bg-gray-100 hover:text-[#FE5300] p-1.5 rounded-xl transition-all duration-200">
             <RefreshCcw size={18} />
           </button>
-          <button onClick={onClose} title="Close" className="hover:bg-white/20 p-1.5 rounded-xl transition-all duration-200 ml-1">
+          <button onClick={onClose} title="Close" className="hover:bg-gray-100 hover:text-[#FE5300] p-1.5 rounded-xl transition-all duration-200 ml-1">
             <X size={20} />
           </button>
         </div>
@@ -149,9 +149,11 @@ export default function ChatWidget({ onClose }) {
           <ChatMessage key={idx} sender={m.sender} message={m.message} url={m.url} />
         ))}
         {isLoading && (
-          <div className="flex justify-start mb-4">
-            <div className="bg-gray-200 text-gray-500 rounded-2xl px-4 py-2 text-sm rounded-bl-none animate-pulse">
-              typing...
+          <div className="flex justify-start mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="bg-white text-gray-500 rounded-2xl px-4 py-2.5 text-sm rounded-bl-none shadow-sm border border-gray-100 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
             </div>
           </div>
         )}
