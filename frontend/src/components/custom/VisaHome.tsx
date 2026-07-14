@@ -6,6 +6,7 @@ import {
   Sun, Mountain, Umbrella, Castle, TreePine, Moon, ArrowRight 
 } from "lucide-react";
 import PopupQueryForm from "./PopupQueryForm";
+import { getWhatsAppLink } from "@/config/contact";
 
 const getVisa = async (search: string) => {
   const res = await fetch(
@@ -127,7 +128,7 @@ async function VisaHome() {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">
             <Link 
-              href="https://wa.me/918744000999"
+              href={getWhatsAppLink()}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-6 py-3 rounded-xl font-medium text-[15px] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
