@@ -73,6 +73,16 @@ const getVisaBySlug = async (req, res) => {
     if (!visa.isActive && !verifyPreviewToken(req.query?.token)) {
       return res.status(403).json({ success: false, message: "Invalid URL" });
     }
+
+    if (!visa.author) {
+      const { Author } = await import("../models/Authors.js");
+      const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+        .select("name role about avatar")
+        .lean();
+      if (defaultAuthor) {
+        visa.author = defaultAuthor;
+      }
+    }
     res.status(200).json({ success: true, data: visa });
   } catch (error) {
     console.log("Visa getting by slug failed", error.message);

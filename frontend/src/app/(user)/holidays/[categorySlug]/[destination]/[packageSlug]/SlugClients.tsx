@@ -570,19 +570,30 @@ function SlugClients({
                 <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-4 shadow-sm">
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
-                    {pkg.author?.avatar?.url ? (
-                      <img src={pkg.author.avatar.url} alt={pkg.author.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover shadow-sm border-2 border-white" />
-                    ) : (
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 font-bold text-2xl shadow-sm border-2 border-white">
-                        {pkg.author?.name ? pkg.author.name.charAt(0).toUpperCase() : "M"}
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base flex-1">
-                      <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {pkg.author?.name || "MusafirBaba Travel Team"} {pkg.author?.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{pkg.author.role}</span>}</p>
-                      {!pkg.author?.name && <p><span className="font-semibold text-gray-800">Reviewed By:</span> Uttarakhand Destination Specialist</p>}
-                      {pkg.author?.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{pkg.author.about}</p>}
-                      <p><span className="font-semibold text-gray-800">Last Updated:</span> Regularly Updated Before Every Yatra Season</p>
-                    </div>
+                    {(() => {
+                      const displayAuthor = pkg.author || {
+                        name: "MusafirBaba Travel Team",
+                        role: "expert",
+                        avatar: { url: "" },
+                        about: "Our travel specialists regularly assist travelers with choosing the best packages, travel planning, and consultation for a wide range of destinations."
+                      };
+                      return (
+                        <>
+                          {displayAuthor.avatar?.url ? (
+                            <img src={displayAuthor.avatar.url} alt={displayAuthor.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover shadow-sm border-2 border-white" />
+                          ) : (
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 font-bold text-2xl shadow-sm border-2 border-white">
+                              {displayAuthor.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base flex-1">
+                            <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {displayAuthor.name} {displayAuthor.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{displayAuthor.role}</span>}</p>
+                            {displayAuthor.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{displayAuthor.about}</p>}
+                            <p><span className="font-semibold text-gray-800">Last Updated:</span> {pkg.updatedAt ? new Date(pkg.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Regularly Updated Before Every Yatra Season"}</p>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

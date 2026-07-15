@@ -3,6 +3,31 @@ import mongoose from "mongoose";
 
 const createBatch = async (req, res) => {
   try {
+    if (Array.isArray(req.body)) {
+      const batches = req.body;
+      for (const batch of batches) {
+        if (
+          !batch.name ||
+          !batch.startDate ||
+          !batch.endDate ||
+          batch.quad === undefined ||
+          batch.triple === undefined ||
+          batch.double === undefined ||
+          batch.child === undefined
+        ) {
+          return res
+            .status(400)
+            .json({ success: false, message: "All fields are required for all batches" });
+        }
+      }
+      const createdBatches = await Batch.insertMany(batches);
+      return res.status(201).json({
+        success: true,
+        message: "Batches created successfully",
+        data: createdBatches,
+      });
+    }
+
     const { name, startDate, endDate, quad, triple, double, child } = req.body;
     if (
       !name ||

@@ -56,7 +56,7 @@ export default function ImageUploader({
 
   return (
     <div className={`relative w-full ${className || 'aspect-square'} bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-[#FE5300]/50 transition-colors group`}>
-      {uploadedImages.length > 0 ? (
+      {uploadedImages.length > 0 && uploadedImages[0]?.url ? (
         <div className="w-full h-full relative">
           {uploadedImages[0].resource_type === "video" ? (
             <div className="w-full h-full bg-black flex items-center justify-center">
