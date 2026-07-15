@@ -348,10 +348,11 @@ export default function CreatePackagePage() {
     },
   });
 
-  const handleBatchCreated = async (id: string) => {
-    form.setValue("batch", [...form.getValues("batch"), id]);
-    const newBatch = await getBatchByIds(accessToken, [id]);
-    setBatchDetails((prev) => [...prev, ...newBatch]);
+  const handleBatchCreated = async (idOrIds: string | string[]) => {
+    const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+    form.setValue("batch", [...form.getValues("batch"), ...ids]);
+    const newBatches = await getBatchByIds(accessToken, ids);
+    setBatchDetails((prev) => [...prev, ...newBatches]);
     setShowBatchModal(false);
   };
 
@@ -536,9 +537,8 @@ export default function CreatePackagePage() {
               <TabsContent value="batch" className="space-y-3">
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
                   <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Batch & Pricing</FormLabel>
-                  {batchDetails.map((field, index) => (<div key={field._id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><div className="flex items-center text-left gap-2"><span className="font-medium text-xs">{field?.name || `Batch ${index + 1}`}</span><span className="text-[10px] text-gray-500">{field?.startDate ? `${new Date(field?.startDate).toLocaleDateString()} → ${new Date(field?.endDate).toLocaleDateString()}` : "No date info"}</span></div><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleBatchDuplicate(field._id)}>Duplicate</Button><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleBatchEdit(field._id)}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteBatch(accessToken, field._id); if (res) { form.setValue("batch", form.getValues("batch").filter((id) => id !== field._id)); setBatchDetails((prev) => prev.filter((item) => item._id !== field._id)); } }}>Delete</Button></div></div>))}
+                  {batchDetails.map((field, index) => (<div key={field._id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><div className="flex items-center text-left gap-2"><span className="font-medium text-xs">{field?.name || `Batch ${index + 1}`}</span><span className="text-[10px] text-gray-500">{field?.startDate ? `${new Date(field?.startDate).toLocaleDateString()} → ${new Date(field?.endDate).toLocaleDateString()}` : "No date info"}</span></div><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleBatchDuplicate(field._id)}>Duplicate</Button><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleBatchEdit(field._id)}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { if (!window.confirm("Are you sure you want to delete this batch?")) return; const res = await deleteBatch(accessToken, field._id); if (res) { form.setValue("batch", form.getValues("batch").filter((id) => id !== field._id)); setBatchDetails((prev) => prev.filter((item) => item._id !== field._id)); } }}>Delete</Button></div></div>))}
                   <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowBatchModal(true)}>+ Add New Batch</Button>
-                  {showBatchModal && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><CreateBatchModal onBatchCreated={handleBatchCreated} onClose={() => { setShowBatchModal(false); setEditBatchId(null); }} onBatchUpdated={handleBatchUpdated} existingBatch={editBatchId} /></div>)}
                 </div>
               </TabsContent>
 
@@ -578,7 +578,7 @@ export default function CreatePackagePage() {
               {/* TAB 6: FAQS & REVIEWS */}
               <TabsContent value="faqs" className="space-y-5">
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">FAQs</FormLabel>{faqsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><div className="grid gap-2 mb-2 flex-1 border border-gray-100 p-2 rounded bg-gray-50"><Input className="h-7 text-xs px-2 rounded-sm bg-white" {...form.register(`faqs.${index}.question`)} placeholder="Question" /><div className="border border-gray-200 rounded p-2 bg-white"><SmallEditor value={form.getValues(`faqs.${index}.answer`)} onChange={(val) => form.setValue(`faqs.${index}.answer`, val)} /></div></div><Button type="button" variant="destructive" size="sm" className="h-7 px-2 mt-2" onClick={() => faqsArray.remove(index)}>X</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => faqsArray.append({ question: "", answer: "" })}>Add FAQ</Button></div>
-                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Reviews</FormLabel>{reviewsArray.fields.map((field, index) => (<div key={field.id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><span className="font-medium text-xs">{reviewsDetails[index]?.name || `Review ${index + 1}`}</span><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleReviewsEdit(form.getValues(`reviews.${index}`))}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteReview(accessToken, form.getValues(`reviews.${index}`)); if (res) reviewsArray.remove(index); }}>Delete</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={() => reviewsArray.remove(index)}>Remove Link</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowReviewsModal(true)}>+ Add New Review</Button>{showReviewsModal && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><CreateReviewsModal onReviewsCreated={handleReviewsCreated} onClose={() => { setShowReviewsModal(false); setEditReviewsId(null); }} onReviewsUpdated={handleReviewsUpdated} existingReviews={editReviewsId} type="package" /></div>)}</div>
+                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Reviews</FormLabel>{reviewsArray.fields.map((field, index) => (<div key={field.id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><span className="font-medium text-xs">{reviewsDetails[index]?.name || `Review ${index + 1}`}</span><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleReviewsEdit(form.getValues(`reviews.${index}`))}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteReview(accessToken, form.getValues(`reviews.${index}`)); if (res) reviewsArray.remove(index); }}>Delete</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={() => reviewsArray.remove(index)}>Remove Link</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowReviewsModal(true)}>+ Add New Review</Button></div>
               </TabsContent>
             </Tabs>
 
@@ -589,6 +589,8 @@ export default function CreatePackagePage() {
             </div>
           </form>
         </Form>
+        {showBatchModal && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><CreateBatchModal onBatchCreated={handleBatchCreated} onClose={() => { setShowBatchModal(false); setEditBatchId(null); }} onBatchUpdated={handleBatchUpdated} existingBatch={editBatchId} packageDuration={form.watch("duration.days") || 0} /></div>)}
+        {showReviewsModal && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><CreateReviewsModal onReviewsCreated={handleReviewsCreated} onClose={() => { setShowReviewsModal(false); setEditReviewsId(null); }} onReviewsUpdated={handleReviewsUpdated} existingReviews={editReviewsId} type="package" /></div>)}
         {mutation.isError && <p className="text-red-500 text-xs mt-2 text-center">Something went wrong!</p>}
         {mutation.isSuccess && <p className="text-green-500 text-xs mt-2 text-center">Package created successfully!</p>}
       </div>

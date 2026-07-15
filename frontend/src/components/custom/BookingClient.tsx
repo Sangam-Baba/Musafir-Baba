@@ -682,15 +682,13 @@ export default function BookingClient({ pkg }: { pkg: Package }) {
                         <div className="flex justify-between">
                           <p className="text-md font-semibold"> Travel Date </p>
                           <p>
-                            <p>
-                              {new Date(
-                                confirmedBatch?.startDate || "",
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </p>
+                            {new Date(
+                              confirmedBatch?.startDate || "",
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
                           </p>
                         </div>
 

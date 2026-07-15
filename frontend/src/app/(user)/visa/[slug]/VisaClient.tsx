@@ -634,24 +634,34 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               )}
 
               {/* About the Author Section moved above Testimonials */}
-              <div className="mt-12 mb-16 p-6 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col sm:flex-row gap-6 items-start">
-                {visa.author?.avatar?.url ? (
-                  <img src={visa.author.avatar.url} alt={visa.author.name} className="w-16 h-16 rounded-full object-cover shrink-0 border border-slate-200" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-[#FE5300]/10 flex items-center justify-center shrink-0 border border-[#FE5300]/20">
-                    <span className="text-[#FE5300] font-black text-2xl tracking-tighter">{visa.author?.name ? visa.author.name.charAt(0).toUpperCase() : "MB"}</span>
-                  </div>
-                )}
-                <div className="flex-1 space-y-2.5">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">About the Author</p>
-                  <h2 className="text-lg font-bold text-slate-900 font-heading">{visa.author?.name || "MusafirBaba Visa Team"} {visa.author?.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm ml-2 font-normal lowercase capitalize">{visa.author.role}</span>}</h2>
-                  <p className="text-[13px] text-slate-600 leading-relaxed">
-                    {visa.author?.about || "Our visa specialists regularly assist travelers with tourist visa applications, documentation guidance, travel planning, and visa consultation for a wide range of international destinations."}
-                  </p>
-                  <div className="pt-3 mt-3 border-t border-slate-200/60 flex flex-col sm:flex-row gap-2 sm:gap-6 text-[11px] text-slate-500 font-medium">
-                    <span>Last Updated: <strong className="text-slate-700">June 2026</strong></span>
-                    <span className="hidden sm:inline text-slate-300">|</span>
-                    <span>Reviewed By: <strong className="text-slate-700">{visa.author?.name ? "MusafirBaba Visa Team" : "Senior Visa Consultants, MusafirBaba"}</strong></span>
+              <div id="author" className="scroll-mt-40 mb-16 mt-12">
+                <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-4 shadow-sm">
+                  <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
+                  <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
+                    {(() => {
+                      const displayAuthor = visa.author || {
+                        name: "MusafirBaba Visa Team",
+                        role: "expert",
+                        avatar: { url: "" },
+                        about: "Our visa specialists regularly assist travelers with tourist visa applications, documentation guidance, travel planning, and visa consultation for a wide range of international destinations."
+                      };
+                      return (
+                        <>
+                          {displayAuthor.avatar?.url ? (
+                            <img src={displayAuthor.avatar.url} alt={displayAuthor.name} className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover shadow-sm border-2 border-white" />
+                          ) : (
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 font-bold text-2xl shadow-sm border-2 border-white">
+                              {displayAuthor.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base flex-1">
+                            <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {displayAuthor.name} {displayAuthor.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{displayAuthor.role}</span>}</p>
+                            {displayAuthor.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{displayAuthor.about}</p>}
+                            <p><span className="font-semibold text-gray-800">Last Updated:</span> {visa.updatedAt ? new Date(visa.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Regularly Updated Before Every Season"}</p>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
-import { Calendar, DollarSign, IndianRupee, Tag, X } from "lucide-react";
+import { Calendar as CalendarIcon, IndianRupee, Tag, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, addDays, parseISO } from "date-fns";
 
 interface Batch {
   name: string;
@@ -21,7 +22,7 @@ interface Batch {
   status: string;
 }
 
-const createBatch = async (accessToken: string, form: Batch) => {
+const createBatch = async (accessToken: string, form: Batch | Batch[]) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/batch`, {
     method: "POST",
     headers: {
@@ -62,16 +63,63 @@ const getBatch = async (accessToken: string, id: string) => {
   return res.json();
 };
 
+const SimpleCalendar = ({ selectedDates, onSelectDate }: { selectedDates: Date[], onSelectDate: (d: Date) => void }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const days = eachDayOfInterval({
+    start: startOfWeek(startOfMonth(currentMonth)),
+    end: endOfWeek(endOfMonth(currentMonth))
+  });
+
+  const handleToggle = (d: Date) => {
+    onSelectDate(d);
+  };
+
+  return (
+    <div className="w-full bg-background rounded-md border border-input p-3 shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <button type="button" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1.5 hover:bg-muted rounded text-muted-foreground"><ChevronLeft className="w-4 h-4"/></button>
+        <span className="text-sm font-semibold text-foreground">{format(currentMonth, "MMMM yyyy")}</span>
+        <button type="button" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1.5 hover:bg-muted rounded text-muted-foreground"><ChevronRight className="w-4 h-4"/></button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-center mb-2">
+        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(day => <div key={day} className="text-[10px] uppercase font-bold text-muted-foreground">{day}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day, idx) => {
+          const isSelected = selectedDates.some(sd => isSameDay(sd, day));
+          const isCurrentMonth = isSameMonth(day, currentMonth);
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleToggle(day)}
+              className={`h-8 w-full rounded-md flex items-center justify-center text-xs transition-colors font-medium
+                ${isSelected ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted'}
+                ${!isCurrentMonth && !isSelected ? 'text-muted-foreground/40' : !isSelected ? 'text-foreground' : ''}
+              `}
+            >
+              {format(day, 'd')}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const CreateBatchModal = ({
   onBatchCreated,
   onBatchUpdated,
   onClose,
   existingBatch,
+  packageDuration = 0,
 }: {
-  onBatchCreated: (batchId: string) => void;
+  onBatchCreated: (batchId: string | string[]) => void;
   onBatchUpdated: (batchId: string) => void;
   onClose: () => void;
   existingBatch: string | null;
+  packageDuration?: number;
 }) => {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
 
@@ -89,6 +137,8 @@ export const CreateBatchModal = ({
     childDiscount: 0,
     status: "upcoming",
   });
+
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const { data } = useQuery({
     queryKey: ["batches", existingBatch],
@@ -113,26 +163,62 @@ export const CreateBatchModal = ({
         childDiscount: batch.childDiscount || 0,
         status: batch.status || "upcoming",
       });
+      if (batch.startDate) {
+        setSelectedDates([parseISO(batch.startDate)]);
+      }
     }
   }, [existingBatch, batch]);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      existingBatch
-        ? updateBatch(accessToken, existingBatch, form)
-        : createBatch(accessToken, form),
+    mutationFn: async () => {
+      if (existingBatch) {
+        return updateBatch(accessToken, existingBatch, form);
+      } else {
+        if (selectedDates.length === 0) throw new Error("Please select at least one start date.");
+        const durationOffset = Math.max(0, packageDuration - 1);
+        const batchesPayload = selectedDates.map((date, index) => {
+          const startDateStr = format(date, 'yyyy-MM-dd');
+          const endDateStr = format(addDays(date, durationOffset), 'yyyy-MM-dd');
+          
+          let finalName = form.name?.trim();
+          if (!finalName) {
+            // Auto-generate MBT standard serial
+            finalName = `MBT${Math.floor(100000 + Math.random() * 900000)}`;
+          } else if (selectedDates.length > 1) {
+            // Append serial if custom name provided for bulk
+            finalName = `${finalName}-${index + 1}`;
+          }
+
+          return { ...form, name: finalName, startDate: startDateStr, endDate: endDateStr };
+        });
+        return createBatch(accessToken, batchesPayload);
+      }
+    },
     onSuccess: (res) => {
       toast.success(
         existingBatch
           ? "Batch updated successfully!"
-          : "Batch created successfully!"
+          : `${selectedDates.length} Batch(es) created successfully!`
       );
-      if (existingBatch) onBatchUpdated?.(existingBatch);
-      else onBatchCreated(res?.data?._id || res?._id);
+      if (existingBatch) {
+        onBatchUpdated?.(existingBatch);
+      } else {
+        const data = res?.data;
+        const ids = Array.isArray(data) ? data.map(r => r?._id) : [data?._id];
+        onBatchCreated(ids);
+      }
       onClose();
     },
-    onError: (err) => toast.error(err.message || "Failed to create batch"),
+    onError: (err) => toast.error(err.message || "Failed to create batch(es)"),
   });
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDates(prev => {
+      const exists = prev.some(d => isSameDay(d, date));
+      if (exists) return prev.filter(d => !isSameDay(d, date));
+      return [...prev, date];
+    });
+  };
 
   const handleChange = (key: keyof Batch, value: string) => {
     if (
@@ -153,6 +239,12 @@ export const CreateBatchModal = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!existingBatch && selectedDates.length === 0) {
+      toast.error("Please select at least one start date.");
+      return;
+    }
+    // Note: We removed the strict 'name' check here because mutationFn 
+    // now auto-generates a name if it's empty, ensuring it won't fail the backend.
     mutation.mutate();
   };
 
@@ -168,12 +260,12 @@ export const CreateBatchModal = ({
           </div>
           <div>
             <h2 className="text-xl font-semibold text-foreground">
-              {existingBatch ? "Update Batch" : "Create New Batch"}
+              {existingBatch ? "Update Batch" : "Create New Batch(es)"}
             </h2>
             <p className="text-sm text-muted-foreground">
               {existingBatch
                 ? "Modify batch details and pricing"
-                : "Set up a new batch with pricing details"}
+                : "Select multiple start dates to create bulk batches"}
             </p>
           </div>
         </div>
@@ -192,46 +284,75 @@ export const CreateBatchModal = ({
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-2">
                 <Tag className="w-4 h-4 text-muted-foreground" />
-                Batch Name
+                Batch Name <span className="text-[10px] text-muted-foreground ml-2 font-normal">(Leave blank to auto-generate)</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g., Summer 2024 Batch"
+                placeholder="e.g., Summer 2024 Batch (Optional)"
                 value={form.name}
                 onChange={(e) => handleChange("name", e.target.value)}
                 className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                required
+                required={!!existingBatch}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) => handleChange("startDate", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                  required
-                />
+            {existingBatch ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) => {
+                      const newStartDate = e.target.value;
+                      handleChange("startDate", newStartDate);
+                      if (newStartDate && packageDuration) {
+                        const durationOffset = Math.max(0, packageDuration - 1);
+                        const newEndDate = format(addDays(parseISO(newStartDate), durationOffset), 'yyyy-MM-dd');
+                        handleChange("endDate", newEndDate);
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    min={form.startDate}
+                    value={form.endDate}
+                    onChange={(e) => handleChange("endDate", e.target.value)}
+                    className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                    required
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => handleChange("endDate", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                  required
-                />
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                    Select Start Dates
+                  </label>
+                  <div className="text-xs text-muted-foreground">
+                    End Dates auto-calculated (+{Math.max(0, packageDuration - 1)} days)
+                  </div>
+                </div>
+                <SimpleCalendar selectedDates={selectedDates} onSelectDate={handleDateSelect} />
+                {selectedDates.length > 0 && (
+                  <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+                    Selected {selectedDates.length} start date(s): {selectedDates.map(d => format(d, 'MMM d')).join(', ')}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -362,7 +483,7 @@ export const CreateBatchModal = ({
               : "Creating..."
             : existingBatch
             ? "Update Batch"
-            : "Create Batch"}
+            : "Create Batch(es)"}
         </button>
       </div>
     </div>

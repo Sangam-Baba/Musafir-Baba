@@ -2,6 +2,7 @@ import { CustomizedTourPackage } from "../models/CustomizedTourPackage.js";
 import mongoose from "mongoose";
 import { Destination } from "../models/Destination.js";
 import { Staff } from "../models/Staff.js";
+import { Author } from "../models/Authors.js";
 
 const createCustomizedTourPackage = async (req, res) => {
   try {
@@ -123,6 +124,19 @@ const getAllCustomizedTourPackages = async (req, res) => {
       .populate("author", "name role about avatar")
       .populate("plans")
       .lean();
+      
+    const { Author } = await import("../models/Authors.js");
+    const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+      .select("name role about avatar")
+      .lean();
+
+    if (defaultAuthor) {
+      customizedTourPackages.forEach(pkg => {
+        if (!pkg.author) {
+          pkg.author = defaultAuthor;
+        }
+      });
+    }
     res.status(200).json({
       success: true,
       message: "Customized tour packages fetched successfully",
@@ -174,6 +188,15 @@ const getCustomizedTourPackageBySlug = async (req, res) => {
       return res
         .status(404)
         .json({ message: "Customized tour package not found" });
+    }
+
+    if (!customizedTourPackage.author) {
+      const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+        .select("name role about avatar")
+        .lean();
+      if (defaultAuthor) {
+        customizedTourPackage.author = defaultAuthor;
+      }
     }
     res.status(200).json({
       success: true,
@@ -229,10 +252,14 @@ const approveCustomizedTourUpdates = async (req, res) => {
     let updateData = { status: "published" };
     if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
       updateData = { ...pkg.pendingUpdates.data, status: "published" };
+      if (!updateData.author || updateData.author === "") {
+        const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i });
+        updateData.author = defaultAuthor ? defaultAuthor._id : null;
+      }
     }
     
     // Clear pendingUpdates before applying
-    updateData.$unset = { pendingUpdates: 1 };
+    updateData.pendingUpdates = null;
 
     const updatedPkg = await CustomizedTourPackage.findByIdAndUpdate(
       id,

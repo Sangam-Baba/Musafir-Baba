@@ -2,6 +2,7 @@ import { Package } from "../models/Package.js";
 import { Category } from "../models/Category.js";
 import { Destination } from "../models/Destination.js";
 import { Staff } from "../models/Staff.js";
+import { Author } from "../models/Authors.js";
 import mongoose from "mongoose";
 const createPackage = async (req, res) => {
   try {
@@ -126,7 +127,10 @@ const approvePackageUpdates = async (req, res) => {
     let updateData = { status: "published" };
     if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
       updateData = { ...pkg.pendingUpdates.data, status: "published" };
-      if (updateData.author === "") updateData.author = null;
+      if (!updateData.author || updateData.author === "") {
+        const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i });
+        updateData.author = defaultAuthor ? defaultAuthor._id : null;
+      }
     }
 
     const updatedPkg = await Package.findByIdAndUpdate(
@@ -184,6 +188,15 @@ const getPackageBySlug = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Package not found for this slug" });
+    }
+
+    if (!pkg.author) {
+      const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+        .select("name role about avatar")
+        .lean();
+      if (defaultAuthor) {
+        pkg.author = defaultAuthor;
+      }
     }
 
     res.json({ success: true, data: pkg });
@@ -314,6 +327,19 @@ const getPackages = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(Number(limit))
       .lean();
+
+    const { Author } = await import("../models/Authors.js");
+    const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+      .select("name role about avatar")
+      .lean();
+
+    if (defaultAuthor) {
+      packages.forEach(pkg => {
+        if (!pkg.author) {
+          pkg.author = defaultAuthor;
+        }
+      });
+    }
 
     const total = await Package.countDocuments(query);
 

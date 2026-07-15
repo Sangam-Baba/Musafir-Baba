@@ -188,12 +188,24 @@ const getVehicleBySlug = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Missing required things" });
     }
-    const vehicle = await Vehicle.findOne({
+    let vehicle = await Vehicle.findOne({
       slug: slug,
       status: "published",
-    }).populate("location", "name city state ");
+    }).populate("location", "name city state ")
+      .populate("author", "name role about avatar")
+      .lean();
     if (!vehicle) {
       return res.status(404).json({ success: false, message: "Invalid Slug" });
+    }
+
+    if (!vehicle.author) {
+      const { Author } = await import("../models/Authors.js");
+      const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+        .select("name role about avatar")
+        .lean();
+      if (defaultAuthor) {
+        vehicle.author = defaultAuthor;
+      }
     }
     res.status(200).json({
       success: true,

@@ -110,6 +110,10 @@ const vehicleSchema = new mongoose.Schema(
         url: String,
       },
     ],
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Author",
+    },
     status: {
       type: String,
       enum: ["draft", "published"],
