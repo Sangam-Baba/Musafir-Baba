@@ -161,7 +161,7 @@ export default function ChatWidget({ onClose }) {
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0">
+      <div className="shrink-0 pt-2 bg-gradient-to-t from-white via-white to-transparent rounded-b-3xl">
         <QuickReplies replies={quickReplies} onSelect={sendMessage} />
         <ChatInput onSendMessage={sendMessage} />
       </div>

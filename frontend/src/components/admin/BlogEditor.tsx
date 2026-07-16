@@ -214,14 +214,26 @@ export default function BlogEditor({ value = "", onChange }: BlogEditorProps) {
       return;
     }
 
-    const url = prompt("Enter link URL");
-    let rel = "noopener noreferrer nofollow";
-    if (url) {
-      if (url.startsWith("https://musafirbaba.com")) {
-        rel = "noopener noreferrer";
-      }
-      editor.chain().focus().setLink({ href: url, rel: rel }).run();
+    const previousUrl = editor.getAttributes("link").href;
+    const url = prompt("Enter link URL", previousUrl || "");
+    
+    if (url === null) return;
+    
+    if (url === "") {
+      editor.chain().focus().unsetLink().run();
+      return;
     }
+
+    let rel = "noopener noreferrer nofollow";
+    if (
+      url.startsWith("https://musafirbaba.com") ||
+      url.startsWith("https://www.musafirbaba.com") ||
+      url.startsWith("/")
+    ) {
+      rel = "noopener noreferrer";
+    }
+    
+    editor.chain().focus().setLink({ href: url, rel: rel }).run();
   };
 
   const handleInsertButton = () => {
