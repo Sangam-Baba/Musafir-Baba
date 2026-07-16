@@ -589,8 +589,8 @@ function SlugClients({
                           <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base flex-1">
                             <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {displayAuthor.name} {displayAuthor.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{displayAuthor.role}</span>}</p>
                             {displayAuthor.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{displayAuthor.about}</p>}
-                            <p><span className="font-semibold text-gray-800">Last Updated:</span> {pkg.updatedAt ? new Date(pkg.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Regularly Updated Before Every Yatra Season"}</p>
-                          </div>
+                            <p suppressHydrationWarning><span className="font-semibold text-gray-800">Last Updated:</span> {pkg.updatedAt ? new Date(pkg.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Regularly Updated Before Every Yatra Season"}</p>
+                            </div>
                         </>
                       );
                     })()}

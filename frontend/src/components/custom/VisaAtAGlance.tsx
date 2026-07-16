@@ -8,7 +8,6 @@ export default function VisaAtAGlance({ html }: { html: string }) {
     const parsedRows: { label: string; value: string }[] = [];
     const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
     let trMatch;
-    let isFirstRow = true;
 
     const decodeEntities = (str: string) => {
       return str.replace(/&(nbsp|amp|quot|lt|gt);/g, (match, entity) => {
@@ -19,11 +18,6 @@ export default function VisaAtAGlance({ html }: { html: string }) {
     };
 
     while ((trMatch = trRegex.exec(html)) !== null) {
-      if (isFirstRow) {
-        isFirstRow = false;
-        continue;
-      }
-      
       const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
       let tdMatch;
       const tds = [];

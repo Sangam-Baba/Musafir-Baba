@@ -93,6 +93,24 @@ function ToolbarButton({
 }
 
 export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
+  const CustomLink = Link.extend({
+    addAttributes() {
+      return {
+        ...this.parent?.(),
+        rel: {
+          default: null,
+          renderHTML: (attributes) => {
+            if (!attributes.rel) return {};
+            return { rel: attributes.rel };
+          },
+        },
+        target: {
+          default: "_blank",
+        },
+      };
+    },
+  });
+
   const editor = useEditor({
     extensions: [
       Table.configure({
@@ -104,7 +122,7 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
       StarterKit.configure({
         codeBlock: {},
       }),
-      Link.configure({ openOnClick: false }),
+      CustomLink.configure({ openOnClick: false }),
       Image.extend({
         addAttributes() {
           return {
@@ -178,14 +196,26 @@ export default function SmallEditor({ value = "", onChange }: BlogEditorProps) {
       return;
     }
 
-    const url = prompt("Enter link URL");
-    let rel = "noopener noreferrer nofollow";
-    if (url) {
-      if (url.startsWith("https://musafirbaba.com")) {
-        rel = "noopener noreferrer";
-      }
-      editor.chain().focus().setLink({ href: url, rel: rel }).run();
+    const previousUrl = editor.getAttributes("link").href;
+    const url = prompt("Enter link URL", previousUrl || "");
+    
+    if (url === null) return;
+    
+    if (url === "") {
+      editor.chain().focus().unsetLink().run();
+      return;
     }
+
+    let rel = "noopener noreferrer nofollow";
+    if (
+      url.startsWith("https://musafirbaba.com") ||
+      url.startsWith("https://www.musafirbaba.com") ||
+      url.startsWith("/")
+    ) {
+      rel = "noopener noreferrer";
+    }
+    
+    editor.chain().focus().setLink({ href: url, rel: rel }).run();
   };
 
   return (

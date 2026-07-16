@@ -415,10 +415,16 @@ export default function CreatePackagePage() {
   const mutation = useMutation({
     mutationFn: (values: PackageFormValues) =>
       updatePackage(values, accessToken, id),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["packages"] });
       toast.success("Package Updated successfully");
-      // form.reset(defaultValues)
+      
+      // Trigger frontend cache revalidation using Server Action
+      try {
+        await clearCache('/holidays', 'packages');
+      } catch (err) {
+        console.error('Failed to revalidate cache:', err);
+      }
     },
     onError: (error: unknown) => {
       toast.error(

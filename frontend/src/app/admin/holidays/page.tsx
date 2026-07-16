@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { clearCache } from "@/app/actions";
 import Pagination from "@/components/common/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/custom/loader";
@@ -173,6 +174,14 @@ function PackagePage() {
       );
       if (!res.ok) throw new Error("Failed to approve package");
       toast.success("Package approved successfully");
+      
+      // Trigger frontend cache revalidation using Server Action
+      try {
+        await clearCache('/holidays', 'packages');
+      } catch (err) {
+        console.error('Failed to revalidate cache:', err);
+      }
+      
       refetch();
     } catch (error) {
       console.log("error in approving", error);

@@ -12,7 +12,7 @@ async function getPackageByCategorySlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}?limit=12&minimal=true`,
     {
-      next: { revalidate: 60 },
+      next: { revalidate: 60, tags: ['packages'] },
     }
   );
   if (!res.ok) throw new Error("Failed to fetch packages");

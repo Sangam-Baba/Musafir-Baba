@@ -400,6 +400,20 @@ const getPackageByCategorySlug = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Packages not found" });
     }
+
+    const { Author } = await import("../models/Authors.js");
+    const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
+      .select("name role about avatar")
+      .lean();
+
+    if (defaultAuthor) {
+      packages.forEach(pkg => {
+        if (!pkg.author) {
+          pkg.author = defaultAuthor;
+        }
+      });
+    }
+
     res.json({ success: true, data: packages });
   } catch (error) {
     console.log("Package getting failed ", error.message);

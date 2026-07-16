@@ -81,7 +81,7 @@ export async function getPackageByCategorySlug(slug: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
     {
-      next: { revalidate: 60 },
+      next: { revalidate: 60, tags: ['packages'] },
     },
   );
   if (!res.ok) return null;
