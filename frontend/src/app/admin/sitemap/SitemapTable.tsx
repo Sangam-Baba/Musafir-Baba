@@ -18,11 +18,23 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
+import * as XLSX from "xlsx";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 interface SitemapItem {
   title: string;
   url: string;
   category: string;
+  fullUrl?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  author?: string;
+  pageType?: string;
+  pageCategory?: string;
+  keywords?: string;
 }
 
 const categories: Record<string, { label: string; icon: any; color: string }> = {
@@ -41,6 +53,7 @@ const categories: Record<string, { label: string; icon: any; color: string }> = 
 
 interface SitemapTableProps {
   data: SitemapItem[];
+  allFilteredData: SitemapItem[];
   totalItems: number;
   totalPages: number;
   currentPage: number;
@@ -52,6 +65,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function SitemapTable({ 
   data, 
+  allFilteredData,
   totalItems, 
   totalPages, 
   currentPage, 
@@ -62,6 +76,7 @@ export default function SitemapTable({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState(currentSearch);
+  const { role } = useAdminAuthStore();
 
   // Sync internal search term with URL search param
   useEffect(() => {
@@ -96,6 +111,35 @@ export default function SitemapTable({
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
 
+  const handleExport = () => {
+    // Only admins or superadmins can export
+    if (role !== "admin" && role !== "superadmin") return;
+
+    // Prepare data for Excel
+    const exportData = allFilteredData.map((item, index) => ({
+      "S.No.": index + 1,
+      "Title": item.title || "",
+      "URL": item.fullUrl || "",
+      "Meta Title": item.metaTitle || "",
+      "Meta Description": item.metaDescription || "",
+      "Keywords": item.keywords || "",
+      "Type of Page": item.pageType || "",
+      "Page Category": item.pageCategory || "",
+      "Created By": item.createdBy || "",
+      "Author": item.author || "",
+      "Created At": item.createdAt || "",
+      "Updated At": item.updatedAt || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sitemap Data");
+    
+    // Generate file name with current date
+    const date = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(workbook, `Sitemap_Export_${date}.xlsx`);
+  };
+
   return (
     <div className="space-y-4">
       {/* Search & Filters */}
@@ -113,6 +157,15 @@ export default function SitemapTable({
         </div>
 
         <div className="flex items-center gap-2">
+          {(role === "admin" || role === "superadmin") && (
+            <Button 
+              onClick={handleExport} 
+              variant="outline" 
+              className="h-8 text-xs bg-slate-50 border-none hover:bg-green-50 hover:text-green-600 transition-colors"
+            >
+              Export to Excel
+            </Button>
+          )}
           <div className="relative">
             <Search className={`absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 transition-colors ${isPending ? 'text-[#FE5300]' : 'text-slate-400'}`} />
             <Input 
