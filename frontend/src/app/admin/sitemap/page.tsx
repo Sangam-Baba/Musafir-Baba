@@ -23,12 +23,100 @@ interface SitemapItem {
   title: string;
   url: string;
   category: string;
+  fullUrl: string;
+  metaTitle: string;
+  metaDescription: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  author: string;
+  pageType: string;
+  pageCategory: string;
+  keywords: string;
 }
 
 const ITEMS_PER_PAGE = 10;
 
 import { cache } from "react";
 import SitemapTable from "./SitemapTable";
+
+function determinePageCategory(url: string) {
+  const parts = url.split('/').filter(Boolean);
+
+  if (parts.length === 0) return "Listing page"; // Home
+
+  const firstPart = parts[0];
+
+  // Blogs, News, and static support pages
+  if (["blog", "news", "about-us", "contact-us", "privacy-policy", "terms-and-conditions", "disclaimer"].includes(firstPart)) {
+    return "Support page";
+  }
+
+  // Visas
+  if (firstPart === "visa") {
+    if (parts.length === 1) return "Listing page";
+    if (parts.length === 2) return "Pillar page"; // Visa Money page
+    return "Support page";
+  }
+
+  // Holidays
+  if (firstPart === "holidays") {
+    if (parts.length === 1) return "Listing page";
+    
+    const isCustomized = parts[1] === "customised-tour-packages";
+    if (isCustomized) {
+      // /holidays/customised-tour-packages (listing)
+      if (parts.length === 2) return "Listing page";
+      // /holidays/customised-tour-packages/<slug> (money page)
+      return "Pillar page"; 
+    } else {
+      // /holidays/category (listing)
+      if (parts.length === 2) return "Listing page";
+      // /holidays/category/destination (listing)
+      if (parts.length === 3) return "Listing page";
+      // /holidays/category/destination/slug (money page)
+      return "Pillar page";
+    }
+  }
+
+  // Rentals
+  if (firstPart === "rental") {
+    if (parts.length === 1) return "Listing page";
+    if (parts.length === 2) return "Listing page";
+    if (parts.length === 3) return "Listing page";
+    return "Pillar page"; // money page
+  }
+  
+  // Destinations
+  if (firstPart === "destinations") {
+    if (parts.length === 1) return "Listing page";
+    return "Pillar page";
+  }
+  
+  // Generic Webpages
+  // /slug -> Pillar page
+  if (parts.length === 1) return "Pillar page";
+  
+  // /slug/support -> Support page
+  return "Support page";
+}
+
+function determinePageType(category: string) {
+  const map: Record<string, string> = {
+    webpage: "Webpage",
+    holiday: "Package",
+    destination: "Destination",
+    visa: "Visa",
+    blog: "Blog",
+    news: "News",
+    customized: "Customise Page",
+    vehicle: "Rental",
+    seo: "Destination SEO",
+    aboutus: "Webpage",
+    category: "Category"
+  };
+  return map[category] || "Webpage";
+}
 
 const getAllSitemapData = cache(async () => {
   try {
@@ -49,6 +137,25 @@ const getAllSitemapData = cache(async () => {
     ]);
 
     const items: SitemapItem[] = [];
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://musafirbaba.com";
+
+    const createItem = (title: string, url: string, category: string, data: any = {}) => {
+      return {
+        title,
+        url,
+        category,
+        fullUrl: `${siteUrl}${url}`,
+        metaTitle: data.metaTitle || data.title || title || "",
+        metaDescription: data.metaDescription || data.excerpt || "",
+        createdAt: data.createdAt ? new Date(data.createdAt).toISOString().split('T')[0] : "",
+        updatedAt: data.updatedAt ? new Date(data.updatedAt).toISOString().split('T')[0] : "",
+        createdBy: data.createdBy?.name || (typeof data.createdBy === 'string' ? data.createdBy : ""),
+        author: data.author?.name || (typeof data.author === 'string' ? data.author : ""),
+        pageType: determinePageType(category),
+        pageCategory: determinePageCategory(url),
+        keywords: Array.isArray(data.keywords) ? data.keywords.join(", ") : (data.keywords || "")
+      };
+    };
     
     const staticLinks = [
       { title: "Home Page", url: "/", category: "webpage" },
@@ -61,36 +168,38 @@ const getAllSitemapData = cache(async () => {
     ];
 
     staticLinks.forEach(link => {
-      items.push(link);
+      items.push(createItem(link.title, link.url, link.category));
     });
 
-    webpages.data?.forEach((p: any) => items.push({ title: p.title, url: `/${p.fullSlug}`, category: "webpage" }));
-    blogs.data?.forEach((b: any) => items.push({ title: b.title, url: `/blog/${b.slug}`, category: "blog" }));
-    news.data?.forEach((n: any) => items.push({ title: n.title, url: `/news/${n.slug}`, category: "news" }));
-    catRes.data?.forEach((c: any) => items.push({ title: c.name, url: `/holidays/${c.slug}`, category: "category" }));
-    packages.data?.forEach((p: any) => items.push({ 
-      title: p.title, 
-      url: `/holidays/${p.mainCategory?.slug}/${p.destination?.state}/${p.slug}`, 
-      category: "holiday" 
-    }));
-    destinations.data?.forEach((d: any) => items.push({ title: d.name, url: `/destinations/${d.state}`, category: "destination" }));
-    visas.data?.forEach((v: any) => items.push({ title: `${v.country} Visa`, url: `/visa/${v.slug}`, category: "visa" }));
-    customized.data?.forEach((c: any) => items.push({ title: c.title, url: `/holidays/customised-tour-packages/${c.slug}`, category: "customized" }));
+    webpages.data?.forEach((p: any) => items.push(createItem(p.title, `/${p.fullSlug}`, "webpage", p)));
+    blogs.data?.forEach((b: any) => items.push(createItem(b.title, `/blog/${b.slug}`, "blog", b)));
+    news.data?.forEach((n: any) => items.push(createItem(n.title, `/news/${n.slug}`, "news", n)));
+    catRes.data?.forEach((c: any) => items.push(createItem(c.name, `/holidays/${c.slug}`, "category", c)));
+    packages.data?.forEach((p: any) => items.push(createItem(
+      p.title, 
+      `/holidays/${p.mainCategory?.slug}/${p.destination?.state}/${p.slug}`, 
+      "holiday", 
+      p
+    )));
+    destinations.data?.forEach((d: any) => items.push(createItem(d.name, `/destinations/${d.state}`, "destination", d)));
+    visas.data?.forEach((v: any) => items.push(createItem(`${v.country} Visa`, `/visa/${v.slug}`, "visa", v)));
+    customized.data?.forEach((c: any) => items.push(createItem(c.title, `/holidays/customised-tour-packages/${c.slug}`, "customized", c)));
     seo.data?.forEach((s: any) => {
       if (s.destinationId && s.categoryId) {
-        items.push({ 
-          title: `${s.destinationId.name} - ${s.categoryId.name} (SEO)`, 
-          url: `/holidays/${s.categoryId.slug}/${s.destinationId.state}`, 
-          category: "seo" 
-        });
+        items.push(createItem(
+          `${s.destinationId.name} - ${s.categoryId.name} (SEO)`, 
+          `/holidays/${s.categoryId.slug}/${s.destinationId.state}`, 
+          "seo", 
+          s
+        ));
       }
     });
     vehicles.data?.forEach((v: any) => {
       const type = v.vehicleType?.toLowerCase() || 'other';
       const dest = v.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any';
-      items.push({ title: v.title, url: `/rental/${type}/${dest}/${v.slug}`, category: "vehicle" });
+      items.push(createItem(v.title, `/rental/${type}/${dest}/${v.slug}`, "vehicle", v));
     });
-    aboutus.data?.forEach((a: any) => items.push({ title: a.title, url: `/about-us`, category: "aboutus" }));
+    aboutus.data?.forEach((a: any) => items.push(createItem(a.title, `/about-us`, "aboutus", a)));
 
     return items;
   } catch (error) {
@@ -125,6 +234,7 @@ export default async function SitemapPage(props: {
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
       <SitemapTable 
         data={paginatedData}
+        allFilteredData={filteredData}
         totalItems={totalItems}
         totalPages={totalPages}
         currentPage={page}
