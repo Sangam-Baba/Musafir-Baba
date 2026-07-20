@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
 });
+import OpenGraphManager from "@/components/admin/OpenGraphManager";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -53,6 +54,22 @@ const formSchema = z.object({
   footerLinks: z
     .array(z.object({ title: z.string(), url: z.string() }))
     .optional(),
+  social: z.object({
+    openGraph: z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      image: z.string().optional(),
+      imageAlt: z.string().optional(),
+      type: z.string().optional(),
+    }).optional(),
+    twitter: z.object({
+      inheritOpenGraph: z.boolean().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      image: z.string().optional(),
+      card: z.string().optional(),
+    }).optional(),
+  }).optional(),
 });
 
 export interface Category {
@@ -157,6 +174,7 @@ export default function EditBlog() {
       status: "draft",
       excerpt: "",
       footerLinks: [],
+      social: { twitter: { inheritOpenGraph: true } },
     },
   });
 
@@ -184,6 +202,7 @@ export default function EditBlog() {
         status: blog.status ?? "draft",
         excerpt: blog.excerpt,
         footerLinks: blog.footerLinks,
+        social: blog.social ?? { twitter: { inheritOpenGraph: true } },
       });
     }
   }, [blog, form]);
@@ -225,7 +244,7 @@ export default function EditBlog() {
             className="space-y-6"
           >
             <Tabs defaultValue="content" className="w-full">
-              <TabsList className="grid grid-cols-3 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
+              <TabsList className="grid grid-cols-4 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
                 <TabsTrigger value="content" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Basic Detail
                 </TabsTrigger>
@@ -234,6 +253,9 @@ export default function EditBlog() {
                 </TabsTrigger>
                 <TabsTrigger value="org" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Organization
+                </TabsTrigger>
+                <TabsTrigger value="social" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Social (OG)
                 </TabsTrigger>
               </TabsList>
 
@@ -466,6 +488,20 @@ export default function EditBlog() {
                       ))}
                     </div>
                   </div>
+                </TabsContent>
+
+                {/* Social (OG) Tab */}
+                <TabsContent value="social" forceMount className="mt-0 space-y-6 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
+                  <OpenGraphManager 
+                    form={form} 
+                    moduleType="BLOG" 
+                    baseMetadata={{
+                      title: form.watch("metaTitle") || form.watch("title") || "",
+                      description: form.watch("metaDescription") || form.watch("excerpt") || "",
+                      image: form.watch("coverImage.url") || "https://musafirbaba.com/default-og.jpg",
+                      imageAlt: form.watch("metaTitle") || form.watch("title") || ""
+                    }} 
+                  />
                 </TabsContent>
               </div>
             </Tabs>

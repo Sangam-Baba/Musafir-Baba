@@ -1,5 +1,6 @@
 import mongoose, { modelNames } from "mongoose";
 import slugify from "slugify";
+import { socialSchema } from "./socialSchema.js";
 
 const blogSchema = new mongoose.Schema(
   {
@@ -104,6 +105,10 @@ const blogSchema = new mongoose.Schema(
         url: String,
       },
     ],
+    social: { 
+      type: socialSchema, 
+      default: () => ({ twitter: { inheritOpenGraph: true } }) 
+    }
   },
   { timestamps: true },
 );

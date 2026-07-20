@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import { Category } from "./Category.js";
 import { Destination } from "./Destination.js";
+import { socialSchema } from "./socialSchema.js";
 
 const packageSchema = new mongoose.Schema(
   {
@@ -146,6 +147,12 @@ const packageSchema = new mongoose.Schema(
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Author",
+    },
+    social: {
+      type: socialSchema,
+      default: () => ({
+        twitter: { inheritOpenGraph: true }
+      })
     },
   },
   { timestamps: true },

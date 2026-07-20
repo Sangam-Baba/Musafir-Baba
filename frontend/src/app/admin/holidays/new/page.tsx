@@ -24,6 +24,7 @@ import { X } from "lucide-react";
 import { AddOnItems } from "./AddOnItems";
 import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import OpenGraphManager from "@/components/admin/OpenGraphManager";
 import { getAllAuthors } from "../../webpage/new/page";
 
 interface Image {
@@ -109,6 +110,22 @@ interface PackageFormValues {
   helpfulResources?: { title: string; url: string }[];
   packagePercent: number;
   status: "draft" | "published";
+  social?: {
+    openGraph?: {
+      title?: string;
+      description?: string;
+      image?: string;
+      imageAlt?: string;
+      type?: string;
+    };
+    twitter?: {
+      inheritOpenGraph?: boolean;
+      title?: string;
+      description?: string;
+      image?: string;
+      card?: string;
+    };
+  };
 }
 
 interface Category {
@@ -270,6 +287,7 @@ export default function CreatePackagePage() {
     hotelsAndAccommodation: "",
     helpfulResources: [],
     packagePercent: 0,
+    social: { twitter: { inheritOpenGraph: true } }
   };
 
   const {
@@ -420,13 +438,14 @@ export default function CreatePackagePage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="batch">Batch & Pricing</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="media">Media</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="faqs">FAQs & Review</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="social">Social (OG)</TabsTrigger>
               </TabsList>
 
               {/* TAB 1: BASIC INFO */}
@@ -579,6 +598,20 @@ export default function CreatePackagePage() {
               <TabsContent value="faqs" className="space-y-5">
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">FAQs</FormLabel>{faqsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><div className="grid gap-2 mb-2 flex-1 border border-gray-100 p-2 rounded bg-gray-50"><Input className="h-7 text-xs px-2 rounded-sm bg-white" {...form.register(`faqs.${index}.question`)} placeholder="Question" /><div className="border border-gray-200 rounded p-2 bg-white"><SmallEditor value={form.getValues(`faqs.${index}.answer`)} onChange={(val) => form.setValue(`faqs.${index}.answer`, val)} /></div></div><Button type="button" variant="destructive" size="sm" className="h-7 px-2 mt-2" onClick={() => faqsArray.remove(index)}>X</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => faqsArray.append({ question: "", answer: "" })}>Add FAQ</Button></div>
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Reviews</FormLabel>{reviewsArray.fields.map((field, index) => (<div key={field.id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><span className="font-medium text-xs">{reviewsDetails[index]?.name || `Review ${index + 1}`}</span><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleReviewsEdit(form.getValues(`reviews.${index}`))}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteReview(accessToken, form.getValues(`reviews.${index}`)); if (res) reviewsArray.remove(index); }}>Delete</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={() => reviewsArray.remove(index)}>Remove Link</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowReviewsModal(true)}>+ Add New Review</Button></div>
+              </TabsContent>
+
+              {/* TAB 7: SOCIAL (OG) */}
+              <TabsContent value="social" className="space-y-3">
+                <OpenGraphManager 
+                  form={form} 
+                  moduleType="PACKAGE" 
+                  baseMetadata={{
+                    title: form.watch("metaTitle") || form.watch("title") || "",
+                    description: form.watch("metaDescription") || form.watch("description") || "",
+                    image: form.watch("coverImage.url") || "https://musafirbaba.com/homebanner1.jpg",
+                    imageAlt: form.watch("metaTitle") || form.watch("title") || ""
+                  }} 
+                />
               </TabsContent>
             </Tabs>
 

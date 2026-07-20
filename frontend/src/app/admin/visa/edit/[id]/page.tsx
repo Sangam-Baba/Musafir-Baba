@@ -30,6 +30,7 @@ import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import OpenGraphManager from "@/components/admin/OpenGraphManager";
 
 async function updateVisa(values: Visa, accessToken: string, id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/${id}`, {
@@ -105,6 +106,7 @@ export default function CreateVisaPage() {
     rejectionReasons: [],
     expertTips: [],
     visas: [],
+    social: { twitter: { inheritOpenGraph: true } },
   };
   const form = useForm<Visa>({ defaultValues });
   const { data, isLoading, isError, error } = useQuery<Visa>({
@@ -215,6 +217,7 @@ export default function CreateVisaPage() {
         expertTips: data.expertTips || [],
         process: sanitizedProcess,
         documentsContent: data.documentsContent || "",
+        social: data.social || { twitter: { inheritOpenGraph: true } },
         visas: (data.visas || []).map((v: any) => {
           // Backward compat: if validityEntries is not present or empty,
           // migrate old single fields into validityEntries[0]
@@ -346,13 +349,14 @@ export default function CreateVisaPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
+              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="visas">Visas</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="media">Media</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO & Docs</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="faqs">FAQs & Review</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="social">Social (OG)</TabsTrigger>
               </TabsList>
 
               {/* TAB 1: BASIC INFO */}
@@ -1420,6 +1424,20 @@ export default function CreateVisaPage() {
                     </div>
                   )}
                 </div>
+              </TabsContent>
+              
+              {/* TAB 7: SOCIAL (OG) */}
+              <TabsContent value="social" className="space-y-3">
+                <OpenGraphManager 
+                  form={form} 
+                  moduleType="VISA" 
+                  baseMetadata={{
+                    title: form.watch("metaTitle") || form.watch("title") || "",
+                    description: form.watch("metaDescription") || form.watch("excerpt") || "",
+                    image: form.watch("coverImage.url") || "https://musafirbaba.com/homebanner1.jpg",
+                    imageAlt: form.watch("metaTitle") || form.watch("title") || ""
+                  }} 
+                />
               </TabsContent>
             </Tabs>
 

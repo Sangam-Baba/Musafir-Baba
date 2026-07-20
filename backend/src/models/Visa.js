@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
+import { socialSchema } from "./socialSchema.js";
 const visaSchema = new mongoose.Schema(
   {
     title: {
@@ -171,6 +172,12 @@ const visaSchema = new mongoose.Schema(
         expressServiceCharges: { type: Number, default: 0 },
       },
     ],
+    social: {
+      type: socialSchema,
+      default: () => ({
+        twitter: { inheritOpenGraph: true }
+      })
+    }
   },
   { timestamps: true }
 );
