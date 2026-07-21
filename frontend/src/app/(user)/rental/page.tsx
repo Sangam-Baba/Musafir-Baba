@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     "Rent cars and bikes easily for local travel, outstation trips, and holidays. Explore affordable vehicle rental options with flexible durations, verified vehicles, and convenient booking.",
   keywords:
     "car and bike rentals, car rental services, bike rental services, self drive car rental, rent a car for travel, rent bikes for trip, car rental for outstation, bike rental near me, vehicle rental services",
+  alternates: {
+    canonical: "https://musafirbaba.com/rental",
+  },
 };
 
 const getAllVehicles = async () => {

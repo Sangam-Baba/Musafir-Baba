@@ -44,10 +44,17 @@ export async function generateMetadata({ params }: { params: Promise<{ vehicleTy
 
   if (!destData) return { title: "Not Found" };
 
+  const url = destData.canonicalUrl 
+    ? `https://musafirbaba.com${destData.canonicalUrl}`
+    : `https://musafirbaba.com/rental/${destination}`;
+
   return {
     title: destData.metaTitle || `${destData.title || destData.name} Rentals - MusafirBaba`,
     description: destData.metaDescription || `Rent vehicles in ${destData.name} easily with MusafirBaba.`,
     keywords: destData.keywords?.join(", "),
+    alternates: {
+      canonical: url,
+    },
   };
 }
 

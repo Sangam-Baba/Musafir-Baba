@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware"; // optional if you want user info 
 interface FormData {
   date: string;
   noOfPeople: number;
+  noOfChildren?: number;
   totalPrice: number;
   plan: string;
   packageId: string;
@@ -21,6 +22,7 @@ export const useCustomizedBookingStore = create<BookingsState>()(
       formData: {
         date: "",
         noOfPeople: 0,
+        noOfChildren: 0,
         totalPrice: 0,
         plan: "",
         packageId: "",
@@ -32,6 +34,7 @@ export const useCustomizedBookingStore = create<BookingsState>()(
           formData: {
             date: "",
             noOfPeople: 0,
+            noOfChildren: 0,
             totalPrice: 0,
             plan: "",
             packageId: "",

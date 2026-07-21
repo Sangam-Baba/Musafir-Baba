@@ -75,6 +75,26 @@ const getRelatedVehicles = async (slug: string) => {
   return data?.data;
 };
 
+export async function generateMetadata({ params }: { params: Promise<{ vehicleType: string, destination: string, slug: string }> }) {
+  const { vehicleType, destination, slug } = await params;
+  const vehicle = await getVehicleBySlug(slug);
+
+  if (!vehicle) return { title: "Not Found" };
+
+  const url = vehicle.canonicalUrl 
+    ? `https://musafirbaba.com${vehicle.canonicalUrl}`
+    : `https://musafirbaba.com/rental/${vehicleType}/${destination}/${slug}`;
+
+  return {
+    title: vehicle.metaTitle || `${vehicle.title || vehicle.vehicleName} - MusafirBaba`,
+    description: vehicle.metaDescription || vehicle.excerpt || `Rent ${vehicle.vehicleName} easily with MusafirBaba.`,
+    keywords: vehicle.keywords?.join(", "),
+    alternates: {
+      canonical: url,
+    },
+  };
+}
+
 async function page({ params }: { params: Promise<{ vehicleType: string, destination: string, slug: string }> }) {
   const { slug } = await params;
   const relatedVehicles = await getRelatedVehicles(slug);
