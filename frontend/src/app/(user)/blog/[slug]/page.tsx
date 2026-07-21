@@ -12,6 +12,7 @@ const SocialShare = dynamic(() => import("@/components/custom/SocialSharing"));
 // import BlogLikes from "@/components/custom/BlogLikes";
 import { BlogComments } from "@/components/custom/BuildCommentTree";
 import Script from "next/script";
+import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { readingTime } from "@/utils/readingTime";
 import { Clock, Folders, Share2, User, Facebook, Twitter, Instagram, Linkedin, Trophy, Medal, Star } from "lucide-react";
@@ -94,6 +95,17 @@ export async function generateMetadata({
     ? `https://musafirbaba.com${blog.canonicalUrl}`
     : `https://musafirbaba.com/blog/${blog.slug}`;
 
+  const socialData = resolveSocialMetadata({
+    resolvedMetadata: {
+      title,
+      description,
+      image,
+      imageAlt: title
+    },
+    socialOverrides: blog.social,
+    moduleType: 'BLOG'
+  });
+
   return {
     title,
     description,
@@ -104,25 +116,25 @@ export async function generateMetadata({
       canonical: url,
     },
     openGraph: {
-      title,
-      description,
+      title: socialData.openGraph.title,
+      description: socialData.openGraph.description,
       url,
       siteName: "Musafir Baba",
-      type: "article",
+      type: socialData.openGraph.type as any,
       images: [
         {
-          url: image,
+          url: socialData.openGraph.images,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: socialData.openGraph.title || title,
         },
       ],
     },
     twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [image],
+      card: socialData.twitter.card as any,
+      title: socialData.twitter.title,
+      description: socialData.twitter.description,
+      images: [socialData.twitter.images],
     },
   };
 }

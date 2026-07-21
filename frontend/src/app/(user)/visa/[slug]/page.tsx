@@ -14,6 +14,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Phone, Mail, HelpCircle } from "lucide-react";
 import { CONTACT_INFO } from "@/config/contact";
+import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
+
 const getVisaBySlug = async (slug: string, token?: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/slug/${slug}?token=${token}`,
@@ -33,23 +35,50 @@ export async function generateMetadata({
   const { slug } = await params;
   const { token } = await searchParams;
   const page = await getVisaBySlug(slug, token);
+  const title = page.metaTitle || page.title;
+  const description = page.metaDescription;
+  const image = page.coverImage?.url || "https://musafirbaba.com/homebanner.webp";
+  const url = page?.canonicalUrl
+    ? `https://musafirbaba.com${page.canonicalUrl}`
+    : `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`;
+
+  const socialData = resolveSocialMetadata({
+    resolvedMetadata: {
+      title,
+      description,
+      image,
+      imageAlt: title
+    },
+    socialOverrides: page.social,
+    moduleType: 'VISA'
+  });
+
   return {
-    title: page.metaTitle || page.title,
-    description: page.metaDescription,
+    title,
+    description,
     keywords: page.keywords,
     alternates: {
-      canonical: page?.canonicalUrl
-        ? `https://musafirbaba.com${page.canonicalUrl}`
-        : `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
+      canonical: url,
     },
     openGraph: {
-      title: page.metaTitle || page.title,
-      description: page.metaDescription,
-      url:
-        `https://musafirbaba.com${page.canonicalUrl}` ||
-        `${process.env.NEXT_PUBLIC_SITE_URL}/visa/${page.slug}`,
-      type: "website",
-      images: page.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+      title: socialData.openGraph.title,
+      description: socialData.openGraph.description,
+      url,
+      type: socialData.openGraph.type as any,
+      images: [
+        {
+          url: socialData.openGraph.images,
+          width: 1200,
+          height: 630,
+          alt: socialData.openGraph.title || title,
+        },
+      ],
+    },
+    twitter: {
+      card: socialData.twitter.card as any,
+      title: socialData.twitter.title,
+      description: socialData.twitter.description,
+      images: [socialData.twitter.images],
     },
   };
 }

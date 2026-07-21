@@ -12,6 +12,7 @@ const BlogEditor = dynamic(() => import("@/components/admin/BlogEditor"), {
   ssr: false,
 });
 import ImageUploader from "@/components/admin/ImageUploader";
+import OpenGraphManager from "@/components/admin/OpenGraphManager";
 import { X, Layout, Search, Settings, Link } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,22 @@ const formSchema = z.object({
       }),
     )
     .optional(),
+  social: z.object({
+    openGraph: z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      image: z.string().optional(),
+      imageAlt: z.string().optional(),
+      type: z.string().optional(),
+    }).optional(),
+    twitter: z.object({
+      inheritOpenGraph: z.boolean().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      image: z.string().optional(),
+      card: z.string().optional(),
+    }).optional(),
+  }).optional(),
 });
 
 export interface Category {
@@ -125,6 +142,7 @@ export default function CreateBlog() {
       status: "draft",
       excerpt: "",
       footerLinks: [],
+      social: { twitter: { inheritOpenGraph: true } },
     },
   });
 
@@ -193,7 +211,7 @@ export default function CreateBlog() {
             className="space-y-6"
           >
             <Tabs defaultValue="content" className="w-full">
-              <TabsList className="grid grid-cols-3 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
+              <TabsList className="grid grid-cols-4 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
                 <TabsTrigger value="content" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Basic Detail
                 </TabsTrigger>
@@ -202,6 +220,9 @@ export default function CreateBlog() {
                 </TabsTrigger>
                 <TabsTrigger value="org" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Organization
+                </TabsTrigger>
+                <TabsTrigger value="social" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Social (OG)
                 </TabsTrigger>
               </TabsList>
 
@@ -432,6 +453,20 @@ export default function CreateBlog() {
                       ))}
                     </div>
                   </div>
+                </TabsContent>
+
+                {/* Social (OG) Tab */}
+                <TabsContent value="social" forceMount className="mt-0 space-y-6 animate-in fade-in-50 duration-200 data-[state=inactive]:hidden">
+                  <OpenGraphManager 
+                    form={form} 
+                    moduleType="BLOG" 
+                    baseMetadata={{
+                      title: form.watch("metaTitle") || form.watch("title") || "",
+                      description: form.watch("metaDescription") || form.watch("excerpt") || "",
+                      image: form.watch("coverImage.url") || "https://musafirbaba.com/homebanner1.jpg",
+                      imageAlt: form.watch("metaTitle") || form.watch("title") || ""
+                    }} 
+                  />
                 </TabsContent>
               </div>
             </Tabs>
