@@ -7,6 +7,10 @@ const partnerVehicleSchema = new mongoose.Schema(
       ref: "PartnerProfile",
       required: true,
     },
+    assignedDriverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PartnerDriver",
+    },
     category: {
       type: String,
       required: true,

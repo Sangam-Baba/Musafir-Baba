@@ -147,7 +147,8 @@ export default async function HomePage() {
       {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
       <section className="w-full px-6 md:px-14 lg:px-20 py-3 md:py-4 lg:py-6 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[480px] overflow-hidden">
         <Image
-          src="/homebanner32.avif"
+          // src="/homebanner32.avif"
+          src="/homebannertest1.avif"
           alt="Home Banner"
           fill
           priority

@@ -127,6 +127,18 @@ export const NAV_GROUPS = [
     ],
   },
   {
+    label: "Fleet Management",
+    icon: Car,
+    items: [
+      {
+        label: "Partner Verification",
+        href: "/admin/fleet-verification",
+        icon: UserRoundCheck,
+        permission: "partner-verification",
+      },
+    ],
+  },
+  {
     label: "Packages",
     icon: FaBox,
     items: [

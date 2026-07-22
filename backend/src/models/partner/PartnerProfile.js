@@ -35,6 +35,9 @@ const partnerProfileSchema = new mongoose.Schema(
     profilePicture: {
       type: String,
     },
+    agencyName: {
+      type: String,
+    },
     partnerType: {
       type: String,
       enum: ["Individual", "Fleet Owner", "Travel Agency", "Company"],
@@ -53,6 +56,10 @@ const partnerProfileSchema = new mongoose.Schema(
     profileCompletionPercentage: {
       type: Number,
       default: 10,
+    },
+    isSubmittedForApproval: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

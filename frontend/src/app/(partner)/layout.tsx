@@ -18,7 +18,7 @@ export default function PartnerLayout({
       <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
         <Header />
 
-        <main className="flex-1 flex flex-col items-center justify-center p-4 pt-24 pb-12">
+        <main className="flex-1 flex flex-col w-full">
           {children}
         </main>
 

@@ -24,13 +24,13 @@ export default function PartnerLoginPage() {
       if (res.ok || data.success) {
         setMessage("✅ Login successful! Redirecting to dashboard...");
         
-        // Save the token if returned in body (fallback if not using strict httpOnly cookies on frontend)
-        if (data.token) {
-          localStorage.setItem("partner_token", data.token);
+        // Save the access token
+        if (data.accessToken) {
+          localStorage.setItem("partner_token", data.accessToken);
         }
 
         setTimeout(() => {
-          router.push("/partner-dashboard"); 
+          router.push("/partner/dashboard"); 
         }, 1000);
       } else {
         setMessage(data.message || "Failed to login. Please try again.");
@@ -79,7 +79,7 @@ export default function PartnerLoginPage() {
 
       <div className="mt-4 text-center">
         <span className="text-sm text-gray-500">Don't have an account? </span>
-        <Link href="/partner-register" className="text-sm text-[#FE5300] hover:underline font-medium">
+        <Link href="/partner/register" className="text-sm text-[#FE5300] hover:underline font-medium">
           Register here
         </Link>
       </div>

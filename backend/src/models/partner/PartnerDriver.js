@@ -27,7 +27,9 @@ const partnerDriverSchema = new mongoose.Schema(
     },
     licenceExpiry: {
       type: Date,
-      required: true,
+    },
+    licenceImageUrl: {
+      type: String,
     },
     experienceYears: {
       type: Number,
