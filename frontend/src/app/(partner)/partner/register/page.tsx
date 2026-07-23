@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function PartnerRegisterPage() {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function PartnerRegisterPage() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-slate-100">
+    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-slate-100 mt-10 mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">
         {step === 1 ? "Partner Registration" : "Verify Your Email"}
       </h2>
@@ -140,6 +141,13 @@ export default function PartnerRegisterPage() {
           {message}
         </div>
       )}
+
+      <div className="mt-6 text-center text-sm text-gray-600">
+        Already have an account?{" "}
+        <Link href="/partner/login" className="text-[#FE5300] hover:underline font-semibold">
+          Login here
+        </Link>
+      </div>
     </div>
   );
 }
