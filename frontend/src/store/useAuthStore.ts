@@ -9,7 +9,7 @@ interface AuthState {
   setAuth: (token: string, role: string, name?: string) => void;
   clearAuth: () => void;
   logout: (token: string) => Promise<void>;
-  refreshAccessToken: () => Promise<void>;
+  refreshAccessToken: () => Promise<string>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -56,7 +56,6 @@ export const useAuthStore = create<AuthState>()(
       },
       refreshAccessToken: async () => {
         try {
-          // 👇 Backend sends new access token, refresh handled by HttpOnly cookie
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_URL}/auth/refresh`,
             {
@@ -66,7 +65,10 @@ export const useAuthStore = create<AuthState>()(
             },
           );
 
-          if (!res.ok) throw new Error("Failed to refresh token");
+          if (!res.ok) {
+            get().clearAuth();
+            throw new Error("Failed to refresh token");
+          }
 
           const data = await res.json();
           set({
@@ -74,11 +76,12 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             role: data.role,
             name: data.name,
-            // optionally also refresh user data here
           });
+          return data.accessToken;
         } catch (err) {
           console.error("Refresh failed", err);
-          // get().clearAuth();
+          get().clearAuth();
+          throw err;
         }
       },
     }),

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 interface Item {
   text: string;
@@ -31,6 +32,11 @@ async function FooterItem({ title }: FooterItemProps) {
             <a href={item.url}>{item.text}</a>
           </li>
         ))}
+        {title === "Services" && (
+          <li className="text-[#FE5300] font-semibold hover:text-[#e04a00]" key="partner-portal">
+            <Link href="/partner/login">Partner Portal</Link>
+          </li>
+        )}
       </ul>
     </section>
   );

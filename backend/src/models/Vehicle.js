@@ -123,21 +123,61 @@ const vehicleSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-vehicleSchema.pre("save", function (next) {
+vehicleSchema.pre("save", async function (next) {
   if (!this.slug || this.isModified("slug")) {
     this.slug = slugify(this.slug || this.title, { lower: true, strict: true });
+  }
+  
+  if (!this.canonicalUrl) {
+    let locSlug = "";
+    if (this.location) {
+      const loc = await mongoose.model("VehiclePickUpDestination").findById(this.location).lean();
+      if (loc) locSlug = loc.slug;
+    }
+    const vType = this.vehicleType ? slugify(this.vehicleType, { lower: true }) : "car";
+    this.canonicalUrl = `/rental/${vType}${locSlug ? '/' + locSlug : ''}/${this.slug}`;
   }
   next();
 });
 
-vehicleSchema.pre("findOneAndUpdate", function (next) {
+vehicleSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  if (update.slug) {
-    update.slug = slugify(update.slug || update.title, {
-      lower: true,
-      strict: true,
-    });
+  const existindDoc = await this.model.findOne(this.getQuery()).lean();
+
+  if (existindDoc) {
+    if (update.slug) {
+      update.slug = slugify(update.slug || update.title || existindDoc.title, {
+        lower: true,
+        strict: true,
+      });
+    } else if (update.title && !update.slug) {
+      update.slug = slugify(update.title, {
+        lower: true,
+        strict: true,
+      });
+    }
+
+    const finalSlug = update.slug ? update.slug : existindDoc.slug;
+
+    const changeCanonical =
+      update.canonicalUrl && update.canonicalUrl !== existindDoc.canonicalUrl;
+    const changeSlug = update.slug && update.slug !== existindDoc.slug;
+    const changeLocation = update.location && String(update.location) !== String(existindDoc.location);
+    const changeType = update.vehicleType && update.vehicleType !== existindDoc.vehicleType;
+    
+    if (!changeCanonical || changeSlug || changeLocation || changeType) {
+      let locId = update.location || existindDoc.location;
+      let locSlug = "";
+      if (locId) {
+        const loc = await mongoose.model("VehiclePickUpDestination").findById(locId).lean();
+        if (loc) locSlug = loc.slug;
+      }
+      let vTypeRaw = update.vehicleType || existindDoc.vehicleType || "car";
+      let vType = slugify(vTypeRaw, { lower: true });
+      update.canonicalUrl = `/rental/${vType}${locSlug ? '/' + locSlug : ''}/${finalSlug}`;
+    }
   }
+
   this.setUpdate(update);
   next();
 });

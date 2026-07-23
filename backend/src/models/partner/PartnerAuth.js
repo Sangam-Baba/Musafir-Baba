@@ -23,10 +23,19 @@ const partnerAuthSchema = new mongoose.Schema(
     otpExpiry: {
       type: Date,
     },
+    refreshToken: {
+      type: String,
+    },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpiry: {
+      type: Date,
+    },
     status: {
       type: String,
-      enum: ["Active", "Suspended", "PendingVerification"],
-      default: "PendingVerification",
+      enum: ["Draft", "PendingVerification", "Approved", "Hold", "Rejected", "In-Active", "Active", "Suspended", "Blacklisted"],
+      default: "Draft",
     },
     lastLogin: {
       type: Date,

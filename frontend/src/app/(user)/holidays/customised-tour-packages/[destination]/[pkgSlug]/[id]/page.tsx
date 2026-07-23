@@ -55,6 +55,7 @@ interface Plan {
 interface FormData {
   date: string;
   noOfPeople: number;
+  noOfChildren?: number;
   totalPrice: number;
   plan: string;
   packageId: string;
@@ -87,19 +88,22 @@ const getPackage = async (id: string) => {
 };
 
 export const getUser = async (accessToken: string) => {
-  const res = await secureFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message);
+  try {
+    const res = await secureFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!res.ok) {
+      return null;
+    }
+    const data = await res.json();
+    return data?.data;
+  } catch (error) {
+    return null;
   }
-  const data = await res.json();
-  return data?.data;
 };
 
 export const getAllOffers = async (accessToken: string) => {
@@ -481,7 +485,7 @@ export default function CheckoutButton() {
                       ₹{plan.price.toLocaleString('en-IN')} x {booking?.noOfPeople}
                     </span>
                   </div>
-                  {booking?.noOfChildren > 0 && (
+                  {(booking?.noOfChildren || 0) > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Child Price (60%)</span>
                       <span className="font-semibold text-foreground">

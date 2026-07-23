@@ -53,6 +53,7 @@ import chatbotRoutes from "./chatbotRoutes.js";
 import holidayRoutes from "./holiday.routes.js";
 import partnerAuthRoutes from "./partner/partnerAuth.routes.js";
 import partnerRoutes from "./partner/partner.routes.js";
+import adminPartnerVerificationRoutes from "./partner/adminPartnerVerification.routes.js";
 
 const router = Router();
 
@@ -110,4 +111,5 @@ router.use("/chatbot", chatbotRoutes);
 router.use("/holidays", holidayRoutes);
 router.use("/partner/auth", partnerAuthRoutes);
 router.use("/partner", partnerRoutes);
+router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
 export default router;

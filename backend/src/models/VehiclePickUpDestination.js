@@ -59,23 +59,39 @@ vehiclePickUpDestinationSchema.pre("save", function (next) {
   if (!this.slug || this.isModified("slug")) {
     this.slug = slugify(this.slug || this.name, { lower: true, strict: true });
   }
+  if (!this.canonicalUrl) this.canonicalUrl = `/rental/${this.slug}`;
   next();
 });
 
 // Auto-generate slug before updating
-vehiclePickUpDestinationSchema.pre("findOneAndUpdate", function (next) {
+vehiclePickUpDestinationSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  if (update.slug) {
-    update.slug = slugify(update.slug || update.name, {
-      lower: true,
-      strict: true,
-    });
-  } else if (update.name && !update.slug) {
-    update.slug = slugify(update.name, {
-      lower: true,
-      strict: true,
-    });
+  const existindDoc = await this.model.findOne(this.getQuery()).lean();
+
+  if (existindDoc) {
+    if (update.slug) {
+      update.slug = slugify(update.slug || update.name || existindDoc.name, {
+        lower: true,
+        strict: true,
+      });
+    } else if (update.name && !update.slug) {
+      update.slug = slugify(update.name, {
+        lower: true,
+        strict: true,
+      });
+    }
+
+    const finalSlug = update.slug ? update.slug : existindDoc.slug;
+
+    const changeCanonical =
+      update.canonicalUrl && update.canonicalUrl !== existindDoc.canonicalUrl;
+    const changeSlug = update.slug && update.slug !== existindDoc.slug;
+    
+    if (!changeCanonical || changeSlug) {
+      update.canonicalUrl = `/rental/${finalSlug}`;
+    }
   }
+
   this.setUpdate(update);
   next();
 });
