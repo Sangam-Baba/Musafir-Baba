@@ -57,6 +57,12 @@ interface PartnerData {
     pucImageUrl?: string;
     insuranceFileUrl?: string;
     permitFileUrl?: string;
+    frontImageUrl?: string;
+    rearImageUrl?: string;
+    leftSideImageUrl?: string;
+    rightSideImageUrl?: string;
+    interiorImageUrl?: string;
+    otherImageUrl?: string;
   }>;
   drivers: Array<{
     _id: string;
@@ -383,12 +389,18 @@ export default function FleetVerificationClient() {
                             <div className="mt-2 flex justify-between items-center">
                               <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase">{v.registrationNumber}</span>
                             </div>
-                            {(v.rcImageUrl || v.pucImageUrl || v.insuranceFileUrl || v.permitFileUrl) && (
+                            {(v.rcImageUrl || v.pucImageUrl || v.insuranceFileUrl || v.permitFileUrl || v.frontImageUrl || v.rearImageUrl || v.leftSideImageUrl || v.rightSideImageUrl || v.interiorImageUrl || v.otherImageUrl) && (
                               <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap gap-3">
                                 {v.rcImageUrl && <a href={v.rcImageUrl} target="_blank" className="text-[9px] font-bold text-blue-600 hover:underline flex items-center gap-1"><FileText size={10} /> RC Image</a>}
                                 {v.pucImageUrl && <a href={v.pucImageUrl} target="_blank" className="text-[9px] font-bold text-blue-600 hover:underline flex items-center gap-1"><FileText size={10} /> PUC</a>}
                                 {v.insuranceFileUrl && <a href={v.insuranceFileUrl} target="_blank" className="text-[9px] font-bold text-blue-600 hover:underline flex items-center gap-1"><FileText size={10} /> Insurance</a>}
                                 {v.permitFileUrl && <a href={v.permitFileUrl} target="_blank" className="text-[9px] font-bold text-blue-600 hover:underline flex items-center gap-1"><FileText size={10} /> Permit</a>}
+                                {v.frontImageUrl && <a href={v.frontImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-1"><Car size={10} /> Front</a>}
+                                {v.rearImageUrl && <a href={v.rearImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-1"><Car size={10} /> Rear</a>}
+                                {v.leftSideImageUrl && <a href={v.leftSideImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-1"><Car size={10} /> L-Side</a>}
+                                {v.rightSideImageUrl && <a href={v.rightSideImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-1"><Car size={10} /> R-Side</a>}
+                                {v.interiorImageUrl && <a href={v.interiorImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-1"><Car size={10} /> Interior</a>}
+                                {v.otherImageUrl && <a href={v.otherImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline flex items-center gap-1"><Car size={10} /> Other</a>}
                               </div>
                             )}
                           </div>
