@@ -68,3 +68,43 @@ export const getDrivers = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+// @route   PUT /api/partner/driver/:driverId
+// @desc    Update driver details
+export const updateDriver = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const { driverId } = req.params;
+    const driverData = req.body;
+
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const driver = await PartnerDriver.findOne({ _id: driverId, partnerId: profile._id, isDeleted: false });
+    if (!driver) {
+      return res.status(404).json({ success: false, message: "Driver not found." });
+    }
+
+    // Optional: add checks for existing licenceNumber if it's changing
+    if (driverData.licenceNumber && driverData.licenceNumber !== driver.licenceNumber) {
+      const existingDriver = await PartnerDriver.findOne({ licenceNumber: driverData.licenceNumber });
+      if (existingDriver) {
+        return res.status(400).json({ success: false, message: "Driver with this licence number already exists." });
+      }
+    }
+
+    Object.assign(driver, driverData);
+    await driver.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver updated successfully.",
+      data: driver,
+    });
+  } catch (error) {
+    console.error("Update Driver Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

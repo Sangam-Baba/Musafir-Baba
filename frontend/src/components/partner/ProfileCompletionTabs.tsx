@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, Phone, MapPin, Building, Briefcase, Navigation, Banknote, CreditCard, Hash, FileText, FileBadge, Car, Type, Hash as HashIcon, Plus, X } from "lucide-react";
+import { User, Phone, MapPin, Building, Briefcase, Navigation, Banknote, CreditCard, Hash, FileText, FileBadge, Car, Type, Hash as HashIcon, Plus, X, History } from "lucide-react";
 import { getStates, getCities } from "@/actions/location";
 
 export default function ProfileCompletionTabs() {
@@ -17,6 +17,8 @@ export default function ProfileCompletionTabs() {
   const [selectedPartnerType, setSelectedPartnerType] = useState("Individual");
   const [fleetSubTab, setFleetSubTab] = useState("vehicles");
   const [isFleetDrawerOpen, setIsFleetDrawerOpen] = useState(false);
+  const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
+  const [selectedFleetRowForEdit, setSelectedFleetRowForEdit] = useState<{driver: any, vehicle: any} | null>(null);
 
   useEffect(() => {
     getStates("IN").then(setStateData).catch(console.error);
@@ -125,6 +127,7 @@ export default function ProfileCompletionTabs() {
     const bankData = {
       accountHolderName: formData.get("accountHolderName"),
       bankName: formData.get("bankName"),
+      branchName: formData.get("branchName"),
       accountNumber: formData.get("accountNumber"),
       ifsc: formData.get("ifsc"),
     };
@@ -432,6 +435,7 @@ export default function ProfileCompletionTabs() {
   const partnerStatus = auth?.status || profile?.status || "";
   const verificationHistory = Array.isArray(logs) ? logs : [];
   const isPendingReview = partnerStatus === "PendingVerification";
+  const isEditable = partnerStatus !== "Approved" && partnerStatus !== "PendingVerification";
   const canSubmitForReview = completionPercentage === 100 && ["", "Draft", "Active", "Rejected", "Hold"].includes(partnerStatus);
   const isIndividualPartner = selectedPartnerType === "Individual";
   const activeDrivers = dashboardData?.drivers || [];
@@ -569,37 +573,22 @@ export default function ProfileCompletionTabs() {
       )}
 
       {verificationHistory.length > 0 && (
-        <div className="bg-white border border-slate-200/70 rounded p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="bg-white border border-slate-200/70 rounded p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
+              <History size={16} />
+            </div>
             <div>
               <h3 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Verification History</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Status updates and messages from the verification team.</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">{verificationHistory.length} update{verificationHistory.length === 1 ? "" : "s"} available</p>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              {verificationHistory.length} update{verificationHistory.length === 1 ? "" : "s"}
-            </span>
           </div>
-          <div className="space-y-3">
-            {verificationHistory.map((log: any) => (
-              <div key={log._id} className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    {log.createdAt ? new Date(log.createdAt).toLocaleString() : "Recently"}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                    {log.actionType === "StatusChange" ? "Status Update" : "Admin Message"}
-                  </span>
-                </div>
-                {log.actionType === "StatusChange" && (
-                  <p className="text-sm font-medium text-slate-700 mt-2">{log.oldStatus || "Draft"} → {log.newStatus}</p>
-                )}
-                {log.reasons?.length > 0 && (
-                  <p className="text-[11px] text-slate-600 mt-1">Reason: {log.reasons.join(", ")}</p>
-                )}
-                {log.comment && <p className="text-sm text-slate-700 mt-1 leading-relaxed">{log.comment}</p>}
-              </div>
-            ))}
-          </div>
+          <button 
+            onClick={() => setIsHistoryDrawerOpen(true)}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold rounded uppercase tracking-wider transition-colors shadow-sm"
+          >
+            View History
+          </button>
         </div>
       )}
 
@@ -643,6 +632,7 @@ export default function ProfileCompletionTabs() {
         {/* TAB SECTION 1: PERSONAL COORDINATES */}
         {activeTab === "personal" && (
           <form onSubmit={handlePersonalSubmit} className="space-y-4">
+            <fieldset disabled={!isEditable}>
             <div>
               <h3 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Personal Coordinates</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">Define your account parameters. Names must match state-issued legal licenses.</p>
@@ -667,7 +657,7 @@ export default function ProfileCompletionTabs() {
                   <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none text-slate-600 font-bold text-xs">
                     +91
                   </div>
-                  <input name="mobileNumber" defaultValue={profile?.mobileNumber || ""} required className="w-full pl-16 pr-3 py-2 border border-slate-200 rounded-lg text-xs bg-orange-50/30 focus:bg-white focus:ring-2 focus:ring-[#FE5300]/20 focus:border-[#FE5300] outline-none transition-all font-medium text-slate-800" />
+                  <input name="mobileNumber" defaultValue={profile?.mobileNumber || ""} required type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="w-full pl-16 pr-3 py-2 border border-slate-200 rounded-lg text-xs bg-orange-50/30 focus:bg-white focus:ring-2 focus:ring-[#FE5300]/20 focus:border-[#FE5300] outline-none transition-all font-medium text-slate-800" />
                 </div>
               </div>
               <div>
@@ -750,12 +740,14 @@ export default function ProfileCompletionTabs() {
             <div className="flex justify-end pt-3">
               <button type="submit" className="px-4 py-1.5 bg-slate-900 hover:bg-slate-850 text-white text-[10px] font-bold rounded uppercase tracking-wider transition-colors shadow-sm">Save Personal Info</button>
             </div>
+            </fieldset>
           </form>
         )}
 
         {/* TAB SECTION 2: BANK SETTLEMENT */}
         {activeTab === "bank" && (
           <form onSubmit={handleBankSubmit} className="space-y-4">
+            <fieldset disabled={!isEditable}>
             <div>
               <h3 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Bank Account Settlement Coordinates</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">Automatic tour payout settlements occur weekly.</p>
@@ -781,6 +773,15 @@ export default function ProfileCompletionTabs() {
                 </div>
               </div>
               <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Branch Name *</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-600/70">
+                    <Building size={14} />
+                  </div>
+                  <input name="branchName" defaultValue={bank?.branchName || ""} required className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-xs bg-emerald-50/40 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all font-medium text-slate-850" />
+                </div>
+              </div>
+              <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Account Number *</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-600/70">
@@ -803,6 +804,7 @@ export default function ProfileCompletionTabs() {
             <div className="flex justify-end pt-3">
               <button type="submit" className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-bold rounded uppercase tracking-wider transition-colors shadow-sm">Save Bank Details</button>
             </div>
+            </fieldset>
           </form>
         )}
 
@@ -821,7 +823,7 @@ export default function ProfileCompletionTabs() {
                     type="file" 
                     accept="image/*,.pdf" 
                     onChange={(e) => handleFileUpload(e, "Aadhaar Front", "PartnerProfile", profile._id)}
-                    disabled={uploading === "Aadhaar Front"}
+                    disabled={uploading === "Aadhaar Front" || !isEditable}
                     className="text-[10px] w-full file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800" 
                   />
                   {uploading === "Aadhaar Front" && <p className="text-[10px] text-[#FE5300] mt-2 font-bold uppercase tracking-wider">Uploading...</p>}
@@ -833,7 +835,7 @@ export default function ProfileCompletionTabs() {
                     type="file" 
                     accept="image/*,.pdf" 
                     onChange={(e) => handleFileUpload(e, "Aadhaar Back", "PartnerProfile", profile._id)}
-                    disabled={uploading === "Aadhaar Back"}
+                    disabled={uploading === "Aadhaar Back" || !isEditable}
                     className="text-[10px] w-full file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800" 
                   />
                   {uploading === "Aadhaar Back" && <p className="text-[10px] text-[#FE5300] mt-2 font-bold uppercase tracking-wider">Uploading...</p>}
@@ -845,7 +847,7 @@ export default function ProfileCompletionTabs() {
                     type="file" 
                     accept="image/*,.pdf" 
                     onChange={(e) => handleFileUpload(e, "PAN", "PartnerProfile", profile._id)}
-                    disabled={uploading === "PAN"}
+                    disabled={uploading === "PAN" || !isEditable}
                     className="text-[10px] w-full file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800" 
                   />
                   {uploading === "PAN" && <p className="text-[10px] text-[#FE5300] mt-2 font-bold uppercase tracking-wider">Uploading...</p>}
@@ -861,13 +863,20 @@ export default function ProfileCompletionTabs() {
                     dashboardData?.documents?.map((doc: any) => (
                       <div key={doc._id} className="flex justify-between items-center bg-white px-2.5 py-1.5 rounded border border-slate-200/60">
                         <span className="text-[10px] font-medium text-slate-600">{doc.documentType} Scan</span>
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border
+                        <div className="flex items-center gap-3">
+                          {doc.fileUrl && (
+                            <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">
+                              View
+                            </a>
+                          )}
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border
                           ${doc.status === "Approved" ? "bg-emerald-50 text-emerald-800 border-emerald-100" :
                           doc.status === "Pending" ? "bg-amber-50 text-amber-800 border-amber-100" :
                           "bg-rose-50 text-rose-800 border-rose-100"}
                         `}>
                           {doc.status}
-                        </span>
+                          </span>
+                        </div>
                       </div>
                     ))
                   )}
@@ -884,6 +893,7 @@ export default function ProfileCompletionTabs() {
              {/* DRIVERS COLUMN */}
              <div className="space-y-6">
                 <form onSubmit={handleDriverSubmit} className="p-5 bg-emerald-50/30 border border-emerald-100 rounded-xl space-y-4 shadow-sm">
+                  <fieldset disabled={!isEditable}>
                   <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-wider block border-b border-emerald-200/50 pb-2 flex items-center gap-2">
                     <User size={14} /> 1. Register Driver
                   </span>
@@ -936,6 +946,7 @@ export default function ProfileCompletionTabs() {
                   <button type="submit" disabled={uploading === "Licence Image" || !canAddDriver} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-colors shadow-sm mt-2">
                     Add Driver
                   </button>
+                  </fieldset>
                 </form>
 
                 <div className="pt-2">
@@ -947,7 +958,7 @@ export default function ProfileCompletionTabs() {
                       dashboardData?.drivers?.map((d: any) => {
                         const assignedVehicle = dashboardData?.vehicles?.find((v: any) => v.assignedDriverId === d._id);
                         return (
-                        <div key={d._id} className="bg-white border border-slate-200/80 p-3 rounded flex justify-between items-center text-xs hover:border-slate-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+                        <div key={d._id} onClick={() => setSelectedFleetRowForEdit({ driver: d, vehicle: null })} className="cursor-pointer bg-white border border-slate-200/80 p-3 rounded flex justify-between items-center text-xs hover:border-slate-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
                           <div>
                             <span className="font-bold text-slate-950 block">{d.name}</span>
                             <span className="text-[10px] text-slate-500 font-medium block">{d.mobile}</span>
@@ -969,6 +980,7 @@ export default function ProfileCompletionTabs() {
              {/* VEHICLES COLUMN */}
              <div className="space-y-6">
                 <form onSubmit={handleVehicleSubmit} className="p-5 bg-blue-50/30 border border-blue-100 rounded-xl space-y-4 shadow-sm">
+                  <fieldset disabled={!isEditable}>
                   <span className="text-[10px] font-bold uppercase text-blue-500 tracking-wider block border-b border-blue-200/50 pb-2 flex items-center gap-2">
                     <Car size={14} /> 2. Register Vehicle Asset
                   </span>
@@ -1046,7 +1058,7 @@ export default function ProfileCompletionTabs() {
                         <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
                           <User size={12} />
                         </div>
-                        <input name="seatingCapacity" type="number" placeholder="7" required className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all" />
+                        <input name="seatingCapacity" required placeholder="7" type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all" />
                       </div>
                     </div>
                     <div>
@@ -1063,6 +1075,7 @@ export default function ProfileCompletionTabs() {
                   <button type="submit" disabled={!canAddVehicle} className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-colors shadow-sm mt-2">
                     Add Vehicle
                   </button>
+                  </fieldset>
                 </form>
 
                 <div className="pt-2">
@@ -1108,13 +1121,15 @@ export default function ProfileCompletionTabs() {
                   <h3 className="text-sm font-bold text-slate-950">Fleet Registry</h3>
                   <p className="text-[11px] text-slate-500 mt-1">Add one linked driver and vehicle per row. Drivers stay assigned to one vehicle at a time.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsFleetDrawerOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-slate-800"
-                >
-                  <Plus size={14} /> Add vehicle row
-                </button>
+                {isEditable && (
+                  <button
+                    type="button"
+                    onClick={() => setIsFleetDrawerOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-slate-800"
+                  >
+                    <Plus size={14} /> Add vehicle row
+                  </button>
+                )}
               </div>
 
               <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
@@ -1126,25 +1141,26 @@ export default function ProfileCompletionTabs() {
                       <th className="px-4 py-3">Driver</th>
                       <th className="px-4 py-3">Licence</th>
                       <th className="px-4 py-3 text-right">Status</th>
+                      <th className="px-4 py-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {activeVehicles.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-10 text-center text-slate-400">No fleet rows yet. Add your first driver and vehicle.</td>
+                        <td colSpan={6} className="px-4 py-10 text-center text-slate-400">No fleet rows yet. Add your first driver and vehicle.</td>
                       </tr>
                     ) : (
                       activeVehicles.map((vehicle: any) => {
                         const driver = activeDrivers.find((item: any) => item._id === vehicle.assignedDriverId);
                         return (
-                          <tr key={vehicle._id} className="hover:bg-slate-50/70">
+                          <tr key={vehicle._id} className="hover:bg-slate-50/70 cursor-pointer group" onClick={() => setSelectedFleetRowForEdit({ driver, vehicle })}>
                             <td className="px-4 py-3">
                               <div className="font-semibold text-slate-800">{vehicle.brand} {vehicle.vehicleName}</div>
                               <div className="mt-0.5 text-[10px] text-slate-500">{vehicle.category} · {vehicle.seatingCapacity} seats · {vehicle.model}</div>
                             </td>
                             <td className="px-4 py-3 font-mono text-[11px] font-semibold text-slate-600">{vehicle.registrationNumber}</td>
-                            <td className="px-4 py-3">
-                              <div className="font-medium text-slate-700">{driver?.name || "Unassigned"}</div>
+                            <td className="px-4 py-3 group-hover:bg-slate-100/50 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedFleetRowForEdit({ driver, vehicle }); }}>
+                              <div className="font-medium text-slate-700 hover:text-blue-600 transition-colors">{driver?.name || "Unassigned"} <span className="text-[9px] text-blue-500 ml-1 hidden group-hover:inline">({isEditable ? "Edit" : "View"})</span></div>
                               <div className="mt-0.5 text-[10px] text-slate-500">{driver?.mobile || "Requires assignment"}</div>
                             </td>
                             <td className="px-4 py-3 font-mono text-[11px] text-slate-600">{driver?.licenceNumber || "—"}</td>
@@ -1152,6 +1168,17 @@ export default function ProfileCompletionTabs() {
                               <span className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${vehicle.status === "Active" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-amber-100 bg-amber-50 text-amber-700"}`}>
                                 {vehicle.status}
                               </span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                               <button 
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   setSelectedFleetRowForEdit({ driver, vehicle });
+                                 }}
+                                 className="text-[10px] font-bold uppercase text-blue-600 hover:text-blue-800"
+                               >
+                                 {isEditable ? "View / Edit" : "View"}
+                               </button>
                             </td>
                           </tr>
                         );
@@ -1178,7 +1205,7 @@ export default function ProfileCompletionTabs() {
                         <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700"><User size={14} /> Driver</h4>
                         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <input name="fleetDriverName" required placeholder="Driver name" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" />
-                          <input name="fleetDriverMobile" required placeholder="Mobile number" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" />
+                          <input name="fleetDriverMobile" required placeholder="Mobile number" type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" />
                           <input name="fleetLicenceNumber" required placeholder="Licence number" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm uppercase outline-none focus:border-emerald-500" />
                           <input name="fleetLicenceImage" type="file" required accept="image/*,.pdf" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" />
                         </div>
@@ -1191,7 +1218,7 @@ export default function ProfileCompletionTabs() {
                           <input name="fleetModel" required placeholder="Model / year" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                           <input name="fleetVehicleName" required placeholder="Vehicle name" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                           <select name="fleetCategory" required defaultValue="SUV" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"><option value="SUV">SUV</option><option value="Sedan">Sedan</option><option value="Hatchback">Hatchback</option><option value="Bus">Bus</option></select>
-                          <input name="fleetSeatingCapacity" type="number" min="1" required placeholder="Seating capacity" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                          <input name="fleetSeatingCapacity" required placeholder="Seating capacity" type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500" />
                           <input name="fleetRegistrationNumber" required placeholder="Registration number" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm uppercase outline-none focus:border-blue-500" />
                         </div>
                       </section>
@@ -1207,6 +1234,202 @@ export default function ProfileCompletionTabs() {
           )
         )}
       </div>
+
+      
+      
+      {/* FLEET ROW EDIT MODAL */}
+      {selectedFleetRowForEdit && (
+        <div className="fixed inset-0 z-[70] flex justify-end bg-slate-950/30 transition-opacity duration-300">
+          <button type="button" aria-label="Close drawer" onClick={() => setSelectedFleetRowForEdit(null)} className="absolute inset-0 cursor-default" />
+          <aside className="relative z-10 h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-2xl sm:p-7 border-l border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col">
+            <div className="mb-6 flex items-start justify-between gap-4 shrink-0 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-950">Fleet Row Details</h3>
+                <p className="mt-1 text-xs text-slate-500">View or edit driver and vehicle information.</p>
+              </div>
+              <button type="button" onClick={() => setSelectedFleetRowForEdit(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"><X size={18} /></button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target as any;
+              try {
+                let success = true;
+                
+                // Update Driver if driver exists
+                if (selectedFleetRowForEdit.driver) {
+                  const driverRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/partner/driver/${selectedFleetRowForEdit.driver._id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+                    body: JSON.stringify({
+                      name: form.driverName.value,
+                      mobile: form.driverMobile.value,
+                      licenceNumber: form.driverLicenceNumber.value
+                    }),
+                  });
+                  if (!driverRes.ok) success = false;
+                }
+
+                // Update Vehicle
+                if (selectedFleetRowForEdit.vehicle) {
+                  const vehicleRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/partner/vehicle/${selectedFleetRowForEdit.vehicle._id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+                    body: JSON.stringify({
+                      vehicleData: {
+                        brand: form.vehicleBrand.value,
+                        model: form.vehicleModel.value,
+                        vehicleName: form.vehicleName.value,
+                        category: form.vehicleCategory.value,
+                        seatingCapacity: Number(form.vehicleSeatingCapacity.value),
+                        registrationNumber: form.vehicleRegistrationNumber.value
+                      }
+                    }),
+                  });
+                  if (!vehicleRes.ok) success = false;
+                }
+
+                if (success) {
+                  setSelectedFleetRowForEdit(null);
+                  fetchDashboardData();
+                  setMessage("Fleet row updated successfully");
+                } else {
+                  alert("Failed to update driver or vehicle details");
+                }
+              } catch (error) {
+                alert("Error updating fleet row");
+              }
+            }} className="space-y-5 flex-1 pr-2">
+              <fieldset disabled={!isEditable} className="space-y-5">
+                
+                {selectedFleetRowForEdit.driver && (
+                  <section className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4">
+                    <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700"><User size={14} /> Driver</h4>
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Driver Name</label>
+                        <input name="driverName" defaultValue={selectedFleetRowForEdit.driver.name} required className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 w-full" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Mobile</label>
+                        <input name="driverMobile" defaultValue={selectedFleetRowForEdit.driver.mobile} required type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 w-full" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Licence Number</label>
+                        <input name="driverLicenceNumber" defaultValue={selectedFleetRowForEdit.driver.licenceNumber} required className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm uppercase outline-none focus:border-emerald-500 w-full" />
+                      </div>
+                      {selectedFleetRowForEdit.driver.licenceImageUrl && (
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Licence Document</label>
+                          <div className="h-full flex items-center">
+                            <a href={selectedFleetRowForEdit.driver.licenceImageUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-emerald-600 hover:text-emerald-800 underline uppercase tracking-wider">View Uploaded Scan</a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+
+                {selectedFleetRowForEdit.vehicle && (
+                  <section className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                    <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-700"><Car size={14} /> Vehicle</h4>
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Brand</label>
+                        <input name="vehicleBrand" defaultValue={selectedFleetRowForEdit.vehicle.brand} required className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 w-full" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Model</label>
+                        <input name="vehicleModel" defaultValue={selectedFleetRowForEdit.vehicle.model} required className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 w-full" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Vehicle Name / Variant</label>
+                        <input name="vehicleName" defaultValue={selectedFleetRowForEdit.vehicle.vehicleName} required className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 w-full" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Category</label>
+                        <select name="vehicleCategory" required defaultValue={selectedFleetRowForEdit.vehicle.category || "SUV"} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 w-full">
+                          <option value="SUV">SUV</option>
+                          <option value="Sedan">Sedan</option>
+                          <option value="Hatchback">Hatchback</option>
+                          <option value="Bus">Bus</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Seating Capacity</label>
+                        <input name="vehicleSeatingCapacity" defaultValue={selectedFleetRowForEdit.vehicle.seatingCapacity} required placeholder="Capacity" type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 w-full" />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Registration Number</label>
+                        <input name="vehicleRegistrationNumber" defaultValue={selectedFleetRowForEdit.vehicle.registrationNumber} required className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm uppercase outline-none focus:border-blue-500 w-full" />
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {isEditable && (
+                  <button type="submit" className="w-full rounded-lg bg-slate-900 py-3 text-xs font-bold uppercase tracking-wider text-white hover:bg-slate-800">
+                    Save Changes
+                  </button>
+                )}
+              </fieldset>
+            </form>
+          </aside>
+        </div>
+      )}
+
+      {/* VERIFICATION HISTORY DRAWER */}
+      {isHistoryDrawerOpen && (
+        <div className="fixed inset-0 z-[60] flex justify-end bg-slate-950/30 transition-opacity duration-300">
+          <button type="button" aria-label="Close history drawer" onClick={() => setIsHistoryDrawerOpen(false)} className="absolute inset-0 cursor-default" />
+          <aside className="relative z-10 h-full w-full max-w-md overflow-y-auto bg-white p-5 shadow-2xl sm:p-7 border-l border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col">
+            <div className="mb-6 flex items-start justify-between gap-4 shrink-0 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-950">Verification History</h3>
+                <p className="mt-1 text-xs text-slate-500">Status updates and messages.</p>
+              </div>
+              <button type="button" onClick={() => setIsHistoryDrawerOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"><X size={18} /></button>
+            </div>
+            
+            <div className="space-y-4 overflow-y-auto flex-1 pr-2 pb-10">
+              {verificationHistory.map((log: any) => (
+                <div key={log._id} className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-colors">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      {log.createdAt ? new Date(log.createdAt).toLocaleString() : "Recently"}
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                      {log.actionType === "StatusChange" ? "Status Update" : "Admin Message"}
+                    </span>
+                  </div>
+                  {log.actionType === "StatusChange" && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs font-semibold text-slate-500 line-through">{log.oldStatus || "Draft"}</span>
+                      <span className="text-slate-400">→</span>
+                      <span className="text-sm font-bold text-slate-800">{log.newStatus}</span>
+                    </div>
+                  )}
+                  {log.reasons?.length > 0 && (
+                    <div className="mt-3 p-2.5 bg-red-50/50 border border-red-100 rounded-lg">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-red-800 block mb-1">Reasons:</span>
+                      <ul className="list-disc list-inside text-xs text-red-700 space-y-0.5">
+                        {log.reasons.map((r: string, i: number) => <li key={i}>{r}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {log.comment && (
+                    <div className="mt-3 p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                      <p className="text-xs text-slate-700 leading-relaxed font-medium">"{log.comment}"</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {verificationHistory.length === 0 && (
+                 <div className="text-center py-10 text-slate-400 text-sm">No verification history available.</div>
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-slate-200 flex items-center justify-around z-35 px-3 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">

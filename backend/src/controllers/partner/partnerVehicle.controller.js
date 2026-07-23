@@ -128,3 +128,41 @@ export const assignDriverToVehicle = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+// @route   PUT /api/partner/vehicle/:vehicleId
+// @desc    Update vehicle details
+export const updateVehicle = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const { vehicleId } = req.params;
+    const { vehicleData } = req.body;
+
+    if (!mongoose.isValidObjectId(vehicleId)) {
+      return res.status(400).json({ success: false, message: "Invalid vehicle ID." });
+    }
+
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const vehicle = await PartnerVehicle.findOne({ _id: vehicleId, partnerId: profile._id, isDeleted: false });
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Vehicle not found." });
+    }
+
+    // Optional: Only allow update if profile is not Approved, or allow it but keep status logic.
+    // Assuming we just update fields provided
+    Object.assign(vehicle, vehicleData);
+    await vehicle.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle updated successfully.",
+      data: vehicle,
+    });
+  } catch (error) {
+    console.error("Update Vehicle Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

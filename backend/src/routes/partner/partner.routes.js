@@ -2,8 +2,8 @@ import { Router } from "express";
 import { isPartnerAuthenticated } from "../../middleware/partnerAuth.middleware.js";
 import { getDashboardProfile, updateProfile, submitProfileForApproval } from "../../controllers/partner/partnerProfile.controller.js";
 import { updateBankAccount } from "../../controllers/partner/partnerBank.controller.js";
-import { addVehicle, assignDriverToVehicle } from "../../controllers/partner/partnerVehicle.controller.js";
-import { addDriver, getDrivers } from "../../controllers/partner/partnerDriver.controller.js";
+import { addVehicle, assignDriverToVehicle, updateVehicle } from "../../controllers/partner/partnerVehicle.controller.js";
+import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/partnerDriver.controller.js";
 import { uploadDocument } from "../../controllers/partner/partnerDocument.controller.js";
 
 const router = Router();
@@ -21,10 +21,12 @@ router.post("/bank", updateBankAccount);
 
 // Vehicles
 router.post("/vehicle", addVehicle);
+router.put("/vehicle/:vehicleId", updateVehicle);
 router.put("/vehicle/:vehicleId/driver", assignDriverToVehicle);
 
 // Drivers
 router.post("/driver", addDriver);
+router.put("/driver/:driverId", updateDriver);
 router.get("/driver", getDrivers);
 
 // Documents
