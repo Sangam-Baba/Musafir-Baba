@@ -100,76 +100,91 @@ interface Visa {
 
 // Example: Fetch blog slugs from your DB or API
 async function getBlogs() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/blogs/?status=published`,
-  );
-  if (!res.ok) throw new Error("Failed to fetch blogs");
-  const data = await res.json();
-  return data.data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/?status=published`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    return [];
+  }
 }
 async function getNews() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/news/?status=published`,
-  );
-  if (!res.ok) throw new Error("Failed to fetch news");
-  const data = await res.json();
-  return data.data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/?status=published`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    return [];
+  }
 }
 
 async function getCategory() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to fetch posts");
-  return res.json();
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    if (!res.ok) return { data: [] };
+    return res.json();
+  } catch (error) {
+    return { data: [] };
+  }
 }
 async function getPackages() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages/`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to fetch packages");
-  const data = await res.json();
-  return data?.data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages/`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data || [];
+  } catch (error) {
+    return [];
+  }
 }
 
 async function getDestination() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!res.ok) throw new Error("Failed to fetch posts");
-  const data = await res.json();
-  return data?.data ?? [];
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data || [];
+  } catch (error) {
+    return [];
+  }
 }
 
 const getAllWebPage = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/?status=published`,
-    {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/?status=published`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-  if (!res.ok) throw new Error("Failed to fetch webpages");
-  const data = await res.json();
-  return data?.data ?? [];
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data || [];
+  } catch (error) {
+    return [];
+  }
 };
 
 const getAllVisa = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`);
-  if (!res.ok) throw new Error("Failed to fetch Visa");
-  const data = await res.json();
-  return data?.data ?? [];
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data || [];
+  } catch (error) {
+    return [];
+  }
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
