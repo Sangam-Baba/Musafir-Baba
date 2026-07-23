@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, Phone, MapPin, Building, Briefcase, Navigation, Banknote, CreditCard, Hash, FileText, FileBadge, Car, Type, Hash as HashIcon, Plus, X, History } from "lucide-react";
+import { User, Phone, MapPin, Building, Briefcase, Navigation, Banknote, CreditCard, Hash, FileText, FileBadge, Car, Type, Hash as HashIcon, Plus, X, History, Camera } from "lucide-react";
 import { getStates, getCities } from "@/actions/location";
+import { CameraModal } from "@/components/admin/CameraModal";
 
 export default function ProfileCompletionTabs() {
   const [activeTab, setActiveTab] = useState("personal");
@@ -19,6 +20,8 @@ export default function ProfileCompletionTabs() {
   const [isFleetDrawerOpen, setIsFleetDrawerOpen] = useState(false);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false);
   const [selectedFleetRowForEdit, setSelectedFleetRowForEdit] = useState<{driver: any, vehicle: any} | null>(null);
+  const [showProfileCamera, setShowProfileCamera] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   useEffect(() => {
     getStates("IN").then(setStateData).catch(console.error);
@@ -30,6 +33,9 @@ export default function ProfileCompletionTabs() {
     }
     if (dashboardData?.profile?.partnerType) {
       setSelectedPartnerType(dashboardData.profile.partnerType);
+    }
+    if (dashboardData?.profile?.profilePicture) {
+      setProfilePicture(dashboardData.profile.profilePicture);
     }
   }, [dashboardData]);
 
@@ -49,7 +55,9 @@ export default function ProfileCompletionTabs() {
   const getToken = () => typeof window !== "undefined" ? localStorage.getItem("partner_token") : "";
 
   const fetchDashboardData = async () => {
-    const currentToken = getToken();
+    
+
+      const currentToken = getToken();
     if (!currentToken) {
       window.location.href = "/partner/login";
       return;
@@ -87,6 +95,7 @@ export default function ProfileCompletionTabs() {
       mobileNumber: formData.get("mobileNumber"),
       partnerType: formData.get("partnerType"),
       agencyName: formData.get("agencyName") || "",
+      profilePicture: profilePicture,
     };
     const addressData = {
       addressLine: formData.get("addressLine"),
@@ -308,6 +317,36 @@ export default function ProfileCompletionTabs() {
         return;
       }
 
+      const uploadHelper = async (fileObj: File) => {
+        if (!fileObj || fileObj.size === 0) return "";
+        const presignRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/upload/cloudflare-url`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName: fileObj.name, fileType: fileObj.type, folder: "partner-documents" }),
+        });
+        if (!presignRes.ok) return "";
+        const { uploadUrl, fileUrl } = await presignRes.json();
+        const uploadRes = await fetch(uploadUrl, { method: "PUT", body: fileObj, headers: { "Content-Type": fileObj.type } });
+        return uploadRes.ok ? fileUrl : "";
+      };
+
+      setUploading("Vehicle Documents");
+      const [
+        rcImageUrl, pucImageUrl, insuranceFileUrl, permitFileUrl,
+        frontImageUrl, rearImageUrl, leftSideImageUrl, rightSideImageUrl, interiorImageUrl, otherImageUrl
+      ] = await Promise.all([
+        uploadHelper(formData.get("fleetRcImage") as File),
+        uploadHelper(formData.get("fleetPucImage") as File),
+        uploadHelper(formData.get("fleetInsuranceImage") as File),
+        uploadHelper(formData.get("fleetPermitImage") as File),
+        uploadHelper(formData.get("fleetFrontImage") as File),
+        uploadHelper(formData.get("fleetRearImage") as File),
+        uploadHelper(formData.get("fleetLeftImage") as File),
+        uploadHelper(formData.get("fleetRightImage") as File),
+        uploadHelper(formData.get("fleetInteriorImage") as File),
+        uploadHelper(formData.get("fleetOtherImage") as File)
+      ]);
+
       const vehicleRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/partner/vehicle`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${currentToken}` },
@@ -380,7 +419,7 @@ export default function ProfileCompletionTabs() {
         setMessage(`✅ Document uploaded successfully!`);
         const updatedVehicle = await res.json();
         if (selectedFleetRowForEdit) {
-           setSelectedFleetRowForEdit(prev => ({ ...prev, vehicle: updatedVehicle.data }));
+           setSelectedFleetRowForEdit(prev => prev ? { ...prev, vehicle: updatedVehicle.data } : null);
         }
         fetchDashboardData();
       } else {
@@ -669,7 +708,7 @@ export default function ProfileCompletionTabs() {
           onClick={() => setActiveTab('vehicles')}
           className={`flex-1 text-center py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-950 shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
         >
-          Fleet ({dashboardData?.vehicles?.length || 0})
+          Vehicle/driver ({dashboardData?.vehicles?.length || 0})
         </button>
       </div>
 
@@ -689,6 +728,27 @@ export default function ProfileCompletionTabs() {
             <div>
               <h3 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Personal Details</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">Define your account parameters. Names must match state-issued legal licenses.</p>
+            </div>
+
+            <div className="mb-4 flex flex-col items-center sm:items-start">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Profile Picture</label>
+              <div className="flex items-center gap-4">
+                <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 flex items-center justify-center">
+                  {profilePicture ? (
+                    <img src={profilePicture} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <User size={32} className="text-slate-400" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileCamera(true)}
+                  className="flex items-center gap-2 rounded-lg bg-orange-100 px-4 py-2 text-xs font-bold uppercase tracking-wider text-orange-700 hover:bg-orange-200 transition-colors"
+                >
+                  <Camera size={14} />
+                  {profilePicture ? "Change Photo" : "Take Photo"}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -940,241 +1000,14 @@ export default function ProfileCompletionTabs() {
         
         {/* TAB SECTION 4: FLEET MANAGEMENT */}
         {activeTab === "vehicles" && (
-          isIndividualPartner ? (
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             
-             {/* DRIVERS COLUMN */}
-             <div className="space-y-6">
-                <form onSubmit={handleDriverSubmit} className="p-5 bg-emerald-50/30 border border-emerald-100 rounded-xl space-y-4 shadow-sm">
-                  <fieldset disabled={!isEditable}>
-                  <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-wider block border-b border-emerald-200/50 pb-2 flex items-center gap-2">
-                    <User size={14} /> 1. Register Driver
-                  </span>
-
-                  {selectedPartnerType === "Individual" && (
-                    <div className="flex items-center gap-2 bg-emerald-100/50 p-2 rounded-lg mb-2">
-                      <input type="checkbox" id="selfDriver" className="w-3 h-3 text-emerald-600 rounded" onChange={(e) => {
-                        const form = e.target.form;
-                        if (form && e.target.checked) {
-                          (form.elements.namedItem("name") as HTMLInputElement).value = profile?.fullName || "";
-                          (form.elements.namedItem("mobile") as HTMLInputElement).value = profile?.mobileNumber || "";
-                        } else if (form) {
-                          (form.elements.namedItem("name") as HTMLInputElement).value = "";
-                          (form.elements.namedItem("mobile") as HTMLInputElement).value = "";
-                        }
-                      }} />
-                      <label htmlFor="selfDriver" className="text-[10px] font-bold text-emerald-800 uppercase cursor-pointer">I am driving the vehicle (Self)</label>
-                    </div>
-                  )}
-
-                  {!canAddDriver && (
-                    <p className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                      Individual partners can keep one driver only.
-                    </p>
-                  )}
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Driver Name *</label>
-                      <input name="name" required className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Mobile *</label>
-                      <input name="mobile" required className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Licence Number *</label>
-                      <input name="licenceNumber" required className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all uppercase" />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Licence Image *</label>
-                      <input type="file" name="licenceImage" accept="image/*,.pdf" required className="text-[10px] w-full file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800" />
-                    </div>
-                  </div>
-
-                  {uploading === "Licence Image" && <p className="text-[10px] text-[#FE5300] mt-2 font-bold uppercase tracking-wider">Uploading Licence Image...</p>}
-
-                  <button type="submit" disabled={uploading === "Licence Image" || !canAddDriver} className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-colors shadow-sm mt-2">
-                    Add Driver
-                  </button>
-                  </fieldset>
-                </form>
-
-                <div className="pt-2">
-                  <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-2">Driver Roster ({dashboardData?.drivers?.length || 0})</span>
-                  <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
-                    {dashboardData?.drivers?.length === 0 || !dashboardData?.drivers ? (
-                      <div className="border border-slate-200 border-dashed rounded p-4 text-center text-[10px] text-slate-400 font-medium">No drivers found. Use form above to register.</div>
-                    ) : (
-                      dashboardData?.drivers?.map((d: any) => {
-                        const assignedVehicle = dashboardData?.vehicles?.find((v: any) => v.assignedDriverId === d._id);
-                        return (
-                        <div key={d._id} onClick={() => setSelectedFleetRowForEdit({ driver: d, vehicle: null })} className="cursor-pointer bg-white border border-slate-200/80 p-3 rounded flex justify-between items-center text-xs hover:border-slate-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
-                          <div>
-                            <span className="font-bold text-slate-950 block">{d.name}</span>
-                            <span className="text-[10px] text-slate-500 font-medium block">{d.mobile}</span>
-                            {assignedVehicle && (
-                              <span className="text-[9px] text-blue-600 font-bold bg-blue-50/80 border border-blue-100 px-1.5 py-0.5 rounded inline-block mt-1">
-                                <Car size={10} className="inline mr-1" />
-                                Assigned to: {assignedVehicle.brand} {assignedVehicle.vehicleName}
-                              </span>
-                            )}
-                          </div>
-                          <span className="font-mono bg-slate-50 text-slate-600 text-[9px] px-1.5 py-0.5 rounded border border-slate-200/60 font-bold uppercase tracking-wider">{d.licenceNumber}</span>
-                        </div>
-                      )})
-                    )}
-                  </div>
-                </div>
-             </div>
-
-             {/* VEHICLES COLUMN */}
-             <div className="space-y-6">
-                <form onSubmit={handleVehicleSubmit} className="p-5 bg-blue-50/30 border border-blue-100 rounded-xl space-y-4 shadow-sm">
-                  <fieldset disabled={!isEditable}>
-                  <span className="text-[10px] font-bold uppercase text-blue-500 tracking-wider block border-b border-blue-200/50 pb-2 flex items-center gap-2">
-                    <Car size={14} /> 2. Register Vehicle Asset
-                  </span>
-
-                  <div className="mb-2">
-                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Assign Available Driver *</label>
-                    <select name="assignedDriverId" required disabled={!canAddVehicle} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all disabled:bg-slate-100 disabled:text-slate-400">
-                      <option value="">{availableDrivers.length ? "Select an available driver" : "Register an available driver first"}</option>
-                      {availableDrivers.map((d: any) => (
-                        <option key={d._id} value={d._id}>{d.name} ({d.licenceNumber})</option>
-                      ))}
-                    </select>
-                    <p className="text-[9px] text-slate-500 mt-1">Each driver can be assigned to one vehicle at a time.</p>
-                  </div>
-
-                  {!canAddVehicle && (
-                    <p className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-                      {isIndividualPartner && activeVehicles.length >= 1
-                        ? "Individual partners can keep one vehicle only."
-                        : "Register a new driver before adding another vehicle."}
-                    </p>
-                  )}
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Maker Brand *</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
-                          <Building size={12} />
-                        </div>
-                        <input name="brand" placeholder="e.g. Toyota" required className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Model *</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
-                          <HashIcon size={12} />
-                        </div>
-                        <input name="model" placeholder="e.g. 2022" required className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Vehicle Name *</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
-                          <Type size={12} />
-                        </div>
-                        <input name="vehicleName" placeholder="e.g. Innova" required className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Category *</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
-                          <Car size={12} />
-                        </div>
-                        <select name="category" required className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 font-semibold outline-none transition-all">
-                          <option value="SUV">SUV</option>
-                          <option value="Sedan">Sedan</option>
-                          <option value="Hatchback">Hatchback</option>
-                          <option value="Bus">Bus</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Seating *</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
-                          <User size={12} />
-                        </div>
-                        <input name="seatingCapacity" required placeholder="7" type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 font-medium outline-none transition-all" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Vehicle No. *</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-blue-400">
-                          <FileText size={12} />
-                        </div>
-                        <input name="registrationNumber" placeholder="DL 01 AB 1234" required className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 uppercase text-slate-800 font-medium outline-none transition-all" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <button type="submit" disabled={!canAddVehicle} className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-[10px] font-bold rounded-lg uppercase tracking-wider transition-colors shadow-sm mt-2">
-                    Add Vehicle
-                  </button>
-                  </fieldset>
-                </form>
-
-                <div className="pt-2">
-                  <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-2">Live Vehicle Registry ({dashboardData?.vehicles?.length || 0})</span>
-                  <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
-                    {dashboardData?.vehicles?.length === 0 || !dashboardData?.vehicles ? (
-                      <div className="border border-slate-200 border-dashed rounded p-4 text-center text-[10px] text-slate-400 font-medium">No registered vehicles found. Use form above to register.</div>
-                    ) : (
-                      dashboardData?.vehicles?.map((vehicle: any) => {
-                        const driver = dashboardData?.drivers?.find((d: any) => d._id === vehicle.assignedDriverId);
-                        return (
-                        <div key={vehicle._id} className="bg-white border border-slate-200/80 p-3 rounded flex items-center justify-between text-xs hover:border-slate-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
-                          <div>
-                            <span className="font-bold text-slate-950 block">{vehicle.brand} {vehicle.vehicleName}</span>
-                            <span className="text-[10px] text-slate-400 font-semibold block">{vehicle.category} • {vehicle.seatingCapacity} Seater</span>
-                            <span className="font-mono bg-slate-50 text-slate-600 text-[9px] px-1.5 py-0.5 rounded border border-slate-200/60 font-bold mt-1 mr-2 inline-block uppercase tracking-wider">{vehicle.registrationNumber}</span>
-                            {driver && (
-                              <span className="text-[9px] text-emerald-700 font-bold bg-emerald-50/80 border border-emerald-100 px-1.5 py-0.5 rounded inline-block mt-1">
-                                <User size={10} className="inline mr-1" />
-                                Driven by: {driver.name}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider block w-max ml-auto border
-                              ${vehicle.status === "Active" ? "bg-emerald-50/50 text-emerald-800 border-emerald-200/60" :
-                              "bg-amber-50/50 text-amber-800 border-amber-200/60"}
-                            `}>
-                              {vehicle.status}
-                            </span>
-                          </div>
-                        </div>
-                      )})
-                    )}
-                  </div>
-                </div>
-             </div>
-           </div>
-          ) : (
+          
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-bold text-slate-950">Fleet Registry</h3>
                   <p className="text-[11px] text-slate-500 mt-1">Add one linked driver and vehicle per row. Drivers stay assigned to one vehicle at a time.</p>
                 </div>
-                {isEditable && (
+                {isEditable && (!isIndividualPartner || activeVehicles.length === 0) && (
                   <button
                     type="button"
                     onClick={() => setIsFleetDrawerOpen(true)}
@@ -1307,6 +1140,21 @@ export default function ProfileCompletionTabs() {
                     <form onSubmit={handleFleetEntrySubmit} className="space-y-5">
                       <section className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4">
                         <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700"><User size={14} /> Driver</h4>
+                        {selectedPartnerType === "Individual" && (
+                          <div className="mt-2 flex items-center gap-2 bg-emerald-100/50 p-2 rounded-lg">
+                            <input type="checkbox" id="selfDriverFleet" className="w-3 h-3 text-emerald-600 rounded" onChange={(e) => {
+                              const form = e.target.form;
+                              if (form && e.target.checked) {
+                                (form.elements.namedItem("fleetDriverName") as HTMLInputElement).value = profile?.fullName || "";
+                                (form.elements.namedItem("fleetDriverMobile") as HTMLInputElement).value = profile?.mobileNumber || "";
+                              } else if (form) {
+                                (form.elements.namedItem("fleetDriverName") as HTMLInputElement).value = "";
+                                (form.elements.namedItem("fleetDriverMobile") as HTMLInputElement).value = "";
+                              }
+                            }} />
+                            <label htmlFor="selfDriverFleet" className="text-[10px] font-bold text-emerald-800 uppercase cursor-pointer">I am driving the vehicle (Self)</label>
+                          </div>
+                        )}
                         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <input name="fleetDriverName" required placeholder="Driver name" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" />
                           <input name="fleetDriverMobile" required placeholder="Mobile number" type="tel" pattern="[0-9]*" onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, ''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" />
@@ -1327,15 +1175,36 @@ export default function ProfileCompletionTabs() {
                         </div>
                       </section>
 
-                      <button type="submit" disabled={uploading === "Fleet Licence Image"} className="w-full rounded-lg bg-slate-900 py-3 text-xs font-bold uppercase tracking-wider text-white hover:bg-slate-800 disabled:opacity-50">
-                        {uploading === "Fleet Licence Image" ? "Saving fleet row..." : "Save driver and vehicle"}
+                      <section className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                        <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-700">Vehicle Documents</h4>
+                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">RC Image</label><input name="fleetRcImage" type="file" accept="image/*,.pdf" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">PUC Image</label><input name="fleetPucImage" type="file" accept="image/*,.pdf" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Insurance</label><input name="fleetInsuranceImage" type="file" accept="image/*,.pdf" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Permit</label><input name="fleetPermitImage" type="file" accept="image/*,.pdf" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                        </div>
+                      </section>
+
+                      <section className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                        <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-700">Vehicle Images</h4>
+                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Front View</label><input name="fleetFrontImage" type="file" accept="image/*" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Rear View</label><input name="fleetRearImage" type="file" accept="image/*" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Left Side</label><input name="fleetLeftImage" type="file" accept="image/*" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Right Side</label><input name="fleetRightImage" type="file" accept="image/*" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Interior</label><input name="fleetInteriorImage" type="file" accept="image/*" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-[9px] font-bold text-slate-500 uppercase">Other / Boot</label><input name="fleetOtherImage" type="file" accept="image/*" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs" /></div>
+                        </div>
+                      </section>
+
+                      <button type="submit" disabled={uploading === "Fleet Licence Image" || uploading === "Vehicle Documents"} className="w-full rounded-lg bg-slate-900 py-3 text-xs font-bold uppercase tracking-wider text-white hover:bg-slate-800 disabled:opacity-50">
+                        {(uploading === "Fleet Licence Image" || uploading === "Vehicle Documents") ? "Saving fleet row and uploading files..." : "Save driver and vehicle"}
                       </button>
                     </form>
                   </aside>
                 </div>
               )}
             </div>
-          )
         )}
       </div>
 
@@ -1746,6 +1615,17 @@ export default function ProfileCompletionTabs() {
           <span className="text-[9px] font-bold mt-0.5 tracking-wider uppercase">Assets</span>
         </button>
       </div>
+
+      {showProfileCamera && (
+        <CameraModal 
+          title="Capture Profile Picture" 
+          onCancel={() => setShowProfileCamera(false)} 
+          onCapture={(base64) => {
+            setProfilePicture(base64);
+            setShowProfileCamera(false);
+          }} 
+        />
+      )}
     </div>
   );
 }

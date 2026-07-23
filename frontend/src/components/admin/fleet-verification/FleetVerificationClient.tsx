@@ -30,6 +30,13 @@ interface PartnerData {
     state: string;
     partnerType: string;
     agencyName?: string;
+    profilePicture?: string;
+  } | null;
+  address?: {
+    addressLine?: string;
+    pincode?: string;
+    city?: string;
+    state?: string;
   } | null;
   stats: {
     vehicles: number;
@@ -83,6 +90,18 @@ export default function FleetVerificationClient() {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [adminComment, setAdminComment] = useState("");
   
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editProfileForm, setEditProfileForm] = useState({
+    fullName: "",
+    mobileNumber: "",
+    city: "",
+    state: "",
+    partnerType: "",
+    agencyName: "",
+    addressLine: "",
+    pincode: "",
+  });
+  
   const accessToken = useAdminAuthStore((s) => s.accessToken);
 
   const REJECTION_REASONS = [
@@ -134,7 +153,59 @@ export default function FleetVerificationClient() {
 
   const handleSelectPartner = (partner: PartnerData) => {
     setSelectedPartner(partner);
+    setIsEditingProfile(false);
+    setEditProfileForm({
+      fullName: partner.profile?.fullName || "",
+      mobileNumber: partner.profile?.mobileNumber || "",
+      city: partner.address?.city || "",
+      state: partner.address?.state || "",
+      partnerType: partner.profile?.partnerType || "",
+      agencyName: partner.profile?.agencyName || "",
+      addressLine: partner.address?.addressLine || "",
+      pincode: partner.address?.pincode || "",
+    });
     fetchLogs(partner.auth._id);
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!selectedPartner) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/partner-verification/${selectedPartner.auth._id}/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(editProfileForm),
+      });
+      if (res.ok) {
+        toast.success("Profile updated successfully");
+        setIsEditingProfile(false);
+        fetchPartners();
+        setSelectedPartner(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            profile: {
+              ...prev.profile,
+              ...editProfileForm
+            } as any,
+            address: {
+              ...prev.address,
+              addressLine: editProfileForm.addressLine,
+              pincode: editProfileForm.pincode,
+              city: editProfileForm.city,
+              state: editProfileForm.state,
+            }
+          };
+        });
+      } else {
+        const err = await res.json();
+        toast.error(err.message || "Failed to update profile");
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating profile");
+    }
   };
 
   const updateStatus = async (status: string) => {
@@ -217,13 +288,13 @@ export default function FleetVerificationClient() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-full">
-            <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider hidden md:table-header-group">
+            <thead className="bg-slate-50 border-b border-slate-100 hidden md:table-header-group">
               <tr>
-                <th className="px-6 py-4 font-semibold">Partner</th>
-                <th className="px-6 py-4 font-semibold">Contact</th>
-                <th className="px-6 py-4 font-semibold">Stats</th>
-                <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Partner</th>
+                <th className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contact</th>
+                <th className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stats</th>
+                <th className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -235,39 +306,39 @@ export default function FleetVerificationClient() {
                 </tr>
               ) : (
                 partners.map((partner) => (
-                  <tr key={partner.auth._id} className="hover:bg-slate-50/50 transition-colors flex flex-col md:table-row p-4 md:p-0">
-                    <td className="md:px-6 md:py-4">
+                  <tr key={partner.auth._id} className="group hover:bg-slate-50/80 transition-all duration-300 ease-in-out flex flex-col md:table-row p-4 md:p-0">
+                    <td className="md:px-6 md:py-2">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
                           {partner.profile?.fullName ? partner.profile.fullName.charAt(0).toUpperCase() : "?"}
                         </div>
-                        <div>
-                          <div className="font-bold text-slate-900">
+                        <div className="group-hover:translate-x-[1px] transition-transform duration-300 ease-in-out">
+                          <div className="text-[13px] font-semibold text-slate-700 tracking-tight">
                             {partner.profile?.agencyName ? partner.profile.agencyName : (partner.profile?.fullName || "Incomplete Profile")}
                           </div>
-                          <div className="text-[10px] uppercase font-bold text-slate-400">{partner.profile?.partnerType || "Unknown"}</div>
+                          <div className="text-[11px] font-medium text-slate-500 capitalize">{partner.profile?.partnerType || "Unknown"}</div>
                         </div>
                       </div>
                     </td>
                     
-                    <td className="md:px-6 md:py-4 mt-2 md:mt-0 text-sm">
-                      <div className="font-medium text-slate-700">{partner.profile?.mobileNumber || "N/A"}</div>
-                      <div className="text-xs text-slate-500">{partner.auth.email}</div>
+                    <td className="md:px-6 md:py-2 mt-2 md:mt-0 text-sm">
+                      <div className="text-[13px] font-semibold text-slate-700 tracking-tight">{partner.profile?.mobileNumber || "N/A"}</div>
+                      <div className="text-[10px] font-medium text-slate-400 lowercase">{partner.auth.email}</div>
                     </td>
 
-                    <td className="md:px-6 md:py-4 mt-2 md:mt-0">
+                    <td className="md:px-6 md:py-2 mt-2 md:mt-0">
                       <div className="flex flex-wrap gap-2">
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded">
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded">
                            {partner.stats.drivers} Drivers
                         </span>
-                        <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-100 text-blue-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded">
+                        <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded">
                            {partner.stats.vehicles} Vehicles
                         </span>
                       </div>
                     </td>
 
-                    <td className="md:px-6 md:py-4 mt-2 md:mt-0">
-                      <span className={`inline-flex text-[10px] px-2.5 py-1 rounded font-bold uppercase tracking-wider ${
+                    <td className="md:px-6 md:py-2 mt-2 md:mt-0">
+                      <span className={`inline-flex text-[10px] px-2.5 py-1 rounded font-black uppercase tracking-widest ${
                         partner.auth.status === "Active" || partner.auth.status === "Approved" ? "bg-green-100 text-green-800" :
                         partner.auth.status === "PendingVerification" ? "bg-amber-100 text-amber-800" :
                         partner.auth.status === "Hold" ? "bg-orange-100 text-orange-800" :
@@ -278,12 +349,13 @@ export default function FleetVerificationClient() {
                       </span>
                     </td>
 
-                    <td className="md:px-6 md:py-4 mt-4 md:mt-0 text-right">
+                    <td className="md:px-6 md:py-2 mt-4 md:mt-0 text-right">
                       <button
                         onClick={() => handleSelectPartner(partner)}
-                        className="inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-[11px] uppercase tracking-wider font-bold rounded transition-all shadow-sm"
+                        className="inline-flex items-center justify-center h-7 w-7 bg-slate-50 hover:bg-slate-200 text-slate-500 rounded transition-all duration-300 ease-in-out shadow-none"
+                        title="Review Profile"
                       >
-                        Review Profile <ArrowRight size={14} />
+                        <ArrowRight size={14} className="opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-in-out" />
                       </button>
                     </td>
                   </tr>
@@ -327,19 +399,96 @@ export default function FleetVerificationClient() {
                 
                 {/* Agency/Profile Block */}
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-3">Entity Profile</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="block text-[10px] text-slate-500 uppercase font-bold">Primary Contact</span>
-                      <span className="font-semibold text-slate-800">{selectedPartner.profile?.fullName}</span>
-                    </div>
-                    {selectedPartner.profile?.agencyName && (
-                      <div>
-                        <span className="block text-[10px] text-slate-500 uppercase font-bold">Agency / Company</span>
-                        <span className="font-semibold text-slate-800">{selectedPartner.profile.agencyName}</span>
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entity Profile</h3>
+                    {!isEditingProfile ? (
+                      <button onClick={() => setIsEditingProfile(true)} className="text-[10px] font-bold text-[#FE5300] hover:underline uppercase">Edit</button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button onClick={() => setIsEditingProfile(false)} className="text-[10px] font-bold text-slate-500 hover:underline uppercase">Cancel</button>
+                        <button onClick={handleUpdateProfile} className="text-[10px] font-bold text-emerald-600 hover:underline uppercase">Save</button>
                       </div>
                     )}
                   </div>
+                  
+                  {!isEditingProfile ? (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">Primary Contact</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          {selectedPartner.profile?.profilePicture && (
+                            <img src={selectedPartner.profile.profilePicture} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                          )}
+                          <span className="font-semibold text-slate-800">{selectedPartner.profile?.fullName}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">Mobile Number</span>
+                        <span className="font-semibold text-slate-800">{selectedPartner.profile?.mobileNumber || "N/A"}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">Address Line</span>
+                        <span className="font-semibold text-slate-800">{selectedPartner.address?.addressLine || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">City</span>
+                        <span className="font-semibold text-slate-800">{selectedPartner.address?.city || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">State</span>
+                        <span className="font-semibold text-slate-800">{selectedPartner.address?.state || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">PIN Code</span>
+                        <span className="font-semibold text-slate-800">{selectedPartner.address?.pincode || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500 uppercase font-bold">Partner Type</span>
+                        <span className="font-semibold text-slate-800">{selectedPartner.profile?.partnerType || "N/A"}</span>
+                      </div>
+                      {selectedPartner.profile?.agencyName && (
+                        <div className="col-span-2">
+                          <span className="block text-[10px] text-slate-500 uppercase font-bold">Agency / Company</span>
+                          <span className="font-semibold text-slate-800">{selectedPartner.profile.agencyName}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Full Name</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.fullName} onChange={(e) => setEditProfileForm({...editProfileForm, fullName: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Mobile Number</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.mobileNumber} onChange={(e) => setEditProfileForm({...editProfileForm, mobileNumber: e.target.value})} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Address Line</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.addressLine} onChange={(e) => setEditProfileForm({...editProfileForm, addressLine: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">City</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.city} onChange={(e) => setEditProfileForm({...editProfileForm, city: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">State</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.state} onChange={(e) => setEditProfileForm({...editProfileForm, state: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">PIN Code</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.pincode} onChange={(e) => setEditProfileForm({...editProfileForm, pincode: e.target.value})} />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Partner Type</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.partnerType} onChange={(e) => setEditProfileForm({...editProfileForm, partnerType: e.target.value})} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Agency / Company</label>
+                        <input type="text" className="w-full border border-slate-300 rounded p-1.5 text-xs" value={editProfileForm.agencyName} onChange={(e) => setEditProfileForm({...editProfileForm, agencyName: e.target.value})} />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Fleet Side-by-Side View */}
