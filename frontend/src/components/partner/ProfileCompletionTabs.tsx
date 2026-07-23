@@ -1185,60 +1185,111 @@ export default function ProfileCompletionTabs() {
                 )}
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                <table className="w-full min-w-[720px] text-left text-xs">
-                  <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3">Vehicle</th>
-                      <th className="px-4 py-3">Registration</th>
-                      <th className="px-4 py-3">Driver</th>
-                      <th className="px-4 py-3">Licence</th>
-                      <th className="px-4 py-3 text-right">Status</th>
-                      <th className="px-4 py-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {activeVehicles.length === 0 ? (
+              <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full min-w-[720px] text-left text-xs">
+                    <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                       <tr>
-                        <td colSpan={6} className="px-4 py-10 text-center text-slate-400">No fleet rows yet. Add your first driver and vehicle.</td>
+                        <th className="px-4 py-3">Vehicle</th>
+                        <th className="px-4 py-3">Registration</th>
+                        <th className="px-4 py-3">Driver</th>
+                        <th className="px-4 py-3">Licence</th>
+                        <th className="px-4 py-3 text-right">Status</th>
+                        <th className="px-4 py-3 text-right">Action</th>
                       </tr>
-                    ) : (
-                      activeVehicles.map((vehicle: any) => {
-                        const driver = activeDrivers.find((item: any) => item._id === vehicle.assignedDriverId);
-                        return (
-                          <tr key={vehicle._id} className="hover:bg-slate-50/70 cursor-pointer group" onClick={() => setSelectedFleetRowForEdit({ driver, vehicle })}>
-                            <td className="px-4 py-3">
-                              <div className="font-semibold text-slate-800">{vehicle.brand} {vehicle.vehicleName}</div>
-                              <div className="mt-0.5 text-[10px] text-slate-500">{vehicle.category} · {vehicle.seatingCapacity} seats · {vehicle.model}</div>
-                            </td>
-                            <td className="px-4 py-3 font-mono text-[11px] font-semibold text-slate-600">{vehicle.registrationNumber}</td>
-                            <td className="px-4 py-3 group-hover:bg-slate-100/50 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedFleetRowForEdit({ driver, vehicle }); }}>
-                              <div className="font-medium text-slate-700 hover:text-blue-600 transition-colors">{driver?.name || "Unassigned"} <span className="text-[9px] text-blue-500 ml-1 hidden group-hover:inline">({isEditable ? "Edit" : "View"})</span></div>
-                              <div className="mt-0.5 text-[10px] text-slate-500">{driver?.mobile || "Requires assignment"}</div>
-                            </td>
-                            <td className="px-4 py-3 font-mono text-[11px] text-slate-600">{driver?.licenceNumber || "—"}</td>
-                            <td className="px-4 py-3 text-right">
-                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${vehicle.status === "Active" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-amber-100 bg-amber-50 text-amber-700"}`}>
-                                {vehicle.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                               <button 
-                                 onClick={(e) => {
-                                   e.stopPropagation();
-                                   setSelectedFleetRowForEdit({ driver, vehicle });
-                                 }}
-                                 className="text-[10px] font-bold uppercase text-blue-600 hover:text-blue-800"
-                               >
-                                 {isEditable ? "View / Edit" : "View"}
-                               </button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {activeVehicles.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-10 text-center text-slate-400">No fleet rows yet. Add your first driver and vehicle.</td>
+                        </tr>
+                      ) : (
+                        activeVehicles.map((vehicle: any) => {
+                          const driver = activeDrivers.find((item: any) => item._id === vehicle.assignedDriverId);
+                          return (
+                            <tr key={vehicle._id} className="hover:bg-slate-50/70 cursor-pointer group" onClick={() => setSelectedFleetRowForEdit({ driver, vehicle })}>
+                              <td className="px-4 py-3">
+                                <div className="font-semibold text-slate-800">{vehicle.brand} {vehicle.vehicleName}</div>
+                                <div className="mt-0.5 text-[10px] text-slate-500">{vehicle.category} · {vehicle.seatingCapacity} seats · {vehicle.model}</div>
+                              </td>
+                              <td className="px-4 py-3 font-mono text-[11px] font-semibold text-slate-600">{vehicle.registrationNumber}</td>
+                              <td className="px-4 py-3 group-hover:bg-slate-100/50 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedFleetRowForEdit({ driver, vehicle }); }}>
+                                <div className="font-medium text-slate-700 hover:text-blue-600 transition-colors">{driver?.name || "Unassigned"} <span className="text-[9px] text-blue-500 ml-1 hidden group-hover:inline">({isEditable ? "Edit" : "View"})</span></div>
+                                <div className="mt-0.5 text-[10px] text-slate-500">{driver?.mobile || "Requires assignment"}</div>
+                              </td>
+                              <td className="px-4 py-3 font-mono text-[11px] text-slate-600">{driver?.licenceNumber || "—"}</td>
+                              <td className="px-4 py-3 text-right">
+                                <span className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${vehicle.status === "Active" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-amber-100 bg-amber-50 text-amber-700"}`}>
+                                  {vehicle.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                 <button 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     setSelectedFleetRowForEdit({ driver, vehicle });
+                                   }}
+                                   className="text-[10px] font-bold uppercase text-blue-600 hover:text-blue-800"
+                                 >
+                                   {isEditable ? "View / Edit" : "View"}
+                                 </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="block md:hidden divide-y divide-slate-100">
+                  {activeVehicles.length === 0 ? (
+                    <div className="px-4 py-10 text-center text-xs text-slate-400">No fleet rows yet. Add your first driver and vehicle.</div>
+                  ) : (
+                    activeVehicles.map((vehicle: any) => {
+                      const driver = activeDrivers.find((item: any) => item._id === vehicle.assignedDriverId);
+                      return (
+                        <div 
+                          key={vehicle._id} 
+                          className="p-4 flex flex-col gap-3 hover:bg-slate-50/70 cursor-pointer active:bg-slate-100 transition-colors"
+                          onClick={() => setSelectedFleetRowForEdit({ driver, vehicle })}
+                        >
+                          {/* Header: Vehicle Name & Status */}
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-bold text-sm text-slate-900">{vehicle.brand} {vehicle.vehicleName}</div>
+                              <div className="text-[10px] text-slate-500 mt-0.5">{vehicle.category} · {vehicle.seatingCapacity} seats · {vehicle.model}</div>
+                            </div>
+                            <span className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${vehicle.status === "Active" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-amber-100 bg-amber-50 text-amber-700"}`}>
+                              {vehicle.status}
+                            </span>
+                          </div>
+
+                          {/* Grid Details */}
+                          <div className="grid grid-cols-2 gap-3 mt-2 bg-slate-50/50 p-3 rounded border border-slate-100">
+                            <div>
+                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Registration</div>
+                              <div className="font-mono text-xs font-bold text-slate-700">{vehicle.registrationNumber}</div>
+                            </div>
+                            <div>
+                              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Driver</div>
+                              <div className="text-xs font-semibold text-slate-800">{driver?.name || "Unassigned"}</div>
+                              <div className="text-[9px] text-slate-500 mt-0.5">{driver?.mobile || "Requires assignment"}</div>
+                            </div>
+                          </div>
+
+                          <div className="mt-1 flex justify-end">
+                             <button className="text-[10px] font-bold uppercase text-blue-600 hover:text-blue-800">
+                               {isEditable ? "View Details & Edit" : "View Details"}
+                             </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
 
               {isFleetDrawerOpen && (
@@ -1378,6 +1429,117 @@ export default function ProfileCompletionTabs() {
                           </div>
                         </div>
                       )}
+                    </div>
+
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-6 mb-3 border-b border-blue-100 pb-2">Vehicle Images</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Front Image */}
+                      <div className="border border-blue-100 p-3 rounded bg-white flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Front View</label>
+                          {selectedFleetRowForEdit.vehicle.frontImageUrl && (
+                            <a href={selectedFleetRowForEdit.vehicle.frontImageUrl} target="_blank" rel="noreferrer" className="text-[9px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">VIEW</a>
+                          )}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleVehicleFileUpload(e, "frontImageUrl", selectedFleetRowForEdit.vehicle._id)}
+                          disabled={uploading === "frontImageUrl" || !isEditable}
+                          className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-blue-900 file:text-white hover:file:bg-blue-800" 
+                        />
+                        {uploading === "frontImageUrl" && <p className="text-[9px] text-[#FE5300] mt-1 font-bold uppercase tracking-wider">Uploading...</p>}
+                      </div>
+                      
+                      {/* Rear Image */}
+                      <div className="border border-blue-100 p-3 rounded bg-white flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Rear View</label>
+                          {selectedFleetRowForEdit.vehicle.rearImageUrl && (
+                            <a href={selectedFleetRowForEdit.vehicle.rearImageUrl} target="_blank" rel="noreferrer" className="text-[9px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">VIEW</a>
+                          )}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleVehicleFileUpload(e, "rearImageUrl", selectedFleetRowForEdit.vehicle._id)}
+                          disabled={uploading === "rearImageUrl" || !isEditable}
+                          className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-blue-900 file:text-white hover:file:bg-blue-800" 
+                        />
+                        {uploading === "rearImageUrl" && <p className="text-[9px] text-[#FE5300] mt-1 font-bold uppercase tracking-wider">Uploading...</p>}
+                      </div>
+                      
+                      {/* Left Side Image */}
+                      <div className="border border-blue-100 p-3 rounded bg-white flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Left Side</label>
+                          {selectedFleetRowForEdit.vehicle.leftSideImageUrl && (
+                            <a href={selectedFleetRowForEdit.vehicle.leftSideImageUrl} target="_blank" rel="noreferrer" className="text-[9px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">VIEW</a>
+                          )}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleVehicleFileUpload(e, "leftSideImageUrl", selectedFleetRowForEdit.vehicle._id)}
+                          disabled={uploading === "leftSideImageUrl" || !isEditable}
+                          className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-blue-900 file:text-white hover:file:bg-blue-800" 
+                        />
+                        {uploading === "leftSideImageUrl" && <p className="text-[9px] text-[#FE5300] mt-1 font-bold uppercase tracking-wider">Uploading...</p>}
+                      </div>
+                      
+                      {/* Right Side Image */}
+                      <div className="border border-blue-100 p-3 rounded bg-white flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Right Side</label>
+                          {selectedFleetRowForEdit.vehicle.rightSideImageUrl && (
+                            <a href={selectedFleetRowForEdit.vehicle.rightSideImageUrl} target="_blank" rel="noreferrer" className="text-[9px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">VIEW</a>
+                          )}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleVehicleFileUpload(e, "rightSideImageUrl", selectedFleetRowForEdit.vehicle._id)}
+                          disabled={uploading === "rightSideImageUrl" || !isEditable}
+                          className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-blue-900 file:text-white hover:file:bg-blue-800" 
+                        />
+                        {uploading === "rightSideImageUrl" && <p className="text-[9px] text-[#FE5300] mt-1 font-bold uppercase tracking-wider">Uploading...</p>}
+                      </div>
+                      
+                      {/* Interior Image */}
+                      <div className="border border-blue-100 p-3 rounded bg-white flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Interior</label>
+                          {selectedFleetRowForEdit.vehicle.interiorImageUrl && (
+                            <a href={selectedFleetRowForEdit.vehicle.interiorImageUrl} target="_blank" rel="noreferrer" className="text-[9px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">VIEW</a>
+                          )}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleVehicleFileUpload(e, "interiorImageUrl", selectedFleetRowForEdit.vehicle._id)}
+                          disabled={uploading === "interiorImageUrl" || !isEditable}
+                          className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-blue-900 file:text-white hover:file:bg-blue-800" 
+                        />
+                        {uploading === "interiorImageUrl" && <p className="text-[9px] text-[#FE5300] mt-1 font-bold uppercase tracking-wider">Uploading...</p>}
+                      </div>
+
+                      {/* Other Image */}
+                      <div className="border border-blue-100 p-3 rounded bg-white flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide">Other / Boot</label>
+                          {selectedFleetRowForEdit.vehicle.otherImageUrl && (
+                            <a href={selectedFleetRowForEdit.vehicle.otherImageUrl} target="_blank" rel="noreferrer" className="text-[9px] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-wider">VIEW</a>
+                          )}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleVehicleFileUpload(e, "otherImageUrl", selectedFleetRowForEdit.vehicle._id)}
+                          disabled={uploading === "otherImageUrl" || !isEditable}
+                          className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-blue-900 file:text-white hover:file:bg-blue-800" 
+                        />
+                        {uploading === "otherImageUrl" && <p className="text-[9px] text-[#FE5300] mt-1 font-bold uppercase tracking-wider">Uploading...</p>}
+                      </div>
                     </div>
                   </section>
                 )}
