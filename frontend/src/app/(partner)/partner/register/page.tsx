@@ -49,7 +49,7 @@ export default function PartnerRegisterPage() {
         setMessage("✅ Email verified successfully! Redirecting...");
         // Redirect to login page after successful verification
         setTimeout(() => {
-          router.push("/partner-login"); 
+          router.push("/partner/login"); 
         }, 2000);
       } else {
         setMessage(data.message || "Invalid or expired OTP.");
