@@ -254,3 +254,44 @@ export const verifyDocument = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+// @route   PUT /api/admin/partner-verification/:partnerId/profile
+// @desc    Update partner profile from admin panel
+export const updatePartnerProfile = async (req, res) => {
+  try {
+    const { partnerId } = req.params;
+    const { fullName, mobileNumber, city, state, partnerType, agencyName, addressLine, pincode } = req.body;
+
+    const profile = await PartnerProfile.findOne({ authId: partnerId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Partner profile not found" });
+    }
+
+    if (fullName) profile.fullName = fullName;
+    if (mobileNumber) profile.mobileNumber = mobileNumber;
+    if (city) profile.city = city;
+    if (state) profile.state = state;
+    if (partnerType) profile.partnerType = partnerType;
+    if (agencyName !== undefined) profile.agencyName = agencyName;
+
+    await profile.save();
+
+    let address = await PartnerAddress.findOne({ partnerId: profile._id });
+    if (address) {
+      if (addressLine !== undefined) address.addressLine = addressLine;
+      if (pincode !== undefined) address.pincode = pincode;
+      if (city !== undefined) address.city = city;
+      if (state !== undefined) address.state = state;
+      await address.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Partner profile updated successfully.",
+      data: { profile, address },
+    });
+  } catch (error) {
+    console.error("Update Partner Profile Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

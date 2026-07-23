@@ -3,6 +3,7 @@ import {
   getPendingPartners,
   updatePartnerStatus,
   verifyDocument,
+  updatePartnerProfile,
 } from "../../controllers/partner/adminPartnerVerification.controller.js";
 import { getPartnerLogs, addPartnerComment } from "../../controllers/partner/partnerLog.controller.js";
 import protect from "../../middleware/auth.middleware.js";
@@ -17,6 +18,7 @@ router.use(authorizedRoles(["admin", "superadmin"]));
 
 router.get("/pending", getPendingPartners);
 router.put("/:partnerId/status", updatePartnerStatus);
+router.put("/:partnerId/profile", updatePartnerProfile);
 router.put("/document/:documentId", verifyDocument);
 router.get("/:partnerId/logs", getPartnerLogs);
 router.post("/:partnerId/comment", addPartnerComment);
