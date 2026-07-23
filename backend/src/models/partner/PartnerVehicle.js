@@ -54,6 +54,10 @@ const partnerVehicleSchema = new mongoose.Schema(
       permitType: { type: String },
       permitExpiry: { type: Date },
     },
+    rcImageUrl: { type: String },
+    pucImageUrl: { type: String },
+    insuranceFileUrl: { type: String },
+    permitFileUrl: { type: String },
     features: [
       {
         type: String, // e.g., 'AC', 'GPS', 'Push Back Seats'
