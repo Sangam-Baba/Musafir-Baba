@@ -90,11 +90,29 @@ export default function PartnerLoginPage() {
   };
 
   return (
-    <div 
-      className="flex-1 w-full flex items-center justify-center lg:justify-start lg:pl-12 xl:pl-24 bg-cover bg-right bg-no-repeat min-h-[calc(100vh-140px)] py-12 px-4 md:px-8"
-      style={{ backgroundImage: "url('/partner/bgimage.avif')" }}
-    >
-      <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 relative">
+    <div className="min-h-screen w-full flex flex-col bg-slate-50">
+      {/* Premium Full-width Header Section */}
+      <div className="w-full bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12] sticky top-0 z-50 shadow-md">
+        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-3 md:py-2 flex justify-between items-center">
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="flex items-center justify-center pr-3 md:pr-5 border-r border-white/20 h-8">
+              <img src="/partner/mbconnect.avif" alt="MB Connect Logo" className="h-6 md:h-7 w-auto object-contain drop-shadow-sm brightness-0 invert" />
+            </div>
+            <div className="flex flex-col">
+              <h2 className="text-base md:text-xl font-black text-white tracking-tight flex items-center gap-1.5 md:gap-2 leading-none">
+                Partner Portal
+              </h2>
+              <p className="hidden lg:block text-[10px] text-white/90 mt-1 font-medium tracking-wide">Join the fleet and manage your business.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div 
+        className="flex-1 w-full min-h-[56.25vw] bg-cover bg-top bg-no-repeat flex items-center justify-center lg:justify-start lg:pl-12 xl:pl-24 py-12 px-4 md:px-8"
+        style={{ backgroundImage: "url('/partner/bgimage.avif')" }}
+      >
+        <div className="w-full max-w-[400px] bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/20 relative">
         <div className="flex justify-center mb-6">
           <img src="/partner/mbconnect.avif" alt="MB Connect Logo" className="h-12 object-contain" />
         </div>
@@ -241,6 +259,7 @@ export default function PartnerLoginPage() {
           {message}
         </div>
       )}
+        </div>
       </div>
     </div>
   );
