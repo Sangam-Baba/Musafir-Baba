@@ -32,4 +32,9 @@ router.get("/driver", getDrivers);
 // Documents
 router.post("/document", uploadDocument);
 
+// Settings
+import { getSettings, updateSettings } from "../../controllers/partner/partnerSettings.controller.js";
+router.get("/settings", getSettings);
+router.post("/settings", updateSettings);
+
 export default router;

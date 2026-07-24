@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, Phone, MapPin, Building, Briefcase, Navigation, Banknote, CreditCard, Hash, FileText, FileBadge, Car, Type, Hash as HashIcon, Plus, X, History, Camera } from "lucide-react";
+import SettingsTab from "./SettingsTab";
+import { User, Phone, MapPin, Building, Briefcase, Navigation, Banknote, CreditCard, Hash, FileText, FileBadge, Car, Type, Hash as HashIcon, Plus, X, History, Camera, AlertCircle, Clock, ShieldAlert, ChevronRight } from "lucide-react";
 import { getStates, getCities } from "@/actions/location";
 import { CameraModal } from "@/components/admin/CameraModal";
 
@@ -554,77 +555,86 @@ export default function ProfileCompletionTabs() {
   return (
     <div className="w-full flex flex-col space-y-6">
       
-      {/* STATS METRIC BLOCK - Replaced loud blocks with elegant minimal cards */}
-      <div className="grid grid-cols-3 gap-4">
-        
-        <div className="bg-white border border-slate-200/70 p-4 rounded shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
-          <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Active Fleet</span>
-          <span className="text-2xl font-semibold text-slate-900 block mt-1 tracking-tight">
-            {dashboardData?.vehicles?.filter((v: any) => v.status === 'Active').length || 0}
-          </span>
-          <span className="text-[9px] text-slate-500 block mt-0.5 font-medium">Vehicles Online</span>
-        </div>
-
-        <div className="bg-white border border-slate-200/70 p-4 rounded shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
-          <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Total Fleet</span>
-          <span className="text-2xl font-semibold text-slate-900 block mt-1 tracking-tight">
-            {dashboardData?.vehicles?.length || 0}
-          </span>
-          <span className="text-[9px] text-slate-500 block mt-0.5 font-medium">Registered Vehicles</span>
-        </div>
-
-        <div className="bg-white border border-slate-200/70 p-4 rounded shadow-[0_1px_2px_rgba(0,0,0,0.01)] flex flex-col justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Audit Status</span>
-            <span className={`text-[12px] font-extrabold uppercase block mt-2.5 truncate tracking-wider
-              ${isPendingReview ? 'text-amber-600' : (partnerStatus === 'Rejected' ? 'text-red-700' : (canSubmitForReview ? 'text-emerald-700' : 'text-slate-600'))}
-            `}>
-              {dashboardStatusLabel}
-            </span>
-          </div>
-          {canSubmitForReview && (
-            <button 
-              onClick={handleSubmitForApproval}
-              className="mt-3 w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-[9px] font-bold uppercase tracking-wider rounded transition-colors shadow-sm"
-            >
-              {partnerStatus === 'Rejected' ? 'Resubmit for Review' : 'Send for Approval'}
-            </button>
-          )}
+      
+      {/* OVERVIEW HEADER & STATS METRIC BLOCK */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight hidden md:block">Dashboard Overview</h2>
+        <div className="flex items-center gap-3 ml-auto">
+          <button 
+            onClick={() => setIsHistoryDrawerOpen(true)}
+            className="relative p-2 md:p-2.5 bg-white rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 group"
+          >
+            <History size={18} className="text-slate-600 group-hover:text-blue-600 transition-colors" />
+            {verificationHistory.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 md:w-4.5 md:h-4.5 bg-[#FE5300] text-white text-[9px] md:text-[10px] font-bold flex items-center justify-center rounded-full shadow-sm ring-2 ring-white">
+                {verificationHistory.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
-      {(partnerStatus === "Rejected" || partnerStatus === "Hold" || partnerStatus === "Blacklisted") && (
-        <div className={`rounded border p-4 shadow-sm ${
-          partnerStatus === "Rejected"
-            ? "bg-red-50 border-red-200"
-            : partnerStatus === "Hold"
-              ? "bg-amber-50 border-amber-200"
-              : "bg-slate-50 border-slate-200"
-        }`}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className={`text-[10px] font-bold uppercase tracking-wider ${
-                partnerStatus === "Rejected"
-                  ? "text-red-700"
-                  : partnerStatus === "Hold"
-                    ? "text-amber-700"
-                    : "text-slate-700"
-              }`}>
-                {partnerStatus || "Status Update"}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+        
+        <div className="bg-gradient-to-br from-white to-slate-50 p-3.5 md:p-5 rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden group hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+          <div className="flex items-center gap-2 mb-3 relative z-10">
+            <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+              <Car size={14} className="text-emerald-700" />
+            </div>
+            <span className="text-[9px] md:text-[10px] font-bold uppercase text-slate-500 tracking-wider">Active Fleet</span>
+          </div>
+          <div className="flex items-baseline gap-1.5 relative z-10">
+            <span className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none">
+              {dashboardData?.vehicles?.filter((v: any) => v.status === 'Active').length || 0}
+            </span>
+            <span className="text-[9px] md:text-[10px] text-slate-400 font-semibold uppercase">Online</span>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-white to-slate-50 p-3.5 md:p-5 rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden group hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+          <div className="flex items-center gap-2 mb-3 relative z-10">
+            <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+              <Car size={14} className="text-blue-700" />
+            </div>
+            <span className="text-[9px] md:text-[10px] font-bold uppercase text-slate-500 tracking-wider">Total Fleet</span>
+          </div>
+          <div className="flex items-baseline gap-1.5 relative z-10">
+            <span className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none">
+              {dashboardData?.vehicles?.length || 0}
+            </span>
+            <span className="text-[9px] md:text-[10px] text-slate-400 font-semibold uppercase">Registered</span>
+          </div>
+        </div>
+
+        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-white to-slate-50 p-3.5 md:p-5 rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden group hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all flex flex-col justify-between">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-2 md:mb-3">
+              <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <FileBadge size={14} className="text-slate-600" />
               </div>
-              <p className="text-sm font-medium text-slate-800 mt-1">
-                {partnerStatus === "Rejected"
-                  ? "Your profile was rejected. Update the required details, then resubmit it for review."
-                  : partnerStatus === "Hold"
-                    ? "Your partner account is on hold. Review the verification history for the next steps."
-                    : "Your partner account has been restricted. Review the verification history for details."}
-              </p>
+              <span className="text-[9px] md:text-[10px] font-bold uppercase text-slate-500 tracking-wider">Audit Status</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <span className={`text-[13px] md:text-[14px] font-extrabold uppercase tracking-wider truncate
+                ${isPendingReview ? 'text-amber-600' : (partnerStatus === 'Rejected' ? 'text-red-600' : (canSubmitForReview ? 'text-emerald-600' : 'text-slate-700'))}
+              `}>
+                {dashboardStatusLabel}
+              </span>
+              {canSubmitForReview && (
+                <button 
+                  onClick={handleSubmitForApproval}
+                  className="px-4 py-2 bg-slate-900 hover:bg-[#FE5300] text-white text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-md hover:shadow-lg active:scale-95 shrink-0"
+                >
+                  {partnerStatus === 'Rejected' ? 'Resubmit' : 'Submit Now'}
+                </button>
+              )}
             </div>
           </div>
         </div>
-      )}
-
-      {/* STATE: DRAFT NOT COMPLETE CHECKPOINTS */}
+      </div>      {/* STATE: DRAFT NOT COMPLETE CHECKPOINTS */}
       {completionPercentage < 100 && !isPendingReview && (
         <div className="bg-slate-50 border border-slate-200/80 rounded p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
           <div className="space-y-1">
@@ -664,28 +674,9 @@ export default function ProfileCompletionTabs() {
         </div>
       )}
 
-      {verificationHistory.length > 0 && (
-        <div className="bg-white border border-slate-200/70 rounded p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
-              <History size={16} />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-slate-950 uppercase tracking-widest">Verification History</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">{verificationHistory.length} update{verificationHistory.length === 1 ? "" : "s"} available</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => setIsHistoryDrawerOpen(true)}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold rounded uppercase tracking-wider transition-colors shadow-sm"
-          >
-            View History
-          </button>
-        </div>
-      )}
 
       {/* Compact Tabs Switcher */}
-      <div className="bg-slate-100/80 p-1 rounded-lg flex items-center justify-between space-x-1 border border-slate-200/20">
+      <div className="bg-slate-100/80 p-1 rounded-lg hidden md:flex items-center justify-between space-x-1 border border-slate-200/20">
         <button 
           onClick={() => setActiveTab('personal')}
           className={`flex-1 text-center py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'personal' ? 'bg-white text-slate-950 shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
@@ -709,6 +700,12 @@ export default function ProfileCompletionTabs() {
           className={`flex-1 text-center py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-950 shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
         >
           Vehicle/driver ({dashboardData?.vehicles?.length || 0})
+        </button>
+        <button 
+          onClick={() => setActiveTab('settings')}
+          className={`flex-1 text-center py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'settings' ? 'bg-white text-slate-950 shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
+        >
+          Settings
         </button>
       </div>
 
@@ -1534,6 +1531,10 @@ export default function ProfileCompletionTabs() {
           </aside>
         </div>
       )}
+      {/* TAB SECTION 5: SETTINGS */}
+      {activeTab === "settings" && (
+        <SettingsTab vehicles={dashboardData?.vehicles || []} />
+      )}
 
       {/* VERIFICATION HISTORY DRAWER */}
       {isHistoryDrawerOpen && (
@@ -1590,10 +1591,10 @@ export default function ProfileCompletionTabs() {
       )}
 
       {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-slate-200 flex items-center justify-around z-35 px-3 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex items-center justify-around z-[999] px-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe">
         <button onClick={() => setActiveTab('personal')} className={`flex flex-col items-center justify-center flex-1 ${activeTab === 'personal' ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>
           <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" style={{width: 18, height: 18}}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-          <span className="text-[9px] font-bold mt-0.5 tracking-wider uppercase">Coords</span>
+          <span className="text-[9px] font-bold mt-0.5 tracking-wider uppercase">Profile</span>
         </button>
         <button onClick={() => setActiveTab('bank')} className={`flex flex-col items-center justify-center flex-1 ${activeTab === 'bank' ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>
           <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" style={{width: 18, height: 18}}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
@@ -1613,6 +1614,13 @@ export default function ProfileCompletionTabs() {
             )}
           </div>
           <span className="text-[9px] font-bold mt-0.5 tracking-wider uppercase">Assets</span>
+        </button>
+        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center justify-center flex-1 ${activeTab === 'settings' ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>
+          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" style={{width: 18, height: 18}}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span className="text-[9px] font-bold mt-0.5 tracking-wider uppercase">Set</span>
         </button>
       </div>
 

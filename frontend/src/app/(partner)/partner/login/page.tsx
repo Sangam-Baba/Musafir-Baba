@@ -90,11 +90,19 @@ export default function PartnerLoginPage() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-slate-100 mt-10 mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">
-        {view === "login" ? "Partner Login" : view === "forgot-password" ? "Forgot Password" : "Reset Password"}
-      </h2>
-      <p className="text-sm text-gray-500 mb-6">
+    <div 
+      className="flex-1 w-full flex items-center justify-center lg:justify-start lg:pl-12 xl:pl-24 bg-cover bg-right bg-no-repeat min-h-[calc(100vh-140px)] py-12 px-4 md:px-8"
+      style={{ backgroundImage: "url('/partner/bgimage.avif')" }}
+    >
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 relative">
+        <div className="flex justify-center mb-6">
+          <img src="/partner/mbconnect.avif" alt="MB Connect Logo" className="h-12 object-contain" />
+        </div>
+        
+        <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+          {view === "login" ? "Partner Login" : view === "forgot-password" ? "Forgot Password" : "Reset Password"}
+        </h2>
+        <p className="text-sm text-gray-500 mb-6 text-center">
         {view === "login" 
           ? "Welcome back! Sign in to manage your fleet." 
           : view === "forgot-password" 
@@ -233,6 +241,7 @@ export default function PartnerLoginPage() {
           {message}
         </div>
       )}
+      </div>
     </div>
   );
 }

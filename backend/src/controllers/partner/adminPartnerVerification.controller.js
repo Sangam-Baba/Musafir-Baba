@@ -6,6 +6,7 @@ import PartnerDocument from "../../models/partner/PartnerDocument.js";
 import PartnerAddress from "../../models/partner/PartnerAddress.js";
 import PartnerBank from "../../models/partner/PartnerBank.js";
 import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
+import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
 import sendEmail from "../../services/email.service.js";
 
 // @route   GET /api/admin/partner-verification/pending
@@ -28,6 +29,7 @@ export const getPendingPartners = async (req, res) => {
         const authId = partner._id;
 
         const profile = await PartnerProfile.findOne({ authId });
+        const settings = await PartnerSettings.findOne({ authId });
         
         let vehicleCount = 0;
         let driverCount = 0;
@@ -86,6 +88,7 @@ export const getPendingPartners = async (req, res) => {
           profile: profile || null,
           address: address,
           bank: bank,
+          settings: settings,
           vehicles: vehiclesList,
           drivers: driversList,
           stats: {
