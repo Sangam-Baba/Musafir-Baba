@@ -38,6 +38,15 @@ interface PartnerData {
     city?: string;
     state?: string;
   } | null;
+  bank?: {
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    accountHolderName?: string;
+  } | null;
+  settings?: {
+    vehicleConfigs?: Array<any>;
+  } | null;
   stats: {
     vehicles: number;
     drivers: number;
@@ -84,6 +93,7 @@ export default function FleetVerificationClient() {
   const [partners, setPartners] = useState<PartnerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPartner, setSelectedPartner] = useState<PartnerData | null>(null);
+  const [activeAdminTab, setActiveAdminTab] = useState<"profile" | "bank" | "assets" | "documents" | "settings">("profile");
   const [logs, setLogs] = useState<ActionLog[]>([]);
   
   const [statusModal, setStatusModal] = useState<{ isOpen: boolean; status: string } | null>(null);
@@ -153,6 +163,7 @@ export default function FleetVerificationClient() {
 
   const handleSelectPartner = (partner: PartnerData) => {
     setSelectedPartner(partner);
+    setActiveAdminTab("profile");
     setIsEditingProfile(false);
     setEditProfileForm({
       fullName: partner.profile?.fullName || "",
@@ -394,10 +405,21 @@ export default function FleetVerificationClient() {
             {/* Content Split: Data vs Timeline */}
             <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
               
-              {/* LEFT: Dashboard UI Replica */}
-              <div className="flex-1 p-6 overflow-y-auto border-r border-slate-100 bg-slate-50/50">
+                            {/* LEFT: Dashboard UI Replica */}
+              <div className="flex-1 p-6 overflow-y-auto border-r border-slate-100 bg-slate-50/50 flex flex-col">
                 
-                {/* Agency/Profile Block */}
+                {/* Admin Tabs */}
+                <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-0">
+                  <button onClick={() => setActiveAdminTab('profile')} className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider rounded-t-lg transition-colors ${activeAdminTab === 'profile' ? 'bg-white border-x border-t border-slate-200 text-[#FE5300] shadow-sm relative top-[1px]' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}`}>Profile & Bank</button>
+                  <button onClick={() => setActiveAdminTab('assets')} className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider rounded-t-lg transition-colors ${activeAdminTab === 'assets' ? 'bg-white border-x border-t border-slate-200 text-[#FE5300] shadow-sm relative top-[1px]' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}`}>Vehicle Assets</button>
+                  <button onClick={() => setActiveAdminTab('documents')} className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider rounded-t-lg transition-colors ${activeAdminTab === 'documents' ? 'bg-white border-x border-t border-slate-200 text-[#FE5300] shadow-sm relative top-[1px]' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}`}>Documents</button>
+                  <button onClick={() => setActiveAdminTab('settings')} className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider rounded-t-lg transition-colors ${activeAdminTab === 'settings' ? 'bg-white border-x border-t border-slate-200 text-[#FE5300] shadow-sm relative top-[1px]' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100 border border-transparent'}`}>Settings</button>
+                </div>
+
+                <div className="flex-1">
+                  {activeAdminTab === "profile" && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      {/* Agency/Profile Block */}
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
                     <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entity Profile</h3>
@@ -490,8 +512,36 @@ export default function FleetVerificationClient() {
                     </div>
                   )}
                 </div>
+                      
+                {/* Bank Block */}
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-3">Bank Details</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="block text-[10px] text-slate-500 uppercase font-bold">Bank Name</span>
+                      <span className="font-semibold text-slate-800">{selectedPartner.bank?.bankName || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 uppercase font-bold">Account Holder</span>
+                      <span className="font-semibold text-slate-800">{selectedPartner.bank?.accountHolderName || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 uppercase font-bold">Account Number</span>
+                      <span className="font-semibold text-slate-800 font-mono tracking-wider">{selectedPartner.bank?.accountNumber || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 uppercase font-bold">IFSC Code</span>
+                      <span className="font-semibold text-slate-800 font-mono">{selectedPartner.bank?.ifscCode || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
 
-                {/* Fleet Side-by-Side View */}
+                    </div>
+                  )}
+
+                  {activeAdminTab === "assets" && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      {/* Fleet Side-by-Side View */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Drivers */}
                   <div>
@@ -558,8 +608,12 @@ export default function FleetVerificationClient() {
                     </div>
                   </div>
                 </div>
+                    </div>
+                  )}
 
-                {/* Documents */}
+                  {activeAdminTab === "documents" && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      {/* Documents */}
                 <div className="mt-6">
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Verification Documents</h3>
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -574,6 +628,54 @@ export default function FleetVerificationClient() {
                       </a>
                     ))}
                   </div>
+                </div>
+                    </div>
+                  )}
+
+                  {activeAdminTab === "settings" && (
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2 mb-3">Vehicle Settings & Locations</h3>
+                  {(!selectedPartner.settings?.vehicleConfigs || selectedPartner.settings.vehicleConfigs.length === 0) ? (
+                    <div className="text-xs text-slate-400 italic">No settings configured yet.</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {selectedPartner.settings.vehicleConfigs.map((config: any) => (
+                        <div key={config.vehicleId} className="border border-slate-100 rounded-lg p-3 bg-slate-50">
+                          <h4 className="font-bold text-slate-800 text-xs uppercase mb-2 pb-1 border-b border-slate-200">{config.vehicleName} ({config.registrationNumber})</h4>
+                          <div className="grid grid-cols-2 gap-2 text-[11px] mb-3">
+                            <div className="bg-white p-2 border border-slate-100 rounded">
+                              <span className="text-slate-500 uppercase font-bold block mb-0.5 text-[9px]">Per Km Rate</span>
+                              <span className="font-bold text-slate-800">₹{config.perKmRate || 0}</span>
+                            </div>
+                            <div className="bg-white p-2 border border-slate-100 rounded">
+                              <span className="text-slate-500 uppercase font-bold block mb-0.5 text-[9px]">Full Day Rate</span>
+                              <span className="font-bold text-slate-800">₹{config.fullDayRate || 0}</span>
+                            </div>
+                          </div>
+                          
+                          {config.locations && config.locations.length > 0 && (
+                            <div>
+                              <span className="text-[9px] font-bold text-slate-500 uppercase mb-1 block">Assigned Locations ({config.locations.length})</span>
+                              <div className="space-y-1">
+                                {config.locations.map((loc: any, idx: number) => (
+                                  <div key={idx} className="bg-white border border-slate-100 p-2 rounded text-[10px] text-slate-700 flex gap-2 items-center">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></div>
+                                    <span className="truncate">{loc.address ? `${loc.address}, ` : ''}{loc.city}, {loc.state} {loc.pincode ? `(${loc.pincode})` : ''}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                    </div>
+                  )}
                 </div>
               </div>
 
