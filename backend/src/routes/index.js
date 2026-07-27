@@ -54,6 +54,7 @@ import holidayRoutes from "./holiday.routes.js";
 import partnerAuthRoutes from "./partner/partnerAuth.routes.js";
 import partnerRoutes from "./partner/partner.routes.js";
 import adminPartnerVerificationRoutes from "./partner/adminPartnerVerification.routes.js";
+import locationMasterRoutes from "./locationMaster.routes.js";
 
 const router = Router();
 
@@ -112,4 +113,5 @@ router.use("/holidays", holidayRoutes);
 router.use("/partner/auth", partnerAuthRoutes);
 router.use("/partner", partnerRoutes);
 router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
+router.use("/", locationMasterRoutes);
 export default router;

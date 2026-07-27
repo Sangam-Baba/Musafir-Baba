@@ -26,22 +26,22 @@ export default function PartnerDashboardPage() {
 
   return (
     <div 
-      className="min-h-screen w-full bg-cover bg-right bg-no-repeat bg-fixed flex flex-col"
+      className="min-h-[56.25vw] min-h-screen w-full bg-cover bg-top bg-no-repeat flex flex-col"
       style={{ backgroundImage: "url('/partner/bgimage.avif')" }}
     >
       {/* Premium Full-width Header Section (Slim & High Visibility) */}
-      <div className="w-full bg-white/95 backdrop-blur-2xl border-b border-slate-200/60 sticky top-0 z-10 shadow-[0_4px_30px_rgba(0,0,0,0.04)]">
-        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-3 md:py-4 flex justify-between items-center">
+      <div className="w-full bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12] sticky top-0 z-50 shadow-md">
+        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8 py-3 md:py-2 flex justify-between items-center">
           
-          <div className="flex items-center gap-3 md:gap-6">
-            <div className="flex items-center justify-center pr-3 md:pr-6 border-r border-slate-200 h-8 md:h-10">
-              <img src="/partner/mbconnect.avif" alt="MB Connect Logo" className="h-6 md:h-8 w-auto object-contain drop-shadow-sm" />
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="flex items-center justify-center pr-3 md:pr-5 border-r border-white/20 h-8">
+              <img src="/partner/mbconnect.avif" alt="MB Connect Logo" className="h-6 md:h-7 w-auto object-contain drop-shadow-sm brightness-0 invert" />
             </div>
             <div className="flex flex-col">
-              <h2 className="text-base md:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-1.5 md:gap-2 leading-none">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FE5300] to-[#ff7e3e]">Partner</span> Dashboard
+              <h2 className="text-base md:text-xl font-black text-white tracking-tight flex items-center gap-1.5 md:gap-2 leading-none">
+                Partner Dashboard
               </h2>
-              <p className="hidden md:block text-[11px] text-slate-500 mt-1.5 font-medium tracking-wide">Manage your fleet, bank settlements, and identity verification.</p>
+              <p className="hidden lg:block text-[10px] text-white/90 mt-1 font-medium tracking-wide">Manage your fleet, bank settlements, and identity verification.</p>
             </div>
           </div>
 
@@ -50,7 +50,7 @@ export default function PartnerDashboardPage() {
               localStorage.removeItem("partner_token");
               router.push("/partner/login");
             }}
-            className="px-4 py-1.5 md:px-6 md:py-2 bg-slate-900 text-white rounded-full hover:bg-[#FE5300] hover:shadow-[0_6px_15px_rgba(254,83,0,0.25)] transition-all duration-300 text-[10px] md:text-[11px] uppercase tracking-wider font-bold shadow-md flex items-center gap-1.5 md:gap-2 group shrink-0"
+            className="px-4 py-1.5 md:px-6 md:py-2 bg-slate-900 text-white rounded-full hover:bg-slate-800 hover:shadow-[0_6px_15px_rgba(0,0,0,0.25)] transition-all duration-300 text-[10px] md:text-[11px] uppercase tracking-wider font-bold shadow-md flex items-center gap-1.5 md:gap-2 group shrink-0"
           >
             <span className="hidden sm:inline">Logout</span>
             <svg className="w-3.5 h-3.5 md:w-4 md:h-4 sm:group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -136,6 +136,12 @@ export const NAV_GROUPS = [
         icon: UserRoundCheck,
         permission: "partner-verification",
       },
+      {
+        label: "Work Locations",
+        href: "/admin/fleet/work-locations",
+        icon: MapPin,
+        permission: "partner-verification", // reuse permission or use a generic one
+      },
     ],
   },
   {

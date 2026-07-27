@@ -1538,53 +1538,134 @@ export default function ProfileCompletionTabs() {
 
       {/* VERIFICATION HISTORY DRAWER */}
       {isHistoryDrawerOpen && (
-        <div className="fixed inset-0 z-[60] flex justify-end bg-slate-950/30 transition-opacity duration-300">
+        <div className="fixed inset-0 z-[60] flex justify-end bg-slate-950/40 backdrop-blur-[2px] transition-opacity duration-300">
           <button type="button" aria-label="Close history drawer" onClick={() => setIsHistoryDrawerOpen(false)} className="absolute inset-0 cursor-default" />
-          <aside className="relative z-10 h-full w-full max-w-md overflow-y-auto bg-white p-5 shadow-2xl sm:p-7 border-l border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col">
-            <div className="mb-6 flex items-start justify-between gap-4 shrink-0 border-b border-slate-100 pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-950">Verification History</h3>
-                <p className="mt-1 text-xs text-slate-500">Status updates and messages.</p>
-              </div>
-              <button type="button" onClick={() => setIsHistoryDrawerOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"><X size={18} /></button>
-            </div>
+          <aside className="relative z-10 h-full w-full max-w-[420px] bg-white border-l border-slate-200 text-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col">
             
-            <div className="space-y-4 overflow-y-auto flex-1 pr-2 pb-10">
-              {verificationHistory.map((log: any) => (
-                <div key={log._id} className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-colors">
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                      {log.createdAt ? new Date(log.createdAt).toLocaleString() : "Recently"}
-                    </span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                      {log.actionType === "StatusChange" ? "Status Update" : "Admin Message"}
-                    </span>
-                  </div>
-                  {log.actionType === "StatusChange" && (
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs font-semibold text-slate-500 line-through">{log.oldStatus || "Draft"}</span>
-                      <span className="text-slate-400">→</span>
-                      <span className="text-sm font-bold text-slate-800">{log.newStatus}</span>
-                    </div>
-                  )}
-                  {log.reasons?.length > 0 && (
-                    <div className="mt-3 p-2.5 bg-red-50/50 border border-red-100 rounded-lg">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-red-800 block mb-1">Reasons:</span>
-                      <ul className="list-disc list-inside text-xs text-red-700 space-y-0.5">
-                        {log.reasons.map((r: string, i: number) => <li key={i}>{r}</li>)}
-                      </ul>
-                    </div>
-                  )}
-                  {log.comment && (
-                    <div className="mt-3 p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
-                      <p className="text-xs text-slate-700 leading-relaxed font-medium">"{log.comment}"</p>
-                    </div>
-                  )}
+            {/* Drawer Header */}
+            <div className="px-6 py-4 border-b flex items-center justify-between border-slate-100 bg-white shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-slate-100 text-slate-700">
+                  <Clock className="w-4 h-4" />
                 </div>
-              ))}
-              {verificationHistory.length === 0 && (
-                 <div className="text-center py-10 text-slate-400 text-sm">No verification history available.</div>
-              )}
+                <div>
+                  <h2 className="text-base font-semibold tracking-tight leading-tight">Timeline</h2>
+                  <p className="text-[11px] uppercase tracking-wider font-mono mt-0.5 text-slate-400">
+                    Verification Updates
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setIsHistoryDrawerOpen(false)} className="p-2 rounded-lg transition-colors hover:bg-slate-100 text-slate-400 hover:text-slate-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Drawer Content Body */}
+            <div className="flex-1 overflow-y-auto px-6 py-6" style={{ scrollbarWidth: 'thin' }}>
+              <div className="relative pl-5 space-y-7">
+                
+                {/* Minimal Vertical Connecting Line */}
+                {verificationHistory.length > 0 && (
+                  <div className="absolute left-[9px] top-3 bottom-3 w-[1.5px] bg-slate-200"></div>
+                )}
+
+                {verificationHistory.map((log: any, index: number) => {
+                  let statusType = 'success';
+                  if (log.newStatus === "Rejected") statusType = 'error';
+                  else if (log.newStatus === "PendingVerification") statusType = 'warning';
+                  else if (log.actionType !== "StatusChange") statusType = 'warning';
+
+                  const dotColor = statusType === 'warning' 
+                      ? 'bg-amber-500 ring-amber-500/20' 
+                      : statusType === 'error'
+                      ? 'bg-rose-500 ring-rose-500/20'
+                      : 'bg-emerald-500 ring-emerald-500/20';
+
+                  const dateObj = log.createdAt ? new Date(log.createdAt) : new Date();
+                  const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+                  const timeStr = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toUpperCase();
+
+                  return (
+                    <div key={log._id || index} className="relative group">
+                      {/* Node Dot Indicator */}
+                      <div className={`absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full ${dotColor} ring-4 transition-transform group-hover:scale-125`}></div>
+
+                      {/* Card Content Area */}
+                      <div className="space-y-2">
+                        {/* Date & Time Stamp */}
+                        <div className="text-[11px] font-mono font-medium tracking-wide text-slate-400">
+                          {dateStr} <span className="mx-1 text-slate-300">•</span> {timeStr}
+                        </div>
+
+                        {/* Status Flow Row */}
+                        <div className="flex items-center gap-2 flex-wrap text-xs">
+                          {log.actionType === "StatusChange" && (
+                            <>
+                              <span className="font-medium text-slate-400">
+                                {log.oldStatus || "Draft"}
+                              </span>
+                              <svg className="w-3 h-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                              </svg>
+                            </>
+                          )}
+
+                          {/* Status Pill Badge */}
+                          <span className={`px-2.5 py-0.5 rounded-md text-xs font-medium inline-flex items-center gap-1.5 ${
+                              statusType === 'warning'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200/80'
+                                  : statusType === 'error'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200/80'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                statusType === 'warning' ? 'bg-amber-500' : statusType === 'error' ? 'bg-rose-500' : 'bg-emerald-500'
+                            }`}></span>
+                            {log.actionType === "StatusChange" ? log.newStatus : "Admin Note"}
+                          </span>
+                        </div>
+
+                        {/* Partner Note / Sub-text Callout */}
+                        {log.comment && (
+                          <div className="p-3 rounded-lg text-xs leading-relaxed bg-slate-50 border border-slate-100 text-slate-600">
+                            <span className="font-medium text-slate-400 block text-[10px] uppercase tracking-wider mb-0.5">Note</span>
+                            "{log.comment}"
+                          </div>
+                        )}
+
+                        {/* Minimal Required Fixes Card */}
+                        {log.reasons && log.reasons.length > 0 && (
+                          <div className="p-3 rounded-lg border text-xs space-y-2 bg-rose-50/50 border-rose-100 text-rose-950">
+                            <div className="font-semibold text-[11px] uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
+                              <svg className="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                              </svg>
+                              Required Fixes ({log.reasons.length})
+                            </div>
+                            <ul className="space-y-1.5 text-[12px] leading-normal">
+                              {log.reasons.map((fix: string, idx: number) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 flex-shrink-0"></span>
+                                  <span className="opacity-90">{fix}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {verificationHistory.length === 0 && (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    No verification history found.
+                  </div>
+                )}
+              </div>
             </div>
           </aside>
         </div>
