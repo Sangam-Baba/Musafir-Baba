@@ -1,0 +1,613 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Ratings & Reviews
+Document ID    : MBC-FE-048
+Module         : Driver Performance
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Rating Summary
+9. Performance Metrics
+10. Customer Reviews
+11. Functional Requirements
+12. Rating Distribution
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Empty State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Ratings & Reviews
+
+Screen Code
+
+PERFORMANCE-001
+
+Entry Point
+
+Menu
+
+Dashboard
+
+Trip Summary
+
+Purpose
+
+Display driver ratings, customer feedback and performance metrics.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Help drivers understand service quality and continuously improve
+customer experience.
+
+Business Goals
+
+• Improve service quality
+
+• Increase customer satisfaction
+
+• Reward high performers
+
+• Reduce complaints
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Read Only
+
+Operations
+
+Quality Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide complete visibility into ratings, reviews and quality metrics.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dashboard
+
+↓
+
+Ratings & Reviews
+
+↓
+
+Review Details
+
+↓
+
+Performance Insights
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Overall Rating
+
+★★★★★
+
+4.92 / 5.00
+
+--------------------------------------------------
+
+Lifetime Reviews
+
+2,548
+
+--------------------------------------------------
+
+Rating Distribution
+
+★★★★★
+
+2,210
+
+★★★★
+
+240
+
+★★★
+
+55
+
+★★
+
+25
+
+★
+
+18
+
+--------------------------------------------------
+
+Performance Score
+
+98%
+
+Excellent
+
+--------------------------------------------------
+
+Acceptance Rate
+
+97%
+
+--------------------------------------------------
+
+Completion Rate
+
+99.4%
+
+--------------------------------------------------
+
+Cancellation Rate
+
+0.6%
+
+--------------------------------------------------
+
+Customer Compliments
+
+Professional Driver
+
+Clean Vehicle
+
+Safe Driving
+
+On Time
+
+Helpful
+
+--------------------------------------------------
+
+Recent Reviews
+
+★★★★★
+
+Very polite and professional.
+
+01 Aug
+
+------------------------------------
+
+★★★★★
+
+Excellent airport pickup.
+
+31 Jul
+
+------------------------------------
+
+★★★★☆
+
+Smooth journey.
+
+30 Jul
+
+--------------------------------------------------
+
+Buttons
+
+View All Reviews
+
+Rating Policy
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Rating Card
+
+Distribution Chart
+
+Performance Cards
+
+Compliments Card
+
+Reviews List
+
+Action Buttons
+
+======================================================================
+8. RATING SUMMARY
+======================================================================
+
+Display
+
+Overall Rating
+
+Total Reviews
+
+Performance Grade
+
+Quality Score
+
+Monthly Rating
+
+Lifetime Rating
+
+======================================================================
+9. PERFORMANCE METRICS
+======================================================================
+
+Acceptance Rate
+
+Completion Rate
+
+Cancellation Rate
+
+On-Time Pickup
+
+Response Time
+
+Customer Satisfaction
+
+======================================================================
+10. CUSTOMER REVIEWS
+======================================================================
+
+Display
+
+Rating
+
+Review Date
+
+Trip Category
+
+Customer Comment
+
+Customer Name
+
+Masked
+
+Report Review
+
+======================================================================
+11. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display ratings.
+
+FR-002
+
+Display reviews.
+
+FR-003
+
+Display compliments.
+
+FR-004
+
+Display quality metrics.
+
+FR-005
+
+Open review details.
+
+FR-006
+
+Report inappropriate review.
+
+======================================================================
+12. RATING DISTRIBUTION
+======================================================================
+
+5 Star
+
+4 Star
+
+3 Star
+
+2 Star
+
+1 Star
+
+Display
+
+Count
+
+Percentage
+
+Trend
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/driver/ratings
+
+------------------------------------
+
+GET
+
+/api/v1/driver/reviews
+
+------------------------------------
+
+POST
+
+/api/v1/driver/reviews/report
+
+Response
+
+{
+
+"overall_rating":4.92,
+
+"reviews":2548,
+
+"acceptance_rate":97,
+
+"completion_rate":99.4
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_ratings
+
+driver_reviews
+
+performance_metrics
+
+Fields
+
+driver_id
+
+rating
+
+review
+
+quality_score
+
+acceptance_rate
+
+completion_rate
+
+review_date
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Load Ratings
+
+Review Not Available
+
+Network Error
+
+Server Error
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Loading Ratings
+
+Loading Reviews
+
+Loading Metrics
+
+======================================================================
+17. EMPTY STATE
+======================================================================
+
+No Reviews Yet
+
+Complete trips to receive customer ratings.
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Ratings Loaded
+
+Reviews Displayed
+
+Performance Updated
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Masked Customer Identity
+
+Audit Logging
+
+Role-Based Access
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+ratings_open
+
+review_open
+
+review_reported
+
+policy_open
+
+performance_view
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Ratings Loaded
+
+Expected
+
+Summary Displayed
+
+------------------------------------
+
+TC-002
+
+Open Review
+
+Expected
+
+Review Displayed
+
+------------------------------------
+
+TC-003
+
+Report Review
+
+Expected
+
+Ticket Created
+
+------------------------------------
+
+TC-004
+
+No Reviews
+
+Expected
+
+Empty State
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Performance Coach
+
+Monthly Rating Trends
+
+Achievement Badges
+
+Benchmark Against City
+
+Video Training Suggestions
+
+Customer Loyalty Score
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Calculate ratings only from completed trips.
+
+Do not expose customer personal information.
+
+Support review pagination.
+
+Refresh metrics daily.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Ratings & Reviews
+
+Route
+
+/performance/ratings
+
+HTML
+
+ratings-reviews.html
+
+CSS
+
+ratings-reviews.css
+
+JavaScript
+
+ratings-reviews.js
+
+Primary APIs
+
+GET /driver/ratings
+
+GET /driver/reviews
+
+POST /driver/reviews/report
+
+======================================================================
+END OF DOCUMENT
+======================================================================

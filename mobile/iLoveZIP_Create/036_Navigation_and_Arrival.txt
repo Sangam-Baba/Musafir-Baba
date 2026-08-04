@@ -1,0 +1,660 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Navigation & Arrival
+Document ID    : MBC-FE-036
+Module         : Driver Operations
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Functional Requirements
+9. Navigation Engine
+10. Arrival Workflow
+11. Waiting Time Management
+12. GPS & Geofencing
+13. Customer Notifications
+14. API Integration
+15. WebSocket Events
+16. Database Mapping
+17. Error Handling
+18. Loading State
+19. Success State
+20. Security Requirements
+21. Analytics Events
+22. Accessibility
+23. Test Cases
+24. Future Enhancements
+25. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Navigation & Arrival
+
+Screen Code
+
+TRIP-003
+
+Entry Point
+
+Trip Details
+
+Purpose
+
+Guide the driver to the pickup location while tracking live position,
+ETA and arrival status.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Ensure the driver reaches the pickup location efficiently while keeping
+the customer informed.
+
+Business Goals
+
+• Reduce pickup delays
+
+• Improve ETA accuracy
+
+• Minimize missed pickups
+
+• Improve customer experience
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide turn-by-turn navigation and automatically manage arrival and
+waiting workflows.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Trip Details
+
+↓
+
+Navigation Started
+
+↓
+
+Driver Near Pickup
+
+↓
+
+Arrival Confirmed
+
+↓
+
+Waiting Timer
+
+↓
+
+Passenger Onboard
+
+↓
+
+Start Trip
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Google Maps
+
+Live Navigation
+
+--------------------------------------------------
+
+Top Information Card
+
+ETA
+
+10 Minutes
+
+Distance
+
+4.8 KM
+
+Traffic
+
+Moderate
+
+--------------------------------------------------
+
+Pickup Information
+
+Terminal 3
+
+Gate 5
+
+Passenger
+
+Rahul Sharma
+
+--------------------------------------------------
+
+Bottom Action Panel
+
+Call Passenger
+
+Chat
+
+Trip Support
+
+SOS
+
+--------------------------------------------------
+
+When Driver Reaches Pickup
+
+[ ARRIVED AT PICKUP ]
+
+--------------------------------------------------
+
+Waiting Timer
+
+00:00
+
+Waiting Charges
+
+₹0
+
+--------------------------------------------------
+
+START TRIP
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Map View
+
+Navigation Card
+
+ETA Card
+
+Traffic Indicator
+
+Pickup Card
+
+Floating Action Buttons
+
+Arrival Button
+
+Waiting Timer
+
+Start Trip Button
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display live navigation.
+
+FR-002
+
+Update ETA continuously.
+
+FR-003
+
+Track driver location.
+
+FR-004
+
+Detect arrival using geofence.
+
+FR-005
+
+Allow manual arrival confirmation.
+
+FR-006
+
+Start waiting timer.
+
+FR-007
+
+Notify customer.
+
+FR-008
+
+Allow Start Trip.
+
+======================================================================
+9. NAVIGATION ENGINE
+======================================================================
+
+Supported Providers
+
+Google Maps
+
+Apple Maps
+
+Future
+
+MBconnect Navigation
+
+Features
+
+Turn-by-turn guidance
+
+Traffic updates
+
+Alternate routes
+
+Road closures
+
+Live ETA
+
+======================================================================
+10. ARRIVAL WORKFLOW
+======================================================================
+
+Driver enters pickup geofence
+
+↓
+
+App displays
+
+"Arrived at Pickup"
+
+↓
+
+Customer notified
+
+↓
+
+Waiting timer begins
+
+↓
+
+Driver may Start Trip after passenger boards
+
+======================================================================
+11. WAITING TIME MANAGEMENT
+======================================================================
+
+Waiting Timer
+
+Starts
+
+After Arrival
+
+Grace Period
+
+Configurable
+
+Example
+
+5 Minutes
+
+Chargeable Waiting
+
+After Grace Period
+
+Waiting Charge
+
+Calculated according to city or trip policy
+
+Displayed Live
+
+======================================================================
+12. GPS & GEOFENCING
+======================================================================
+
+Pickup Radius
+
+Default
+
+100 Metres
+
+Arrival Detection
+
+Automatic
+
+Location Update
+
+Every 5 Seconds
+
+GPS Accuracy Required
+
+≤20 Metres
+
+======================================================================
+13. CUSTOMER NOTIFICATIONS
+======================================================================
+
+Driver Started Navigation
+
+Driver Near Pickup
+
+Driver Arrived
+
+Waiting Started
+
+Driver Calling
+
+Trip Started
+
+======================================================================
+14. API INTEGRATION
+======================================================================
+
+POST
+
+/api/v1/trips/start-navigation
+
+------------------------------------
+
+POST
+
+/api/v1/trips/arrived
+
+------------------------------------
+
+POST
+
+/api/v1/trips/start-waiting
+
+------------------------------------
+
+POST
+
+/api/v1/trips/start
+
+======================================================================
+15. WEBSOCKET EVENTS
+======================================================================
+
+navigation_started
+
+driver_location
+
+driver_arrived
+
+waiting_started
+
+trip_started
+
+customer_message
+
+======================================================================
+16. DATABASE MAPPING
+======================================================================
+
+Tables
+
+trip_navigation
+
+trip_events
+
+driver_locations
+
+Fields
+
+trip_id
+
+driver_id
+
+latitude
+
+longitude
+
+eta
+
+arrival_time
+
+waiting_start
+
+trip_start
+
+======================================================================
+17. ERROR HANDLING
+======================================================================
+
+GPS Disabled
+
+Navigation Failed
+
+Customer Cancelled
+
+Network Lost
+
+Server Error
+
+======================================================================
+18. LOADING STATE
+======================================================================
+
+Loading Map
+
+Calculating Route
+
+Updating ETA
+
+Disable Arrival Button
+
+======================================================================
+19. SUCCESS STATE
+======================================================================
+
+Navigation Active
+
+Arrival Recorded
+
+Waiting Timer Started
+
+Ready To Start Trip
+
+======================================================================
+20. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Location Updates
+
+Tamper Detection
+
+Secure GPS Transmission
+
+======================================================================
+21. ANALYTICS EVENTS
+======================================================================
+
+navigation_started
+
+arrival_detected
+
+arrival_confirmed
+
+waiting_started
+
+trip_started
+
+route_changed
+
+======================================================================
+22. ACCESSIBILITY
+======================================================================
+
+Large Action Buttons
+
+Voice Navigation Support
+
+Screen Reader Labels
+
+High Contrast Mode
+
+======================================================================
+23. TEST CASES
+======================================================================
+
+TC-001
+
+Navigation Started
+
+Expected
+
+Route Displayed
+
+------------------------------------
+
+TC-002
+
+Driver Arrives
+
+Expected
+
+Waiting Timer Starts
+
+------------------------------------
+
+TC-003
+
+GPS Lost
+
+Expected
+
+Warning Displayed
+
+------------------------------------
+
+TC-004
+
+Customer Cancels
+
+Expected
+
+Trip Ends
+
+------------------------------------
+
+TC-005
+
+Start Trip
+
+Expected
+
+Trip Status Updated
+
+======================================================================
+24. FUTURE ENHANCEMENTS
+======================================================================
+
+Offline Maps
+
+AI Route Optimization
+
+Airport Indoor Navigation
+
+Parking Guidance
+
+Voice Commands
+
+Lane Guidance
+
+EV Charging Stops
+
+======================================================================
+25. DEVELOPER NOTES
+======================================================================
+
+Map rendering must remain smooth while receiving location updates.
+
+Support automatic arrival detection using configurable geofencing.
+
+Continue navigation in the background when the app is minimized.
+
+Waiting charges should be configurable by city and trip type.
+
+SOS button must remain visible throughout navigation.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Navigation & Arrival
+
+Route
+
+/trips/navigation
+
+HTML
+
+navigation.html
+
+CSS
+
+navigation.css
+
+JavaScript
+
+navigation.js
+
+Primary APIs
+
+POST /trips/start-navigation
+
+POST /trips/arrived
+
+POST /trips/start-waiting
+
+POST /trips/start
+
+WebSocket Events
+
+navigation_started
+
+driver_location
+
+driver_arrived
+
+waiting_started
+
+trip_started
+
+======================================================================
+END OF DOCUMENT
+======================================================================

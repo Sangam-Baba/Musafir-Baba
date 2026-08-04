@@ -1,0 +1,715 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Event & Group Transportation Management
+Document ID    : MBC-FE-087
+Module         : Hospitality & Events Suite
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Event Dashboard
+8. Event Creation
+9. Group Booking Management
+10. Passenger Manifest
+11. Vehicle Allocation
+12. Coordinator Dashboard
+13. Driver Coordination
+14. Live Event Tracking
+15. Attendance Management
+16. Communication Center
+17. Reports & Analytics
+18. Functional Requirements
+19. API Integration
+20. Database Mapping
+21. Error Handling
+22. Loading State
+23. Empty State
+24. Success State
+25. Security Requirements
+26. Analytics Events
+27. Accessibility
+28. Test Cases
+29. Future Enhancements
+30. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Event & Group Transportation Management
+
+Screen Code
+
+EVENT-001
+
+Entry Point
+
+Operations Dashboard
+
+Events
+
+Purpose
+
+Plan, coordinate and monitor transportation for
+large groups and organized events.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Simplify transportation logistics for events
+while ensuring punctuality and coordination.
+
+Business Goals
+
+• Efficient fleet utilization
+
+• Better passenger experience
+
+• Centralized event operations
+
+• Reduced coordination effort
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Event Manager
+
+Operations Manager
+
+Group Coordinator
+
+Fleet Manager
+
+Driver Partner
+
+Travel Desk
+
+Super Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide complete event transportation planning,
+execution and monitoring.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Create Event
+
+↓
+
+Add Passengers
+
+↓
+
+Assign Vehicles
+
+↓
+
+Assign Drivers
+
+↓
+
+Monitor Live Operations
+
+↓
+
+Complete Event
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Event Dashboard
+
+Today's Events
+
+8
+
+Passengers
+
+624
+
+Vehicles
+
+42
+
+Drivers
+
+45
+
+Trips Active
+
+18
+
+--------------------------------------------------
+
+Event
+
+ABC Annual Conference
+
+Venue
+
+Pragati Maidan
+
+Date
+
+18 Aug 2026
+
+Passengers
+
+240
+
+Vehicles
+
+18
+
+Status
+
+Live
+
+--------------------------------------------------
+
+Quick Actions
+
+Create Event
+
+Passenger List
+
+Assign Vehicles
+
+Coordinator Panel
+
+Live Tracking
+
+======================================================================
+7. EVENT DASHBOARD
+======================================================================
+
+Upcoming Events
+
+Ongoing Events
+
+Completed Events
+
+Cancelled Events
+
+Revenue Summary
+
+Resource Allocation
+
+======================================================================
+8. EVENT CREATION
+======================================================================
+
+Event Name
+
+Organizer
+
+Venue
+
+Start Date
+
+End Date
+
+Pickup Locations
+
+Drop Locations
+
+Expected Passengers
+
+Special Requirements
+
+======================================================================
+9. GROUP BOOKING MANAGEMENT
+======================================================================
+
+Passenger Groups
+
+Family Groups
+
+Corporate Teams
+
+VIP Guests
+
+Batch Assignment
+
+Pickup Schedule
+
+Drop Schedule
+
+======================================================================
+10. PASSENGER MANIFEST
+======================================================================
+
+Passenger Name
+
+Booking ID
+
+Contact Number
+
+Pickup Location
+
+Assigned Vehicle
+
+Seat Number
+
+Boarding Status
+
+Special Notes
+
+======================================================================
+11. VEHICLE ALLOCATION
+======================================================================
+
+Vehicle Type
+
+Vehicle Capacity
+
+Assigned Driver
+
+Vehicle Status
+
+Pickup Sequence
+
+Occupancy %
+
+Backup Vehicle
+
+======================================================================
+12. COORDINATOR DASHBOARD
+======================================================================
+
+Coordinator Name
+
+Assigned Event
+
+Passengers Checked-In
+
+Vehicles Departed
+
+Delayed Trips
+
+Emergency Contacts
+
+======================================================================
+13. DRIVER COORDINATION
+======================================================================
+
+Driver Assignment
+
+Navigation
+
+Passenger Contact
+
+Trip Instructions
+
+Emergency Alerts
+
+Vehicle Checklist
+
+======================================================================
+14. LIVE EVENT TRACKING
+======================================================================
+
+Vehicle Locations
+
+Passenger Boarding
+
+Trip Progress
+
+ETA
+
+Delays
+
+Diversions
+
+======================================================================
+15. ATTENDANCE MANAGEMENT
+======================================================================
+
+Passenger Check-In
+
+QR Check-In
+
+OTP Verification
+
+No Shows
+
+Late Arrivals
+
+Boarding Complete
+
+======================================================================
+16. COMMUNICATION CENTER
+======================================================================
+
+SMS Broadcast
+
+WhatsApp Broadcast
+
+Push Notifications
+
+Coordinator Messages
+
+Driver Alerts
+
+Emergency Announcements
+
+======================================================================
+17. REPORTS & ANALYTICS
+======================================================================
+
+Passenger Reports
+
+Vehicle Utilization
+
+Trip Performance
+
+Coordinator Performance
+
+Revenue Report
+
+Incident Report
+
+======================================================================
+18. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Create event.
+
+FR-002
+
+Assign passengers.
+
+FR-003
+
+Allocate vehicles.
+
+FR-004
+
+Monitor trips.
+
+FR-005
+
+Track attendance.
+
+FR-006
+
+Generate reports.
+
+======================================================================
+19. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/events
+
+------------------------------------
+
+POST
+
+/api/v1/events
+
+------------------------------------
+
+GET
+
+/api/v1/events/{event_id}
+
+------------------------------------
+
+POST
+
+/api/v1/events/assign-vehicle
+
+------------------------------------
+
+POST
+
+/api/v1/events/check-in
+
+------------------------------------
+
+GET
+
+/api/v1/events/reports
+
+Response
+
+{
+
+"event":"ABC Annual Conference",
+
+"passengers":240,
+
+"vehicles":18,
+
+"drivers":18,
+
+"status":"Live"
+
+}
+
+======================================================================
+20. DATABASE MAPPING
+======================================================================
+
+Tables
+
+events
+
+event_passengers
+
+event_vehicles
+
+event_drivers
+
+event_checkins
+
+event_reports
+
+Fields
+
+event_id
+
+passenger_id
+
+vehicle_id
+
+driver_id
+
+seat_number
+
+boarding_status
+
+======================================================================
+21. ERROR HANDLING
+======================================================================
+
+Event Creation Failed
+
+Vehicle Allocation Failed
+
+Check-In Failed
+
+Retry
+
+======================================================================
+22. LOADING STATE
+======================================================================
+
+Loading Event Dashboard
+
+Allocating Vehicles
+
+Syncing Passenger List
+
+======================================================================
+23. EMPTY STATE
+======================================================================
+
+No Active Events
+
+Create a new event to begin.
+
+======================================================================
+24. SUCCESS STATE
+======================================================================
+
+Event Created
+
+Passengers Assigned
+
+Vehicle Allocation Complete
+
+======================================================================
+25. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Encrypted Passenger Data
+
+Audit Logs
+
+======================================================================
+26. ANALYTICS EVENTS
+======================================================================
+
+event_created
+
+vehicle_assigned
+
+passenger_checked_in
+
+trip_started
+
+event_completed
+
+report_exported
+
+======================================================================
+27. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+28. TEST CASES
+======================================================================
+
+TC-001
+
+Create Event
+
+Expected
+
+Event Created Successfully
+
+------------------------------------
+
+TC-002
+
+Assign Vehicle
+
+Expected
+
+Vehicle Assigned
+
+------------------------------------
+
+TC-003
+
+Passenger Check-In
+
+Expected
+
+Boarding Confirmed
+
+------------------------------------
+
+TC-004
+
+Live Tracking
+
+Expected
+
+Vehicle Location Updated
+
+======================================================================
+29. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Fleet Optimization
+
+Dynamic Seat Allocation
+
+Digital Event Passes
+
+Face Recognition Check-In
+
+RFID Boarding
+
+Drone Event Monitoring
+
+Predictive Traffic Routing
+
+======================================================================
+30. DEVELOPER NOTES
+======================================================================
+
+Support events with 10,000+ passengers.
+
+Enable bulk passenger import.
+
+Provide offline check-in mode.
+
+Support QR and OTP validation.
+
+Allow live WebSocket updates.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Event & Group Transportation Management
+
+Route
+
+/events/dashboard
+
+HTML
+
+events-dashboard.html
+
+CSS
+
+events-dashboard.css
+
+JavaScript
+
+events-dashboard.js
+
+Primary APIs
+
+GET /events
+
+POST /events
+
+GET /events/{event_id}
+
+POST /events/assign-vehicle
+
+POST /events/check-in
+
+GET /events/reports
+
+======================================================================
+END OF DOCUMENT
+======================================================================

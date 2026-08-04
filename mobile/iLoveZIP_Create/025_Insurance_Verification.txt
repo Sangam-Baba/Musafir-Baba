@@ -1,0 +1,776 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Insurance Verification
+Document ID    : MBC-FE-025
+Module         : Vehicle Verification
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Functional Requirements
+9. Insurance Validation Rules
+10. OCR & Policy Extraction
+11. Cross Validation
+12. Expiry Monitoring
+13. API Integration
+14. Database Mapping
+15. Verification Workflow
+16. Error Handling
+17. Loading State
+18. Success State
+19. Security & Compliance
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Insurance Verification
+
+Screen Code
+
+VEHICLE-004
+
+Entry Point
+
+RC Verification
+
+Purpose
+
+Verify the insurance policy for the registered vehicle before allowing
+trip activation.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Insurance verification confirms that every vehicle on MBconnect is
+covered by a valid insurance policy.
+
+Business Goals
+
+• Passenger safety
+
+• Regulatory compliance
+
+• Reduce legal risk
+
+• Prevent uninsured operations
+
+• Automated renewal reminders
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Reviewed By
+
+Vehicle Verification Team
+
+Operations Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Capture insurance details accurately, validate policy information and
+track policy validity throughout its lifecycle.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+RC Verification
+
+↓
+
+Insurance Verification
+
+↓
+
+OCR Processing
+
+↓
+
+Cross Validation
+
+↓
+
+Manual Review
+
+↓
+
+Approved / Rejected
+
+↓
+
+PUC Verification
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Back Button
+
+Insurance Verification
+
+--------------------------------------------------
+
+Progress
+
+Step 3 of 5
+
+--------------------------------------------------
+
+Information Card
+
+Upload your current insurance policy. Ensure all details are clearly
+visible.
+
+--------------------------------------------------
+
+Insurance Company
+
+Dropdown
+
+--------------------------------------------------
+
+Policy Number
+
+_____________________
+
+--------------------------------------------------
+
+Policy Type
+
+○ Comprehensive
+
+○ Third Party
+
+○ Zero Depreciation
+
+--------------------------------------------------
+
+Policy Start Date
+
+DD/MM/YYYY
+
+--------------------------------------------------
+
+Policy Expiry Date
+
+DD/MM/YYYY
+
+--------------------------------------------------
+
+Upload Policy
+
+Camera
+
+Gallery
+
+PDF Upload
+
+--------------------------------------------------
+
+Preview Document
+
+--------------------------------------------------
+
+OCR Summary
+
+Company
+
+Policy Number
+
+Vehicle Number
+
+Policy Holder
+
+Policy Type
+
+Start Date
+
+Expiry Date
+
+--------------------------------------------------
+
+☑ I confirm that the uploaded insurance policy belongs to my vehicle.
+
+--------------------------------------------------
+
+Submit for Verification
+
+--------------------------------------------------
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+App Bar
+
+Progress Card
+
+Information Card
+
+Insurance Company Dropdown
+
+Policy Number Field
+
+Policy Type Selector
+
+Date Pickers
+
+Upload Component
+
+Preview Card
+
+OCR Summary Card
+
+Confirmation Checkbox
+
+Submit Button
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Capture insurance company.
+
+FR-002
+
+Capture policy number.
+
+FR-003
+
+Capture policy dates.
+
+FR-004
+
+Upload policy image or PDF.
+
+FR-005
+
+Run OCR.
+
+FR-006
+
+Extract policy details.
+
+FR-007
+
+Cross-check vehicle information.
+
+FR-008
+
+Schedule expiry reminders.
+
+FR-009
+
+Submit verification.
+
+======================================================================
+9. INSURANCE VALIDATION RULES
+======================================================================
+
+Policy Number
+
+Required
+
+Unique
+
+Insurance Company
+
+Required
+
+Policy Type
+
+Required
+
+Policy Start Date
+
+Required
+
+Policy Expiry Date
+
+Must be greater than current date
+
+Reject
+
+Expired Policy
+
+Duplicate Policy
+
+Invalid Date
+
+Unreadable Document
+
+======================================================================
+10. OCR & POLICY EXTRACTION
+======================================================================
+
+Extract
+
+Insurance Company
+
+Policy Number
+
+Policy Holder
+
+Vehicle Number
+
+Policy Type
+
+Registration Number
+
+Engine Number
+
+Chassis Number
+
+Start Date
+
+Expiry Date
+
+Coverage
+
+Image Quality Checks
+
+Blur
+
+Brightness
+
+Orientation
+
+Cropping
+
+Minimum Resolution
+
+1080 × 720
+
+Maximum File Size
+
+10 MB
+
+Supported Formats
+
+JPG
+
+PNG
+
+WEBP
+
+PDF
+
+======================================================================
+11. CROSS VALIDATION
+======================================================================
+
+Compare with Vehicle Details
+
+Vehicle Number
+
+Manufacturer
+
+Model
+
+Fuel Type
+
+Compare with RC
+
+Owner Name
+
+Registration Number
+
+Engine Number
+
+Chassis Number
+
+Policy Holder
+
+Mismatch
+
+↓
+
+Manual Review
+
+======================================================================
+12. EXPIRY MONITORING
+======================================================================
+
+Automatic Notifications
+
+30 Days Before Expiry
+
+15 Days Before Expiry
+
+7 Days Before Expiry
+
+1 Day Before Expiry
+
+Expired Policy
+
+Vehicle automatically marked
+
+Insurance Expired
+
+Trip Assignment Disabled
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+Submit Insurance
+
+POST
+
+/api/v1/driver/vehicles/insurance
+
+Multipart Request
+
+Fields
+
+driver_id
+
+vehicle_id
+
+company
+
+policy_number
+
+policy_type
+
+start_date
+
+expiry_date
+
+policy_document
+
+Response
+
+{
+
+"status":true,
+
+"verification_status":"pending",
+
+"expiry_date":"2027-08-15",
+
+"reference_id":"INS458731"
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+vehicle_documents
+
+vehicle_verification
+
+insurance_notifications
+
+Fields
+
+vehicle_id
+
+driver_id
+
+policy_number
+
+company
+
+policy_type
+
+start_date
+
+expiry_date
+
+policy_holder
+
+document_path
+
+verification_status
+
+notification_status
+
+remarks
+
+======================================================================
+15. VERIFICATION WORKFLOW
+======================================================================
+
+Draft
+
+↓
+
+Submitted
+
+↓
+
+OCR
+
+↓
+
+Cross Validation
+
+↓
+
+Manual Review
+
+↓
+
+Approved
+
+OR
+
+Rejected
+
+↓
+
+Re-upload
+
+======================================================================
+16. ERROR HANDLING
+======================================================================
+
+Invalid Policy Number
+
+Expired Insurance
+
+Unreadable Document
+
+OCR Failure
+
+Vehicle Mismatch
+
+Duplicate Policy
+
+Network Error
+
+Server Error
+
+======================================================================
+17. LOADING STATE
+======================================================================
+
+Uploading
+
+Compressing
+
+OCR Processing
+
+Policy Validation
+
+Disable Submit Button
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Insurance Submitted Successfully
+
+Verification Pending
+
+Expiry Reminder Scheduled
+
+Proceed to
+
+PUC Verification
+
+======================================================================
+19. SECURITY & COMPLIANCE
+======================================================================
+
+HTTPS
+
+Encrypted Storage
+
+Role-Based Access
+
+Audit Logging
+
+Secure Document Storage
+
+Policy data visible only to authorized users.
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+insurance_screen_open
+
+policy_uploaded
+
+ocr_completed
+
+expiry_tracked
+
+verification_submitted
+
+verification_failed
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥ 48px
+
+Screen Reader Labels
+
+Keyboard Navigation
+
+Accessible Upload Controls
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Valid Policy
+
+Expected
+
+Verification Submitted
+
+------------------------------------
+
+TC-002
+
+Expired Policy
+
+Expected
+
+Validation Error
+
+------------------------------------
+
+TC-003
+
+Vehicle Mismatch
+
+Expected
+
+Manual Review
+
+------------------------------------
+
+TC-004
+
+Duplicate Policy
+
+Expected
+
+Submission Blocked
+
+------------------------------------
+
+TC-005
+
+Unreadable PDF
+
+Expected
+
+Quality Warning
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+Insurance Company API Integration
+
+Automatic Policy Validation
+
+AI Fraud Detection
+
+Renewal Purchase Integration
+
+Digital Insurance Wallet
+
+Coverage Recommendation Engine
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Support image and PDF uploads.
+
+Schedule automatic expiry reminder jobs.
+
+Reuse OCR service.
+
+Display countdown to policy expiry.
+
+Allow policy replacement after approval with audit tracking.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Insurance Verification
+
+Route
+
+/vehicle/insurance
+
+HTML
+
+insurance-verification.html
+
+CSS
+
+insurance-verification.css
+
+JavaScript
+
+insurance-verification.js
+
+Primary API
+
+POST /driver/vehicles/insurance
+
+======================================================================
+END OF DOCUMENT
+======================================================================

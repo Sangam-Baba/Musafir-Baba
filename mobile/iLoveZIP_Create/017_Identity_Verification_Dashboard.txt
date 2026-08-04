@@ -1,0 +1,504 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Identity Verification Dashboard
+Document ID    : MBC-FE-017
+Module         : Driver Verification
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Verification Journey
+8. Functional Requirements
+9. Verification Status
+10. API Integration
+11. Database Mapping
+12. Error Handling
+13. Loading State
+14. Success State
+15. Security Requirements
+16. Analytics Events
+17. Accessibility
+18. Test Cases
+19. Future Enhancements
+20. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Identity Verification Dashboard
+
+Screen Code
+
+VERIFY-001
+
+Entry Point
+
+Permissions Screen
+
+Purpose
+
+Display all identity verification tasks required before the driver
+becomes a Verified Partner.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+The dashboard provides complete visibility into the driver's
+verification progress.
+
+Objectives
+
+• Increase onboarding completion
+
+• Reduce confusion
+
+• Track verification status
+
+• Minimize support requests
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Present all required identity verification steps on a single screen,
+allowing the driver to complete them in any order (unless business rules
+require a sequence).
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Permissions
+
+↓
+
+Identity Verification Dashboard
+
+↓
+
+Aadhaar Verification
+
+↓
+
+PAN Verification
+
+↓
+
+Driving Licence
+
+↓
+
+Selfie Verification
+
+↓
+
+Verification Complete
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+App Bar
+
+Back Button
+
+Identity Verification
+
+--------------------------------------------------
+
+Progress Card
+
+Verification Progress
+
+25%
+
+1 of 4 Completed
+
+Progress Bar
+
+--------------------------------------------------
+
+Verification Checklist
+
+✓ Mobile Verified
+
+○ Aadhaar Verification
+
+○ PAN Verification
+
+○ Driving Licence
+
+○ Selfie Verification
+
+--------------------------------------------------
+
+Estimated Time
+
+5 Minutes
+
+--------------------------------------------------
+
+Information Card
+
+Why Verification?
+
+"Verification helps build trust with customers, enables faster
+approvals, and ensures compliance with transport regulations."
+
+--------------------------------------------------
+
+Primary Button
+
+Continue Verification
+
+======================================================================
+7. VERIFICATION JOURNEY
+======================================================================
+
+STEP 1
+
+Mobile Verification
+
+Status
+
+Completed
+
+------------------------------------
+
+STEP 2
+
+Aadhaar Verification
+
+Status
+
+Pending
+
+------------------------------------
+
+STEP 3
+
+PAN Verification
+
+Status
+
+Pending
+
+------------------------------------
+
+STEP 4
+
+Driving Licence
+
+Status
+
+Pending
+
+------------------------------------
+
+STEP 5
+
+Selfie Verification
+
+Status
+
+Pending
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display verification progress.
+
+FR-002
+
+Show completion percentage.
+
+FR-003
+
+Display verification status for each document.
+
+FR-004
+
+Allow navigation to pending steps.
+
+FR-005
+
+Prevent modification of approved documents without review workflow.
+
+FR-006
+
+Automatically update progress after successful verification.
+
+======================================================================
+9. VERIFICATION STATUS
+======================================================================
+
+Pending
+
+Submitted
+
+Under Review
+
+Approved
+
+Rejected
+
+Expired
+
+Re-upload Required
+
+======================================================================
+10. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/driver/verification-status
+
+Response
+
+{
+
+"mobile":"approved",
+
+"aadhaar":"pending",
+
+"pan":"pending",
+
+"driving_licence":"pending",
+
+"selfie":"pending",
+
+"completion_percentage":20
+
+}
+
+======================================================================
+11. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_verification
+
+driver_documents
+
+Relevant Fields
+
+driver_id
+
+verification_type
+
+status
+
+reviewed_by
+
+submitted_at
+
+approved_at
+
+remarks
+
+======================================================================
+12. ERROR HANDLING
+======================================================================
+
+Unable to Load Verification Status
+
+Network Error
+
+Session Expired
+
+Retry Option
+
+======================================================================
+13. LOADING STATE
+======================================================================
+
+Display Skeleton Loader
+
+Disable Action Buttons
+
+Show Progress Animation
+
+======================================================================
+14. SUCCESS STATE
+======================================================================
+
+Verification Dashboard Loaded
+
+Display Current Progress
+
+Enable Pending Verification Steps
+
+======================================================================
+15. SECURITY REQUIREMENTS
+======================================================================
+
+Authenticated Session Required
+
+HTTPS Only
+
+Role Validation
+
+Audit Every Verification Update
+
+======================================================================
+16. ANALYTICS EVENTS
+======================================================================
+
+identity_dashboard_open
+
+verification_started
+
+verification_step_open
+
+verification_completed
+
+verification_rejected
+
+======================================================================
+17. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥ 48px
+
+Readable Progress Indicators
+
+Screen Reader Labels
+
+Keyboard Navigation
+
+======================================================================
+18. TEST CASES
+======================================================================
+
+TC-001
+
+Load Dashboard
+
+Expected
+
+Progress Displayed
+
+------------------------------------
+
+TC-002
+
+Open Aadhaar Verification
+
+Expected
+
+Navigate Successfully
+
+------------------------------------
+
+TC-003
+
+Completed Verification
+
+Expected
+
+Progress Updated
+
+------------------------------------
+
+TC-004
+
+Network Failure
+
+Expected
+
+Retry Screen
+
+======================================================================
+19. FUTURE ENHANCEMENTS
+======================================================================
+
+Digilocker Integration
+
+Government eKYC
+
+Real-time OCR Validation
+
+AI Document Quality Detection
+
+Video KYC
+
+======================================================================
+20. DEVELOPER NOTES
+======================================================================
+
+Progress component should be reusable.
+
+Each verification item should be an independent reusable card.
+
+Status updates must be driven by the backend.
+
+Rejected documents should clearly display rejection reasons and
+"Re-upload" actions.
+
+Support localization and dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Identity Verification Dashboard
+
+Route
+
+/verification
+
+HTML
+
+identity-verification-dashboard.html
+
+CSS
+
+identity-verification-dashboard.css
+
+JavaScript
+
+identity-verification-dashboard.js
+
+Primary API
+
+GET /driver/verification-status
+
+======================================================================
+END OF DOCUMENT
+======================================================================

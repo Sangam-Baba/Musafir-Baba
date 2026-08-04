@@ -10,8 +10,22 @@ export const RootNavigator = () => {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    initialize();
-    setIsReady(true);
+    let isMounted = true;
+    const initApp = async () => {
+      try {
+        await initialize();
+      } catch (error) {
+        console.error('Failed to initialize auth store:', error);
+      } finally {
+        if (isMounted) {
+          setIsReady(true);
+        }
+      }
+    };
+    initApp();
+    return () => {
+      isMounted = false;
+    };
   }, [initialize]);
 
   if (!isReady) {

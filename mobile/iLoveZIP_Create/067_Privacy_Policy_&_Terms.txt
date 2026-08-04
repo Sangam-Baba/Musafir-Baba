@@ -1,0 +1,562 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Privacy Policy & Terms
+Document ID    : MBC-FE-067
+Module         : Legal & Compliance
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Legal Documents
+9. Functional Requirements
+10. Consent Management
+11. Policy Versioning
+12. Driver Agreement
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Empty State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Privacy Policy & Terms
+
+Screen Code
+
+LEGAL-001
+
+Entry Point
+
+Settings
+
+Registration
+
+About MBconnect
+
+Purpose
+
+Provide all legal documents governing the use of MBconnect and record
+driver acceptance.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Ensure legal compliance while maintaining transparency regarding
+data usage, platform rules and driver responsibilities.
+
+Business Goals
+
+• Regulatory compliance
+
+• Transparent data handling
+
+• Driver awareness
+
+• Consent tracking
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Admin
+
+Legal Team
+
+Compliance Team
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Allow drivers to read, search and accept all legal agreements.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Registration
+
+↓
+
+Legal Documents
+
+↓
+
+Read Policy
+
+↓
+
+Accept
+
+↓
+
+Consent Recorded
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Legal Documents
+
+--------------------------------------------------
+
+Privacy Policy
+
+Last Updated
+
+01 Aug 2026
+
+Read >
+
+--------------------------------------------------
+
+Terms & Conditions
+
+Version
+
+2.1
+
+Read >
+
+--------------------------------------------------
+
+Driver Partner Agreement
+
+Mandatory
+
+Read >
+
+--------------------------------------------------
+
+Cookie Policy
+
+Read >
+
+--------------------------------------------------
+
+Data Usage Policy
+
+Read >
+
+--------------------------------------------------
+
+Permissions Policy
+
+Read >
+
+--------------------------------------------------
+
+Version History
+
+View >
+
+--------------------------------------------------
+
+I have read and agree to all legal documents.
+
+☑ Accept
+
+Buttons
+
+Continue
+
+Download PDF
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Document Cards
+
+Version Labels
+
+Search Bar
+
+Acceptance Checkbox
+
+Download Button
+
+======================================================================
+8. LEGAL DOCUMENTS
+======================================================================
+
+Privacy Policy
+
+Terms & Conditions
+
+Driver Agreement
+
+Cookie Policy
+
+Refund Policy
+
+Data Usage Policy
+
+Permissions Policy
+
+Community Guidelines
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display legal documents.
+
+FR-002
+
+Download PDF.
+
+FR-003
+
+Search within documents.
+
+FR-004
+
+Record consent.
+
+FR-005
+
+Display version history.
+
+FR-006
+
+Require re-acceptance after major updates.
+
+======================================================================
+10. CONSENT MANAGEMENT
+======================================================================
+
+Consent Required
+
+Registration
+
+Major Policy Updates
+
+Driver Agreement Updates
+
+Consent Timestamp
+
+Device Information
+
+App Version
+
+======================================================================
+11. POLICY VERSIONING
+======================================================================
+
+Version Number
+
+Release Date
+
+Change Summary
+
+Mandatory / Optional
+
+Accepted Status
+
+======================================================================
+12. DRIVER AGREEMENT
+======================================================================
+
+Platform Rules
+
+Commission Structure
+
+Driver Responsibilities
+
+Cancellation Policy
+
+Code of Conduct
+
+Suspension Policy
+
+Termination Policy
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/legal/documents
+
+------------------------------------
+
+GET
+
+/api/v1/legal/document/{id}
+
+------------------------------------
+
+POST
+
+/api/v1/legal/accept
+
+------------------------------------
+
+GET
+
+/api/v1/legal/history
+
+Response
+
+{
+
+"version":"2.1",
+
+"accepted":true,
+
+"accepted_on":"2026-08-01T11:45:22"
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+legal_documents
+
+legal_versions
+
+driver_consents
+
+Fields
+
+document_id
+
+version
+
+driver_id
+
+accepted
+
+accepted_at
+
+device_id
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Load Documents
+
+Acceptance Failed
+
+Network Error
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Loading Legal Documents
+
+Downloading PDF
+
+Saving Consent
+
+======================================================================
+17. EMPTY STATE
+======================================================================
+
+No Documents Available
+
+Please Try Again Later
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Consent Recorded
+
+Documents Downloaded
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Immutable Consent Records
+
+Audit Logging
+
+Legal Version Tracking
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+legal_open
+
+policy_viewed
+
+policy_downloaded
+
+consent_accepted
+
+version_history_open
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Screen Reader Support
+
+Large Fonts
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Open Privacy Policy
+
+Expected
+
+Document Displayed
+
+------------------------------------
+
+TC-002
+
+Accept Terms
+
+Expected
+
+Consent Saved
+
+------------------------------------
+
+TC-003
+
+Download PDF
+
+Expected
+
+PDF Downloaded
+
+------------------------------------
+
+TC-004
+
+Major Policy Update
+
+Expected
+
+Re-Acceptance Required
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+Multi-Language Legal Documents
+
+Digital Signature
+
+AI Policy Summary
+
+Video-Based Legal Explanation
+
+Regional Compliance Documents
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Legal documents should be remotely configurable.
+
+Store consent with timestamp, device ID and app version.
+
+Never overwrite previous consent records.
+
+Support searchable legal documents.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Privacy Policy & Terms
+
+Route
+
+/legal
+
+HTML
+
+privacy-terms.html
+
+CSS
+
+privacy-terms.css
+
+JavaScript
+
+privacy-terms.js
+
+Primary APIs
+
+GET /legal/documents
+
+GET /legal/document/{id}
+
+POST /legal/accept
+
+GET /legal/history
+
+======================================================================
+END OF DOCUMENT
+======================================================================

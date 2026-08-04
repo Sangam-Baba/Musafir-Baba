@@ -1,0 +1,638 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Aadhaar Verification
+Document ID    : MBC-FE-018
+Module         : Driver Verification
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Functional Requirements
+9. Aadhaar Validation Rules
+10. OCR & Image Processing
+11. API Integration
+12. Database Mapping
+13. Verification Workflow
+14. Error Handling
+15. Loading State
+16. Success State
+17. Security & Privacy
+18. Analytics Events
+19. Accessibility
+20. Test Cases
+21. Future Enhancements
+22. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Aadhaar Verification
+
+Screen Code
+
+VERIFY-002
+
+Entry Point
+
+Identity Verification Dashboard
+
+Purpose
+
+Verify the driver's identity using Aadhaar details and supporting
+document images.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Aadhaar verification establishes the driver's identity before they
+become an active Driver Partner.
+
+Business Goals
+
+• Verify genuine identity
+
+• Reduce fraud
+
+• Improve onboarding quality
+
+• Enable regulatory compliance
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Reviewed By
+
+Verification Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Collect Aadhaar information accurately and securely while making the
+upload process easy for drivers.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Identity Verification Dashboard
+
+↓
+
+Aadhaar Verification
+
+↓
+
+Submit for Review
+
+↓
+
+Pending Review
+
+↓
+
+Approved / Rejected
+
+↓
+
+Identity Dashboard
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Back Button
+
+Aadhaar Verification
+
+--------------------------------------------------
+
+Progress
+
+Step 1 of 4
+
+--------------------------------------------------
+
+Information Card
+
+Why do we need Aadhaar?
+
+Your Aadhaar helps us verify your identity and comply with government
+requirements. Your data is stored securely.
+
+--------------------------------------------------
+
+Aadhaar Number
+
+____ ____ ____
+
+(12 Digits)
+
+--------------------------------------------------
+
+Upload Aadhaar Front
+
+[ Upload ]
+
+Camera | Gallery
+
+--------------------------------------------------
+
+Upload Aadhaar Back
+
+[ Upload ]
+
+Camera | Gallery
+
+--------------------------------------------------
+
+Preview Uploaded Images
+
+--------------------------------------------------
+
+Checkbox
+
+☑ I confirm that the information provided is accurate.
+
+--------------------------------------------------
+
+Submit for Verification
+
+--------------------------------------------------
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+App Bar
+
+Progress Card
+
+Information Card
+
+Aadhaar Number Input
+
+Upload Buttons
+
+Image Preview Cards
+
+Delete Image Button
+
+Retake Button
+
+Confirmation Checkbox
+
+Submit Button
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Accept Aadhaar number.
+
+FR-002
+
+Allow camera capture.
+
+FR-003
+
+Allow gallery upload.
+
+FR-004
+
+Compress images before upload.
+
+FR-005
+
+Preview uploaded images.
+
+FR-006
+
+Replace uploaded image.
+
+FR-007
+
+Submit verification request.
+
+======================================================================
+9. AADHAAR VALIDATION RULES
+======================================================================
+
+Length
+
+12 Digits
+
+Characters
+
+Numeric Only
+
+Spaces
+
+Ignored Automatically
+
+Masked Display
+
+XXXX XXXX 1234
+
+Checksum Validation
+
+Supported
+
+Reject
+
+Letters
+
+Special Characters
+
+Incorrect Length
+
+======================================================================
+10. OCR & IMAGE PROCESSING
+======================================================================
+
+Extract
+
+Name
+
+Date of Birth
+
+Gender
+
+Aadhaar Number
+
+Image Quality Checks
+
+Blur Detection
+
+Brightness Check
+
+Edge Detection
+
+Document Alignment
+
+Minimum Resolution
+
+1080 x 720
+
+Maximum File Size
+
+10 MB
+
+Supported Formats
+
+JPG
+
+PNG
+
+WEBP
+
+PDF (Future)
+
+======================================================================
+11. API INTEGRATION
+======================================================================
+
+Submit Aadhaar
+
+POST
+
+/api/v1/driver/documents/aadhaar
+
+Multipart Request
+
+Fields
+
+aadhaar_number
+
+front_image
+
+back_image
+
+driver_id
+
+Response
+
+{
+
+"status":true,
+
+"verification_status":"pending",
+
+"reference_id":"AAD123456"
+
+}
+
+======================================================================
+12. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_documents
+
+driver_verification
+
+Fields
+
+driver_id
+
+document_type
+
+document_number
+
+front_image
+
+back_image
+
+ocr_status
+
+verification_status
+
+submitted_at
+
+reviewed_at
+
+reviewed_by
+
+remarks
+
+======================================================================
+13. VERIFICATION WORKFLOW
+======================================================================
+
+Draft
+
+↓
+
+Submitted
+
+↓
+
+OCR Processing
+
+↓
+
+Manual Review
+
+↓
+
+Approved
+
+OR
+
+Rejected
+
+↓
+
+Re-upload (if rejected)
+
+======================================================================
+14. ERROR HANDLING
+======================================================================
+
+Invalid Aadhaar Number
+
+Blurred Image
+
+Large File
+
+Unsupported Format
+
+Network Error
+
+Server Error
+
+Duplicate Document
+
+OCR Failure
+
+======================================================================
+15. LOADING STATE
+======================================================================
+
+Image Upload Progress
+
+Compression Indicator
+
+OCR Processing Spinner
+
+Disable Submit Button
+
+======================================================================
+16. SUCCESS STATE
+======================================================================
+
+Documents Uploaded Successfully
+
+Verification Submitted
+
+Status
+
+Pending Review
+
+Estimated Review Time
+
+24 Hours
+
+======================================================================
+17. SECURITY & PRIVACY
+======================================================================
+
+HTTPS Only
+
+Encrypted Storage
+
+Masked Aadhaar Number
+
+Role-Based Access
+
+Audit Logging
+
+Secure File Storage
+
+No Public Access
+
+Comply with applicable data protection requirements.
+
+======================================================================
+18. ANALYTICS EVENTS
+======================================================================
+
+aadhaar_screen_open
+
+aadhaar_number_entered
+
+front_uploaded
+
+back_uploaded
+
+ocr_completed
+
+verification_submitted
+
+verification_failed
+
+======================================================================
+19. ACCESSIBILITY
+======================================================================
+
+Large Upload Buttons
+
+Screen Reader Labels
+
+Accessible Image Picker
+
+Touch Targets ≥ 48px
+
+High Contrast Mode
+
+======================================================================
+20. TEST CASES
+======================================================================
+
+TC-001
+
+Valid Aadhaar
+
+Expected
+
+Submission Successful
+
+------------------------------------
+
+TC-002
+
+Invalid Number
+
+Expected
+
+Validation Error
+
+------------------------------------
+
+TC-003
+
+Blurred Image
+
+Expected
+
+Quality Warning
+
+------------------------------------
+
+TC-004
+
+Network Failure
+
+Expected
+
+Retry
+
+------------------------------------
+
+TC-005
+
+Rejected Document
+
+Expected
+
+Display Remarks
+
+Allow Re-upload
+
+======================================================================
+21. FUTURE ENHANCEMENTS
+======================================================================
+
+DigiLocker Integration
+
+UIDAI eKYC (Subject to applicable regulations)
+
+AI Document Quality Detection
+
+Automatic OCR Correction
+
+Face Match
+
+Video KYC
+
+======================================================================
+22. DEVELOPER NOTES
+======================================================================
+
+Compress images before upload.
+
+Display image quality warnings before submission.
+
+Store Aadhaar numbers securely and mask them in the UI wherever possible.
+
+Use reusable upload components.
+
+Reuse OCR service for PAN, Driving Licence, RC and Insurance.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Aadhaar Verification
+
+Route
+
+/verification/aadhaar
+
+HTML
+
+aadhaar-verification.html
+
+CSS
+
+aadhaar-verification.css
+
+JavaScript
+
+aadhaar-verification.js
+
+Primary API
+
+POST /driver/documents/aadhaar
+
+======================================================================
+END OF DOCUMENT
+======================================================================

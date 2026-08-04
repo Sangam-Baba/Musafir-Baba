@@ -1,0 +1,737 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Vehicle Details
+Document ID    : MBC-FE-023
+Module         : Vehicle Verification
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Vehicle Information
+9. Vehicle Photo Requirements
+10. Functional Requirements
+11. Validation Rules
+12. API Integration
+13. Database Mapping
+14. Vehicle Categories
+15. Error Handling
+16. Loading State
+17. Success State
+18. Security Requirements
+19. Analytics Events
+20. Accessibility
+21. Test Cases
+22. Future Enhancements
+23. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Vehicle Details
+
+Screen Code
+
+VEHICLE-002
+
+Entry Point
+
+Vehicle Verification Dashboard
+
+Purpose
+
+Capture complete vehicle information before document verification.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Vehicle Details create the master profile for every vehicle operating
+on MBconnect.
+
+Business Goals
+
+• Register commercial vehicles
+
+• Enable trip allocation
+
+• Calculate pricing
+
+• Maintain fleet records
+
+• Improve passenger confidence
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Future
+
+Fleet Owner
+
+Corporate Fleet Manager
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Collect complete vehicle specifications that will be used throughout
+the MBconnect ecosystem.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Vehicle Verification Dashboard
+
+↓
+
+Vehicle Details
+
+↓
+
+RC Verification
+
+↓
+
+Insurance Verification
+
+↓
+
+PUC Verification
+
+↓
+
+Fitness Certificate
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Back Button
+
+Vehicle Details
+
+--------------------------------------------------
+
+Progress
+
+Step 1 of 5
+
+--------------------------------------------------
+
+Vehicle Number
+
+DL01AB1234
+
+--------------------------------------------------
+
+Vehicle Category
+
+Dropdown
+
+--------------------------------------------------
+
+Manufacturer
+
+Toyota
+
+--------------------------------------------------
+
+Model
+
+Rumion
+
+--------------------------------------------------
+
+Manufacturing Year
+
+2026
+
+--------------------------------------------------
+
+Fuel Type
+
+Petrol
+
+Diesel
+
+CNG
+
+EV
+
+Hybrid
+
+--------------------------------------------------
+
+Transmission
+
+Manual
+
+Automatic
+
+--------------------------------------------------
+
+Vehicle Color
+
+White
+
+--------------------------------------------------
+
+Seating Capacity
+
+7
+
+--------------------------------------------------
+
+Commercial Registration
+
+○ Yes
+
+○ No
+
+--------------------------------------------------
+
+Commercial Permit Number
+
+(Optional)
+
+--------------------------------------------------
+
+Vehicle Photos
+
+Front
+
+Rear
+
+Left
+
+Right
+
+Interior
+
+--------------------------------------------------
+
+Save & Continue
+
+--------------------------------------------------
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+App Bar
+
+Progress Card
+
+Vehicle Number Field
+
+Dropdown Components
+
+Date Picker
+
+Radio Buttons
+
+Photo Upload Cards
+
+Preview Gallery
+
+Save Button
+
+======================================================================
+8. VEHICLE INFORMATION
+======================================================================
+
+Required Fields
+
+Vehicle Number
+
+Category
+
+Manufacturer
+
+Model
+
+Manufacturing Year
+
+Fuel Type
+
+Transmission
+
+Color
+
+Seating Capacity
+
+Commercial Registration
+
+Optional
+
+Permit Number
+
+Special Features
+
+Accessibility Equipment
+
+Roof Carrier
+
+======================================================================
+9. VEHICLE PHOTO REQUIREMENTS
+======================================================================
+
+Required Photos
+
+Front View
+
+Rear View
+
+Left Side
+
+Right Side
+
+Interior
+
+Optional
+
+Dashboard
+
+Boot Space
+
+Roof Carrier
+
+Wheelchair Ramp
+
+Image Rules
+
+Minimum Resolution
+
+1080 × 720
+
+Maximum Size
+
+10 MB
+
+Formats
+
+JPG
+
+PNG
+
+WEBP
+
+======================================================================
+10. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Capture vehicle details.
+
+FR-002
+
+Upload multiple photos.
+
+FR-003
+
+Preview uploaded photos.
+
+FR-004
+
+Replace photos.
+
+FR-005
+
+Save draft.
+
+FR-006
+
+Submit vehicle profile.
+
+FR-007
+
+Support multiple vehicles.
+
+======================================================================
+11. VALIDATION RULES
+======================================================================
+
+Vehicle Number
+
+Required
+
+Uppercase
+
+Unique
+
+Manufacturer
+
+Required
+
+Model
+
+Required
+
+Manufacturing Year
+
+1900–Current Year
+
+Fuel Type
+
+Required
+
+Transmission
+
+Required
+
+Seating Capacity
+
+1–60
+
+Commercial Registration
+
+Mandatory
+
+======================================================================
+12. API INTEGRATION
+======================================================================
+
+Create Vehicle
+
+POST
+
+/api/v1/driver/vehicles
+
+Multipart Request
+
+Fields
+
+driver_id
+
+vehicle_number
+
+manufacturer
+
+model
+
+year
+
+fuel_type
+
+transmission
+
+color
+
+category
+
+seat_capacity
+
+commercial_registration
+
+permit_number
+
+front_photo
+
+rear_photo
+
+left_photo
+
+right_photo
+
+interior_photo
+
+Response
+
+{
+
+"status":true,
+
+"vehicle_id":"VH100001",
+
+"next_step":"rc-verification"
+
+}
+
+======================================================================
+13. DATABASE MAPPING
+======================================================================
+
+Tables
+
+vehicles
+
+vehicle_photos
+
+Fields
+
+vehicle_id
+
+driver_id
+
+vehicle_number
+
+manufacturer
+
+model
+
+year
+
+fuel_type
+
+transmission
+
+color
+
+category
+
+seat_capacity
+
+commercial_registration
+
+permit_number
+
+status
+
+======================================================================
+14. VEHICLE CATEGORIES
+======================================================================
+
+Hatchback
+
+Sedan
+
+SUV
+
+MUV
+
+Luxury Sedan
+
+Luxury SUV
+
+Tempo Traveller
+
+Mini Bus
+
+Bus
+
+Electric Vehicle
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Duplicate Vehicle Number
+
+Invalid Registration
+
+Missing Photo
+
+Upload Failed
+
+Network Error
+
+Server Error
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Uploading Images
+
+Compressing Images
+
+Saving Vehicle
+
+Disable Save Button
+
+======================================================================
+17. SUCCESS STATE
+======================================================================
+
+Vehicle Registered Successfully
+
+Vehicle ID Generated
+
+Proceed to RC Verification
+
+======================================================================
+18. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+Authenticated Session
+
+Encrypted Storage
+
+Role-Based Access
+
+Audit Logging
+
+======================================================================
+19. ANALYTICS EVENTS
+======================================================================
+
+vehicle_details_open
+
+vehicle_number_entered
+
+vehicle_photo_uploaded
+
+vehicle_saved
+
+vehicle_registration_completed
+
+======================================================================
+20. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥ 48px
+
+Screen Reader Support
+
+Accessible Image Upload
+
+Keyboard Navigation
+
+======================================================================
+21. TEST CASES
+======================================================================
+
+TC-001
+
+Valid Vehicle Details
+
+Expected
+
+Vehicle Saved
+
+------------------------------------
+
+TC-002
+
+Duplicate Vehicle Number
+
+Expected
+
+Validation Error
+
+------------------------------------
+
+TC-003
+
+Missing Required Photo
+
+Expected
+
+Upload Required
+
+------------------------------------
+
+TC-004
+
+Large Image
+
+Expected
+
+Compression
+
+------------------------------------
+
+TC-005
+
+No Internet
+
+Expected
+
+Retry
+
+======================================================================
+22. FUTURE ENHANCEMENTS
+======================================================================
+
+VIN Scanner
+
+Number Plate OCR
+
+Automatic Model Detection
+
+AI Vehicle Inspection
+
+FASTag Integration
+
+GPS Device Detection
+
+EV Battery Health
+
+======================================================================
+23. DEVELOPER NOTES
+======================================================================
+
+Support draft saving.
+
+Compress images before upload.
+
+Auto-convert vehicle number to uppercase.
+
+Reuse upload component.
+
+Validate duplicate vehicle numbers.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Vehicle Details
+
+Route
+
+/vehicle/details
+
+HTML
+
+vehicle-details.html
+
+CSS
+
+vehicle-details.css
+
+JavaScript
+
+vehicle-details.js
+
+Primary API
+
+POST /driver/vehicles
+
+======================================================================
+END OF DOCUMENT
+======================================================================

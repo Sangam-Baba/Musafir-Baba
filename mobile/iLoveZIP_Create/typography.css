@@ -1,0 +1,378 @@
+/* ==========================================================
+   MBCONNECT DESIGN SYSTEM
+   typography.css
+   ========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* ==========================================================
+   FONT FAMILY
+   ========================================================== */
+
+:root{
+
+    --font-family:'Poppins',sans-serif;
+
+}
+
+/* ==========================================================
+   RESET
+   ========================================================== */
+
+*{
+
+    font-family:var(--font-family);
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+/* ==========================================================
+   BODY
+   ========================================================== */
+
+body{
+
+    font-family:var(--font-family);
+
+    color:var(--text-primary);
+
+    background:var(--background);
+
+    line-height:1.5;
+
+    font-size:15px;
+
+    font-weight:400;
+
+}
+
+/* ==========================================================
+   DISPLAY HEADINGS
+   ========================================================== */
+
+.display-xl{
+
+    font-size:40px;
+
+    font-weight:700;
+
+    line-height:48px;
+
+}
+
+.display-lg{
+
+    font-size:34px;
+
+    font-weight:700;
+
+    line-height:42px;
+
+}
+
+.display-md{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    line-height:38px;
+
+}
+
+/* ==========================================================
+   HEADINGS
+   ========================================================== */
+
+h1{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    line-height:36px;
+
+    color:var(--text-primary);
+
+}
+
+h2{
+
+    font-size:24px;
+
+    font-weight:700;
+
+    line-height:32px;
+
+    color:var(--text-primary);
+
+}
+
+h3{
+
+    font-size:20px;
+
+    font-weight:600;
+
+    line-height:28px;
+
+}
+
+h4{
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+h5{
+
+    font-size:16px;
+
+    font-weight:600;
+
+}
+
+h6{
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+/* ==========================================================
+   PARAGRAPH
+   ========================================================== */
+
+p{
+
+    font-size:15px;
+
+    color:var(--text-secondary);
+
+    line-height:24px;
+
+}
+
+/* ==========================================================
+   SMALL TEXT
+   ========================================================== */
+
+.small{
+
+    font-size:13px;
+
+    color:var(--text-light);
+
+}
+
+.caption{
+
+    font-size:12px;
+
+    color:var(--text-light);
+
+}
+
+.overline{
+
+    font-size:11px;
+
+    font-weight:600;
+
+    letter-spacing:1px;
+
+    text-transform:uppercase;
+
+}
+
+/* ==========================================================
+   LABEL
+   ========================================================== */
+
+label{
+
+    font-size:14px;
+
+    font-weight:500;
+
+}
+
+/* ==========================================================
+   BUTTON TEXT
+   ========================================================== */
+
+.btn-text{
+
+    font-size:15px;
+
+    font-weight:600;
+
+}
+
+.btn-lg{
+
+    font-size:17px;
+
+    font-weight:600;
+
+}
+
+.btn-sm{
+
+    font-size:13px;
+
+    font-weight:500;
+
+}
+
+/* ==========================================================
+   CARD TITLES
+   ========================================================== */
+
+.card-title{
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+.card-subtitle{
+
+    font-size:13px;
+
+    color:var(--text-secondary);
+
+}
+
+/* ==========================================================
+   STATISTICS
+   ========================================================== */
+
+.stat-number{
+
+    font-size:26px;
+
+    font-weight:700;
+
+}
+
+.stat-label{
+
+    font-size:13px;
+
+    color:var(--text-secondary);
+
+}
+
+/* ==========================================================
+   BOOKING
+   ========================================================== */
+
+.booking-title{
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+.booking-price{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    color:var(--primary);
+
+}
+
+.booking-distance{
+
+    font-size:14px;
+
+    color:var(--text-secondary);
+
+}
+
+/* ==========================================================
+   NAVIGATION
+   ========================================================== */
+
+.nav-title{
+
+    font-size:12px;
+
+    font-weight:500;
+
+}
+
+/* ==========================================================
+   BADGES
+   ========================================================== */
+
+.badge-text{
+
+    font-size:11px;
+
+    font-weight:600;
+
+}
+
+/* ==========================================================
+   LINKS
+   ========================================================== */
+
+a{
+
+    text-decoration:none;
+
+    color:inherit;
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media(max-width:390px){
+
+h1{
+
+font-size:24px;
+
+}
+
+h2{
+
+font-size:20px;
+
+}
+
+.display-xl{
+
+font-size:34px;
+
+}
+
+.display-lg{
+
+font-size:30px;
+
+}
+
+.display-md{
+
+font-size:26px;
+
+}
+
+}

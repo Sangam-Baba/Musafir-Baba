@@ -1,0 +1,615 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Notifications Center
+Document ID    : MBC-FE-051
+Module         : Communication
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Notification Categories
+9. Functional Requirements
+10. Notification Actions
+11. Priority Levels
+12. Search & Filters
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Empty State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Notifications Center
+
+Screen Code
+
+NOTIFICATION-001
+
+Entry Point
+
+Dashboard
+
+Menu
+
+Purpose
+
+Display all platform notifications in one centralized location.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Ensure drivers never miss important updates related to trips,
+payments, compliance, incentives and support.
+
+Business Goals
+
+• Better communication
+
+• Faster driver response
+
+• Reduce missed trips
+
+• Improve engagement
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Admin
+
+Operations
+
+Support
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide organized, searchable and actionable notifications.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dashboard
+
+↓
+
+Notifications Center
+
+↓
+
+Notification Details
+
+↓
+
+Related Module
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Notifications
+
+Search Notifications...
+
+--------------------------------------------------
+
+Tabs
+
+All
+
+Unread
+
+Trips
+
+Payments
+
+Documents
+
+Support
+
+Offers
+
+--------------------------------------------------
+
+Today
+
+🔴 New Trip Assigned
+
+Airport Transfer
+
+5 Minutes Ago
+
+Open >
+
+----------------------------------
+
+🟢 Payment Settled
+
+₹18,500 transferred
+
+45 Minutes Ago
+
+----------------------------------
+
+🟡 Insurance Expiring
+
+12 Days Remaining
+
+Renew Now >
+
+----------------------------------
+
+🔵 Weekly Incentive Achieved
+
+₹2,000 Earned
+
+Yesterday
+
+----------------------------------
+
+⚪ Support Ticket Updated
+
+Issue #4587
+
+Yesterday
+
+--------------------------------------------------
+
+Buttons
+
+Mark All Read
+
+Notification Settings
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Search Bar
+
+Category Tabs
+
+Notification Cards
+
+Priority Badge
+
+Timestamp
+
+Action Button
+
+======================================================================
+8. NOTIFICATION CATEGORIES
+======================================================================
+
+Trips
+
+Payments
+
+Payouts
+
+Wallet
+
+Incentives
+
+Bonuses
+
+Compliance
+
+Documents
+
+Support
+
+Training
+
+Announcements
+
+Promotions
+
+Security Alerts
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display notifications.
+
+FR-002
+
+Support unread status.
+
+FR-003
+
+Mark as read.
+
+FR-004
+
+Delete notification (where permitted).
+
+FR-005
+
+Open related module.
+
+FR-006
+
+Support search.
+
+======================================================================
+10. NOTIFICATION ACTIONS
+======================================================================
+
+Mark Read
+
+Mark Unread
+
+Delete
+
+Archive
+
+Share (Optional)
+
+Open Related Screen
+
+======================================================================
+11. PRIORITY LEVELS
+======================================================================
+
+Critical
+
+Trip Requests
+
+SOS
+
+Account Suspension
+
+--------------------------------------------------
+
+High
+
+Payments
+
+Compliance
+
+Support
+
+--------------------------------------------------
+
+Medium
+
+Bonuses
+
+Training
+
+Announcements
+
+--------------------------------------------------
+
+Low
+
+Promotions
+
+Tips
+
+Marketing Updates
+
+======================================================================
+12. SEARCH & FILTERS
+======================================================================
+
+Search By
+
+Title
+
+Content
+
+Trip ID
+
+Support ID
+
+Filter By
+
+Unread
+
+Read
+
+Today
+
+This Week
+
+Category
+
+Priority
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/driver/notifications
+
+------------------------------------
+
+POST
+
+/api/v1/driver/notifications/read
+
+------------------------------------
+
+POST
+
+/api/v1/driver/notifications/delete
+
+Response
+
+{
+
+"unread":12,
+
+"total":248,
+
+"critical":2
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+notifications
+
+notification_status
+
+notification_actions
+
+Fields
+
+notification_id
+
+driver_id
+
+category
+
+priority
+
+title
+
+message
+
+status
+
+created_at
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Load Notifications
+
+Notification Deleted
+
+Network Error
+
+Server Error
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Loading Notifications
+
+Refreshing List
+
+Searching
+
+======================================================================
+17. EMPTY STATE
+======================================================================
+
+No Notifications
+
+You're all caught up.
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Notifications Loaded
+
+Status Updated
+
+Filters Applied
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Notifications
+
+Role-Based Access
+
+Audit Logging
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+notification_open
+
+notification_read
+
+notification_deleted
+
+filter_applied
+
+settings_open
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Notifications Loaded
+
+Expected
+
+List Displayed
+
+------------------------------------
+
+TC-002
+
+Mark All Read
+
+Expected
+
+Unread Count = 0
+
+------------------------------------
+
+TC-003
+
+Search Notification
+
+Expected
+
+Matching Results
+
+------------------------------------
+
+TC-004
+
+Delete Notification
+
+Expected
+
+Removed Successfully
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Priority Sorting
+
+Voice Notifications
+
+Smart Notification Bundles
+
+Calendar Sync
+
+Pinned Notifications
+
+Notification Snooze
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Load newest notifications first.
+
+Support infinite scrolling.
+
+Badge count must sync in real time.
+
+Deep-link notifications directly to related screens.
+
+Critical notifications cannot be deleted until acknowledged.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Notifications Center
+
+Route
+
+/notifications
+
+HTML
+
+notifications.html
+
+CSS
+
+notifications.css
+
+JavaScript
+
+notifications.js
+
+Primary APIs
+
+GET /driver/notifications
+
+POST /driver/notifications/read
+
+POST /driver/notifications/delete
+
+======================================================================
+END OF DOCUMENT
+======================================================================

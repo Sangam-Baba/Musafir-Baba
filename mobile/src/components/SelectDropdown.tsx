@@ -24,8 +24,9 @@ export const SelectDropdown = ({ label, selectedValue, onValueChange, options, e
           selectedValue={selectedValue}
           onValueChange={onValueChange}
           style={styles.picker}
+          dropdownIconColor="#FE5300"
         >
-          <Picker.Item label="Select an option" value="" color="#999" />
+          <Picker.Item label="Select an option" value="" color="#94a3b8" />
           {options.map((option) => (
             <Picker.Item key={option.value} label={option.label} value={option.value} />
           ))}
@@ -41,28 +42,31 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
     marginBottom: 6,
   },
   pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    backgroundColor: '#FAFAFA',
-    overflow: 'hidden', // Ensures picker rounded corners apply on iOS
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    backgroundColor: '#f8fafc',
+    overflow: 'hidden',
   },
   pickerError: {
-    borderColor: '#FF3B30',
+    borderColor: '#ef4444',
+    backgroundColor: '#fef2f2',
   },
   picker: {
-    height: 50, // Standard touch target
+    height: 50,
     width: '100%',
+    color: '#0f172a',
   },
   errorText: {
-    color: '#FF3B30',
+    color: '#dc2626',
     fontSize: 12,
     marginTop: 4,
-  }
+    fontWeight: '500',
+  },
 });

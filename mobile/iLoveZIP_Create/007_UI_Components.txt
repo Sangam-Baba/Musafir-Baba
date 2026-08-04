@@ -1,0 +1,957 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : UI Components Library
+Document ID    : MBC-FE-007
+Version        : 1.0
+Prepared For   : MusafirBaba Travels Pvt. Ltd.
+Platform       : MBconnect + MBGO
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Introduction
+2. Component Philosophy
+3. App Bar
+4. Bottom Navigation
+5. Side Navigation Drawer
+6. Buttons
+7. Icon Buttons
+8. Floating Action Button
+9. Input Fields
+10. Search Bar
+11. Dropdown
+12. Date Picker
+13. Time Picker
+14. Checkbox
+15. Radio Button
+16. Toggle Switch
+17. Chips
+18. Badges
+19. Cards
+20. KPI Cards
+21. Driver Card
+22. Vehicle Card
+23. Booking Card
+24. Trip Card
+25. Wallet Card
+26. Invoice Card
+27. Timeline Component
+28. Stepper Component
+29. List Components
+30. Tables
+31. Charts
+32. Progress Indicators
+33. Skeleton Loader
+34. Empty States
+35. Dialogs
+36. Bottom Sheets
+37. Toast Messages
+38. Snackbars
+39. Notification Banner
+40. Maps
+41. Calendar
+42. Avatar
+43. Tags
+44. Status Indicators
+45. Component States
+46. Accessibility
+47. Best Practices
+
+======================================================================
+1. INTRODUCTION
+======================================================================
+
+All UI elements within MBconnect must be developed using reusable
+components.
+
+Every screen should be assembled using predefined components instead
+of creating custom layouts repeatedly.
+
+Benefits
+
+• Faster Development
+
+• Easier Maintenance
+
+• Better Performance
+
+• Consistent Design
+
+• Lower Development Cost
+
+======================================================================
+2. COMPONENT PHILOSOPHY
+======================================================================
+
+Every component must be
+
+Reusable
+
+Responsive
+
+Accessible
+
+Documented
+
+Testable
+
+API Ready
+
+Theme Ready
+
+Dark Mode Ready
+
+======================================================================
+3. APP BAR
+======================================================================
+
+Height
+
+72px
+
+Components
+
+Back Button
+
+Title
+
+Subtitle (Optional)
+
+Notification Button
+
+Profile Button
+
+Search Button
+
+Properties
+
+Sticky
+
+Shadow Level 1
+
+Safe Area Support
+
+======================================================================
+4. BOTTOM NAVIGATION
+======================================================================
+
+Maximum Tabs
+
+5
+
+Default Tabs
+
+Home
+
+Trips
+
+Wallet
+
+Inbox
+
+Menu
+
+Features
+
+Animated Icons
+
+Active Indicator
+
+Badge Support
+
+Safe Area
+
+======================================================================
+5. SIDE NAVIGATION DRAWER
+======================================================================
+
+Contains
+
+Profile
+
+Dashboard
+
+Trips
+
+Fleet
+
+Finance
+
+Support
+
+Settings
+
+Logout
+
+Width
+
+320px
+
+======================================================================
+6. BUTTON COMPONENT
+======================================================================
+
+Variants
+
+Primary
+
+Secondary
+
+Outlined
+
+Danger
+
+Success
+
+Warning
+
+Disabled
+
+Loading
+
+Sizes
+
+Small
+
+Medium
+
+Large
+
+Height
+
+56px
+
+Radius
+
+18px
+
+States
+
+Default
+
+Hover
+
+Pressed
+
+Focused
+
+Disabled
+
+Loading
+
+======================================================================
+7. ICON BUTTON
+======================================================================
+
+Sizes
+
+40px
+
+48px
+
+56px
+
+Examples
+
+Refresh
+
+Back
+
+Call
+
+Chat
+
+Location
+
+Navigation
+
+Edit
+
+Delete
+
+======================================================================
+8. FLOATING ACTION BUTTON
+======================================================================
+
+Diameter
+
+56px
+
+Actions
+
+Start Trip
+
+Add Vehicle
+
+New Booking
+
+Emergency
+
+Quick Payment
+
+======================================================================
+9. INPUT FIELD
+======================================================================
+
+Components
+
+Label
+
+Placeholder
+
+Input
+
+Error Message
+
+Helper Text
+
+Character Counter
+
+Types
+
+Text
+
+Number
+
+Password
+
+Email
+
+Phone
+
+OTP
+
+Search
+
+Currency
+
+======================================================================
+10. SEARCH BAR
+======================================================================
+
+Features
+
+Search Icon
+
+Clear Button
+
+Voice Search (Future)
+
+Recent Searches
+
+Filters
+
+Suggestions
+
+======================================================================
+11. DROPDOWN
+======================================================================
+
+Supports
+
+Single Select
+
+Multi Select
+
+Searchable
+
+Grouped Options
+
+Async Loading
+
+======================================================================
+12. DATE PICKER
+======================================================================
+
+Views
+
+Calendar
+
+Month
+
+Year
+
+Range Selection
+
+Time Zone Support
+
+======================================================================
+13. TIME PICKER
+======================================================================
+
+12 Hour
+
+24 Hour
+
+Timezone Aware
+
+======================================================================
+14. CHECKBOX
+======================================================================
+
+States
+
+Checked
+
+Unchecked
+
+Disabled
+
+Indeterminate
+
+======================================================================
+15. RADIO BUTTON
+======================================================================
+
+Single Selection
+
+Accessible
+
+Keyboard Support
+
+======================================================================
+16. TOGGLE SWITCH
+======================================================================
+
+States
+
+On
+
+Off
+
+Disabled
+
+Loading
+
+======================================================================
+17. CHIPS
+======================================================================
+
+Filter Chip
+
+Status Chip
+
+Vehicle Chip
+
+Trip Chip
+
+Driver Chip
+
+Interactive
+
+Removable
+
+======================================================================
+18. BADGES
+======================================================================
+
+Numeric Badge
+
+Status Badge
+
+Notification Badge
+
+Live Badge
+
+Unread Badge
+
+Verified Badge
+
+======================================================================
+19. CARD COMPONENT
+======================================================================
+
+Card Radius
+
+24px
+
+Padding
+
+24px
+
+Shadow
+
+Medium
+
+Variants
+
+Information
+
+Analytics
+
+Finance
+
+Trip
+
+Driver
+
+Fleet
+
+Corporate
+
+======================================================================
+20. KPI CARD
+======================================================================
+
+Contains
+
+Title
+
+Value
+
+Trend
+
+Percentage
+
+Icon
+
+Chart
+
+======================================================================
+21. DRIVER CARD
+======================================================================
+
+Driver Image
+
+Name
+
+Rating
+
+Vehicle
+
+Status
+
+Trips
+
+Call Button
+
+Message Button
+
+======================================================================
+22. VEHICLE CARD
+======================================================================
+
+Vehicle Number
+
+Model
+
+Category
+
+Fuel
+
+Insurance
+
+Fitness
+
+Status
+
+======================================================================
+23. BOOKING CARD
+======================================================================
+
+Booking ID
+
+Pickup
+
+Destination
+
+Fare
+
+Vehicle
+
+Time
+
+Status
+
+======================================================================
+24. TRIP CARD
+======================================================================
+
+Trip Number
+
+Passenger
+
+Route
+
+Distance
+
+Duration
+
+Fare
+
+Status
+
+======================================================================
+25. WALLET CARD
+======================================================================
+
+Balance
+
+Pending
+
+Today's Earnings
+
+Weekly Earnings
+
+Withdraw Button
+
+======================================================================
+26. INVOICE CARD
+======================================================================
+
+Invoice Number
+
+Amount
+
+GST
+
+Payment Status
+
+Download PDF
+
+======================================================================
+27. TIMELINE
+======================================================================
+
+Booking Created
+
+Driver Assigned
+
+Driver Arrived
+
+Trip Started
+
+Trip Completed
+
+Settlement
+
+======================================================================
+28. STEPPER
+======================================================================
+
+Driver Registration
+
+Vehicle Verification
+
+Document Upload
+
+Approval
+
+Activation
+
+======================================================================
+29. LIST COMPONENT
+======================================================================
+
+Avatar
+
+Title
+
+Subtitle
+
+Trailing Action
+
+Divider
+
+Swipe Actions
+
+======================================================================
+30. TABLE COMPONENT
+======================================================================
+
+Sticky Header
+
+Sorting
+
+Filtering
+
+Pagination
+
+Export
+
+Responsive
+
+======================================================================
+31. CHART COMPONENT
+======================================================================
+
+Line Chart
+
+Bar Chart
+
+Pie Chart
+
+Area Chart
+
+Revenue Chart
+
+Trip Chart
+
+Fleet Chart
+
+======================================================================
+32. PROGRESS INDICATORS
+======================================================================
+
+Linear
+
+Circular
+
+Determinate
+
+Indeterminate
+
+======================================================================
+33. SKELETON LOADER
+======================================================================
+
+Card Loader
+
+Table Loader
+
+List Loader
+
+Profile Loader
+
+Dashboard Loader
+
+======================================================================
+34. EMPTY STATES
+======================================================================
+
+No Trips
+
+No Earnings
+
+No Bookings
+
+No Drivers
+
+No Vehicles
+
+No Notifications
+
+Action Button Required
+
+======================================================================
+35. DIALOGS
+======================================================================
+
+Confirmation
+
+Warning
+
+Success
+
+Delete
+
+Permission
+
+Payment
+
+======================================================================
+36. BOTTOM SHEETS
+======================================================================
+
+Trip Actions
+
+Booking Details
+
+Driver Details
+
+Vehicle Details
+
+Filters
+
+======================================================================
+37. TOAST
+======================================================================
+
+Success
+
+Warning
+
+Error
+
+Information
+
+Duration
+
+2.5 Seconds
+
+======================================================================
+38. SNACKBAR
+======================================================================
+
+Action Support
+
+Dismiss Button
+
+Undo
+
+Retry
+
+======================================================================
+39. NOTIFICATION BANNER
+======================================================================
+
+Top Banner
+
+Floating Banner
+
+System Alert
+
+Maintenance Alert
+
+Promotion
+
+======================================================================
+40. MAP COMPONENT
+======================================================================
+
+Google Maps
+
+Live Driver
+
+Pickup Marker
+
+Destination Marker
+
+Polyline
+
+Traffic Layer
+
+======================================================================
+41. CALENDAR
+======================================================================
+
+Daily View
+
+Weekly View
+
+Monthly View
+
+Trip Schedule
+
+Availability
+
+======================================================================
+42. AVATAR
+======================================================================
+
+Driver
+
+Customer
+
+Fleet Manager
+
+Corporate User
+
+Admin
+
+Sizes
+
+32px
+
+48px
+
+64px
+
+96px
+
+======================================================================
+43. TAGS
+======================================================================
+
+Corporate
+
+Airport
+
+Outstation
+
+Premium
+
+Luxury
+
+EV
+
+======================================================================
+44. STATUS INDICATORS
+======================================================================
+
+Online
+
+Offline
+
+Busy
+
+Pending
+
+Verified
+
+Blocked
+
+Suspended
+
+======================================================================
+45. COMPONENT STATES
+======================================================================
+
+Loading
+
+Success
+
+Empty
+
+Disabled
+
+Focused
+
+Selected
+
+Error
+
+======================================================================
+46. ACCESSIBILITY
+======================================================================
+
+Minimum Touch Target
+
+48px
+
+Keyboard Accessible
+
+Screen Reader Labels
+
+High Contrast Support
+
+ARIA Labels
+
+======================================================================
+47. BEST PRACTICES
+======================================================================
+
+✓ Build every component once.
+
+✓ Reuse everywhere.
+
+✓ Never duplicate UI.
+
+✓ Keep components stateless whenever possible.
+
+✓ Support API-driven data.
+
+✓ Document all props and events.
+
+✓ Follow the Design System and Color Palette.
+
+======================================================================
+END OF DOCUMENT
+======================================================================

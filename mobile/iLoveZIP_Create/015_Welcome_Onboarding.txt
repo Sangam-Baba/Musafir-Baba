@@ -1,0 +1,536 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Welcome Onboarding
+Document ID    : MBC-FE-015
+Module         : Driver Onboarding
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Functional Requirements
+9. Verification Journey
+10. API Integration
+11. Database Mapping
+12. Error Handling
+13. Loading State
+14. Success State
+15. Security Considerations
+16. Analytics Events
+17. Accessibility
+18. Test Cases
+19. Future Enhancements
+20. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Welcome Onboarding
+
+Screen Code
+
+ONBOARD-002
+
+Entry Point
+
+Create Driver Account
+
+Purpose
+
+Introduce MBconnect and guide drivers through the verification process.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+The Welcome Onboarding screen prepares newly registered drivers for
+verification by explaining the process and setting expectations.
+
+Business Goals
+
+• Increase onboarding completion
+• Reduce confusion
+• Explain benefits
+• Improve document quality
+• Reduce support requests
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Future
+
+Fleet Driver
+
+Corporate Driver
+
+Rental Partner
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Welcome new drivers and clearly communicate that only five simple steps
+are required before they can start accepting trips.
+
+Estimated completion time:
+
+5–10 Minutes
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Create Account
+
+↓
+
+Welcome Onboarding
+
+↓
+
+Identity Verification
+
+↓
+
+Vehicle Details
+
+↓
+
+Bank Account
+
+↓
+
+Background Check
+
+↓
+
+Profile Review
+
+↓
+
+Dashboard
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Illustration
+
+Happy Driver + Car
+
+--------------------------------------------------
+
+Heading
+
+Welcome to MBconnect
+
+--------------------------------------------------
+
+Message
+
+You're just five quick steps away from
+becoming a Verified Driver Partner.
+
+--------------------------------------------------
+
+Progress Timeline
+
+✓ Account Created
+
+○ Identity Verification
+
+○ Vehicle Verification
+
+○ Bank Account
+
+○ Background Check
+
+--------------------------------------------------
+
+Estimated Time
+
+5–10 Minutes
+
+--------------------------------------------------
+
+Benefits
+
+✔ More Trips
+
+✔ Faster Payouts
+
+✔ Verified Partner Badge
+
+✔ Priority Dispatch
+
+--------------------------------------------------
+
+Primary Button
+
+Start Verification
+
+--------------------------------------------------
+
+Secondary Button
+
+Complete Later
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+App Illustration
+
+Heading
+
+Description
+
+Timeline
+
+Benefits Card
+
+Estimated Time Card
+
+Start Button
+
+Later Button
+
+Footer
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display welcome illustration.
+
+FR-002
+
+Show onboarding timeline.
+
+FR-003
+
+Display estimated completion time.
+
+FR-004
+
+Explain verification benefits.
+
+FR-005
+
+Navigate to Identity Verification.
+
+FR-006
+
+Allow postponing onboarding.
+
+======================================================================
+9. VERIFICATION JOURNEY
+======================================================================
+
+STEP 1
+
+Identity Verification
+
+Documents
+
+• Aadhaar
+• PAN
+• Driving Licence
+
+------------------------------------
+
+STEP 2
+
+Vehicle Verification
+
+Documents
+
+• RC
+• Insurance
+• PUC
+• Fitness Certificate
+
+------------------------------------
+
+STEP 3
+
+Bank Account
+
+Information
+
+• Account Number
+• IFSC
+• Cancelled Cheque (Optional)
+
+------------------------------------
+
+STEP 4
+
+Background Check
+
+Verification
+
+• Criminal Record
+• Driver History
+• Profile Review
+
+------------------------------------
+
+STEP 5
+
+Go Online
+
+Receive Trips
+
+Start Earning
+
+======================================================================
+10. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/onboarding/status
+
+Response
+
+{
+
+"account_created":true,
+
+"identity":false,
+
+"vehicle":false,
+
+"bank":false,
+
+"background":false
+
+}
+
+======================================================================
+11. DATABASE MAPPING
+======================================================================
+
+Tables
+
+drivers
+
+driver_profiles
+
+driver_verification
+
+Fields
+
+driver_id
+
+registration_status
+
+identity_status
+
+vehicle_status
+
+bank_status
+
+background_status
+
+======================================================================
+12. ERROR HANDLING
+======================================================================
+
+Unable to Load Progress
+
+Network Error
+
+Server Timeout
+
+Retry Option
+
+======================================================================
+13. LOADING STATE
+======================================================================
+
+Skeleton Loader
+
+Disable Buttons
+
+Show Progress Indicator
+
+======================================================================
+14. SUCCESS STATE
+======================================================================
+
+Successfully Loaded
+
+Display Current Verification Progress
+
+Enable Start Verification Button
+
+======================================================================
+15. SECURITY CONSIDERATIONS
+======================================================================
+
+Require Authenticated Session
+
+Verify Driver ID
+
+Prevent Unauthorized Access
+
+HTTPS Required
+
+======================================================================
+16. ANALYTICS EVENTS
+======================================================================
+
+welcome_screen_open
+
+verification_started
+
+complete_later_clicked
+
+benefits_viewed
+
+timeline_completed
+
+======================================================================
+17. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥ 48px
+
+Readable Text
+
+Illustration Alt Text
+
+Screen Reader Support
+
+Keyboard Navigation
+
+======================================================================
+18. TEST CASES
+======================================================================
+
+TC-001
+
+Open Welcome Screen
+
+Expected
+
+Displays Correct Information
+
+------------------------------------
+
+TC-002
+
+Start Verification
+
+Expected
+
+Navigate to Identity Verification
+
+------------------------------------
+
+TC-003
+
+Complete Later
+
+Expected
+
+Return to Dashboard
+
+------------------------------------
+
+TC-004
+
+Network Failure
+
+Expected
+
+Retry Screen
+
+======================================================================
+19. FUTURE ENHANCEMENTS
+======================================================================
+
+Interactive Onboarding Tour
+
+Video Introduction
+
+Gamified Progress
+
+Voice Guidance
+
+Multi-language Tutorials
+
+======================================================================
+20. DEVELOPER NOTES
+======================================================================
+
+Progress timeline should be reusable.
+
+All onboarding status should be fetched from the API.
+
+Illustrations should use SVG or WebP.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Welcome Onboarding
+
+Route
+
+/onboarding/welcome
+
+HTML
+
+welcome-onboarding.html
+
+CSS
+
+welcome-onboarding.css
+
+JavaScript
+
+welcome-onboarding.js
+
+Primary API
+
+GET /onboarding/status
+
+======================================================================
+END OF DOCUMENT
+======================================================================

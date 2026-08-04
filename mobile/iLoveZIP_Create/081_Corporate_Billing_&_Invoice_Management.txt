@@ -1,0 +1,736 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Corporate Billing & Invoice Management
+Document ID    : MBC-FE-081
+Module         : Corporate Finance
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Components
+8. Invoice Management
+9. Billing Configuration
+10. Cost Center Allocation
+11. GST & Tax Compliance
+12. Credit Management
+13. Payment Terms
+14. Outstanding & Collections
+15. Reconciliation
+16. Financial Reports
+17. Functional Requirements
+18. API Integration
+19. Database Mapping
+20. Error Handling
+21. Loading State
+22. Empty State
+23. Success State
+24. Security Requirements
+25. Analytics Events
+26. Accessibility
+27. Test Cases
+28. Future Enhancements
+29. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Corporate Billing & Invoice Management
+
+Screen Code
+
+CORP-BILLING-001
+
+Entry Point
+
+Corporate Dashboard
+
+Billing
+
+Finance
+
+Purpose
+
+Provide centralized enterprise billing, invoicing,
+collections and reconciliation.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Automate corporate billing while ensuring
+financial accuracy and tax compliance.
+
+Business Goals
+
+• Faster invoicing
+
+• Accurate billing
+
+• Reduced payment delays
+
+• Complete financial transparency
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Corporate Admin
+
+Finance Manager
+
+Accounts Payable
+
+Accounts Receivable
+
+Travel Desk
+
+Super Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Allow finance teams to manage invoices,
+payments and reconciliations efficiently.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Corporate Dashboard
+
+↓
+
+Billing
+
+↓
+
+Invoices
+
+↓
+
+Payment
+
+↓
+
+Reconciliation
+
+↓
+
+Reports
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Corporate Billing Dashboard
+
+Current Billing Cycle
+
+August 2026
+
+Monthly Spend
+
+₹24,85,000
+
+Outstanding
+
+₹6,45,000
+
+Credit Limit
+
+₹30,00,000
+
+Available Credit
+
+₹23,55,000
+
+--------------------------------------------------
+
+Invoice Summary
+
+Generated
+
+28
+
+Paid
+
+22
+
+Pending
+
+5
+
+Overdue
+
+1
+
+--------------------------------------------------
+
+Recent Invoice
+
+Invoice No
+
+INV-202608-1054
+
+Company
+
+ABC Technologies
+
+Amount
+
+₹1,84,250
+
+GST
+
+₹33,165
+
+Due Date
+
+15 Aug 2026
+
+Status
+
+Pending
+
+Buttons
+
+View
+
+Download PDF
+
+Email
+
+--------------------------------------------------
+
+Quick Actions
+
+Generate Invoice
+
+Record Payment
+
+Export Statement
+
+Reconcile Payments
+
+======================================================================
+7. DASHBOARD COMPONENTS
+======================================================================
+
+Billing Summary
+
+Invoice Cards
+
+Outstanding Widget
+
+Credit Summary
+
+Payment Widget
+
+Quick Actions
+
+======================================================================
+8. INVOICE MANAGEMENT
+======================================================================
+
+Monthly Invoice
+
+Department Invoice
+
+Employee Invoice
+
+Project Invoice
+
+Cost Center Invoice
+
+Credit Note
+
+Debit Note
+
+Invoice History
+
+======================================================================
+9. BILLING CONFIGURATION
+======================================================================
+
+Billing Cycle
+
+Invoice Frequency
+
+Payment Terms
+
+Tax Settings
+
+Currency
+
+Invoice Prefix
+
+Auto Invoice
+
+======================================================================
+10. COST CENTER ALLOCATION
+======================================================================
+
+Department
+
+Project
+
+Business Unit
+
+Cost Center
+
+Budget Code
+
+Expense Category
+
+======================================================================
+11. GST & TAX COMPLIANCE
+======================================================================
+
+GST Invoice
+
+GST Number
+
+HSN/SAC
+
+Tax Summary
+
+CGST
+
+SGST
+
+IGST
+
+Reverse Charge
+
+======================================================================
+12. CREDIT MANAGEMENT
+======================================================================
+
+Credit Limit
+
+Credit Utilization
+
+Credit Balance
+
+Credit Hold
+
+Auto Credit Alert
+
+Credit History
+
+======================================================================
+13. PAYMENT TERMS
+======================================================================
+
+Advance Payment
+
+Net 7
+
+Net 15
+
+Net 30
+
+Net 45
+
+Custom Terms
+
+Late Fee Rules
+
+======================================================================
+14. OUTSTANDING & COLLECTIONS
+======================================================================
+
+Outstanding Balance
+
+Overdue Invoices
+
+Reminder Schedule
+
+Collection Status
+
+Promise To Pay
+
+Dispute Status
+
+======================================================================
+15. RECONCILIATION
+======================================================================
+
+Bank Reconciliation
+
+UPI Reconciliation
+
+Gateway Reconciliation
+
+Wallet Reconciliation
+
+Adjustment Entries
+
+Settlement Matching
+
+======================================================================
+16. FINANCIAL REPORTS
+======================================================================
+
+Billing Report
+
+Invoice Aging
+
+Payment Summary
+
+Outstanding Report
+
+Tax Report
+
+Credit Report
+
+Revenue Report
+
+======================================================================
+17. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Generate invoices.
+
+FR-002
+
+Configure billing cycles.
+
+FR-003
+
+Record payments.
+
+FR-004
+
+Allocate expenses.
+
+FR-005
+
+Reconcile transactions.
+
+FR-006
+
+Generate financial reports.
+
+======================================================================
+18. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/corporate/billing/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/corporate/invoices
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/invoice/generate
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/payment/record
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/reconciliation
+
+------------------------------------
+
+GET
+
+/api/v1/corporate/outstanding
+
+Response
+
+{
+
+"billing_cycle":"August 2026",
+
+"monthly_spend":2485000,
+
+"outstanding":645000,
+
+"credit_limit":3000000,
+
+"paid_invoices":22
+
+}
+
+======================================================================
+19. DATABASE MAPPING
+======================================================================
+
+Tables
+
+corporate_invoices
+
+invoice_items
+
+invoice_payments
+
+credit_limits
+
+reconciliation_logs
+
+Fields
+
+invoice_id
+
+company_id
+
+department_id
+
+cost_center
+
+invoice_amount
+
+gst_amount
+
+status
+
+due_date
+
+======================================================================
+20. ERROR HANDLING
+======================================================================
+
+Invoice Generation Failed
+
+Payment Recording Failed
+
+Reconciliation Error
+
+Download Failed
+
+Retry
+
+======================================================================
+21. LOADING STATE
+======================================================================
+
+Generating Invoice
+
+Recording Payment
+
+Loading Billing Dashboard
+
+Reconciling Transactions
+
+======================================================================
+22. EMPTY STATE
+======================================================================
+
+No Invoices Available
+
+Generate your first invoice.
+
+======================================================================
+23. SUCCESS STATE
+======================================================================
+
+Invoice Generated
+
+Payment Recorded
+
+Reconciliation Completed
+
+Statement Exported
+
+======================================================================
+24. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Encrypted Financial Records
+
+Audit Logs
+
+Immutable Invoice History
+
+======================================================================
+25. ANALYTICS EVENTS
+======================================================================
+
+billing_dashboard_open
+
+invoice_generated
+
+invoice_downloaded
+
+payment_recorded
+
+reconciliation_completed
+
+statement_exported
+
+======================================================================
+26. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+27. TEST CASES
+======================================================================
+
+TC-001
+
+Generate Monthly Invoice
+
+Expected
+
+Invoice Created Successfully
+
+------------------------------------
+
+TC-002
+
+Record Payment
+
+Expected
+
+Outstanding Updated
+
+------------------------------------
+
+TC-003
+
+Download GST Invoice
+
+Expected
+
+PDF Generated
+
+------------------------------------
+
+TC-004
+
+Reconcile Bank Entry
+
+Expected
+
+Transaction Matched
+
+======================================================================
+28. FUTURE ENHANCEMENTS
+======================================================================
+
+E-Invoicing
+
+E-Way Bill Integration
+
+AI Payment Prediction
+
+Automated Collections
+
+ERP Synchronization
+
+Multi-Currency Billing
+
+Subscription Billing
+
+======================================================================
+29. DEVELOPER NOTES
+======================================================================
+
+Generate invoices server-side only.
+
+Support configurable billing cycles.
+
+Maintain immutable financial records.
+
+Allow PDF, Excel and CSV exports.
+
+Support ERP integration APIs.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Corporate Billing & Invoice Management
+
+Route
+
+/corporate/billing
+
+HTML
+
+corporate-billing.html
+
+CSS
+
+corporate-billing.css
+
+JavaScript
+
+corporate-billing.js
+
+Primary APIs
+
+GET /corporate/billing/dashboard
+
+GET /corporate/invoices
+
+POST /corporate/invoice/generate
+
+POST /corporate/payment/record
+
+POST /corporate/reconciliation
+
+GET /corporate/outstanding
+
+======================================================================
+END OF DOCUMENT
+======================================================================

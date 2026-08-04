@@ -1,0 +1,560 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Payout History
+Document ID    : MBC-FE-044
+Module         : Driver Earnings
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Payout Summary
+9. Payout Status
+10. Functional Requirements
+11. Settlement Workflow
+12. Filters & Search
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Empty State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Payout History
+
+Screen Code
+
+PAYOUT-001
+
+Entry Point
+
+Wallet
+
+Purpose
+
+Display complete payout history transferred to the driver's bank account.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Provide complete visibility of every settlement processed by MBconnect.
+
+Business Goals
+
+• Settlement transparency
+
+• Reduce payout disputes
+
+• Financial reconciliation
+
+• Easy audit trail
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Finance Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Allow drivers to track every payout and verify settlement details.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Wallet
+
+↓
+
+Payout History
+
+↓
+
+Payout Details
+
+↓
+
+Download Report
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Total Paid This Month
+
+₹1,68,500
+
+--------------------------------------------------
+
+Pending Settlement
+
+₹4,600
+
+Expected Transfer
+
+05 Aug 2026
+
+--------------------------------------------------
+
+Recent Payouts
+
+----------------------------------
+
+01 Aug 2026
+
+₹18,500
+
+Transferred
+
+Bank
+
+SBI XXXX9012
+
+UTR
+
+UTR984512365
+
+View Details >
+
+----------------------------------
+
+25 Jul 2026
+
+₹21,850
+
+Transferred
+
+UTR
+
+UTR847521963
+
+View Details >
+
+----------------------------------
+
+18 Jul 2026
+
+₹16,240
+
+Processing
+
+Estimated
+
+Today
+
+--------------------------------------------------
+
+Quick Actions
+
+Download Report
+
+Contact Finance
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Summary Card
+
+Pending Card
+
+Payout List
+
+Status Badge
+
+Quick Action Buttons
+
+======================================================================
+8. PAYOUT SUMMARY
+======================================================================
+
+Display
+
+This Week
+
+This Month
+
+This Year
+
+Lifetime Payout
+
+Pending Settlement
+
+Next Settlement Date
+
+======================================================================
+9. PAYOUT STATUS
+======================================================================
+
+Processing
+
+Transferred
+
+Failed
+
+Cancelled
+
+Reversed
+
+On Hold
+
+======================================================================
+10. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display payout list.
+
+FR-002
+
+Display UTR.
+
+FR-003
+
+Display bank account.
+
+FR-004
+
+Download report.
+
+FR-005
+
+Filter payouts.
+
+FR-006
+
+View payout details.
+
+======================================================================
+11. SETTLEMENT WORKFLOW
+======================================================================
+
+Wallet Balance
+
+↓
+
+Finance Approval
+
+↓
+
+Bank Transfer
+
+↓
+
+Settlement Successful
+
+↓
+
+Transaction Recorded
+
+======================================================================
+12. FILTERS & SEARCH
+======================================================================
+
+Today
+
+Last 7 Days
+
+This Month
+
+Last Month
+
+Custom Date
+
+Status
+
+Bank Account
+
+Search by UTR
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/driver/payouts
+
+------------------------------------
+
+GET
+
+/api/v1/driver/payout/{payout_id}
+
+------------------------------------
+
+GET
+
+/api/v1/driver/payout/report
+
+Response
+
+{
+
+"total_paid":168500,
+
+"pending":4600,
+
+"next_settlement":"2026-08-05",
+
+"currency":"INR"
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_payouts
+
+bank_transfers
+
+settlement_reports
+
+Fields
+
+payout_id
+
+driver_id
+
+amount
+
+status
+
+utr_number
+
+bank_account
+
+processed_at
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Load
+
+Transfer Failed
+
+Network Error
+
+Server Error
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Loading Payouts
+
+Loading Reports
+
+Refreshing Status
+
+======================================================================
+17. EMPTY STATE
+======================================================================
+
+No Payouts Available
+
+Complete trips to receive your first payout.
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Payout Loaded
+
+Report Generated
+
+Settlement Updated
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Masked Bank Account
+
+Encrypted Financial Data
+
+Audit Logging
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+payout_history_open
+
+payout_details_open
+
+report_downloaded
+
+finance_contact_clicked
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Large Text
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+View Payout
+
+Expected
+
+Details Displayed
+
+------------------------------------
+
+TC-002
+
+Download Report
+
+Expected
+
+Report Downloaded
+
+------------------------------------
+
+TC-003
+
+Failed Settlement
+
+Expected
+
+Failure Status Displayed
+
+------------------------------------
+
+TC-004
+
+No Payout History
+
+Expected
+
+Empty State
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+Instant Settlement
+
+Settlement Notifications
+
+Multi-Bank Support
+
+GST Reports
+
+Income Tax Reports
+
+AI Financial Insights
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Mask bank account numbers except last four digits.
+
+Allow report download in PDF and Excel.
+
+Support pagination for payout history.
+
+Finance remarks should be visible where applicable.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Payout History
+
+Route
+
+/wallet/payout-history
+
+HTML
+
+payout-history.html
+
+CSS
+
+payout-history.css
+
+JavaScript
+
+payout-history.js
+
+Primary APIs
+
+GET /driver/payouts
+
+GET /driver/payout/{payout_id}
+
+GET /driver/payout/report
+
+======================================================================
+END OF DOCUMENT
+======================================================================

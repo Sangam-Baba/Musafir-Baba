@@ -1,0 +1,706 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Fleet Trip Allocation & Dispatch
+Document ID    : MBC-FE-074
+Module         : Fleet Dispatch
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Components
+8. Trip Queue
+9. Driver Matching Engine
+10. Vehicle Matching Engine
+11. Auto Dispatch Rules
+12. Manual Dispatch
+13. Airport Queue Management
+14. Corporate Dispatch
+15. Route Optimization
+16. Dispatch Analytics
+17. Functional Requirements
+18. API Integration
+19. Database Mapping
+20. Error Handling
+21. Loading State
+22. Empty State
+23. Success State
+24. Security Requirements
+25. Analytics Events
+26. Accessibility
+27. Test Cases
+28. Future Enhancements
+29. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Fleet Trip Allocation & Dispatch
+
+Screen Code
+
+DISPATCH-001
+
+Entry Point
+
+Fleet Dashboard
+
+Dispatch Center
+
+Purpose
+
+Allocate trips efficiently using intelligent driver
+and vehicle matching.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Optimize fleet operations while minimizing idle time
+and maximizing customer satisfaction.
+
+Business Goals
+
+• Faster allocations
+
+• Higher utilization
+
+• Better ETA
+
+• Lower cancellations
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Fleet Owner
+
+Dispatch Manager
+
+Operations Manager
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide a centralized dispatch console for managing
+all active, upcoming and queued trips.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dispatch Dashboard
+
+↓
+
+Pending Trips
+
+↓
+
+Select Trip
+
+↓
+
+Auto / Manual Dispatch
+
+↓
+
+Driver Acceptance
+
+↓
+
+Trip Confirmed
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Dispatch Dashboard
+
+Pending Trips
+
+34
+
+Active Trips
+
+112
+
+Waiting Drivers
+
+26
+
+Average Dispatch Time
+
+42 Seconds
+
+--------------------------------------------------
+
+Pending Trip
+
+Booking ID
+
+MB202608010124
+
+Pickup
+
+Delhi Airport T3
+
+Drop
+
+Gurugram
+
+Vehicle
+
+Sedan
+
+Customer Priority
+
+High
+
+ETA Required
+
+12 Minutes
+
+--------------------------------------------------
+
+Suggested Driver
+
+Rajesh Kumar
+
+Distance
+
+1.8 KM
+
+Rating
+
+4.95
+
+Acceptance
+
+98%
+
+Vehicle
+
+Toyota Rumion
+
+Status
+
+Available
+
+--------------------------------------------------
+
+Buttons
+
+Auto Assign
+
+Manual Assign
+
+Reject
+
+======================================================================
+7. DASHBOARD COMPONENTS
+======================================================================
+
+Trip Queue
+
+Driver Queue
+
+Vehicle Queue
+
+Dispatch Map
+
+Priority Panel
+
+Alerts
+
+======================================================================
+8. TRIP QUEUE
+======================================================================
+
+New Bookings
+
+Scheduled Trips
+
+Corporate Trips
+
+Airport Transfers
+
+Hotel Transfers
+
+Outstation Trips
+
+VIP Trips
+
+Emergency Requests
+
+======================================================================
+9. DRIVER MATCHING ENGINE
+======================================================================
+
+Availability
+
+Distance
+
+Vehicle Compatibility
+
+Rating
+
+Acceptance Rate
+
+Completion Rate
+
+Training Certification
+
+Airport Eligibility
+
+Corporate Eligibility
+
+Language Preference
+
+======================================================================
+10. VEHICLE MATCHING ENGINE
+======================================================================
+
+Vehicle Category
+
+Seat Capacity
+
+Luggage Capacity
+
+Fuel Type
+
+EV Preference
+
+Luxury Requirement
+
+Wheelchair Accessibility
+
+Child Seat Availability
+
+======================================================================
+11. AUTO DISPATCH RULES
+======================================================================
+
+Nearest Eligible Driver
+
+Highest Performance Score
+
+Lowest Idle Time
+
+Corporate Priority
+
+Airport Priority
+
+VIP Priority
+
+Round Robin
+
+Load Balancing
+
+======================================================================
+12. MANUAL DISPATCH
+======================================================================
+
+Search Driver
+
+Search Vehicle
+
+Assign Trip
+
+Override Suggestions
+
+Add Notes
+
+Dispatch Confirmation
+
+======================================================================
+13. AIRPORT QUEUE MANAGEMENT
+======================================================================
+
+Terminal Queue
+
+FIFO Queue
+
+Priority Queue
+
+Flight Monitoring
+
+Pickup Window
+
+Holding Area
+
+======================================================================
+14. CORPORATE DISPATCH
+======================================================================
+
+Preferred Driver
+
+Dedicated Fleet
+
+SLA Monitoring
+
+Shift Allocation
+
+Recurring Bookings
+
+Department Mapping
+
+======================================================================
+15. ROUTE OPTIMIZATION
+======================================================================
+
+Traffic Analysis
+
+Shortest Route
+
+Fastest Route
+
+Toll Preference
+
+Road Restrictions
+
+Multi-stop Planning
+
+======================================================================
+16. DISPATCH ANALYTICS
+======================================================================
+
+Average Dispatch Time
+
+Trips Assigned
+
+Auto Dispatch %
+
+Manual Dispatch %
+
+Driver Acceptance
+
+Reassignment Rate
+
+Dispatch SLA
+
+======================================================================
+17. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display pending trips.
+
+FR-002
+
+Auto-match drivers.
+
+FR-003
+
+Manual assignment.
+
+FR-004
+
+Reassign trips.
+
+FR-005
+
+Optimize routes.
+
+FR-006
+
+Track dispatch KPIs.
+
+======================================================================
+18. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/dispatch/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/dispatch/pending
+
+------------------------------------
+
+POST
+
+/api/v1/dispatch/auto
+
+------------------------------------
+
+POST
+
+/api/v1/dispatch/manual
+
+------------------------------------
+
+POST
+
+/api/v1/dispatch/reassign
+
+Response
+
+{
+
+"pending_trips":34,
+
+"available_drivers":26,
+
+"average_dispatch_time":42,
+
+"auto_dispatch_rate":81
+
+}
+
+======================================================================
+19. DATABASE MAPPING
+======================================================================
+
+Tables
+
+dispatch_queue
+
+trip_assignments
+
+dispatch_rules
+
+driver_matching
+
+Fields
+
+trip_id
+
+driver_id
+
+vehicle_id
+
+dispatch_type
+
+status
+
+assigned_at
+
+======================================================================
+20. ERROR HANDLING
+======================================================================
+
+Assignment Failed
+
+Driver Busy
+
+Vehicle Unavailable
+
+Trip Expired
+
+Retry
+
+======================================================================
+21. LOADING STATE
+======================================================================
+
+Loading Dispatch Queue
+
+Matching Driver
+
+Assigning Trip
+
+======================================================================
+22. EMPTY STATE
+======================================================================
+
+No Pending Trips
+
+Fleet is operating normally.
+
+======================================================================
+23. SUCCESS STATE
+======================================================================
+
+Trip Assigned
+
+Driver Accepted
+
+Dispatch Completed
+
+======================================================================
+24. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Dispatch Audit Logs
+
+Fleet Data Isolation
+
+======================================================================
+25. ANALYTICS EVENTS
+======================================================================
+
+dispatch_dashboard_open
+
+trip_auto_assigned
+
+trip_manual_assigned
+
+dispatch_reassigned
+
+dispatch_completed
+
+======================================================================
+26. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+High Contrast Mode
+
+======================================================================
+27. TEST CASES
+======================================================================
+
+TC-001
+
+Auto Dispatch
+
+Expected
+
+Nearest Eligible Driver Assigned
+
+------------------------------------
+
+TC-002
+
+Manual Dispatch
+
+Expected
+
+Trip Assigned Successfully
+
+------------------------------------
+
+TC-003
+
+Driver Rejects Trip
+
+Expected
+
+Automatic Reassignment
+
+------------------------------------
+
+TC-004
+
+Corporate Booking
+
+Expected
+
+Preferred Driver Assigned
+
+======================================================================
+28. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Dispatch Engine
+
+Predictive Demand Allocation
+
+Heat Map Dispatch
+
+Airport Gate Automation
+
+Dynamic Driver Scoring
+
+Multi-City Dispatch Center
+
+Cross-Fleet Trip Sharing
+
+======================================================================
+29. DEVELOPER NOTES
+======================================================================
+
+Dispatch decisions should execute server-side.
+
+Support configurable dispatch rules.
+
+Maintain complete assignment history.
+
+Enable live WebSocket updates.
+
+Optimize for fleets exceeding 100,000 active trips.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Fleet Trip Allocation & Dispatch
+
+Route
+
+/fleet/dispatch
+
+HTML
+
+fleet-dispatch.html
+
+CSS
+
+fleet-dispatch.css
+
+JavaScript
+
+fleet-dispatch.js
+
+Primary APIs
+
+GET /dispatch/dashboard
+
+GET /dispatch/pending
+
+POST /dispatch/auto
+
+POST /dispatch/manual
+
+POST /dispatch/reassign
+
+======================================================================
+END OF DOCUMENT
+======================================================================

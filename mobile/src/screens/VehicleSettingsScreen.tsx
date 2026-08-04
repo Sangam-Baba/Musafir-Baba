@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../components/Button';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -11,59 +12,107 @@ export const VehicleSettingsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Vehicle Settings</Text>
-      <Text style={styles.subtitle}>Configure pricing and operational hubs for your approved vehicles.</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Vehicle Settings</Text>
+        <Text style={styles.subtitle}>Configure pricing & operational hubs for your approved vehicles.</Text>
+      </View>
       
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Toyota Innova (DL1CA1234)</Text>
-        <Text style={styles.status}>Status: Pending Setup</Text>
-        <Button title="Configure Pricing & Hubs" onPress={() => console.log('Navigate to config')} style={{ marginTop: 12 }} />
+        <View style={styles.cardHeader}>
+          <Ionicons name="car-sport-outline" size={22} color="#FE5300" style={{ marginRight: 8 }} />
+          <Text style={styles.cardTitle}>Fleet Vehicle Setup</Text>
+        </View>
+
+        <Text style={styles.vehicleName}>Toyota Innova (DL1CA1234)</Text>
+        
+        <View style={styles.statusBadge}>
+          <Ionicons name="time-outline" size={14} color="#d97706" style={{ marginRight: 4 }} />
+          <Text style={styles.statusText}>Status: Pending Operational Setup</Text>
+        </View>
+
+        <Button 
+          title="Configure Pricing & Hubs" 
+          type="outline" 
+          onPress={() => console.log('Navigate to config')} 
+          style={{ marginTop: 16 }} 
+        />
       </View>
 
       <View style={styles.footer}>
         <Button title="Complete Profile Setup" onPress={handleComplete} />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#fff',
     flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  header: {
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#000',
+    fontWeight: '800',
+    marginBottom: 4,
+    color: '#0f172a',
   },
   subtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 24,
+    fontSize: 13,
+    color: '#64748b',
   },
   card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    padding: 16,
-    backgroundColor: '#FAFAFA',
+    borderColor: '#f1f5f9',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+    marginBottom: 20,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.5,
   },
-  status: {
-    color: '#E65100',
-    fontWeight: '500',
+  vehicleName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef3c7',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  statusText: {
+    color: '#b45309',
+    fontWeight: '700',
+    fontSize: 12,
   },
   footer: {
     marginTop: 20,
-    marginBottom: 40,
   }
 });

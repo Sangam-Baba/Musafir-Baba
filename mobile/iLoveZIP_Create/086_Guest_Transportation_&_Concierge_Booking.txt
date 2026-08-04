@@ -1,0 +1,749 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Guest Transportation & Concierge Booking
+Document ID    : MBC-FE-086
+Module         : Hospitality Partner Suite
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Booking Dashboard
+8. Guest Information
+9. Transportation Types
+10. Airport Transfer Booking
+11. Local Transportation
+12. Sightseeing Booking
+13. VIP & Luxury Transfers
+14. Multi-Stop Journeys
+15. Guest Preferences
+16. Special Assistance
+17. Booking Timeline
+18. Functional Requirements
+19. API Integration
+20. Database Mapping
+21. Error Handling
+22. Loading State
+23. Empty State
+24. Success State
+25. Security Requirements
+26. Analytics Events
+27. Accessibility
+28. Test Cases
+29. Future Enhancements
+30. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Guest Transportation & Concierge Booking
+
+Screen Code
+
+HOTEL-BOOKING-001
+
+Entry Point
+
+Hotel Dashboard
+
+Guest Booking
+
+Purpose
+
+Provide concierge teams with a fast and reliable
+transportation booking interface.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Deliver premium guest transportation while
+reducing booking time and operational errors.
+
+Business Goals
+
+• Faster booking
+
+• Better guest experience
+
+• Personalized service
+
+• Higher operational efficiency
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Concierge Executive
+
+Front Office
+
+Bell Desk
+
+Duty Manager
+
+Travel Desk
+
+Hotel Administrator
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Create transportation bookings with complete
+guest and journey information.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Guest Search
+
+↓
+
+Select Transport Type
+
+↓
+
+Enter Journey Details
+
+↓
+
+Assign Vehicle
+
+↓
+
+Driver Confirmation
+
+↓
+
+Guest Pickup
+
+↓
+
+Trip Completed
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Guest Transportation Booking
+
+Guest Name
+
+John Smith
+
+Room
+
+1208
+
+Phone
+
++91XXXXXXXXXX
+
+--------------------------------------------------
+
+Transport Type
+
+○ Airport Pickup
+
+○ Airport Drop
+
+○ Railway Transfer
+
+○ Bus Station Transfer
+
+○ Local Transfer
+
+○ Sightseeing
+
+○ VIP Transfer
+
+--------------------------------------------------
+
+Journey Details
+
+Pickup
+
+Delhi Airport T3
+
+Drop
+
+Grand Imperial Hotel
+
+Flight
+
+AI202
+
+Arrival
+
+15:05
+
+--------------------------------------------------
+
+Vehicle
+
+Sedan
+
+Passengers
+
+2
+
+Luggage
+
+3 Bags
+
+--------------------------------------------------
+
+Special Requests
+
+✓ Child Seat
+
+✓ Wheelchair
+
+☐ Pet Friendly
+
+☐ English Speaking Driver
+
+☐ Female Driver (Subject to Availability)
+
+--------------------------------------------------
+
+Buttons
+
+Check Availability
+
+Confirm Booking
+
+Save Draft
+
+======================================================================
+7. BOOKING DASHBOARD
+======================================================================
+
+Today's Bookings
+
+Upcoming Transfers
+
+Active Trips
+
+VIP Guests
+
+Cancelled Bookings
+
+Draft Bookings
+
+======================================================================
+8. GUEST INFORMATION
+======================================================================
+
+Guest Name
+
+Reservation Number
+
+Room Number
+
+Phone
+
+Email
+
+Nationality
+
+Preferred Language
+
+Loyalty Tier
+
+======================================================================
+9. TRANSPORTATION TYPES
+======================================================================
+
+Airport Pickup
+
+Airport Drop
+
+Railway Station Transfer
+
+Bus Station Transfer
+
+Local City Transfer
+
+Corporate Meeting
+
+Wedding Transfer
+
+Sightseeing
+
+Hourly Rental
+
+VIP Transfer
+
+======================================================================
+10. AIRPORT TRANSFER BOOKING
+======================================================================
+
+Flight Number
+
+Airline
+
+Arrival Terminal
+
+Departure Terminal
+
+Meet & Greet
+
+Flight Tracking
+
+Delay Handling
+
+======================================================================
+11. LOCAL TRANSPORTATION
+======================================================================
+
+Shopping
+
+Business Meeting
+
+Restaurant
+
+City Tour
+
+Hospital Visit
+
+Custom Destination
+
+======================================================================
+12. SIGHTSEEING BOOKING
+======================================================================
+
+Half Day Tour
+
+Full Day Tour
+
+Multi-Day Tour
+
+Private Tour
+
+Shared Tour
+
+Tour Guide Required
+
+======================================================================
+13. VIP & LUXURY TRANSFERS
+======================================================================
+
+Luxury Sedan
+
+Luxury SUV
+
+Premium Van
+
+Executive Chauffeur
+
+Security Escort
+
+Protocol Assistance
+
+======================================================================
+14. MULTI-STOP JOURNEYS
+======================================================================
+
+Add Multiple Stops
+
+Waiting Time
+
+Route Optimization
+
+Estimated Cost
+
+Journey Summary
+
+======================================================================
+15. GUEST PREFERENCES
+======================================================================
+
+Favorite Driver
+
+Favorite Vehicle
+
+Language
+
+Music Preference
+
+Temperature Preference
+
+Accessibility Needs
+
+Special Notes
+
+======================================================================
+16. SPECIAL ASSISTANCE
+======================================================================
+
+Wheelchair Support
+
+Senior Citizen Assistance
+
+Child Seat
+
+Extra Luggage
+
+Medical Assistance
+
+Pet Friendly
+
+Sign Language Support
+
+======================================================================
+17. BOOKING TIMELINE
+======================================================================
+
+Booking Created
+
+↓
+
+Driver Assigned
+
+↓
+
+Driver Arriving
+
+↓
+
+Guest Picked Up
+
+↓
+
+Trip In Progress
+
+↓
+
+Trip Completed
+
+======================================================================
+18. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Create guest booking.
+
+FR-002
+
+Support multiple journey types.
+
+FR-003
+
+Store guest preferences.
+
+FR-004
+
+Assign suitable vehicle.
+
+FR-005
+
+Handle special assistance requests.
+
+FR-006
+
+Track booking lifecycle.
+
+======================================================================
+19. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/hotel/guest/{guest_id}
+
+------------------------------------
+
+POST
+
+/api/v1/hotel/booking/create
+
+------------------------------------
+
+POST
+
+/api/v1/hotel/booking/check-availability
+
+------------------------------------
+
+POST
+
+/api/v1/hotel/booking/assign
+
+------------------------------------
+
+GET
+
+/api/v1/hotel/booking/{booking_id}
+
+Response
+
+{
+
+"booking_id":"HTL45892",
+
+"guest":"John Smith",
+
+"vehicle":"Sedan",
+
+"status":"Driver Assigned",
+
+"estimated_pickup":"15:10"
+
+}
+
+======================================================================
+20. DATABASE MAPPING
+======================================================================
+
+Tables
+
+guest_bookings
+
+guest_preferences
+
+journey_details
+
+special_requests
+
+booking_timeline
+
+Fields
+
+booking_id
+
+guest_id
+
+hotel_id
+
+journey_type
+
+vehicle_category
+
+driver_id
+
+status
+
+======================================================================
+21. ERROR HANDLING
+======================================================================
+
+Booking Failed
+
+Vehicle Not Available
+
+Flight Information Missing
+
+Retry
+
+======================================================================
+22. LOADING STATE
+======================================================================
+
+Searching Vehicles
+
+Checking Availability
+
+Creating Booking
+
+======================================================================
+23. EMPTY STATE
+======================================================================
+
+No Active Guest Bookings
+
+Create a new booking to begin.
+
+======================================================================
+24. SUCCESS STATE
+======================================================================
+
+Booking Confirmed
+
+Driver Assigned
+
+Guest Notified
+
+======================================================================
+25. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Guest Data Encryption
+
+Audit Logs
+
+======================================================================
+26. ANALYTICS EVENTS
+======================================================================
+
+guest_booking_open
+
+booking_created
+
+availability_checked
+
+driver_assigned
+
+vip_booking_created
+
+booking_completed
+
+======================================================================
+27. ACCESSIBILITY
+======================================================================
+
+Screen Reader Support
+
+Keyboard Navigation
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+28. TEST CASES
+======================================================================
+
+TC-001
+
+Airport Pickup Booking
+
+Expected
+
+Booking Confirmed
+
+------------------------------------
+
+TC-002
+
+Multi-stop Journey
+
+Expected
+
+Route Calculated
+
+------------------------------------
+
+TC-003
+
+VIP Booking
+
+Expected
+
+Luxury Vehicle Assigned
+
+------------------------------------
+
+TC-004
+
+Special Assistance
+
+Expected
+
+Appropriate Driver & Vehicle Assigned
+
+======================================================================
+29. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Concierge Assistant
+
+Voice Booking
+
+Guest Mobile Self-Service
+
+QR-Based Pickup Verification
+
+Digital Itinerary
+
+Hotel PMS Auto-Sync
+
+Guest Preference AI
+
+======================================================================
+30. DEVELOPER NOTES
+======================================================================
+
+Support configurable booking forms.
+
+Synchronize guest preferences across properties.
+
+Validate flight information automatically.
+
+Support multilingual guest communication.
+
+Optimize booking APIs for sub-second response.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Guest Transportation & Concierge Booking
+
+Route
+
+/hotel/booking
+
+HTML
+
+hotel-booking.html
+
+CSS
+
+hotel-booking.css
+
+JavaScript
+
+hotel-booking.js
+
+Primary APIs
+
+GET /hotel/guest/{guest_id}
+
+POST /hotel/booking/create
+
+POST /hotel/booking/check-availability
+
+POST /hotel/booking/assign
+
+GET /hotel/booking/{booking_id}
+
+======================================================================
+END OF DOCUMENT
+======================================================================

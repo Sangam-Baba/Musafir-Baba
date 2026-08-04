@@ -1,0 +1,702 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Color Palette
+Document ID    : MBC-FE-004
+Version        : 1.0
+Prepared For   : MusafirBaba Travels Pvt. Ltd.
+Platform       : MBconnect + MBGO
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Introduction
+2. Brand Colors
+3. Primary Colors
+4. Secondary Colors
+5. Neutral Colors
+6. Semantic Colors
+7. Status Colors
+8. Module Colors
+9. Gradient Library
+10. Background Colors
+11. Typography Colors
+12. Border Colors
+13. Shadow Colors
+14. Chart Colors
+15. Interactive States
+16. Notification Colors
+17. Dark Theme
+18. CSS Variables
+19. Accessibility Standards
+20. Best Practices
+21. Future Expansion
+
+======================================================================
+1. INTRODUCTION
+======================================================================
+
+The MBconnect color system provides a unified visual identity across
+all applications, dashboards, and portals.
+
+Every screen should use colors from this document only.
+
+Developers must never introduce arbitrary colors.
+
+======================================================================
+2. BRAND COLORS
+======================================================================
+
+Brand Primary
+
+Blue
+
+HEX
+
+#1565C0
+
+RGB
+
+21,101,192
+
+Purpose
+
+Primary Actions
+
+Navigation
+
+Brand Identity
+
+------------------------------------------------------------
+
+Brand Dark
+
+#0B2D6B
+
+Purpose
+
+Headers
+
+Navigation
+
+Important Titles
+
+------------------------------------------------------------
+
+Brand Light
+
+#42A5F5
+
+Purpose
+
+Highlights
+
+Cards
+
+Charts
+
+Illustrations
+
+======================================================================
+3. PRIMARY COLORS
+======================================================================
+
+Primary
+
+#1565C0
+
+Primary Hover
+
+#1976D2
+
+Primary Active
+
+#0D47A1
+
+Primary Disabled
+
+#90CAF9
+
+Primary Background
+
+#E3F2FD
+
+======================================================================
+4. SECONDARY COLORS
+======================================================================
+
+Purple
+
+#8E24AA
+
+Cyan
+
+#00ACC1
+
+Indigo
+
+#3949AB
+
+Teal
+
+#009688
+
+Pink
+
+#EC407A
+
+These colors should only be used for visual categorization and analytics.
+
+======================================================================
+5. NEUTRAL COLORS
+======================================================================
+
+White
+
+#FFFFFF
+
+Light Background
+
+#F5F7FB
+
+Card Background
+
+#FFFFFF
+
+Divider
+
+#ECEFF4
+
+Border
+
+#E3E8EF
+
+Grey 100
+
+#F8FAFC
+
+Grey 200
+
+#EDF2F7
+
+Grey 300
+
+#CBD5E0
+
+Grey 400
+
+#A0AEC0
+
+Grey 500
+
+#718096
+
+Grey 700
+
+#4A5568
+
+Grey 900
+
+#202124
+
+======================================================================
+6. SEMANTIC COLORS
+======================================================================
+
+Success
+
+#16C47F
+
+Hover
+
+#13A66A
+
+Background
+
+#E7FFF1
+
+------------------------------------------------------------
+
+Warning
+
+#FB8C00
+
+Hover
+
+#EF6C00
+
+Background
+
+#FFF7E6
+
+------------------------------------------------------------
+
+Danger
+
+#E53935
+
+Hover
+
+#C62828
+
+Background
+
+#FFF5F5
+
+------------------------------------------------------------
+
+Information
+
+#00ACC1
+
+Background
+
+#E0F7FA
+
+======================================================================
+7. STATUS COLORS
+======================================================================
+
+Driver Online
+
+#16C47F
+
+Driver Offline
+
+#9E9E9E
+
+Driver Busy
+
+#FB8C00
+
+Driver On Trip
+
+#1565C0
+
+Driver Suspended
+
+#E53935
+
+------------------------------------------------------------
+
+Trip Completed
+
+#16C47F
+
+Trip Running
+
+#1565C0
+
+Trip Scheduled
+
+#8E24AA
+
+Trip Cancelled
+
+#E53935
+
+Trip Pending
+
+#FB8C00
+
+------------------------------------------------------------
+
+Vehicle Active
+
+#16C47F
+
+Vehicle Maintenance
+
+#FB8C00
+
+Vehicle Inactive
+
+#9E9E9E
+
+Vehicle Blocked
+
+#E53935
+
+======================================================================
+8. MODULE COLORS
+======================================================================
+
+Authentication
+
+Blue
+
+Dashboard
+
+Blue
+
+Trips
+
+Green
+
+Navigation
+
+Blue
+
+Wallet
+
+Orange
+
+Finance
+
+Purple
+
+Fleet
+
+Teal
+
+SOS
+
+Red
+
+Support
+
+Cyan
+
+Corporate
+
+Indigo
+
+Analytics
+
+Purple
+
+Executive
+
+Dark Blue
+
+======================================================================
+9. GRADIENT LIBRARY
+======================================================================
+
+Primary
+
+#1565C0 → #42A5F5
+
+Success
+
+#16C47F → #4DD599
+
+Warning
+
+#FB8C00 → #FFB74D
+
+Danger
+
+#E53935 → #EF5350
+
+Purple
+
+#8E24AA → #BA68C8
+
+Executive
+
+#0B2D6B → #1565C0
+
+======================================================================
+10. BACKGROUND COLORS
+======================================================================
+
+Application
+
+#F5F7FB
+
+Cards
+
+#FFFFFF
+
+Dialogs
+
+#FFFFFF
+
+Forms
+
+#FFFFFF
+
+Charts
+
+#FFFFFF
+
+Tables
+
+#FFFFFF
+
+Sidebar
+
+#0B2D6B
+
+======================================================================
+11. TYPOGRAPHY COLORS
+======================================================================
+
+Primary Text
+
+#202124
+
+Secondary Text
+
+#6B7280
+
+Placeholder
+
+#9CA3AF
+
+Disabled
+
+#A0AEC0
+
+White Text
+
+#FFFFFF
+
+Link
+
+#1565C0
+
+======================================================================
+12. BORDER COLORS
+======================================================================
+
+Default
+
+#E3E8EF
+
+Focused
+
+#1565C0
+
+Error
+
+#E53935
+
+Success
+
+#16C47F
+
+Warning
+
+#FB8C00
+
+======================================================================
+13. SHADOW COLORS
+======================================================================
+
+Light
+
+rgba(0,0,0,.05)
+
+Medium
+
+rgba(0,0,0,.08)
+
+Heavy
+
+rgba(0,0,0,.15)
+
+Floating
+
+rgba(0,0,0,.25)
+
+======================================================================
+14. CHART COLORS
+======================================================================
+
+Revenue
+
+#1565C0
+
+Trips
+
+#16C47F
+
+Fleet
+
+#FB8C00
+
+Drivers
+
+#8E24AA
+
+Corporate
+
+#00ACC1
+
+Expenses
+
+#E53935
+
+Profit
+
+#43A047
+
+======================================================================
+15. INTERACTIVE STATES
+======================================================================
+
+Hover
+
+Brightness +8%
+
+Pressed
+
+Brightness -10%
+
+Disabled
+
+Opacity 50%
+
+Selected
+
+Blue Border
+
+Focused
+
+Blue Outline
+
+======================================================================
+16. NOTIFICATION COLORS
+======================================================================
+
+Success
+
+Green
+
+Error
+
+Red
+
+Warning
+
+Orange
+
+Information
+
+Blue
+
+Unread
+
+Purple
+
+======================================================================
+17. DARK THEME
+======================================================================
+
+Background
+
+#121212
+
+Surface
+
+#1E1E1E
+
+Card
+
+#242424
+
+Divider
+
+#333333
+
+Text
+
+#F5F5F5
+
+Primary
+
+#42A5F5
+
+======================================================================
+18. CSS VARIABLES
+======================================================================
+
+--primary
+
+--primary-dark
+
+--primary-light
+
+--success
+
+--warning
+
+--danger
+
+--background
+
+--card
+
+--border
+
+--text-primary
+
+--text-secondary
+
+======================================================================
+19. ACCESSIBILITY
+======================================================================
+
+Minimum Contrast
+
+4.5 : 1
+
+Large Text
+
+3 : 1
+
+Icons
+
+Minimum 24px
+
+Touch Area
+
+48px
+
+Do not rely on color alone to indicate status.
+
+======================================================================
+20. BEST PRACTICES
+======================================================================
+
+✓ Maintain consistent color usage
+
+✓ Avoid excessive gradients
+
+✓ Limit accent colors
+
+✓ Ensure sufficient contrast
+
+✓ Use semantic colors appropriately
+
+✓ Test in light and dark modes
+
+======================================================================
+21. FUTURE EXPANSION
+======================================================================
+
+Material You Support
+
+Dynamic Themes
+
+Corporate Branding
+
+City Themes
+
+Seasonal Themes
+
+Accessibility Profiles
+
+High Contrast Mode
+
+======================================================================
+END OF DOCUMENT
+======================================================================

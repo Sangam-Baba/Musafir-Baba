@@ -1,0 +1,675 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : White Label Partner Portal
+Document ID    : MBC-FE-088
+Module         : White Label SaaS Platform
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Partner Dashboard
+8. White Label Branding
+9. Domain & Tenant Management
+10. Pricing & Commission Rules
+11. Subscription Management
+12. Mobile App Branding
+13. Theme & UI Customization
+14. Multi-Tenant Administration
+15. Analytics & Settlements
+16. Functional Requirements
+17. API Integration
+18. Database Mapping
+19. Error Handling
+20. Loading State
+21. Empty State
+22. Success State
+23. Security Requirements
+24. Analytics Events
+25. Accessibility
+26. Test Cases
+27. Future Enhancements
+28. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+White Label Partner Portal
+
+Screen Code
+
+WL-001
+
+Entry Point
+
+Partner Admin
+
+Purpose
+
+Allow partners to operate MBconnect using their
+own branding, domain and business configuration.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Enable scalable SaaS growth through branded
+mobility platforms for partners.
+
+Business Goals
+
+• Expand market reach
+
+• Generate recurring revenue
+
+• Support partner independence
+
+• Maintain centralized control
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ White Label Partner
+
+Partner Administrator
+
+Finance Manager
+
+Operations Manager
+
+Support Manager
+
+Super Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide partners with complete branding,
+configuration and operational control.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Partner Login
+
+↓
+
+Brand Settings
+
+↓
+
+Business Configuration
+
+↓
+
+Publish Changes
+
+↓
+
+Launch Platform
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+White Label Dashboard
+
+Partner
+
+XYZ Mobility Solutions
+
+Subscription
+
+Enterprise
+
+Status
+
+Active
+
+Domain
+
+app.xyzmobility.com
+
+Drivers
+
+842
+
+Customers
+
+18,420
+
+Bookings
+
+2,48,650
+
+--------------------------------------------------
+
+Brand Assets
+
+Logo
+
+Uploaded
+
+Primary Color
+
+#0A7CFF
+
+Secondary Color
+
+#1F2937
+
+App Icon
+
+Configured
+
+--------------------------------------------------
+
+Quick Actions
+
+Brand Settings
+
+Pricing
+
+Analytics
+
+Invoices
+
+Support
+
+======================================================================
+7. PARTNER DASHBOARD
+======================================================================
+
+Business Summary
+
+Subscription Details
+
+Usage Statistics
+
+Revenue
+
+Active Drivers
+
+Active Customers
+
+Pending Settlements
+
+======================================================================
+8. WHITE LABEL BRANDING
+======================================================================
+
+Company Name
+
+Logo
+
+Favicon
+
+App Icon
+
+Splash Screen
+
+Login Screen
+
+Email Branding
+
+Invoice Branding
+
+======================================================================
+9. DOMAIN & TENANT MANAGEMENT
+======================================================================
+
+Custom Domain
+
+Subdomain
+
+SSL Status
+
+DNS Verification
+
+Tenant ID
+
+Tenant Status
+
+Region
+
+======================================================================
+10. PRICING & COMMISSION RULES
+======================================================================
+
+Trip Pricing
+
+Platform Fee
+
+Driver Commission
+
+Fleet Commission
+
+Dynamic Pricing
+
+Coupon Rules
+
+Tax Configuration
+
+======================================================================
+11. SUBSCRIPTION MANAGEMENT
+======================================================================
+
+Plan
+
+Billing Cycle
+
+Renewal Date
+
+Usage Limits
+
+Extra Modules
+
+Payment Method
+
+Invoices
+
+======================================================================
+12. MOBILE APP BRANDING
+======================================================================
+
+Android App Name
+
+iOS App Name
+
+Package Identifier
+
+Bundle Identifier
+
+App Icon
+
+Launch Screen
+
+Store Listing Details
+
+======================================================================
+13. THEME & UI CUSTOMIZATION
+======================================================================
+
+Primary Color
+
+Secondary Color
+
+Fonts
+
+Button Style
+
+Menu Layout
+
+Dark Mode
+
+Language
+
+======================================================================
+14. MULTI-TENANT ADMINISTRATION
+======================================================================
+
+Tenant Management
+
+Partner Users
+
+Roles
+
+Permissions
+
+API Keys
+
+Audit Logs
+
+======================================================================
+15. ANALYTICS & SETTLEMENTS
+======================================================================
+
+Revenue
+
+Trips
+
+Drivers
+
+Customers
+
+Subscription Usage
+
+Settlement Reports
+
+Invoices
+
+======================================================================
+16. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Configure branding.
+
+FR-002
+
+Manage subscription.
+
+FR-003
+
+Configure pricing.
+
+FR-004
+
+Manage users.
+
+FR-005
+
+View analytics.
+
+FR-006
+
+Generate settlements.
+
+======================================================================
+17. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/partner/dashboard
+
+------------------------------------
+
+POST
+
+/api/v1/partner/branding
+
+------------------------------------
+
+POST
+
+/api/v1/partner/pricing
+
+------------------------------------
+
+GET
+
+/api/v1/partner/subscription
+
+------------------------------------
+
+GET
+
+/api/v1/partner/analytics
+
+Response
+
+{
+
+"partner":"XYZ Mobility Solutions",
+
+"subscription":"Enterprise",
+
+"drivers":842,
+
+"customers":18420,
+
+"bookings":248650
+
+}
+
+======================================================================
+18. DATABASE MAPPING
+======================================================================
+
+Tables
+
+partners
+
+partner_branding
+
+partner_domains
+
+partner_subscriptions
+
+partner_settings
+
+partner_users
+
+Fields
+
+partner_id
+
+tenant_id
+
+domain
+
+subscription_plan
+
+logo_url
+
+theme
+
+status
+
+======================================================================
+19. ERROR HANDLING
+======================================================================
+
+Brand Update Failed
+
+Domain Verification Failed
+
+Subscription Error
+
+Retry
+
+======================================================================
+20. LOADING STATE
+======================================================================
+
+Loading Dashboard
+
+Uploading Branding
+
+Saving Configuration
+
+======================================================================
+21. EMPTY STATE
+======================================================================
+
+No Branding Configured
+
+Upload your company branding to continue.
+
+======================================================================
+22. SUCCESS STATE
+======================================================================
+
+Brand Updated
+
+Subscription Activated
+
+Domain Verified
+
+======================================================================
+23. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Tenant Isolation
+
+Role-Based Access
+
+Encrypted Partner Data
+
+Audit Logs
+
+API Rate Limiting
+
+======================================================================
+24. ANALYTICS EVENTS
+======================================================================
+
+partner_dashboard_open
+
+branding_updated
+
+subscription_changed
+
+pricing_updated
+
+analytics_viewed
+
+domain_verified
+
+======================================================================
+25. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+26. TEST CASES
+======================================================================
+
+TC-001
+
+Upload Logo
+
+Expected
+
+Brand Updated
+
+------------------------------------
+
+TC-002
+
+Verify Domain
+
+Expected
+
+Domain Active
+
+------------------------------------
+
+TC-003
+
+Update Pricing
+
+Expected
+
+Pricing Applied
+
+------------------------------------
+
+TC-004
+
+Activate Subscription
+
+Expected
+
+Enterprise Features Enabled
+
+======================================================================
+27. FUTURE ENHANCEMENTS
+======================================================================
+
+One-Click App Publishing
+
+Marketplace Extensions
+
+Partner API Marketplace
+
+Custom Feature Toggles
+
+Regional Data Hosting
+
+AI Branding Assistant
+
+======================================================================
+28. DEVELOPER NOTES
+======================================================================
+
+Implement strict tenant isolation.
+
+Support unlimited white-label partners.
+
+Separate branding from core logic.
+
+Cache theme configuration.
+
+Allow runtime branding updates.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+White Label Partner Portal
+
+Route
+
+/partner/dashboard
+
+HTML
+
+partner-dashboard.html
+
+CSS
+
+partner-dashboard.css
+
+JavaScript
+
+partner-dashboard.js
+
+Primary APIs
+
+GET /partner/dashboard
+
+POST /partner/branding
+
+POST /partner/pricing
+
+GET /partner/subscription
+
+GET /partner/analytics
+
+======================================================================
+END OF DOCUMENT
+======================================================================

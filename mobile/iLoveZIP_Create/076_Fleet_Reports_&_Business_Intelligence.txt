@@ -1,0 +1,728 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Fleet Reports & Business Intelligence
+Document ID    : MBC-FE-076
+Module         : Fleet Analytics & BI
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Executive Dashboard
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Widgets
+8. Revenue Analytics
+9. Driver Analytics
+10. Vehicle Analytics
+11. Trip Analytics
+12. Customer Analytics
+13. Operational KPIs
+14. Profitability Reports
+15. Scheduled Reports
+16. Custom Report Builder
+17. Functional Requirements
+18. API Integration
+19. Database Mapping
+20. Error Handling
+21. Loading State
+22. Empty State
+23. Success State
+24. Security Requirements
+25. Analytics Events
+26. Accessibility
+27. Test Cases
+28. Future Enhancements
+29. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Fleet Reports & Business Intelligence
+
+Screen Code
+
+BI-001
+
+Entry Point
+
+Fleet Dashboard
+
+Reports
+
+Analytics
+
+Purpose
+
+Provide enterprise-grade reporting and business intelligence
+for fleet operations.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Enable data-driven decision making across fleet operations.
+
+Business Goals
+
+• Increase profitability
+
+• Improve efficiency
+
+• Reduce operational costs
+
+• Enhance customer satisfaction
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Fleet Owner
+
+Business Manager
+
+Operations Manager
+
+Finance Manager
+
+Admin
+
+======================================================================
+4. EXECUTIVE DASHBOARD
+======================================================================
+
+Display
+
+Today's Revenue
+
+Monthly Revenue
+
+Fleet Utilization
+
+Driver Productivity
+
+Customer Rating
+
+Trip Success Rate
+
+Profit Margin
+
+Outstanding Payments
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dashboard
+
+↓
+
+Analytics
+
+↓
+
+Select Report
+
+↓
+
+Apply Filters
+
+↓
+
+Generate Report
+
+↓
+
+Export
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Business Intelligence Dashboard
+
+Revenue Today
+
+₹2,48,950
+
+Monthly Revenue
+
+₹58,40,000
+
+Fleet Utilization
+
+91%
+
+Average Rating
+
+4.88
+
+--------------------------------------------------
+
+Revenue Trend
+
+(Line Chart)
+
+--------------------------------------------------
+
+Trips by Category
+
+Airport
+
+Corporate
+
+Outstation
+
+Hourly Rental
+
+Hotel Transfers
+
+(Pie Chart)
+
+--------------------------------------------------
+
+Top Drivers
+
+Rajesh Kumar
+
+₹1,48,000
+
+----------------------------------
+
+Amit Singh
+
+₹1,36,000
+
+----------------------------------
+
+Vehicle Utilization
+
+Toyota Rumion
+
+94%
+
+Kia Carens
+
+89%
+
+Toyota Innova
+
+96%
+
+--------------------------------------------------
+
+Buttons
+
+Generate Report
+
+Export
+
+Schedule Report
+
+======================================================================
+7. DASHBOARD WIDGETS
+======================================================================
+
+Revenue Widget
+
+Trip Widget
+
+Driver Widget
+
+Vehicle Widget
+
+Profit Widget
+
+Customer Widget
+
+Compliance Widget
+
+Forecast Widget
+
+======================================================================
+8. REVENUE ANALYTICS
+======================================================================
+
+Daily Revenue
+
+Weekly Revenue
+
+Monthly Revenue
+
+Yearly Revenue
+
+Revenue by City
+
+Revenue by Vehicle
+
+Revenue by Customer Type
+
+Revenue by Fleet
+
+======================================================================
+9. DRIVER ANALYTICS
+======================================================================
+
+Trips Completed
+
+Acceptance Rate
+
+Completion Rate
+
+Revenue
+
+Ratings
+
+Cancellation %
+
+Training Status
+
+Driver Rankings
+
+======================================================================
+10. VEHICLE ANALYTICS
+======================================================================
+
+Vehicle Utilization
+
+Revenue Per Vehicle
+
+Idle Time
+
+Maintenance Cost
+
+Downtime
+
+Mileage
+
+Fuel Cost
+
+======================================================================
+11. TRIP ANALYTICS
+======================================================================
+
+Trips by Type
+
+Trips by City
+
+Peak Hours
+
+Cancellation Analysis
+
+Average Trip Duration
+
+Average Distance
+
+Completion Rate
+
+======================================================================
+12. CUSTOMER ANALYTICS
+======================================================================
+
+Corporate Clients
+
+Airport Customers
+
+Hotel Customers
+
+Retail Customers
+
+Repeat Customers
+
+Customer Ratings
+
+Complaints
+
+======================================================================
+13. OPERATIONAL KPIs
+======================================================================
+
+Dispatch SLA
+
+Average ETA
+
+Acceptance %
+
+Completion %
+
+Response Time
+
+Vehicle Availability
+
+Compliance Score
+
+======================================================================
+14. PROFITABILITY REPORTS
+======================================================================
+
+Gross Profit
+
+Net Profit
+
+Revenue Per Driver
+
+Revenue Per Vehicle
+
+Cost Per Trip
+
+Profit Margin
+
+ROI
+
+======================================================================
+15. SCHEDULED REPORTS
+======================================================================
+
+Daily Report
+
+Weekly Report
+
+Monthly Report
+
+Quarterly Report
+
+Yearly Report
+
+Email Delivery
+
+======================================================================
+16. CUSTOM REPORT BUILDER
+======================================================================
+
+Date Filter
+
+City Filter
+
+Vehicle Filter
+
+Driver Filter
+
+Trip Type Filter
+
+Export Format
+
+======================================================================
+17. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Generate reports.
+
+FR-002
+
+Filter reports.
+
+FR-003
+
+Export reports.
+
+FR-004
+
+Schedule reports.
+
+FR-005
+
+View KPIs.
+
+FR-006
+
+Display analytics.
+
+======================================================================
+18. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/analytics/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/analytics/revenue
+
+------------------------------------
+
+GET
+
+/api/v1/analytics/drivers
+
+------------------------------------
+
+GET
+
+/api/v1/analytics/vehicles
+
+------------------------------------
+
+POST
+
+/api/v1/analytics/report
+
+------------------------------------
+
+POST
+
+/api/v1/analytics/schedule
+
+Response
+
+{
+
+"today_revenue":248950,
+
+"fleet_utilization":91,
+
+"customer_rating":4.88,
+
+"profit_margin":24.5
+
+}
+
+======================================================================
+19. DATABASE MAPPING
+======================================================================
+
+Tables
+
+analytics_dashboard
+
+analytics_reports
+
+scheduled_reports
+
+kpi_metrics
+
+Fields
+
+report_id
+
+fleet_id
+
+metric_name
+
+metric_value
+
+generated_at
+
+======================================================================
+20. ERROR HANDLING
+======================================================================
+
+Unable To Generate Report
+
+Export Failed
+
+No Data Available
+
+Retry
+
+======================================================================
+21. LOADING STATE
+======================================================================
+
+Loading Dashboard
+
+Generating Report
+
+Preparing Export
+
+======================================================================
+22. EMPTY STATE
+======================================================================
+
+No Analytics Available
+
+Complete more trips to generate reports.
+
+======================================================================
+23. SUCCESS STATE
+======================================================================
+
+Report Generated
+
+Export Successful
+
+Schedule Created
+
+======================================================================
+24. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Audit Logs
+
+Data Encryption
+
+======================================================================
+25. ANALYTICS EVENTS
+======================================================================
+
+analytics_open
+
+report_generated
+
+report_exported
+
+dashboard_viewed
+
+scheduled_report_created
+
+======================================================================
+26. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+27. TEST CASES
+======================================================================
+
+TC-001
+
+Generate Revenue Report
+
+Expected
+
+Revenue Report Displayed
+
+------------------------------------
+
+TC-002
+
+Apply Filters
+
+Expected
+
+Filtered Results Displayed
+
+------------------------------------
+
+TC-003
+
+Export Excel
+
+Expected
+
+Excel File Generated
+
+------------------------------------
+
+TC-004
+
+Schedule Monthly Report
+
+Expected
+
+Report Scheduled
+
+======================================================================
+28. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Business Insights
+
+Predictive Demand Forecasting
+
+Revenue Forecast
+
+Driver Attrition Prediction
+
+Heat Maps
+
+Interactive BI Dashboards
+
+Power BI Integration
+
+Tableau Integration
+
+======================================================================
+29. DEVELOPER NOTES
+======================================================================
+
+Support large datasets efficiently.
+
+Use server-side aggregation.
+
+Enable caching for dashboards.
+
+Support drill-down analytics.
+
+Allow PDF, Excel and CSV exports.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Fleet Reports & Business Intelligence
+
+Route
+
+/fleet/analytics
+
+HTML
+
+fleet-analytics.html
+
+CSS
+
+fleet-analytics.css
+
+JavaScript
+
+fleet-analytics.js
+
+Primary APIs
+
+GET /analytics/dashboard
+
+GET /analytics/revenue
+
+GET /analytics/drivers
+
+GET /analytics/vehicles
+
+POST /analytics/report
+
+POST /analytics/schedule
+
+======================================================================
+END OF DOCUMENT
+======================================================================

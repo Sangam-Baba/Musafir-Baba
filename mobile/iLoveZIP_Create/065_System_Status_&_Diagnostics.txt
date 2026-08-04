@@ -1,0 +1,573 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : System Status & Diagnostics
+Document ID    : MBC-FE-065
+Module         : System Diagnostics
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. System Health Checks
+9. Functional Requirements
+10. Diagnostic Tests
+11. Troubleshooting
+12. API Integration
+13. Database Mapping
+14. Error Handling
+15. Loading State
+16. Success State
+17. Security Requirements
+18. Analytics Events
+19. Accessibility
+20. Test Cases
+21. Future Enhancements
+22. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+System Status & Diagnostics
+
+Screen Code
+
+SYSTEM-001
+
+Entry Point
+
+Settings
+
+Help Center
+
+Support
+
+Purpose
+
+Allow Driver Partners to verify application health, device readiness
+and connectivity before or during trips.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Detect technical issues before they affect trip execution.
+
+Business Goals
+
+• Reduce technical failures
+
+• Improve trip reliability
+
+• Faster troubleshooting
+
+• Reduce support workload
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Support Team
+
+Operations Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide real-time health status of the application, device and network.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Settings
+
+↓
+
+Diagnostics
+
+↓
+
+Run Health Check
+
+↓
+
+View Results
+
+↓
+
+Fix Issues
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+System Health
+
+Overall Status
+
+98%
+
+Excellent
+
+--------------------------------------------------
+
+GPS
+
+✓ Active
+
+Accuracy
+
+5 Metres
+
+--------------------------------------------------
+
+Internet
+
+✓ Connected
+
+4G
+
+18 Mbps
+
+--------------------------------------------------
+
+Server Status
+
+✓ Online
+
+Latency
+
+82 ms
+
+--------------------------------------------------
+
+Battery
+
+73%
+
+Battery Optimization Disabled
+
+--------------------------------------------------
+
+Permissions
+
+Location
+
+✓ Allowed
+
+Camera
+
+✓ Allowed
+
+Microphone
+
+✓ Allowed
+
+Storage
+
+✓ Allowed
+
+Notifications
+
+✓ Enabled
+
+--------------------------------------------------
+
+Background Services
+
+Running Normally
+
+--------------------------------------------------
+
+Buttons
+
+Run Diagnostics
+
+Export Report
+
+Contact Support
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Health Score Card
+
+Connectivity Cards
+
+Permission Cards
+
+Battery Card
+
+Diagnostic Result List
+
+Action Buttons
+
+======================================================================
+8. SYSTEM HEALTH CHECKS
+======================================================================
+
+GPS Status
+
+Internet Status
+
+Server Reachability
+
+API Connectivity
+
+Battery Level
+
+Battery Optimization
+
+Location Accuracy
+
+Storage Space
+
+Memory Usage
+
+Notification Permission
+
+Camera Permission
+
+Background Location
+
+Microphone Permission
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Run diagnostic scan.
+
+FR-002
+
+Display device health.
+
+FR-003
+
+Check permissions.
+
+FR-004
+
+Display API status.
+
+FR-005
+
+Generate report.
+
+FR-006
+
+Provide troubleshooting suggestions.
+
+======================================================================
+10. DIAGNOSTIC TESTS
+======================================================================
+
+GPS Test
+
+Internet Speed Test
+
+Server Ping
+
+API Authentication
+
+Background Service Check
+
+Notification Delivery Test
+
+Storage Availability
+
+Permission Validation
+
+======================================================================
+11. TROUBLESHOOTING
+======================================================================
+
+Suggested Fixes
+
+Enable GPS
+
+Disable Battery Saver
+
+Grant Background Location
+
+Reconnect Internet
+
+Restart App
+
+Update Application
+
+Restart Device
+
+======================================================================
+12. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/system/status
+
+------------------------------------
+
+POST
+
+/api/v1/system/diagnostics
+
+------------------------------------
+
+POST
+
+/api/v1/system/report
+
+Response
+
+{
+
+"health_score":98,
+
+"gps":"active",
+
+"internet":"connected",
+
+"server":"online",
+
+"battery":73
+
+}
+
+======================================================================
+13. DATABASE MAPPING
+======================================================================
+
+Tables
+
+diagnostic_reports
+
+device_health
+
+system_logs
+
+Fields
+
+driver_id
+
+device_model
+
+os_version
+
+health_score
+
+diagnostic_time
+
+======================================================================
+14. ERROR HANDLING
+======================================================================
+
+Unable To Run Diagnostics
+
+Server Unreachable
+
+Permission Missing
+
+Retry
+
+======================================================================
+15. LOADING STATE
+======================================================================
+
+Running Diagnostics
+
+Testing Connectivity
+
+Checking Permissions
+
+Preparing Report
+
+======================================================================
+16. SUCCESS STATE
+======================================================================
+
+Diagnostics Completed
+
+Health Report Generated
+
+No Critical Issues Found
+
+======================================================================
+17. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Diagnostic Reports
+
+Role-Based Access
+
+Audit Logging
+
+======================================================================
+18. ANALYTICS EVENTS
+======================================================================
+
+diagnostics_open
+
+diagnostics_started
+
+diagnostics_completed
+
+report_exported
+
+support_contacted
+
+======================================================================
+19. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+20. TEST CASES
+======================================================================
+
+TC-001
+
+Run Diagnostics
+
+Expected
+
+All Tests Completed
+
+------------------------------------
+
+TC-002
+
+GPS Disabled
+
+Expected
+
+Warning Displayed
+
+------------------------------------
+
+TC-003
+
+Permission Missing
+
+Expected
+
+Permission Guidance
+
+------------------------------------
+
+TC-004
+
+Export Report
+
+Expected
+
+Report Generated
+
+======================================================================
+21. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Auto Diagnosis
+
+Crash Log Analysis
+
+Predictive Device Health
+
+Automatic Issue Resolution
+
+Cloud Diagnostics
+
+Fleet Health Dashboard
+
+======================================================================
+22. DEVELOPER NOTES
+======================================================================
+
+Run tests asynchronously.
+
+Never block UI while diagnostics execute.
+
+Permission checks should follow platform guidelines.
+
+Diagnostic reports must exclude personal information.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+System Status & Diagnostics
+
+Route
+
+/system/diagnostics
+
+HTML
+
+system-diagnostics.html
+
+CSS
+
+system-diagnostics.css
+
+JavaScript
+
+system-diagnostics.js
+
+Primary APIs
+
+GET /system/status
+
+POST /system/diagnostics
+
+POST /system/report
+
+======================================================================
+END OF DOCUMENT
+======================================================================

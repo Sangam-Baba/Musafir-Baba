@@ -1,0 +1,647 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Data Privacy & Consent Manager
+Document ID    : MBC-FE-068
+Module         : Privacy & Data Protection
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Privacy Dashboard
+9. Consent Management
+10. Personal Data Management
+11. Communication Preferences
+12. Data Export
+13. Account Deletion
+14. Third-Party Data Sharing
+15. Functional Requirements
+16. API Integration
+17. Database Mapping
+18. Error Handling
+19. Loading State
+20. Empty State
+21. Success State
+22. Security Requirements
+23. Analytics Events
+24. Accessibility
+25. Test Cases
+26. Future Enhancements
+27. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Data Privacy & Consent Manager
+
+Screen Code
+
+PRIVACY-001
+
+Entry Point
+
+Settings
+
+Privacy
+
+Registration
+
+Purpose
+
+Provide complete control over personal data,
+privacy preferences and consent management.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Increase transparency by allowing Driver Partners
+to manage how their personal information is used.
+
+Business Goals
+
+• User Trust
+
+• Regulatory Compliance
+
+• Data Transparency
+
+• User Control
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Privacy Team
+
+Compliance Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide complete visibility and control over
+personal information and consent.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Settings
+
+↓
+
+Privacy Center
+
+↓
+
+Select Privacy Section
+
+↓
+
+Update Preferences
+
+↓
+
+Save Changes
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Privacy Center
+
+Your Privacy Score
+
+92%
+
+Excellent
+
+--------------------------------------------------
+
+Consent Preferences
+
+✓ Operational Communication
+
+✓ Safety Alerts
+
+✓ Payment Notifications
+
+☐ Marketing Messages
+
+☐ Promotional Offers
+
+--------------------------------------------------
+
+Personal Data
+
+View Personal Data
+
+Download Data
+
+Update Personal Information
+
+--------------------------------------------------
+
+Data Sharing
+
+Third Party Partners
+
+View Details >
+
+--------------------------------------------------
+
+Permissions
+
+Location
+
+Camera
+
+Microphone
+
+Storage
+
+Notifications
+
+--------------------------------------------------
+
+Privacy Requests
+
+Export My Data
+
+Delete My Account
+
+Privacy History
+
+--------------------------------------------------
+
+Buttons
+
+Save Changes
+
+Request Data Export
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Privacy Score Card
+
+Consent Toggles
+
+Permission Cards
+
+Data Management Cards
+
+Privacy Request Cards
+
+Primary Action Buttons
+
+======================================================================
+8. PRIVACY DASHBOARD
+======================================================================
+
+Display
+
+Privacy Score
+
+Active Consents
+
+Permissions
+
+Third Party Access
+
+Recent Privacy Activity
+
+======================================================================
+9. CONSENT MANAGEMENT
+======================================================================
+
+Operational Communication
+
+Safety Alerts
+
+Marketing
+
+Email
+
+SMS
+
+Push Notifications
+
+Personalized Recommendations
+
+Analytics
+
+======================================================================
+10. PERSONAL DATA MANAGEMENT
+======================================================================
+
+Profile Information
+
+Identity Documents
+
+Vehicle Information
+
+Bank Information
+
+Trip History
+
+Learning Records
+
+Achievements
+
+======================================================================
+11. COMMUNICATION PREFERENCES
+======================================================================
+
+Email
+
+SMS
+
+WhatsApp
+
+Push Notifications
+
+Phone Calls
+
+Marketing
+
+Mandatory System Alerts
+
+======================================================================
+12. DATA EXPORT
+======================================================================
+
+Available Formats
+
+PDF
+
+JSON
+
+CSV
+
+Export Includes
+
+Profile
+
+Trips
+
+Payments
+
+Documents
+
+Certificates
+
+======================================================================
+13. ACCOUNT DELETION
+======================================================================
+
+Display
+
+Important Notice
+
+Data Retention Policy
+
+Pending Balance Check
+
+Open Trips Check
+
+Final Confirmation
+
+======================================================================
+14. THIRD-PARTY DATA SHARING
+======================================================================
+
+Payment Gateway
+
+Maps Provider
+
+SMS Provider
+
+Identity Verification
+
+Analytics Services
+
+Purpose Of Sharing
+
+======================================================================
+15. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Update privacy preferences.
+
+FR-002
+
+Manage communication preferences.
+
+FR-003
+
+Request data export.
+
+FR-004
+
+Initiate account deletion.
+
+FR-005
+
+Display consent history.
+
+FR-006
+
+Display third-party data usage.
+
+======================================================================
+16. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/privacy
+
+------------------------------------
+
+PUT
+
+/api/v1/privacy/preferences
+
+------------------------------------
+
+POST
+
+/api/v1/privacy/export
+
+------------------------------------
+
+POST
+
+/api/v1/privacy/delete-account
+
+------------------------------------
+
+GET
+
+/api/v1/privacy/history
+
+Response
+
+{
+
+"privacy_score":92,
+
+"marketing":false,
+
+"analytics":true,
+
+"export_available":true
+
+}
+
+======================================================================
+17. DATABASE MAPPING
+======================================================================
+
+Tables
+
+privacy_preferences
+
+privacy_requests
+
+consent_history
+
+data_exports
+
+Fields
+
+driver_id
+
+consent_type
+
+status
+
+requested_at
+
+completed_at
+
+======================================================================
+18. ERROR HANDLING
+======================================================================
+
+Unable To Save Preferences
+
+Export Failed
+
+Deletion Failed
+
+Network Error
+
+Retry
+
+======================================================================
+19. LOADING STATE
+======================================================================
+
+Loading Privacy Settings
+
+Saving Preferences
+
+Preparing Export
+
+======================================================================
+20. EMPTY STATE
+======================================================================
+
+No Privacy Requests Found
+
+======================================================================
+21. SUCCESS STATE
+======================================================================
+
+Preferences Updated
+
+Export Request Submitted
+
+Deletion Request Received
+
+======================================================================
+22. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Personal Data
+
+Audit Logging
+
+Consent Versioning
+
+Role-Based Access
+
+======================================================================
+23. ANALYTICS EVENTS
+======================================================================
+
+privacy_open
+
+consent_changed
+
+data_export_requested
+
+delete_request_started
+
+permission_updated
+
+======================================================================
+24. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+25. TEST CASES
+======================================================================
+
+TC-001
+
+Disable Marketing
+
+Expected
+
+Preference Saved
+
+------------------------------------
+
+TC-002
+
+Request Data Export
+
+Expected
+
+Export Created
+
+------------------------------------
+
+TC-003
+
+Delete Account
+
+Expected
+
+Confirmation Required
+
+------------------------------------
+
+TC-004
+
+View Consent History
+
+Expected
+
+History Displayed
+
+======================================================================
+26. FUTURE ENHANCEMENTS
+======================================================================
+
+Privacy Risk Score
+
+AI Privacy Advisor
+
+Automatic Consent Expiry
+
+Regional Privacy Compliance
+
+Data Processing Timeline
+
+======================================================================
+27. DEVELOPER NOTES
+======================================================================
+
+Separate mandatory operational communications from
+optional marketing communications.
+
+Consent history must never be deleted.
+
+Every consent update should be timestamped.
+
+Account deletion should follow configurable retention rules.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Data Privacy & Consent Manager
+
+Route
+
+/settings/privacy
+
+HTML
+
+privacy-center.html
+
+CSS
+
+privacy-center.css
+
+JavaScript
+
+privacy-center.js
+
+Primary APIs
+
+GET /privacy
+
+PUT /privacy/preferences
+
+POST /privacy/export
+
+POST /privacy/delete-account
+
+GET /privacy/history
+
+======================================================================
+END OF DOCUMENT
+======================================================================

@@ -1,0 +1,516 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Login Screen
+Document ID    : MBC-FE-011
+Module         : Authentication
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Functional Requirements
+9. Validation Rules
+10. API Integration
+11. Database Mapping
+12. Error Handling
+13. Loading State
+14. Empty State
+15. Success State
+16. Security Requirements
+17. Analytics Events
+18. Test Cases
+19. Future Enhancements
+20. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Login
+
+Screen Code
+
+LOGIN-001
+
+Entry Point
+
+Application Launch
+
+Platform
+
+Android
+
+iOS
+
+Web
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+The Login Screen is the gateway into MBconnect.
+
+Its objectives are
+
+• Authenticate driver
+
+• Verify registered mobile number
+
+• Begin secure session
+
+• Reduce fraudulent access
+
+• Redirect verified users
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported Users
+
+✓ Driver Partner
+
+Future
+
+Fleet Owner
+
+Corporate Driver
+
+Operations Staff
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Allow a registered driver to log in using a verified mobile number.
+
+The screen must be
+
+Fast
+
+Simple
+
+Secure
+
+Mobile Friendly
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Splash Screen
+
+↓
+
+Login Screen
+
+↓
+
+OTP Verification
+
+↓
+
+Dashboard
+
+Forgot Session
+
+↓
+
+Login Again
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+MBconnect Logo
+
+Welcome Back
+
+"Sign in to continue"
+
+--------------------------------------------------
+
+Mobile Number
+
+[ +91 | __________ ]
+
+--------------------------------------------------
+
+Continue Button
+
+--------------------------------------------------
+
+OR
+
+--------------------------------------------------
+
+Google Login (Future)
+
+--------------------------------------------------
+
+Terms & Privacy
+
+--------------------------------------------------
+
+Version Number
+
+--------------------------------------------------
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+App Logo
+
+Welcome Text
+
+Subtitle
+
+Country Code Picker
+
+Mobile Number Input
+
+Continue Button
+
+Terms Link
+
+Privacy Link
+
+App Version
+
+Network Status Indicator
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+User enters mobile number.
+
+FR-002
+
+System validates number.
+
+FR-003
+
+Continue button activates only after valid input.
+
+FR-004
+
+API request sent.
+
+FR-005
+
+OTP screen opens.
+
+FR-006
+
+Existing session bypasses login.
+
+======================================================================
+9. VALIDATION RULES
+======================================================================
+
+Mobile Number
+
+Required
+
+10 Digits
+
+Numeric Only
+
+Country Code
+
+Mandatory
+
+No Spaces
+
+No Alphabets
+
+Examples
+
+9876543210 ✓
+
+98765 ✓
+
+abcd1234 ✕
+
+123456789012 ✕
+
+======================================================================
+10. API INTEGRATION
+======================================================================
+
+Endpoint
+
+POST
+
+/api/v1/auth/login
+
+Request
+
+{
+
+country_code:"+91",
+
+mobile:"9876543210"
+
+}
+
+Success
+
+{
+
+status:true,
+
+message:"OTP Sent",
+
+otp_reference:"XYZ123"
+
+}
+
+======================================================================
+11. DATABASE MAPPING
+======================================================================
+
+Table
+
+users
+
+Columns
+
+id
+
+mobile
+
+country_code
+
+status
+
+last_login
+
+device_id
+
+======================================================================
+12. ERROR HANDLING
+======================================================================
+
+Invalid Number
+
+Network Error
+
+OTP Service Unavailable
+
+Blocked User
+
+Suspended User
+
+Inactive User
+
+Too Many Attempts
+
+======================================================================
+13. LOADING STATE
+======================================================================
+
+Disable Button
+
+Show Spinner
+
+Prevent Multiple Clicks
+
+Timeout
+
+30 Seconds
+
+======================================================================
+14. EMPTY STATE
+======================================================================
+
+Mobile Number Empty
+
+Continue Button Disabled
+
+======================================================================
+15. SUCCESS STATE
+======================================================================
+
+OTP Sent Successfully
+
+Green Success Message
+
+Navigate
+
+OTP Screen
+
+======================================================================
+16. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Ready
+
+Device Identification
+
+Rate Limiting
+
+No OTP Exposure
+
+Input Sanitization
+
+API Validation
+
+======================================================================
+17. ANALYTICS EVENTS
+======================================================================
+
+login_screen_open
+
+mobile_entered
+
+login_button_clicked
+
+otp_sent
+
+login_failed
+
+network_error
+
+======================================================================
+18. TEST CASES
+======================================================================
+
+TC-001
+
+Valid Number
+
+Expected
+
+OTP Sent
+
+------------------------
+
+TC-002
+
+Invalid Number
+
+Expected
+
+Validation Error
+
+------------------------
+
+TC-003
+
+No Internet
+
+Expected
+
+Network Error
+
+------------------------
+
+TC-004
+
+Blocked Driver
+
+Expected
+
+Access Denied
+
+------------------------
+
+TC-005
+
+Rapid Multiple Clicks
+
+Expected
+
+Single API Call
+
+======================================================================
+19. FUTURE ENHANCEMENTS
+======================================================================
+
+Google Login
+
+Face ID
+
+Fingerprint
+
+WhatsApp OTP
+
+Email Login
+
+QR Login
+
+======================================================================
+20. DEVELOPER NOTES
+======================================================================
+
+Use reusable components.
+
+Do not hardcode country codes.
+
+API timeout should be configurable.
+
+Support localization.
+
+Support dark mode.
+
+Maintain accessibility standards.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Login
+
+Route
+
+/login
+
+HTML
+
+login.html
+
+CSS
+
+login.css
+
+JavaScript
+
+login.js
+
+API
+
+POST /auth/login
+
+======================================================================
+END OF DOCUMENT
+======================================================================

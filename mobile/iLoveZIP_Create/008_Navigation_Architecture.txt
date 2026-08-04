@@ -1,0 +1,615 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Navigation Architecture
+Document ID    : MBC-FE-008
+Version        : 1.0
+Prepared For   : MusafirBaba Travels Pvt. Ltd.
+Platform       : MBconnect + MBGO
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Introduction
+2. Navigation Philosophy
+3. Global Navigation
+4. Driver App Navigation
+5. Customer App Navigation
+6. Operations Portal Navigation
+7. Executive Dashboard Navigation
+8. Authentication Flow
+9. Bottom Navigation
+10. Side Navigation Drawer
+11. Deep Linking
+12. Route Naming Convention
+13. Back Navigation
+14. Role Based Navigation
+15. Error Routes
+16. Navigation Guards
+17. State Preservation
+18. Navigation Animations
+19. Best Practices
+20. Future Enhancements
+
+======================================================================
+1. INTRODUCTION
+======================================================================
+
+Navigation defines how users move between screens within the MBconnect
+ecosystem.
+
+The objective is to make navigation intuitive, predictable, and
+consistent across every product.
+
+Every user should reach any primary feature in no more than three taps.
+
+======================================================================
+2. NAVIGATION PHILOSOPHY
+======================================================================
+
+Navigation should be:
+
+Simple
+
+Fast
+
+Consistent
+
+Role Based
+
+Context Aware
+
+Accessible
+
+Responsive
+
+Offline Friendly
+
+======================================================================
+3. GLOBAL NAVIGATION
+======================================================================
+
+Products
+
+1. MBconnect Driver App
+
+2. MBGO Customer App
+
+3. Operations Portal
+
+4. Executive Dashboard
+
+Each product maintains its own navigation while sharing a common design
+language.
+
+======================================================================
+4. DRIVER APP NAVIGATION
+======================================================================
+
+Login
+
+↓
+
+OTP Verification
+
+↓
+
+Permissions
+
+↓
+
+Dashboard
+
+↓
+
+-----------------------------------
+
+Dashboard
+
+↓
+
+Trips
+
+↓
+
+Live Trip
+
+↓
+
+Trip Completion
+
+↓
+
+Settlement
+
+↓
+
+Rating
+
+-----------------------------------
+
+Dashboard
+
+↓
+
+Menu
+
+↓
+
+Profile
+
+↓
+
+Vehicle
+
+↓
+
+Documents
+
+↓
+
+Wallet
+
+↓
+
+Support
+
+↓
+
+Settings
+
+======================================================================
+5. CUSTOMER APP NAVIGATION
+======================================================================
+
+Splash
+
+↓
+
+Login
+
+↓
+
+Home
+
+↓
+
+Book Ride
+
+↓
+
+Vehicle Selection
+
+↓
+
+Payment
+
+↓
+
+Driver Assigned
+
+↓
+
+Live Tracking
+
+↓
+
+Trip Completed
+
+↓
+
+Rating
+
+======================================================================
+6. OPERATIONS PORTAL
+======================================================================
+
+Login
+
+↓
+
+Operations Dashboard
+
+↓
+
+Bookings
+
+↓
+
+Assign Driver
+
+↓
+
+Live Monitoring
+
+↓
+
+Trip Completion
+
+↓
+
+Settlement
+
+↓
+
+Reports
+
+======================================================================
+7. EXECUTIVE DASHBOARD
+======================================================================
+
+Login
+
+↓
+
+Executive Dashboard
+
+↓
+
+Revenue
+
+↓
+
+Fleet Analytics
+
+↓
+
+Driver Performance
+
+↓
+
+AI Insights
+
+↓
+
+Reports
+
+======================================================================
+8. AUTHENTICATION FLOW
+======================================================================
+
+Splash
+
+↓
+
+Login
+
+↓
+
+OTP
+
+↓
+
+Token Generation
+
+↓
+
+Role Validation
+
+↓
+
+Dashboard
+
+If token expires
+
+↓
+
+Refresh Token
+
+↓
+
+Login Screen (if refresh fails)
+
+======================================================================
+9. BOTTOM NAVIGATION
+======================================================================
+
+Driver App
+
+Home
+
+Trips
+
+Wallet
+
+Inbox
+
+Menu
+
+Maximum Tabs
+
+5
+
+Icons
+
+24px
+
+Labels
+
+12px
+
+Persistent Navigation
+
+Enabled
+
+======================================================================
+10. SIDE NAVIGATION DRAWER
+======================================================================
+
+Profile
+
+Dashboard
+
+Trips
+
+Bookings
+
+Fleet
+
+Wallet
+
+Documents
+
+Notifications
+
+Support
+
+Settings
+
+Logout
+
+======================================================================
+11. DEEP LINKING
+======================================================================
+
+Supported Examples
+
+mbconnect://trip/24567
+
+mbconnect://wallet
+
+mbconnect://booking/5487
+
+mbconnect://driver/profile
+
+mbconnect://notification/456
+
+Deep links should support authentication checks before opening.
+
+======================================================================
+12. ROUTE NAMING CONVENTION
+======================================================================
+
+Examples
+
+/login
+
+/dashboard
+
+/trips
+
+/live-trip
+
+/wallet
+
+/profile
+
+/settings
+
+/support
+
+/fleet
+
+/executive
+
+Use lowercase and hyphen-separated route names.
+
+======================================================================
+13. BACK NAVIGATION
+======================================================================
+
+Android
+
+System Back Button
+
+iOS
+
+Navigation Bar Back Button
+
+Rules
+
+Never exit the app accidentally.
+
+Warn users before leaving an active trip.
+
+Confirm before logging out.
+
+======================================================================
+14. ROLE BASED NAVIGATION
+======================================================================
+
+Driver
+
+Dashboard
+
+Trips
+
+Wallet
+
+Documents
+
+Support
+
+----------------------------------
+
+Operations
+
+Dashboard
+
+Bookings
+
+Dispatch
+
+Fleet
+
+Support
+
+Analytics
+
+----------------------------------
+
+Finance
+
+Invoices
+
+Settlements
+
+Reports
+
+Corporate Billing
+
+----------------------------------
+
+Executive
+
+Revenue
+
+KPIs
+
+Fleet
+
+AI Dashboard
+
+Reports
+
+Only authorized roles may access restricted routes.
+
+======================================================================
+15. ERROR ROUTES
+======================================================================
+
+404 Page
+
+Unauthorized
+
+Network Error
+
+Session Expired
+
+Maintenance Mode
+
+Retry Screen
+
+Provide clear recovery actions for each state.
+
+======================================================================
+16. NAVIGATION GUARDS
+======================================================================
+
+Require Login
+
+Require OTP Verification
+
+Require Profile Completion
+
+Require Vehicle Approval
+
+Require Background Verification
+
+Require Internet (where necessary)
+
+Redirect unauthorized users to the appropriate screen.
+
+======================================================================
+17. STATE PRESERVATION
+======================================================================
+
+Remember:
+
+Current Tab
+
+Scroll Position
+
+Filters
+
+Search Queries
+
+Draft Forms
+
+Map Position
+
+Do not lose user progress during navigation.
+
+======================================================================
+18. NAVIGATION ANIMATIONS
+======================================================================
+
+Forward
+
+Slide Left
+
+Back
+
+Slide Right
+
+Modal
+
+Slide Up
+
+Dialog
+
+Fade
+
+Bottom Sheet
+
+Slide Up
+
+Animation Duration
+
+200–300ms
+
+======================================================================
+19. BEST PRACTICES
+======================================================================
+
+✓ Maximum three taps to any primary feature
+
+✓ Keep navigation labels short
+
+✓ Maintain consistent icon placement
+
+✓ Preserve state where appropriate
+
+✓ Use role-based access control
+
+✓ Test navigation on different screen sizes
+
+✓ Avoid dead-end screens
+
+======================================================================
+20. FUTURE ENHANCEMENTS
+======================================================================
+
+Universal Links
+
+QR Code Deep Linking
+
+Voice Navigation
+
+AI Smart Shortcuts
+
+Recently Visited Screens
+
+Context-Aware Recommendations
+
+Cross-Platform Route Synchronization
+
+======================================================================
+END OF DOCUMENT
+======================================================================

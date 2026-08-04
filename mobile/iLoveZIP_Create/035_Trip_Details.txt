@@ -1,0 +1,614 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Trip Details
+Document ID    : MBC-FE-035
+Module         : Driver Operations
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Trip Information
+9. Functional Requirements
+10. Driver Actions
+11. Customer Communication
+12. Navigation Integration
+13. API Integration
+14. WebSocket Events
+15. Database Mapping
+16. Error Handling
+17. Loading State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Trip Details
+
+Screen Code
+
+TRIP-002
+
+Entry Point
+
+Trip Accepted
+
+Purpose
+
+Display complete booking information before the driver starts
+navigation to the pickup location.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Provide all operational information needed to execute the trip
+efficiently.
+
+Business Goals
+
+• Reduce driver confusion
+
+• Improve pickup experience
+
+• Increase on-time arrivals
+
+• Improve customer satisfaction
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Present every important detail of the assigned trip in one place,
+allowing the driver to begin the journey confidently.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Trip Request
+
+↓
+
+Accept Trip
+
+↓
+
+Trip Details
+
+↓
+
+Navigate to Pickup
+
+↓
+
+Arrived at Pickup
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Trip ID
+
+MB240801000145
+
+Status
+
+Assigned
+
+--------------------------------------------------
+
+Pickup
+
+Terminal 3
+
+IGI Airport
+
+ETA
+
+12 Minutes
+
+Distance
+
+5.2 KM
+
+--------------------------------------------------
+
+Drop
+
+Connaught Place
+
+New Delhi
+
+Trip Distance
+
+18.4 KM
+
+Estimated Duration
+
+42 Minutes
+
+--------------------------------------------------
+
+Passenger
+
+Rahul Sharma
+
+★★★★☆ 4.9
+
+Verified
+
+--------------------------------------------------
+
+Booking Source
+
+Corporate
+
+Company
+
+ABC Technologies Pvt Ltd
+
+--------------------------------------------------
+
+Trip Type
+
+Airport Pickup
+
+--------------------------------------------------
+
+Payment
+
+Corporate Billing
+
+Driver Earnings
+
+₹785
+
+--------------------------------------------------
+
+Special Instructions
+
+Meet at Gate 5
+
+Placard Required
+
+Flight AI-302
+
+2 Large Bags
+
+--------------------------------------------------
+
+Buttons
+
+Navigate
+
+Call Passenger
+
+Chat
+
+Trip Support
+
+Cancel Assignment
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Trip Header
+
+Status Badge
+
+Pickup Card
+
+Drop Card
+
+Passenger Card
+
+Payment Card
+
+Instructions Card
+
+Action Buttons
+
+======================================================================
+8. TRIP INFORMATION
+======================================================================
+
+Display
+
+Trip ID
+
+Pickup Address
+
+Drop Address
+
+ETA
+
+Distance
+
+Passenger Name
+
+Passenger Rating
+
+Booking Source
+
+Payment Method
+
+Driver Earnings
+
+Instructions
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display trip information.
+
+FR-002
+
+Show live ETA.
+
+FR-003
+
+Display booking source.
+
+FR-004
+
+Display customer notes.
+
+FR-005
+
+Show driver earnings.
+
+FR-006
+
+Support navigation launch.
+
+======================================================================
+10. DRIVER ACTIONS
+======================================================================
+
+Navigate
+
+Call Passenger
+
+Chat
+
+View Route
+
+Trip Support
+
+Cancel Assignment
+(Only before reaching pickup and subject to business rules)
+
+======================================================================
+11. CUSTOMER COMMUNICATION
+======================================================================
+
+Voice Call
+
+In-App Chat
+
+Masked Number
+
+Predefined Messages
+
+"I'm on my way."
+
+"I've arrived."
+
+"Please share your location."
+
+======================================================================
+12. NAVIGATION INTEGRATION
+======================================================================
+
+Supported
+
+Google Maps
+
+Apple Maps
+
+Internal Navigation (Future)
+
+Features
+
+Live ETA
+
+Traffic
+
+Alternate Routes
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/trips/{trip_id}
+
+Response
+
+{
+
+"trip_id":"MB240801000145",
+
+"status":"assigned",
+
+"pickup":"Terminal 3",
+
+"drop":"Connaught Place",
+
+"eta":"12 Minutes",
+
+"distance":"18.4 KM",
+
+"driver_earning":785,
+
+"booking_source":"Corporate"
+
+}
+
+======================================================================
+14. WEBSOCKET EVENTS
+======================================================================
+
+trip_updated
+
+customer_cancelled
+
+pickup_changed
+
+chat_message
+
+support_message
+
+======================================================================
+15. DATABASE MAPPING
+======================================================================
+
+Tables
+
+trips
+
+trip_status
+
+trip_messages
+
+Fields
+
+trip_id
+
+driver_id
+
+status
+
+pickup
+
+drop
+
+customer_id
+
+earnings
+
+======================================================================
+16. ERROR HANDLING
+======================================================================
+
+Trip Cancelled
+
+Location Changed
+
+Navigation Failed
+
+Network Error
+
+Server Error
+
+======================================================================
+17. LOADING STATE
+======================================================================
+
+Loading Trip
+
+Disable Action Buttons
+
+Skeleton Cards
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Trip Loaded
+
+Navigation Available
+
+Communication Enabled
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Masked Customer Contact
+
+Encrypted Chat
+
+Role-Based Access
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+trip_opened
+
+navigation_started
+
+customer_called
+
+chat_opened
+
+trip_cancelled
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+VoiceOver Support
+
+TalkBack Support
+
+Large Fonts
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Trip Loaded
+
+Expected
+
+All Details Visible
+
+------------------------------------
+
+TC-002
+
+Start Navigation
+
+Expected
+
+Maps Opens
+
+------------------------------------
+
+TC-003
+
+Passenger Calls Driver
+
+Expected
+
+Call Connected
+
+------------------------------------
+
+TC-004
+
+Customer Cancels
+
+Expected
+
+Trip Closed
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+Flight Tracking
+
+Train Tracking
+
+Live Customer Location
+
+AI Pickup Suggestions
+
+Smart Parking Guidance
+
+Digital Placard
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Trip data should refresh in real time.
+
+Booking source badges should use color coding.
+
+Display only essential information during active trips.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Trip Details
+
+Route
+
+/trips/details
+
+HTML
+
+trip-details.html
+
+CSS
+
+trip-details.css
+
+JavaScript
+
+trip-details.js
+
+Primary API
+
+GET /trips/{trip_id}
+
+WebSocket
+
+trip_updated
+
+customer_cancelled
+
+pickup_changed
+
+======================================================================
+END OF DOCUMENT
+======================================================================

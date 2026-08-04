@@ -1,0 +1,686 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Icons & Illustrations
+Document ID    : MBC-FE-006
+Version        : 1.0
+Prepared For   : MusafirBaba Travels Pvt. Ltd.
+Platform       : MBconnect + MBGO
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Introduction
+2. Design Philosophy
+3. Icon Library
+4. Icon Categories
+5. Icon Sizes
+6. Icon Colors
+7. Icon Placement
+8. Vehicle Icons
+9. Navigation Icons
+10. Driver Icons
+11. Customer Icons
+12. Fleet Icons
+13. Finance Icons
+14. SOS & Emergency Icons
+15. Notification Icons
+16. Status Icons
+17. Empty State Illustrations
+18. Onboarding Illustrations
+19. Marketing Illustrations
+20. Animation Guidelines
+21. Accessibility
+22. Asset Naming Convention
+23. Best Practices
+24. Future Enhancements
+
+======================================================================
+1. INTRODUCTION
+======================================================================
+
+Icons and illustrations provide visual communication throughout the
+MBconnect ecosystem.
+
+Every icon should immediately communicate its purpose without requiring
+users to read supporting text.
+
+Icons should be simple, consistent, and scalable.
+
+======================================================================
+2. DESIGN PHILOSOPHY
+======================================================================
+
+The icon system follows five principles.
+
+• Simple
+• Recognizable
+• Minimal
+• Consistent
+• Scalable
+
+Avoid decorative icons.
+
+Every icon must have a functional purpose.
+
+======================================================================
+3. ICON LIBRARY
+======================================================================
+
+Primary Library
+
+Material Symbols Rounded
+
+Secondary Library
+
+Custom SVG Icons
+
+Preferred Formats
+
+SVG
+
+PNG (fallback)
+
+WebP (illustrations)
+
+Do not use bitmap icons where SVG alternatives are available.
+
+======================================================================
+4. ICON CATEGORIES
+======================================================================
+
+Authentication
+
+Dashboard
+
+Trips
+
+Bookings
+
+Navigation
+
+Vehicles
+
+Fleet
+
+Finance
+
+Wallet
+
+Documents
+
+Analytics
+
+Notifications
+
+SOS
+
+Support
+
+Corporate
+
+Executive
+
+Settings
+
+======================================================================
+5. ICON SIZES
+======================================================================
+
+Extra Small
+
+16px
+
+Small
+
+20px
+
+Standard
+
+24px
+
+Medium
+
+28px
+
+Large
+
+32px
+
+Extra Large
+
+48px
+
+Hero Icons
+
+64px
+
+Illustration Icons
+
+96px
+
+======================================================================
+6. ICON COLORS
+======================================================================
+
+Primary
+
+Blue
+
+#1565C0
+
+Success
+
+Green
+
+#16C47F
+
+Warning
+
+Orange
+
+#FB8C00
+
+Danger
+
+Red
+
+#E53935
+
+Disabled
+
+Grey
+
+#A0AEC0
+
+White
+
+#FFFFFF
+
+Icons should inherit semantic colors whenever possible.
+
+======================================================================
+7. ICON PLACEMENT
+======================================================================
+
+Leading Icons
+
+Left aligned
+
+Trailing Icons
+
+Right aligned
+
+Action Buttons
+
+Centered
+
+Cards
+
+Top Left
+
+Lists
+
+Leading
+
+Navigation
+
+Centered
+
+Maintain consistent spacing around icons.
+
+======================================================================
+8. VEHICLE ICONS
+======================================================================
+
+Vehicle
+
+Sedan
+
+SUV
+
+Hatchback
+
+Premium
+
+Luxury
+
+Electric Vehicle
+
+Bike
+
+Tempo Traveller
+
+Mini Bus
+
+Bus
+
+Truck
+
+Maintenance
+
+Fuel
+
+Charging
+
+Parking
+
+======================================================================
+9. NAVIGATION ICONS
+======================================================================
+
+Home
+
+Dashboard
+
+Trips
+
+Bookings
+
+Wallet
+
+Inbox
+
+Notifications
+
+Support
+
+Menu
+
+Profile
+
+Settings
+
+Logout
+
+Location
+
+Maps
+
+Compass
+
+======================================================================
+10. DRIVER ICONS
+======================================================================
+
+Driver
+
+License
+
+Verification
+
+Rating
+
+Helmet
+
+Identity
+
+Training
+
+Performance
+
+Attendance
+
+Online
+
+Offline
+
+Busy
+
+======================================================================
+11. CUSTOMER ICONS
+======================================================================
+
+Customer
+
+Booking
+
+Pickup
+
+Destination
+
+Payments
+
+Ratings
+
+Favourite
+
+History
+
+Wallet
+
+Support
+
+======================================================================
+12. FLEET ICONS
+======================================================================
+
+Fleet
+
+Vehicle
+
+GPS
+
+Fuel
+
+Maintenance
+
+Insurance
+
+PUC
+
+Fitness
+
+Tyre
+
+Battery
+
+Service
+
+======================================================================
+13. FINANCE ICONS
+======================================================================
+
+Wallet
+
+Income
+
+Expense
+
+Invoice
+
+Settlement
+
+Payout
+
+Corporate Billing
+
+Refund
+
+Tax
+
+GST
+
+Revenue
+
+Profit
+
+Loss
+
+======================================================================
+14. SOS & EMERGENCY ICONS
+======================================================================
+
+Emergency
+
+SOS
+
+Police
+
+Hospital
+
+Ambulance
+
+Fire
+
+Emergency Contact
+
+Accident
+
+Breakdown
+
+Hazard
+
+Priority Dispatch
+
+These icons must always use the danger color.
+
+======================================================================
+15. NOTIFICATION ICONS
+======================================================================
+
+Success
+
+Warning
+
+Error
+
+Information
+
+Updates
+
+Messages
+
+Trips
+
+Payments
+
+Promotions
+
+======================================================================
+16. STATUS ICONS
+======================================================================
+
+Online
+
+Green Dot
+
+Offline
+
+Grey Dot
+
+Busy
+
+Orange Dot
+
+Active Trip
+
+Blue Dot
+
+Cancelled
+
+Red Cross
+
+Completed
+
+Green Check
+
+Verified
+
+Blue Shield
+
+Pending
+
+Orange Clock
+
+======================================================================
+17. EMPTY STATE ILLUSTRATIONS
+======================================================================
+
+No Trips
+
+No Earnings
+
+No Notifications
+
+No Documents
+
+No Bookings
+
+No Drivers
+
+No Vehicles
+
+No Support Tickets
+
+Each illustration should include
+
+• Friendly artwork
+
+• Short heading
+
+• Supporting message
+
+• Primary action button
+
+======================================================================
+18. ONBOARDING ILLUSTRATIONS
+======================================================================
+
+Create Account
+
+Upload Documents
+
+Start Driving
+
+Receive Trips
+
+Earn Money
+
+Complete Profile
+
+Professional vector illustrations only.
+
+======================================================================
+19. MARKETING ILLUSTRATIONS
+======================================================================
+
+Driver Recruitment
+
+Referral Program
+
+Corporate Services
+
+Airport Transfers
+
+Fleet Expansion
+
+Promotions
+
+Illustration Style
+
+Flat Vector
+
+Rounded Shapes
+
+Minimal Shadows
+
+Brand Colors
+
+======================================================================
+20. ANIMATION GUIDELINES
+======================================================================
+
+Icon Hover
+
+Scale 1.05
+
+Button Press
+
+Scale 0.98
+
+Loading
+
+Spinner
+
+Progress
+
+Linear
+
+Success
+
+Check Animation
+
+Notifications
+
+Slide Down
+
+Duration
+
+200–300ms
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Minimum Icon Size
+
+24px
+
+Touch Target
+
+48px
+
+Decorative icons should be hidden from screen readers.
+
+Informative icons must include accessible labels.
+
+Never rely on icons alone to communicate important information.
+
+======================================================================
+22. ASSET NAMING CONVENTION
+======================================================================
+
+Use lowercase with hyphens.
+
+Examples
+
+icon-wallet.svg
+
+icon-trip-history.svg
+
+vehicle-suv.svg
+
+status-online.svg
+
+illustration-empty-trip.webp
+
+Do not use spaces or special characters.
+
+======================================================================
+23. BEST PRACTICES
+======================================================================
+
+✓ Use SVG wherever possible
+
+✓ Keep stroke widths consistent
+
+✓ Maintain equal padding
+
+✓ Use semantic colors
+
+✓ Reuse existing icons
+
+✓ Avoid mixing icon styles
+
+✓ Optimize SVG files
+
+✓ Test visibility on light and dark backgrounds
+
+======================================================================
+24. FUTURE ENHANCEMENTS
+======================================================================
+
+Animated SVG Icons
+
+Lottie Animations
+
+3D Illustrations
+
+Seasonal Illustration Packs
+
+Material You Icons
+
+AI-generated Illustrations
+
+High Contrast Icon Pack
+
+======================================================================
+END OF DOCUMENT
+======================================================================

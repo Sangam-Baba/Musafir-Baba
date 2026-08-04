@@ -1,0 +1,726 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Corporate Employee Management
+Document ID    : MBC-FE-078
+Module         : Corporate Mobility
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Components
+8. Employee Directory
+9. Employee Profile
+10. Department Management
+11. Cost Center Assignment
+12. Travel Eligibility
+13. Approval Hierarchy
+14. Employee Status Management
+15. Bulk Import & Export
+16. Functional Requirements
+17. API Integration
+18. Database Mapping
+19. Error Handling
+20. Loading State
+21. Empty State
+22. Success State
+23. Security Requirements
+24. Analytics Events
+25. Accessibility
+26. Test Cases
+27. Future Enhancements
+28. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Corporate Employee Management
+
+Screen Code
+
+CORP-EMP-001
+
+Entry Point
+
+Corporate Dashboard
+
+Employees
+
+Purpose
+
+Manage employee onboarding, profiles, travel
+eligibility and organizational hierarchy.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Provide centralized employee administration for
+enterprise transportation programs.
+
+Business Goals
+
+• Simplify employee onboarding
+
+• Improve policy compliance
+
+• Reduce administrative effort
+
+• Enable scalable operations
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Corporate Admin
+
+HR Manager
+
+Department Manager
+
+Travel Desk
+
+Finance Manager
+
+Employee (Limited View)
+
+Super Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide a complete employee management interface
+with enterprise administration capabilities.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Corporate Dashboard
+
+↓
+
+Employees
+
+↓
+
+Employee Profile
+
+↓
+
+Update Information
+
+↓
+
+Save
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Employee Management
+
+Total Employees
+
+2,456
+
+Active
+
+2,318
+
+Inactive
+
+98
+
+Pending Approval
+
+40
+
+--------------------------------------------------
+
+Search Employee
+
+Name
+
+Employee ID
+
+Department
+
+Email
+
+Phone
+
+--------------------------------------------------
+
+Filters
+
+Department
+
+Designation
+
+Travel Eligible
+
+Inactive
+
+Pending Approval
+
+Cost Center
+
+--------------------------------------------------
+
+Employee Card
+
+Ashutosh Rai
+
+Employee ID
+
+EMP10542
+
+Department
+
+Sales
+
+Designation
+
+Regional Manager
+
+Travel Eligibility
+
+Approved
+
+Manager
+
+Rahul Sharma
+
+Status
+
+Active
+
+Buttons
+
+View
+
+Edit
+
+Suspend
+
+--------------------------------------------------
+
+Floating Button
+
++ Add Employee
+
+======================================================================
+7. DASHBOARD COMPONENTS
+======================================================================
+
+Employee Summary
+
+Search Bar
+
+Advanced Filters
+
+Employee Cards
+
+Quick Actions
+
+Import & Export
+
+======================================================================
+8. EMPLOYEE DIRECTORY
+======================================================================
+
+Employee Name
+
+Employee ID
+
+Department
+
+Designation
+
+Email
+
+Phone
+
+Office Location
+
+Manager
+
+Travel Status
+
+Account Status
+
+======================================================================
+9. EMPLOYEE PROFILE
+======================================================================
+
+Personal Information
+
+Office Information
+
+Travel Preferences
+
+Travel History
+
+Approval Manager
+
+Emergency Contact
+
+Policy Assignment
+
+Cost Center
+
+Recent Bookings
+
+======================================================================
+10. DEPARTMENT MANAGEMENT
+======================================================================
+
+Department Name
+
+Department Head
+
+Employee Count
+
+Travel Budget
+
+Monthly Spend
+
+Approval Rules
+
+======================================================================
+11. COST CENTER ASSIGNMENT
+======================================================================
+
+Cost Center
+
+Project Code
+
+Business Unit
+
+Expense Allocation
+
+Budget Owner
+
+======================================================================
+12. TRAVEL ELIGIBILITY
+======================================================================
+
+Eligible Vehicle Categories
+
+Maximum Trip Cost
+
+Daily Travel Limit
+
+Monthly Budget
+
+Outstation Eligibility
+
+Airport Eligibility
+
+VIP Eligibility
+
+======================================================================
+13. APPROVAL HIERARCHY
+======================================================================
+
+Employee
+
+↓
+
+Reporting Manager
+
+↓
+
+Department Head
+
+↓
+
+Travel Desk
+
+↓
+
+Finance Approval (Optional)
+
+↓
+
+Booking Approved
+
+======================================================================
+14. EMPLOYEE STATUS MANAGEMENT
+======================================================================
+
+Active
+
+Inactive
+
+Suspended
+
+On Leave
+
+Resigned
+
+Transferred
+
+Blocked
+
+======================================================================
+15. BULK IMPORT & EXPORT
+======================================================================
+
+CSV Import
+
+Excel Import
+
+Bulk Update
+
+Bulk Status Change
+
+Bulk Policy Assignment
+
+Export Employee List
+
+======================================================================
+16. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Add employee.
+
+FR-002
+
+Edit employee.
+
+FR-003
+
+Bulk import employees.
+
+FR-004
+
+Assign travel policies.
+
+FR-005
+
+Manage approval hierarchy.
+
+FR-006
+
+Export employee data.
+
+======================================================================
+17. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/corporate/employees
+
+------------------------------------
+
+GET
+
+/api/v1/corporate/employee/{employee_id}
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/employee
+
+------------------------------------
+
+PUT
+
+/api/v1/corporate/employee/{employee_id}
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/employees/import
+
+------------------------------------
+
+GET
+
+/api/v1/corporate/employees/export
+
+Response
+
+{
+
+"total_employees":2456,
+
+"active":2318,
+
+"travel_eligible":2245,
+
+"pending_approval":40
+
+}
+
+======================================================================
+18. DATABASE MAPPING
+======================================================================
+
+Tables
+
+corporate_employees
+
+employee_departments
+
+employee_cost_centers
+
+employee_policies
+
+employee_hierarchy
+
+Fields
+
+employee_id
+
+company_id
+
+department_id
+
+designation
+
+manager_id
+
+policy_id
+
+status
+
+======================================================================
+19. ERROR HANDLING
+======================================================================
+
+Unable To Load Employees
+
+Import Failed
+
+Validation Error
+
+Duplicate Employee ID
+
+Retry
+
+======================================================================
+20. LOADING STATE
+======================================================================
+
+Loading Employees
+
+Importing Data
+
+Saving Profile
+
+Exporting Employee List
+
+======================================================================
+21. EMPTY STATE
+======================================================================
+
+No Employees Found
+
+Add employees individually or import using Excel.
+
+======================================================================
+22. SUCCESS STATE
+======================================================================
+
+Employee Added
+
+Import Completed
+
+Profile Updated
+
+Export Ready
+
+======================================================================
+23. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Corporate Data Isolation
+
+Audit Logs
+
+PII Protection
+
+======================================================================
+24. ANALYTICS EVENTS
+======================================================================
+
+employee_directory_open
+
+employee_added
+
+employee_updated
+
+bulk_import_started
+
+bulk_import_completed
+
+employee_exported
+
+======================================================================
+25. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+26. TEST CASES
+======================================================================
+
+TC-001
+
+Add Employee
+
+Expected
+
+Employee Created
+
+------------------------------------
+
+TC-002
+
+Bulk Import
+
+Expected
+
+All Valid Records Imported
+
+------------------------------------
+
+TC-003
+
+Assign Policy
+
+Expected
+
+Travel Policy Applied
+
+------------------------------------
+
+TC-004
+
+Deactivate Employee
+
+Expected
+
+Employee Cannot Create New Bookings
+
+======================================================================
+27. FUTURE ENHANCEMENTS
+======================================================================
+
+Azure AD Sync
+
+Google Workspace Sync
+
+HRMS Integration
+
+Face Verification
+
+Employee Self Registration
+
+QR Code Employee ID
+
+Digital Employee Cards
+
+======================================================================
+28. DEVELOPER NOTES
+======================================================================
+
+Support organizations with more than
+100,000 employees.
+
+Use asynchronous processing for bulk imports.
+
+Provide downloadable error reports for failed imports.
+
+Validate duplicate employee IDs and email addresses.
+
+Support configurable approval hierarchies.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Corporate Employee Management
+
+Route
+
+/corporate/employees
+
+HTML
+
+corporate-employees.html
+
+CSS
+
+corporate-employees.css
+
+JavaScript
+
+corporate-employees.js
+
+Primary APIs
+
+GET /corporate/employees
+
+GET /corporate/employee/{employee_id}
+
+POST /corporate/employee
+
+PUT /corporate/employee/{employee_id}
+
+POST /corporate/employees/import
+
+GET /corporate/employees/export
+
+======================================================================
+END OF DOCUMENT
+======================================================================

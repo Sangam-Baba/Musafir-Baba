@@ -1,0 +1,719 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Corporate Client Portal
+Document ID    : MBC-FE-077
+Module         : Corporate Mobility
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Corporate Dashboard
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Components
+8. Employee Management
+9. Department Management
+10. Cost Centers
+11. Corporate Bookings
+12. Booking Approval Workflow
+13. Travel Policies
+14. Corporate Wallet
+15. Billing & Invoicing
+16. SLA Monitoring
+17. Reports & Analytics
+18. Functional Requirements
+19. API Integration
+20. Database Mapping
+21. Error Handling
+22. Loading State
+23. Empty State
+24. Success State
+25. Security Requirements
+26. Analytics Events
+27. Accessibility
+28. Test Cases
+29. Future Enhancements
+30. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Corporate Client Portal
+
+Screen Code
+
+CORP-001
+
+Entry Point
+
+Corporate Login
+
+Dashboard
+
+Purpose
+
+Provide organizations with centralized mobility
+management for employees, bookings and billing.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Simplify corporate transportation while providing
+administrative control, policy enforcement and
+financial transparency.
+
+Business Goals
+
+• Enterprise mobility
+
+• Cost optimization
+
+• Policy compliance
+
+• Employee convenience
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Corporate Admin
+
+Travel Desk
+
+Department Manager
+
+Finance Manager
+
+Employee
+
+Super Admin
+
+======================================================================
+4. CORPORATE DASHBOARD
+======================================================================
+
+Display
+
+Today's Trips
+
+Upcoming Trips
+
+Monthly Spend
+
+Active Employees
+
+Pending Approvals
+
+Wallet Balance
+
+Outstanding Invoices
+
+SLA Compliance
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Corporate Dashboard
+
+↓
+
+Employees
+
+↓
+
+Bookings
+
+↓
+
+Approvals
+
+↓
+
+Billing
+
+↓
+
+Reports
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Corporate Dashboard
+
+ABC Technologies Pvt. Ltd.
+
+--------------------------------------------------
+
+Today's Trips
+
+124
+
+Upcoming Trips
+
+38
+
+Employees
+
+1,245
+
+Monthly Spend
+
+₹18,45,000
+
+--------------------------------------------------
+
+Pending Approvals
+
+12
+
+Pending Invoices
+
+3
+
+Wallet Balance
+
+₹2,50,000
+
+--------------------------------------------------
+
+Quick Actions
+
+Book Ride
+
+Add Employee
+
+Approve Requests
+
+Download Invoice
+
+View Reports
+
+======================================================================
+7. DASHBOARD COMPONENTS
+======================================================================
+
+Overview Cards
+
+Approval Queue
+
+Booking Summary
+
+Wallet Summary
+
+Invoice Widget
+
+Analytics Widget
+
+======================================================================
+8. EMPLOYEE MANAGEMENT
+======================================================================
+
+Employee Directory
+
+Employee ID
+
+Department
+
+Designation
+
+Mobile Number
+
+Email
+
+Travel Eligibility
+
+Travel History
+
+Travel Limit
+
+Account Status
+
+======================================================================
+9. DEPARTMENT MANAGEMENT
+======================================================================
+
+Department List
+
+Department Head
+
+Employee Count
+
+Monthly Budget
+
+Trips
+
+Department Spend
+
+======================================================================
+10. COST CENTERS
+======================================================================
+
+Cost Center Code
+
+Department Mapping
+
+Project Mapping
+
+Budget Allocation
+
+Expense Tracking
+
+======================================================================
+11. CORPORATE BOOKINGS
+======================================================================
+
+Airport Transfer
+
+Office Pickup
+
+Office Drop
+
+Client Visit
+
+Outstation
+
+Hourly Rental
+
+Recurring Booking
+
+======================================================================
+12. BOOKING APPROVAL WORKFLOW
+======================================================================
+
+Employee Request
+
+↓
+
+Manager Approval
+
+↓
+
+Travel Desk Review
+
+↓
+
+Booking Confirmed
+
+↓
+
+Driver Assigned
+
+======================================================================
+13. TRAVEL POLICIES
+======================================================================
+
+Working Hours
+
+Maximum Fare
+
+Allowed Vehicle Categories
+
+Approval Rules
+
+Weekend Policy
+
+Holiday Policy
+
+Outstation Policy
+
+======================================================================
+14. CORPORATE WALLET
+======================================================================
+
+Wallet Balance
+
+Recharge
+
+Transaction History
+
+Credit Limit
+
+Auto Recharge
+
+Usage Analytics
+
+======================================================================
+15. BILLING & INVOICING
+======================================================================
+
+Monthly Invoice
+
+Department Invoice
+
+Project Invoice
+
+GST Invoice
+
+Outstanding Balance
+
+Payment History
+
+======================================================================
+16. SLA MONITORING
+======================================================================
+
+Pickup Time
+
+ETA Accuracy
+
+Cancellation Rate
+
+Driver Rating
+
+Trip Completion
+
+Complaint Resolution
+
+======================================================================
+17. REPORTS & ANALYTICS
+======================================================================
+
+Department Spend
+
+Employee Trips
+
+Travel Cost
+
+Monthly Utilization
+
+Policy Violations
+
+Vendor Performance
+
+======================================================================
+18. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Manage employees.
+
+FR-002
+
+Manage approvals.
+
+FR-003
+
+Track travel policies.
+
+FR-004
+
+Generate invoices.
+
+FR-005
+
+Monitor SLA.
+
+FR-006
+
+Generate reports.
+
+======================================================================
+19. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/corporate/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/corporate/employees
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/booking
+
+------------------------------------
+
+POST
+
+/api/v1/corporate/approval
+
+------------------------------------
+
+GET
+
+/api/v1/corporate/invoices
+
+Response
+
+{
+
+"company":"ABC Technologies",
+
+"employees":1245,
+
+"today_trips":124,
+
+"monthly_spend":1845000,
+
+"wallet_balance":250000
+
+}
+
+======================================================================
+20. DATABASE MAPPING
+======================================================================
+
+Tables
+
+corporate_accounts
+
+corporate_employees
+
+travel_policies
+
+cost_centers
+
+corporate_bookings
+
+corporate_wallet
+
+corporate_invoices
+
+Fields
+
+company_id
+
+employee_id
+
+department_id
+
+policy_id
+
+wallet_balance
+
+invoice_status
+
+======================================================================
+21. ERROR HANDLING
+======================================================================
+
+Unable To Load Dashboard
+
+Booking Failed
+
+Approval Failed
+
+Invoice Generation Failed
+
+Retry
+
+======================================================================
+22. LOADING STATE
+======================================================================
+
+Loading Dashboard
+
+Loading Employees
+
+Generating Invoice
+
+Processing Approval
+
+======================================================================
+23. EMPTY STATE
+======================================================================
+
+No Corporate Data Available
+
+Add employees and start booking trips.
+
+======================================================================
+24. SUCCESS STATE
+======================================================================
+
+Booking Confirmed
+
+Approval Completed
+
+Invoice Generated
+
+Wallet Updated
+
+======================================================================
+25. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Corporate Data Isolation
+
+Audit Logging
+
+SSO Ready
+
+======================================================================
+26. ANALYTICS EVENTS
+======================================================================
+
+corporate_dashboard_open
+
+employee_added
+
+booking_created
+
+approval_completed
+
+invoice_downloaded
+
+======================================================================
+27. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+28. TEST CASES
+======================================================================
+
+TC-001
+
+Create Booking
+
+Expected
+
+Booking Confirmed
+
+------------------------------------
+
+TC-002
+
+Approval Workflow
+
+Expected
+
+Manager Approval Recorded
+
+------------------------------------
+
+TC-003
+
+Generate Invoice
+
+Expected
+
+Invoice Available
+
+------------------------------------
+
+TC-004
+
+Wallet Recharge
+
+Expected
+
+Wallet Updated
+
+======================================================================
+29. FUTURE ENHANCEMENTS
+======================================================================
+
+SSO (Azure AD, Google Workspace)
+
+SAP Integration
+
+Oracle ERP Integration
+
+Expense Management Integration
+
+Travel Desk Automation
+
+AI Travel Policy Recommendations
+
+Carbon Emission Reports
+
+======================================================================
+30. DEVELOPER NOTES
+======================================================================
+
+Support organizations with 10 to 100,000+ employees.
+
+Approval workflows should be configurable.
+
+Travel policies must be dynamic.
+
+Support multi-level approval hierarchy.
+
+Support PDF, Excel and CSV exports.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Corporate Client Portal
+
+Route
+
+/corporate/dashboard
+
+HTML
+
+corporate-dashboard.html
+
+CSS
+
+corporate-dashboard.css
+
+JavaScript
+
+corporate-dashboard.js
+
+Primary APIs
+
+GET /corporate/dashboard
+
+GET /corporate/employees
+
+POST /corporate/booking
+
+POST /corporate/approval
+
+GET /corporate/invoices
+
+======================================================================
+END OF DOCUMENT
+======================================================================

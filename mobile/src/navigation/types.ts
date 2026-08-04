@@ -1,12 +1,34 @@
 export type AuthStackParamList = {
   Login: undefined;
   OTPVerification: { phone: string };
+  Register: undefined;
+  ForgotPassword: { initialEmail?: string } | undefined;
 };
 
 export type MainTabParamList = {
-  Dashboard: undefined;
-  Profile: undefined;
-  Fleet: undefined;
+  Home: undefined;
+  Bookings: undefined;
+  Earnings: undefined;
+  Inbox: undefined;
+  Menu: undefined;
+};
+
+export type HomeStackParamList = {
+  HomeScreen: undefined;
+  BackgroundCheck: undefined;
+  TripSupport: undefined;
+  Inbox: undefined;
+};
+
+export type BookingsStackParamList = {
+  BookingsList: undefined;
+  BookingDetails: { bookingId: string } | undefined;
+};
+
+export type EarningsStackParamList = {
+  EarningsMain: undefined;
+  PayoutHistory: undefined;
+  EarningsTrend: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -16,9 +38,17 @@ export type ProfileStackParamList = {
   BankDetails: undefined;
   FleetRegistry: undefined;
   VehicleSettings: undefined;
+  VehicleDetails: undefined;
+  IdentityProof: undefined;
+  VerifiedPartner: undefined;
+  ProfilePhoto: undefined;
+  BackgroundCheck: undefined;
+  TripSupport: undefined;
+  Inbox: undefined;
+  PayoutHistory: undefined;
+  EarningsTrend: undefined;
 };
 
-// Kept for backward compatibility if needed temporarily, but we'll phase it out
 export type OnboardingStackParamList = {
   PersonalDetails: undefined;
   KYCDocuments: undefined;

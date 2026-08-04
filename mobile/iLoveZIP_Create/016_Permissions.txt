@@ -1,0 +1,571 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : App Permissions
+Document ID    : MBC-FE-016
+Module         : Driver Onboarding
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Required Permissions
+8. Permission Details
+9. Functional Requirements
+10. API Integration
+11. Local Storage
+12. Error Handling
+13. Permission States
+14. Security
+15. Analytics Events
+16. Accessibility
+17. Test Cases
+18. Future Enhancements
+19. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+App Permissions
+
+Screen Code
+
+ONBOARD-003
+
+Entry Point
+
+Welcome Onboarding
+
+Purpose
+
+Collect all required application permissions before verification.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+The Permissions screen educates drivers about why each permission is
+required before the operating system displays permission dialogs.
+
+Business Goals
+
+• Improve permission acceptance rate
+
+• Reduce confusion
+
+• Improve document upload success
+
+• Enable live tracking
+
+• Enable customer communication
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Future
+
+Fleet Owner
+
+Operations
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Explain every permission in simple language and obtain user consent.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Welcome Onboarding
+
+↓
+
+Permissions
+
+↓
+
+Identity Verification
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Illustration
+
+Phone + Shield
+
+--------------------------------------------------
+
+Heading
+
+Allow Required Permissions
+
+--------------------------------------------------
+
+Description
+
+MBconnect requires a few permissions to provide
+safe and uninterrupted trips.
+
+--------------------------------------------------
+
+Permission List
+
+📍 Location
+
+📷 Camera
+
+🖼 Photos & Files
+
+🔔 Notifications
+
+📞 Phone
+
+📱 SMS
+
+🎤 Microphone
+
+--------------------------------------------------
+
+Allow All Permissions
+
+--------------------------------------------------
+
+Skip For Now
+
+======================================================================
+7. REQUIRED PERMISSIONS
+======================================================================
+
+Location
+
+Purpose
+
+Driver Tracking
+
+Navigation
+
+Trip Monitoring
+
+--------------------------------------------------
+
+Camera
+
+Purpose
+
+Capture Documents
+
+Capture Profile Photo
+
+--------------------------------------------------
+
+Storage / Photos
+
+Purpose
+
+Upload RC
+
+Insurance
+
+Driving Licence
+
+Aadhaar
+
+PAN
+
+--------------------------------------------------
+
+Notifications
+
+Purpose
+
+Trip Alerts
+
+Payments
+
+Announcements
+
+Emergency Alerts
+
+--------------------------------------------------
+
+Phone
+
+Purpose
+
+Customer Calling
+
+Support Calls
+
+Emergency Calling
+
+--------------------------------------------------
+
+SMS
+
+Purpose
+
+Automatic OTP Detection
+
+(Android Only)
+
+--------------------------------------------------
+
+Microphone
+
+Purpose
+
+Voice Support
+
+Future Voice Navigation
+
+======================================================================
+8. PERMISSION DETAILS
+======================================================================
+
+Location
+
+Required
+
+Yes
+
+Allow
+
+Always
+
+Reason
+
+Live Trip Tracking
+
+------------------------------------
+
+Camera
+
+Required
+
+Yes
+
+Reason
+
+Document Verification
+
+------------------------------------
+
+Storage
+
+Required
+
+Yes
+
+Reason
+
+Upload Documents
+
+------------------------------------
+
+Notifications
+
+Required
+
+Yes
+
+Reason
+
+Booking Notifications
+
+------------------------------------
+
+Phone
+
+Optional
+
+Recommended
+
+------------------------------------
+
+SMS
+
+Optional
+
+Recommended
+
+Android Only
+
+------------------------------------
+
+Microphone
+
+Optional
+
+Future Use
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display all permissions.
+
+FR-002
+
+Explain purpose.
+
+FR-003
+
+Request permissions sequentially.
+
+FR-004
+
+Handle denial gracefully.
+
+FR-005
+
+Redirect to Settings if permanently denied.
+
+FR-006
+
+Continue after mandatory permissions granted.
+
+======================================================================
+10. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/app/config
+
+Response
+
+{
+
+"required_permissions":[
+
+"location",
+
+"camera",
+
+"notifications"
+
+]
+
+}
+
+======================================================================
+11. LOCAL STORAGE
+======================================================================
+
+Store
+
+Permission Status
+
+Permission Timestamp
+
+App Version
+
+Device ID
+
+======================================================================
+12. ERROR HANDLING
+======================================================================
+
+Permission Denied
+
+Permission Permanently Denied
+
+OS Error
+
+Retry Option
+
+Open Settings
+
+======================================================================
+13. PERMISSION STATES
+======================================================================
+
+Not Requested
+
+Pending
+
+Granted
+
+Denied
+
+Permanently Denied
+
+Restricted
+
+======================================================================
+14. SECURITY
+======================================================================
+
+Do not request unnecessary permissions.
+
+Only request permissions when needed.
+
+Respect user privacy.
+
+Follow Android and iOS guidelines.
+
+======================================================================
+15. ANALYTICS EVENTS
+======================================================================
+
+permission_screen_open
+
+location_granted
+
+camera_granted
+
+notification_granted
+
+permission_denied
+
+open_settings
+
+permissions_completed
+
+======================================================================
+16. ACCESSIBILITY
+======================================================================
+
+Large Touch Targets
+
+Readable Labels
+
+VoiceOver Support
+
+TalkBack Support
+
+High Contrast Mode
+
+======================================================================
+17. TEST CASES
+======================================================================
+
+TC-001
+
+Grant All Permissions
+
+Expected
+
+Continue Enabled
+
+----------------------------------
+
+TC-002
+
+Deny Camera
+
+Expected
+
+Prompt Again
+
+----------------------------------
+
+TC-003
+
+Permanent Denial
+
+Expected
+
+Open Settings
+
+----------------------------------
+
+TC-004
+
+Grant Mandatory Only
+
+Expected
+
+Continue Allowed
+
+======================================================================
+18. FUTURE ENHANCEMENTS
+======================================================================
+
+Bluetooth
+
+Nearby Devices
+
+Health Data
+
+Wear OS Integration
+
+Android Auto
+
+CarPlay
+
+======================================================================
+19. DEVELOPER NOTES
+======================================================================
+
+Use native permission APIs.
+
+Never show multiple permission popups simultaneously.
+
+Explain each permission before requesting it.
+
+Respect OS permission best practices.
+
+Support Android 13+ notification permission model.
+
+Support iOS permission lifecycle.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Permissions
+
+Route
+
+/onboarding/permissions
+
+HTML
+
+permissions.html
+
+CSS
+
+permissions.css
+
+JavaScript
+
+permissions.js
+
+Primary API
+
+GET /app/config
+
+======================================================================
+END OF DOCUMENT
+======================================================================

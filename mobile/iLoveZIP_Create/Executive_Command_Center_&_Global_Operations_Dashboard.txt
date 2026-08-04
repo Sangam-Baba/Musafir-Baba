@@ -1,0 +1,714 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Executive Command Center & Global Operations Dashboard
+Document ID    : MBC-FE-092
+Module         : Executive Intelligence Platform
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Executive Dashboard
+8. Live Operations Center
+9. Revenue Command Center
+10. Driver & Fleet Monitoring
+11. Customer Experience Dashboard
+12. Corporate Mobility KPIs
+13. Airport Operations KPIs
+14. Hospitality Partner KPIs
+15. White Label Partner Analytics
+16. AI Insights & Forecasting
+17. Incident Command Center
+18. Strategic Business Analytics
+19. Functional Requirements
+20. API Integration
+21. Database Mapping
+22. Error Handling
+23. Loading State
+24. Empty State
+25. Success State
+26. Security Requirements
+27. Analytics Events
+28. Accessibility
+29. Test Cases
+30. Future Enhancements
+31. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Executive Command Center & Global Operations Dashboard
+
+Screen Code
+
+EXEC-001
+
+Entry Point
+
+Executive Portal
+
+Purpose
+
+Provide a unified executive view of all platform
+operations, business performance and strategic KPIs.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Enable executives to monitor, analyze and make
+data-driven decisions across the MBconnect ecosystem.
+
+Business Goals
+
+• Real-time visibility
+
+• Faster executive decisions
+
+• Operational excellence
+
+• Sustainable business growth
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ CEO
+
+Founder
+
+Managing Director
+
+COO
+
+CTO
+
+CFO
+
+Chief Business Officer
+
+Super Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Deliver a real-time strategic dashboard for the
+entire organization.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Executive Login
+
+↓
+
+Executive Dashboard
+
+↓
+
+Select Business Area
+
+↓
+
+Drill Down
+
+↓
+
+Take Action
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Executive Command Center
+
+Platform Status
+
+Healthy
+
+Global Revenue Today
+
+₹2.84 Cr
+
+Bookings Today
+
+58,642
+
+Drivers Online
+
+18,420
+
+Customers Active
+
+1,48,200
+
+Fleet Vehicles
+
+12,950
+
+--------------------------------------------------
+
+Business Units
+
+Corporate
+
+Healthy
+
+Airport
+
+Healthy
+
+Hospitality
+
+Healthy
+
+White Label
+
+Growing
+
+AI Platform
+
+Healthy
+
+--------------------------------------------------
+
+Executive Actions
+
+View Live Map
+
+Revenue Analytics
+
+Operational Alerts
+
+AI Forecast
+
+Incident Center
+
+======================================================================
+7. EXECUTIVE DASHBOARD
+======================================================================
+
+Revenue Summary
+
+Bookings Summary
+
+Fleet Summary
+
+Customer Summary
+
+Platform Health
+
+Executive Alerts
+
+Business Growth
+
+======================================================================
+8. LIVE OPERATIONS CENTER
+======================================================================
+
+Live Bookings
+
+Live Trips
+
+Driver Locations
+
+Customer Requests
+
+Trip Heatmap
+
+City Operations
+
+Incident Feed
+
+======================================================================
+9. REVENUE COMMAND CENTER
+======================================================================
+
+Daily Revenue
+
+Weekly Revenue
+
+Monthly Revenue
+
+Yearly Revenue
+
+Revenue By City
+
+Revenue By Partner
+
+Profit Margin
+
+Growth %
+
+======================================================================
+10. DRIVER & FLEET MONITORING
+======================================================================
+
+Drivers Online
+
+Acceptance Rate
+
+Completion Rate
+
+Fleet Utilization
+
+Maintenance Alerts
+
+Idle Vehicles
+
+Safety Score
+
+======================================================================
+11. CUSTOMER EXPERIENCE DASHBOARD
+======================================================================
+
+Customer Rating
+
+NPS
+
+Complaint Rate
+
+Resolution Time
+
+Repeat Customers
+
+Cancellation Rate
+
+======================================================================
+12. CORPORATE MOBILITY KPIs
+======================================================================
+
+Corporate Revenue
+
+Active Companies
+
+Employee Trips
+
+Policy Compliance
+
+SLA Compliance
+
+Corporate Satisfaction
+
+======================================================================
+13. AIRPORT OPERATIONS KPIs
+======================================================================
+
+Airport Transfers
+
+Flight Delays
+
+Driver Waiting Time
+
+Pickup Success
+
+Airport Revenue
+
+Terminal Performance
+
+======================================================================
+14. HOSPITALITY PARTNER KPIs
+======================================================================
+
+Hotel Partners
+
+Guest Transfers
+
+VIP Bookings
+
+Concierge Performance
+
+Partner Revenue
+
+Guest Satisfaction
+
+======================================================================
+15. WHITE LABEL PARTNER ANALYTICS
+======================================================================
+
+Active Partners
+
+Tenant Health
+
+Subscription Revenue
+
+API Usage
+
+Growth Trend
+
+Top Performing Partners
+
+======================================================================
+16. AI INSIGHTS & FORECASTING
+======================================================================
+
+Revenue Forecast
+
+Demand Forecast
+
+Fraud Alerts
+
+Dispatch Accuracy
+
+AI Confidence
+
+Business Recommendations
+
+======================================================================
+17. INCIDENT COMMAND CENTER
+======================================================================
+
+Critical Incidents
+
+Service Outages
+
+Security Alerts
+
+Operational Risks
+
+Escalations
+
+Resolution Status
+
+======================================================================
+18. STRATEGIC BUSINESS ANALYTICS
+======================================================================
+
+Market Expansion
+
+City Performance
+
+Partner Growth
+
+Customer Acquisition
+
+Retention
+
+Lifetime Value
+
+======================================================================
+19. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display executive KPIs.
+
+FR-002
+
+Provide drill-down analytics.
+
+FR-003
+
+Monitor incidents.
+
+FR-004
+
+Display forecasts.
+
+FR-005
+
+Generate executive reports.
+
+FR-006
+
+Support live dashboards.
+
+======================================================================
+20. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/executive/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/executive/revenue
+
+------------------------------------
+
+GET
+
+/api/v1/executive/operations
+
+------------------------------------
+
+GET
+
+/api/v1/executive/forecast
+
+------------------------------------
+
+GET
+
+/api/v1/executive/incidents
+
+Response
+
+{
+
+"revenue_today":28400000,
+
+"bookings":58642,
+
+"drivers_online":18420,
+
+"customers_active":148200,
+
+"platform_status":"Healthy"
+
+}
+
+======================================================================
+21. DATABASE MAPPING
+======================================================================
+
+Tables
+
+executive_metrics
+
+business_kpis
+
+executive_alerts
+
+forecast_reports
+
+incident_center
+
+Fields
+
+metric_id
+
+business_unit
+
+metric_name
+
+metric_value
+
+generated_at
+
+status
+
+======================================================================
+22. ERROR HANDLING
+======================================================================
+
+Unable To Load Dashboard
+
+Analytics Unavailable
+
+Forecast Failed
+
+Retry
+
+======================================================================
+23. LOADING STATE
+======================================================================
+
+Loading Executive Dashboard
+
+Generating Forecast
+
+Fetching Live Metrics
+
+======================================================================
+24. EMPTY STATE
+======================================================================
+
+No Executive Data Available
+
+======================================================================
+25. SUCCESS STATE
+======================================================================
+
+Dashboard Updated
+
+Forecast Generated
+
+Incident Resolved
+
+======================================================================
+26. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Mandatory MFA
+
+Executive RBAC
+
+Audit Logging
+
+Encryption At Rest
+
+Encryption In Transit
+
+======================================================================
+27. ANALYTICS EVENTS
+======================================================================
+
+executive_dashboard_open
+
+forecast_viewed
+
+incident_opened
+
+kpi_drilldown
+
+report_exported
+
+======================================================================
+28. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+29. TEST CASES
+======================================================================
+
+TC-001
+
+Open Executive Dashboard
+
+Expected
+
+KPIs Loaded
+
+------------------------------------
+
+TC-002
+
+View Revenue Forecast
+
+Expected
+
+Forecast Displayed
+
+------------------------------------
+
+TC-003
+
+Open Incident Center
+
+Expected
+
+Incidents Listed
+
+------------------------------------
+
+TC-004
+
+Drill Down Into City
+
+Expected
+
+Detailed Analytics Displayed
+
+======================================================================
+30. FUTURE ENHANCEMENTS
+======================================================================
+
+Digital Twin Operations
+
+Global Expansion Dashboard
+
+AI Executive Copilot
+
+Predictive Investment Planner
+
+ESG Dashboard
+
+Carbon Emission Intelligence
+
+Autonomous Operations Center
+
+======================================================================
+31. DEVELOPER NOTES
+======================================================================
+
+Use server-side aggregated KPIs.
+
+Support near real-time dashboard refresh.
+
+Optimize drill-down queries.
+
+Enable configurable executive widgets.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Executive Command Center & Global Operations Dashboard
+
+Route
+
+/executive/dashboard
+
+HTML
+
+executive-dashboard.html
+
+CSS
+
+executive-dashboard.css
+
+JavaScript
+
+executive-dashboard.js
+
+Primary APIs
+
+GET /executive/dashboard
+
+GET /executive/revenue
+
+GET /executive/operations
+
+GET /executive/forecast
+
+GET /executive/incidents
+
+======================================================================
+END OF DOCUMENT
+======================================================================

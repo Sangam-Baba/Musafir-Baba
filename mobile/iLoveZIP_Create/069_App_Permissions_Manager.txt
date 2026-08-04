@@ -1,0 +1,618 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : App Permissions Manager
+Document ID    : MBC-FE-069
+Module         : Device Permissions
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Permission Dashboard
+9. Permission Types
+10. Functional Requirements
+11. Permission Health Score
+12. Troubleshooting
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Empty State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+App Permissions Manager
+
+Screen Code
+
+PERMISSION-001
+
+Entry Point
+
+Settings
+
+Privacy
+
+Diagnostics
+
+Purpose
+
+Allow Driver Partners to manage all application permissions from one
+centralized location.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Ensure required permissions are granted for uninterrupted
+driver operations.
+
+Business Goals
+
+• Reduce permission-related issues
+
+• Improve trip reliability
+
+• Increase transparency
+
+• Simplify troubleshooting
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Support Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide visibility into permission status and guide users
+to enable missing permissions.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Settings
+
+↓
+
+Permissions Manager
+
+↓
+
+Select Permission
+
+↓
+
+View Purpose
+
+↓
+
+Grant Permission
+
+↓
+
+Verification
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Permission Health
+
+95%
+
+Excellent
+
+--------------------------------------------------
+
+Location
+
+✓ Always Allowed
+
+Required
+
+--------------------------------------------------
+
+Background Location
+
+✓ Enabled
+
+--------------------------------------------------
+
+Notifications
+
+✓ Enabled
+
+--------------------------------------------------
+
+Camera
+
+✓ Allowed
+
+--------------------------------------------------
+
+Microphone
+
+✓ Allowed
+
+--------------------------------------------------
+
+Storage
+
+✓ Allowed
+
+--------------------------------------------------
+
+Phone
+
+✓ Allowed
+
+--------------------------------------------------
+
+Bluetooth
+
+Optional
+
+Disabled
+
+--------------------------------------------------
+
+Nearby Devices
+
+Optional
+
+Disabled
+
+--------------------------------------------------
+
+Buttons
+
+Manage Permissions
+
+Run Permission Test
+
+Open Device Settings
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Permission Score Card
+
+Permission List
+
+Status Indicators
+
+Purpose Cards
+
+Troubleshooting Section
+
+Primary Action Buttons
+
+======================================================================
+8. PERMISSION DASHBOARD
+======================================================================
+
+Display
+
+Permission Name
+
+Status
+
+Importance
+
+Reason Required
+
+Last Checked
+
+Action Button
+
+======================================================================
+9. PERMISSION TYPES
+======================================================================
+
+Location (Always)
+
+Background Location
+
+Camera
+
+Microphone
+
+Storage
+
+Notifications
+
+Phone
+
+Bluetooth
+
+Nearby Devices
+
+Battery Optimization
+
+Auto Start Permission
+
+Overlay Permission (Optional)
+
+======================================================================
+10. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display permission status.
+
+FR-002
+
+Explain why permission is required.
+
+FR-003
+
+Open system permission screen.
+
+FR-004
+
+Detect permission changes.
+
+FR-005
+
+Run permission validation.
+
+FR-006
+
+Display missing permissions.
+
+======================================================================
+11. PERMISSION HEALTH SCORE
+======================================================================
+
+100%
+
+All Required Permissions Granted
+
+------------------------------------
+
+80%
+
+Minor Optional Permissions Missing
+
+------------------------------------
+
+60%
+
+One Critical Permission Missing
+
+------------------------------------
+
+Below 40%
+
+Trips Cannot Be Accepted
+
+======================================================================
+12. TROUBLESHOOTING
+======================================================================
+
+Location Disabled
+
+↓
+
+Enable GPS
+
+------------------------------------
+
+Background Location Missing
+
+↓
+
+Grant "Allow All The Time"
+
+------------------------------------
+
+Notifications Disabled
+
+↓
+
+Enable Notifications
+
+------------------------------------
+
+Battery Optimization Enabled
+
+↓
+
+Disable Optimization For MBconnect
+
+------------------------------------
+
+Camera Denied
+
+↓
+
+Grant Camera Access
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/device/permissions
+
+------------------------------------
+
+POST
+
+/api/v1/device/permissions/check
+
+------------------------------------
+
+POST
+
+/api/v1/device/permissions/report
+
+Response
+
+{
+
+"health_score":95,
+
+"critical_missing":0,
+
+"optional_missing":2,
+
+"ready_for_trips":true
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+device_permissions
+
+permission_logs
+
+permission_audit
+
+Fields
+
+driver_id
+
+permission_name
+
+status
+
+checked_at
+
+device_model
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Read Permissions
+
+Permission Check Failed
+
+System Access Denied
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Checking Permissions
+
+Loading Status
+
+Running Validation
+
+======================================================================
+17. EMPTY STATE
+======================================================================
+
+No Permission Data Available
+
+Run a permission scan.
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Permission Updated
+
+Health Score Improved
+
+All Required Permissions Granted
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Device Information
+
+Permission Audit Logs
+
+Role-Based Access
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+permissions_open
+
+permission_granted
+
+permission_denied
+
+permission_test_run
+
+device_settings_open
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Grant Location Permission
+
+Expected
+
+Permission Status Updated
+
+------------------------------------
+
+TC-002
+
+Background Location Missing
+
+Expected
+
+Warning Displayed
+
+------------------------------------
+
+TC-003
+
+Run Permission Test
+
+Expected
+
+Health Score Generated
+
+------------------------------------
+
+TC-004
+
+Open Device Settings
+
+Expected
+
+Settings Screen Opened
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+Automatic Permission Recovery
+
+OEM-Specific Permission Guides
+
+AI Permission Troubleshooter
+
+Battery Optimization Detection
+
+Permission History Timeline
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Monitor permission changes in real time.
+
+Provide manufacturer-specific guidance
+(Xiaomi, Samsung, Vivo, Oppo, OnePlus, Realme, etc.).
+
+Never repeatedly prompt users after denial.
+
+Show clear explanations before requesting sensitive permissions.
+
+Battery optimization should be checked during onboarding.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+App Permissions Manager
+
+Route
+
+/settings/permissions
+
+HTML
+
+permissions-manager.html
+
+CSS
+
+permissions-manager.css
+
+JavaScript
+
+permissions-manager.js
+
+Primary APIs
+
+GET /device/permissions
+
+POST /device/permissions/check
+
+POST /device/permissions/report
+
+======================================================================
+END OF DOCUMENT
+======================================================================

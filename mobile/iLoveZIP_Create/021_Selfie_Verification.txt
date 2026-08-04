@@ -1,0 +1,630 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Selfie Verification
+Document ID    : MBC-FE-021
+Module         : Driver Verification
+Platform       : MBconnect Driver App
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Functional Requirements
+9. Camera & Image Quality Rules
+10. Face Detection Workflow
+11. API Integration
+12. Database Mapping
+13. Verification Workflow
+14. Error Handling
+15. Loading State
+16. Success State
+17. Security & Privacy
+18. Analytics Events
+19. Accessibility
+20. Test Cases
+21. Future Enhancements
+22. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Selfie Verification
+
+Screen Code
+
+VERIFY-005
+
+Entry Point
+
+Identity Verification Dashboard
+
+Purpose
+
+Capture a live selfie to verify the driver's identity before activation.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Selfie verification helps ensure that the registered driver matches
+the submitted identity documents.
+
+Business Goals
+
+• Prevent impersonation
+
+• Improve trust
+
+• Reduce fraud
+
+• Support manual verification
+
+• Prepare for AI face verification
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Reviewed By
+
+Verification Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Capture a clear, front-facing selfie using the device camera with
+sufficient quality for identity verification.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Driving Licence Verification
+
+↓
+
+Selfie Verification
+
+↓
+
+Image Quality Check
+
+↓
+
+Manual Review
+
+↓
+
+Approved
+
+↓
+
+Identity Verification Completed
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Back Button
+
+Selfie Verification
+
+--------------------------------------------------
+
+Progress
+
+Step 4 of 4
+
+--------------------------------------------------
+
+Illustration
+
+Face Alignment Guide
+
+--------------------------------------------------
+
+Instructions
+
+• Remove sunglasses
+
+• Ensure good lighting
+
+• Face the camera
+
+• Keep your full face visible
+
+--------------------------------------------------
+
+Live Camera Preview
+
+Oval Face Guide
+
+--------------------------------------------------
+
+Capture Selfie
+
+--------------------------------------------------
+
+Preview
+
+Retake
+
+Use Photo
+
+--------------------------------------------------
+
+Submit for Verification
+
+--------------------------------------------------
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+App Bar
+
+Progress Card
+
+Instruction Card
+
+Camera Preview
+
+Face Alignment Overlay
+
+Capture Button
+
+Preview Screen
+
+Retake Button
+
+Submit Button
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Open front camera.
+
+FR-002
+
+Display alignment guide.
+
+FR-003
+
+Capture image.
+
+FR-004
+
+Allow preview.
+
+FR-005
+
+Allow retake.
+
+FR-006
+
+Compress image.
+
+FR-007
+
+Upload selfie.
+
+FR-008
+
+Submit verification request.
+
+======================================================================
+9. CAMERA & IMAGE QUALITY RULES
+======================================================================
+
+Camera
+
+Front Camera
+
+Minimum Resolution
+
+1080 × 1080
+
+Maximum File Size
+
+10 MB
+
+Supported Formats
+
+JPG
+
+PNG
+
+WEBP
+
+Image Quality Checks
+
+Blur Detection
+
+Face Visibility
+
+Brightness
+
+Contrast
+
+Orientation
+
+Single Face Only
+
+======================================================================
+10. FACE DETECTION WORKFLOW
+======================================================================
+
+Capture Selfie
+
+↓
+
+Face Detection
+
+↓
+
+Quality Validation
+
+↓
+
+Image Compression
+
+↓
+
+Upload
+
+↓
+
+Manual Review
+
+Future
+
+↓
+
+AI Face Match
+
+↓
+
+Liveness Detection
+
+======================================================================
+11. API INTEGRATION
+======================================================================
+
+Submit Selfie
+
+POST
+
+/api/v1/driver/documents/selfie
+
+Multipart Request
+
+Fields
+
+driver_id
+
+selfie_image
+
+Response
+
+{
+
+"status":true,
+
+"verification_status":"pending",
+
+"reference_id":"SELFIE92871"
+
+}
+
+======================================================================
+12. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_documents
+
+driver_verification
+
+Fields
+
+driver_id
+
+document_type
+
+image_path
+
+quality_score
+
+verification_status
+
+submitted_at
+
+reviewed_at
+
+reviewed_by
+
+remarks
+
+======================================================================
+13. VERIFICATION WORKFLOW
+======================================================================
+
+Draft
+
+↓
+
+Captured
+
+↓
+
+Quality Check
+
+↓
+
+Submitted
+
+↓
+
+Manual Review
+
+↓
+
+Approved
+
+OR
+
+Rejected
+
+↓
+
+Retake Required
+
+======================================================================
+14. ERROR HANDLING
+======================================================================
+
+Camera Permission Denied
+
+Camera Not Available
+
+Multiple Faces Detected
+
+Face Not Detected
+
+Blurred Image
+
+Poor Lighting
+
+Network Error
+
+Server Error
+
+======================================================================
+15. LOADING STATE
+======================================================================
+
+Compressing Image
+
+Uploading
+
+Submitting
+
+Disable Buttons
+
+Progress Indicator
+
+======================================================================
+16. SUCCESS STATE
+======================================================================
+
+Selfie Uploaded Successfully
+
+Verification Pending
+
+Estimated Review Time
+
+24 Hours
+
+Next Step
+
+Vehicle Verification
+
+======================================================================
+17. SECURITY & PRIVACY
+======================================================================
+
+HTTPS
+
+Encrypted Storage
+
+Secure File Access
+
+Role-Based Permissions
+
+Audit Logging
+
+No Public Image Access
+
+Image retained according to company retention policy.
+
+======================================================================
+18. ANALYTICS EVENTS
+======================================================================
+
+selfie_screen_open
+
+camera_opened
+
+selfie_captured
+
+selfie_retaken
+
+quality_check_completed
+
+verification_submitted
+
+verification_failed
+
+======================================================================
+19. ACCESSIBILITY
+======================================================================
+
+Large Capture Button
+
+Voice Instructions (Future)
+
+Screen Reader Labels
+
+Touch Targets ≥ 48px
+
+High Contrast Support
+
+======================================================================
+20. TEST CASES
+======================================================================
+
+TC-001
+
+Valid Selfie
+
+Expected
+
+Verification Submitted
+
+------------------------------------
+
+TC-002
+
+Blurred Image
+
+Expected
+
+Quality Warning
+
+------------------------------------
+
+TC-003
+
+Multiple Faces
+
+Expected
+
+Capture Blocked
+
+------------------------------------
+
+TC-004
+
+No Camera Permission
+
+Expected
+
+Permission Request
+
+------------------------------------
+
+TC-005
+
+Network Failure
+
+Expected
+
+Retry Upload
+
+======================================================================
+21. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Face Matching
+
+Liveness Detection
+
+Blink Detection
+
+Head Movement Validation
+
+Video Verification
+
+Mask Detection
+
+Real-Time Anti-Spoofing
+
+======================================================================
+22. DEVELOPER NOTES
+======================================================================
+
+Use native camera APIs.
+
+Do not allow gallery upload in Version 1.
+
+Compress images before upload.
+
+Keep face alignment overlay reusable.
+
+Run quality checks before upload.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Selfie Verification
+
+Route
+
+/verification/selfie
+
+HTML
+
+selfie-verification.html
+
+CSS
+
+selfie-verification.css
+
+JavaScript
+
+selfie-verification.js
+
+Primary API
+
+POST /driver/documents/selfie
+
+======================================================================
+END OF DOCUMENT
+======================================================================

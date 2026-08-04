@@ -1,0 +1,555 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Logout & Session Management
+Document ID    : MBC-FE-063
+Module         : Security
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Active Sessions
+9. Trusted Devices
+10. Functional Requirements
+11. Logout Workflow
+12. Session Timeout Rules
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Success State
+18. Security Requirements
+19. Analytics Events
+20. Accessibility
+21. Test Cases
+22. Future Enhancements
+23. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Logout & Session Management
+
+Screen Code
+
+SECURITY-001
+
+Entry Point
+
+Settings
+
+Security
+
+Profile
+
+Purpose
+
+Manage user sessions, trusted devices and secure account access.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Protect Driver Partner accounts from unauthorized access while
+providing visibility into active sessions.
+
+Business Goals
+
+• Improve account security
+
+• Prevent unauthorized access
+
+• Remote session management
+
+• Secure authentication
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Allow users to securely logout, monitor active sessions and remove
+unrecognized devices.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Settings
+
+↓
+
+Security
+
+↓
+
+Session Management
+
+↓
+
+Select Session
+
+↓
+
+Logout Session
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Current Device
+
+Samsung Galaxy S24
+
+Delhi, India
+
+Active Now
+
+✓ This Device
+
+--------------------------------------------------
+
+Other Active Devices
+
+----------------------------------
+
+OnePlus 12
+
+Mumbai
+
+2 Hours Ago
+
+Logout >
+
+----------------------------------
+
+iPhone 15
+
+Lucknow
+
+Yesterday
+
+Logout >
+
+--------------------------------------------------
+
+Trusted Devices
+
+3 Devices
+
+Manage >
+
+--------------------------------------------------
+
+Security Actions
+
+Logout
+
+Logout All Devices
+
+Remove Trusted Device
+
+View Login History
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Current Device Card
+
+Active Session List
+
+Trusted Devices List
+
+Security Actions
+
+Confirmation Dialog
+
+======================================================================
+8. ACTIVE SESSIONS
+======================================================================
+
+Display
+
+Device Name
+
+Device Type
+
+Operating System
+
+App Version
+
+IP Address (Masked)
+
+Location
+
+Last Active Time
+
+Session Status
+
+======================================================================
+9. TRUSTED DEVICES
+======================================================================
+
+Display
+
+Device Name
+
+First Login
+
+Last Active
+
+Trusted Status
+
+Remove Button
+
+======================================================================
+10. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display active sessions.
+
+FR-002
+
+Logout selected device.
+
+FR-003
+
+Logout all devices.
+
+FR-004
+
+Remove trusted device.
+
+FR-005
+
+View login history.
+
+FR-006
+
+Receive login alerts.
+
+======================================================================
+11. LOGOUT WORKFLOW
+======================================================================
+
+Logout Selected
+
+↓
+
+Confirmation
+
+↓
+
+Token Revoked
+
+↓
+
+Session Removed
+
+↓
+
+Redirect To Login
+
+======================================================================
+12. SESSION TIMEOUT RULES
+======================================================================
+
+Inactive For 30 Minutes
+
+↓
+
+Session Warning
+
+↓
+
+Auto Logout
+
+Exceptions
+
+Active Trip
+
+Emergency SOS
+
+Background Navigation
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/security/sessions
+
+------------------------------------
+
+POST
+
+/api/v1/security/logout
+
+------------------------------------
+
+POST
+
+/api/v1/security/logout-all
+
+------------------------------------
+
+DELETE
+
+/api/v1/security/trusted-device/{device_id}
+
+Response
+
+{
+
+"active_sessions":3,
+
+"trusted_devices":2,
+
+"current_device":"Android"
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+user_sessions
+
+trusted_devices
+
+login_history
+
+Fields
+
+driver_id
+
+device_id
+
+device_name
+
+ip_address
+
+login_time
+
+last_active
+
+status
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Logout
+
+Session Already Expired
+
+Network Error
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Loading Sessions
+
+Logging Out
+
+Removing Device
+
+======================================================================
+17. SUCCESS STATE
+======================================================================
+
+Logged Out Successfully
+
+Device Removed
+
+Session Terminated
+
+======================================================================
+18. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Refresh Tokens
+
+Token Revocation
+
+Encrypted Session Store
+
+Audit Logging
+
+======================================================================
+19. ANALYTICS EVENTS
+======================================================================
+
+session_open
+
+logout_clicked
+
+logout_all_clicked
+
+trusted_device_removed
+
+login_history_open
+
+======================================================================
+20. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+21. TEST CASES
+======================================================================
+
+TC-001
+
+Logout Current Device
+
+Expected
+
+Redirect To Login
+
+------------------------------------
+
+TC-002
+
+Logout Other Device
+
+Expected
+
+Remote Session Closed
+
+------------------------------------
+
+TC-003
+
+Logout All Devices
+
+Expected
+
+All Tokens Revoked
+
+------------------------------------
+
+TC-004
+
+Remove Trusted Device
+
+Expected
+
+Trust Removed Successfully
+
+======================================================================
+22. FUTURE ENHANCEMENTS
+======================================================================
+
+Device Risk Score
+
+Biometric Session Approval
+
+Suspicious Login Detection
+
+Geo-Fencing Alerts
+
+Hardware Security Key
+
+======================================================================
+23. DEVELOPER NOTES
+======================================================================
+
+Invalidate refresh tokens immediately on logout.
+
+Support remote session termination.
+
+Log every authentication event.
+
+Never expose full IP addresses.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Logout & Session Management
+
+Route
+
+/settings/security
+
+HTML
+
+session-management.html
+
+CSS
+
+session-management.css
+
+JavaScript
+
+session-management.js
+
+Primary APIs
+
+GET /security/sessions
+
+POST /security/logout
+
+POST /security/logout-all
+
+DELETE /security/trusted-device/{device_id}
+
+======================================================================
+END OF DOCUMENT
+======================================================================

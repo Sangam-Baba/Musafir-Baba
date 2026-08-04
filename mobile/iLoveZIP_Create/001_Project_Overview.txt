@@ -1,0 +1,551 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Project Overview
+Document ID    : MBC-FE-001
+Version        : 1.0
+Prepared For   : MusafirBaba Travels Pvt. Ltd.
+Platform       : MBconnect + MBGO
+Prepared By    : OpenAI & Project Team
+Status         : Draft
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Introduction
+2. Business Vision
+3. Project Objectives
+4. Platform Overview
+5. Target Users
+6. Core Products
+7. Major Modules
+8. Technology Stack
+9. Design Philosophy
+10. System Architecture
+11. User Roles
+12. Business Workflow
+13. Project Scope
+14. Security Overview
+15. Future Roadmap
+16. Success Metrics
+17. Development Guidelines
+18. Conclusion
+
+======================================================================
+1. INTRODUCTION
+======================================================================
+
+MBconnect is an enterprise-grade mobility management platform developed
+by MusafirBaba Travels Pvt. Ltd.
+
+The platform is designed to manage:
+
+• Driver Partners
+• Customers
+• Fleet Owners
+• Corporate Clients
+• Travel Operations
+• Finance
+• Dispatch
+• Fleet Analytics
+• Executive Reporting
+
+Unlike a traditional taxi application, MBconnect combines fleet
+management, trip execution, finance, dispatch, analytics, and
+business intelligence into a unified ecosystem.
+
+The system is modular, scalable, API-first, and cloud-ready.
+
+======================================================================
+2. BUSINESS VISION
+======================================================================
+
+Vision
+
+To build India's most trusted mobility ecosystem for driver partners,
+fleet operators, and travel businesses by delivering technology that is
+transparent, scalable, and easy to use.
+
+Mission
+
+• Empower driver partners
+• Simplify travel operations
+• Digitize fleet management
+• Automate dispatch
+• Improve customer experience
+• Enable data-driven decision making
+
+Business Goals
+
+• Increase booking efficiency
+• Reduce manual operations
+• Improve driver earnings
+• Maximize fleet utilization
+• Enhance customer satisfaction
+• Expand into multiple cities
+
+======================================================================
+3. PROJECT OBJECTIVES
+======================================================================
+
+Primary Objectives
+
+• Develop a professional Driver Partner application.
+• Create a customer booking platform (MBGO).
+• Build an Operations Control Center.
+• Provide real-time fleet tracking.
+• Enable digital document management.
+• Simplify driver onboarding.
+• Automate booking assignments.
+• Monitor trip execution.
+• Manage settlements and payouts.
+• Generate business intelligence reports.
+
+Secondary Objectives
+
+• AI-powered dispatching
+• Predictive fleet analytics
+• Corporate travel management
+• Executive dashboards
+• Demand forecasting
+• Multi-city expansion
+
+======================================================================
+4. PLATFORM OVERVIEW
+======================================================================
+
+The complete ecosystem consists of four major platforms.
+
+1. MBconnect Driver App
+
+Purpose
+
+Used by drivers to:
+
+• Register
+• Upload documents
+• Receive bookings
+• Navigate trips
+• Track earnings
+• Request support
+
+------------------------------------------------------------
+
+2. MBGO Customer App
+
+Purpose
+
+Allows customers to:
+
+• Book rides
+• Track drivers
+• Make payments
+• Share trips
+• Contact support
+
+------------------------------------------------------------
+
+3. Admin & Operations Portal
+
+Purpose
+
+Used by operations teams to:
+
+• Assign drivers
+• Monitor trips
+• Handle SOS events
+• Manage support tickets
+• Track fleet performance
+
+------------------------------------------------------------
+
+4. Executive Dashboard
+
+Purpose
+
+Provides business owners with:
+
+• Revenue insights
+• Fleet utilization
+• Driver performance
+• Booking trends
+• AI recommendations
+
+======================================================================
+5. TARGET USERS
+======================================================================
+
+Primary Users
+
+• Driver Partners
+• Fleet Owners
+• Operations Team
+• Dispatch Managers
+• Finance Team
+• Customer Support
+
+Secondary Users
+
+• Corporate Clients
+• Business Owners
+• Regional Managers
+• Executives
+• Auditors
+
+======================================================================
+6. CORE PRODUCTS
+======================================================================
+
+Product 1
+
+MBconnect Driver Platform
+
+Features
+
+• Driver onboarding
+• Trip management
+• Earnings
+• Navigation
+• Documents
+• Wallet
+• SOS
+
+------------------------------------------------------------
+
+Product 2
+
+MBGO Customer Platform
+
+Features
+
+• Ride booking
+• Trip tracking
+• Payments
+• Driver communication
+• Reviews
+
+------------------------------------------------------------
+
+Product 3
+
+Operations Portal
+
+Features
+
+• Dispatch
+• Fleet monitoring
+• Reports
+• Analytics
+• Driver management
+
+------------------------------------------------------------
+
+Product 4
+
+Business Intelligence Platform
+
+Features
+
+• Executive dashboard
+• AI analytics
+• Revenue
+• KPIs
+• Growth tracking
+
+======================================================================
+7. MAJOR MODULES
+======================================================================
+
+Authentication
+
+Driver Management
+
+Vehicle Management
+
+Booking Engine
+
+Trip Management
+
+Navigation
+
+Fleet Analytics
+
+Corporate Billing
+
+Finance
+
+Driver Wallet
+
+SOS Center
+
+Customer Tracking
+
+Operations Center
+
+AI Dispatch Engine
+
+Executive Dashboard
+
+======================================================================
+8. TECHNOLOGY STACK
+======================================================================
+
+Frontend
+
+HTML5
+
+CSS3
+
+JavaScript
+
+Google Fonts
+
+Material Symbols
+
+Backend (Planned)
+
+Laravel
+
+Node.js
+
+REST APIs
+
+Database
+
+MySQL
+
+Redis
+
+Firebase
+
+Maps
+
+Google Maps
+
+OpenStreetMap
+
+Notifications
+
+Firebase Cloud Messaging
+
+SMS Gateway
+
+WhatsApp API
+
+======================================================================
+9. DESIGN PHILOSOPHY
+======================================================================
+
+The design focuses on:
+
+• Simplicity
+• Speed
+• Accessibility
+• Mobile-first layouts
+• High readability
+• Enterprise-grade consistency
+• Reusable components
+• Responsive interfaces
+
+======================================================================
+10. SYSTEM ARCHITECTURE
+======================================================================
+
+Driver App
+        │
+        ▼
+REST API Gateway
+        │
+        ▼
+Application Server
+        │
+        ▼
+Database
+        │
+        ▼
+Operations Dashboard
+        │
+        ▼
+Executive Dashboard
+
+======================================================================
+11. USER ROLES
+======================================================================
+
+• Driver
+• Customer
+• Fleet Owner
+• Dispatcher
+• Operations Executive
+• Finance Executive
+• Admin
+• Super Admin
+
+Each role has separate permissions and dashboard access.
+
+======================================================================
+12. BUSINESS WORKFLOW
+======================================================================
+
+Customer Booking
+
+↓
+
+Booking Validation
+
+↓
+
+AI Driver Assignment
+
+↓
+
+Driver Accepts
+
+↓
+
+Navigation
+
+↓
+
+Trip Execution
+
+↓
+
+Payment
+
+↓
+
+Settlement
+
+↓
+
+Reporting
+
+======================================================================
+13. PROJECT SCOPE
+======================================================================
+
+Included
+
+✔ Driver Platform
+
+✔ Customer Platform
+
+✔ Fleet Management
+
+✔ Dispatch
+
+✔ Finance
+
+✔ Analytics
+
+✔ Reports
+
+✔ Executive Dashboard
+
+Excluded (Version 1)
+
+✘ AI Prediction
+
+✘ Voice Assistant
+
+✘ IoT Integration
+
+✘ Vehicle Diagnostics
+
+======================================================================
+14. SECURITY OVERVIEW
+======================================================================
+
+Authentication
+
+JWT
+
+HTTPS
+
+Role-Based Access
+
+Encrypted Passwords
+
+OTP Verification
+
+Activity Logs
+
+API Authorization
+
+======================================================================
+15. FUTURE ROADMAP
+======================================================================
+
+Version 2
+
+• AI Dispatch Improvements
+• Driver Wallet
+• Corporate Portal
+• Multi-city Operations
+• Demand Prediction
+
+Version 3
+
+• EV Fleet Management
+• IoT Integration
+• Voice Commands
+• Predictive Maintenance
+• AI Business Intelligence
+
+======================================================================
+16. SUCCESS METRICS
+======================================================================
+
+• Booking Success Rate
+
+• Driver Acceptance Rate
+
+• Fleet Utilization
+
+• Revenue Growth
+
+• Customer Ratings
+
+• Driver Retention
+
+• Trip Completion Rate
+
+======================================================================
+17. DEVELOPMENT GUIDELINES
+======================================================================
+
+Coding Standards
+
+Reusable Components
+
+API-first Design
+
+Responsive Layout
+
+Modular JavaScript
+
+Scalable Folder Structure
+
+Enterprise Naming Convention
+
+Version Control (Git)
+
+======================================================================
+18. CONCLUSION
+======================================================================
+
+MBconnect is designed as a complete enterprise mobility ecosystem that
+integrates driver management, customer bookings, fleet operations,
+finance, analytics, and executive reporting into a unified platform.
+
+The modular architecture ensures scalability from a single-city
+deployment to nationwide operations while maintaining a consistent user
+experience across all products.
+
+========================== END OF DOCUMENT ==========================

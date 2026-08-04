@@ -1,0 +1,699 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : System Administration & Platform Control Center
+Document ID    : MBC-FE-090
+Module         : Platform Administration
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Global Dashboard
+8. Multi-Tenant Administration
+9. User & Role Management
+10. Platform Configuration
+11. Feature Flag Management
+12. Security Center
+13. System Health Monitoring
+14. Audit Logs
+15. Notification Center
+16. Backup & Disaster Recovery
+17. API Administration
+18. Functional Requirements
+19. API Integration
+20. Database Mapping
+21. Error Handling
+22. Loading State
+23. Empty State
+24. Success State
+25. Security Requirements
+26. Analytics Events
+27. Accessibility
+28. Test Cases
+29. Future Enhancements
+30. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+System Administration & Platform Control Center
+
+Screen Code
+
+ADMIN-001
+
+Entry Point
+
+Super Admin Dashboard
+
+Purpose
+
+Provide centralized administration for the
+entire MBconnect ecosystem.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Enable secure platform governance,
+configuration and monitoring.
+
+Business Goals
+
+• Centralized administration
+
+• Enterprise security
+
+• High availability
+
+• Operational excellence
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Super Admin
+
+Platform Administrator
+
+Operations Team
+
+Security Team
+
+DevOps Engineer
+
+Support Administrator
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Manage every platform module, tenant,
+configuration and infrastructure from one place.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Admin Dashboard
+
+↓
+
+Select Module
+
+↓
+
+Configure
+
+↓
+
+Save Changes
+
+↓
+
+Audit Logged
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Platform Control Center
+
+Platform Status
+
+Healthy
+
+Uptime
+
+99.98%
+
+--------------------------------------------------
+
+Today's Activity
+
+Bookings
+
+58,642
+
+Drivers Online
+
+18,420
+
+Corporate Clients
+
+426
+
+Hotels
+
+182
+
+API Requests
+
+5.4 Million
+
+--------------------------------------------------
+
+Quick Actions
+
+Users
+
+Tenants
+
+Security
+
+Platform Settings
+
+Audit Logs
+
+Health
+
+Backups
+
+======================================================================
+7. GLOBAL DASHBOARD
+======================================================================
+
+Platform Overview
+
+Active Users
+
+Drivers Online
+
+Customers Online
+
+Fleet Owners
+
+Corporate Clients
+
+Hotels
+
+Revenue Today
+
+System Alerts
+
+======================================================================
+8. MULTI-TENANT ADMINISTRATION
+======================================================================
+
+Tenant List
+
+Tenant Status
+
+Subscription
+
+Storage
+
+API Usage
+
+Custom Domains
+
+Regional Hosting
+
+Suspend Tenant
+
+======================================================================
+9. USER & ROLE MANAGEMENT
+======================================================================
+
+Users
+
+Roles
+
+Permissions
+
+Teams
+
+Access Policies
+
+Role Templates
+
+Session Management
+
+======================================================================
+10. PLATFORM CONFIGURATION
+======================================================================
+
+General Settings
+
+Countries
+
+Currencies
+
+Languages
+
+Pricing Engine
+
+Payment Gateway
+
+SMS Providers
+
+Email Providers
+
+Maps Provider
+
+======================================================================
+11. FEATURE FLAG MANAGEMENT
+======================================================================
+
+Enable Feature
+
+Disable Feature
+
+Beta Features
+
+Tenant-Specific Features
+
+Region-Based Features
+
+A/B Testing
+
+======================================================================
+12. SECURITY CENTER
+======================================================================
+
+Login Activity
+
+Failed Logins
+
+Blocked Accounts
+
+2FA Status
+
+Password Policy
+
+IP Restrictions
+
+Device Management
+
+======================================================================
+13. SYSTEM HEALTH MONITORING
+======================================================================
+
+CPU
+
+Memory
+
+Database
+
+Queue
+
+Cache
+
+Storage
+
+API Health
+
+Microservices
+
+======================================================================
+14. AUDIT LOGS
+======================================================================
+
+User
+
+Action
+
+Module
+
+Timestamp
+
+IP Address
+
+Device
+
+Status
+
+======================================================================
+15. NOTIFICATION CENTER
+======================================================================
+
+System Alerts
+
+Maintenance Notices
+
+Security Alerts
+
+Platform Announcements
+
+Scheduled Downtime
+
+======================================================================
+16. BACKUP & DISASTER RECOVERY
+======================================================================
+
+Backup Schedule
+
+Backup History
+
+Restore Point
+
+Disaster Recovery
+
+Geo Replication
+
+Recovery Status
+
+======================================================================
+17. API ADMINISTRATION
+======================================================================
+
+API Keys
+
+Webhook Health
+
+API Versions
+
+Rate Limits
+
+Usage Statistics
+
+Deprecated APIs
+
+======================================================================
+18. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Manage platform users.
+
+FR-002
+
+Manage tenants.
+
+FR-003
+
+Configure platform settings.
+
+FR-004
+
+Monitor infrastructure.
+
+FR-005
+
+Manage security.
+
+FR-006
+
+View audit logs.
+
+======================================================================
+19. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/admin/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/admin/system-health
+
+------------------------------------
+
+POST
+
+/api/v1/admin/settings
+
+------------------------------------
+
+GET
+
+/api/v1/admin/audit
+
+------------------------------------
+
+GET
+
+/api/v1/admin/tenants
+
+Response
+
+{
+
+"uptime":"99.98%",
+
+"drivers_online":18420,
+
+"bookings_today":58642,
+
+"api_requests":5400000
+
+}
+
+======================================================================
+20. DATABASE MAPPING
+======================================================================
+
+Tables
+
+admin_users
+
+platform_settings
+
+feature_flags
+
+audit_logs
+
+system_health
+
+tenant_registry
+
+Fields
+
+admin_id
+
+tenant_id
+
+setting_name
+
+flag_name
+
+status
+
+created_at
+
+======================================================================
+21. ERROR HANDLING
+======================================================================
+
+Unable To Load Dashboard
+
+Permission Denied
+
+Configuration Failed
+
+Retry
+
+======================================================================
+22. LOADING STATE
+======================================================================
+
+Loading Dashboard
+
+Saving Settings
+
+Fetching Logs
+
+======================================================================
+23. EMPTY STATE
+======================================================================
+
+No System Alerts
+
+Platform operating normally.
+
+======================================================================
+24. SUCCESS STATE
+======================================================================
+
+Settings Saved
+
+Backup Completed
+
+Feature Updated
+
+======================================================================
+25. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Mandatory MFA
+
+RBAC
+
+Audit Trail
+
+Encryption At Rest
+
+Encryption In Transit
+
+======================================================================
+26. ANALYTICS EVENTS
+======================================================================
+
+admin_dashboard_open
+
+feature_flag_updated
+
+backup_completed
+
+audit_log_viewed
+
+security_alert_opened
+
+tenant_updated
+
+======================================================================
+27. ACCESSIBILITY
+======================================================================
+
+Keyboard Navigation
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+High Contrast Mode
+
+======================================================================
+28. TEST CASES
+======================================================================
+
+TC-001
+
+Enable Feature Flag
+
+Expected
+
+Feature Enabled
+
+------------------------------------
+
+TC-002
+
+Create Backup
+
+Expected
+
+Backup Completed
+
+------------------------------------
+
+TC-003
+
+Suspend Tenant
+
+Expected
+
+Tenant Access Disabled
+
+------------------------------------
+
+TC-004
+
+View Audit Logs
+
+Expected
+
+Logs Displayed
+
+======================================================================
+29. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Platform Monitoring
+
+Auto-Healing Services
+
+Predictive Failure Detection
+
+Security Threat Intelligence
+
+Cloud Cost Optimization
+
+Zero Trust Administration
+
+======================================================================
+30. DEVELOPER NOTES
+======================================================================
+
+Implement granular RBAC.
+
+Support millions of users.
+
+Maintain immutable audit logs.
+
+Provide zero-downtime deployments.
+
+Support horizontal scaling.
+
+Enable localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+System Administration & Platform Control Center
+
+Route
+
+/admin/dashboard
+
+HTML
+
+admin-dashboard.html
+
+CSS
+
+admin-dashboard.css
+
+JavaScript
+
+admin-dashboard.js
+
+Primary APIs
+
+GET /admin/dashboard
+
+GET /admin/system-health
+
+POST /admin/settings
+
+GET /admin/audit
+
+GET /admin/tenants
+
+======================================================================
+END OF DOCUMENT
+======================================================================

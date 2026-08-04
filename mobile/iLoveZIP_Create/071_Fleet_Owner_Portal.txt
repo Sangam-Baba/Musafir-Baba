@@ -1,0 +1,681 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Fleet Owner Portal
+Document ID    : MBC-FE-071
+Module         : Fleet Management
+Platform       : Android / iOS / Web
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Fleet Owner Dashboard
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Widgets
+8. Driver Management
+9. Vehicle Management
+10. Trip Management
+11. Earnings & Settlement
+12. Compliance Monitoring
+13. Fleet Performance
+14. Notifications
+15. Functional Requirements
+16. API Integration
+17. Database Mapping
+18. Error Handling
+19. Loading State
+20. Empty State
+21. Success State
+22. Security Requirements
+23. Analytics Events
+24. Accessibility
+25. Test Cases
+26. Future Enhancements
+27. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Fleet Owner Portal
+
+Screen Code
+
+FLEET-001
+
+Entry Point
+
+Fleet Login
+
+Dashboard
+
+Purpose
+
+Provide Fleet Owners with centralized management of
+drivers, vehicles, trips and business performance.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Enable Fleet Owners to efficiently manage operations
+through a single enterprise dashboard.
+
+Business Goals
+
+• Fleet visibility
+
+• Driver productivity
+
+• Compliance management
+
+• Revenue optimization
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Fleet Owner
+
+Fleet Manager
+
+Operations Manager
+
+Admin
+
+======================================================================
+4. FLEET OWNER DASHBOARD
+======================================================================
+
+Display
+
+Total Vehicles
+
+Active Drivers
+
+Trips Today
+
+Revenue Today
+
+Monthly Revenue
+
+Fleet Rating
+
+Pending Compliance
+
+Driver Availability
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Fleet Dashboard
+
+↓
+
+Drivers
+
+↓
+
+Vehicles
+
+↓
+
+Trips
+
+↓
+
+Reports
+
+↓
+
+Settings
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Fleet Dashboard
+
+Good Morning
+
+ABC Fleet Services
+
+--------------------------------------------------
+
+Overview
+
+Vehicles
+
+42
+
+Drivers
+
+51
+
+Trips Today
+
+138
+
+Revenue Today
+
+₹84,500
+
+--------------------------------------------------
+
+Quick Actions
+
+Add Driver
+
+Add Vehicle
+
+Assign Driver
+
+Compliance
+
+Reports
+
+--------------------------------------------------
+
+Performance
+
+Acceptance Rate
+
+96%
+
+Completion Rate
+
+99%
+
+Cancellation
+
+1%
+
+Customer Rating
+
+4.89
+
+--------------------------------------------------
+
+Alerts
+
+2 Documents Expiring
+
+1 Driver Suspended
+
+3 Vehicles Due For Insurance
+
+--------------------------------------------------
+
+Buttons
+
+View Reports
+
+Manage Fleet
+
+======================================================================
+7. DASHBOARD WIDGETS
+======================================================================
+
+Revenue Widget
+
+Trips Widget
+
+Driver Widget
+
+Vehicle Widget
+
+Compliance Widget
+
+Performance Widget
+
+Alert Widget
+
+======================================================================
+8. DRIVER MANAGEMENT
+======================================================================
+
+Driver List
+
+Availability
+
+Ratings
+
+Documents
+
+Training Status
+
+Assigned Vehicle
+
+Performance
+
+Suspend Driver
+
+Activate Driver
+
+======================================================================
+9. VEHICLE MANAGEMENT
+======================================================================
+
+Vehicle Inventory
+
+Registration
+
+Insurance
+
+Fitness
+
+PUC
+
+Assigned Driver
+
+Vehicle Status
+
+Maintenance Schedule
+
+======================================================================
+10. TRIP MANAGEMENT
+======================================================================
+
+Today's Trips
+
+Upcoming Trips
+
+Completed Trips
+
+Cancelled Trips
+
+Live Trips
+
+Driver Assignment
+
+Trip History
+
+======================================================================
+11. EARNINGS & SETTLEMENT
+======================================================================
+
+Daily Earnings
+
+Weekly Earnings
+
+Monthly Earnings
+
+Fleet Commission
+
+Driver Payout
+
+Settlement Status
+
+Invoices
+
+======================================================================
+12. COMPLIANCE MONITORING
+======================================================================
+
+Insurance Expiry
+
+Licence Expiry
+
+Fitness Expiry
+
+PUC Expiry
+
+Background Verification
+
+Driver Training Status
+
+======================================================================
+13. FLEET PERFORMANCE
+======================================================================
+
+Trip Completion
+
+Acceptance Rate
+
+Cancellation Rate
+
+Customer Ratings
+
+Driver Rankings
+
+Vehicle Utilization
+
+Revenue Per Vehicle
+
+======================================================================
+14. NOTIFICATIONS
+======================================================================
+
+Driver Joined
+
+Trip Assigned
+
+Vehicle Expiry
+
+Payment Received
+
+Compliance Alert
+
+System Announcement
+
+======================================================================
+15. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Manage drivers.
+
+FR-002
+
+Manage vehicles.
+
+FR-003
+
+Monitor trips.
+
+FR-004
+
+Track earnings.
+
+FR-005
+
+Monitor compliance.
+
+FR-006
+
+Generate reports.
+
+======================================================================
+16. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/fleet/dashboard
+
+------------------------------------
+
+GET
+
+/api/v1/fleet/drivers
+
+------------------------------------
+
+GET
+
+/api/v1/fleet/vehicles
+
+------------------------------------
+
+GET
+
+/api/v1/fleet/revenue
+
+------------------------------------
+
+POST
+
+/api/v1/fleet/assign-driver
+
+Response
+
+{
+
+"fleet_id":"FLT1024",
+
+"drivers":51,
+
+"vehicles":42,
+
+"today_trips":138,
+
+"today_revenue":84500
+
+}
+
+======================================================================
+17. DATABASE MAPPING
+======================================================================
+
+Tables
+
+fleet
+
+fleet_drivers
+
+fleet_vehicles
+
+fleet_revenue
+
+fleet_reports
+
+Fields
+
+fleet_id
+
+driver_id
+
+vehicle_id
+
+trip_count
+
+revenue
+
+status
+
+======================================================================
+18. ERROR HANDLING
+======================================================================
+
+Unable To Load Dashboard
+
+Assignment Failed
+
+Vehicle Not Available
+
+Driver Offline
+
+Retry
+
+======================================================================
+19. LOADING STATE
+======================================================================
+
+Loading Fleet Dashboard
+
+Loading Reports
+
+Loading Drivers
+
+======================================================================
+20. EMPTY STATE
+======================================================================
+
+No Fleet Data Available
+
+Add your first driver or vehicle.
+
+======================================================================
+21. SUCCESS STATE
+======================================================================
+
+Fleet Updated
+
+Assignment Successful
+
+Revenue Updated
+
+======================================================================
+22. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Role-Based Access
+
+Fleet Data Isolation
+
+Audit Logs
+
+======================================================================
+23. ANALYTICS EVENTS
+======================================================================
+
+fleet_dashboard_open
+
+driver_added
+
+vehicle_added
+
+assignment_created
+
+report_generated
+
+======================================================================
+24. ACCESSIBILITY
+======================================================================
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+Keyboard Navigation (Web)
+
+High Contrast Mode
+
+======================================================================
+25. TEST CASES
+======================================================================
+
+TC-001
+
+Open Dashboard
+
+Expected
+
+Fleet Summary Loaded
+
+------------------------------------
+
+TC-002
+
+Assign Driver
+
+Expected
+
+Assignment Completed
+
+------------------------------------
+
+TC-003
+
+View Revenue
+
+Expected
+
+Revenue Displayed
+
+------------------------------------
+
+TC-004
+
+Compliance Alert
+
+Expected
+
+Alert Displayed
+
+======================================================================
+26. FUTURE ENHANCEMENTS
+======================================================================
+
+Fleet Heat Maps
+
+AI Driver Allocation
+
+Predictive Maintenance
+
+Fuel Analytics
+
+EV Fleet Dashboard
+
+Corporate Fleet Module
+
+======================================================================
+27. DEVELOPER NOTES
+======================================================================
+
+Dashboard widgets should refresh automatically.
+
+Revenue calculations should be server-side.
+
+Support fleets with 1–10,000+ vehicles.
+
+Enable role-based permissions for fleet staff.
+
+Optimize APIs using pagination and lazy loading.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Fleet Owner Portal
+
+Route
+
+/fleet/dashboard
+
+HTML
+
+fleet-dashboard.html
+
+CSS
+
+fleet-dashboard.css
+
+JavaScript
+
+fleet-dashboard.js
+
+Primary APIs
+
+GET /fleet/dashboard
+
+GET /fleet/drivers
+
+GET /fleet/vehicles
+
+GET /fleet/revenue
+
+POST /fleet/assign-driver
+
+======================================================================
+END OF DOCUMENT
+======================================================================

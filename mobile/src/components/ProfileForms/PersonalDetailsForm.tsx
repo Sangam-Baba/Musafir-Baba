@@ -7,7 +7,6 @@ import { InputField } from '../InputField';
 import { SelectDropdown, SelectOption } from '../SelectDropdown';
 import { Button } from '../Button';
 
-import { State, City } from 'country-state-city';
 import * as ImagePicker from 'expo-image-picker';
 import { API_BASE_URL } from '../../utils/config';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -78,20 +77,30 @@ export const PersonalDetailsForm = ({ onSaveSuccess }: PersonalDetailsFormProps)
   const partnerType = watch('partnerType');
 
   useEffect(() => {
-    const states = State.getStatesOfCountry('IN').map(s => ({
-      label: s.name,
-      value: s.isoCode
-    }));
-    setStateOptions(states);
+    try {
+      const { State } = require('country-state-city');
+      const states = State.getStatesOfCountry('IN').map((s: any) => ({
+        label: s.name,
+        value: s.isoCode
+      }));
+      setStateOptions(states);
+    } catch (e) {
+      console.warn("Failed to load states", e);
+    }
   }, []);
 
   useEffect(() => {
     if (selectedState) {
-      const cities = City.getCitiesOfState('IN', selectedState).map(c => ({
-        label: c.name,
-        value: c.name
-      }));
-      setCityOptions(cities);
+      try {
+        const { City } = require('country-state-city');
+        const cities = City.getCitiesOfState('IN', selectedState).map((c: any) => ({
+          label: c.name,
+          value: c.name
+        }));
+        setCityOptions(cities);
+      } catch (e) {
+        console.warn("Failed to load cities", e);
+      }
     } else {
       setCityOptions([]);
     }

@@ -1,0 +1,627 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Referral Program
+Document ID    : MBC-FE-058
+Module         : Growth & Referral
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Referral Categories
+9. Referral Workflow
+10. Functional Requirements
+11. Reward Rules
+12. Fraud Prevention
+13. API Integration
+14. Database Mapping
+15. Error Handling
+16. Loading State
+17. Empty State
+18. Success State
+19. Security Requirements
+20. Analytics Events
+21. Accessibility
+22. Test Cases
+23. Future Enhancements
+24. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Referral Program
+
+Screen Code
+
+REFERRAL-001
+
+Entry Point
+
+Dashboard
+
+Menu
+
+Profile
+
+Purpose
+
+Allow Driver Partners to invite new drivers, fleet owners and business
+partners while earning referral rewards.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Drive platform growth through trusted referrals while rewarding
+existing Driver Partners.
+
+Business Goals
+
+• Increase driver acquisition
+
+• Expand fleet partnerships
+
+• Grow business network
+
+• Reduce acquisition costs
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Fleet Owner
+
+Travel Partner
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Enable users to share referral codes, track referrals and monitor
+reward earnings.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dashboard
+
+↓
+
+Referral Program
+
+↓
+
+Share Referral
+
+↓
+
+Referral Registered
+
+↓
+
+Verification
+
+↓
+
+Reward Released
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Invite & Earn
+
+Earn up to ₹5,000 per successful referral
+
+--------------------------------------------------
+
+My Referral Code
+
+ASHU9845
+
+Copy
+
+--------------------------------------------------
+
+Referral Link
+
+https://mbconnect.app/r/ASHU9845
+
+Share
+
+--------------------------------------------------
+
+Referral Summary
+
+Successful Referrals
+
+28
+
+Pending Verification
+
+4
+
+Rewards Earned
+
+₹56,000
+
+--------------------------------------------------
+
+Referral Categories
+
+🚗 Driver Partner
+
+🚘 Fleet Owner
+
+🏢 Corporate Client
+
+🏨 Hotel Partner
+
+🧳 Travel Agency
+
+--------------------------------------------------
+
+Recent Referrals
+
+Rahul Singh
+
+Verified
+
+Reward
+
+₹2,000
+
+----------------------------------
+
+Amit Kumar
+
+Pending
+
+Verification
+
+----------------------------------
+
+Priya Sharma
+
+Registered
+
+Waiting for First Trip
+
+--------------------------------------------------
+
+Buttons
+
+Invite via WhatsApp
+
+Invite via SMS
+
+Copy Referral Link
+
+View Terms
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Referral Banner
+
+Referral Code Card
+
+Referral Link Card
+
+Statistics Card
+
+Referral List
+
+Quick Share Buttons
+
+======================================================================
+8. REFERRAL CATEGORIES
+======================================================================
+
+Driver Partner
+
+Fleet Owner
+
+Corporate Client
+
+Hotel Partner
+
+Travel Agency
+
+Affiliate Partner
+
+======================================================================
+9. REFERRAL WORKFLOW
+======================================================================
+
+Invite Shared
+
+↓
+
+User Registers
+
+↓
+
+Documents Verified
+
+↓
+
+First Eligible Activity Completed
+
+↓
+
+Reward Approved
+
+↓
+
+Reward Credited
+
+======================================================================
+10. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display referral code.
+
+FR-002
+
+Generate referral link.
+
+FR-003
+
+Track referrals.
+
+FR-004
+
+Display reward status.
+
+FR-005
+
+Share referral.
+
+FR-006
+
+View referral history.
+
+======================================================================
+11. REWARD RULES
+======================================================================
+
+Reward Trigger
+
+Successful Verification
+
+Required Conditions
+
+First Completed Trip
+
+Minimum Activity Threshold
+
+No Fraud Detected
+
+Reward Status
+
+Pending
+
+Approved
+
+Paid
+
+Rejected
+
+Expired
+
+======================================================================
+12. FRAUD PREVENTION
+======================================================================
+
+Duplicate Device Detection
+
+Duplicate Phone Detection
+
+Duplicate Bank Account Detection
+
+Identity Verification
+
+Referral Abuse Detection
+
+Manual Review
+
+======================================================================
+13. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/referrals
+
+------------------------------------
+
+POST
+
+/api/v1/referrals/share
+
+------------------------------------
+
+GET
+
+/api/v1/referrals/history
+
+------------------------------------
+
+GET
+
+/api/v1/referrals/terms
+
+Response
+
+{
+
+"referral_code":"ASHU9845",
+
+"successful":28,
+
+"pending":4,
+
+"rewards":56000,
+
+"currency":"INR"
+
+}
+
+======================================================================
+14. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_referrals
+
+referral_rewards
+
+referral_history
+
+Fields
+
+driver_id
+
+referral_code
+
+referred_user
+
+category
+
+status
+
+reward_amount
+
+created_at
+
+======================================================================
+15. ERROR HANDLING
+======================================================================
+
+Unable To Load Referrals
+
+Share Failed
+
+Reward Unavailable
+
+Network Error
+
+Server Error
+
+Retry
+
+======================================================================
+16. LOADING STATE
+======================================================================
+
+Loading Referral Dashboard
+
+Loading History
+
+Generating Link
+
+======================================================================
+17. EMPTY STATE
+======================================================================
+
+No Referrals Yet
+
+Invite your first Driver Partner and start earning rewards.
+
+======================================================================
+18. SUCCESS STATE
+======================================================================
+
+Referral Sent
+
+Referral Registered
+
+Reward Credited
+
+======================================================================
+19. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Secure Referral Tokens
+
+Fraud Detection
+
+Audit Logging
+
+======================================================================
+20. ANALYTICS EVENTS
+======================================================================
+
+referral_open
+
+referral_shared
+
+link_copied
+
+reward_received
+
+terms_open
+
+======================================================================
+21. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+22. TEST CASES
+======================================================================
+
+TC-001
+
+Share Referral Link
+
+Expected
+
+Link Shared Successfully
+
+------------------------------------
+
+TC-002
+
+Referral Registered
+
+Expected
+
+Pending Verification
+
+------------------------------------
+
+TC-003
+
+Reward Released
+
+Expected
+
+Wallet Credited
+
+------------------------------------
+
+TC-004
+
+Duplicate Referral
+
+Expected
+
+Fraud Check Triggered
+
+======================================================================
+23. FUTURE ENHANCEMENTS
+======================================================================
+
+Referral Leaderboard
+
+Multi-Level Referral
+
+Campaign-Based Rewards
+
+QR Code Sharing
+
+Referral Certificates
+
+Seasonal Bonus Campaigns
+
+Gamification
+
+======================================================================
+24. DEVELOPER NOTES
+======================================================================
+
+Referral links should use secure unique tokens.
+
+Reward calculations must be handled entirely by backend services.
+
+Support campaign-specific referral rules.
+
+Display real-time referral status.
+
+Prevent self-referrals.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Referral Program
+
+Route
+
+/referrals
+
+HTML
+
+referral-program.html
+
+CSS
+
+referral-program.css
+
+JavaScript
+
+referral-program.js
+
+Primary APIs
+
+GET /referrals
+
+POST /referrals/share
+
+GET /referrals/history
+
+GET /referrals/terms
+
+======================================================================
+END OF DOCUMENT
+======================================================================

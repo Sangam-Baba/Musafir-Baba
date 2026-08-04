@@ -1,0 +1,579 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Feedback & Suggestions
+Document ID    : MBC-FE-066
+Module         : Product Feedback
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Feedback Categories
+9. Functional Requirements
+10. Feedback Workflow
+11. Satisfaction Surveys
+12. API Integration
+13. Database Mapping
+14. Error Handling
+15. Loading State
+16. Empty State
+17. Success State
+18. Security Requirements
+19. Analytics Events
+20. Accessibility
+21. Test Cases
+22. Future Enhancements
+23. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Feedback & Suggestions
+
+Screen Code
+
+FEEDBACK-001
+
+Entry Point
+
+Settings
+
+Help Center
+
+Dashboard
+
+Purpose
+
+Allow Driver Partners to submit feedback, report bugs,
+suggest new features and participate in product surveys.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Collect actionable feedback directly from Driver Partners
+to continuously improve the MBconnect platform.
+
+Business Goals
+
+• Improve product quality
+
+• Increase driver satisfaction
+
+• Reduce usability issues
+
+• Encourage innovation
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Product Team
+
+Support Team
+
+Admin
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Provide a structured platform to collect product feedback
+and track its status.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dashboard
+
+↓
+
+Feedback & Suggestions
+
+↓
+
+Choose Category
+
+↓
+
+Write Feedback
+
+↓
+
+Attach Files
+
+↓
+
+Submit
+
+↓
+
+Track Status
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Feedback & Suggestions
+
+How was your experience today?
+
+★★★★★
+
+--------------------------------------------------
+
+Choose Category
+
+🐞 Bug Report
+
+💡 Feature Request
+
+🚗 Trip Experience
+
+📱 App Performance
+
+💰 Payments
+
+⭐ General Feedback
+
+🛡 Safety
+
+⚙ Other
+
+--------------------------------------------------
+
+Describe Your Feedback
+
+_________________________________
+
+_________________________________
+
+Minimum 20 Characters
+
+--------------------------------------------------
+
+Attachments
+
+📷 Screenshot
+
+📄 PDF
+
+📹 Screen Recording
+
+Maximum 5 Files
+
+--------------------------------------------------
+
+Would You Like Us To Contact You?
+
+☑ Yes
+
+☐ No
+
+--------------------------------------------------
+
+Buttons
+
+Submit Feedback
+
+View Submitted Feedback
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Rating Selector
+
+Category Grid
+
+Feedback Text Area
+
+Attachment Upload
+
+Contact Preference
+
+Primary Buttons
+
+======================================================================
+8. FEEDBACK CATEGORIES
+======================================================================
+
+Bug Report
+
+Feature Request
+
+App Performance
+
+Trip Experience
+
+Payments
+
+Wallet
+
+Navigation
+
+Safety
+
+Learning
+
+General Feedback
+
+Other
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Submit feedback.
+
+FR-002
+
+Attach screenshots.
+
+FR-003
+
+Track feedback status.
+
+FR-004
+
+Participate in surveys.
+
+FR-005
+
+Rate application.
+
+FR-006
+
+Receive acknowledgement.
+
+======================================================================
+10. FEEDBACK WORKFLOW
+======================================================================
+
+Feedback Submitted
+
+↓
+
+Ticket Created
+
+↓
+
+Product Review
+
+↓
+
+Assigned
+
+↓
+
+Under Evaluation
+
+↓
+
+Implemented / Closed
+
+======================================================================
+11. SATISFACTION SURVEYS
+======================================================================
+
+Driver Satisfaction
+
+Trip Experience
+
+Support Experience
+
+Payment Experience
+
+Training Feedback
+
+Feature Satisfaction
+
+Net Promoter Score (NPS)
+
+======================================================================
+12. API INTEGRATION
+======================================================================
+
+POST
+
+/api/v1/feedback
+
+------------------------------------
+
+GET
+
+/api/v1/feedback/history
+
+------------------------------------
+
+POST
+
+/api/v1/feedback/survey
+
+------------------------------------
+
+POST
+
+/api/v1/feedback/attachment
+
+Response
+
+{
+
+"feedback_id":"FDB984521",
+
+"status":"Submitted",
+
+"estimated_review":"3 Days"
+
+}
+
+======================================================================
+13. DATABASE MAPPING
+======================================================================
+
+Tables
+
+driver_feedback
+
+feedback_attachments
+
+feedback_surveys
+
+Fields
+
+feedback_id
+
+driver_id
+
+category
+
+rating
+
+description
+
+status
+
+created_at
+
+======================================================================
+14. ERROR HANDLING
+======================================================================
+
+Unable To Submit Feedback
+
+Attachment Failed
+
+Network Error
+
+Retry
+
+======================================================================
+15. LOADING STATE
+======================================================================
+
+Submitting Feedback
+
+Uploading Files
+
+Saving Survey
+
+======================================================================
+16. EMPTY STATE
+======================================================================
+
+No Feedback Submitted Yet
+
+Help us improve MBconnect by sharing your ideas.
+
+======================================================================
+17. SUCCESS STATE
+======================================================================
+
+Feedback Submitted Successfully
+
+Reference Number Generated
+
+Thank You Message Displayed
+
+======================================================================
+18. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Attachments
+
+Role-Based Access
+
+Audit Logging
+
+======================================================================
+19. ANALYTICS EVENTS
+======================================================================
+
+feedback_open
+
+feedback_submitted
+
+survey_completed
+
+attachment_uploaded
+
+rating_selected
+
+======================================================================
+20. ACCESSIBILITY
+======================================================================
+
+Screen Reader Support
+
+Touch Targets ≥48px
+
+Large Fonts
+
+High Contrast Mode
+
+Voice Input Support
+
+======================================================================
+21. TEST CASES
+======================================================================
+
+TC-001
+
+Submit Feedback
+
+Expected
+
+Reference Number Generated
+
+------------------------------------
+
+TC-002
+
+Upload Screenshot
+
+Expected
+
+Attachment Stored
+
+------------------------------------
+
+TC-003
+
+Complete Survey
+
+Expected
+
+Survey Saved
+
+------------------------------------
+
+TC-004
+
+Offline Submission
+
+Expected
+
+Queued For Synchronization
+
+======================================================================
+22. FUTURE ENHANCEMENTS
+======================================================================
+
+AI Feedback Analysis
+
+Voice Feedback
+
+Video Feedback
+
+Public Feature Voting
+
+Beta Tester Program
+
+Product Roadmap Visibility
+
+======================================================================
+23. DEVELOPER NOTES
+======================================================================
+
+Compress images before upload.
+
+Support offline queueing for feedback.
+
+Allow multiple attachments.
+
+Automatically include app version and device information
+(with user consent) to simplify debugging.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Feedback & Suggestions
+
+Route
+
+/feedback
+
+HTML
+
+feedback.html
+
+CSS
+
+feedback.css
+
+JavaScript
+
+feedback.js
+
+Primary APIs
+
+POST /feedback
+
+GET /feedback/history
+
+POST /feedback/survey
+
+POST /feedback/attachment
+
+======================================================================
+END OF DOCUMENT
+======================================================================

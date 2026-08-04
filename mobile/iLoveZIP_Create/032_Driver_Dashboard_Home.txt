@@ -1,0 +1,572 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Driver Dashboard (Home)
+Document ID    : MBC-FE-032
+Module         : Driver Operations
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Dashboard Sections
+8. Functional Requirements
+9. Online / Offline Logic
+10. Trip Availability
+11. API Integration
+12. Database Mapping
+13. Error Handling
+14. Loading State
+15. Empty State
+16. Success State
+17. Security Requirements
+18. Analytics Events
+19. Accessibility
+20. Test Cases
+21. Future Enhancements
+22. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Driver Dashboard
+
+Screen Code
+
+HOME-001
+
+Entry Point
+
+Verification Completed
+
+Purpose
+
+Provide the primary working screen for every Driver Partner.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+The dashboard enables drivers to
+
+• Go Online
+
+• Receive Trips
+
+• Track Earnings
+
+• View Important Alerts
+
+• Access Essential Features
+
+Business Goals
+
+• Reduce driver distraction
+
+• Increase trip acceptance
+
+• Improve earnings
+
+• Faster navigation
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+Future
+
+Fleet Driver
+
+Corporate Driver
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Keep the home screen clean.
+
+Only display information required before accepting trips.
+
+All secondary functions should be available through dedicated screens.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Login
+
+↓
+
+Dashboard
+
+↓
+
+Go Online
+
+↓
+
+Trip Request
+
+↓
+
+Trip Lifecycle
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Top App Bar
+
+☰ Menu
+
+MBconnect Logo
+
+Notification Icon
+
+--------------------------------------------------
+
+Availability Card
+
+Status
+
+● OFFLINE
+
+or
+
+● ONLINE
+
+Large Toggle Button
+
+GO ONLINE
+
+GO OFFLINE
+
+--------------------------------------------------
+
+Today's Summary
+
+Trips Completed
+
+Today's Earnings
+
+Online Hours
+
+--------------------------------------------------
+
+Current Vehicle
+
+Toyota Rumion
+
+DL01AB1234
+
+Verified
+
+--------------------------------------------------
+
+Important Alerts
+
+Insurance expires in 12 days
+
+OR
+
+No Alerts
+
+--------------------------------------------------
+
+Quick Actions
+
+Trip History
+
+Earnings
+
+Support
+
+Inbox
+
+--------------------------------------------------
+
+Bottom Navigation
+
+Home
+
+Trips
+
+Inbox
+
+Wallet
+
+Menu
+
+======================================================================
+7. DASHBOARD SECTIONS
+======================================================================
+
+Section 1
+
+Availability
+
+Section 2
+
+Today's Summary
+
+Section 3
+
+Vehicle
+
+Section 4
+
+Alerts
+
+Section 5
+
+Quick Actions
+
+======================================================================
+8. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Display current online status.
+
+FR-002
+
+Allow Go Online.
+
+FR-003
+
+Allow Go Offline.
+
+FR-004
+
+Display today's earnings.
+
+FR-005
+
+Display today's completed trips.
+
+FR-006
+
+Display online hours.
+
+FR-007
+
+Display active vehicle.
+
+FR-008
+
+Show important alerts.
+
+======================================================================
+9. ONLINE / OFFLINE LOGIC
+======================================================================
+
+Offline
+
+↓
+
+Driver cannot receive trips.
+
+------------------------------------
+
+Online
+
+↓
+
+Location updates start.
+
+Trip requests enabled.
+
+Driver visible to dispatch engine.
+
+======================================================================
+10. TRIP AVAILABILITY
+======================================================================
+
+Trip Requests
+
+Enabled only when
+
+Driver Status
+
+ONLINE
+
+AND
+
+Identity Approved
+
+Vehicle Approved
+
+Bank Verified
+
+No Expired Documents
+
+GPS Active
+
+======================================================================
+11. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/dashboard
+
+Response
+
+{
+
+"driver_status":"offline",
+
+"today_trips":5,
+
+"today_earnings":4200,
+
+"online_hours":"06:15",
+
+"vehicle":"Toyota Rumion",
+
+"alerts":1
+
+}
+
+======================================================================
+12. DATABASE MAPPING
+======================================================================
+
+Tables
+
+drivers
+
+driver_sessions
+
+driver_statistics
+
+Fields
+
+driver_id
+
+status
+
+online_since
+
+today_earnings
+
+today_trips
+
+vehicle_id
+
+======================================================================
+13. ERROR HANDLING
+======================================================================
+
+Dashboard Load Failed
+
+Network Error
+
+Location Disabled
+
+Session Expired
+
+Retry
+
+======================================================================
+14. LOADING STATE
+======================================================================
+
+Skeleton Dashboard
+
+Loading Cards
+
+Disable Toggle
+
+======================================================================
+15. EMPTY STATE
+======================================================================
+
+No Trips Today
+
+Today's Earnings
+
+₹0
+
+No Alerts
+
+======================================================================
+16. SUCCESS STATE
+======================================================================
+
+Dashboard Loaded
+
+Go Online Available
+
+Summary Updated
+
+======================================================================
+17. SECURITY REQUIREMENTS
+======================================================================
+
+Authenticated Session
+
+HTTPS
+
+JWT Validation
+
+Role-Based Access
+
+Device Validation
+
+======================================================================
+18. ANALYTICS EVENTS
+======================================================================
+
+dashboard_open
+
+go_online
+
+go_offline
+
+quick_action_clicked
+
+alert_opened
+
+======================================================================
+19. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+High Contrast
+
+Large Text Support
+
+======================================================================
+20. TEST CASES
+======================================================================
+
+TC-001
+
+Dashboard Opens
+
+Expected
+
+Summary Loaded
+
+------------------------------------
+
+TC-002
+
+Go Online
+
+Expected
+
+Status Updated
+
+------------------------------------
+
+TC-003
+
+Expired Insurance
+
+Expected
+
+Go Online Blocked
+
+------------------------------------
+
+TC-004
+
+No Internet
+
+Expected
+
+Offline Message
+
+======================================================================
+21. FUTURE ENHANCEMENTS
+======================================================================
+
+Weather Card
+
+Heat Map
+
+Demand Zones
+
+Airport Queue
+
+Leaderboard
+
+Daily Challenges
+
+Fuel Price Widget
+
+======================================================================
+22. DEVELOPER NOTES
+======================================================================
+
+Keep dashboard lightweight.
+
+Refresh summary every 30 seconds while online.
+
+Load cards independently.
+
+Cache dashboard for offline viewing.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Driver Dashboard
+
+Route
+
+/driver/home
+
+HTML
+
+dashboard.html
+
+CSS
+
+dashboard.css
+
+JavaScript
+
+dashboard.js
+
+Primary API
+
+GET /dashboard
+
+======================================================================
+END OF DOCUMENT
+======================================================================

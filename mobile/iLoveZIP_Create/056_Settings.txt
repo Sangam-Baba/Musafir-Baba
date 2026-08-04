@@ -1,0 +1,557 @@
+======================================================================
+                           MBCONNECT
+                Enterprise Mobility Platform
+                  Frontend Documentation
+======================================================================
+
+Document Name  : Settings
+Document ID    : MBC-FE-056
+Module         : Settings
+Platform       : Android / iOS
+Version        : 1.0
+Status         : Approved
+Last Updated   : August 2026
+
+======================================================================
+TABLE OF CONTENTS
+======================================================================
+
+1. Module Overview
+2. Business Purpose
+3. User Roles
+4. Screen Objective
+5. Navigation Flow
+6. UI Layout
+7. Components
+8. Settings Categories
+9. Functional Requirements
+10. Privacy & Security
+11. App Preferences
+12. API Integration
+13. Database Mapping
+14. Error Handling
+15. Loading State
+16. Success State
+17. Security Requirements
+18. Analytics Events
+19. Accessibility
+20. Test Cases
+21. Future Enhancements
+22. Developer Notes
+
+======================================================================
+1. MODULE OVERVIEW
+======================================================================
+
+Module Name
+
+Settings
+
+Screen Code
+
+SETTING-001
+
+Entry Point
+
+Menu
+
+Profile
+
+Dashboard
+
+Purpose
+
+Allow Driver Partners to configure app preferences, account settings,
+privacy controls and application behavior.
+
+======================================================================
+2. BUSINESS PURPOSE
+======================================================================
+
+Provide a centralized configuration area for personal preferences,
+security and application settings.
+
+Business Goals
+
+• Better user experience
+
+• Increased security
+
+• Personalized preferences
+
+• Simplified configuration
+
+======================================================================
+3. USER ROLES
+======================================================================
+
+Supported
+
+✓ Driver Partner
+
+======================================================================
+4. SCREEN OBJECTIVE
+======================================================================
+
+Allow drivers to manage every configurable aspect of their MBconnect
+application.
+
+======================================================================
+5. NAVIGATION FLOW
+======================================================================
+
+Dashboard
+
+↓
+
+Menu
+
+↓
+
+Settings
+
+↓
+
+Selected Category
+
+↓
+
+Save Changes
+
+======================================================================
+6. UI LAYOUT
+======================================================================
+
+--------------------------------------------------
+
+Settings
+
+--------------------------------------------------
+
+Account
+
+Profile
+
+Vehicle
+
+Bank Account
+
+Documents
+
+--------------------------------------------------
+
+Preferences
+
+Language
+
+Theme
+
+Navigation
+
+Units
+
+Date & Time
+
+--------------------------------------------------
+
+Notifications
+
+Trip Alerts
+
+Payment Alerts
+
+Offers
+
+Marketing
+
+Sound
+
+Vibration
+
+--------------------------------------------------
+
+Privacy & Security
+
+Change Password
+
+Biometric Login
+
+App Lock
+
+Two-Factor Authentication
+
+Manage Devices
+
+--------------------------------------------------
+
+Permissions
+
+Location
+
+Camera
+
+Microphone
+
+Storage
+
+Notifications
+
+--------------------------------------------------
+
+About
+
+Terms & Conditions
+
+Privacy Policy
+
+Version
+
+Licenses
+
+======================================================================
+7. COMPONENTS
+======================================================================
+
+Settings List
+
+Toggle Switches
+
+Dropdown Selectors
+
+Navigation Rows
+
+Action Buttons
+
+======================================================================
+8. SETTINGS CATEGORIES
+======================================================================
+
+Account
+
+Profile
+
+Vehicle
+
+Documents
+
+Language
+
+Theme
+
+Navigation
+
+Notifications
+
+Privacy
+
+Security
+
+Permissions
+
+Legal
+
+About
+
+======================================================================
+9. FUNCTIONAL REQUIREMENTS
+======================================================================
+
+FR-001
+
+Update settings.
+
+FR-002
+
+Persist user preferences.
+
+FR-003
+
+Enable biometric login.
+
+FR-004
+
+Manage permissions.
+
+FR-005
+
+View legal information.
+
+FR-006
+
+Reset default settings.
+
+======================================================================
+10. PRIVACY & SECURITY
+======================================================================
+
+Biometric Login
+
+PIN Lock
+
+Password Change
+
+Two-Factor Authentication
+
+Trusted Devices
+
+Login History
+
+Active Sessions
+
+======================================================================
+11. APP PREFERENCES
+======================================================================
+
+Language
+
+Theme
+
+Map Provider
+
+Distance Unit
+
+Currency
+
+Sound
+
+Vibration
+
+Notification Preferences
+
+======================================================================
+12. API INTEGRATION
+======================================================================
+
+GET
+
+/api/v1/settings
+
+------------------------------------
+
+PUT
+
+/api/v1/settings
+
+------------------------------------
+
+POST
+
+/api/v1/settings/reset
+
+Response
+
+{
+
+"language":"English",
+
+"theme":"System",
+
+"biometric":true,
+
+"notifications":true
+
+}
+
+======================================================================
+13. DATABASE MAPPING
+======================================================================
+
+Tables
+
+user_settings
+
+user_preferences
+
+security_preferences
+
+Fields
+
+driver_id
+
+language
+
+theme
+
+biometric
+
+notification_status
+
+updated_at
+
+======================================================================
+14. ERROR HANDLING
+======================================================================
+
+Unable To Save Settings
+
+Network Error
+
+Server Error
+
+Permission Denied
+
+Retry
+
+======================================================================
+15. LOADING STATE
+======================================================================
+
+Loading Settings
+
+Saving Changes
+
+Refreshing Preferences
+
+======================================================================
+16. SUCCESS STATE
+======================================================================
+
+Settings Saved
+
+Preferences Updated
+
+======================================================================
+17. SECURITY REQUIREMENTS
+======================================================================
+
+HTTPS
+
+JWT Authentication
+
+Encrypted Preferences
+
+Role-Based Access
+
+Audit Logging
+
+======================================================================
+18. ANALYTICS EVENTS
+======================================================================
+
+settings_open
+
+setting_changed
+
+theme_changed
+
+language_changed
+
+security_updated
+
+======================================================================
+19. ACCESSIBILITY
+======================================================================
+
+Touch Targets ≥48px
+
+Screen Reader Support
+
+Large Fonts
+
+High Contrast Mode
+
+======================================================================
+20. TEST CASES
+======================================================================
+
+TC-001
+
+Change Theme
+
+Expected
+
+Theme Updated
+
+------------------------------------
+
+TC-002
+
+Enable Biometric
+
+Expected
+
+Biometric Activated
+
+------------------------------------
+
+TC-003
+
+Reset Settings
+
+Expected
+
+Default Values Restored
+
+------------------------------------
+
+TC-004
+
+Permission Denied
+
+Expected
+
+Permission Guidance Displayed
+
+======================================================================
+21. FUTURE ENHANCEMENTS
+======================================================================
+
+Cloud Settings Backup
+
+Multi-Device Sync
+
+Custom Themes
+
+AI Preference Recommendations
+
+Widget Configuration
+
+======================================================================
+22. DEVELOPER NOTES
+======================================================================
+
+Settings should sync across devices after login.
+
+Persist changes immediately after successful API response.
+
+Sensitive settings should require re-authentication.
+
+Support localization.
+
+Support dark mode.
+
+======================================================================
+SCREEN IDENTIFIERS
+======================================================================
+
+Screen Name
+
+Settings
+
+Route
+
+/settings
+
+HTML
+
+settings.html
+
+CSS
+
+settings.css
+
+JavaScript
+
+settings.js
+
+Primary APIs
+
+GET /settings
+
+PUT /settings
+
+POST /settings/reset
+
+======================================================================
+END OF DOCUMENT
+======================================================================

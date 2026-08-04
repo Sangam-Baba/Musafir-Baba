@@ -4,35 +4,255 @@ import { ProfileStackParamList } from './types';
 import { PersonalDetailsScreen } from '../screens/PersonalDetailsScreen';
 import { FleetRegistryScreen } from '../screens/FleetRegistryScreen';
 import { VehicleSettingsScreen } from '../screens/VehicleSettingsScreen';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { BackgroundCheckScreen } from '../screens/BackgroundCheckScreen';
+import { TripSupportScreen } from '../screens/TripSupportScreen';
+import { InboxScreen } from '../screens/InboxScreen';
+import { PayoutHistoryScreen } from '../screens/PayoutHistoryScreen';
+import { ProfilePhotoScreen } from '../screens/ProfilePhotoScreen';
+import { VerifiedPartnerScreen } from '../screens/VerifiedPartnerScreen';
+import { EarningsTrendScreen } from '../screens/EarningsTrendScreen';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../store/useAuthStore';
+
+import { IdentityProofScreen } from '../screens/IdentityProofScreen';
+import { VehicleDetailsScreen } from '../screens/VehicleDetailsScreen';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
 type MenuNavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMenu'>;
 
 const ProfileMenuScreen = () => {
-  const navigation = useNavigation<MenuNavigationProp>();
-  
-  const menuItems = [
-    { title: 'Personal Details', screen: 'PersonalDetails' as const },
-    { title: 'Fleet Registry', screen: 'FleetRegistry' as const },
-    { title: 'Vehicle Settings', screen: 'VehicleSettings' as const },
+  const navigation = useNavigation<any>();
+  const profile = useAuthStore((state) => state.profile);
+  const logout = useAuthStore((state) => state.logout);
+
+  const accountItems = [
+    {
+      title: 'My Profile',
+      subtitle: 'View and update your profile',
+      icon: 'person-outline' as const,
+      iconBg: '#f3e8ff',
+      iconColor: '#9333ea',
+      onPress: () => navigation.navigate('PersonalDetails'),
+    },
+    {
+      title: 'Documents',
+      subtitle: 'Manage your documents',
+      icon: 'card-outline' as const,
+      iconBg: '#dcfce7',
+      iconColor: '#16a34a',
+      onPress: () => navigation.navigate('IdentityProof'),
+    },
+    {
+      title: 'My Vehicles',
+      subtitle: 'Manage your vehicles',
+      icon: 'car-outline' as const,
+      iconBg: '#fff7ed',
+      iconColor: '#FE5300',
+      onPress: () => navigation.navigate('VehicleDetails'),
+    },
+    {
+      title: 'Payout & Bank Details',
+      subtitle: 'Manage bank accounts and payouts',
+      icon: 'business-outline' as const,
+      iconBg: '#e0f2fe',
+      iconColor: '#0284c7',
+      onPress: () => navigation.navigate('PayoutHistory'),
+    },
+    {
+      title: 'Subscription',
+      subtitle: 'View plan, renewal and history',
+      icon: 'shield-checkmark-outline' as const,
+      iconBg: '#f3e8ff',
+      iconColor: '#7c3aed',
+      onPress: () => Alert.alert("Subscription", "Your Active Partner Subscription is valid until Dec 2026."),
+    },
+    {
+      title: 'Referrals & Rewards',
+      subtitle: 'Invite partners and earn rewards',
+      icon: 'gift-outline' as const,
+      iconBg: '#fef2f2',
+      iconColor: '#dc2626',
+      onPress: () => Alert.alert("Referrals & Rewards", "Share your referral code MB-REF-992 to earn ₹500 per signup!"),
+    },
+  ];
+
+  const supportItems = [
+    {
+      title: 'Help Center',
+      subtitle: 'Get help and view FAQs',
+      icon: 'headset-outline' as const,
+      iconBg: '#e0f2fe',
+      iconColor: '#0284c7',
+      onPress: () => navigation.navigate('TripSupport'),
+    },
+    {
+      title: 'Contact Support',
+      subtitle: 'Chat with our support team',
+      icon: 'chatbubble-ellipses-outline' as const,
+      iconBg: '#fef3c7',
+      iconColor: '#d97706',
+      onPress: () => navigation.navigate('TripSupport'),
+    },
+    {
+      title: 'Terms & Conditions',
+      subtitle: 'Read our terms and conditions',
+      icon: 'document-text-outline' as const,
+      iconBg: '#dcfce7',
+      iconColor: '#16a34a',
+      onPress: () => Alert.alert("Terms & Conditions", "MB Connect Partner Terms & Conditions v1.0.0"),
+    },
+    {
+      title: 'Privacy Policy',
+      subtitle: 'Read our privacy policy',
+      icon: 'shield-outline' as const,
+      iconBg: '#e0f2fe',
+      iconColor: '#2563eb',
+      onPress: () => Alert.alert("Privacy Policy", "MB Connect Privacy & Data Protection Policy v1.0.0"),
+    },
+    {
+      title: 'About MBconnect',
+      subtitle: 'App version 1.0.0',
+      icon: 'information-circle-outline' as const,
+      iconBg: '#f1f5f9',
+      iconColor: '#64748b',
+      onPress: () => Alert.alert("About MBconnect", "MB Connect Mobile App Version 1.0.0 (Build 104)"),
+    },
   ];
 
   return (
-    <View style={styles.container}>
-      {menuItems.map((item, index) => (
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      {/* Top Header */}
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.menuTitle}>Menu</Text>
+          <Text style={styles.menuSubtitle}>Manage your account and app settings</Text>
+        </View>
         <TouchableOpacity 
-          key={index} 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate(item.screen)}
+          style={styles.notifBtn}
+          onPress={() => navigation.navigate('Inbox')}
+          activeOpacity={0.7}
         >
-          <Text style={styles.menuText}>{item.title}</Text>
+          <Ionicons name="notifications-outline" size={22} color="#0f172a" />
+          <View style={styles.notifBadge}>
+            <Text style={styles.notifBadgeText}>3</Text>
+          </View>
         </TouchableOpacity>
-      ))}
-    </View>
+      </View>
+
+      {/* Driver Profile Card */}
+      <TouchableOpacity 
+        style={styles.profileCard}
+        onPress={() => navigation.navigate('VerifiedPartner')}
+        activeOpacity={0.85}
+      >
+        <View style={styles.profileTopRow}>
+          <View style={styles.avatarCircle}>
+            <Ionicons name="person" size={28} color="#16a34a" />
+          </View>
+
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.profileName}>{profile?.name || 'Ashutosh Kumar'}</Text>
+              <Ionicons name="checkmark-circle" size={16} color="#16a34a" style={{ marginLeft: 4 }} />
+            </View>
+            <Text style={styles.driverId}>MB-DRV-12568</Text>
+            
+            <View style={styles.verifiedTag}>
+              <Text style={styles.verifiedTagText}>Verified Partner</Text>
+            </View>
+          </View>
+
+          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+        </View>
+
+        {/* Inner Wallet Box */}
+        <View style={styles.walletBox}>
+          <View style={styles.walletLeft}>
+            <View style={styles.walletIconCircle}>
+              <Ionicons name="wallet-outline" size={18} color="#16a34a" />
+            </View>
+            <View style={{ marginLeft: 10 }}>
+              <Text style={styles.walletLabel}>Wallet Balance</Text>
+              <Text style={styles.walletVal}>₹1,250</Text>
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.viewWalletBtn}
+            onPress={() => navigation.navigate('PayoutHistory')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.viewWalletText}>View Wallet &gt;</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+
+      {/* Account & Settings Group */}
+      <Text style={styles.groupHeader}>Account & Settings</Text>
+      <View style={styles.cardGroup}>
+        {accountItems.map((item, idx) => (
+          <TouchableOpacity 
+            key={idx}
+            style={[styles.menuRow, idx < accountItems.length - 1 && styles.menuRowBorder]}
+            onPress={item.onPress}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
+              <Ionicons name={item.icon} size={20} color={item.iconColor} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.rowTitle}>{item.title}</Text>
+              <Text style={styles.rowSub}>{item.subtitle}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Support & Information Group */}
+      <Text style={[styles.groupHeader, { marginTop: 20 }]}>Support & Information</Text>
+      <View style={styles.cardGroup}>
+        {supportItems.map((item, idx) => (
+          <TouchableOpacity 
+            key={idx}
+            style={[styles.menuRow, idx < supportItems.length - 1 && styles.menuRowBorder]}
+            onPress={item.onPress}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
+              <Ionicons name={item.icon} size={20} color={item.iconColor} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.rowTitle}>{item.title}</Text>
+              <Text style={styles.rowSub}>{item.subtitle}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Logout Card Action */}
+      <TouchableOpacity 
+        style={styles.logoutCard}
+        onPress={logout}
+        activeOpacity={0.8}
+      >
+        <View style={styles.logoutIconBox}>
+          <Ionicons name="power-outline" size={20} color="#dc2626" />
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.logoutTitle}>Logout</Text>
+          <Text style={styles.logoutSub}>Safely logout from your account</Text>
+        </View>
+
+        <Ionicons name="chevron-forward" size={18} color="#dc2626" />
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
@@ -41,25 +261,53 @@ export const ProfileStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileMenu" component={ProfileMenuScreen} />
       <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
+      <Stack.Screen name="IdentityProof" component={IdentityProofScreen} />
+      <Stack.Screen name="VehicleDetails" component={VehicleDetailsScreen} />
       <Stack.Screen name="FleetRegistry" component={FleetRegistryScreen} />
       <Stack.Screen name="VehicleSettings" component={VehicleSettingsScreen} />
+      <Stack.Screen name="BackgroundCheck" component={BackgroundCheckScreen} />
+      <Stack.Screen name="TripSupport" component={TripSupportScreen} />
+      <Stack.Screen name="Inbox" component={InboxScreen} />
+      <Stack.Screen name="PayoutHistory" component={PayoutHistoryScreen} />
+      <Stack.Screen name="ProfilePhoto" component={ProfilePhotoScreen} />
+      <Stack.Screen name="VerifiedPartner" component={VerifiedPartnerScreen} />
+      <Stack.Screen name="EarningsTrend" component={EarningsTrendScreen} />
     </Stack.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  menuItem: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  menuText: {
-    fontSize: 16,
-    fontWeight: '500',
-  }
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  contentContainer: { padding: 16, paddingTop: 48, paddingBottom: 40 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  menuTitle: { fontSize: 26, fontWeight: '900', color: '#0f172a' },
+  menuSubtitle: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  notifBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#f1f5f9', position: 'relative' },
+  notifBadge: { position: 'absolute', top: 2, right: 2, backgroundColor: '#ef4444', width: 15, height: 15, borderRadius: 7.5, justifyContent: 'center', alignItems: 'center' },
+  notifBadgeText: { color: '#ffffff', fontSize: 9, fontWeight: '900' },
+  profileCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#f1f5f9', marginBottom: 20 },
+  profileTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  avatarCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#dcfce7', justifyContent: 'center', alignItems: 'center' },
+  profileName: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  driverId: { fontSize: 12, color: '#64748b', marginTop: 1 },
+  verifiedTag: { backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start', marginTop: 4 },
+  verifiedTagText: { fontSize: 11, fontWeight: '800', color: '#16a34a' },
+  walletBox: { backgroundColor: '#f4fbf7', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#dcfce7' },
+  walletLeft: { flexDirection: 'row', alignItems: 'center' },
+  walletIconCircle: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#dcfce7', justifyContent: 'center', alignItems: 'center' },
+  walletLabel: { fontSize: 11, color: '#16a34a', fontWeight: '700' },
+  walletVal: { fontSize: 18, fontWeight: '900', color: '#0f172a', marginTop: 1 },
+  viewWalletBtn: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#16a34a', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
+  viewWalletText: { fontSize: 11, fontWeight: '800', color: '#16a34a' },
+  groupHeader: { fontSize: 12, fontWeight: '800', color: '#94a3b8', letterSpacing: 0.5, marginBottom: 8, marginLeft: 4 },
+  cardGroup: { backgroundColor: '#ffffff', borderRadius: 20, borderWidth: 1, borderColor: '#f1f5f9', overflow: 'hidden' },
+  menuRow: { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  menuRowBorder: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  iconBox: { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  rowTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  rowSub: { fontSize: 11, color: '#64748b', marginTop: 2 },
+  logoutCard: { backgroundColor: '#fef2f2', borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#fee2e2', marginTop: 20 },
+  logoutIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#fee2e2', justifyContent: 'center', alignItems: 'center' },
+  logoutTitle: { fontSize: 14, fontWeight: '800', color: '#dc2626' },
+  logoutSub: { fontSize: 11, color: '#ef4444', marginTop: 2 },
 });
