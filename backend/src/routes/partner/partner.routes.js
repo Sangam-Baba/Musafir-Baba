@@ -2,7 +2,7 @@ import { Router } from "express";
 import { isPartnerAuthenticated } from "../../middleware/partnerAuth.middleware.js";
 import { getDashboardProfile, updateProfile, submitProfileForApproval } from "../../controllers/partner/partnerProfile.controller.js";
 import { updateBankAccount } from "../../controllers/partner/partnerBank.controller.js";
-import { addVehicle, assignDriverToVehicle, updateVehicle, getVehicles, deleteVehicle } from "../../controllers/partner/partnerVehicle.controller.js";
+import { addVehicle, assignDriverToVehicle, updateVehicle, getVehicles, getVehicleById, deleteVehicle } from "../../controllers/partner/partnerVehicle.controller.js";
 import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/partnerDriver.controller.js";
 import { uploadDocument } from "../../controllers/partner/partnerDocument.controller.js";
 import {
@@ -31,6 +31,7 @@ router.post("/bank", updateBankAccount);
 
 // Vehicles
 router.get("/vehicles", getVehicles);
+router.get("/vehicle/:vehicleId", getVehicleById);
 router.post("/vehicle", addVehicle);
 router.put("/vehicle/:vehicleId", updateVehicle);
 router.delete("/vehicle/:vehicleId", deleteVehicle);

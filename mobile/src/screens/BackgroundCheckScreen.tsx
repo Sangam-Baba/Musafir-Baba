@@ -5,15 +5,25 @@ import { useNavigation } from '@react-navigation/native';
 import { Button } from '../components/Button';
 
 export const BackgroundCheckScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-      {/* Header Info */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Background Check Audit</Text>
-        <Text style={styles.subtitle}>Verification steps for driver safety & police clearance.</Text>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      {/* Top Header Bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Background Check Audit</Text>
+        <View style={{ width: 24 }} />
       </View>
+
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        {/* Header Info */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Background Check Audit</Text>
+          <Text style={styles.subtitle}>Verification steps for driver safety & police clearance.</Text>
+        </View>
 
       {/* Hero Status Card */}
       <View style={styles.heroCard}>
@@ -102,11 +112,25 @@ export const BackgroundCheckScreen = () => {
       {/* Action Footer */}
       <Button title="Upload Police Clearance Certificate" onPress={() => Alert.alert("Upload Document", "Please select your Police Character Certificate PDF or Image.")} style={{ marginTop: 20 }} />
       <Button title="Back to Dashboard" type="outline" onPress={() => navigation.goBack()} style={{ marginTop: 10 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
   container: { flex: 1, backgroundColor: '#f8fafc' },
   contentContainer: { padding: 16, paddingBottom: 40 },
   header: { marginBottom: 16 },

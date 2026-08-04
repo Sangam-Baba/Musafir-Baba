@@ -39,7 +39,7 @@ export const addVehicle = async (req, res) => {
           mobile,
           licenceNumber: driverLicence,
           licenceImageUrl: licenceImageUrl || "",
-          status: "Approved"
+          status: "Active"
         });
         await driver.save();
       }
@@ -84,6 +84,36 @@ export const addVehicle = async (req, res) => {
     });
   } catch (error) {
     console.error("Add Vehicle Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   GET /api/partner/vehicle/:vehicleId
+// @desc    Get a single vehicle with full driver data
+export const getVehicleById = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const { vehicleId } = req.params;
+
+    if (!mongoose.isValidObjectId(vehicleId)) {
+      return res.status(400).json({ success: false, message: "Invalid vehicle ID." });
+    }
+
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const vehicle = await PartnerVehicle.findOne({ _id: vehicleId, partnerId: profile._id, isDeleted: false })
+      .populate("assignedDriverId", "name mobile licenceNumber licenceImageUrl status photoUrl");
+
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Vehicle not found." });
+    }
+
+    return res.status(200).json({ success: true, data: vehicle });
+  } catch (error) {
+    console.error("Get Vehicle By ID Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

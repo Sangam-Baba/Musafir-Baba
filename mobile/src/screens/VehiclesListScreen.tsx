@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, RefreshControl, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuthStore } from '../store/useAuthStore';
@@ -217,12 +217,7 @@ export const VehiclesListScreen = () => {
             <TouchableOpacity
               key={item.id}
               style={styles.vehicleCard}
-              onPress={() => navigation.navigate('VehicleDetails', { 
-                vehicleId: item.id,
-                model: item.model,
-                regNo: item.regNo,
-                type: item.category
-              })}
+              onPress={() => navigation.navigate('VehicleDetails', { vehicleId: item.id })}
               activeOpacity={0.85}
             >
               <View style={styles.vehicleTopRow}>
@@ -288,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 48,
+    paddingTop: Platform.OS === 'web' ? 12 : 44,
     paddingBottom: 12,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,

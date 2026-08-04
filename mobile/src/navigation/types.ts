@@ -41,6 +41,7 @@ export type ProfileStackParamList = {
   VehiclesList: undefined;
   VehicleDetails: { vehicleId?: string; model?: string; regNo?: string; type?: string } | undefined;
   AddVehicle: undefined;
+  UpdateVehicle: { vehicle: any; vehicleId: string };
   ServiceAreaPricing: undefined;
   IdentityProof: undefined;
   VerifiedPartner: undefined;

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuthStore } from '../store/useAuthStore';
@@ -61,12 +61,30 @@ export const PayoutHistoryScreen = () => {
     Alert.alert("Receipt Downloaded", `Settlement receipt for ${record.settlementId} saved to downloads.`);
   };
 
+  const navigation = useNavigation<any>();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Payout Settlement History</Text>
-        <Text style={styles.subtitle}>Bank transfers, UTR reference numbers & tax invoices.</Text>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      {/* Top Header Bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Payout & Bank Details</Text>
+        <TouchableOpacity 
+          style={styles.helpBtn}
+          onPress={() => navigation.navigate('TripSupport')}
+        >
+          <Ionicons name="help-circle-outline" size={16} color="#0f172a" style={{ marginRight: 2 }} />
+          <Text style={styles.helpText}>Help</Text>
+        </TouchableOpacity>
       </View>
+
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Payout Settlement History</Text>
+          <Text style={styles.subtitle}>Bank transfers, UTR reference numbers & tax invoices.</Text>
+        </View>
 
       <FlatList
         data={records}
@@ -102,11 +120,27 @@ export const PayoutHistoryScreen = () => {
           </View>
         )}
       />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'web' ? 12 : 44,
+    paddingBottom: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
+  helpBtn: { flexDirection: 'row', alignItems: 'center' },
+  helpText: { fontSize: 12, fontWeight: '700', color: '#0f172a' },
   container: { flex: 1, backgroundColor: '#f8fafc' },
   header: { padding: 16 },
   title: { fontSize: 24, fontWeight: '800', color: '#0f172a', marginBottom: 4 },

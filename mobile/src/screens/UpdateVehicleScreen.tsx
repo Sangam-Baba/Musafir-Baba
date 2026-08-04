@@ -1,47 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 
-export const AddVehicleScreen = () => {
+export const UpdateVehicleScreen = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const token = useAuthStore((state) => state.token);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
+  
+  const existingVehicle = route.params?.vehicle;
+  const vehicleId = route.params?.vehicleId || existingVehicle?._id;
 
   // Tab 1 State: Vehicle Specs
-  const [regNo, setRegNo] = useState('');
-  const [make, setMake] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('2023');
-  const [fuel, setFuel] = useState<'Diesel' | 'CNG' | 'Petrol' | 'EV'>('Diesel');
-  const [category, setCategory] = useState<'SUV' | 'Sedan' | 'Hatchback' | 'Tempo Traveller'>('SUV');
-  const [seats, setSeats] = useState('7');
+  const [regNo, setRegNo] = useState(existingVehicle?.registrationNumber || '');
+  const [make, setMake] = useState(existingVehicle?.brand || '');
+  const [model, setModel] = useState(existingVehicle?.model || '');
+  const [year, setYear] = useState(existingVehicle?.manufacturingYear ? String(existingVehicle.manufacturingYear) : '2023');
+  const [fuel, setFuel] = useState<'Diesel' | 'CNG' | 'Petrol' | 'EV'>(existingVehicle?.fuel || 'Diesel');
+  const [category, setCategory] = useState<'SUV' | 'Sedan' | 'Hatchback' | 'Tempo Traveller'>(existingVehicle?.category || 'SUV');
+  const [seats, setSeats] = useState(existingVehicle?.seatingCapacity ? String(existingVehicle.seatingCapacity) : '7');
   const [showSeatDropdown, setShowSeatDropdown] = useState(false);
-  const [color, setColor] = useState('White');
+  const [color, setColor] = useState(existingVehicle?.color || 'White');
 
   // Tab 1 State: 6 Vehicle Inspection Images (real URI strings)
-  const [frontImage, setFrontImage] = useState('');
-  const [backImage, setBackImage] = useState('');
-  const [leftSideImage, setLeftSideImage] = useState('');
-  const [rightSideImage, setRightSideImage] = useState('');
-  const [interiorFrontImage, setInteriorFrontImage] = useState('');
-  const [interiorBackImage, setInteriorBackImage] = useState('');
+  const [frontImage, setFrontImage] = useState(existingVehicle?.frontImageUrl || '');
+  const [backImage, setBackImage] = useState(existingVehicle?.rearImageUrl || '');
+  const [leftSideImage, setLeftSideImage] = useState(existingVehicle?.leftSideImageUrl || '');
+  const [rightSideImage, setRightSideImage] = useState(existingVehicle?.rightSideImageUrl || '');
+  const [interiorFrontImage, setInteriorFrontImage] = useState(existingVehicle?.interiorImageUrl || '');
+  const [interiorBackImage, setInteriorBackImage] = useState(existingVehicle?.otherImageUrl || '');
 
   // Tab 2 State: Vehicle Documents (real URI strings)
-  const [rcUri, setRcUri] = useState('');
-  const [insuranceUri, setInsuranceUri] = useState('');
-  const [pucUri, setPucUri] = useState('');
-  const [permitUri, setPermitUri] = useState('');
+  const [rcUri, setRcUri] = useState(existingVehicle?.rcImageUrl || '');
+  const [insuranceUri, setInsuranceUri] = useState(existingVehicle?.insuranceFileUrl || '');
+  const [pucUri, setPucUri] = useState(existingVehicle?.pucImageUrl || '');
+  const [permitUri, setPermitUri] = useState(existingVehicle?.permitFileUrl || '');
 
   // Tab 3 State: Associated Driver Data
-  const [driverName, setDriverName] = useState('');
-  const [driverMobile, setDriverMobile] = useState('');
-  const [driverLicense, setDriverLicense] = useState('');
-  const [driverLicenceUri, setDriverLicenceUri] = useState('');
+  const [driverName, setDriverName] = useState(existingVehicle?.assignedDriverId?.name || '');
+  const [driverMobile, setDriverMobile] = useState(existingVehicle?.assignedDriverId?.mobile || '');
+  const [driverLicense, setDriverLicense] = useState(existingVehicle?.assignedDriverId?.licenceNumber || '');
+  const [driverLicenceUri, setDriverLicenceUri] = useState(existingVehicle?.assignedDriverId?.licenceImageUrl || '');
 
   // Real device image picker with web browser fallback
   const pickImage = (setter: (uri: string) => void): void => {
@@ -114,8 +118,8 @@ export const AddVehicleScreen = () => {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/partner/vehicle`, {
-        method: 'POST',
+      const res = await fetch(`${API_BASE_URL}/partner/vehicle/${vehicleId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -140,6 +144,8 @@ export const AddVehicleScreen = () => {
             rightSideImageUrl: rightSideImage,
             interiorImageUrl: interiorFrontImage,
             otherImageUrl: interiorBackImage,
+            // Only update driver data if it wasn't populated or if it changed, otherwise backend expects ID or will update. 
+            // In our system, driver data might be handled separately, but we'll pass it if changed.
             driver: {
               name: driverName.trim(),
               mobile: driverMobile.trim(),
@@ -154,12 +160,12 @@ export const AddVehicleScreen = () => {
 
       if (res.ok && result.success) {
         Alert.alert(
-          "Vehicle Submitted!",
-          `Vehicle ${regNo.toUpperCase()} (${make} ${model}) with driver "${driverName}" has been submitted for audit.`,
+          "Vehicle Updated!",
+          `Vehicle ${regNo.toUpperCase()} (${make} ${model}) has been successfully updated.`,
           [
             {
-              text: "View My Vehicles",
-              onPress: () => navigation.navigate('VehiclesList'),
+              text: "Back to Details",
+              onPress: () => navigation.goBack(),
             }
           ]
         );
@@ -181,7 +187,7 @@ export const AddVehicleScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Vehicle</Text>
+        <Text style={styles.headerTitle}>Update Vehicle</Text>
         <TouchableOpacity 
           style={styles.helpBtn}
           onPress={() => navigation.navigate('TripSupport')}
@@ -687,7 +693,7 @@ export const AddVehicleScreen = () => {
                 {submitting ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
-                  <Text style={styles.primaryBtnText}>Submit Vehicle for Audit</Text>
+                  <Text style={styles.primaryBtnText}>Update Vehicle Details</Text>
                 )}
               </TouchableOpacity>
             </View>

@@ -32,12 +32,22 @@ export const TripSupportScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-      {/* Header Info */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Trip Support & Help</Text>
-        <Text style={styles.subtitle}>24/7 Partner helpline, dispute resolution & emergency assistance.</Text>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      {/* Top Header Bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Help Center & Support</Text>
+        <View style={{ width: 24 }} />
       </View>
+
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        {/* Header Info */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Trip Support & Help</Text>
+          <Text style={styles.subtitle}>24/7 Partner helpline, dispute resolution & emergency assistance.</Text>
+        </View>
 
       {/* Emergency SOS Banner */}
       <TouchableOpacity style={styles.sosCard} onPress={handleSOS} activeOpacity={0.85}>
@@ -118,11 +128,25 @@ export const TripSupportScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
   container: { flex: 1, backgroundColor: '#f8fafc' },
   contentContainer: { padding: 16, paddingBottom: 40 },
   header: { marginBottom: 16 },

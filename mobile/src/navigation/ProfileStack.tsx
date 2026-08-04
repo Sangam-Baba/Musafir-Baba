@@ -22,6 +22,7 @@ import { IdentityProofScreen } from '../screens/IdentityProofScreen';
 import { VehicleDetailsScreen } from '../screens/VehicleDetailsScreen';
 import { VehiclesListScreen } from '../screens/VehiclesListScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
+import { UpdateVehicleScreen } from '../screens/UpdateVehicleScreen';
 import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
@@ -349,6 +350,7 @@ export const ProfileStack = () => {
       <Stack.Screen name="VehiclesList" component={VehiclesListScreen} />
       <Stack.Screen name="VehicleDetails" component={VehicleDetailsScreen} />
       <Stack.Screen name="AddVehicle" component={AddVehicleScreen} />
+      <Stack.Screen name="UpdateVehicle" component={UpdateVehicleScreen} />
       <Stack.Screen name="ServiceAreaPricing" component={ServiceAreaPricingScreen} />
       <Stack.Screen name="FleetRegistry" component={FleetRegistryScreen} />
       <Stack.Screen name="VehicleSettings" component={VehicleSettingsScreen} />
