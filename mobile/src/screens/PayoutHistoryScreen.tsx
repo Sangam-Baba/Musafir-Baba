@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Button } from '../components/Button';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 type PayoutRecord = {
   id: string;
@@ -14,15 +16,46 @@ type PayoutRecord = {
   utrNumber: string;
 };
 
-const MOCK_SETTLEMENTS: PayoutRecord[] = [
-  { id: 's1', settlementId: 'SET-9901', amount: 12850, date: '28 Jul 2026', bankName: 'HDFC Bank', accountEnding: '4321', status: 'Completed', utrNumber: 'UTR-982104928172' },
-  { id: 's2', settlementId: 'SET-9900', amount: 9400, date: '21 Jul 2026', bankName: 'HDFC Bank', accountEnding: '4321', status: 'Completed', utrNumber: 'UTR-982101189230' },
-  { id: 's3', settlementId: 'SET-9899', amount: 14200, date: '14 Jul 2026', bankName: 'HDFC Bank', accountEnding: '4321', status: 'Completed', utrNumber: 'UTR-982098877123' },
-  { id: 's4', settlementId: 'SET-9898', amount: 11600, date: '07 Jul 2026', bankName: 'HDFC Bank', accountEnding: '4321', status: 'Completed', utrNumber: 'UTR-982091122334' },
-];
-
 export const PayoutHistoryScreen = () => {
-  const [records] = useState<PayoutRecord[]>(MOCK_SETTLEMENTS);
+  const token = useAuthStore((state) => state.token);
+  const [bankInfo, setBankInfo] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchBankAndPayouts = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/profile/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success && result.data?.bank) {
+        setBankInfo(result.data.bank);
+      }
+    } catch (e) {
+      console.error("Error fetching payout bank details:", e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBankAndPayouts();
+    }, [token])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchBankAndPayouts();
+  };
+
+  const bankName = bankInfo?.bankName || 'HDFC Bank';
+  const accountEnding = bankInfo?.accountNumber ? bankInfo.accountNumber.slice(-4) : '4321';
+
+  const [records] = useState<PayoutRecord[]>([
+    { id: 's1', settlementId: 'SET-9901', amount: 12850, date: '28 Jul 2026', bankName, accountEnding, status: 'Completed', utrNumber: 'UTR-982104928172' },
+    { id: 's2', settlementId: 'SET-9900', amount: 9400, date: '21 Jul 2026', bankName, accountEnding, status: 'Completed', utrNumber: 'UTR-982101189230' },
+  ]);
 
   const downloadReceipt = (record: PayoutRecord) => {
     Alert.alert("Receipt Downloaded", `Settlement receipt for ${record.settlementId} saved to downloads.`);

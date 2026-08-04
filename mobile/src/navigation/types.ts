@@ -38,7 +38,10 @@ export type ProfileStackParamList = {
   BankDetails: undefined;
   FleetRegistry: undefined;
   VehicleSettings: undefined;
-  VehicleDetails: undefined;
+  VehiclesList: undefined;
+  VehicleDetails: { vehicleId?: string; model?: string; regNo?: string; type?: string } | undefined;
+  AddVehicle: undefined;
+  ServiceAreaPricing: undefined;
   IdentityProof: undefined;
   VerifiedPartner: undefined;
   ProfilePhoto: undefined;

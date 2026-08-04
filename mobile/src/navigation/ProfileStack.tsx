@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileStackParamList } from './types';
 import { PersonalDetailsScreen } from '../screens/PersonalDetailsScreen';
@@ -11,14 +11,18 @@ import { PayoutHistoryScreen } from '../screens/PayoutHistoryScreen';
 import { ProfilePhotoScreen } from '../screens/ProfilePhotoScreen';
 import { VerifiedPartnerScreen } from '../screens/VerifiedPartnerScreen';
 import { EarningsTrendScreen } from '../screens/EarningsTrendScreen';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 import { IdentityProofScreen } from '../screens/IdentityProofScreen';
 import { VehicleDetailsScreen } from '../screens/VehicleDetailsScreen';
+import { VehiclesListScreen } from '../screens/VehiclesListScreen';
+import { AddVehicleScreen } from '../screens/AddVehicleScreen';
+import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
@@ -26,8 +30,67 @@ type MenuNavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMen
 
 const ProfileMenuScreen = () => {
   const navigation = useNavigation<any>();
-  const profile = useAuthStore((state) => state.profile);
+  const token = useAuthStore((state) => state.token);
+  const storeProfile = useAuthStore((state) => state.profile);
   const logout = useAuthStore((state) => state.logout);
+
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(3);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const fetchMenuData = async (showSpinner = true) => {
+    if (!token) return;
+    if (showSpinner) setLoading(true);
+    try {
+      const [dashRes, notifRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/partner/profile/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/partner/notifications`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const dashResult = await dashRes.json();
+      if (dashRes.ok && dashResult.success) {
+        setDashboardData(dashResult.data);
+      }
+
+      const notifResult = await notifRes.json();
+      if (notifRes.ok && notifResult.success) {
+        setUnreadCount(notifResult.unreadCount ?? 3);
+      }
+    } catch (error) {
+      console.error("Error fetching menu dashboard data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchMenuData();
+    }, [token])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchMenuData(false);
+  };
+
+  const partnerProfile = dashboardData?.profile;
+  const partnerAuth = dashboardData?.auth;
+
+  const derivedDefaultName = partnerAuth?.email
+    ? partnerAuth.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+    : 'Partner Account';
+
+  const fullName = partnerProfile?.fullName || storeProfile?.name || derivedDefaultName;
+  const partnerId = partnerProfile?._id ? `MB-PTR-${partnerProfile._id.slice(-5).toUpperCase()}` : (partnerAuth?._id ? `MB-PTR-${partnerAuth._id.slice(-5).toUpperCase()}` : 'MB-PTR-ACCOUNT');
+  const isVerified = partnerAuth?.status === 'Approved' || partnerProfile?.isSubmittedForApproval;
+  const walletBalance = partnerProfile?.walletBalance ?? 0;
 
   const accountItems = [
     {
@@ -48,11 +111,19 @@ const ProfileMenuScreen = () => {
     },
     {
       title: 'My Vehicles',
-      subtitle: 'Manage your vehicles',
+      subtitle: 'Manage vehicle roster & details',
       icon: 'car-outline' as const,
       iconBg: '#fff7ed',
       iconColor: '#FE5300',
-      onPress: () => navigation.navigate('VehicleDetails'),
+      onPress: () => navigation.navigate('VehiclesList'),
+    },
+    {
+      title: 'Service Area & Pricing',
+      subtitle: 'Operational hubs & per-KM fare rules',
+      icon: 'map-outline' as const,
+      iconBg: '#eff6ff',
+      iconColor: '#2563eb',
+      onPress: () => navigation.navigate('ServiceAreaPricing'),
     },
     {
       title: 'Payout & Bank Details',
@@ -124,7 +195,14 @@ const ProfileMenuScreen = () => {
   ];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.contentContainer} 
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
+      }
+    >
       {/* Top Header */}
       <View style={styles.headerRow}>
         <View>
@@ -137,9 +215,11 @@ const ProfileMenuScreen = () => {
           activeOpacity={0.7}
         >
           <Ionicons name="notifications-outline" size={22} color="#0f172a" />
-          <View style={styles.notifBadge}>
-            <Text style={styles.notifBadgeText}>3</Text>
-          </View>
+          {unreadCount > 0 && (
+            <View style={styles.notifBadge}>
+              <Text style={styles.notifBadgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -156,13 +236,17 @@ const ProfileMenuScreen = () => {
 
           <View style={{ flex: 1, marginLeft: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.profileName}>{profile?.name || 'Ashutosh Kumar'}</Text>
-              <Ionicons name="checkmark-circle" size={16} color="#16a34a" style={{ marginLeft: 4 }} />
+              <Text style={styles.profileName}>{fullName}</Text>
+              {isVerified && (
+                <Ionicons name="checkmark-circle" size={16} color="#16a34a" style={{ marginLeft: 4 }} />
+              )}
             </View>
-            <Text style={styles.driverId}>MB-DRV-12568</Text>
+            <Text style={styles.driverId}>{partnerId}</Text>
             
-            <View style={styles.verifiedTag}>
-              <Text style={styles.verifiedTagText}>Verified Partner</Text>
+            <View style={[styles.verifiedTag, !isVerified && { backgroundColor: '#fef3c7' }]}>
+              <Text style={[styles.verifiedTagText, !isVerified && { color: '#b45309' }]}>
+                {partnerAuth?.status === 'Approved' ? 'Verified Partner' : partnerProfile?.isSubmittedForApproval ? 'Under Audit' : 'Onboarding Pending'}
+              </Text>
             </View>
           </View>
 
@@ -177,7 +261,7 @@ const ProfileMenuScreen = () => {
             </View>
             <View style={{ marginLeft: 10 }}>
               <Text style={styles.walletLabel}>Wallet Balance</Text>
-              <Text style={styles.walletVal}>₹1,250</Text>
+              <Text style={styles.walletVal}>₹{walletBalance.toLocaleString('en-IN')}</Text>
             </View>
           </View>
 
@@ -262,7 +346,10 @@ export const ProfileStack = () => {
       <Stack.Screen name="ProfileMenu" component={ProfileMenuScreen} />
       <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
       <Stack.Screen name="IdentityProof" component={IdentityProofScreen} />
+      <Stack.Screen name="VehiclesList" component={VehiclesListScreen} />
       <Stack.Screen name="VehicleDetails" component={VehicleDetailsScreen} />
+      <Stack.Screen name="AddVehicle" component={AddVehicleScreen} />
+      <Stack.Screen name="ServiceAreaPricing" component={ServiceAreaPricingScreen} />
       <Stack.Screen name="FleetRegistry" component={FleetRegistryScreen} />
       <Stack.Screen name="VehicleSettings" component={VehicleSettingsScreen} />
       <Stack.Screen name="BackgroundCheck" component={BackgroundCheckScreen} />

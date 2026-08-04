@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getItem, setItem, removeItem } from '../utils/storage';
+import { API_BASE_URL } from '../utils/config';
 
 export interface PartnerProfile {
   name?: string;
@@ -20,7 +21,7 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   profile: null,
   isAuthenticated: false,
@@ -37,9 +38,24 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ hasCompletedOnboarding: status });
   },
   logout: async () => {
-    await removeItem('partner_token');
-    await removeItem('onboarding_complete');
-    set({ token: null, profile: null, isAuthenticated: false, hasCompletedOnboarding: false });
+    const token = get().token;
+    try {
+      if (token) {
+        await fetch(`${API_BASE_URL}/partner/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Logout API Call Error:', error);
+    } finally {
+      await removeItem('partner_token');
+      await removeItem('onboarding_complete');
+      set({ token: null, profile: null, isAuthenticated: false, hasCompletedOnboarding: false });
+    }
   },
   initialize: async () => {
     const token = await getItem('partner_token');

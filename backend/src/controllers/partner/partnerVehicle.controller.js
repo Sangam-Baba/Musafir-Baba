@@ -10,12 +10,8 @@ export const addVehicle = async (req, res) => {
     const authId = req.partnerId;
     const { vehicleData } = req.body;
 
-    if (!vehicleData || !vehicleData.registrationNumber || !vehicleData.brand || !vehicleData.assignedDriverId) {
-      return res.status(400).json({ success: false, message: "Registration number, brand, and assigned driver are required." });
-    }
-
-    if (!mongoose.isValidObjectId(vehicleData.assignedDriverId)) {
-      return res.status(400).json({ success: false, message: "Invalid driver selected." });
+    if (!vehicleData || !vehicleData.registrationNumber || !vehicleData.brand) {
+      return res.status(400).json({ success: false, message: "Registration number and brand are required." });
     }
 
     const profile = await PartnerProfile.findOne({ authId });
@@ -23,29 +19,48 @@ export const addVehicle = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found. Please complete personal details first." });
     }
 
-    if (profile.partnerType === "Individual") {
-      const vehicleCount = await PartnerVehicle.countDocuments({ partnerId: profile._id, isDeleted: false });
-      if (vehicleCount >= 1) {
-        return res.status(400).json({ success: false, message: "Individual partners can register only one vehicle." });
+    let assignedDriverId = vehicleData.assignedDriverId;
+
+    // Support atomic driver creation if "driver" sub-object is supplied
+    if (!assignedDriverId && vehicleData.driver) {
+      const { name, mobile, licenseNo, licenceNumber, licenceImageUrl } = vehicleData.driver;
+      const driverLicence = licenseNo || licenceNumber;
+      
+      if (!name || !mobile || !driverLicence) {
+        return res.status(400).json({ success: false, message: "Driver name, mobile, and license number are required." });
       }
+
+      // Check if driver with this mobile already exists for this partner
+      let driver = await PartnerDriver.findOne({ partnerId: profile._id, mobile, isDeleted: false });
+      if (!driver) {
+        driver = new PartnerDriver({
+          partnerId: profile._id,
+          name,
+          mobile,
+          licenceNumber: driverLicence,
+          licenceImageUrl: licenceImageUrl || "",
+          status: "Approved"
+        });
+        await driver.save();
+      }
+      assignedDriverId = driver._id;
+    }
+
+    if (!assignedDriverId) {
+      return res.status(400).json({ success: false, message: "Assigned driver is required." });
+    }
+
+    if (!mongoose.isValidObjectId(assignedDriverId)) {
+      return res.status(400).json({ success: false, message: "Invalid driver selected." });
     }
 
     const assignedDriver = await PartnerDriver.findOne({
-      _id: vehicleData.assignedDriverId,
+      _id: assignedDriverId,
       partnerId: profile._id,
       isDeleted: false,
     });
     if (!assignedDriver) {
       return res.status(400).json({ success: false, message: "Select a valid driver from your driver roster." });
-    }
-
-    const driverAssignment = await PartnerVehicle.findOne({
-      partnerId: profile._id,
-      assignedDriverId: assignedDriver._id,
-      isDeleted: false,
-    });
-    if (driverAssignment) {
-      return res.status(400).json({ success: false, message: "This driver is already assigned to another vehicle." });
     }
 
     // Check if registration number already exists globally
@@ -57,6 +72,8 @@ export const addVehicle = async (req, res) => {
     const vehicle = new PartnerVehicle({
       partnerId: profile._id,
       ...vehicleData,
+      assignedDriverId,
+      verificationStatus: "Verified",
     });
     await vehicle.save();
 
@@ -163,6 +180,66 @@ export const updateVehicle = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Vehicle Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   GET /api/partner/vehicles
+// @desc    Get all vehicles for the authenticated partner
+export const getVehicles = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const vehicles = await PartnerVehicle.find({ partnerId: profile._id, isDeleted: false })
+      .populate("assignedDriverId", "name mobile licenceNumber");
+
+    return res.status(200).json({
+      success: true,
+      count: vehicles.length,
+      data: vehicles,
+    });
+  } catch (error) {
+    console.error("Get Vehicles Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   DELETE /api/partner/vehicle/:vehicleId
+// @desc    Soft-delete a vehicle from the roster
+export const deleteVehicle = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const { vehicleId } = req.params;
+
+    if (!mongoose.isValidObjectId(vehicleId)) {
+      return res.status(400).json({ success: false, message: "Invalid vehicle ID." });
+    }
+
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const vehicle = await PartnerVehicle.findOneAndUpdate(
+      { _id: vehicleId, partnerId: profile._id, isDeleted: false },
+      { $set: { isDeleted: true } },
+      { new: true }
+    );
+
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: "Vehicle not found." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete Vehicle Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

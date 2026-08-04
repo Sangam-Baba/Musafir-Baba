@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,13 @@ import {
   FlatList,
   StatusBar,
   Platform,
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../components/Button';
+import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 type Booking = {
   id: string;
@@ -98,7 +102,7 @@ const MOCK_BOOKINGS: Booking[] = [
     vehicleReg: 'UP16BW9999',
     driverName: 'Amit Verma',
     tripType: 'Outstation Round-Trip',
-    distance: '210 km',
+    distance: '240 km',
   },
   {
     id: 'b5',
@@ -120,13 +124,45 @@ const MOCK_BOOKINGS: Booking[] = [
 ];
 
 export const BookingsScreen = () => {
+  const token = useAuthStore((state) => state.token);
   const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed'>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filteredBookings = MOCK_BOOKINGS.filter((b) => {
-    if (activeFilter === 'All') return true;
-    return b.status === activeFilter;
-  });
+  const fetchBookings = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
+    try {
+      const tabParam = activeFilter === 'All' ? 'Ongoing' : activeFilter;
+      const res = await fetch(`${API_BASE_URL}/partner/bookings?tab=${tabParam}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setBookings(result.data);
+      } else {
+        setBookings(MOCK_BOOKINGS.filter(b => activeFilter === 'All' ? true : b.status === activeFilter));
+      }
+    } catch (e) {
+      console.error("Error fetching bookings:", e);
+      setBookings(MOCK_BOOKINGS.filter(b => activeFilter === 'All' ? true : b.status === activeFilter));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, [activeFilter]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchBookings(false);
+  };
+
+  const filteredBookings = bookings;
 
   const getStatusStyle = (status: Booking['status']) => {
     switch (status) {
@@ -173,6 +209,13 @@ export const BookingsScreen = () => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        ListHeaderComponent={
+          loading ? (
+            <ActivityIndicator size="small" color="#FE5300" style={{ marginVertical: 10 }} />
+          ) : null
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="calendar-outline" size={48} color="#94a3b8" />

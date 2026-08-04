@@ -1,12 +1,131 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, RefreshControl, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 export const IdentityProofScreen = () => {
   const navigation = useNavigation<any>();
-  const profile = useAuthStore((state) => state.profile);
+  const token = useAuthStore((state) => state.token);
+  const storeProfile = useAuthStore((state) => state.profile);
+
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [uploadingDocType, setUploadingDocType] = useState<string | null>(null);
+
+  const fetchIdentityDocs = async (showSpinner = true) => {
+    if (!token) return;
+    if (showSpinner) setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/profile/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setDashboardData(result.data);
+      }
+    } catch (e) {
+      console.error("Error fetching identity documents:", e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchIdentityDocs();
+    }, [token])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchIdentityDocs(false);
+  };
+
+  const partnerProfile = dashboardData?.profile;
+  const partnerAuth = dashboardData?.auth;
+  const documents = dashboardData?.documents || [];
+
+  const aadhaarDoc = documents.find((d: any) => d.documentType === 'Aadhaar');
+  const panDoc = documents.find((d: any) => d.documentType === 'PAN');
+  const hasProfilePhoto = !!(partnerProfile?.profilePicture);
+
+  const derivedDefaultName = partnerAuth?.email
+    ? partnerAuth.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+    : 'Partner Account';
+
+  const fullName = partnerProfile?.fullName || storeProfile?.name || derivedDefaultName;
+  const partnerId = partnerProfile?._id ? `MB-PTR-${partnerProfile._id.slice(-5).toUpperCase()}` : 'MB-PTR-NEW';
+
+  const handleUploadDocument = async (docType: 'Aadhaar' | 'PAN' | 'ProfilePhoto') => {
+    if (!token || !partnerProfile?._id) return;
+    setUploadingDocType(docType);
+    try {
+      if (docType === 'ProfilePhoto') {
+        const res = await fetch(`${API_BASE_URL}/partner/profile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            profileData: {
+              fullName: partnerProfile.fullName || fullName,
+              mobileNumber: partnerProfile.mobileNumber || 'Not Provided',
+              profilePicture: 'https://storage.musafirbaba.com/photos/profile_verified.jpg',
+              partnerType: partnerProfile.partnerType || 'Individual'
+            }
+          })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          Alert.alert("Profile Photo Updated!", "Account profile photo uploaded and verified for testing.");
+          fetchIdentityDocs(false);
+        } else {
+          Alert.alert("Upload Failed", result.message || "Unable to upload profile photo.");
+        }
+      } else {
+        const res = await fetch(`${API_BASE_URL}/partner/document`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ownerType: 'PartnerProfile',
+            ownerId: partnerProfile._id,
+            documentType: docType,
+            fileUrl: docType === 'Aadhaar'
+              ? 'https://storage.musafirbaba.com/docs/aadhaar_both_sides.pdf'
+              : 'https://storage.musafirbaba.com/docs/pan_card.pdf'
+          })
+        });
+
+        const result = await res.json();
+        if (res.ok && result.success) {
+          Alert.alert(
+            `${docType === 'Aadhaar' ? 'Aadhaar Card' : 'PAN Card'} Uploaded!`,
+            `Your ${docType === 'Aadhaar' ? 'Aadhaar (Both Sides)' : 'PAN Card'} has been uploaded and auto-approved for testing.`
+          );
+          fetchIdentityDocs(false);
+        } else {
+          Alert.alert("Upload Failed", result.message || "Unable to upload document.");
+        }
+      }
+    } catch (e) {
+      console.error(`Error uploading ${docType}:`, e);
+      Alert.alert("Network Error", "Unable to upload document.");
+    } finally {
+      setUploadingDocType(null);
+    }
+  };
+
+  const isAadhaarVerified = aadhaarDoc?.status === 'Approved';
+  const isPanVerified = panDoc?.status === 'Approved';
+  const totalVerifiedCount = (isAadhaarVerified ? 1 : 0) + (isPanVerified ? 1 : 0) + (hasProfilePhoto ? 1 : 0);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -15,7 +134,7 @@ export const IdentityProofScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Identity Proof</Text>
+        <Text style={styles.headerTitle}>Identity & KYC Documents</Text>
         <TouchableOpacity 
           style={styles.helpBtn}
           onPress={() => navigation.navigate('TripSupport')}
@@ -25,130 +144,155 @@ export const IdentityProofScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
+        }
+      >
         {/* Status Banner */}
-        <View style={styles.statusBanner}>
-          <View style={styles.statusShieldBox}>
-            <Ionicons name="shield-checkmark" size={24} color="#16a34a" />
+        <View style={[styles.statusBanner, totalVerifiedCount < 3 && { backgroundColor: '#fff7ed', borderColor: '#ffedd5' }]}>
+          <View style={[styles.statusShieldBox, totalVerifiedCount < 3 && { backgroundColor: '#ffedd5' }]}>
+            <Ionicons 
+              name={totalVerifiedCount === 3 ? "shield-checkmark" : "time-outline"} 
+              size={24} 
+              color={totalVerifiedCount === 3 ? "#16a34a" : "#d97706"} 
+            />
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.statusTitle}>Verified</Text>
-            <Text style={styles.statusSub}>Your identity proof has been verified on 18 May 2025</Text>
+            <Text style={[styles.statusTitle, totalVerifiedCount < 3 && { color: '#d97706' }]}>
+              {totalVerifiedCount === 3 ? "KYC Fully Verified" : `KYC Verification (${totalVerifiedCount}/3 Complete)`}
+            </Text>
+            <Text style={styles.statusSub}>
+              {totalVerifiedCount === 3 
+                ? "Aadhaar Card, PAN Card & Profile Photo are fully verified."
+                : "Upload mandatory 3 documents: Aadhaar (both sides), PAN Card & Profile Photo."}
+            </Text>
           </View>
-          <Ionicons name="checkmark-circle" size={22} color="#16a34a" />
+          <Ionicons 
+            name={totalVerifiedCount === 3 ? "checkmark-circle" : "alert-circle"} 
+            size={22} 
+            color={totalVerifiedCount === 3 ? "#16a34a" : "#d97706"} 
+          />
         </View>
 
-        {/* Document Details Card */}
-        <Text style={styles.sectionHeader}>Document Details</Text>
-        <View style={styles.detailsCard}>
-          <View style={styles.detailRow}>
-            <View style={[styles.detailIconBox, { backgroundColor: '#dcfce7' }]}>
-              <Ionicons name="card-outline" size={14} color="#16a34a" />
+        {/* 3 Main Account Holder Documents List */}
+        <Text style={styles.sectionHeader}>Mandatory Account Holder Documents (3/3)</Text>
+
+        {/* 1. Aadhaar Card Card */}
+        <View style={styles.docCard}>
+          <View style={styles.docCardHeader}>
+            <View style={[styles.docIconBox, { backgroundColor: isAadhaarVerified ? '#dcfce7' : '#ffedd5' }]}>
+              <Ionicons name="card-outline" size={18} color={isAadhaarVerified ? "#16a34a" : "#d97706"} />
             </View>
-            <Text style={styles.detailLabel}>Document Type</Text>
-            <Text style={styles.detailVal}>Aadhaar Card</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <View style={[styles.detailIconBox, { backgroundColor: '#f3e8ff' }]}>
-              <Ionicons name="person-outline" size={14} color="#7c3aed" />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.docTitle}>1. Aadhaar Card (Both Sides)</Text>
+              <Text style={styles.docSub}>Government Issued Unique Identity Card</Text>
             </View>
-            <Text style={styles.detailLabel}>Name</Text>
-            <Text style={styles.detailVal}>{profile?.name || 'Ashutosh Kumar'}</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <View style={[styles.detailIconBox, { backgroundColor: '#e0f2fe' }]}>
-              <Ionicons name="calendar-outline" size={14} color="#0284c7" />
-            </View>
-            <Text style={styles.detailLabel}>Date of Birth</Text>
-            <Text style={styles.detailVal}>30 Apr 1997</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <View style={[styles.detailIconBox, { backgroundColor: '#fff7ed' }]}>
-              <Ionicons name="pricetag-outline" size={14} color="#d97706" />
-            </View>
-            <Text style={styles.detailLabel}>Aadhaar Number</Text>
-            <Text style={styles.detailVal}>xxxx xxxx 1234</Text>
-          </View>
-
-          <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
-            <View style={[styles.detailIconBox, { backgroundColor: '#e0f2fe' }]}>
-              <Ionicons name="checkmark-circle-outline" size={14} color="#0284c7" />
-            </View>
-            <Text style={styles.detailLabel}>Date of Verification</Text>
-            <Text style={styles.detailVal}>18 May 2025</Text>
-          </View>
-        </View>
-
-        {/* Uploaded Document Card */}
-        <Text style={styles.sectionHeader}>Uploaded Document</Text>
-        <View style={styles.uploadedDocCard}>
-          <View style={styles.aadhaarCardGraphic}>
-            <View style={styles.aadhaarHeaderRow}>
-              <Ionicons name="flag-outline" size={16} color="#d97706" />
-              <Text style={styles.govtTitle}>GOVERNMENT OF INDIA</Text>
-            </View>
-
-            <View style={styles.aadhaarContentRow}>
-              <View style={styles.aadhaarPhotoCircle}>
-                <Ionicons name="person" size={32} color="#16a34a" />
-              </View>
-
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.aadhaarName}>Ashutosh Kumar</Text>
-                <Text style={styles.aadhaarDob}>DOB: 30/04/1997 / Male</Text>
-                <Text style={styles.aadhaarNum}>XXXX XXXX 1234</Text>
-              </View>
-
-              <Ionicons name="qr-code" size={32} color="#0f172a" />
+            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : styles.badgeAmber]}>
+              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : styles.badgeTextAmber]}>
+                {isAadhaarVerified ? "Verified" : (aadhaarDoc ? "Under Audit" : "Pending")}
+              </Text>
             </View>
           </View>
 
           <TouchableOpacity 
-            style={styles.fullscreenBtn}
-            onPress={() => Alert.alert("Document View", "Viewing Aadhaar Card in full screen mode.")}
+            style={[styles.uploadBtn, isAadhaarVerified && styles.uploadBtnBorder]}
+            onPress={() => handleUploadDocument('Aadhaar')}
+            disabled={uploadingDocType === 'Aadhaar'}
           >
-            <Ionicons name="scan-outline" size={18} color="#16a34a" />
-            <Text style={styles.fullscreenText}>View Fullscreen</Text>
+            {uploadingDocType === 'Aadhaar' ? (
+              <ActivityIndicator size="small" color="#16a34a" />
+            ) : (
+              <>
+                <Ionicons name="cloud-upload-outline" size={16} color="#16a34a" style={{ marginRight: 6 }} />
+                <Text style={styles.uploadBtnText}>
+                  {isAadhaarVerified ? "Replace Aadhaar Card (Both Sides)" : "Upload Aadhaar Card (Front & Back)"}
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
 
-        {/* Guidelines Card */}
-        <View style={styles.guidelinesCard}>
-          <Text style={styles.guideCardTitle}>Guidelines</Text>
-
-          {[
-            "Document should be original and valid",
-            "All details must be clearly visible",
-            "Accepted formats: JPG, PNG, PDF",
-            "Maximum file size: 5MB",
-          ].map((item, idx) => (
-            <View key={idx} style={styles.guideItemRow}>
-              <Ionicons name="checkmark-circle" size={16} color="#16a34a" style={{ marginRight: 8 }} />
-              <Text style={styles.guideItemText}>{item}</Text>
+        {/* 2. PAN Card */}
+        <View style={styles.docCard}>
+          <View style={styles.docCardHeader}>
+            <View style={[styles.docIconBox, { backgroundColor: isPanVerified ? '#dcfce7' : '#ffedd5' }]}>
+              <Ionicons name="pricetag-outline" size={18} color={isPanVerified ? "#16a34a" : "#d97706"} />
             </View>
-          ))}
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.docTitle}>2. PAN Card</Text>
+              <Text style={styles.docSub}>Permanent Account Number for Payouts</Text>
+            </View>
+            <View style={[styles.badgePill, isPanVerified ? styles.badgeGreen : styles.badgeAmber]}>
+              <Text style={[styles.badgeText, isPanVerified ? styles.badgeTextGreen : styles.badgeTextAmber]}>
+                {isPanVerified ? "Verified" : (panDoc ? "Under Audit" : "Pending")}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.uploadBtn, isPanVerified && styles.uploadBtnBorder]}
+            onPress={() => handleUploadDocument('PAN')}
+            disabled={uploadingDocType === 'PAN'}
+          >
+            {uploadingDocType === 'PAN' ? (
+              <ActivityIndicator size="small" color="#16a34a" />
+            ) : (
+              <>
+                <Ionicons name="cloud-upload-outline" size={16} color="#16a34a" style={{ marginRight: 6 }} />
+                <Text style={styles.uploadBtnText}>
+                  {isPanVerified ? "Replace PAN Card Copy" : "Upload PAN Card Document"}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* 3. Profile Photo */}
+        <View style={styles.docCard}>
+          <View style={styles.docCardHeader}>
+            <View style={[styles.docIconBox, { backgroundColor: hasProfilePhoto ? '#dcfce7' : '#ffedd5' }]}>
+              <Ionicons name="person-outline" size={18} color={hasProfilePhoto ? "#16a34a" : "#d97706"} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.docTitle}>3. Account Profile Photo</Text>
+              <Text style={styles.docSub}>Clear Passport Size Face Photo</Text>
+            </View>
+            <View style={[styles.badgePill, hasProfilePhoto ? styles.badgeGreen : styles.badgeAmber]}>
+              <Text style={[styles.badgeText, hasProfilePhoto ? styles.badgeTextGreen : styles.badgeTextAmber]}>
+                {hasProfilePhoto ? "Verified" : "Pending"}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.uploadBtn, hasProfilePhoto && styles.uploadBtnBorder]}
+            onPress={() => handleUploadDocument('ProfilePhoto')}
+            disabled={uploadingDocType === 'ProfilePhoto'}
+          >
+            {uploadingDocType === 'ProfilePhoto' ? (
+              <ActivityIndicator size="small" color="#16a34a" />
+            ) : (
+              <>
+                <Ionicons name="camera-outline" size={16} color="#16a34a" style={{ marginRight: 6 }} />
+                <Text style={styles.uploadBtnText}>
+                  {hasProfilePhoto ? "Change Profile Photo" : "Upload Account Holder Photo"}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Facing issue support link */}
         <View style={styles.supportFooter}>
-          <Text style={styles.supportText}>Facing an issue?</Text>
+          <Text style={styles.supportText}>Facing document upload issues?</Text>
           <TouchableOpacity onPress={() => navigation.navigate('TripSupport')}>
-            <Text style={styles.supportLink}>Contact Support</Text>
+            <Text style={styles.supportLink}>Contact 24/7 Partner Support</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Re-upload Action Button */}
-        <TouchableOpacity 
-          style={styles.reuploadBtn}
-          onPress={() => Alert.alert("Re-upload", "Please select a new original copy of your identity proof.")}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="cloud-upload-outline" size={18} color="#16a34a" style={{ marginRight: 6 }} />
-          <Text style={styles.reuploadBtnText}>Re-upload Document</Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -186,29 +330,21 @@ const styles = StyleSheet.create({
   statusTitle: { fontSize: 15, fontWeight: '800', color: '#16a34a' },
   statusSub: { fontSize: 11, color: '#475569', marginTop: 1 },
   sectionHeader: { fontSize: 14, fontWeight: '800', color: '#0f172a', marginBottom: 10, marginLeft: 4 },
-  detailsCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#f1f5f9', marginBottom: 20 },
-  detailRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-  detailIconBox: { width: 26, height: 26, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  detailLabel: { fontSize: 12, color: '#64748b', flex: 1 },
-  detailVal: { fontSize: 12, fontWeight: '800', color: '#0f172a' },
-  uploadedDocCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#f1f5f9', marginBottom: 20 },
-  aadhaarCardGraphic: { width: '100%', backgroundColor: '#fffbebfb', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#fef3c7', marginBottom: 12 },
-  aadhaarHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  govtTitle: { fontSize: 10, fontWeight: '900', color: '#d97706', marginLeft: 4, letterSpacing: 0.5 },
-  aadhaarContentRow: { flexDirection: 'row', alignItems: 'center' },
-  aadhaarPhotoCircle: { width: 44, height: 44, borderRadius: 10, backgroundColor: '#dcfce7', justifyContent: 'center', alignItems: 'center' },
-  aadhaarName: { fontSize: 13, fontWeight: '900', color: '#0f172a' },
-  aadhaarDob: { fontSize: 10, color: '#64748b', marginTop: 1 },
-  aadhaarNum: { fontSize: 11, fontWeight: '800', color: '#0f172a', marginTop: 3 },
-  fullscreenBtn: { flexDirection: 'row', alignItems: 'center' },
-  fullscreenText: { fontSize: 11, fontWeight: '700', color: '#16a34a', marginLeft: 4 },
-  guidelinesCard: { backgroundColor: '#f4fbf7', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#dcfce7', marginBottom: 20 },
-  guideCardTitle: { fontSize: 13, fontWeight: '800', color: '#16a34a', marginBottom: 12 },
-  guideItemRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  guideItemText: { fontSize: 12, color: '#334155', fontWeight: '600' },
-  supportFooter: { alignItems: 'center', marginVertical: 12 },
+  docCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#f1f5f9', marginBottom: 14 },
+  docCardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  docIconBox: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  docTitle: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
+  docSub: { fontSize: 11, color: '#64748b', marginTop: 1 },
+  badgePill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  badgeGreen: { backgroundColor: '#dcfce7' },
+  badgeAmber: { backgroundColor: '#ffedd5' },
+  badgeText: { fontSize: 10, fontWeight: '800' },
+  badgeTextGreen: { color: '#16a34a' },
+  badgeTextAmber: { color: '#d97706' },
+  uploadBtn: { backgroundColor: '#f0fdf4', borderWidth: 1, borderColor: '#16a34a', borderRadius: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  uploadBtnBorder: { backgroundColor: '#ffffff', borderColor: '#cbd5e1' },
+  uploadBtnText: { color: '#16a34a', fontSize: 13, fontWeight: '800' },
+  supportFooter: { alignItems: 'center', marginVertical: 16 },
   supportText: { fontSize: 12, color: '#64748b' },
   supportLink: { fontSize: 12, fontWeight: '800', color: '#16a34a', marginTop: 2 },
-  reuploadBtn: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#16a34a', borderRadius: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  reuploadBtnText: { color: '#16a34a', fontSize: 13, fontWeight: '800' },
 });

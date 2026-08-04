@@ -249,14 +249,24 @@ export const loginPartner = async (req, res) => {
 // @desc    Logout partner and clear refresh token cookie
 export const logoutPartner = async (req, res) => {
   try {
-    const { partner_refresh_token } = req.cookies;
+    const { partner_refresh_token } = req.cookies || {};
+    const authHeader = req.headers.authorization;
 
     if (partner_refresh_token) {
-      // Find partner and remove refresh token
       await PartnerAuth.findOneAndUpdate(
         { refreshToken: partner_refresh_token },
         { $unset: { refreshToken: 1 } }
       );
+    } else if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || "fallback_secret");
+        if (decoded && decoded.partnerId) {
+          await PartnerAuth.findByIdAndUpdate(decoded.partnerId, { $unset: { refreshToken: 1 } });
+        }
+      } catch (e) {
+        // Token verification error ignored during logout cleanup
+      }
     }
 
     res.clearCookie("partner_refresh_token");

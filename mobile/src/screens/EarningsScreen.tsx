@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,14 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
+  RefreshControl,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
 import { useNavigation } from '@react-navigation/native';
+import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 type PayoutItem = {
   id: string;
@@ -64,9 +68,58 @@ const WEEKLY_DATA = [
 export const EarningsScreen = () => {
   const [timeframe, setTimeframe] = useState<'Week' | 'Month' | 'Year'>('Week');
   const navigation = useNavigation<any>();
+  const token = useAuthStore((state) => state.token);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [earnings, setEarnings] = useState<any>(null);
+
+  const fetchEarnings = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/earnings?timeframe=${timeframe}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setEarnings(result.data);
+      } else {
+        setEarnings(null);
+      }
+    } catch (e) {
+      console.error("Error fetching earnings data:", e);
+      setEarnings(null);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEarnings();
+  }, [timeframe]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchEarnings(false);
+  };
+
+  const chartData = (earnings?.chartData || WEEKLY_DATA).map((item: any) => ({
+    day: item.day,
+    amount: item.amount,
+    height: item.height || Math.min(115, Math.max(10, (item.amount / 50)))
+  }));
+
+  const recentPayouts = earnings?.recentPayouts || MOCK_PAYOUTS;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.contentContainer} 
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
+      }
+    >
       <StatusBar barStyle="light-content" backgroundColor="#FE5300" />
 
       {/* Top Banner */}
@@ -94,7 +147,7 @@ export const EarningsScreen = () => {
         <View style={styles.heroHeader}>
           <View>
             <Text style={styles.heroSub}>TOTAL NET EARNINGS ({timeframe.toUpperCase()})</Text>
-            <Text style={styles.heroAmount}>₹22,940.00</Text>
+            <Text style={styles.heroAmount}>₹{(earnings?.totalNetEarnings || 22940.00).toLocaleString('en-IN')}</Text>
           </View>
           <TouchableOpacity 
             style={styles.growthBadge}
@@ -108,7 +161,7 @@ export const EarningsScreen = () => {
         {/* Bar Chart Visual */}
         <View style={styles.chartSection}>
           <View style={styles.chartBarsRow}>
-            {WEEKLY_DATA.map((item) => (
+            {chartData.map((item: any) => (
               <View key={item.day} style={styles.barCol}>
                 <Text style={styles.barVal}>₹{(item.amount / 1000).toFixed(1)}k</Text>
                 <View style={styles.barTrack}>
@@ -132,7 +185,7 @@ export const EarningsScreen = () => {
             <Text style={styles.bdTitle}>Trip Fares</Text>
             <Text style={styles.bdSub}>Gross fare from completed rides</Text>
           </View>
-          <Text style={styles.bdAmount}>₹19,250.00</Text>
+          <Text style={styles.bdAmount}>₹{(earnings?.grossTripFare || 19250.00).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={styles.bdDivider} />
@@ -145,7 +198,7 @@ export const EarningsScreen = () => {
             <Text style={styles.bdTitle}>Bonuses & Incentives</Text>
             <Text style={styles.bdSub}>Peak hours & fleet milestone rewards</Text>
           </View>
-          <Text style={[styles.bdAmount, { color: '#16a34a' }]}>+₹4,200.00</Text>
+          <Text style={[styles.bdAmount, { color: '#16a34a' }]}>+₹{(earnings?.taxes || 4200.00).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={styles.bdDivider} />
@@ -158,7 +211,7 @@ export const EarningsScreen = () => {
             <Text style={styles.bdTitle}>Platform & Commission</Text>
             <Text style={styles.bdSub}>Platform service fee deduction</Text>
           </View>
-          <Text style={[styles.bdAmount, { color: '#dc2626' }]}>-₹510.00</Text>
+          <Text style={[styles.bdAmount, { color: '#dc2626' }]}>-₹{(earnings?.platformCommission || 510.00).toLocaleString('en-IN')}</Text>
         </View>
       </View>
 
@@ -170,7 +223,7 @@ export const EarningsScreen = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.payoutsCard}>
-        {MOCK_PAYOUTS.map((payout, index) => (
+        {recentPayouts.map((payout: any, index: number) => (
           <View key={payout.id}>
             {index > 0 && <View style={styles.payoutDivider} />}
             <View style={styles.payoutRow}>

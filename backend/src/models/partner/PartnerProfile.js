@@ -24,7 +24,7 @@ const partnerProfileSchema = new mongoose.Schema(
     },
     mobileNumber: {
       type: String,
-      required: true,
+      default: "",
     },
     alternateMobileNumber: {
       type: String,
@@ -60,6 +60,14 @@ const partnerProfileSchema = new mongoose.Schema(
     isSubmittedForApproval: {
       type: Boolean,
       default: false,
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    pricingConfig: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
   },
   { timestamps: true }

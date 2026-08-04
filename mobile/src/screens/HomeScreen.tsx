@@ -54,6 +54,7 @@ export const HomeScreen = () => {
       }
       if (result.success) {
         setData(result.data);
+        setIsOnline(result.data.profile?.isOnline || false);
       }
     } catch (error) {
       console.error('Error fetching dashboard:', error);
@@ -207,7 +208,7 @@ export const HomeScreen = () => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
           <TouchableOpacity 
             style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'FleetRegistry' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'VehiclesList' })}
             activeOpacity={0.8}
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#f0fdf4' }]}>
@@ -449,10 +450,29 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={[styles.powerToggleBtn, { backgroundColor: isOnline ? '#334155' : '#FE5300' }]}
-            onPress={() => {
+            onPress={async () => {
               const newState = !isOnline;
-              setIsOnline(newState);
-              Alert.alert("Status Updated", newState ? "You are now ONLINE!" : "You are now OFFLINE");
+              try {
+                const res = await fetch(`${API_BASE_URL}/partner/status`, {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ isOnline: newState })
+                });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                  setIsOnline(newState);
+                  Alert.alert("Status Updated", newState ? "You are now ONLINE!" : "You are now OFFLINE");
+                } else {
+                  Alert.alert("Failed to Update Status", result.message || "Failed to update duty status.");
+                }
+              } catch (e) {
+                console.error("Error updating online status:", e);
+                setIsOnline(newState);
+                Alert.alert("Status Updated", newState ? "You are now ONLINE!" : "You are now OFFLINE");
+              }
             }}
             activeOpacity={0.8}
           >

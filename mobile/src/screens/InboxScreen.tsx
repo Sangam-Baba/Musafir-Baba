@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 type NotificationItem = {
   id: string;
@@ -47,10 +49,52 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const InboxScreen = () => {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const token = useAuthStore((state) => state.token);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const markAllRead = () => {
+  const fetchNotifications = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/notifications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setNotifications(result.data);
+      } else {
+        setNotifications(MOCK_NOTIFICATIONS);
+      }
+    } catch (e) {
+      console.error("Error fetching notifications:", e);
+      setNotifications(MOCK_NOTIFICATIONS);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchNotifications(false);
+  };
+
+  const markAllRead = async () => {
+    // Optimistic UI update
     setNotifications(notifications.map(n => ({ ...n, read: true })));
+    try {
+      await fetch(`${API_BASE_URL}/partner/notifications/mark-read`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch (e) {
+      console.error("Error marking notifications as read:", e);
+    }
   };
 
   const getIcon = (type: NotificationItem['type']) => {
@@ -80,6 +124,13 @@ export const InboxScreen = () => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingTop: 4 }}
         showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        ListHeaderComponent={
+          loading ? (
+            <ActivityIndicator size="small" color="#FE5300" style={{ marginVertical: 10 }} />
+          ) : null
+        }
         renderItem={({ item }) => {
           const config = getIcon(item.type);
           return (

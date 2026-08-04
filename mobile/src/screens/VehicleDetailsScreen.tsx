@@ -1,10 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 export const VehicleDetailsScreen = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+
+  const vehicleId = route.params?.vehicleId || 'veh-1';
+  const regNo = route.params?.regNo || 'DL01AB1234';
+  const modelName = route.params?.model || 'Toyota Innova Crysta';
+  const vehicleCategory = route.params?.type || 'SUV';
 
   const vehicleDocs = [
     {
@@ -26,7 +32,7 @@ export const VehicleDetailsScreen = () => {
     },
     {
       title: 'RC Certificate (Registration)',
-      subtitle: 'RC No: DL01AB1234',
+      subtitle: `RC No: ${regNo}`,
       validity: 'Issued On: 20 Jun 2019',
       icon: 'car-outline',
       iconBg: '#e0f2fe',
@@ -72,17 +78,17 @@ export const VehicleDetailsScreen = () => {
 
           <View style={{ flex: 1, marginLeft: 12 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.regNumberText}>DL01AB1234</Text>
+              <Text style={styles.regNumberText}>{regNo}</Text>
               <View style={styles.verifiedTag}>
                 <Text style={styles.verifiedTagText}>Verified </Text>
                 <Ionicons name="checkmark-circle" size={12} color="#16a34a" />
               </View>
             </View>
 
-            <Text style={styles.vehicleModelText}>Toyota Innova Crysta</Text>
+            <Text style={styles.vehicleModelText}>{modelName}</Text>
             <Text style={styles.vehicleSpecsText}>White • 2019 • Diesel</Text>
             <View style={styles.commercialPill}>
-              <Text style={styles.commercialPillText}>Commercial</Text>
+              <Text style={styles.commercialPillText}>{vehicleCategory} • Commercial</Text>
             </View>
           </View>
         </View>
@@ -91,12 +97,11 @@ export const VehicleDetailsScreen = () => {
         <Text style={styles.sectionHeader}>Vehicle Information</Text>
         <View style={styles.infoCard}>
           {[
-            { label: 'Registration Number', val: 'DL01AB1234', icon: 'card-outline', iconBg: '#dcfce7' },
-            { label: 'Vehicle Make', val: 'Toyota', icon: 'car-sport-outline', iconBg: '#dcfce7' },
-            { label: 'Vehicle Model', val: 'Innova Crysta', icon: 'car-outline', iconBg: '#dcfce7' },
+            { label: 'Registration Number', val: regNo, icon: 'card-outline', iconBg: '#dcfce7' },
+            { label: 'Vehicle Model', val: modelName, icon: 'car-outline', iconBg: '#dcfce7' },
             { label: 'Year of Manufacture', val: '2019', icon: 'calendar-outline', iconBg: '#dcfce7' },
             { label: 'Fuel Type', val: 'Diesel', icon: 'flame-outline', iconBg: '#dcfce7' },
-            { label: 'Seating Capacity', val: '7 Seater', icon: 'people-outline', iconBg: '#dcfce7' },
+            { label: 'Seating Capacity', val: vehicleCategory === 'SUV' ? '7 Seater' : '5 Seater', icon: 'people-outline', iconBg: '#dcfce7' },
             { label: 'Vehicle Type', val: 'Commercial', icon: 'bus-outline', iconBg: '#dcfce7' },
             { label: 'Registration Date', val: '20 Jun 2019', icon: 'calendar-number-outline', iconBg: '#dcfce7' },
           ].map((item, idx, arr) => (
