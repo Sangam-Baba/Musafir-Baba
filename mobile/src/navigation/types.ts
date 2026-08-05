@@ -36,6 +36,7 @@ export type ProfileStackParamList = {
   PersonalDetails: undefined;
   KYCDocuments: undefined;
   BankDetails: undefined;
+  BankAccount: undefined;
   FleetRegistry: undefined;
   VehicleSettings: undefined;
   VehiclesList: undefined;

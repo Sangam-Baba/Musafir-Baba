@@ -111,7 +111,7 @@ export const VerifiedPartnerScreen = () => {
       subtitle: isBankVerified ? `${bank.bankName} (••${bank.accountNumber?.slice(-4) || '4321'})` : 'No Bank Account Linked',
       isVerified: isBankVerified,
       status: isBankVerified ? 'Verified' : 'Pending',
-      screen: 'PayoutHistory',
+      screen: 'BankDetails',
       icon: 'business-outline'
     },
     {

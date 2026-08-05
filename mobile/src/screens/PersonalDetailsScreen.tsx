@@ -354,13 +354,25 @@ export const PersonalDetailsScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.linkRow, { borderBottomWidth: 0 }]}
+            style={styles.linkRow}
             onPress={() => navigation.navigate('VerifiedPartner')}
           >
             <Ionicons name="ribbon-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
             <Text style={styles.linkText}>Verified Partner Badge & Rating</Text>
             <View style={styles.verifiedGreenTag}>
               <Text style={styles.verifiedGreenTagText}>4.9 ★</Text>
+              <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.linkRow, { borderBottomWidth: 0 }]}
+            onPress={() => navigation.navigate('BankAccount')}
+          >
+            <Ionicons name="business-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
+            <Text style={styles.linkText}>Account and bank information</Text>
+            <View style={styles.verifiedGreenTag}>
+              <Text style={styles.verifiedGreenTagText}>Verified</Text>
               <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
             </View>
           </TouchableOpacity>

@@ -23,6 +23,8 @@ import { VehicleDetailsScreen } from '../screens/VehicleDetailsScreen';
 import { VehiclesListScreen } from '../screens/VehiclesListScreen';
 import { AddVehicleScreen } from '../screens/AddVehicleScreen';
 import { UpdateVehicleScreen } from '../screens/UpdateVehicleScreen';
+import { BankDetailsScreen } from '../screens/BankDetailsScreen';
+import { BankAccountScreen } from '../screens/BankAccountScreen';
 import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
@@ -346,6 +348,8 @@ export const ProfileStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileMenu" component={ProfileMenuScreen} />
       <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
+      <Stack.Screen name="BankDetails" component={BankDetailsScreen} />
+      <Stack.Screen name="BankAccount" component={BankAccountScreen} />
       <Stack.Screen name="IdentityProof" component={IdentityProofScreen} />
       <Stack.Screen name="VehiclesList" component={VehiclesListScreen} />
       <Stack.Screen name="VehicleDetails" component={VehicleDetailsScreen} />

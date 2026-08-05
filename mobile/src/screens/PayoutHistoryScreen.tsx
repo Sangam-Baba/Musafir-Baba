@@ -52,10 +52,10 @@ export const PayoutHistoryScreen = () => {
   const bankName = bankInfo?.bankName || 'HDFC Bank';
   const accountEnding = bankInfo?.accountNumber ? bankInfo.accountNumber.slice(-4) : '4321';
 
-  const [records] = useState<PayoutRecord[]>([
+  const records: PayoutRecord[] = [
     { id: 's1', settlementId: 'SET-9901', amount: 12850, date: '28 Jul 2026', bankName, accountEnding, status: 'Completed', utrNumber: 'UTR-982104928172' },
     { id: 's2', settlementId: 'SET-9900', amount: 9400, date: '21 Jul 2026', bankName, accountEnding, status: 'Completed', utrNumber: 'UTR-982101189230' },
-  ]);
+  ];
 
   const downloadReceipt = (record: PayoutRecord) => {
     Alert.alert("Receipt Downloaded", `Settlement receipt for ${record.settlementId} saved to downloads.`);
@@ -82,8 +82,15 @@ export const PayoutHistoryScreen = () => {
 
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Payout Settlement History</Text>
-          <Text style={styles.subtitle}>Bank transfers, UTR reference numbers & tax invoices.</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>Payout Settlement History</Text>
+              <Text style={styles.subtitle}>Bank transfers, UTR reference numbers & tax invoices.</Text>
+            </View>
+            <TouchableOpacity style={styles.updateBankBtn} onPress={() => navigation.navigate('BankDetails')}>
+              <Text style={styles.updateBankText}>Update Bank Info</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
       <FlatList
@@ -145,6 +152,8 @@ const styles = StyleSheet.create({
   header: { padding: 16 },
   title: { fontSize: 24, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#64748b' },
+  updateBankBtn: { backgroundColor: '#e0f2fe', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, marginTop: 4 },
+  updateBankText: { color: '#0284c7', fontSize: 11, fontWeight: '800' },
   card: { backgroundColor: '#ffffff', borderRadius: 20, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#f1f5f9' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   idRow: { flexDirection: 'row', alignItems: 'center' },

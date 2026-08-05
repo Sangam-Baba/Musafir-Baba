@@ -25,36 +25,6 @@ type PayoutItem = {
   referenceId: string;
 };
 
-const MOCK_PAYOUTS: PayoutItem[] = [
-  {
-    id: 'p1',
-    amount: 12850,
-    date: '28 Jul 2026',
-    status: 'Completed',
-    bankName: 'HDFC Bank',
-    accountEnding: '4321',
-    referenceId: 'UPI/628104928172',
-  },
-  {
-    id: 'p2',
-    amount: 9400,
-    date: '21 Jul 2026',
-    status: 'Completed',
-    bankName: 'HDFC Bank',
-    accountEnding: '4321',
-    referenceId: 'UPI/628101189230',
-  },
-  {
-    id: 'p3',
-    amount: 14200,
-    date: '14 Jul 2026',
-    status: 'Completed',
-    bankName: 'HDFC Bank',
-    accountEnding: '4321',
-    referenceId: 'UPI/628098877123',
-  },
-];
-
 const WEEKLY_DATA = [
   { day: 'Mon', amount: 2400, height: 60 },
   { day: 'Tue', amount: 3100, height: 80 },
@@ -80,8 +50,17 @@ export const EarningsScreen = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
+      
+      const dashboardRes = await fetch(`${API_BASE_URL}/partner/profile/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dashboardResult = await dashboardRes.json();
+      
       if (res.ok && result.success) {
-        setEarnings(result.data);
+        setEarnings({
+          ...result.data,
+          bankInfo: dashboardResult.data?.bank || null
+        });
       } else {
         setEarnings(null);
       }
@@ -102,6 +81,15 @@ export const EarningsScreen = () => {
     setRefreshing(true);
     fetchEarnings(false);
   };
+
+  const bankName = earnings?.bankInfo?.bankName || 'HDFC Bank';
+  const accountEnding = earnings?.bankInfo?.accountNumber ? earnings.bankInfo.accountNumber.slice(-4) : '4321';
+
+  const MOCK_PAYOUTS: PayoutItem[] = [
+    { id: 'p1', amount: 12850, date: '28 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628104928172' },
+    { id: 'p2', amount: 9400, date: '21 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628101189230' },
+    { id: 'p3', amount: 14200, date: '14 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628098877123' },
+  ];
 
   const chartData = (earnings?.chartData || WEEKLY_DATA).map((item: any) => ({
     day: item.day,

@@ -5,6 +5,7 @@ import { updateBankAccount } from "../../controllers/partner/partnerBank.control
 import { addVehicle, assignDriverToVehicle, updateVehicle, getVehicles, getVehicleById, deleteVehicle } from "../../controllers/partner/partnerVehicle.controller.js";
 import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/partnerDriver.controller.js";
 import { uploadDocument } from "../../controllers/partner/partnerDocument.controller.js";
+import { getStates, getCities, getPincodes } from "../../controllers/locationMaster.controller.js";
 import {
   updateStatus,
   getBookings,
@@ -56,6 +57,11 @@ router.patch("/notifications/mark-read", markNotificationsRead);
 
 // Documents
 router.post("/document", uploadDocument);
+
+// Locations (Read-Only)
+router.get("/states", getStates);
+router.get("/cities", getCities);
+router.get("/pincodes", getPincodes);
 
 // Settings
 import { getSettings, updateSettings } from "../../controllers/partner/partnerSettings.controller.js";
