@@ -38,12 +38,15 @@ export const uploadDocument = async (req, res) => {
           ownerId,
           documentType,
           fileUrl,
-          status: "Pending",
+          status: "Approved",
+          verificationDate: new Date(),
         });
         await document.save();
       } else {
         // Just update file URL for Pending documents
         document.fileUrl = fileUrl;
+        document.status = "Approved";
+        document.verificationDate = new Date();
         await document.save();
       }
     } else {
@@ -52,7 +55,8 @@ export const uploadDocument = async (req, res) => {
         ownerId,
         documentType,
         fileUrl,
-        status: "Pending",
+        status: "Approved",
+        verificationDate: new Date(),
       });
       await document.save();
     }

@@ -85,8 +85,24 @@ const partnerVehicleSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+// Virtual property to group legacy image fields for new UI clients
+partnerVehicleSchema.virtual("inspectionPhotos").get(function () {
+  return {
+    front: this.frontImageUrl || "",
+    back: this.rearImageUrl || "",
+    leftSide: this.leftSideImageUrl || "",
+    rightSide: this.rightSideImageUrl || "",
+    interiorFront: this.interiorImageUrl || "",
+    interiorBack: this.otherImageUrl || "",
+  };
+});
 
 export default mongoose.models.PartnerVehicle ||
   mongoose.model("PartnerVehicle", partnerVehicleSchema);

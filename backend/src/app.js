@@ -18,9 +18,11 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin or "null" origin (e.g. Postman, server-to-server, PayU cross-origin POSTs)
+      // Allow requests with no origin or "null" origin (e.g. Mobile apps, Postman, server-to-server)
       if (!origin || origin === "null") return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (process.env.NODE_ENV !== "production" || allowedOrigins.includes(origin) || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+        return callback(null, true);
+      }
       callback(new Error(`CORS: Origin ${origin} not allowed`));
     },
     credentials: true,
