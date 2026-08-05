@@ -117,8 +117,8 @@ export const getBookings = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      total: filtered.length,
-      data: filtered,
+      total: 0, // filtered.length,
+      data: [], // filtered,
     });
   } catch (error) {
     console.error("Get Bookings Error:", error);
@@ -169,12 +169,12 @@ export const getEarnings = async (req, res) => {
       success: true,
       data: {
         timeframe: req.query.timeframe || "Week",
-        totalNetEarnings: profile.walletBalance || 1250.00,
-        grossTripFare: 14500.00,
-        platformCommission: 2175.00,
-        taxes: 500.00,
-        growthPercent: 12.4,
-        chartData: [
+        totalNetEarnings: 0, // profile.walletBalance || 1250.00,
+        grossTripFare: 0, // 14500.00,
+        platformCommission: 0, // 2175.00,
+        taxes: 0, // 500.00,
+        growthPercent: 0, // 12.4,
+        chartData: [], /* [
           { day: "Mon", amount: 2400 },
           { day: "Tue", amount: 3100 },
           { day: "Wed", amount: 1800 },
@@ -182,8 +182,8 @@ export const getEarnings = async (req, res) => {
           { day: "Fri", amount: 3500 },
           { day: "Sat", amount: 5100 },
           { day: "Sun", amount: 2840 }
-        ],
-        recentPayouts: [
+        ], */
+        recentPayouts: [] /* [
           {
             id: "p1",
             amount: 12850,
@@ -202,7 +202,7 @@ export const getEarnings = async (req, res) => {
             accountEnding: bank?.accountNumber ? bank.accountNumber.slice(-4) : "4321",
             referenceId: "UPI/628101189230",
           }
-        ]
+        ] */
       }
     });
   } catch (error) {
@@ -280,8 +280,8 @@ export const getNotifications = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      unreadCount: mockNotifications.filter(n => !n.read).length,
-      data: mockNotifications,
+      unreadCount: 0, // mockNotifications.filter(n => !n.read).length,
+      data: [], // mockNotifications,
     });
   } catch (error) {
     console.error("Get Notifications Error:", error);

@@ -18,6 +18,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
   const token = useAuthStore((state) => state.token);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   
   const { control, handleSubmit, reset, formState: { errors } } = useForm<BankDetailsFormData>({
     resolver: zodResolver(bankDetailsSchema),
@@ -37,8 +38,13 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const result = await res.json();
-        if (result.success && result.data && result.data.bank) {
-          const bank = result.data.bank;
+        if (result.success && result.data) {
+          const profile = result.data.profile;
+          const auth = result.data.auth;
+          setIsLocked(profile?.isSubmittedForApproval || auth?.status === 'Approved');
+
+          if (result.data.bank) {
+            const bank = result.data.bank;
           reset({
             accountHolderName: bank.accountHolderName || '',
             bankName: bank.bankName || '',
@@ -46,6 +52,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
             accountNumber: bank.accountNumber || '',
             ifsc: bank.ifsc || '',
           });
+          }
         }
       } catch (e) {
         console.error("Error loading bank data", e);
@@ -100,7 +107,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
         control={control}
         name="accountHolderName"
         render={({ field: { onChange, value } }) => (
-          <InputField label="Account Holder Name" value={value} onChangeText={onChange} error={errors.accountHolderName?.message} />
+          <InputField label="Account Holder Name" value={value} onChangeText={onChange} error={errors.accountHolderName?.message} editable={!isLocked} />
         )}
       />
       
@@ -108,7 +115,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
         control={control}
         name="bankName"
         render={({ field: { onChange, value } }) => (
-          <InputField label="Bank Name" value={value} onChangeText={onChange} error={errors.bankName?.message} />
+          <InputField label="Bank Name" value={value} onChangeText={onChange} error={errors.bankName?.message} editable={!isLocked} />
         )}
       />
 
@@ -116,7 +123,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
         control={control}
         name="branchName"
         render={({ field: { onChange, value } }) => (
-          <InputField label="Branch Name" value={value} onChangeText={onChange} error={errors.branchName?.message} />
+          <InputField label="Branch Name" value={value} onChangeText={onChange} error={errors.branchName?.message} editable={!isLocked} />
         )}
       />
 
@@ -124,7 +131,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
         control={control}
         name="accountNumber"
         render={({ field: { onChange, value } }) => (
-          <InputField label="Account Number" value={value} onChangeText={onChange} keyboardType="number-pad" error={errors.accountNumber?.message} secureTextEntry={true} />
+          <InputField label="Account Number" value={value} onChangeText={onChange} keyboardType="number-pad" error={errors.accountNumber?.message} secureTextEntry={true} editable={!isLocked} />
         )}
       />
 
@@ -132,13 +139,15 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
         control={control}
         name="ifsc"
         render={({ field: { onChange, value } }) => (
-          <InputField label="IFSC Code" value={value} onChangeText={(text) => onChange(text.toUpperCase())} autoCapitalize="characters" error={errors.ifsc?.message} />
+          <InputField label="IFSC Code" value={value} onChangeText={(text) => onChange(text.toUpperCase())} autoCapitalize="characters" error={errors.ifsc?.message} editable={!isLocked} />
         )}
       />
 
-      <View style={styles.footer}>
-        <Button title="Save Bank Details" onPress={handleSubmit(onSubmit)} />
-      </View>
+      {!isLocked && (
+        <View style={styles.footer}>
+          <Button title="Save Bank Details" onPress={handleSubmit(onSubmit)} />
+        </View>
+      )}
     </View>
   );
 };

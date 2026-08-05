@@ -58,10 +58,16 @@ export const IdentityProofScreen = () => {
 
   const partnerProfile = dashboardData?.profile;
   const partnerAuth = dashboardData?.auth;
+  const isLocked = partnerProfile?.isSubmittedForApproval || partnerAuth?.status === 'Approved';
   const documents = dashboardData?.documents || [];
 
   const aadhaarDoc = documents.find((d: any) => d.documentType === 'Aadhaar');
+  const aadhaarBackDoc = documents.find((d: any) => d.documentType === 'Aadhaar Back');
   const panDoc = documents.find((d: any) => d.documentType === 'PAN');
+
+  const effectiveAadhaarFront = aadhaarFrontUri || aadhaarDoc?.fileUrl;
+  const effectiveAadhaarBack = aadhaarBackUri || aadhaarBackDoc?.fileUrl || aadhaarDoc?.fileUrlBack;
+  const effectivePan = panUri || panDoc?.fileUrl;
   const hasProfilePhoto = !!(profilePhotoUri || partnerProfile?.profilePicture);
 
   const derivedDefaultName = partnerAuth?.email
@@ -72,6 +78,10 @@ export const IdentityProofScreen = () => {
 
   // Real device image picker with web fallback
   const pickImage = (setter: (uri: string) => void): Promise<void> => {
+    if (isLocked) {
+      Alert.alert("Profile Locked", "Your account is under audit or approved. You cannot modify documents.");
+      return Promise.resolve();
+    }
     return new Promise(async (resolve) => {
       try {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -285,19 +295,19 @@ export const IdentityProofScreen = () => {
               <Text style={styles.docTitle}>1. Aadhaar Card – Front Side</Text>
               <Text style={styles.docSub}>Government Issued Unique Identity Card</Text>
             </View>
-            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : (aadhaarFrontUri ? styles.badgeBlue : styles.badgeAmber)]}>
-              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : (aadhaarFrontUri ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
-                {isAadhaarVerified ? "Verified" : (aadhaarFrontUri ? "Ready" : (aadhaarDoc ? "On File" : "Pending"))}
+            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : (effectiveAadhaarFront ? styles.badgeBlue : styles.badgeAmber)]}>
+              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : (effectiveAadhaarFront ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
+                {isAadhaarVerified ? "Verified" : (aadhaarFrontUri ? "Ready" : (effectiveAadhaarFront ? "On File" : "Pending"))}
               </Text>
             </View>
           </View>
           <TouchableOpacity 
-            style={[styles.uploadSlot, aadhaarFrontUri && styles.uploadSlotFilled]}
+            style={[styles.uploadSlot, effectiveAadhaarFront && styles.uploadSlotFilled]}
             onPress={() => pickImage(setAadhaarFrontUri)}
           >
-            {aadhaarFrontUri ? (
+            {effectiveAadhaarFront ? (
               <>
-                <Image source={{ uri: aadhaarFrontUri }} style={styles.docThumbnail} />
+                <Image source={{ uri: effectiveAadhaarFront }} style={styles.docThumbnail} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.uploadSlotTextFilled}>Aadhaar Front Attached</Text>
                   <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>
@@ -324,19 +334,19 @@ export const IdentityProofScreen = () => {
               <Text style={styles.docTitle}>2. Aadhaar Card – Back Side</Text>
               <Text style={styles.docSub}>Government Issued Unique Identity Card</Text>
             </View>
-            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : (aadhaarBackUri ? styles.badgeBlue : styles.badgeAmber)]}>
-              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : (aadhaarBackUri ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
-                {isAadhaarVerified ? "Verified" : (aadhaarBackUri ? "Ready" : (aadhaarDoc ? "On File" : "Pending"))}
+            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : (effectiveAadhaarBack ? styles.badgeBlue : styles.badgeAmber)]}>
+              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : (effectiveAadhaarBack ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
+                {isAadhaarVerified ? "Verified" : (aadhaarBackUri ? "Ready" : (effectiveAadhaarBack ? "On File" : "Pending"))}
               </Text>
             </View>
           </View>
           <TouchableOpacity 
-            style={[styles.uploadSlot, aadhaarBackUri && styles.uploadSlotFilled]}
+            style={[styles.uploadSlot, effectiveAadhaarBack && styles.uploadSlotFilled]}
             onPress={() => pickImage(setAadhaarBackUri)}
           >
-            {aadhaarBackUri ? (
+            {effectiveAadhaarBack ? (
               <>
-                <Image source={{ uri: aadhaarBackUri }} style={styles.docThumbnail} />
+                <Image source={{ uri: effectiveAadhaarBack }} style={styles.docThumbnail} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.uploadSlotTextFilled}>Aadhaar Back Attached</Text>
                   <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>
@@ -363,19 +373,19 @@ export const IdentityProofScreen = () => {
               <Text style={styles.docTitle}>3. PAN Card Copy</Text>
               <Text style={styles.docSub}>Permanent Account Number for Payouts</Text>
             </View>
-            <View style={[styles.badgePill, isPanVerified ? styles.badgeGreen : (panUri ? styles.badgeBlue : styles.badgeAmber)]}>
-              <Text style={[styles.badgeText, isPanVerified ? styles.badgeTextGreen : (panUri ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
-                {isPanVerified ? "Verified" : (panUri ? "Ready" : (panDoc ? "On File" : "Pending"))}
+            <View style={[styles.badgePill, isPanVerified ? styles.badgeGreen : (effectivePan ? styles.badgeBlue : styles.badgeAmber)]}>
+              <Text style={[styles.badgeText, isPanVerified ? styles.badgeTextGreen : (effectivePan ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
+                {isPanVerified ? "Verified" : (panUri ? "Ready" : (effectivePan ? "On File" : "Pending"))}
               </Text>
             </View>
           </View>
           <TouchableOpacity 
-            style={[styles.uploadSlot, panUri && styles.uploadSlotFilled]}
+            style={[styles.uploadSlot, effectivePan && styles.uploadSlotFilled]}
             onPress={() => pickImage(setPanUri)}
           >
-            {panUri ? (
+            {effectivePan ? (
               <>
-                <Image source={{ uri: panUri }} style={styles.docThumbnail} />
+                <Image source={{ uri: effectivePan }} style={styles.docThumbnail} />
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.uploadSlotTextFilled}>PAN Card Attached</Text>
                   <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>

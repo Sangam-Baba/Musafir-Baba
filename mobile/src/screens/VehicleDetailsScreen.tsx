@@ -11,6 +11,7 @@ export const VehicleDetailsScreen = () => {
   const token = useAuthStore((state) => state.token);
 
   const vehicleId = route.params?.vehicleId;
+  const isLocked = route.params?.isLocked;
 
   const [vehicle, setVehicle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -305,14 +306,16 @@ export const VehicleDetailsScreen = () => {
           ))}
         </View>
         {/* Update Vehicle Details Button */}
-        <TouchableOpacity
-          style={styles.updateVehicleBtn}
-          onPress={() => navigation.navigate('UpdateVehicle', { vehicleId, vehicle })}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="cloud-upload-outline" size={18} color="#16a34a" style={{ marginRight: 6 }} />
-          <Text style={styles.updateVehicleBtnText}>Update Vehicle Details</Text>
-        </TouchableOpacity>
+        {!isLocked && (
+          <TouchableOpacity
+            style={styles.updateVehicleBtn}
+            onPress={() => navigation.navigate('UpdateVehicle', { vehicleId, vehicle })}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="cloud-upload-outline" size={18} color="#16a34a" style={{ marginRight: 6 }} />
+            <Text style={styles.updateVehicleBtnText}>Update Vehicle Details</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       {/* Image Viewer Modal */}

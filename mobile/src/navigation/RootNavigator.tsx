@@ -4,10 +4,13 @@ import { useAuthStore } from '../store/useAuthStore';
 import { AuthStack } from './AuthStack';
 import { MainTabNavigator } from './MainTabNavigator';
 import { View, ActivityIndicator } from 'react-native';
+import { usePushNotifications } from '../hooks/usePushNotifications';
+import { API_BASE_URL } from '../utils/config';
 
 export const RootNavigator = () => {
   const { isAuthenticated, hasCompletedOnboarding, initialize } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
+  const { expoPushToken, notification } = usePushNotifications();
 
   useEffect(() => {
     let isMounted = true;
@@ -27,6 +30,17 @@ export const RootNavigator = () => {
       isMounted = false;
     };
   }, [initialize]);
+
+  useEffect(() => {
+    if (isAuthenticated && expoPushToken) {
+      const token = useAuthStore.getState().token;
+      fetch(`${API_BASE_URL}/partner/push-token`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ pushToken: expoPushToken })
+      }).catch(e => console.log('Error syncing push token', e));
+    }
+  }, [isAuthenticated, expoPushToken]);
 
   if (!isReady) {
     return (

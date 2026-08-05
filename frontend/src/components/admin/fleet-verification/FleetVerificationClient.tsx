@@ -39,10 +39,12 @@ interface PartnerData {
     state?: string;
   } | null;
   bank?: {
+    _id?: string;
     bankName?: string;
     accountNumber?: string;
     ifscCode?: string;
     accountHolderName?: string;
+    status?: string;
   } | null;
   settings?: {
     vehicleConfigs?: Array<any>;
@@ -57,7 +59,7 @@ interface PartnerData {
     _id: string;
     documentType: string;
     fileUrl: string;
-    verificationStatus: string;
+    status: string;
     remarks?: string;
   }>;
   vehicles: Array<{
@@ -79,13 +81,23 @@ interface PartnerData {
     rightSideImageUrl?: string;
     interiorImageUrl?: string;
     otherImageUrl?: string;
+    engineNumber?: string;
+    chassisNumber?: string;
+    manufacturingYear?: number;
+    permitDetails?: {
+      hasCommercialPermit?: boolean;
+      permitNumber?: string;
+    };
   }>;
   drivers: Array<{
     _id: string;
     name: string;
     mobile: string;
     licenceNumber: string;
+    licenceExpiry?: string;
+    experienceYears?: number;
     licenceImageUrl: string;
+    status: string;
   }>;
 }
 
@@ -219,11 +231,11 @@ export default function FleetVerificationClient() {
     }
   };
 
-  const updateStatus = async (status: string) => {
+  const updateStatus = async (status: string, overrideReasons?: string[], overrideComment?: string) => {
     if (!selectedPartner) return;
     
     // If rejecting or holding, open modal to gather reasons
-    if ((status === "Rejected" || status === "Hold") && !statusModal) {
+    if ((status === "Rejected" || status === "Hold") && !statusModal && !overrideReasons) {
       setStatusModal({ isOpen: true, status });
       setSelectedReasons([]);
       setAdminComment("");
@@ -235,22 +247,121 @@ export default function FleetVerificationClient() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${useAdminAuthStore.getState().accessToken}`,
         },
-        body: JSON.stringify({
-          status,
-          reasons: selectedReasons,
-          comment: adminComment
+        body: JSON.stringify({ 
+          status, 
+          reasons: overrideReasons || selectedReasons, 
+          comment: overrideComment || adminComment 
         }),
       });
+      const data = await res.json();
       if (res.ok) {
-        toast.success(`Partner status updated to ${status}!`);
+        toast.success(`Partner status updated to ${status}`);
         fetchPartners();
         if (statusModal) setStatusModal(null);
-        setSelectedPartner(null);
+        setSelectedPartner({...selectedPartner, auth: {...selectedPartner.auth, status: status}});
       } else {
-        const err = await res.json();
-        toast.error(err.message || "Failed to update status");
+        toast.error(data.message || "Failed to update status");
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating status");
+    }
+  };
+
+  const verifyBank = async (bankId: string, status: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/partner-verification/bank/${bankId}/verify`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${useAdminAuthStore.getState().accessToken}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Bank marked as ${status}`);
+        if (selectedPartner?.bank) {
+           setSelectedPartner({...selectedPartner, bank: {...selectedPartner.bank, status: status}});
+        }
+      } else {
+        toast.error(data.message || "Failed to verify bank");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
+
+  const verifyDocument = async (documentId: string, status: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/partner-verification/document/${documentId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${useAdminAuthStore.getState().accessToken}`,
+        },
+        body: JSON.stringify({ status, remarks: status === 'Rejected' ? 'Document issue' : undefined }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Document marked as ${status}`);
+        if (selectedPartner?.documents) {
+           const updatedDocs = selectedPartner.documents.map(d => d._id === documentId ? {...d, status: status} : d);
+           setSelectedPartner({...selectedPartner, documents: updatedDocs});
+        }
+      } else {
+        toast.error(data.message || "Failed to verify document");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
+
+  const verifyVehicle = async (vehicleId: string, status: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/partner-verification/vehicle/${vehicleId}/verify`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${useAdminAuthStore.getState().accessToken}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Vehicle marked as ${status}`);
+        if (selectedPartner?.vehicles) {
+           const updatedVehicles = selectedPartner.vehicles.map(v => v._id === vehicleId ? {...v, status: status} : v);
+           setSelectedPartner({...selectedPartner, vehicles: updatedVehicles});
+        }
+      } else {
+        toast.error(data.message || "Failed to verify vehicle");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
+
+  const verifyDriver = async (driverId: string, status: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/partner-verification/driver/${driverId}/verify`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${useAdminAuthStore.getState().accessToken}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Driver marked as ${status}`);
+        if (selectedPartner?.drivers) {
+           const updatedDrivers = selectedPartner.drivers.map(d => d._id === driverId ? {...d, status: status} : d);
+           setSelectedPartner({...selectedPartner, drivers: updatedDrivers});
+        }
+      } else {
+        toast.error(data.message || "Failed to verify driver");
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -534,6 +645,13 @@ export default function FleetVerificationClient() {
                       <span className="font-semibold text-slate-800 font-mono">{selectedPartner.bank?.ifscCode || "N/A"}</span>
                     </div>
                   </div>
+                  {selectedPartner.bank && (
+                    <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                      <span className={`text-[10px] font-bold uppercase mr-auto ${selectedPartner.bank.status === 'Verified' ? 'text-emerald-600' : selectedPartner.bank.status === 'Rejected' ? 'text-red-600' : 'text-amber-500'}`}>Status: {selectedPartner.bank.status || 'Pending'}</span>
+                      <button onClick={() => verifyBank(selectedPartner.bank!._id!, 'Rejected')} className="text-[10px] px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-bold uppercase border border-red-200">Reject</button>
+                      <button onClick={() => verifyBank(selectedPartner.bank!._id!, 'Verified')} className="text-[10px] px-2 py-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold uppercase border border-emerald-200">Verify</button>
+                    </div>
+                  )}
                 </div>
 
                     </div>
@@ -554,13 +672,21 @@ export default function FleetVerificationClient() {
                           const assigned = selectedPartner.vehicles?.find(v => v.assignedDriverId === d._id);
                           return (
                             <div key={d._id} className="bg-white border border-slate-200 p-3 rounded shadow-sm text-xs">
-                              <span className="font-bold text-slate-900 block">{d.name}</span>
-                              <span className="text-[10px] text-slate-500 block">{d.mobile}</span>
-                              <div className="mt-2 flex justify-between items-center">
-                                <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase">{d.licenceNumber}</span>
-                                {d.licenceImageUrl && (
-                                  <a href={d.licenceImageUrl} target="_blank" className="text-[9px] font-bold text-emerald-600 hover:underline">View DL</a>
-                                )}
+                              <span className="font-bold text-slate-900 block">{d.name} <span className="text-slate-500 font-normal">({d.mobile})</span></span>
+                              <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase block mt-1 w-max">{d.licenceNumber}</span>
+                              {(d.licenceExpiry || d.experienceYears) && (
+                                <span className="text-[9px] text-slate-500 block mt-1">
+                                  {d.experienceYears ? `${d.experienceYears} yrs exp` : ''} 
+                                  {d.licenceExpiry ? ` • Exp: ${new Date(d.licenceExpiry).toLocaleDateString()}` : ''}
+                                </span>
+                              )}
+                              <div className="mt-2 pt-2 border-t border-slate-100 flex justify-between items-center">
+                                <span className={`text-[9px] font-bold uppercase ${d.status === 'Active' ? 'text-emerald-600' : d.status === 'Rejected' ? 'text-red-600' : 'text-amber-500'}`}>{d.status || 'Pending'}</span>
+                                <div className="flex gap-1 items-center">
+                                  {d.licenceImageUrl && <a href={d.licenceImageUrl} target="_blank" className="text-[9px] font-bold text-blue-600 hover:underline mr-2">View DL</a>}
+                                  <button onClick={() => verifyDriver(d._id, 'Rejected')} className="text-[9px] px-2 py-0.5 rounded bg-red-50 text-red-600 hover:bg-red-100 font-bold uppercase border border-red-200">Reject</button>
+                                  <button onClick={() => verifyDriver(d._id, 'Active')} className="text-[9px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold uppercase border border-emerald-200">Verify</button>
+                                </div>
                               </div>
                               {assigned && (
                                 <div className="mt-2 pt-2 border-t border-slate-100 text-[9px] font-bold text-blue-600">
@@ -585,8 +711,25 @@ export default function FleetVerificationClient() {
                           <div key={v._id} className="bg-white border border-slate-200 p-3 rounded shadow-sm text-xs">
                             <span className="font-bold text-slate-900 block">{v.brand} {v.vehicleName} <span className="text-slate-500">({v.model})</span></span>
                             <span className="text-[10px] text-slate-500 block">{v.category} • {v.seatingCapacity} Seater</span>
-                            <div className="mt-2 flex justify-between items-center">
-                              <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase">{v.registrationNumber}</span>
+                            <div className="mt-2 flex flex-col gap-1">
+                              <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase w-max">{v.registrationNumber}</span>
+                              {(v.engineNumber || v.chassisNumber || v.manufacturingYear) && (
+                                <span className="text-[9px] text-slate-500">
+                                  {v.manufacturingYear ? `${v.manufacturingYear} ` : ''}
+                                  {v.engineNumber ? `• Eng: ${v.engineNumber} ` : ''} 
+                                  {v.chassisNumber ? `• Chas: ${v.chassisNumber}` : ''}
+                                </span>
+                              )}
+                              {v.permitDetails?.hasCommercialPermit && (
+                                <span className="text-[9px] text-emerald-600 font-bold">Commercial Permit: {v.permitDetails.permitNumber}</span>
+                              )}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-slate-100 flex justify-between items-center">
+                                <span className={`text-[9px] font-bold uppercase ${(v as any).status === 'Active' ? 'text-emerald-600' : (v as any).status === 'Rejected' ? 'text-red-600' : 'text-amber-500'}`}>{(v as any).status || 'Pending'}</span>
+                                <div className="flex gap-1">
+                                  <button onClick={() => verifyVehicle(v._id, 'Rejected')} className="text-[9px] px-2 py-0.5 rounded bg-red-50 text-red-600 hover:bg-red-100 font-bold uppercase border border-red-200">Reject</button>
+                                  <button onClick={() => verifyVehicle(v._id, 'Active')} className="text-[9px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold uppercase border border-emerald-200">Verify</button>
+                                </div>
                             </div>
                             {(v.rcImageUrl || v.pucImageUrl || v.insuranceFileUrl || v.permitFileUrl || v.frontImageUrl || v.rearImageUrl || v.leftSideImageUrl || v.rightSideImageUrl || v.interiorImageUrl || v.otherImageUrl) && (
                               <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap gap-3">
@@ -616,16 +759,30 @@ export default function FleetVerificationClient() {
                       {/* Documents */}
                 <div className="mt-6">
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Verification Documents</h3>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     {selectedPartner.documents?.map(doc => (
-                      <a key={doc._id} href={doc.fileUrl} target="_blank" className="block bg-white border border-slate-200 p-2 rounded shadow-sm hover:border-blue-400 transition-colors">
-                        <span className="block text-[10px] font-bold text-slate-700 truncate">{doc.documentType}</span>
-                        {doc.fileUrl.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-                          <img src={doc.fileUrl} className="w-full h-16 object-cover mt-1 rounded bg-slate-100" />
-                        ) : (
-                          <div className="w-full h-16 bg-slate-100 mt-1 rounded flex items-center justify-center text-[10px] font-bold text-slate-400">PDF</div>
-                        )}
-                      </a>
+                      <div key={doc._id} className="bg-white border border-slate-200 p-3 rounded shadow-sm hover:border-blue-400 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="block text-[11px] font-bold text-slate-700">{doc.documentType}</span>
+                          <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${doc.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' : doc.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {doc.status || 'Pending'}
+                          </span>
+                        </div>
+                        <a href={doc.fileUrl} target="_blank" className="block w-full">
+                          {doc.fileUrl.match(/\.(jpeg|jpg|gif|png)$/i) || doc.fileUrl.startsWith('data:image/') ? (
+                            <img src={doc.fileUrl} className="w-full h-24 object-cover rounded bg-slate-100" />
+                          ) : (
+                            <div className="w-full h-24 bg-slate-100 rounded flex flex-col items-center justify-center text-[10px] font-bold text-slate-400">
+                              <FileText size={20} className="mb-1" />
+                              View PDF Document
+                            </div>
+                          )}
+                        </a>
+                        <div className="mt-3 flex gap-2">
+                          <button onClick={() => verifyDocument(doc._id, 'Rejected')} className="flex-1 text-[9px] py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 font-bold uppercase border border-red-200">Reject</button>
+                          <button onClick={() => verifyDocument(doc._id, 'Approved')} className="flex-1 text-[9px] py-1 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-bold uppercase border border-emerald-200">Approve</button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

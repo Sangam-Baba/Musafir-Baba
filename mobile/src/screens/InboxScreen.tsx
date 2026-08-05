@@ -64,11 +64,13 @@ export const InboxScreen = () => {
       if (res.ok && result.success) {
         setNotifications(result.data);
       } else {
-        setNotifications(MOCK_NOTIFICATIONS);
+        // setNotifications(MOCK_NOTIFICATIONS);
+        setNotifications([]);
       }
     } catch (e) {
       console.error("Error fetching notifications:", e);
-      setNotifications(MOCK_NOTIFICATIONS);
+      // setNotifications(MOCK_NOTIFICATIONS);
+      setNotifications([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -131,6 +133,17 @@ export const InboxScreen = () => {
             <ActivityIndicator size="small" color="#FE5300" style={{ marginVertical: 10 }} />
           ) : null
         }
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconBox}>
+                <Ionicons name="notifications-off-outline" size={32} color="#cbd5e1" />
+              </View>
+              <Text style={styles.emptyTitle}>You're all caught up!</Text>
+              <Text style={styles.emptySubtitle}>No new notifications right now. We'll alert you when there are important updates.</Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item }) => {
           const config = getIcon(item.type);
           return (
@@ -170,4 +183,8 @@ const styles = StyleSheet.create({
   unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FE5300' },
   cardMsg: { fontSize: 12, color: '#64748b', lineHeight: 18, marginBottom: 6 },
   cardTime: { fontSize: 10, fontWeight: '700', color: '#94a3b8' },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 80, paddingHorizontal: 40 },
+  emptyIconBox: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  emptyTitle: { fontSize: 18, fontWeight: '800', color: '#334155', marginBottom: 8, textAlign: 'center' },
+  emptySubtitle: { fontSize: 13, color: '#94a3b8', textAlign: 'center', lineHeight: 20 },
 });

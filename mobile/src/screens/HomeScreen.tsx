@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../navigation/types';
 
@@ -33,6 +33,7 @@ type HomeScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Home'
 export const HomeScreen = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -40,6 +41,7 @@ export const HomeScreen = () => {
   const token = useAuthStore((state) => state.token);
   const logout = useAuthStore((state) => state.logout);
   const navigation = useNavigation<any>();
+
 
   const fetchDashboard = useCallback(async () => {
     if (!token) return;
@@ -148,8 +150,8 @@ export const HomeScreen = () => {
         </View>
 
         <View style={styles.darkOverviewCard}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 8 }}>
-            {/* Today's Earnings */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 8 }}>
+              {/* Today's Earnings */}
             <View style={styles.overviewCol}>
               <View style={[styles.metricIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.2)' }]}>
                 <Text style={{ color: '#4ade80', fontWeight: '900', fontSize: 16 }}>₹</Text>
@@ -200,8 +202,8 @@ export const HomeScreen = () => {
                 <Text style={styles.growthGreen}>0.1 <Text style={styles.growthSub}>vs last 7 days</Text></Text>
               </View>
             </View>
-          </ScrollView>
-        </View>
+            </ScrollView>
+          </View>
 
         {/* Quick Actions Grid */}
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Quick Actions</Text>
@@ -284,69 +286,10 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.liveOppCard}>
-          <View style={styles.tagBadge}>
-            <Text style={styles.tagBadgeText}>Outstation</Text>
-          </View>
-
-          <View style={styles.oppContentRow}>
-            {/* Route Timeline */}
-            <View style={styles.routeCol}>
-              <View style={styles.timelineGraphic}>
-                <View style={styles.greenCircle} />
-                <View style={styles.timelineLine} />
-                <View style={styles.redCircle} />
-              </View>
-
-              <View style={styles.routeAddressBox}>
-                <View>
-                  <Text style={styles.locTitle}>Delhi (Indira Gandhi Airport)</Text>
-                  <Text style={styles.locSub}>T3, New Delhi</Text>
-                </View>
-                <View style={{ marginTop: 12 }}>
-                  <Text style={styles.locTitle}>Jaipur, Rajasthan</Text>
-                  <Text style={styles.locSub}>Mansarovar, Jaipur</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Distance & Duration */}
-            <View style={styles.distDurationCol}>
-              <View>
-                <Text style={styles.distValue}>275 KM</Text>
-                <Text style={styles.distSub}>Distance</Text>
-              </View>
-              <View style={{ marginTop: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="time-outline" size={12} color="#64748b" style={{ marginRight: 3 }} />
-                  <Text style={styles.distValue}>6h 15m</Text>
-                </View>
-                <Text style={styles.distSub}>Est. Time</Text>
-              </View>
-            </View>
-
-            {/* Fare Box */}
-            <View style={styles.fareActionBox}>
-              <Text style={styles.fareAmount}>₹5,850</Text>
-              <Text style={styles.fareLabel}>Estimated Fare</Text>
-
-              <TouchableOpacity 
-                style={styles.acceptBtn} 
-                onPress={() => Alert.alert("Success", "Trip Accepted! Navigating to pickup...")}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.acceptBtnText}>Accept</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.viewDetailsBtn} 
-                onPress={() => setShowDetailsModal(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.viewDetailsBtnText}>View Details</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View style={[styles.liveOppCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 30 }]}>
+          <Ionicons name="map-outline" size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+          <Text style={{ color: '#64748b', fontSize: 14, fontWeight: '500' }}>No live opportunities right now</Text>
+          <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>New trips will appear here</Text>
         </View>
 
         {/* Upcoming Bookings Section */}
@@ -360,29 +303,10 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.upcomingCard}
-          onPress={() => navigation.navigate('Bookings')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.upcomingIconBox}>
-            <Ionicons name="calendar-outline" size={20} color="#2563eb" />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <View style={styles.roundTripBadge}>
-                <Text style={styles.roundTripText}>Round Trip</Text>
-              </View>
-              <Text style={styles.timeNotice}>Today, 02:00 PM</Text>
-            </View>
-
-            <Text style={styles.upcomingRouteText}>Gurugram, Haryana → Agra, Uttar Pradesh</Text>
-            <Text style={styles.upcomingMetaText}>230 KM Distance  •  ₹4,950 Fare</Text>
-          </View>
-
-          <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-        </TouchableOpacity>
+        <View style={[styles.upcomingCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 30 }]}>
+          <Ionicons name="calendar-outline" size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
+          <Text style={{ color: '#64748b', fontSize: 14, fontWeight: '500' }}>No upcoming bookings</Text>
+        </View>
 
         {/* Banner Promo Pass */}
         <View style={styles.promoPassCard}>
@@ -411,23 +335,9 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.notifCard}
-          onPress={() => navigation.navigate('Inbox')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.notifIconBox}>
-            <Ionicons name="notifications" size={18} color="#2563eb" />
-          </View>
-
-          <View style={{ flex: 1, marginRight: 8 }}>
-            <Text style={styles.notifTitle}>Update: New toll guidelines for outstation trips</Text>
-            <Text style={styles.notifTime}>2 hours ago</Text>
-          </View>
-
-          <View style={styles.unreadDot} />
-          <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
-        </TouchableOpacity>
+        <View style={[styles.notifCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }]}>
+           <Text style={{ color: '#94a3b8', fontSize: 13 }}>No recent notifications</Text>
+        </View>
 
         {/* Extra spacing for floating capsule bar */}
         <View style={{ height: 90 }} />
@@ -435,8 +345,8 @@ export const HomeScreen = () => {
 
       {/* Floating Go Online / Offline Toggle Bar */}
       <View style={styles.floatingCapsuleContainer}>
-        <View style={styles.floatingCapsule}>
-          <View style={styles.capsuleLeft}>
+          <View style={styles.floatingCapsule}>
+            <View style={styles.capsuleLeft}>
             <View style={styles.pulseContainer}>
               <View style={[styles.pulseDot, { backgroundColor: isOnline ? '#22c55e' : '#ef4444' }]} />
             </View>

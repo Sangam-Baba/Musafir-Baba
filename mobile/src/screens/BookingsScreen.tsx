@@ -142,11 +142,13 @@ export const BookingsScreen = () => {
       if (res.ok && result.success) {
         setBookings(result.data);
       } else {
-        setBookings(MOCK_BOOKINGS.filter(b => activeFilter === 'All' ? true : b.status === activeFilter));
+        // setBookings(MOCK_BOOKINGS.filter(b => activeFilter === 'All' ? true : b.status === activeFilter));
+        setBookings([]);
       }
     } catch (e) {
       console.error("Error fetching bookings:", e);
-      setBookings(MOCK_BOOKINGS.filter(b => activeFilter === 'All' ? true : b.status === activeFilter));
+      // setBookings(MOCK_BOOKINGS.filter(b => activeFilter === 'All' ? true : b.status === activeFilter));
+      setBookings([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -8,6 +8,7 @@ import PartnerBank from "../../models/partner/PartnerBank.js";
 import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
 import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
 import sendEmail from "../../services/email.service.js";
+import { sendPushNotification } from "../../utils/notifications.js";
 
 // @route   GET /api/admin/partner-verification/pending
 // @desc    Get all partners with their aggregated stats (vehicles, documents)
@@ -136,6 +137,43 @@ export const updatePartnerStatus = async (req, res) => {
     }
 
     const oldStatus = partner.status;
+    // Enforce Master Approval Validation
+    if (status === "Approved" || status === "Active") {
+      const profile = await PartnerProfile.findOne({ authId: partnerId });
+      if (!profile) {
+        return res.status(400).json({ success: false, message: "Cannot approve account: Partner profile is missing." });
+      }
+
+      const documents = await PartnerDocument.find({ ownerId: profile._id });
+      const hasPendingDocs = documents.some(doc => doc.status !== "Approved" && doc.status !== "Archived");
+      if (hasPendingDocs) {
+        return res.status(400).json({ success: false, message: "Cannot approve account: There are unverified or rejected documents." });
+      }
+
+      const bank = await PartnerBank.findOne({ partnerId: profile._id, isPrimary: true });
+      if (!bank || bank.status !== "Verified") {
+        return res.status(400).json({ success: false, message: "Cannot approve account: Bank information is not verified." });
+      }
+
+      const vehicles = await PartnerVehicle.find({ partnerId: profile._id, isDeleted: false });
+      if (vehicles.length === 0) {
+        return res.status(400).json({ success: false, message: "Cannot approve account: Partner has no vehicles." });
+      }
+      const hasPendingVehicles = vehicles.some(v => v.status !== "Active");
+      if (hasPendingVehicles) {
+        return res.status(400).json({ success: false, message: "Cannot approve account: There are unverified or rejected vehicles." });
+      }
+
+      const drivers = await PartnerDriver.find({ partnerId: profile._id, isDeleted: false });
+      if (drivers.length === 0) {
+        return res.status(400).json({ success: false, message: "Cannot approve account: Partner has no drivers." });
+      }
+      const hasPendingDrivers = drivers.some(d => d.status !== "Active");
+      if (hasPendingDrivers) {
+        return res.status(400).json({ success: false, message: "Cannot approve account: There are unverified or rejected drivers." });
+      }
+    }
+
     partner.status = status;
     await partner.save();
 
@@ -208,6 +246,17 @@ export const updatePartnerStatus = async (req, res) => {
 
     if (shouldSend) {
       await sendEmail(partner.email, subject, htmlBody);
+      
+      // Send Push Notification
+      const pushProfile = await PartnerProfile.findOne({ authId: partnerId });
+      if (pushProfile && pushProfile.pushToken) {
+        let pushBody = "Your account status has been updated.";
+        if (status === "Approved" || status === "Active") pushBody = "Congratulations! Your partner account is approved.";
+        else if (status === "Hold") pushBody = "Your account verification is on hold. Check details.";
+        else if (status === "Rejected") pushBody = "Your application was rejected.";
+        
+        await sendPushNotification(pushProfile.pushToken, subject, pushBody);
+      }
     }
 
     return res.status(200).json({
@@ -226,10 +275,10 @@ export const updatePartnerStatus = async (req, res) => {
 export const verifyDocument = async (req, res) => {
   try {
     const { documentId } = req.params;
-    const { status, remarks } = req.body; // status should be 'Verified' or 'Rejected'
+    const { status, remarks } = req.body; // status should be 'Approved' or 'Rejected'
 
-    if (!["Verified", "Rejected"].includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status. Must be Verified or Rejected." });
+    if (!["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status. Must be Approved or Rejected." });
     }
 
     if (status === "Rejected" && !remarks) {
@@ -241,6 +290,7 @@ export const verifyDocument = async (req, res) => {
       return res.status(404).json({ success: false, message: "Document not found" });
     }
 
+    document.status = status; // Note: using status in db, verified status can also be updated
     document.verificationStatus = status;
     if (remarks) {
       document.remarks = remarks;
@@ -291,10 +341,82 @@ export const updatePartnerProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Partner profile updated successfully.",
-      data: { profile, address },
+      data: profile,
     });
   } catch (error) {
     console.error("Update Partner Profile Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   PUT /api/admin/partner-verification/bank/:bankId/verify
+// @desc    Verify or reject a partner's bank account
+export const verifyBank = async (req, res) => {
+  try {
+    const { bankId } = req.params;
+    const { status, remarks } = req.body; // 'Verified' or 'Rejected'
+
+    if (!["Verified", "Rejected"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status. Must be Verified or Rejected." });
+    }
+
+    const bank = await PartnerBank.findById(bankId);
+    if (!bank) return res.status(404).json({ success: false, message: "Bank not found" });
+
+    bank.status = status;
+    await bank.save();
+
+    return res.status(200).json({ success: true, message: `Bank account marked as ${status}` });
+  } catch (error) {
+    console.error("verifyBank Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   PUT /api/admin/partner-verification/vehicle/:vehicleId/verify
+// @desc    Verify or reject a partner's vehicle
+export const verifyVehicle = async (req, res) => {
+  try {
+    const { vehicleId } = req.params;
+    const { status, remarks } = req.body; // 'Active' (Verified) or 'Rejected'
+
+    if (!["Active", "Rejected"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status. Must be Active or Rejected." });
+    }
+
+    const vehicle = await PartnerVehicle.findById(vehicleId);
+    if (!vehicle) return res.status(404).json({ success: false, message: "Vehicle not found" });
+
+    vehicle.status = status;
+    await vehicle.save();
+
+    return res.status(200).json({ success: true, message: `Vehicle marked as ${status}` });
+  } catch (error) {
+    console.error("verifyVehicle Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   PUT /api/admin/partner-verification/driver/:driverId/verify
+// @desc    Verify or reject a partner's driver
+export const verifyDriver = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const { status, remarks } = req.body; // 'Active' (Verified) or 'Rejected'
+
+    if (!["Active", "Rejected"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status. Must be Active or Rejected." });
+    }
+
+    const driver = await PartnerDriver.findById(driverId);
+    if (!driver) return res.status(404).json({ success: false, message: "Driver not found" });
+
+    driver.status = status;
+    await driver.save();
+
+    return res.status(200).json({ success: true, message: `Driver marked as ${status}` });
+  } catch (error) {
+    console.error("verifyDriver Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
