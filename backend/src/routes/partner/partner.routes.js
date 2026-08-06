@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isPartnerAuthenticated } from "../../middleware/partnerAuth.middleware.js";
-import { getDashboardProfile, updateProfile, submitProfileForApproval } from "../../controllers/partner/partnerProfile.controller.js";
+import { getDashboardProfile, updateProfile, submitProfileForApproval, updatePushToken } from "../../controllers/partner/partnerProfile.controller.js";
 import { updateBankAccount } from "../../controllers/partner/partnerBank.controller.js";
 import { addVehicle, assignDriverToVehicle, updateVehicle, getVehicles, getVehicleById, deleteVehicle } from "../../controllers/partner/partnerVehicle.controller.js";
 import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/partnerDriver.controller.js";
@@ -25,6 +25,7 @@ router.use(isPartnerAuthenticated);
 router.get("/profile/dashboard", getDashboardProfile);
 router.post("/profile", updateProfile);
 router.post("/profile/submit", submitProfileForApproval);
+router.patch("/push-token", updatePushToken);
 router.patch("/status", updateStatus);
 
 // Bank Details

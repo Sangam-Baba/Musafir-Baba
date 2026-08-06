@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import LazyQueryFormInView from "./LazyQueryFormInView";
 import { Star, Clock, ShieldCheck, MessageCircle } from "lucide-react";
 
@@ -28,55 +29,12 @@ function SectionFive() {
             
             {/* Top Row: Decorative Mountain Graphic */}
             <div className="w-full flex-1 min-h-[200px] bg-gradient-to-b from-blue-50 to-white rounded-2xl relative overflow-hidden mb-8 border border-gray-100">
-              <style dangerouslySetInnerHTML={{__html: `
-                @keyframes mountainBreathe {
-                  0%, 100% { transform: scaleY(1); }
-                  50% { transform: scaleY(1.05); }
-                }
-                .animate-mountain-breathe-2 {
-                  animation: mountainBreathe 12s ease-in-out infinite;
-                  transform-origin: bottom;
-                  animation-delay: -4s;
-                }
-                .animate-mountain-breathe-3 {
-                  animation: mountainBreathe 15s ease-in-out infinite;
-                  transform-origin: bottom;
-                  animation-delay: -8s;
-                }
-              `}} />
-              {/* Sky Glow / Sun */}
-              <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full bg-gradient-to-t from-blue-400 to-transparent opacity-20 blur-3xl animate-pulse-glow"></div>
-              
-              {/* Star Spangles */}
-              <div className="absolute top-4 left-1/4 w-1.5 h-1.5 rounded-full bg-blue-500 opacity-40 animate-pulse-glow"></div>
-              <div className="absolute top-8 right-1/3 w-1 h-1 rounded-full bg-blue-500 opacity-30 animate-pulse-glow" style={{ animationDelay: '1.5s' }}></div>
-
-              {/* Floating Drifting Clouds */}
-              <div className="absolute top-4 left-0 w-[80px] h-4 opacity-20 pointer-events-none animate-drift-cloud" style={{ animationDelay: '-15s', animationDuration: '45s' }}>
-                  <svg viewBox="0 0 100 30" fill="#3B82F6" className="w-full h-full">
-                      <path d="M10 20 A 10 10 0 0 1 30 20 A 15 15 0 0 1 65 20 A 12 12 0 0 1 90 20 Z" />
-                  </svg>
-              </div>
-
-              {/* Gliding Birds */}
-              <div className="absolute top-8 left-1/3 w-10 h-5 opacity-30 pointer-events-none animate-sway-birds">
-                  <svg viewBox="0 0 50 20" className="w-full h-full fill-none stroke-[#3B82F6]" strokeWidth="1.5">
-                      <path d="M 5,12 C 10,8 15,12 20,15 C 25,12 30,8 35,12" />
-                      <path d="M 18,6 C 22,2 25,6 28,8 C 31,6 34,2 38,6" />
-                  </svg>
-              </div>
-
-              {/* Mountain Layers */}
-              <div className="absolute -bottom-[1px] left-0 w-full h-[90px] md:h-[110px]">
-                  <svg viewBox="0 0 800 200" preserveAspectRatio="none" className="w-full h-full fill-[#3B82F6] opacity-25 animate-mountain-breathe-3">
-                      <path d="M0,200 L120,80 L240,140 L380,40 L500,130 L640,60 L800,200" />
-                  </svg>
-              </div>
-              <div className="absolute -bottom-[1px] left-0 w-full h-[60px] md:h-[80px]">
-                  <svg viewBox="0 0 800 200" preserveAspectRatio="none" className="w-full h-full fill-[#3B82F6] opacity-15 animate-mountain-breathe-2">
-                      <path d="M0,200 L180,70 L340,150 L520,50 L680,120 L800,200" />
-                  </svg>
-              </div>
+              <Image 
+                src="/enqueryImage1.avif" 
+                alt="Plan your trip" 
+                fill 
+                className="object-cover" 
+              />
             </div>
 
             {/* Bottom Row: Text Content */}

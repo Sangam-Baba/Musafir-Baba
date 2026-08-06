@@ -51,19 +51,21 @@ export const VerifiedPartnerScreen = () => {
   const vehicles = dashboardData?.vehicles || [];
   const drivers = dashboardData?.drivers || [];
 
-  const isVerified = auth?.status === 'Approved' || profile?.isSubmittedForApproval;
+  const isVerified = auth?.status === 'Approved';
   const statusLabel = auth?.status === 'Approved' ? 'Verified' : profile?.isSubmittedForApproval ? 'Under Audit' : 'Pending';
 
   const aadhaarDoc = documents.find((d: any) => d.documentType === 'Aadhaar');
   const panDoc = documents.find((d: any) => d.documentType === 'PAN');
-  const insuranceDoc = documents.find((d: any) => d.documentType === 'Insurance');
-
-  const isIdentityVerified = !!(aadhaarDoc || panDoc);
+  const isIdentityVerified = !!(aadhaarDoc?.status === 'Approved' && panDoc?.status === 'Approved');
   const isPhotoVerified = !!(profile?.profilePicture);
-  const isVehicleVerified = vehicles.length > 0;
-  const isDriverVerified = drivers.length > 0;
-  const isBankVerified = !!(bank && bank.accountNumber);
-  const isInsuranceVerified = !!(insuranceDoc || (vehicles.length > 0 && vehicles[0]?.insuranceValidTill));
+  const isVehicleVerified = vehicles.some((v: any) => v.status === 'Active');
+  const isDriverVerified = drivers.some((d: any) => d.status === 'Active');
+  const isBankVerified = bank?.status === 'Verified';
+
+  // Track if they have uploaded everything required, regardless of verification status
+  const isEverythingUploaded = !!(
+    aadhaarDoc && panDoc && profile?.profilePicture && bank?.accountNumber && vehicles.length > 0 && drivers.length > 0
+  );
 
   const verifiedDate = auth?.createdAt 
     ? new Date(auth.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -113,15 +115,7 @@ export const VerifiedPartnerScreen = () => {
       status: isBankVerified ? 'Verified' : 'Pending',
       screen: 'BankDetails',
       icon: 'business-outline'
-    },
-    {
-      title: 'Insurance & PUC Certificate',
-      subtitle: isInsuranceVerified ? 'Vehicle Insurance & PUC Clean' : (vehicles.length > 0 ? 'Upload Insurance & PUC' : 'Add Vehicle First'),
-      isVerified: isInsuranceVerified,
-      status: isInsuranceVerified ? 'Verified' : 'Pending',
-      screen: 'VehiclesList',
-      icon: 'document-text-outline'
-    },
+    }
   ];
 
   return (

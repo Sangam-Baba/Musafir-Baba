@@ -91,13 +91,15 @@ export const EarningsScreen = () => {
     { id: 'p3', amount: 14200, date: '14 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628098877123' },
   ];
 
-  const chartData = (earnings?.chartData || WEEKLY_DATA).map((item: any) => ({
+  const chartData = (earnings?.chartData || []).map((item: any) => ({
+    ...item,
     day: item.day,
     amount: item.amount,
     height: item.height || Math.min(115, Math.max(10, (item.amount / 50)))
   }));
 
-  const recentPayouts = earnings?.recentPayouts || MOCK_PAYOUTS;
+  // const recentPayouts = earnings?.recentPayouts || MOCK_PAYOUTS;
+  const recentPayouts = earnings?.recentPayouts || [];
 
   return (
     <ScrollView 
@@ -135,7 +137,7 @@ export const EarningsScreen = () => {
         <View style={styles.heroHeader}>
           <View>
             <Text style={styles.heroSub}>TOTAL NET EARNINGS ({timeframe.toUpperCase()})</Text>
-            <Text style={styles.heroAmount}>₹{(earnings?.totalNetEarnings || 22940.00).toLocaleString('en-IN')}</Text>
+            <Text style={styles.heroAmount}>₹{(earnings?.totalNetEarnings || 0).toLocaleString('en-IN')}</Text>
           </View>
           <TouchableOpacity 
             style={styles.growthBadge}
@@ -173,7 +175,7 @@ export const EarningsScreen = () => {
             <Text style={styles.bdTitle}>Trip Fares</Text>
             <Text style={styles.bdSub}>Gross fare from completed rides</Text>
           </View>
-          <Text style={styles.bdAmount}>₹{(earnings?.grossTripFare || 19250.00).toLocaleString('en-IN')}</Text>
+          <Text style={styles.bdAmount}>₹{(earnings?.grossTripFare || 0).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={styles.bdDivider} />
@@ -186,7 +188,7 @@ export const EarningsScreen = () => {
             <Text style={styles.bdTitle}>Bonuses & Incentives</Text>
             <Text style={styles.bdSub}>Peak hours & fleet milestone rewards</Text>
           </View>
-          <Text style={[styles.bdAmount, { color: '#16a34a' }]}>+₹{(earnings?.taxes || 4200.00).toLocaleString('en-IN')}</Text>
+          <Text style={[styles.bdAmount, { color: '#16a34a' }]}>+₹{(earnings?.taxes || 0).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={styles.bdDivider} />
@@ -199,7 +201,7 @@ export const EarningsScreen = () => {
             <Text style={styles.bdTitle}>Platform & Commission</Text>
             <Text style={styles.bdSub}>Platform service fee deduction</Text>
           </View>
-          <Text style={[styles.bdAmount, { color: '#dc2626' }]}>-₹{(earnings?.platformCommission || 510.00).toLocaleString('en-IN')}</Text>
+          <Text style={[styles.bdAmount, { color: '#dc2626' }]}>-₹{(earnings?.platformCommission || 0).toLocaleString('en-IN')}</Text>
         </View>
       </View>
 

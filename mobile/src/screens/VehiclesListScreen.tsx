@@ -29,16 +29,23 @@ export const VehiclesListScreen = () => {
   const [activeFilter, setActiveFilter] = useState<'All' | 'Sedan' | 'SUV' | 'Verified' | 'Pending'>('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [partnerType, setPartnerType] = useState('Individual');
 
   const fetchVehicles = async (showSpinner = true) => {
     if (showSpinner) setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/partner/vehicles`, {
+      const res = await fetch(`${API_BASE_URL}/partner/profile/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
       if (res.ok && result.success) {
-        const mapped = (result.data || []).map((v: any) => ({
+        const profile = result.data?.profile;
+        const auth = result.data?.auth;
+        setIsLocked(profile?.isSubmittedForApproval || auth?.status === 'Approved');
+        setPartnerType((profile?.partnerType || 'Individual').toLowerCase());
+
+        const mapped = (result.data?.vehicles || []).map((v: any) => ({
           id: v._id,
           regNo: v.registrationNumber,
           make: v.brand || v.vehicleName || 'Vehicle',
@@ -101,14 +108,16 @@ export const VehiclesListScreen = () => {
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Vehicles</Text>
-        <TouchableOpacity 
-          style={styles.addHeaderBtn}
-          onPress={() => navigation.navigate('AddVehicle')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="add-circle" size={16} color="#ffffff" style={{ marginRight: 4 }} />
-          <Text style={styles.addHeaderBtnText}>Add Vehicle</Text>
-        </TouchableOpacity>
+        {(!isLocked && (partnerType !== 'individual' || vehicles.length === 0)) && (
+          <TouchableOpacity 
+            style={styles.addHeaderBtn}
+            onPress={() => navigation.navigate('AddVehicle')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add-circle" size={16} color="#ffffff" style={{ marginRight: 4 }} />
+            <Text style={styles.addHeaderBtnText}>Add Vehicle</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView 
@@ -217,7 +226,7 @@ export const VehiclesListScreen = () => {
             <TouchableOpacity
               key={item.id}
               style={styles.vehicleCard}
-              onPress={() => navigation.navigate('VehicleDetails', { vehicleId: item.id })}
+              onPress={() => navigation.navigate('VehicleDetails', { vehicleId: item.id, isLocked })}
               activeOpacity={0.85}
             >
               <View style={styles.vehicleTopRow}>

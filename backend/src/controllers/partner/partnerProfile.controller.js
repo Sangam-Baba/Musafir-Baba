@@ -215,15 +215,15 @@ export const submitProfileForApproval = async (req, res) => {
 
     const oldStatus = auth.status;
     profile.isSubmittedForApproval = true;
-    auth.status = "Approved";
+    auth.status = "PendingVerification";
     await Promise.all([profile.save(), auth.save()]);
 
     await PartnerActionLog.create({
       partnerId: authId,
       actionType: "StatusChange",
       oldStatus,
-      newStatus: "Approved",
-      comment: "Partner profile updated and auto-approved for testing environment.",
+      newStatus: "PendingVerification",
+      comment: "Partner profile submitted for verification audit.",
     });
 
     const emailHtml = `
@@ -237,12 +237,33 @@ export const submitProfileForApproval = async (req, res) => {
     `;
     await sendEmail(auth.email, "MusafirBaba - Profile Submitted for Verification", emailHtml);
 
-    return res.status(200).json({
-      success: true,
-      message: "Profile successfully submitted for approval.",
-    });
+    return res.status(200).json({ success: true, message: "Profile submitted for approval" });
   } catch (error) {
     console.error("Submit Profile Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   PATCH /api/partner/push-token
+// @desc    Update partner's Expo push token
+export const updatePushToken = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const { pushToken } = req.body;
+    
+    if (!pushToken) {
+      return res.status(400).json({ success: false, message: "pushToken is required" });
+    }
+    
+    await PartnerProfile.findOneAndUpdate(
+      { authId },
+      { $set: { pushToken } },
+      { upsert: true }
+    );
+    
+    return res.status(200).json({ success: true, message: "Push token updated" });
+  } catch (error) {
+    console.error("Update Push Token Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

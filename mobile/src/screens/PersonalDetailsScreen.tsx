@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator, RefreshControl, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 
@@ -23,10 +24,65 @@ export const PersonalDetailsScreen = () => {
   const [editHub, setEditHub] = useState('');
   const [editEmergency, setEditEmergency] = useState('');
   const [editPartnerType, setEditPartnerType] = useState<string>('Individual');
+  const [editAddressLine, setEditAddressLine] = useState('');
+  const [editCity, setEditCity] = useState('');
+  const [editState, setEditState] = useState('');
+  const [editPincode, setEditPincode] = useState('');
   const [aadhaarFront, setAadhaarFront] = useState<string>('');
   const [aadhaarBack, setAadhaarBack] = useState<string>('');
   const [panDocUrl, setPanDocUrl] = useState<string>('');
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('');
+
+  const [dbStates, setDbStates] = useState<any[]>([]);
+  const [dbCities, setDbCities] = useState<any[]>([]);
+  const [isLoadingLoc, setIsLoadingLoc] = useState(false);
+
+  const fetchDbStates = async () => {
+    try {
+      setIsLoadingLoc(true);
+      const res = await fetch(`${API_BASE_URL}/partner/states?limit=100`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDbStates(data.data);
+      }
+    } catch (e) {
+      console.error("Error fetching states:", e);
+    } finally {
+      setIsLoadingLoc(false);
+    }
+  };
+
+  const fetchDbCities = async (stateId: string) => {
+    try {
+      setIsLoadingLoc(true);
+      const res = await fetch(`${API_BASE_URL}/partner/cities?stateId=${stateId}&limit=100`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDbCities(data.data);
+      }
+    } catch (e) {
+      console.error("Error fetching cities:", e);
+    } finally {
+      setIsLoadingLoc(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) fetchDbStates();
+  }, [token]);
+
+  useEffect(() => {
+    if (editState && dbStates.length > 0) {
+      const st = dbStates.find(s => s.name === editState);
+      if (st) {
+        fetchDbCities(st._id);
+      } else {
+        setDbCities([]);
+      }
+    } else {
+      setDbCities([]);
+    }
+  }, [editState, dbStates]);
 
   const pickDocumentImage = async (setter: (uri: string) => void) => {
     try {
@@ -79,11 +135,18 @@ export const PersonalDetailsScreen = () => {
       if (res.ok && result.success) {
         setDashboardData(result.data);
         const p = result.data.profile;
+        const a = result.data.address;
         if (p) {
           setEditName(p.fullName || '');
           setEditMobile(p.mobileNumber || '');
           setEditHub(p.agencyName || '');
           setEditEmergency(p.emergencyContactNumber || '');
+        }
+        if (a) {
+          setEditAddressLine(a.addressLine || '');
+          setEditCity(a.city || '');
+          setEditState(a.state || '');
+          setEditPincode(a.pincode || '');
         }
       }
     } catch (e) {
@@ -123,17 +186,48 @@ export const PersonalDetailsScreen = () => {
     : 'Aug 2026';
 
   const partnerId = partnerProfile?._id ? `MB-PTR-${partnerProfile._id.slice(-5).toUpperCase()}` : (partnerAuth?._id ? `MB-PTR-${partnerAuth._id.slice(-5).toUpperCase()}` : 'MB-PTR-NEW');
-  const isVerified = partnerAuth?.status === 'Approved' || partnerProfile?.isSubmittedForApproval;
+  const isVerified = partnerAuth?.status === 'Approved';
+  const isLocked = partnerProfile?.isSubmittedForApproval || partnerAuth?.status === 'Approved';
+
+  const aadhaarDoc = dashboardData?.documents?.find((d: any) => d.documentType === 'Aadhaar');
+  const panDoc = dashboardData?.documents?.find((d: any) => d.documentType === 'PAN');
+  const bank = dashboardData?.bank;
+  const vehicles = dashboardData?.vehicles || [];
+  const drivers = dashboardData?.drivers || [];
+
+  const isEverythingUploaded = !!(
+    aadhaarDoc && panDoc && partnerProfile?.profilePicture && bank?.accountNumber && vehicles.length > 0 && drivers.length > 0
+  );
+
+  const submitForApproval = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/profile/submit`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        Alert.alert("Success", "Your profile has been submitted for approval.");
+        fetchProfile(false);
+      } else {
+        Alert.alert("Error", data.message || "Failed to submit for approval.");
+      }
+    } catch (e) {
+      Alert.alert("Error", "Network error submitting profile.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
-    if (!editName || !editMobile) {
-      Alert.alert("Required Fields", "Please enter Full Name and Mobile Number.");
+    if (!editName || !editMobile || !editAddressLine || !editCity || !editState || !editPincode) {
+      Alert.alert("Required Fields", "Please enter Full Name, Mobile Number, and complete Address.");
       return;
     }
 
     setSubmitting(true);
     try {
-      // 1. Update Profile in DB
       const res = await fetch(`${API_BASE_URL}/partner/profile`, {
         method: 'POST',
         headers: {
@@ -148,14 +242,20 @@ export const PersonalDetailsScreen = () => {
             emergencyContactNumber: editEmergency.trim(),
             partnerType: editPartnerType || partnerType,
             profilePicture: profilePhotoUrl || partnerProfile?.profilePicture || 'https://storage.musafirbaba.com/photos/profile_verified.jpg'
+          },
+          addressData: {
+            addressLine: editAddressLine.trim(),
+            city: editCity.trim(),
+            state: editState.trim(),
+            pincode: editPincode.trim(),
+            type: "Current"
           }
         })
       });
 
       const result = await res.json();
       if (res.ok && result.success) {
-        // Upload Aadhaar if provided
-        if (aadhaarFront || aadhaarBack) {
+        if (aadhaarFront) {
           await fetch(`${API_BASE_URL}/partner/document`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -163,13 +263,22 @@ export const PersonalDetailsScreen = () => {
               ownerType: 'PartnerProfile',
               ownerId: result.data?._id || partnerProfile?._id,
               documentType: 'Aadhaar',
-              fileUrl: aadhaarFront || 'https://storage.musafirbaba.com/docs/aadhaar_front.jpg',
-              backFileUrl: aadhaarBack || 'https://storage.musafirbaba.com/docs/aadhaar_back.jpg'
+              fileUrl: aadhaarFront || 'https://storage.musafirbaba.com/docs/aadhaar_front.jpg'
             })
           });
         }
-
-        // Upload PAN if provided
+        if (aadhaarBack) {
+          await fetch(`${API_BASE_URL}/partner/document`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+              ownerType: 'PartnerProfile',
+              ownerId: result.data?._id || partnerProfile?._id,
+              documentType: 'Aadhaar Back',
+              fileUrl: aadhaarBack || 'https://storage.musafirbaba.com/docs/aadhaar_back.jpg'
+            })
+          });
+        }
         if (panDocUrl) {
           await fetch(`${API_BASE_URL}/partner/document`, {
             method: 'POST',
@@ -183,15 +292,9 @@ export const PersonalDetailsScreen = () => {
           });
         }
 
-        // 2. Submit for auto-approval (bypassing approval delay in testing mode)
-        await fetch(`${API_BASE_URL}/partner/profile/submit`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
         Alert.alert(
           "Profile & Documents Saved!",
-          "Your profile and KYC documents have been updated and auto-approved for testing.",
+          "Your profile and KYC documents have been updated.",
           [{ text: "OK", onPress: () => setShowEditModal(false) }]
         );
         fetchProfile(false);
@@ -208,7 +311,6 @@ export const PersonalDetailsScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-      {/* Top Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
@@ -231,25 +333,23 @@ export const PersonalDetailsScreen = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
         }
       >
-        {/* Status Banner */}
         <View style={[styles.statusBanner, !isVerified && { backgroundColor: '#fff7ed', borderColor: '#ffedd5' }]}>
           <View style={[styles.statusShieldBox, !isVerified && { backgroundColor: '#ffedd5' }]}>
             <Ionicons name={isVerified ? "shield-checkmark" : "time-outline"} size={24} color={isVerified ? "#16a34a" : "#d97706"} />
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[styles.statusTitle, !isVerified && { color: '#d97706' }]}>
-              {isVerified ? "Verified Profile" : "Profile Verification Pending"}
+              {isVerified ? "Verified Profile" : partnerProfile?.isSubmittedForApproval ? "Profile Under Audit" : "Profile Verification Pending"}
             </Text>
             <Text style={styles.statusSub}>
               {isVerified 
                 ? "Your personal profile & KYC are fully approved."
-                : "Your profile details have been submitted for verification audit."}
+                : partnerProfile?.isSubmittedForApproval ? "Your profile details have been submitted for verification audit." : "Please submit your details for verification."}
             </Text>
           </View>
           <Ionicons name={isVerified ? "checkmark-circle" : "alert-circle"} size={22} color={isVerified ? "#16a34a" : "#d97706"} />
         </View>
 
-        {/* Profile Card Header */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarCircle}>
             <Ionicons name="person" size={32} color="#16a34a" />
@@ -278,7 +378,6 @@ export const PersonalDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Personal Information List */}
         <Text style={styles.sectionHeader}>Personal & Business Details</Text>
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
@@ -338,7 +437,6 @@ export const PersonalDetailsScreen = () => {
           </View>
         </View>
 
-        {/* Verification Credentials Quick Links */}
         <Text style={styles.sectionHeader}>Verification & Credentials</Text>
         <View style={styles.linksCard}>
           <TouchableOpacity 
@@ -378,21 +476,41 @@ export const PersonalDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Action Button */}
-        <TouchableOpacity 
-          style={styles.actionBtn}
-          onPress={() => {
-            setEditPartnerType(partnerType);
-            setShowEditModal(true);
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="create-outline" size={18} color="#16a34a" style={{ marginRight: 6 }} />
-          <Text style={styles.actionBtnText}>Request Profile Update</Text>
-        </TouchableOpacity>
+        {!isLocked && (
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+              <TouchableOpacity 
+                style={[styles.actionBtn, { flex: 1 }]}
+                onPress={() => {
+                  setEditPartnerType(partnerType);
+                  setShowEditModal(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="create-outline" size={18} color="#16a34a" style={{ marginRight: 6 }} />
+                <Text style={styles.actionBtnText}>Update Profile</Text>
+              </TouchableOpacity>
+
+            {!partnerProfile?.isSubmittedForApproval && (
+                <TouchableOpacity 
+                  style={[
+                    styles.actionBtn, 
+                    { flex: 1 }, 
+                    !isEverythingUploaded ? { backgroundColor: '#e2e8f0', borderColor: '#cbd5e1' } : { backgroundColor: '#16a34a', borderColor: '#16a34a' }
+                  ]}
+                  onPress={() => submitForApproval()}
+                  disabled={!isEverythingUploaded || submitting}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="send-outline" size={18} color={!isEverythingUploaded ? "#94a3b8" : "#ffffff"} style={{ marginRight: 6 }} />
+                  <Text style={[styles.actionBtnText, !isEverythingUploaded ? { color: '#94a3b8' } : { color: '#ffffff' }]}>
+                    {submitting ? 'Sending...' : 'Send For Approval'}
+                  </Text>
+                </TouchableOpacity>
+            )}
+          </View>
+        )}
       </ScrollView>
 
-      {/* Edit Profile Modal */}
       <Modal visible={showEditModal} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: '#ffffff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '80%' }}>
@@ -452,6 +570,49 @@ export const PersonalDetailsScreen = () => {
                 keyboardType="phone-pad"
                 value={editEmergency}
                 onChangeText={setEditEmergency}
+              />
+
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Address Line *</Text>
+              <TextInput 
+                style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 12, color: '#0f172a' }}
+                value={editAddressLine}
+                onChangeText={setEditAddressLine}
+              />
+              
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>State *</Text>
+              <View style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, marginBottom: 12, overflow: 'hidden' }}>
+                <Picker 
+                  selectedValue={editState} 
+                  onValueChange={(v) => {
+                    setEditState(v);
+                    if (v !== editState) setEditCity('');
+                  }} 
+                  style={{ height: 50, color: '#0f172a' }}
+                >
+                  <Picker.Item label="-- Select State --" value="" />
+                  {dbStates.map(s => <Picker.Item key={s._id} label={s.name} value={s.name} />)}
+                </Picker>
+              </View>
+
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>City *</Text>
+              <View style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, marginBottom: 12, overflow: 'hidden' }}>
+                <Picker 
+                  selectedValue={editCity} 
+                  onValueChange={(v) => setEditCity(v)} 
+                  style={{ height: 50, color: '#0f172a' }}
+                  enabled={dbCities.length > 0}
+                >
+                  <Picker.Item label="-- Select City --" value="" />
+                  {dbCities.map(c => <Picker.Item key={c._id} label={c.name} value={c.name} />)}
+                </Picker>
+              </View>
+              
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Pincode *</Text>
+              <TextInput 
+                style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 16, color: '#0f172a' }}
+                keyboardType="number-pad"
+                value={editPincode}
+                onChangeText={setEditPincode}
               />
 
               <Text style={{ fontSize: 14, fontWeight: '800', color: '#0f172a', marginTop: 4, marginBottom: 10 }}>

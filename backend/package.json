@@ -24,6 +24,7 @@
     "country-state-city": "^3.2.1",
     "crypto": "^1.0.1",
     "dotenv": "^17.2.1",
+    "expo-server-sdk": "^6.1.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.1",

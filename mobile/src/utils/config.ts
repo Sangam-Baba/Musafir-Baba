@@ -1,9 +1,6 @@
 import { Platform } from 'react-native';
 
-// Local IP of the host machine (allows emulators and physical devices on the same Wi-Fi to connect)
-const LOCAL_IP = '192.168.29.111';
+// Live Server API URL for production APK builds
+const PROD_API_URL = 'https://musafir-baba-backend.onrender.com/api';
 
-// Local Backend API URL for development/testing (backend runs on port 8000)
-const LOCAL_API_URL = `http://${LOCAL_IP}:8000/api`;
-
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || LOCAL_API_URL;
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || PROD_API_URL;

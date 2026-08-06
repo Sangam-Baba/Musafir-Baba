@@ -17,6 +17,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
+import { useCopilot, CopilotProvider, CopilotStep, walkthroughable } from 'react-native-copilot';
+import * as SecureStore from 'expo-secure-store';
+
+const WalkthroughableView = walkthroughable(View);
+const WalkthroughableTouchableOpacity = walkthroughable(TouchableOpacity);
 
 import { IdentityProofScreen } from '../screens/IdentityProofScreen';
 import { VehicleDetailsScreen } from '../screens/VehicleDetailsScreen';
@@ -31,16 +36,28 @@ const Stack = createStackNavigator<ProfileStackParamList>();
 
 type MenuNavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMenu'>;
 
-const ProfileMenuScreen = () => {
-  const navigation = useNavigation<any>();
+const MenuScreen = ({ navigation }: any) => {
   const token = useAuthStore((state) => state.token);
   const storeProfile = useAuthStore((state) => state.profile);
   const logout = useAuthStore((state) => state.logout);
+  const { start } = useCopilot();
 
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState<number>(3);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const checkMenuTour = async () => {
+    try {
+      const hasSeenMenuTour = await SecureStore.getItemAsync('hasSeenMenuTour');
+      if (!hasSeenMenuTour) {
+        setTimeout(() => start("stepProfile"), 500); // Start from the first step in the new flow
+        await SecureStore.setItemAsync('hasSeenMenuTour', 'true');
+      }
+    } catch (e) {
+      console.log('Error starting menu tour', e);
+    }
+  };
 
   const fetchMenuData = async (showSpinner = true) => {
     if (!token) return;
@@ -75,6 +92,7 @@ const ProfileMenuScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchMenuData();
+      checkMenuTour();
     }, [token])
   );
 
@@ -136,22 +154,6 @@ const ProfileMenuScreen = () => {
       iconColor: '#0284c7',
       onPress: () => navigation.navigate('PayoutHistory'),
     },
-    {
-      title: 'Subscription',
-      subtitle: 'View plan, renewal and history',
-      icon: 'shield-checkmark-outline' as const,
-      iconBg: '#f3e8ff',
-      iconColor: '#7c3aed',
-      onPress: () => Alert.alert("Subscription", "Your Active Partner Subscription is valid until Dec 2026."),
-    },
-    {
-      title: 'Referrals & Rewards',
-      subtitle: 'Invite partners and earn rewards',
-      icon: 'gift-outline' as const,
-      iconBg: '#fef2f2',
-      iconColor: '#dc2626',
-      onPress: () => Alert.alert("Referrals & Rewards", "Share your referral code MB-REF-992 to earn ₹500 per signup!"),
-    },
   ];
 
   const supportItems = [
@@ -170,6 +172,16 @@ const ProfileMenuScreen = () => {
       iconBg: '#fef3c7',
       iconColor: '#d97706',
       onPress: () => navigation.navigate('TripSupport'),
+    },
+    {
+      title: 'Replay App Tour',
+      subtitle: 'See the interactive tutorial again',
+      icon: 'map-outline' as const,
+      iconBg: '#ede9fe',
+      iconColor: '#8b5cf6',
+      onPress: () => {
+        setTimeout(() => start("stepProfile"), 200); 
+      },
     },
     {
       title: 'Terms & Conditions',
@@ -206,7 +218,6 @@ const ProfileMenuScreen = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
       }
     >
-      {/* Top Header */}
       <View style={styles.headerRow}>
         <View>
           <Text style={styles.menuTitle}>Menu</Text>
@@ -226,8 +237,8 @@ const ProfileMenuScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Driver Profile Card */}
-      <TouchableOpacity 
+      <CopilotStep text="Fourth, once everything is completed below, tap here to send your profile for admin approval!" order={13} name="profileCard">
+      <WalkthroughableTouchableOpacity 
         style={styles.profileCard}
         onPress={() => navigation.navigate('VerifiedPartner')}
         activeOpacity={0.85}
@@ -256,7 +267,6 @@ const ProfileMenuScreen = () => {
           <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
         </View>
 
-        {/* Inner Wallet Box */}
         <View style={styles.walletBox}>
           <View style={styles.walletLeft}>
             <View style={styles.walletIconCircle}>
@@ -276,34 +286,70 @@ const ProfileMenuScreen = () => {
             <Text style={styles.viewWalletText}>View Wallet &gt;</Text>
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </WalkthroughableTouchableOpacity>
+      </CopilotStep>
 
-      {/* Account & Settings Group */}
       <Text style={styles.groupHeader}>Account & Settings</Text>
       <View style={styles.cardGroup}>
-        {accountItems.map((item, idx) => (
-          <TouchableOpacity 
-            key={idx}
-            style={[styles.menuRow, idx < accountItems.length - 1 && styles.menuRowBorder]}
-            onPress={item.onPress}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
-              <Ionicons name={item.icon} size={20} color={item.iconColor} />
-            </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.rowTitle}>{item.title}</Text>
-              <Text style={styles.rowSub}>{item.subtitle}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-          </TouchableOpacity>
-        ))}
+        {accountItems.map((item, idx) => {
+          let stepProps = null;
+          // Grouping Profile (idx 0) and Bank (idx 4) instructions on the Profile step
+          if (idx === 0) stepProps = { text: "First, complete your personal profile and add your bank details for payouts.", order: 10, name: "stepProfile" };
+          else if (idx === 1) stepProps = { text: "Second, upload your identity and business documents.", order: 11, name: "stepDocs" };
+          else if (idx === 2) stepProps = { text: "Third, add your vehicles and driver information here.", order: 12, name: "stepVehicles" };
+
+          const row = (
+            <WalkthroughableTouchableOpacity 
+              key={idx}
+              style={[styles.menuRow, idx < accountItems.length - 1 && styles.menuRowBorder]}
+              onPress={item.onPress}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
+                <Ionicons name={item.icon} size={20} color={item.iconColor} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.rowTitle}>{item.title}</Text>
+                <Text style={styles.rowSub}>{item.subtitle}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+            </WalkthroughableTouchableOpacity>
+          );
+
+          if (stepProps) {
+            return (
+              <CopilotStep key={idx} text={stepProps.text} order={stepProps.order} name={stepProps.name}>
+                {row}
+              </CopilotStep>
+            );
+          }
+
+          // For items without a tour step, just return a regular TouchableOpacity
+          return (
+            <TouchableOpacity 
+              key={idx}
+              style={[styles.menuRow, idx < accountItems.length - 1 && styles.menuRowBorder]}
+              onPress={item.onPress}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
+                <Ionicons name={item.icon} size={20} color={item.iconColor} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.rowTitle}>{item.title}</Text>
+                <Text style={styles.rowSub}>{item.subtitle}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
-      {/* Support & Information Group */}
-      <Text style={[styles.groupHeader, { marginTop: 20 }]}>Support & Information</Text>
-      <View style={styles.cardGroup}>
-        {supportItems.map((item, idx) => (
+      <CopilotStep text="Need help? Access the help center or talk to our support team here." order={14} name="supportGroup">
+      <WalkthroughableView>
+        <Text style={[styles.groupHeader, { marginTop: 20 }]}>Support & Information</Text>
+        <View style={styles.cardGroup}>
+          {supportItems.map((item, idx) => (
           <TouchableOpacity 
             key={idx}
             style={[styles.menuRow, idx < supportItems.length - 1 && styles.menuRowBorder]}
@@ -321,8 +367,9 @@ const ProfileMenuScreen = () => {
           </TouchableOpacity>
         ))}
       </View>
+      </WalkthroughableView>
+      </CopilotStep>
 
-      {/* Logout Card Action */}
       <TouchableOpacity 
         style={styles.logoutCard}
         onPress={logout}
@@ -339,6 +386,7 @@ const ProfileMenuScreen = () => {
 
         <Ionicons name="chevron-forward" size={18} color="#dc2626" />
       </TouchableOpacity>
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 };
@@ -346,7 +394,7 @@ const ProfileMenuScreen = () => {
 export const ProfileStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ProfileMenu" component={ProfileMenuScreen} />
+      <Stack.Screen name="ProfileMenu" component={MenuScreen} />
       <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
       <Stack.Screen name="BankDetails" component={BankDetailsScreen} />
       <Stack.Screen name="BankAccount" component={BankAccountScreen} />
