@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "MBGO",
+    "slug": "mbgo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.musafirbaba.mbgo"
+    },
+    "android": {
+      "package": "com.musafirbaba.mbgo",
+      "usesCleartextTraffic": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "MBGO uses your location to auto-fill your pick-up point."
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "19e1b6c0-2027-411d-898b-9b732efd36c0"
+      }
+    }
+  }
+}

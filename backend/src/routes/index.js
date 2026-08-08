@@ -55,11 +55,20 @@ import partnerAuthRoutes from "./partner/partnerAuth.routes.js";
 import partnerRoutes from "./partner/partner.routes.js";
 import adminPartnerVerificationRoutes from "./partner/adminPartnerVerification.routes.js";
 import locationMasterRoutes from "./locationMaster.routes.js";
+import riderAuthRoutes from "./rider/riderAuth.routes.js";
+import riderProfileRoutes from "./rider/riderProfile.routes.js";
+import rideRoutes from "./ride.routes.js";
+import adminRideRoutes from "./adminRide.routes.js";
 
 const router = Router();
 
 router.use("/packages", pkgRoutes);
 router.use("/auth", authRouter);
+// NOTE: these two must be registered before the generic "/admin" mount below,
+// since staffRouter has a "GET /:id" route that would otherwise shadow them
+// (e.g. GET /admin/rides being matched as staffRouter's GET /admin/:id).
+router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
+router.use("/admin/rides", adminRideRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);
 router.use("/booking", bookingRoutes);
@@ -112,6 +121,8 @@ router.use("/chatbot", chatbotRoutes);
 router.use("/holidays", holidayRoutes);
 router.use("/partner/auth", partnerAuthRoutes);
 router.use("/partner", partnerRoutes);
-router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
+router.use("/rider/auth", riderAuthRoutes);
+router.use("/rider/profile", riderProfileRoutes);
+router.use("/ride", rideRoutes);
 router.use("/", locationMasterRoutes);
 export default router;

@@ -12,10 +12,14 @@ import {
   verifyVehicleFailurePayment,
   verifyVisaSuccessPayment,
   verifyVisaFailurePayment,
+  verifyRideSuccessPayment,
+  verifyRideFailurePayment,
+  createRidePayment,
 } from "../controllers/payment.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
+import { isRiderAuthenticated } from "../middleware/riderAuth.middleware.js";
 
 const paymentRoute = Router();
 
@@ -45,6 +49,10 @@ paymentRoute.post("/failure-vehicle", verifyVehicleFailurePayment);
 
 paymentRoute.post("/success-visa", verifyVisaSuccessPayment);
 paymentRoute.post("/failure-visa", verifyVisaFailurePayment);
+
+paymentRoute.post("/success-ride", verifyRideSuccessPayment);
+paymentRoute.post("/failure-ride", verifyRideFailurePayment);
+paymentRoute.post("/ride", isRiderAuthenticated, createRidePayment);
 
 export default paymentRoute;
 
