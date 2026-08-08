@@ -2,6 +2,8 @@ import PartnerProfile from "../../models/partner/PartnerProfile.js";
 import PartnerVehicle from "../../models/partner/PartnerVehicle.js";
 import PartnerDriver from "../../models/partner/PartnerDriver.js";
 import PartnerBank from "../../models/partner/PartnerBank.js";
+import { RideBooking } from "../../models/RideBooking.js";
+import { Notification } from "../../models/Notification.js";
 import mongoose from "mongoose";
 
 // @desc    Toggle partner's active duty status (online/offline)
@@ -36,7 +38,24 @@ export const updateStatus = async (req, res) => {
   }
 };
 
-// @desc    List bookings for the partner's registered vehicles
+// Maps the internal RideBooking status enum to the partner app's display status.
+function toPartnerStatus(rideStatus) {
+  if (rideStatus === "ONGOING") return "Ongoing";
+  if (["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED"].includes(rideStatus)) return "Scheduled";
+  if (rideStatus === "COMPLETED") return "Completed";
+  if (rideStatus === "CANCELLED") return "Cancelled";
+  return "Scheduled";
+}
+
+function toRideBookingForTab(tab) {
+  if (tab === "Ongoing") return ["ONGOING"];
+  if (tab === "Scheduled") return ["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED"];
+  if (tab === "Completed") return ["COMPLETED"];
+  if (tab === "Cancelled") return ["CANCELLED"];
+  return ["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING", "COMPLETED", "CANCELLED"];
+}
+
+// @desc    List bookings assigned to the partner's registered vehicles
 // @route   GET /api/partner/bookings
 export const getBookings = async (req, res) => {
   try {
@@ -46,82 +65,128 @@ export const getBookings = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found." });
     }
 
-    // Find all vehicles owned by this partner
-    const vehicles = await PartnerVehicle.find({ partnerId: profile._id, isDeleted: false });
-    const vehicleRegs = vehicles.map(v => v.registrationNumber);
-    const vehicleNames = vehicles.map(v => `${v.brand} ${v.model}`);
-
-    // Serve mock/dynamic list structured as expected by the UI Tab 2 contracts, utilizing real vehicle names
-    const mockBookings = [
-      {
-        id: "bk-8801",
-        tripId: "MB-89241",
-        pickupLocation: "Terminal 3, IGI Airport, New Delhi",
-        dropoffLocation: "Sector 62, Noida, Uttar Pradesh",
-        pickupTime: "10:30 AM",
-        date: "Today",
-        fare: 1850,
-        status: "Ongoing",
-        customerName: "Rajesh Sharma",
-        customerPhone: "+91 98765 43210",
-        vehicleName: vehicleNames[0] || "Innova Crysta",
-        vehicleReg: vehicleRegs[0] || "DL01AB1234",
-        driverName: "Ramesh Kumar",
-        tripType: "Airport Transfer",
-        distance: "42 km",
-      },
-      {
-        id: "bk-8802",
-        tripId: "MB-89240",
-        pickupLocation: "Connaught Place, New Delhi",
-        dropoffLocation: "Cyber Hub, Gurugram, Haryana",
-        pickupTime: "02:00 PM",
-        date: "Today",
-        fare: 1420,
-        status: "Scheduled",
-        customerName: "Ananya Verma",
-        customerPhone: "+91 98123 67890",
-        vehicleName: vehicleNames[1] || "Maruti Ertiga",
-        vehicleReg: vehicleRegs[1] || "HR26CK5678",
-        driverName: "Suresh Singh",
-        tripType: "City Ride",
-        distance: "28 km",
-      },
-      {
-        id: "bk-8803",
-        tripId: "MB-89239",
-        pickupLocation: "Nizamuddin Railway Station",
-        dropoffLocation: "Mall Road, Shimla, Himachal Pradesh",
-        pickupTime: "06:00 AM",
-        date: "Yesterday",
-        fare: 7800,
-        status: "Completed",
-        customerName: "Vikram Malhotra",
-        customerPhone: "+91 97111 22334",
-        vehicleName: vehicleNames[0] || "Innova Crysta",
-        vehicleReg: vehicleRegs[0] || "DL01AB1234",
-        driverName: "Ramesh Kumar",
-        tripType: "Outstation One-Way",
-        distance: "345 km",
-      }
-    ];
-
     const tab = req.query.tab || "Ongoing";
-    const filtered = mockBookings.filter(b => {
-      if (tab === "Ongoing") return b.status === "Ongoing";
-      if (tab === "Scheduled") return b.status === "Scheduled";
-      if (tab === "Completed") return b.status === "Completed";
-      if (tab === "Cancelled") return b.status === "Cancelled";
-      return true;
-    });
+    const rides = await RideBooking.find({
+      assignedPartnerId: profile._id,
+      status: { $in: toRideBookingForTab(tab) },
+    })
+      .populate("rider", "fullName mobileNumber")
+      .populate("assignedVehicleId", "vehicleName registrationNumber brand model")
+      .populate("assignedDriverId", "fullName")
+      .sort({ createdAt: -1 });
+
+    const data = rides.map((ride) => ({
+      id: String(ride._id),
+      tripId: `MB-${String(ride._id).slice(-6).toUpperCase()}`,
+      pickupLocation: ride.pickup.address,
+      dropoffLocation: ride.drop.address,
+      pickupTime: ride.rideTime,
+      date: ride.rideDate,
+      fare: ride.totalAmount,
+      status: toPartnerStatus(ride.status),
+      customerName: ride.rider?.fullName || "Rider",
+      customerPhone: ride.rider?.mobileNumber || "",
+      vehicleName: ride.assignedVehicleId
+        ? `${ride.assignedVehicleId.brand} ${ride.assignedVehicleId.model}`
+        : "",
+      vehicleReg: ride.assignedVehicleId?.registrationNumber || "",
+      driverName: ride.assignedDriverId?.fullName || "",
+      tripType: "Outstation",
+      distance: `${ride.distanceKm} km`,
+    }));
 
     return res.status(200).json({
       success: true,
-      total: 0, // filtered.length,
-      data: [], // filtered,
+      total: data.length,
+      data,
     });
   } catch (error) {
     console.error("Get Bookings Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @desc    List rides awaiting assignment that this partner is eligible for (by vehicle category)
+// @route   GET /api/partner/rides/available
+export const getAvailableRides = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const categories = await PartnerVehicle.find({
+      partnerId: profile._id,
+      status: "Active",
+      isDeleted: false,
+    }).distinct("category");
+
+    const rides = await RideBooking.find({
+      status: "AWAITING_ASSIGNMENT",
+      vehicleCategory: { $in: categories },
+    }).sort({ createdAt: -1 });
+
+    const data = rides.map((ride) => ({
+      id: String(ride._id),
+      pickupLocation: ride.pickup.address,
+      dropoffLocation: ride.drop.address,
+      pickupTime: ride.rideTime,
+      date: ride.rideDate,
+      fare: ride.totalAmount,
+      vehicleCategory: ride.vehicleCategory,
+      distance: `${ride.distanceKm} km`,
+    }));
+
+    return res.status(200).json({ success: true, total: data.length, data });
+  } catch (error) {
+    console.error("Get Available Rides Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @desc    Accept an available ride (first partner to accept wins, atomically)
+// @route   POST /api/partner/rides/:id/accept
+export const acceptRide = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const vehicle = await PartnerVehicle.findOne({
+      partnerId: profile._id,
+      status: "Active",
+      isDeleted: false,
+    });
+    if (!vehicle) {
+      return res.status(400).json({ success: false, message: "You need an active, approved vehicle to accept rides." });
+    }
+
+    // Atomic guard: only succeeds if the ride is still awaiting assignment.
+    // Whichever partner's request lands first wins; everyone else gets the message below.
+    const ride = await RideBooking.findOneAndUpdate(
+      { _id: req.params.id, status: "AWAITING_ASSIGNMENT" },
+      {
+        $set: {
+          status: "ACCEPTED",
+          assignedPartnerId: profile._id,
+          assignedVehicleId: vehicle._id,
+          assignedDriverId: vehicle.assignedDriverId,
+        },
+        $push: { statusHistory: { status: "ACCEPTED", note: `Accepted by partner ${profile._id}` } },
+      },
+      { new: true }
+    );
+
+    if (!ride) {
+      return res.status(409).json({ success: false, message: "This ride has already been accepted by another partner." });
+    }
+
+    return res.status(200).json({ success: true, message: "Ride accepted", data: { rideId: ride._id } });
+  } catch (error) {
+    console.error("Accept Ride Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -130,6 +195,7 @@ export const getBookings = async (req, res) => {
 // @route   PATCH /api/partner/bookings/:id/status
 export const updateBookingStatus = async (req, res) => {
   try {
+    const authId = req.partnerId;
     const { id } = req.params;
     const { status, otpCode } = req.body;
 
@@ -137,9 +203,43 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: "Status is required." });
     }
 
-    if (status === "ONGOING" && otpCode && otpCode !== "1234") {
-      return res.status(400).json({ success: false, message: "Invalid Customer OTP verification code." });
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
     }
+
+    const ride = await RideBooking.findOne({ _id: id, assignedPartnerId: profile._id });
+    if (!ride) {
+      return res.status(404).json({ success: false, message: "Booking not found." });
+    }
+
+    // status values coming from the partner app: DRIVER_EN_ROUTE | ARRIVED | ONGOING | COMPLETED
+    if (status === "ONGOING") {
+      if (!otpCode || otpCode !== ride.tripStartOtp) {
+        return res.status(400).json({ success: false, message: "Invalid Customer OTP verification code." });
+      }
+    }
+
+    ride.status = status;
+    ride.statusHistory.push({ status });
+
+    if (status === "COMPLETED") {
+      const commission = Math.round((ride.totalAmount * ride.platformCommissionPercent) / 100);
+      const netEarning = ride.totalAmount - commission;
+      profile.walletBalance = (profile.walletBalance || 0) + netEarning;
+      await profile.save();
+
+      await Notification.create({
+        recipientType: "Partner",
+        recipientId: profile._id,
+        title: "Trip Fare Credited",
+        message: `₹${netEarning.toLocaleString("en-IN")} credited to your MB Wallet for completed trip #MB-${String(ride._id).slice(-6).toUpperCase()}.`,
+        type: "Trip",
+        data: { rideId: ride._id },
+      });
+    }
+
+    await ride.save();
 
     return res.status(200).json({
       success: true,
@@ -163,47 +263,46 @@ export const getEarnings = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found." });
     }
 
-    const bank = await PartnerBank.findOne({ partnerId: profile._id, isPrimary: true });
+    const timeframe = req.query.timeframe || "Week";
+    const now = new Date();
+    const since = new Date(now);
+    if (timeframe === "Week") since.setDate(now.getDate() - 7);
+    else if (timeframe === "Month") since.setMonth(now.getMonth() - 1);
+    else since.setFullYear(now.getFullYear() - 1);
+
+    const completedRides = await RideBooking.find({
+      assignedPartnerId: profile._id,
+      status: "COMPLETED",
+      updatedAt: { $gte: since },
+    });
+
+    const grossTripFare = completedRides.reduce((sum, r) => sum + r.totalAmount, 0);
+    const platformCommission = completedRides.reduce(
+      (sum, r) => sum + Math.round((r.totalAmount * r.platformCommissionPercent) / 100),
+      0
+    );
+    const totalNetEarnings = grossTripFare - platformCommission;
+
+    const dayTotals = new Map();
+    for (const ride of completedRides) {
+      const day = ride.updatedAt.toLocaleDateString("en-IN", { weekday: "short" });
+      const commission = Math.round((ride.totalAmount * ride.platformCommissionPercent) / 100);
+      dayTotals.set(day, (dayTotals.get(day) || 0) + (ride.totalAmount - commission));
+    }
+    const chartData = Array.from(dayTotals.entries()).map(([day, amount]) => ({ day, amount }));
 
     return res.status(200).json({
       success: true,
       data: {
-        timeframe: req.query.timeframe || "Week",
-        totalNetEarnings: 0, // profile.walletBalance || 1250.00,
-        grossTripFare: 0, // 14500.00,
-        platformCommission: 0, // 2175.00,
-        taxes: 0, // 500.00,
-        growthPercent: 0, // 12.4,
-        chartData: [], /* [
-          { day: "Mon", amount: 2400 },
-          { day: "Tue", amount: 3100 },
-          { day: "Wed", amount: 1800 },
-          { day: "Thu", amount: 4200 },
-          { day: "Fri", amount: 3500 },
-          { day: "Sat", amount: 5100 },
-          { day: "Sun", amount: 2840 }
-        ], */
-        recentPayouts: [] /* [
-          {
-            id: "p1",
-            amount: 12850,
-            date: "28 Jul 2026",
-            status: "Completed",
-            bankName: bank?.bankName || "HDFC Bank",
-            accountEnding: bank?.accountNumber ? bank.accountNumber.slice(-4) : "4321",
-            referenceId: "UPI/628104928172",
-          },
-          {
-            id: "p2",
-            amount: 9400,
-            date: "21 Jul 2026",
-            status: "Completed",
-            bankName: bank?.bankName || "HDFC Bank",
-            accountEnding: bank?.accountNumber ? bank.accountNumber.slice(-4) : "4321",
-            referenceId: "UPI/628101189230",
-          }
-        ] */
-      }
+        timeframe,
+        totalNetEarnings,
+        grossTripFare,
+        platformCommission,
+        taxes: 0,
+        growthPercent: 0,
+        chartData,
+        recentPayouts: [],
+      },
     });
   } catch (error) {
     console.error("Get Earnings Error:", error);
@@ -231,7 +330,6 @@ export const requestPayout = async (req, res) => {
       return res.status(400).json({ success: false, message: "Insufficient balance for payout." });
     }
 
-    // Deduct balance atomically
     profile.walletBalance = Math.max(0, profile.walletBalance - amount);
     await profile.save();
 
@@ -247,41 +345,47 @@ export const requestPayout = async (req, res) => {
   }
 };
 
+function toRelativeTime(date) {
+  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min${minutes > 1 ? "s" : ""} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
+}
+
 // @desc    Get partner inbox alerts feed
 // @route   GET /api/partner/notifications
 export const getNotifications = async (req, res) => {
   try {
-    const mockNotifications = [
-      {
-        id: "n1",
-        title: "Trip Fare Credited",
-        message: "₹1,850 credited to your MB Wallet for completed trip #MB-89241.",
-        time: "10 mins ago",
-        type: "Trip",
-        read: false,
-      },
-      {
-        id: "n2",
-        title: "Weekly Payout Processed",
-        message: "Settlement of ₹12,850 successfully initiated.",
-        time: "2 hours ago",
-        type: "Payout",
-        read: false,
-      },
-      {
-        id: "n3",
-        title: "Vehicle Insurance Notice",
-        message: "Insurance policy for DL01AB1234 expires in 14 days. Upload renewal document.",
-        time: "1 day ago",
-        type: "Document",
-        read: true,
-      }
-    ];
+    const authId = req.partnerId;
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const notifications = await Notification.find({
+      recipientType: "Partner",
+      recipientId: profile._id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    const data = notifications.map((n) => ({
+      id: String(n._id),
+      title: n.title,
+      message: n.message,
+      time: toRelativeTime(n.createdAt),
+      type: n.type,
+      read: n.read,
+    }));
 
     return res.status(200).json({
       success: true,
-      unreadCount: 0, // mockNotifications.filter(n => !n.read).length,
-      data: [], // mockNotifications,
+      unreadCount: notifications.filter((n) => !n.read).length,
+      data,
     });
   } catch (error) {
     console.error("Get Notifications Error:", error);
@@ -293,6 +397,17 @@ export const getNotifications = async (req, res) => {
 // @route   PATCH /api/partner/notifications/mark-read
 export const markNotificationsRead = async (req, res) => {
   try {
+    const authId = req.partnerId;
+    const profile = await PartnerProfile.findOne({ authId });
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    await Notification.updateMany(
+      { recipientType: "Partner", recipientId: profile._id, read: false },
+      { $set: { read: true } }
+    );
+
     return res.status(200).json({
       success: true,
       message: "Notifications marked as read successfully.",

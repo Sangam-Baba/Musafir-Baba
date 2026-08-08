@@ -50,7 +50,7 @@ async function registerForPushNotificationsAsync() {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FE5300',
+      lightColor: '#FF3B00',
     });
   }
 
@@ -65,17 +65,17 @@ async function registerForPushNotificationsAsync() {
       console.log('Failed to get push token for push notification!');
       return;
     }
-    
+
     try {
-        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-        if (!projectId) {
-          console.log('Missing EAS projectId in app.json (extra.eas.projectId); cannot fetch push token.');
-          return;
-        }
-        token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-        console.log("Expo Push Token:", token);
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+      if (!projectId) {
+        console.log('Missing EAS projectId in app.json (extra.eas.projectId); cannot fetch push token.');
+        return;
+      }
+      token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+      console.log("Expo Push Token:", token);
     } catch (e) {
-        console.log("Error getting token:", e);
+      console.log("Error getting token:", e);
     }
   } else {
     console.log('Must use physical device for Push Notifications');

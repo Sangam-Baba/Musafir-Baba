@@ -142,6 +142,12 @@ export const NAV_GROUPS = [
         icon: MapPin,
         permission: "partner-verification", // reuse permission or use a generic one
       },
+      {
+        label: "Ride Bookings",
+        href: "/admin/ride-bookings",
+        icon: CookingPot,
+        permission: "partner-verification", // reuse permission or use a generic one
+      },
     ],
   },
   {

@@ -9,6 +9,8 @@ import { getStates, getCities, getPincodes } from "../../controllers/locationMas
 import {
   updateStatus,
   getBookings,
+  getAvailableRides,
+  acceptRide,
   updateBookingStatus,
   getEarnings,
   requestPayout,
@@ -47,6 +49,10 @@ router.get("/driver", getDrivers);
 // Bookings
 router.get("/bookings", getBookings);
 router.patch("/bookings/:id/status", updateBookingStatus);
+
+// Ride pool (accept-first-wins)
+router.get("/rides/available", getAvailableRides);
+router.post("/rides/:id/accept", acceptRide);
 
 // Earnings & Payouts
 router.get("/earnings", getEarnings);

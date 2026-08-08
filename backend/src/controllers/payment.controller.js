@@ -5,6 +5,10 @@ import { CustomizedBookings } from "../models/CustomizedBookings.js";
 import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
 import { VehicleBooking } from "../models/VehicleBooking.js";
 import { VisaApplication } from "../models/VisaApplication.js";
+import { RideBooking } from "../models/RideBooking.js";
+import { releaseRideToPartnerPool } from "./ride.controller.js";
+import RiderProfile from "../models/rider/RiderProfile.js";
+import RiderAuth from "../models/rider/RiderAuth.js";
 
 // ENV CONFIG
 const merchantKey = process.env.PAYU_KEY;
@@ -82,6 +86,74 @@ export const createPayemnt = (req, res) => {
   };
 
   res.json({ payuUrl: `${payuBaseUrl}/_payment`, paymentData });
+};
+
+// API to initiate a PayU payment for a ride booking. Separate from the
+// generic createPayemnt above because riders authenticate through an
+// isolated JWT system (isRiderAuthenticated), not the generic
+// isAuthenticated/authorizedRoles(["user", ...]) used by every other
+// booking type — a rider token can never pass that check, so this route
+// is gated by isRiderAuthenticated instead (see ride.routes.js).
+// Amount/txnid/product info are computed server-side from the stored ride,
+// rather than trusted from the client, since this is a payment initiation.
+export const createRidePayment = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+    if (!rideId) {
+      return res.status(400).json({ success: false, message: "rideId is required" });
+    }
+
+    const riderProfile = await RiderProfile.findOne({ authId: req.riderId });
+    if (!riderProfile) {
+      return res.status(404).json({ success: false, message: "Rider profile not found" });
+    }
+
+    const ride = await RideBooking.findOne({ _id: rideId, rider: riderProfile._id });
+    if (!ride) {
+      return res.status(404).json({ success: false, message: "Ride not found" });
+    }
+    if (ride.status !== "PAYMENT_PENDING") {
+      return res.status(400).json({ success: false, message: "This ride is not awaiting payment" });
+    }
+
+    const riderAuth = await RiderAuth.findById(req.riderId);
+
+    const txnid = `MBGO${Date.now()}`;
+    const amount = ride.totalAmount;
+    const productinfo = "MBGO Ride Booking";
+    const firstname = riderProfile.fullName || "Rider";
+    const email = riderAuth?.email || "";
+    const phone = riderProfile.mobileNumber || "";
+    const udf1 = String(ride._id);
+    // Derived from the incoming request rather than the BACKEND_URL env var
+    // (which is pinned to production) so this keeps working when the backend
+    // is hit from a local dev server during PayU testmode testing.
+    const backendBaseUrl = `${req.protocol}://${req.get("host")}`;
+    const surl = `${backendBaseUrl}/api/payment/success-ride`;
+    const furl = `${backendBaseUrl}/api/payment/failure-ride`;
+
+    const hash = generateHash({ txnid, amount, productinfo, firstname, email, udf1 });
+
+    const paymentData = {
+      key: merchantKey,
+      txnid,
+      amount,
+      productinfo,
+      firstname,
+      email,
+      phone,
+      surl,
+      furl,
+      hash,
+      udf1,
+      service_provider: "payu_paisa",
+    };
+
+    return res.json({ success: true, payuUrl: `${payuBaseUrl}/_payment`, paymentData });
+  } catch (error) {
+    console.error("Create Ride Payment Error:", error.message);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
 };
 
 function verifyHash({
@@ -696,6 +768,103 @@ export const verifyVisaFailurePayment = async (req, res) => {
     { new: true },
   ).exec();
   console.log("Visa Payment Failed:", data, application);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+};
+
+export const verifyRideSuccessPayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  const ride = await RideBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: { txnid, mihpayid, hash, status: "Paid" },
+      status: "AWAITING_ASSIGNMENT",
+      $push: {
+        statusHistory: [{ status: "PAID" }, { status: "AWAITING_ASSIGNMENT" }],
+      },
+    },
+    { new: true },
+  ).exec();
+
+  if (ride) {
+    try {
+      await releaseRideToPartnerPool(ride);
+    } catch (error) {
+      console.error("Release Ride To Partner Pool Error:", error.message);
+    }
+  }
+  console.log("Ride Payment Verified:", data, ride);
+
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+};
+
+export const verifyRideFailurePayment = async (req, res) => {
+  const data = req.body;
+  const {
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    hash,
+    udf1,
+    mihpayid,
+  } = data;
+
+  const expectedHash = verifyHash({
+    status,
+    txnid,
+    amount,
+    productinfo,
+    firstname,
+    email,
+    udf1,
+  });
+
+  if (expectedHash !== hash) {
+    console.error("⚠️ Hash mismatch, possible tampering");
+    return res.status(400).send("Invalid transaction");
+  }
+
+  const ride = await RideBooking.findOneAndUpdate(
+    { _id: udf1 },
+    {
+      paymentInfo: { txnid, mihpayid, hash, status: "Failed" },
+      status: "CANCELLED",
+      cancelReason: "Payment failed",
+      $push: { statusHistory: { status: "CANCELLED", note: "Payment failed" } },
+    },
+    { new: true },
+  ).exec();
+  console.log("Ride Payment Failed:", data, ride);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
 };

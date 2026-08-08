@@ -10,7 +10,8 @@ import {
   StatusBar,
   Platform,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../components/Button';
@@ -32,6 +33,17 @@ type Booking = {
   vehicleReg: string;
   driverName: string;
   tripType: string;
+  distance: string;
+};
+
+type AvailableRide = {
+  id: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupTime: string;
+  date: string;
+  fare: number;
+  vehicleCategory: string;
   distance: string;
 };
 
@@ -125,9 +137,11 @@ const MOCK_BOOKINGS: Booking[] = [
 
 export const BookingsScreen = () => {
   const token = useAuthStore((state) => state.token);
-  const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed'>('All');
+  const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Available'>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [availableRides, setAvailableRides] = useState<AvailableRide[]>([]);
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -155,13 +169,60 @@ export const BookingsScreen = () => {
     }
   };
 
+  const fetchAvailableRides = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/rides/available`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      setAvailableRides(res.ok && result.success ? result.data : []);
+    } catch (e) {
+      console.error("Error fetching available rides:", e);
+      setAvailableRides([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    fetchBookings();
+    if (activeFilter === 'Available') {
+      fetchAvailableRides();
+    } else {
+      fetchBookings();
+    }
   }, [activeFilter]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchBookings(false);
+    if (activeFilter === 'Available') {
+      fetchAvailableRides(false);
+    } else {
+      fetchBookings(false);
+    }
+  };
+
+  const handleAcceptRide = async (rideId: string) => {
+    setAcceptingId(rideId);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/rides/${rideId}/accept`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        Alert.alert('Ride Accepted', 'This ride has been added to your Scheduled bookings.');
+        setAvailableRides((prev) => prev.filter((r) => r.id !== rideId));
+      } else {
+        Alert.alert('Could not accept ride', result.message || 'This ride may have already been accepted by another partner.');
+        fetchAvailableRides(false);
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Could not accept ride. Please try again.');
+    } finally {
+      setAcceptingId(null);
+    }
   };
 
   const filteredBookings = bookings;
@@ -190,7 +251,7 @@ export const BookingsScreen = () => {
 
         {/* Filter Pills */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContainer}>
-          {(['All', 'Ongoing', 'Scheduled', 'Completed'] as const).map((filter) => (
+          {(['Available', 'All', 'Ongoing', 'Scheduled', 'Completed'] as const).map((filter) => (
             <TouchableOpacity
               key={filter}
               style={[styles.filterPill, activeFilter === filter && styles.filterPillActive]}
@@ -205,7 +266,79 @@ export const BookingsScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Bookings List */}
+      {/* Available Rides Pool (accept-first-wins) */}
+      {activeFilter === 'Available' ? (
+        <FlatList
+          data={availableRides}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          ListHeaderComponent={
+            loading ? (
+              <ActivityIndicator size="small" color="#FE5300" style={{ marginVertical: 10 }} />
+            ) : null
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="flash-outline" size={48} color="#94a3b8" />
+              <Text style={styles.emptyTitle}>No Rides Available Right Now</Text>
+              <Text style={styles.emptyText}>New ride requests matching your vehicle category will show up here.</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <View style={styles.tripIdRow}>
+                  <Ionicons name="flash-outline" size={16} color="#FE5300" style={{ marginRight: 6 }} />
+                  <Text style={styles.tripId}>{item.vehicleCategory}</Text>
+                </View>
+                <Text style={styles.fareText}>₹{item.fare}</Text>
+              </View>
+
+              <View style={styles.routeSection}>
+                <View style={styles.routeRow}>
+                  <View style={[styles.dot, { backgroundColor: '#16a34a' }]} />
+                  <Text style={styles.routeText} numberOfLines={1}>{item.pickupLocation}</Text>
+                </View>
+                <View style={styles.routeLine} />
+                <View style={styles.routeRow}>
+                  <View style={[styles.dot, { backgroundColor: '#ef4444' }]} />
+                  <Text style={styles.routeText} numberOfLines={1}>{item.dropoffLocation}</Text>
+                </View>
+              </View>
+
+              <View style={styles.cardFooter}>
+                <View style={styles.footerItem}>
+                  <Ionicons name="speedometer-outline" size={14} color="#64748b" style={{ marginRight: 4 }} />
+                  <Text style={styles.footerValue}>{item.distance}</Text>
+                </View>
+                <View style={styles.footerItem}>
+                  <Ionicons name="time-outline" size={14} color="#64748b" style={{ marginRight: 4 }} />
+                  <Text style={styles.footerValue}>{item.date}, {item.pickupTime}</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.acceptButton, acceptingId === item.id && { opacity: 0.6 }]}
+                onPress={() => handleAcceptRide(item.id)}
+                disabled={acceptingId === item.id}
+                activeOpacity={0.85}
+              >
+                {acceptingId === item.id ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                    <Text style={styles.acceptButtonText}>Accept Ride</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      ) : (
       <FlatList
         data={filteredBookings}
         keyExtractor={(item) => item.id}
@@ -281,6 +414,7 @@ export const BookingsScreen = () => {
           );
         }}
       />
+      )}
 
       {/* Booking Details Modal */}
       <Modal visible={!!selectedBooking} animationType="slide" presentationStyle="pageSheet">
@@ -516,6 +650,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#FE5300',
+  },
+  acceptButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16a34a',
+    borderRadius: 14,
+    paddingVertical: 12,
+    marginTop: 12,
+  },
+  acceptButtonText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
   },
 
   /* Empty State */
