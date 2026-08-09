@@ -225,7 +225,7 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
     setIsSubmitting(true);
     try {
       const res = await loginRider({ email, password });
-      await setToken(res.data.accessToken);
+      await setToken(res.data.accessToken, res.data.refreshToken);
       setProfile({ ...(res.data.profile || {}), email });
       showToast('Signed in successfully');
       onNavigate('31');
@@ -276,7 +276,7 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
     try {
       await verifyRiderOtp({ email, otp: registerOtp });
       const res = await loginRider({ email, password: registerPassword });
-      await setToken(res.data.accessToken);
+      await setToken(res.data.accessToken, res.data.refreshToken);
       setProfile({ ...(res.data.profile || {}), email });
       setRegisterStep('success');
     } catch (error: any) {

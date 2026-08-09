@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/config';
 import { getItem, setItem, removeItem } from '../utils/storage';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -53,19 +54,31 @@ apiClient.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
     try {
+      // The httpOnly cookie works on web, but React Native's HTTP layer
+      // doesn't reliably persist/replay cross-request cookies the way a
+      // browser does -- so also send the refresh token we stored explicitly
+      // at login, which the backend accepts as a fallback to the cookie.
+      const storedRefreshToken = await getItem('rider_refresh_token');
       const refreshResponse = await axios.post(
         `${API_BASE_URL}/rider/auth/refresh`,
-        {},
+        storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
         { withCredentials: true }
       );
       const newToken = refreshResponse.data.accessToken;
       await setItem('rider_token', newToken);
+      useAuthStore.setState({ token: newToken });
       resolvePendingRequests(newToken);
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
       return apiClient(originalRequest);
     } catch (refreshError) {
       resolvePendingRequests(null);
+      // The refresh token is genuinely invalid/expired (not just a transient
+      // network blip) -- clear the session everywhere (storage + in-memory
+      // store) so the app can react and route back to the login screen,
+      // instead of silently leaving every subsequent call broken.
       await removeItem('rider_token');
+      await removeItem('rider_refresh_token');
+      useAuthStore.setState({ token: null, refreshToken: null, profile: null, isAuthenticated: false });
       return Promise.reject(error);
     } finally {
       isRefreshing = false;

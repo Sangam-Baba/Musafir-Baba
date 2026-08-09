@@ -61,6 +61,8 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
 
   const pickup = useRideStore((s) => s.pickup);
   const drop = useRideStore((s) => s.drop);
+  const pickupCoords = useRideStore((s) => s.pickupCoords);
+  const dropCoords = useRideStore((s) => s.dropCoords);
   const date = useRideStore((s) => s.rideDate);
   const time = useRideStore((s) => s.rideTime);
   const quote = useRideStore((s) => s.quote);
@@ -91,8 +93,8 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
     setIsBooking(true);
     try {
       const res = await createRide({
-        pickup: { address: pickup },
-        drop: { address: drop },
+        pickup: { address: pickup, ...(pickupCoords || {}) },
+        drop: { address: drop, ...(dropCoords || {}) },
         rideDate: date,
         rideTime: time,
         vehicleCategory: selectedOffer.category,

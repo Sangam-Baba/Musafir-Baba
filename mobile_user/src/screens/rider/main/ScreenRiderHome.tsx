@@ -70,6 +70,15 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   const [tripType, setTripType] = useState<'oneway' | 'roundway'>('oneway');
   const [pickup, setPickup] = useState('New Delhi, Delhi');
   const [drop, setDrop] = useState('Jaipur, Rajasthan');
+  // Coordinates from the selected autocomplete suggestion (or GPS), so the
+  // backend can skip re-geocoding the address text -- forward-geocoding a
+  // long reverse-geocoded display string (e.g. "Municipal Corporation,
+  // Jaipur Tehsil, Jaipur, Rajasthan, 302001, India") isn't always reliable,
+  // which was causing "Could not resolve pickup/drop location" failures.
+  // Cleared whenever the user free-types so we don't send stale coords for
+  // a manually-edited address.
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [dropCoords, setDropCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [vehicleType, setVehicleType] = useState('');
@@ -224,6 +233,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
       const position = await Location.getCurrentPositionAsync({});
       const res = await reverseGeocode(position.coords.latitude, position.coords.longitude);
       setPickup(res.data.data.address);
+      setPickupCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
       setActiveField(null);
       setPickupSuggestions([]);
     } catch (error: any) {
@@ -244,12 +254,15 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
     }
     setIsSearching(true);
     try {
-      const res = await getRideQuote({ pickup: { address: pickup }, drop: { address: drop } });
+      const res = await getRideQuote({
+        pickup: { address: pickup, ...(pickupCoords || {}) },
+        drop: { address: drop, ...(dropCoords || {}) },
+      });
       if (!res.data.data.offers.length) {
         showToast('No vehicles currently serve this route');
         return;
       }
-      setSearch({ pickup, drop, rideDate: date, rideTime: time, passengerCount });
+      setSearch({ pickup, drop, pickupCoords, dropCoords, rideDate: date, rideTime: time, passengerCount });
       // Vehicle Type here is just a preference to pre-highlight on the next
       // screen — the actual choice + real prices are shown there.
       setQuote(res.data.data, selectedCategory);
@@ -279,8 +292,11 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
   const swapLocations = () => {
     const temp = pickup;
+    const tempCoords = pickupCoords;
     setPickup(drop);
+    setPickupCoords(dropCoords);
     setDrop(temp);
+    setDropCoords(tempCoords);
     showToast('Locations swapped');
   };
 
@@ -358,7 +374,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                       </View>
                       <TextInput
                         value={pickup}
-                        onChangeText={setPickup}
+                        onChangeText={(t) => { setPickup(t); setPickupCoords(null); }}
                         onFocus={() => setActiveField('pickup')}
                         placeholder="Enter pick-up location"
                         placeholderTextColor="#94A3B8"
@@ -387,6 +403,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           key={idx}
                           onPress={() => {
                             setPickup(s.address);
+                            setPickupCoords({ lat: s.lat, lng: s.lng });
                             setActiveField(null);
                             setPickupSuggestions([]);
                           }}
@@ -407,7 +424,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                       <MapPin size={16} color="#FF3B00" />
                       <TextInput
                         value={drop}
-                        onChangeText={setDrop}
+                        onChangeText={(t) => { setDrop(t); setDropCoords(null); }}
                         onFocus={() => setActiveField('drop')}
                         placeholder="Enter drop location"
                         placeholderTextColor="#94A3B8"
@@ -436,6 +453,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           key={idx}
                           onPress={() => {
                             setDrop(s.address);
+                            setDropCoords({ lat: s.lat, lng: s.lng });
                             setActiveField(null);
                             setDropSuggestions([]);
                           }}

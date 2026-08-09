@@ -241,6 +241,12 @@ export const loginRider = async (req, res) => {
       success: true,
       message: "Logged in successfully",
       accessToken,
+      // Also returned in the body (not just the httpOnly cookie) so native
+      // clients -- whose HTTP layer doesn't reliably persist/replay
+      // cross-request cookies the way a browser does -- can store it
+      // themselves and send it explicitly to /refresh. The cookie is kept
+      // as-is for the web client, which already works correctly with it.
+      refreshToken,
       profile: profile
         ? { fullName: profile.fullName, mobileNumber: profile.mobileNumber, profilePicture: profile.profilePicture }
         : null,
@@ -255,7 +261,9 @@ export const loginRider = async (req, res) => {
 // @desc    Logout rider and clear refresh token cookie
 export const logoutRider = async (req, res) => {
   try {
-    const { rider_refresh_token } = req.cookies || {};
+    // Native clients that couldn't rely on the cookie send the refresh
+    // token explicitly in the body instead -- accept either.
+    const rider_refresh_token = req.cookies?.rider_refresh_token || req.body?.refreshToken;
     const authHeader = req.headers.authorization;
 
     if (rider_refresh_token) {
@@ -291,7 +299,10 @@ export const logoutRider = async (req, res) => {
 // @desc    Refresh access token using HTTP-only cookie
 export const refreshAccessToken = async (req, res) => {
   try {
-    const { rider_refresh_token } = req.cookies;
+    // Prefer the httpOnly cookie (web); fall back to a body-supplied token
+    // for native clients, whose HTTP layer doesn't reliably persist/replay
+    // cross-request cookies the way a browser does.
+    const rider_refresh_token = req.cookies?.rider_refresh_token || req.body?.refreshToken;
 
     if (!rider_refresh_token) {
       return res.status(401).json({ success: false, message: "No refresh token provided" });

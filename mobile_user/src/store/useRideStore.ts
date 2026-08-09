@@ -1,9 +1,16 @@
 import { create } from 'zustand';
 import type { RideOffer, RideQuote } from '../api/ride.api';
 
+interface Coords {
+  lat: number;
+  lng: number;
+}
+
 interface RideDraftState {
   pickup: string;
   drop: string;
+  pickupCoords: Coords | null;
+  dropCoords: Coords | null;
   rideDate: string;
   rideTime: string;
   quote: RideQuote | null;
@@ -13,7 +20,7 @@ interface RideDraftState {
 
   passengerCount: number;
 
-  setSearch: (fields: Partial<Pick<RideDraftState, 'pickup' | 'drop' | 'rideDate' | 'rideTime' | 'passengerCount'>>) => void;
+  setSearch: (fields: Partial<Pick<RideDraftState, 'pickup' | 'drop' | 'pickupCoords' | 'dropCoords' | 'rideDate' | 'rideTime' | 'passengerCount'>>) => void;
   setQuote: (quote: RideQuote, preferredCategory?: string) => void;
   setSelectedOffer: (offer: RideOffer) => void;
   setRide: (rideId: string, totalAmount: number) => void;
@@ -23,6 +30,8 @@ interface RideDraftState {
 const initialState = {
   pickup: '',
   drop: '',
+  pickupCoords: null,
+  dropCoords: null,
   rideDate: '',
   rideTime: '',
   quote: null,

@@ -79,6 +79,16 @@ export default function App() {
     }
   }, [isInitializing, isAuthenticated]);
 
+  useEffect(() => {
+    // Mirror of the effect above: if the session dies mid-use (e.g. the
+    // refresh token expired and axios's interceptor cleared it), route back
+    // to login instead of leaving the user stranded on a screen where every
+    // API call now silently fails.
+    if (!isInitializing && !isAuthenticated && !['login', 'register', 'forgot'].includes(activeScreen)) {
+      setActiveScreen('login');
+    }
+  }, [isInitializing, isAuthenticated]);
+
   if (isInitializing) {
     return (
       <SafeAreaProvider>
