@@ -23,11 +23,13 @@ export const loginRider = (payload: { email: string; password: string }) =>
   apiClient.post<{
     success: boolean;
     accessToken: string;
+    refreshToken: string;
     profile: RiderProfileDto | null;
     message?: string;
   }>('/rider/auth/login', payload);
 
-export const logoutRider = () => apiClient.post('/rider/auth/logout');
+export const logoutRider = (refreshToken?: string | null) =>
+  apiClient.post('/rider/auth/logout', refreshToken ? { refreshToken } : {});
 
 export const forgotRiderPassword = (payload: { email: string }) =>
   apiClient.post('/rider/auth/forgot-password', payload);

@@ -32,14 +32,20 @@ export interface RideQuote {
   offers: RideOffer[];
 }
 
+interface LocationPayload {
+  address: string;
+  lat?: number;
+  lng?: number;
+}
+
 export const getRideQuote = (payload: {
-  pickup: { address: string };
-  drop: { address: string };
+  pickup: LocationPayload;
+  drop: LocationPayload;
 }) => apiClient.post<{ success: boolean; data: RideQuote }>('/ride/quote', payload);
 
 export const createRide = (payload: {
-  pickup: { address: string };
-  drop: { address: string };
+  pickup: LocationPayload;
+  drop: LocationPayload;
   rideDate: string;
   rideTime: string;
   vehicleCategory: string;

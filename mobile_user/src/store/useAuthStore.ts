@@ -14,10 +14,11 @@ export interface RiderProfile {
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   profile: RiderProfile | null;
   isAuthenticated: boolean;
   isInitializing: boolean;
-  setToken: (token: string) => Promise<void>;
+  setToken: (token: string, refreshToken?: string) => Promise<void>;
   setProfile: (profile: RiderProfile | null) => void;
   logout: () => Promise<void>;
   initialize: () => Promise<void>;
@@ -25,30 +26,40 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
+  refreshToken: null,
   profile: null,
   isAuthenticated: false,
   isInitializing: true,
-  setToken: async (token: string) => {
+  setToken: async (token: string, refreshToken?: string) => {
     await setItem('rider_token', token);
-    set({ token, isAuthenticated: true });
+    if (refreshToken) {
+      await setItem('rider_refresh_token', refreshToken);
+      set({ token, refreshToken, isAuthenticated: true });
+    } else {
+      set({ token, isAuthenticated: true });
+    }
   },
   setProfile: (profile: RiderProfile | null) => {
     set({ profile });
   },
   logout: async () => {
     try {
-      await apiClient.post('/rider/auth/logout');
+      await apiClient.post('/rider/auth/logout', { refreshToken: get().refreshToken });
     } catch (error) {
       console.error('Logout API Call Error:', error);
     } finally {
       await removeItem('rider_token');
-      set({ token: null, profile: null, isAuthenticated: false });
+      await removeItem('rider_refresh_token');
+      set({ token: null, refreshToken: null, profile: null, isAuthenticated: false });
     }
   },
   initialize: async () => {
-    const token = await getItem('rider_token');
+    const [token, refreshToken] = await Promise.all([
+      getItem('rider_token'),
+      getItem('rider_refresh_token'),
+    ]);
     if (token) {
-      set({ token, isAuthenticated: true });
+      set({ token, refreshToken, isAuthenticated: true });
     }
     set({ isInitializing: false });
   },
