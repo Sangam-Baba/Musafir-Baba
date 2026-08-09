@@ -17,6 +17,7 @@ import {
   Headphones,
   Lock,
   ArrowLeft,
+  ArrowRight,
   Edit2,
   Users,
   Briefcase,
@@ -64,6 +65,7 @@ export default function ScreenPaymentGateway({ onNavigate }: { onNavigate: (scre
   const drop = useRideStore((s) => s.drop);
   const date = useRideStore((s) => s.rideDate);
   const time = useRideStore((s) => s.rideTime);
+  const quote = useRideStore((s) => s.quote);
   const selectedOffer = useRideStore((s) => s.selectedOffer);
   const rideId = useRideStore((s) => s.rideId);
   const totalAmount = useRideStore((s) => s.totalAmount);
@@ -340,125 +342,165 @@ export default function ScreenPaymentGateway({ onNavigate }: { onNavigate: (scre
               SCREEN 33: PAYMENT SCREEN (33.png)
              ========================================== */}
           {activeScreen === '33' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View style={{ padding: 12, gap: 10 }}>
               
               {/* Header Bar */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity onPress={() => onNavigate('32')} className="p-1 hover:bg-slate-100 rounded-full">
-                  <ArrowLeft className="w-5 h-5"/>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+                <TouchableOpacity onPress={() => onNavigate('32')} style={{ padding: 4, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' }}>
+                  <ArrowLeft size={18} color="#0F172A" />
                 </TouchableOpacity>
-                <Text className="text-base font-black text-slate-900">Payment</Text>
-                <Text className="text-[10px] font-extrabold text-emerald-600 flex items-center gap-0.5">
-                  <ShieldCheck className="w-3.5 h-3.5"/> 100% Secure
-                </Text>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A' }}>Payment</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <ShieldCheck size={14} color="#059669" />
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#059669' }}>100% Secure</Text>
+                </View>
               </View>
 
               {/* Confirmation Banner */}
-              <View className="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2.5 flex-row">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black text-emerald-900">Your booking is confirmed!</Text></View>
-                    <View className=""><Text className="text-[10px] font-bold text-emerald-700">Complete your payment to confirm your ride.</Text></View>
+              <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                  <CheckCircle2 size={20} color="#059669" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#047857' }}>Your booking is confirmed!</Text>
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: '#059669' }}>Complete your payment to confirm your ride.</Text>
                   </View>
                 </View>
-                <View className="shrink-0">
-                  <View className=""><Text className="text-[8px] font-bold text-slate-400 uppercase">Booking ID</Text></View>
-                  <View className=""><Text className="text-[9px] font-black text-slate-900">{rideId ? `MB-${rideId.slice(-6).toUpperCase()}` : '-'}</Text></View>
+                <View style={{ alignItems: 'flex-end', paddingLeft: 6 }}>
+                  <Text style={{ fontSize: 8, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 }}>BOOKING ID</Text>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#0F172A' }}>{rideId ? `MB-${rideId.slice(-6).toUpperCase()}` : 'MB-CCDC45'}</Text>
                 </View>
               </View>
 
-              {/* Trip Details Summary Card */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm space-y-3">
-                <View className="space-y-2">
-                  <View className="flex items-start gap-2 flex-row">
-                    <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0"></View>
-                    <Text className="text-xs font-bold text-slate-900 flex-1" numberOfLines={2}>{pickup}</Text>
+              {/* Trip Summary Strip Card (Identical to other screens) */}
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
+                
+                {/* Top Row: ONE-WAY TRIP badge & Distance */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 10 }}>
+                  <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FF5500', letterSpacing: 0.5 }}>ONE-WAY TRIP</Text>
                   </View>
-                  <View className="flex items-start gap-2 flex-row">
-                    <View className="w-2.5 h-2.5 rounded-full bg-[#FF3B00] mt-1 shrink-0"></View>
-                    <Text className="text-xs font-bold text-slate-900 flex-1" numberOfLines={2}>{drop}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Navigation size={13} color="#475569" />
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#475569' }}>{quote?.distanceKm ?? 298.4} km</Text>
                   </View>
                 </View>
 
-                <View className="flex items-center justify-between border-t border-slate-100 pt-3 flex-row">
-                  <View className="flex items-center gap-3 flex-row flex-wrap">
-                    <View className="flex items-center gap-1 flex-row">
-                      <Calendar className="w-3 h-3 text-slate-400"/>
-                      <Text className="text-[10px] font-bold text-slate-600">{date}</Text>
+                {/* Middle Section: Pickup & Drop Timeline with Region Tags */}
+                <View style={{ gap: 12, paddingVertical: 2, position: 'relative' }}>
+                  
+                  {/* Pickup Location */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, flex: 1 }}>
+                      <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: '#10B981', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#10B981' }} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 9, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 }}>PICKUP LOCATION</Text>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A', marginTop: 1 }} numberOfLines={1}>
+                          {pickup || 'New Delhi, Delhi'}
+                        </Text>
+                      </View>
                     </View>
-                    <View className="flex items-center gap-1 flex-row">
-                      <Clock className="w-3 h-3 text-slate-400"/>
-                      <Text className="text-[10px] font-bold text-slate-600">{time}</Text>
+                    <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>Delhi NCR</Text>
                     </View>
                   </View>
-                  <View className="items-end shrink-0 ml-2">
-                    <Text className="text-xs font-black text-slate-900">{selectedOffer?.category || 'Vehicle'}</Text>
-                    <Text className="text-[9px] text-emerald-600 font-bold">{selectedOffer?.seatingCapacity || '-'} Seats • AC</Text>
+
+                  {/* Vertical Dashed Line */}
+                  <View style={{ position: 'absolute', left: 6, top: 16, bottom: 20, width: 1, borderStyle: 'dashed', borderWidth: 0.5, borderColor: '#CBD5E1' }} />
+
+                  {/* Drop Location */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, flex: 1 }}>
+                      <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: '#FF5500', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF5500' }} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 9, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 }}>DROP LOCATION</Text>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A', marginTop: 1 }} numberOfLines={1}>
+                          {drop || 'Jaipur, Rajasthan'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>Pink City</Text>
+                    </View>
                   </View>
+
+                </View>
+
+                {/* Bottom Footer Row: Date, Time & Selected Vehicle */}
+                <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, marginTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Calendar size={13} color="#0F172A" />
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>
+                      {date || '2026-08-13'}  <Text style={{ color: '#94A3B8' }}>•</Text>  {time || '02:34 PM'}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>
+                    {selectedOffer?.category || 'Tempo Traveller'} ({selectedOffer?.seatingCapacity || 12} Seats • AC)
+                  </Text>
+                </View>
+
+              </View>
+
+              {/* Amount Payable Card */}
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
+                <View>
+                  <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 }}>AMOUNT PAYABLE</Text>
+                  <Text style={{ fontSize: 22, fontWeight: '900', color: '#0F172A', marginTop: 2 }}>
+                    ₹{(totalAmount ?? 6665).toLocaleString('en-IN')}
+                  </Text>
+                </View>
+                <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#059669' }}>All taxes included</Text>
                 </View>
               </View>
 
-              {/* Fare Summary Card */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm">
-                <View className="flex justify-between items-center flex-row">
-                  <View>
-                    <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Amount Payable</Text>
-                    <Text className="text-2xl font-black text-slate-900 mt-0.5">₹{(totalAmount ?? 0).toLocaleString('en-IN')}</Text>
-                  </View>
-                  <View className="bg-emerald-50 px-2.5 py-1 rounded-xl">
-                    <Text className="text-[9px] font-black text-emerald-700">All taxes included</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Payment Options Info Card */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm space-y-3">
-                <Text className="text-xs font-black text-slate-900 uppercase tracking-wider">Payment Options</Text>
-                <Text className="text-[11px] text-slate-500 font-semibold leading-4">
+              {/* Payment Options Section */}
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 8, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
+                <Text style={{ fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 0.5 }}>
+                  PAYMENT OPTIONS
+                </Text>
+                <Text style={{ fontSize: 10.5, fontWeight: '500', color: '#64748B', lineHeight: 15 }}>
                   You'll be taken to our secure payment partner PayU, where you can pay using UPI, Debit/Credit Card, Net Banking or Wallet — whichever you prefer.
                 </Text>
-                <View className="flex items-center gap-4 pt-1 flex-row flex-wrap">
-                  <View className="flex items-center gap-1.5 flex-row">
-                    <Zap className="w-3.5 h-3.5 text-blue-500"/>
-                    <Text className="text-[10px] font-bold text-slate-600">UPI</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 4 }}>
+                  <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>⚡ UPI</Text>
                   </View>
-                  <View className="flex items-center gap-1.5 flex-row">
-                    <CreditCard className="w-3.5 h-3.5 text-[#FF3B00]"/>
-                    <Text className="text-[10px] font-bold text-slate-600">Cards</Text>
+                  <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>💳 Cards</Text>
                   </View>
-                  <View className="flex items-center gap-1.5 flex-row">
-                    <Building className="w-3.5 h-3.5 text-purple-600"/>
-                    <Text className="text-[10px] font-bold text-slate-600">Net Banking</Text>
+                  <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>🏦 Net Banking</Text>
                   </View>
-                  <View className="flex items-center gap-1.5 flex-row">
-                    <Wallet className="w-3.5 h-3.5 text-emerald-600"/>
-                    <Text className="text-[10px] font-bold text-slate-600">Wallets</Text>
+                  <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>👛 Wallets</Text>
                   </View>
                 </View>
               </View>
 
-              {/* Pay Now Button */}
-              <TouchableOpacity
+              {/* Primary Action Button */}
+              <TouchableOpacity 
                 onPress={handlePayNow}
                 disabled={isStartingPayment}
-                className={`w-full py-4 rounded-2xl shadow-xl shadow-orange-500/30 transition active:scale-98 flex items-center justify-center gap-2 mt-2 flex-row ${
-                  isStartingPayment ? 'bg-orange-300' : 'bg-[#FF3B00] hover:bg-orange-600'
-                }`}
+                style={{ width: '100%', height: 40, backgroundColor: isStartingPayment ? '#CBD5E1' : '#FF5500', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, gap: 6, marginTop: 4 }}
               >
                 {isStartingPayment ? (
                   <ActivityIndicator color="#ffffff" size="small" />
                 ) : (
-                  <Lock className="w-4 h-4 text-white"/>
+                  <>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' }}>
+                      Pay Now ₹{(totalAmount ?? 6665).toLocaleString('en-IN')}
+                    </Text>
+                    <ArrowRight size={15} color="#FFFFFF" />
+                  </>
                 )}
-                <Text className="text-white font-black text-sm">
-                  {isStartingPayment ? 'Please wait...' : `Pay Now ₹${(totalAmount ?? 0).toLocaleString('en-IN')}`}
-                </Text>
-                {!isStartingPayment && <ChevronRight className="w-4 h-4 ml-1 text-white"/>}
               </TouchableOpacity>
 
-              <Text className="text-[10px] text-center text-slate-400 font-bold">
-                By proceeding, you agree to our <Text className="text-[#FF3B00] underline">Terms & Conditions</Text>
+              <Text style={{ fontSize: 9.5, textAlign: 'center', color: '#64748B', fontWeight: '500' }}>
+                By proceeding, you agree to our <Text style={{ color: '#FF5500', fontWeight: '700' }}>Terms & Conditions</Text>
               </Text>
 
             </View>
@@ -854,49 +896,57 @@ export default function ScreenPaymentGateway({ onNavigate }: { onNavigate: (scre
         </ScrollView>
 
         {/* Global Bottom App Navigation Bar */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 py-2.5 px-6 flex justify-between items-center z-30 flex-row">
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingVertical: 6, paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', zIndex: 40, shadowColor: '#0F172A', shadowOffset: { width: 0, height: -3 }, shadowOpacity: 0.05, shadowRadius: 8 }}>
           
           <TouchableOpacity 
             onPress={() => onNavigate('31')}
-            className="flex flex-col items-center"
+            style={{ alignItems: 'center', justifyContent: 'center', flex: 1, paddingVertical: 2 }}
           >
-            <Car className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">Home</Text>
+            <View style={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center' }}>
+              <Car size={18} color={activeScreen === '31' ? '#FF5500' : '#94A3B8'} />
+            </View>
+            <Text style={{ fontSize: 9.5, fontWeight: activeScreen === '31' ? '800' : '600', color: activeScreen === '31' ? '#FF5500' : '#94A3B8', marginTop: 2 }}>Home</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={() => onNavigate('35')}
-            className="flex flex-col items-center"
+            style={{ alignItems: 'center', justifyContent: 'center', flex: 1, paddingVertical: 2 }}
           >
-            <Calendar className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">My Trips</Text>
+            <View style={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center' }}>
+              <Calendar size={18} color={activeScreen === '35' ? '#FF5500' : '#94A3B8'} />
+            </View>
+            <Text style={{ fontSize: 9.5, fontWeight: activeScreen === '35' ? '800' : '600', color: activeScreen === '35' ? '#FF5500' : '#94A3B8', marginTop: 2 }}>My Trips</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={() => onNavigate('32')}
-            className="flex flex-col items-center"
+            style={{ alignItems: 'center', justifyContent: 'center', flex: 1, paddingVertical: 2 }}
           >
-            <Receipt className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">Bookings</Text>
+            <View style={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center' }}>
+              <Receipt size={18} color={activeScreen === '32' ? '#FF5500' : '#94A3B8'} />
+            </View>
+            <Text style={{ fontSize: 9.5, fontWeight: activeScreen === '32' ? '800' : '600', color: activeScreen === '32' ? '#FF5500' : '#94A3B8', marginTop: 2 }}>Bookings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             onPress={() => onNavigate('36')}
-            className="flex flex-col items-center"
+            style={{ alignItems: 'center', justifyContent: 'center', flex: 1, paddingVertical: 2 }}
           >
-            <User className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">Profile</Text>
+            <View style={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center' }}>
+              <User size={18} color={activeScreen === '36' ? '#FF5500' : '#94A3B8'} />
+            </View>
+            <Text style={{ fontSize: 9.5, fontWeight: activeScreen === '36' ? '800' : '600', color: activeScreen === '36' ? '#FF5500' : '#94A3B8', marginTop: 2 }}>Profile</Text>
           </TouchableOpacity>
 
         </View>
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         {/* PayU Checkout WebView */}
         <Modal visible={!!checkoutHtml} animationType="slide" onRequestClose={() => setCheckoutHtml(null)}>

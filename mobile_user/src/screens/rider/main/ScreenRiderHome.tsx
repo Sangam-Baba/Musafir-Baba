@@ -1,7 +1,10 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, Linking } from 'react-native';
 import React, { useState, useEffect, useRef, createElement } from 'react';
 import * as Location from 'expo-location';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
+
+const LOGO_TRANSPARENT = require('../../../assets/mbgoLogo_transparent.png');
 import {
   Menu,
   Bell,
@@ -15,6 +18,8 @@ import {
   RotateCcw,
   Building2,
   Palmtree,
+  Globe,
+  FileCheck,
   ShieldCheck,
   Headphones,
   Lock,
@@ -62,6 +67,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   const setQuote = useRideStore((s) => s.setQuote);
 
   // Form State for Screen 31
+  const [tripType, setTripType] = useState<'oneway' | 'roundway'>('oneway');
   const [pickup, setPickup] = useState('New Delhi, Delhi');
   const [drop, setDrop] = useState('Jaipur, Rajasthan');
   const [date, setDate] = useState('');
@@ -279,10 +285,10 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   };
 
   return (
-    <View className="flex-1 bg-slate-900">
+    <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       
       {/* Main Mobile App Viewport Container */}
-      <View className="flex-1 bg-[#F8FAFC] relative">
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', position: 'relative' }}>
         
         
 
@@ -293,80 +299,87 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
               SCREEN 31: RIDER HOME & SEARCH (31.png)
              ========================================== */}
           {activeScreen === '31' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View style={{ padding: 12, gap: 10 }}>
               
               {/* Header Bar */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full transition">
-                  <Menu className="w-6 h-6 stroke-[2.2]"/>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 2 }}>
+                <TouchableOpacity onPress={() => onNavigate('36')} style={{ padding: 2 }}>
+                  <Menu size={20} color="#0F172A" />
                 </TouchableOpacity>
 
                 {/* Brand Logo */}
-                <View className="">
-                  <View className="flex items-center justify-center flex-row">
-                    <Text className="text-[#002B66]">MB</Text>
-                    <Text className="text-[#FF3B00]">GO</Text>
-                  </View>
-                  <View className="-mt-0.5"><Text className="text-[8px] font-bold text-slate-400 tracking-wider uppercase">
+                <View style={{ alignItems: 'center' }}>
+                  <Image source={LOGO_TRANSPARENT} style={{ width: 100, height: 28 }} resizeMode="contain" />
+                  <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#64748B', marginTop: -3 }}>
                     powered by musafirbaba
-                  </Text></View>
-                </View>
-
-                <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full relative transition">
-                  <Bell className="w-6 h-6 stroke-[2.2]"/>
-                  <Text className="w-2 h-2 rounded-full bg-[#FF3B00] absolute top-1 right-1 border border-white"></Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Greeting & Hero Graphic Header */}
-              <View className="relative pt-1 pb-1 flex justify-between items-start min-h-[105px] flex-row">
-                <View className="space-y-0.5 max-w-[58%] z-10 pt-1">
-                  <Text className="text-xs font-bold text-[#FF3B00]">Hello,</Text>
-                  <Text className="text-xl font-black text-slate-900 leading-tight">
-                    Where would you like to go today?
                   </Text>
                 </View>
 
-                {/* White SUV Car Hero Illustration */}
-                <View className="absolute right-0 -top-2 w-32 h-24 z-0 flex items-end justify-start" pointerEvents="none">
-                  <View className="w-16 h-12 bg-orange-100 opacity-50 rounded-2xl flex items-center justify-center"><Car className="w-8 h-8 text-[#FF3B00]"/></View>
-                </View>
+                <TouchableOpacity onPress={() => onNavigate('38')} style={{ padding: 2, position: 'relative' }}>
+                  <Bell size={20} color="#0F172A" />
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF3B00', position: 'absolute', top: 3, right: 3, borderWidth: 1, borderColor: '#FFFFFF' }} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Greeting & Hero Header */}
+              <View style={{ paddingTop: 2, paddingBottom: 2 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF3B00', marginBottom: 1 }}>Hello,</Text>
+                <Text style={{ fontSize: 18, fontWeight: '900', color: '#0F172A', lineHeight: 22 }}>
+                  Where would you{'\n'}like to go today?
+                </Text>
               </View>
 
               {/* Main Booking Search Card */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm space-y-3 relative z-10">
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 10, position: 'relative', zIndex: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 }}>
                 
+                {/* Trip Type Selector Tab */}
+                <View style={{ flexDirection: 'row', backgroundColor: '#F8FAFC', padding: 3, borderRadius: 10, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                  <TouchableOpacity
+                    onPress={() => setTripType('oneway')}
+                    style={{ flex: 1, paddingVertical: 5, borderRadius: 8, backgroundColor: tripType === 'oneway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: tripType === 'oneway' ? '#000' : 'transparent', shadowOpacity: 0.04, shadowRadius: 2, elevation: tripType === 'oneway' ? 1 : 0 }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: tripType === 'oneway' ? '#FF3B00' : '#64748B' }}>One Way</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setTripType('roundway')}
+                    style={{ flex: 1, paddingVertical: 5, borderRadius: 8, backgroundColor: tripType === 'roundway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: tripType === 'roundway' ? '#000' : 'transparent', shadowOpacity: 0.04, shadowRadius: 2, elevation: tripType === 'roundway' ? 1 : 0 }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: tripType === 'roundway' ? '#FF3B00' : '#64748B' }}>Round Trip</Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* Pick-up Location */}
                 <View>
-                  <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Pick-up Location</Text>
-                  <View className="flex items-center justify-between border-b border-slate-100 pb-2.5 flex-row">
-                    <View className="flex items-center gap-2.5 flex-1 flex-row">
-                      <View className="w-3.5 h-3.5 rounded-full border-2 border-emerald-500 bg-white flex items-center justify-center shrink-0 flex-row">
-                        <View className="w-1.5 h-1.5 rounded-full bg-emerald-500"></View>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Pick-up Location</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                      <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#10B981', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#10B981' }} />
                       </View>
                       <TextInput
                         value={pickup}
                         onChangeText={setPickup}
                         onFocus={() => setActiveField('pickup')}
                         placeholder="Enter pick-up location"
-                        className="flex-1 bg-transparent text-xs font-extrabold text-slate-900 focus:outline-none placeholder:text-slate-300"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontSize: 12, fontWeight: '700', color: '#0F172A', padding: 0 }}
                       />
                     </View>
-                    <TouchableOpacity onPress={handleUseCurrentLocation} disabled={isLocating} className="p-1 hover:text-slate-900">
-                      {isLocating ? <ActivityIndicator size="small" color="#FF3B00" /> : <LocateFixed className="w-4 h-4"/>}
+                    <TouchableOpacity onPress={handleUseCurrentLocation} disabled={isLocating} style={{ padding: 2 }}>
+                      {isLocating ? <ActivityIndicator size="small" color="#FF3B00" /> : <LocateFixed size={16} color="#0F172A" />}
                     </TouchableOpacity>
                   </View>
                   {activeField === 'pickup' && pickup.trim().length >= 3 && (
-                    <View className="bg-white border border-slate-200 rounded-2xl shadow-sm mt-2">
+                    <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, marginTop: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4 }}>
                       {isSearchingPickup && (
-                        <View className="px-3 py-3 flex-row items-center gap-2">
+                        <View style={{ padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <ActivityIndicator size="small" color="#FF3B00" />
-                          <Text className="text-xs font-bold text-slate-400">Searching...</Text>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>Searching...</Text>
                         </View>
                       )}
                       {!isSearchingPickup && pickupSuggestions.length === 0 && (
-                        <View className="px-3 py-3">
-                          <Text className="text-xs font-bold text-slate-400">No matching locations found</Text>
+                        <View style={{ padding: 8 }}>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>No matching locations found</Text>
                         </View>
                       )}
                       {!isSearchingPickup && pickupSuggestions.map((s, idx) => (
@@ -377,9 +390,9 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             setActiveField(null);
                             setPickupSuggestions([]);
                           }}
-                          className="px-3 py-2.5 border-b border-slate-50"
+                          style={{ paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' }}
                         >
-                          <Text className="text-xs font-bold text-slate-700">{s.address}</Text>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#334155' }}>{s.address}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -388,33 +401,34 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Drop Location */}
                 <View>
-                  <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Drop Location</Text>
-                  <View className="flex items-center justify-between border-b border-slate-100 pb-2.5 flex-row">
-                    <View className="flex items-center gap-2.5 flex-1 flex-row">
-                      <MapPin className="w-4 h-4 text-[#FF3B00] shrink-0"/>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Drop Location</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                      <MapPin size={16} color="#FF3B00" />
                       <TextInput
                         value={drop}
                         onChangeText={setDrop}
                         onFocus={() => setActiveField('drop')}
                         placeholder="Enter drop location"
-                        className="flex-1 bg-transparent text-xs font-extrabold text-slate-900 focus:outline-none placeholder:text-slate-300"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontSize: 12, fontWeight: '700', color: '#0F172A', padding: 0 }}
                       />
                     </View>
-                    <TouchableOpacity onPress={swapLocations} className="p-1 hover:text-slate-900">
-                      <ArrowUpDown className="w-4 h-4"/>
+                    <TouchableOpacity onPress={swapLocations} style={{ padding: 2 }}>
+                      <ArrowUpDown size={16} color="#0F172A" />
                     </TouchableOpacity>
                   </View>
                   {activeField === 'drop' && drop.trim().length >= 3 && (
-                    <View className="bg-white border border-slate-200 rounded-2xl shadow-sm mt-2">
+                    <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, marginTop: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4 }}>
                       {isSearchingDrop && (
-                        <View className="px-3 py-3 flex-row items-center gap-2">
+                        <View style={{ padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <ActivityIndicator size="small" color="#FF3B00" />
-                          <Text className="text-xs font-bold text-slate-400">Searching...</Text>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>Searching...</Text>
                         </View>
                       )}
                       {!isSearchingDrop && dropSuggestions.length === 0 && (
-                        <View className="px-3 py-3">
-                          <Text className="text-xs font-bold text-slate-400">No matching locations found</Text>
+                        <View style={{ padding: 8 }}>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>No matching locations found</Text>
                         </View>
                       )}
                       {!isSearchingDrop && dropSuggestions.map((s, idx) => (
@@ -425,9 +439,9 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             setActiveField(null);
                             setDropSuggestions([]);
                           }}
-                          className="px-3 py-2.5 border-b border-slate-50"
+                          style={{ paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' }}
                         >
-                          <Text className="text-xs font-bold text-slate-700">{s.address}</Text>
+                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#334155' }}>{s.address}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -435,11 +449,11 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 </View>
 
                 {/* Date & Time Selector Row */}
-                <View className="flex-row flex-wrap gap-3 border-b border-slate-100 pb-2.5">
-                  <View className="flex-1 border-r border-slate-100 pr-2">
-                    <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Date</Text>
-                    <View className="flex items-center gap-2 flex-row">
-                      <Calendar className="w-4 h-4 text-blue-600 shrink-0"/>
+                <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                  <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#F8FAFC', paddingRight: 6 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Date</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Calendar size={15} color="#3B82F6" />
                       {isWeb ? (
                         createElement('input', {
                           type: 'date',
@@ -454,25 +468,25 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             border: 'none',
                             outline: 'none',
                             background: 'transparent',
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: 'bold',
-                            color: date ? '#1e293b' : '#cbd5e1',
+                            color: date ? '#0F172A' : '#CBD5E1',
                             fontFamily: 'inherit',
                             cursor: 'pointer',
                           },
                         })
                       ) : (
-                        <TouchableOpacity onPress={() => setShowDatePicker(true)} className="flex-1">
-                          <Text className={`text-xs font-bold ${date ? 'text-slate-800' : 'text-slate-300'}`}>{date || 'Select date'}</Text>
+                        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 11, fontWeight: 'bold', color: date ? '#0F172A' : '#CBD5E1' }}>{date || 'Select date'}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
                   </View>
 
-                  <View className="flex-1 pl-1">
-                    <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Time</Text>
-                    <View className="flex items-center gap-2 flex-row">
-                      <Clock className="w-4 h-4 text-blue-600 shrink-0"/>
+                  <View style={{ flex: 1, paddingLeft: 8 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Time</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Clock size={15} color="#3B82F6" />
                       {isWeb ? (
                         createElement('input', {
                           type: 'time',
@@ -486,16 +500,16 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             border: 'none',
                             outline: 'none',
                             background: 'transparent',
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: 'bold',
-                            color: time ? '#1e293b' : '#cbd5e1',
+                            color: time ? '#0F172A' : '#CBD5E1',
                             fontFamily: 'inherit',
                             cursor: 'pointer',
                           },
                         })
                       ) : (
-                        <TouchableOpacity onPress={() => setShowTimePicker(true)} className="flex-1">
-                          <Text className={`text-xs font-bold ${time ? 'text-slate-800' : 'text-slate-300'}`}>{time || 'Select time'}</Text>
+                        <TouchableOpacity onPress={() => setShowTimePicker(true)} style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 11, fontWeight: 'bold', color: time ? '#0F172A' : '#CBD5E1' }}>{time || 'Select time'}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -525,14 +539,14 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 )}
 
                 {/* Vehicle Type Picker */}
-                <TouchableOpacity onPress={() => setShowVehiclePicker(true)} className="border-b border-slate-100 pb-2.5">
-                  <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Vehicle Type</Text>
-                  <View className="flex items-center justify-between pt-0.5 flex-row">
-                    <View className="flex items-center gap-2 flex-row">
-                      <Car className="w-4 h-4 text-[#FF3B00] shrink-0"/>
-                      <Text className={`text-xs font-bold ${vehicleType ? 'text-slate-900' : 'text-slate-300'}`}>{vehicleType || 'Select vehicle type'}</Text>
+                <TouchableOpacity onPress={() => setShowVehiclePicker(true)} style={{ borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Vehicle Type</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Car size={15} color="#6366F1" />
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: vehicleType ? '#0F172A' : '#CBD5E1' }}>{vehicleType || 'Select vehicle type'}</Text>
                     </View>
-                    <ChevronRight className="w-4 h-4 text-slate-400"/>
+                    <ChevronRight size={14} color="#94A3B8" />
                   </View>
                 </TouchableOpacity>
 
@@ -542,8 +556,8 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                     onPress={() => setShowVehiclePicker(false)}
                     activeOpacity={1}
                   >
-                    <View className="bg-white rounded-t-3xl p-4 space-y-2">
-                      <Text className="text-sm font-black text-slate-900 pb-2">Select Vehicle Type</Text>
+                    <View style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, gap: 8 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '900', color: '#0F172A', paddingBottom: 2 }}>Select Vehicle Type</Text>
                       {VEHICLE_CATEGORIES.map((v) => (
                         <TouchableOpacity
                           key={v.category}
@@ -552,88 +566,67 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             setVehicleType(v.label);
                             setShowVehiclePicker(false);
                           }}
-                          className={`p-3 rounded-2xl flex-row items-center gap-2 ${selectedCategory === v.category ? 'bg-orange-50 border border-[#FF3B00]' : 'bg-slate-50'}`}
+                          style={{ padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: selectedCategory === v.category ? '#FFF5EF' : '#F8FAFC', borderWidth: selectedCategory === v.category ? 1 : 0, borderColor: '#FF3B00' }}
                         >
-                          <Car className="w-4 h-4 text-[#FF3B00]"/>
-                          <Text className="text-xs font-bold text-slate-800">{v.label}</Text>
+                          <Car size={16} color="#FF3B00" />
+                          <Text style={{ fontSize: 11, fontWeight: '700', color: '#1E293B' }}>{v.label}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
                   </TouchableOpacity>
                 </Modal>
 
-                {/* Passenger Count */}
-                <View className="flex items-center justify-between pt-0.5 flex-row">
-                  <View className="flex items-center gap-2 flex-row">
-                    <Users className="w-4 h-4 text-[#FF3B00] shrink-0"/>
-                    <Text className="text-xs font-bold text-slate-900">Passengers</Text>
-                  </View>
-                  <View className="flex items-center gap-3 flex-row">
-                    <TouchableOpacity
-                      onPress={() => setPassengerCount((n) => Math.max(1, n - 1))}
-                      className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"
-                    >
-                      <Text className="text-slate-700 font-black">-</Text>
-                    </TouchableOpacity>
-                    <Text className="text-xs font-black text-slate-900 w-4 text-center">{passengerCount}</Text>
-                    <TouchableOpacity
-                      onPress={() => setPassengerCount((n) => Math.min(12, n + 1))}
-                      className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"
-                    >
-                      <Text className="text-slate-700 font-black">+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
                 {/* Search Cabs Action Button */}
                 <TouchableOpacity
                   onPress={handleSearchCabs}
                   disabled={isSearching}
-                  className="w-full bg-[#FF3B00] py-3.5 rounded-2xl shadow-lg mt-2 flex items-center justify-center flex-row"
-                ><Text className="text-white font-extrabold text-sm text-center">
-                  {isSearching ? 'Searching...' : 'Search Cabs'}
-                </Text></TouchableOpacity>
+                  style={{ width: '100%', height: 38, backgroundColor: '#FF3B00', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13, textAlign: 'center' }}>
+                    {isSearching ? 'Searching...' : 'Search Cabs'}
+                  </Text>
+                </TouchableOpacity>
 
               </View>
 
               {/* Popular Services Section */}
-              <View className="space-y-2 pt-1">
-                <View className="flex items-center justify-between flex-row">
-                  <Text className="text-sm font-black text-slate-900 tracking-tight">Popular Services</Text>
-                  <TouchableOpacity className="flex items-center gap-0.5 flex-row"><Text className="text-xs font-bold text-[#FF3B00]">
-                    View All </Text><ChevronRight className="w-3.5 h-3.5"/>
+              <View style={{ gap: 6, paddingTop: 2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 13, fontWeight: '900', color: '#0F172A' }}>Popular Services</Text>
+                  <TouchableOpacity onPress={() => Linking.openURL('https://musafirbaba.com/')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF3B00' }}>View All </Text>
+                    <ChevronRight size={12} color="#FF3B00" />
                   </TouchableOpacity>
                 </View>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 4 }} className="flex-row">
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 2 }}>
                   {[
-                    { icon: Plane, label: 'Airport Transfer', color: 'bg-emerald-100 text-emerald-600' },
-                    { icon: Navigation, label: 'Outstation Trips', color: 'bg-orange-100 text-orange-600' },
-                    { icon: RotateCcw, label: 'Hourly Rental', color: 'bg-blue-100 text-blue-600' },
-                    { icon: Building2, label: 'Corporate Travel', color: 'bg-purple-100 text-purple-600' },
-                    { icon: Palmtree, label: 'Tour Packages', color: 'bg-amber-100 text-amber-600' },
+                    { icon: Palmtree, label: 'Tour\nPackages', bg: '#FEF3C7', iconColor: '#F59E0B', action: () => Linking.openURL('https://musafirbaba.com/holidays') },
+                    { icon: Globe, label: 'International\nTrips', bg: '#F0FDF4', iconColor: '#16A34A', action: () => Linking.openURL('https://musafirbaba.com/holidays/international-tour-packages') },
+                    { icon: FileCheck, label: 'Visa\nServices', bg: '#FEF2F2', iconColor: '#EF4444', action: () => Linking.openURL('https://musafirbaba.com/visa') },
+                    { icon: Building2, label: 'Corporate\nTravel', bg: '#F3E8FF', iconColor: '#8B5CF6', action: () => Linking.openURL('https://musafirbaba.com/holidays/mountain-treks') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
                       <TouchableOpacity 
                         key={idx}
-                        onPress={() => onNavigate('32')}
+                        onPress={srv.action}
                         style={{
-                          backgroundColor: '#fff',
+                          backgroundColor: '#FFFFFF',
                           borderWidth: 1,
-                          borderColor: 'rgba(226,232,240,0.7)',
-                          borderRadius: 16,
-                          padding: 12,
+                          borderColor: '#F1F5F9',
+                          borderRadius: 14,
+                          padding: 10,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          minWidth: 76,
-                          flexShrink: 0,
+                          width: 74,
+                          height: 84,
                         }}
                       >
-                        <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0fdf4' }}>
-                          <Icon width={20} height={20} />
+                        <View style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: srv.bg, marginBottom: 4 }}>
+                          <Icon size={17} color={srv.iconColor} />
                         </View>
-                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#1e293b', marginTop: 6 }}>{srv.label}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#1E293B', textAlign: 'center', lineHeight: 11 }}>{srv.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -641,41 +634,41 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
               </View>
 
               {/* Banner Card */}
-              <View className="bg-orange-50 border border-orange-200/70 rounded-3xl p-4 flex items-center justify-between relative overflow-hidden shadow-sm flex-row">
-                <View className="space-y-1 z-10 max-w-[65%]">
-                  <Text className="text-xs font-black text-slate-900 leading-snug">
-                    Travel with comfort at the best prices
+              <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', borderRadius: 16, padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ gap: 2, flex: 1, paddingRight: 8 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '900', color: '#0F172A', lineHeight: 14 }}>
+                    Travel with comfort{'\n'}at the best prices
                   </Text>
-                  <Text className="text-[10px] text-slate-600 font-bold">Safe | Reliable | On-time</Text>
+                  <Text style={{ fontSize: 9, color: '#64748B', fontWeight: '600' }}>Safe | Reliable | On-time</Text>
                   <TouchableOpacity 
                     onPress={() => onNavigate('32')}
-                    className="bg-[#FF3B00] hover:bg-orange-600 px-3.5 py-1.5 rounded-xl shadow-md transition active:scale-95 mt-2 inline-block"
-                  ><Text className="text-white text-[10px] font-black">
-                    Book Now
-                  </Text></TouchableOpacity>
+                    style={{ backgroundColor: '#FF3B00', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginTop: 2 }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontSize: 9, fontWeight: '900' }}>Book Now</Text>
+                  </TouchableOpacity>
                 </View>
-                <View className="w-24 h-20 bg-orange-200/40 rounded-2xl flex items-center justify-center shrink-0 flex-row">
-                  <Car className="w-12 h-12 text-[#FF3B00]"/>
+                <View style={{ width: 56, height: 48, borderRadius: 10, backgroundColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
+                  <Car size={26} color="#FF3B00" />
                 </View>
               </View>
 
               {/* Why Travel With MBGO? Section */}
-              <View className="space-y-2 pt-1">
-                <Text className="text-sm font-black text-slate-900 tracking-tight">Why travel with MBGO?</Text>
-                <View className="flex-row flex-wrap gap-2">
+              <View style={{ gap: 6, paddingTop: 2 }}>
+                <Text style={{ fontSize: 13, fontWeight: '900', color: '#0F172A' }}>Why travel with MBGO?</Text>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
                   {[
-                    { icon: ShieldCheck, label: 'Verified Partners', color: 'bg-emerald-100 text-emerald-600' },
-                    { icon: Award, label: 'Best Price Guarantee', color: 'bg-orange-100 text-orange-600' },
-                    { icon: Headphones, label: '24x7 Support', color: 'bg-blue-100 text-blue-600' },
-                    { icon: Lock, label: 'Safe & Secure Ride', color: 'bg-purple-100 text-purple-600' },
+                    { icon: ShieldCheck, label: 'Verified\nPartners', bg: '#ECFDF5', iconColor: '#10B981' },
+                    { icon: Award, label: 'Best Price\nGuarantee', bg: '#FFF5EF', iconColor: '#FF3B00' },
+                    { icon: Headphones, label: '24x7\nSupport', bg: '#EFF6FF', iconColor: '#3B82F6' },
+                    { icon: Lock, label: 'Safe & Secure\nRide', bg: '#F3E8FF', iconColor: '#8B5CF6' },
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <View key={idx} className="flex-1 bg-white border border-slate-100 rounded-2xl p-2.5 flex flex-col items-center space-y-1.5 shadow-sm">
-                        <View className={`w-8 h-8 rounded-full flex items-center justify-center ${item.color}`}>
-                          <Icon className="w-4 h-4"/>
+                      <View key={idx} style={{ flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 12, padding: 8, alignItems: 'center', gap: 4 }}>
+                        <View style={{ width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: item.bg }}>
+                          <Icon size={14} color={item.iconColor} />
                         </View>
-                        <Text className="text-[9px] font-extrabold text-slate-800 leading-tight">{item.label}</Text>
+                        <Text style={{ fontSize: 8.5, fontWeight: '800', color: '#1E293B', textAlign: 'center', lineHeight: 10 }}>{item.label}</Text>
                       </View>
                     );
                   })}
@@ -1279,203 +1272,286 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
               SCREEN 35: MY TRIPS (35.png)
              ========================================== */}
           {activeScreen === '35' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View style={{ padding: 12, gap: 10 }}>
               
               {/* Header Bar */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <Text className="text-lg font-black text-slate-900">My Trips</Text>
-                <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full relative">
-                  <Bell className="w-5 h-5"/>
-                  <Text className="w-2 h-2 rounded-full bg-[#FF3B00] absolute top-1 right-1"></Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+                <Text style={{ fontSize: 18, fontWeight: '900', color: '#0F172A' }}>My Trips</Text>
+                <TouchableOpacity style={{ alignItems: 'center', position: 'relative' }}>
+                  <View style={{ position: 'relative' }}>
+                    <Bell size={20} color="#0F172A" />
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF5500', position: 'absolute', top: 0, right: 0 }} />
+                  </View>
+                  <Text style={{ fontSize: 8, fontWeight: '700', color: '#64748B', marginTop: 1 }}>Notifications</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Status Tabs */}
-              <View className="flex border-b border-slate-200 flex-row">
+              {/* Status Tabs (Upcoming, Completed, Cancelled) */}
+              <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingTop: 2 }}>
                 <TouchableOpacity 
                   onPress={() => setTripsTab('upcoming')}
-                  className={`flex-1 py-2.5 text-center flex items-center justify-center gap-1.5 transition ${
-                    tripsTab === 'upcoming' ? 'text-[#FF3B00] border-b-2 border-[#FF3B00]' : 'hover:text-slate-800'
-                  }`}
+                  style={{ flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, borderBottomWidth: tripsTab === 'upcoming' ? 2 : 0, borderBottomColor: '#FF5500' }}
                 >
-                  <Calendar className="w-4 h-4"/><Text className="text-center"> Upcoming
-                </Text></TouchableOpacity>
+                  <Calendar size={14} color={tripsTab === 'upcoming' ? '#FF5500' : '#64748B'} />
+                  <Text style={{ fontSize: 12, fontWeight: tripsTab === 'upcoming' ? '800' : '600', color: tripsTab === 'upcoming' ? '#FF5500' : '#64748B' }}>Upcoming</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity 
                   onPress={() => setTripsTab('completed')}
-                  className={`flex-1 py-2.5 text-center flex items-center justify-center gap-1.5 transition ${
-                    tripsTab === 'completed' ? 'text-[#FF3B00] border-b-2 border-[#FF3B00]' : 'hover:text-slate-800'
-                  }`}
+                  style={{ flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, borderBottomWidth: tripsTab === 'completed' ? 2 : 0, borderBottomColor: '#FF5500' }}
                 >
-                  <CheckCircle2 className="w-4 h-4"/><Text className="text-center"> Completed
-                </Text></TouchableOpacity>
+                  <CheckCircle2 size={14} color={tripsTab === 'completed' ? '#FF5500' : '#64748B'} />
+                  <Text style={{ fontSize: 12, fontWeight: tripsTab === 'completed' ? '800' : '600', color: tripsTab === 'completed' ? '#FF5500' : '#64748B' }}>Completed</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity 
                   onPress={() => setTripsTab('cancelled')}
-                  className={`flex-1 py-2.5 text-center flex items-center justify-center gap-1.5 transition ${
-                    tripsTab === 'cancelled' ? 'text-[#FF3B00] border-b-2 border-[#FF3B00]' : 'hover:text-slate-800'
-                  }`}
+                  style={{ flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, borderBottomWidth: tripsTab === 'cancelled' ? 2 : 0, borderBottomColor: '#FF5500' }}
                 >
-                  <XCircle className="w-4 h-4"/><Text className="text-center"> Cancelled
-                </Text></TouchableOpacity>
+                  <XCircle size={14} color={tripsTab === 'cancelled' ? '#FF5500' : '#64748B'} />
+                  <Text style={{ fontSize: 12, fontWeight: tripsTab === 'cancelled' ? '800' : '600', color: tripsTab === 'cancelled' ? '#FF5500' : '#64748B' }}>Cancelled</Text>
+                </TouchableOpacity>
               </View>
 
               {/* Filter Pills Row */}
-              <View className="flex justify-between items-center flex-row">
-                <View className="flex gap-1.5 flex-row">
-                  <TouchableOpacity className="bg-[#FF3B00] px-3 py-1.5 rounded-xl shadow-sm"><Text className="text-white">All Trips</Text></TouchableOpacity>
-                  <TouchableOpacity className="bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl"><Text className="text-slate-700">Outstation</Text></TouchableOpacity>
-                  <TouchableOpacity className="bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl"><Text className="text-slate-700">Local</Text></TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <TouchableOpacity style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 }}>
+                    <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#FF5500' }}>All Trips</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 }}>
+                    <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#64748B' }}>Outstation</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 }}>
+                    <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#64748B' }}>Local</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity className="border border-slate-200 hover:bg-slate-50 px-2.5 py-1.5 rounded-xl flex items-center gap-1 flex-row">
-                  <Filter className="w-3 h-3"/><Text className="text-slate-700"> Filter
-                </Text></TouchableOpacity>
+
+                <TouchableOpacity style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Filter size={12} color="#475569" />
+                  <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#475569' }}>Filter</Text>
+                </TouchableOpacity>
               </View>
 
               {/* Refer & Earn Banner */}
-              <View className="bg-orange-50 border border-amber-200/80 rounded-2xl p-3 flex items-center justify-between shadow-sm flex-row">
-                <View className="flex items-center gap-2.5 flex-row">
-                  <Gift className="w-5 h-5 text-[#FF3B00] shrink-0"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black text-slate-900">Refer & Earn</Text></View>
-                    <View className=""><Text className="text-[10px] text-slate-500 font-semibold">Refer your friends and earn exciting rewards.</Text></View>
+              <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
+                    <Gift size={18} color="#FF5500" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A' }}>Refer & Earn</Text>
+                    <Text style={{ fontSize: 9.5, fontWeight: '600', color: '#64748B', marginTop: 1 }}>Refer your friends and earn exciting rewards.</Text>
                   </View>
                 </View>
-                <TouchableOpacity className="bg-[#FF3B00] hover:bg-orange-600 px-3 py-1.5 rounded-xl shadow-sm shrink-0"><Text className="text-[10px] font-black text-white">
-                  Refer Now &gt;
-                </Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => showToast("Opening Referral Program...")} style={{ height: 30, backgroundColor: '#FF5500', borderRadius: 8, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#FFFFFF' }}>Refer Now</Text>
+                  <ChevronRight size={12} color="#FFFFFF" />
+                </TouchableOpacity>
               </View>
 
-              {/* Completed Trips List */}
-              <View className="space-y-3">
-                <View className=""><Text className="text-xs font-black text-slate-900">Completed Trips</Text></View>
+              {/* Completed Trips Header */}
+              <Text style={{ fontSize: 14, fontWeight: '900', color: '#0F172A', paddingTop: 2 }}>
+                {tripsTab === 'completed' ? 'Completed Trips' : tripsTab === 'upcoming' ? 'Upcoming Trips' : 'Cancelled Trips'}
+              </Text>
 
-                {/* Trip Card 1 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm space-y-3">
-                  <View className="flex justify-between items-center border-b border-slate-100 pb-2 flex-row">
-                    <Text className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-md">
-                      ✓ Completed
-                    </Text>
-                    <Text className="text-[10px] font-extrabold text-slate-400 flex items-center gap-1">
-                      Booking ID: MBGO2505200001 <Copy className="w-3 h-3 text-slate-400 cursor-pointer"/>
-                    </Text>
+              {/* Trip Cards List: Render MOCK DUMMY TRIPS matching target screenshot */}
+              {[
+                {
+                  _id: 'MBGO2505200001',
+                  status: 'COMPLETED',
+                  pickup: { address: 'New Delhi, Delhi' },
+                  drop: { address: 'Jaipur, Rajasthan' },
+                  rideDate: '20 May 2025',
+                  rideTime: '08:00 AM',
+                  tripType: 'One Way',
+                  passengers: '2 Passengers',
+                  bags: '2 Bags',
+                  vehicleCategory: 'Sedan',
+                  vehicleSubtext: 'Dzire, Etios, Amaze or similar',
+                  seats: '4 Seats',
+                  ac: true,
+                  totalAmount: 6250,
+                  driverName: 'Ramesh Kumar',
+                  driverRating: '4.8',
+                  completedTime: '20 May 2025, 01:45 PM'
+                },
+                {
+                  _id: 'MBGO1805200002',
+                  status: 'COMPLETED',
+                  pickup: { address: 'Gurugram, Haryana' },
+                  drop: { address: 'Agra, Uttar Pradesh' },
+                  rideDate: '18 May 2025',
+                  rideTime: '07:30 AM',
+                  tripType: 'Round Trip',
+                  passengers: '3 Passengers',
+                  bags: '3 Bags',
+                  vehicleCategory: 'SUV',
+                  vehicleSubtext: 'Ertiga, Carens or similar',
+                  seats: '6 Seats',
+                  ac: true,
+                  totalAmount: 9750,
+                  driverName: 'Mahesh Yadav',
+                  driverRating: '4.7',
+                  completedTime: '18 May 2025, 06:30 PM'
+                }
+              ].map((trip, idx) => (
+                <View key={trip._id || idx} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
+                  
+                  {/* Card Header: Status Badge & Booking ID */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
+                    <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <CheckCircle2 size={10} color="#059669" />
+                      <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#059669' }}>Completed</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748B' }}>Booking ID: {trip._id}</Text>
+                      <TouchableOpacity onPress={() => showToast("Booking ID copied!")}>
+                        <Copy size={11} color="#94A3B8" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
 
-                  <View className="flex justify-between items-start gap-2 flex-row">
-                    <View className="space-y-2">
-                      <View className="flex items-start gap-2 flex-row">
-                        <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-0.5 shrink-0"></View>
-                        <View>
-                          <View className=""><Text className="text-xs font-black text-slate-900">New Delhi, Delhi</Text></View>
-                          <View className=""><Text className="text-[9px] text-slate-400 font-bold">Pick-up</Text></View>
+                  {/* 3-Column Layout: Route, Schedule, Vehicle Box */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                    
+                    {/* Col 1: Route Timeline */}
+                    <View style={{ flex: 1, gap: 10, position: 'relative', minWidth: 0, paddingRight: 4 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
+                        <View style={{ width: 9, height: 9, borderRadius: 4.5, borderWidth: 1.5, borderColor: '#10B981', backgroundColor: '#FFFFFF', marginTop: 3 }} />
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#0F172A' }} numberOfLines={1}>
+                            {trip.pickup?.address}
+                          </Text>
+                          <Text style={{ fontSize: 8.5, fontWeight: '600', color: '#94A3B8', marginTop: 1 }}>Pick-up</Text>
                         </View>
                       </View>
 
-                      <View className="flex items-start gap-2 flex-row">
-                        <View className="w-2.5 h-2.5 rounded-full bg-[#FF3B00] mt-0.5 shrink-0"></View>
-                        <View>
-                          <View className=""><Text className="text-xs font-black text-slate-900">Jaipur, Rajasthan</Text></View>
-                          <View className=""><Text className="text-[9px] text-slate-400 font-bold">Drop</Text></View>
+                      {/* Vertical line */}
+                      <View style={{ position: 'absolute', left: 4, top: 12, bottom: 16, width: 1, borderStyle: 'dashed', borderWidth: 0.5, borderColor: '#CBD5E1' }} />
+
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
+                        <View style={{ width: 9, height: 9, borderRadius: 4.5, borderWidth: 1.5, borderColor: '#FF5500', backgroundColor: '#FFFFFF', marginTop: 3 }} />
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#0F172A' }} numberOfLines={1}>
+                            {trip.drop?.address}
+                          </Text>
+                          <Text style={{ fontSize: 8.5, fontWeight: '600', color: '#94A3B8', marginTop: 1 }}>Drop</Text>
                         </View>
                       </View>
                     </View>
 
-                    <View className="shrink-0">
-                      <View className=""><Text className="text-xs font-black text-slate-900">Sedan</Text></View>
-                      <View className=""><Text className="text-[10px] text-slate-400 font-bold">Dzire, Etios, Amaze</Text></View>
-                      <View className=""><Text className="text-[10px] text-slate-500 font-bold">4 Seats • AC</Text></View>
-                      <View className="mt-1"><Text className="text-sm font-black text-[#FF3B00]">₹6,250</Text></View>
+                    {/* Col 2: Schedule & Specs */}
+                    <View style={{ width: 88, gap: 3, borderLeftWidth: 1, borderLeftColor: '#F1F5F9', paddingLeft: 5 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Calendar size={10} color="#64748B" />
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.rideDate}</Text>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Clock size={10} color="#64748B" />
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.rideTime}</Text>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <ArrowUpDown size={10} color="#64748B" />
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.tripType}</Text>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Users size={10} color="#64748B" />
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.passengers}</Text>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Briefcase size={10} color="#64748B" />
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.bags}</Text>
+                      </View>
+                    </View>
+
+                    {/* Col 3: Vehicle Info & Graphic */}
+                    <View style={{ width: 85, gap: 2, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderLeftColor: '#F1F5F9', paddingLeft: 5 }}>
+                      <Text style={{ fontSize: 11.5, fontWeight: '900', color: '#0F172A', textAlign: 'center' }}>
+                        {trip.vehicleCategory}
+                      </Text>
+                      <Text style={{ fontSize: 8, fontWeight: '600', color: '#64748B', textAlign: 'center' }} numberOfLines={1}>
+                        {trip.vehicleSubtext}
+                      </Text>
+
+                      <View style={{ width: 46, height: 26, borderRadius: 6, backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center', marginVertical: 2 }}>
+                        <Car size={16} color="#FF5500" />
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#475569' }}>{trip.seats}</Text>
+                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#059669' }}>• AC</Text>
+                      </View>
+                    </View>
+
+                  </View>
+
+                  {/* Middle Info Bar: 2-Row Responsive Non-Overflowing Layout */}
+                  <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, gap: 6 }}>
+                    {/* Row 1: Total Amount & Driver */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Total Amount</Text>
+                        <Text style={{ fontSize: 12.5, fontWeight: '900', color: '#059669' }}>₹{trip.totalAmount.toLocaleString('en-IN')}</Text>
+                        <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                          <Text style={{ fontSize: 8, fontWeight: '800', color: '#059669' }}>Paid ✓</Text>
+                        </View>
+                      </View>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Driver</Text>
+                        <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#0F172A' }}>{trip.driverName}</Text>
+                        <View style={{ backgroundColor: '#059669', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                          <Text style={{ fontSize: 7.5, fontWeight: '800', color: '#FFFFFF' }}>★ {trip.driverRating}</Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Row 2: Trip Completion Time */}
+                    <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Trip Completed</Text>
+                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>{trip.completedTime}</Text>
                     </View>
                   </View>
 
-                  <View className="bg-slate-50 rounded-2xl p-2.5 flex items-center justify-between flex-row">
-                    <Text className="text-slate-700 font-medium">Driver Ramesh Kumar ★ 4.8</Text>
-                    <Text className="text-slate-700 font-medium">20 May 2025, 01:45 PM</Text>
+                  {/* Card Action Buttons Row */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TouchableOpacity onPress={() => showToast("Downloading Invoice...")} style={{ flex: 1, height: 32, borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: '#FFFFFF' }}>
+                      <Download size={11} color="#FF5500" />
+                      <Text style={{ fontSize: 9, fontWeight: '800', color: '#FF5500' }}>Download Invoice</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => showToast("Opening Receipt...")} style={{ flex: 1, height: 32, borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: '#FFFFFF' }}>
+                      <Receipt size={11} color="#FF5500" />
+                      <Text style={{ fontSize: 9, fontWeight: '800', color: '#FF5500' }}>Get Receipt</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => onNavigate('31')} style={{ flex: 1, height: 32, borderWidth: 1, borderColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: '#FFF5EF' }}>
+                      <RotateCw size={11} color="#FF5500" />
+                      <Text style={{ fontSize: 9, fontWeight: '800', color: '#FF5500' }}>Book Again</Text>
+                    </TouchableOpacity>
                   </View>
 
-                  {/* Actions Row */}
-                  <View className="flex-row flex-wrap gap-2 pt-1">
-                    <TouchableOpacity onPress={() => showToast("Downloading Invoice...")} className="flex-1 border border-slate-200 hover:bg-slate-50 py-1.5 rounded-xl flex items-center justify-center gap-1 flex-row">
-                      <Download className="w-3 h-3 text-slate-500"/><Text className="text-[10px] font-black text-slate-700"> Download Invoice
-                    </Text></TouchableOpacity>
-                    <TouchableOpacity onPress={() => showToast("Opening Receipt...")} className="flex-1 border border-slate-200 hover:bg-slate-50 py-1.5 rounded-xl flex items-center justify-center gap-1 flex-row">
-                      <Receipt className="w-3 h-3 text-slate-500"/><Text className="text-[10px] font-black text-slate-700"> Get Receipt
-                    </Text></TouchableOpacity>
-                    <TouchableOpacity onPress={() => onNavigate('31')} className="flex-1 bg-[#FF3B00] hover:bg-orange-600 py-1.5 rounded-xl flex items-center justify-center gap-1 flex-row">
-                      <RotateCw className="w-3 h-3"/><Text className="text-white text-[10px] font-black"> Book Again
-                    </Text></TouchableOpacity>
+                </View>
+              ))}
+
+              {/* Support Card Banner */}
+              <View style={{ backgroundColor: '#F0F9FF', borderWidth: 1, borderColor: '#BAE6FD', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                  <Headphones size={18} color="#0284C7" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#0369A1' }}>Need help with your trip?</Text>
+                    <Text style={{ fontSize: 9.5, fontWeight: '600', color: '#0284C7' }}>Our support team is available 24x7 to assist you.</Text>
                   </View>
                 </View>
-
-                {/* Trip Card 2 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm space-y-3">
-                  <View className="flex justify-between items-center border-b border-slate-100 pb-2 flex-row">
-                    <Text className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-md">
-                      ✓ Completed
-                    </Text>
-                    <Text className="text-[10px] font-extrabold text-slate-400 flex items-center gap-1">
-                      Booking ID: MBGO1805200002 <Copy className="w-3 h-3 text-slate-400 cursor-pointer"/>
-                    </Text>
-                  </View>
-
-                  <View className="flex justify-between items-start gap-2 flex-row">
-                    <View className="space-y-2">
-                      <View className="flex items-start gap-2 flex-row">
-                        <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-0.5 shrink-0"></View>
-                        <View>
-                          <View className=""><Text className="text-xs font-black text-slate-900">Gurugram, Haryana</Text></View>
-                          <View className=""><Text className="text-[9px] text-slate-400 font-bold">Pick-up</Text></View>
-                        </View>
-                      </View>
-
-                      <View className="flex items-start gap-2 flex-row">
-                        <View className="w-2.5 h-2.5 rounded-full bg-[#FF3B00] mt-0.5 shrink-0"></View>
-                        <View>
-                          <View className=""><Text className="text-xs font-black text-slate-900">Agra, Uttar Pradesh</Text></View>
-                          <View className=""><Text className="text-[9px] text-slate-400 font-bold">Drop</Text></View>
-                        </View>
-                      </View>
-                    </View>
-
-                    <View className="shrink-0">
-                      <View className=""><Text className="text-xs font-black text-slate-900">SUV</Text></View>
-                      <View className=""><Text className="text-[10px] text-slate-400 font-bold">Ertiga, Carens</Text></View>
-                      <View className=""><Text className="text-[10px] text-slate-500 font-bold">6 Seats • AC</Text></View>
-                      <View className="mt-1"><Text className="text-sm font-black text-[#FF3B00]">₹9,750</Text></View>
-                    </View>
-                  </View>
-
-                  <View className="bg-slate-50 rounded-2xl p-2.5 flex items-center justify-between flex-row">
-                    <Text className="text-slate-700 font-medium">Driver Mahesh Yadav ★ 4.7</Text>
-                    <Text className="text-slate-700 font-medium">18 May 2025, 06:30 PM</Text>
-                  </View>
-
-                  {/* Actions Row */}
-                  <View className="flex-row flex-wrap gap-2 pt-1">
-                    <TouchableOpacity onPress={() => showToast("Downloading Invoice...")} className="flex-1 border border-slate-200 hover:bg-slate-50 py-1.5 rounded-xl flex items-center justify-center gap-1 flex-row">
-                      <Download className="w-3 h-3 text-slate-500"/><Text className="text-[10px] font-black text-slate-700"> Download Invoice
-                    </Text></TouchableOpacity>
-                    <TouchableOpacity onPress={() => showToast("Opening Receipt...")} className="flex-1 border border-slate-200 hover:bg-slate-50 py-1.5 rounded-xl flex items-center justify-center gap-1 flex-row">
-                      <Receipt className="w-3 h-3 text-slate-500"/><Text className="text-[10px] font-black text-slate-700"> Get Receipt
-                    </Text></TouchableOpacity>
-                    <TouchableOpacity onPress={() => onNavigate('31')} className="flex-1 bg-[#FF3B00] hover:bg-orange-600 py-1.5 rounded-xl flex items-center justify-center gap-1 flex-row">
-                      <RotateCw className="w-3 h-3"/><Text className="text-white text-[10px] font-black"> Book Again
-                    </Text></TouchableOpacity>
-                  </View>
-                </View>
-
-              </View>
-
-              {/* Support Card Footer */}
-              <View className="bg-blue-50 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2.5 flex-row">
-                  <Headphones className="w-5 h-5 text-blue-600 shrink-0"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black text-blue-900">Need help with your trip?</Text></View>
-                    <View className=""><Text className="text-[10px] text-slate-500 font-semibold">Our support team is available 24x7.</Text></View>
-                  </View>
-                </View>
-                <TouchableOpacity onPress={() => showToast("Opening Support...")} className="bg-white border border-blue-200 px-2.5 py-1 rounded-xl shrink-0"><Text className="text-[10px] font-black text-blue-700">
-                  Contact Support &gt;
-                </Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => showToast("Opening Support...")} style={{ height: 28, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#0284C7', borderRadius: 6, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                  <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#0284C7' }}>Contact Support</Text>
+                  <ChevronRight size={10} color="#0284C7" />
+                </TouchableOpacity>
               </View>
 
             </View>
@@ -1483,50 +1559,16 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
         </ScrollView>
 
-        {/* Global Bottom App Navigation Bar */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 py-2.5 px-6 flex justify-between items-center z-30 flex-row">
-          
-          <TouchableOpacity 
-            onPress={() => onNavigate('31')}
-            className="flex flex-col items-center"
-          >
-            <Car className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('35')}
-            className="flex flex-col items-center"
-          >
-            <Calendar className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">My Trips</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('32')}
-            className="flex flex-col items-center"
-          >
-            <Receipt className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">Bookings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('36')}
-            className="flex flex-col items-center"
-          >
-            <User className="w-5 h-5"/>
-            <Text className="text-slate-700 font-medium">Profile</Text>
-          </TouchableOpacity>
-
-        </View>
+        {/* Reusable Rider Bottom App Navigation Bar */}
+        <RiderBottomNavbar activeScreen={activeScreen} onNavigate={onNavigate} />
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         
 

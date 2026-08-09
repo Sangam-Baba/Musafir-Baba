@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, SafeAreaView, Linking } from 'react-native';
 import React, { useState } from 'react';
 import {
   Menu,
@@ -13,6 +13,8 @@ import {
   RotateCcw,
   Building2,
   Palmtree,
+  Globe,
+  FileCheck,
   ShieldCheck,
   Headphones,
   Lock,
@@ -54,7 +56,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function SearchDestinationScreen() {
   const navigation = useNavigation<any>();
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
-  const activeScreen = '32';
+  const activeScreen: string = '32';
 
   // Form State for Screen 31
   const [pickup, setPickup] = useState('New Delhi, Delhi');
@@ -286,24 +288,23 @@ export default function SearchDestinationScreen() {
               <View className="space-y-2 pt-1">
                 <View className="flex items-center justify-between flex-row">
                   <Text className="text-sm font-black text-slate-900 tracking-tight">Popular Services</Text>
-                  <TouchableOpacity className="flex items-center gap-0.5 flex-row"><Text className="text-xs font-bold text-[#FF3B00]">
+                  <TouchableOpacity onPress={() => Linking.openURL('https://musafirbaba.com/')} className="flex items-center gap-0.5 flex-row"><Text className="text-xs font-bold text-[#FF3B00]">
                     View All </Text><ChevronRight className="w-3.5 h-3.5"/>
                   </TouchableOpacity>
                 </View>
 
                 <View className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 flex-row">
                   {[
-                    { icon: Plane, label: 'Airport Transfer', color: 'bg-emerald-100 text-emerald-600' },
-                    { icon: Navigation, label: 'Outstation Trips', color: 'bg-orange-100 text-orange-600' },
-                    { icon: RotateCcw, label: 'Hourly Rental', color: 'bg-blue-100 text-blue-600' },
-                    { icon: Building2, label: 'Corporate Travel', color: 'bg-purple-100 text-purple-600' },
-                    { icon: Palmtree, label: 'Tour Packages', color: 'bg-amber-100 text-amber-600' },
+                    { icon: Palmtree, label: 'Tour Packages', color: 'bg-amber-100 text-amber-600', action: () => Linking.openURL('https://musafirbaba.com/holidays') },
+                    { icon: Globe, label: 'International Trips', color: 'bg-green-100 text-green-600', action: () => Linking.openURL('https://musafirbaba.com/holidays/international-tour-packages') },
+                    { icon: FileCheck, label: 'Visa Services', color: 'bg-red-100 text-red-600', action: () => Linking.openURL('https://musafirbaba.com/visa') },
+                    { icon: Building2, label: 'Corporate Travel', color: 'bg-purple-100 text-purple-600', action: () => Linking.openURL('https://musafirbaba.com/holidays/mountain-treks') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
                       <TouchableOpacity 
                         key={idx}
-                        onPress={() => navigation.navigate('SearchDestinationScreen')}
+                        onPress={srv.action}
                         className="bg-white border border-slate-200/70 rounded-2xl p-3 flex flex-col items-center justify-center min-w-[76px] space-y-2 cursor-pointer hover:border-orange-300 transition shadow-2xs shrink-0"
                       >
                         <View className={`w-10 h-10 rounded-full flex items-center justify-center ${srv.color}`}>

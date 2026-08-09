@@ -5,7 +5,7 @@ import { View, Platform } from 'react-native';
 import { cssText } from './cssText';
 import { useAuthStore } from './src/store/useAuthStore';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
-import { updateRiderPushToken } from './src/api/riderProfile.api';
+import { updateRiderPushToken, getRiderProfile } from './src/api/riderProfile.api';
 
 // NativeWindStyleSheet.setOutput({
 //   default: 'native',
@@ -49,11 +49,22 @@ export default function App() {
   const initialize = useAuthStore((s) => s.initialize);
   const isInitializing = useAuthStore((s) => s.isInitializing);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setProfile = useAuthStore((s) => s.setProfile);
   const { expoPushToken } = usePushNotifications();
 
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    // `profile` isn't persisted across app restarts (only the token is), so
+    // re-fetch it once a stored session is confirmed valid.
+    if (isAuthenticated) {
+      getRiderProfile()
+        .then((res) => setProfile(res.data.data))
+        .catch((e) => console.log('Error loading rider profile', e));
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && expoPushToken) {

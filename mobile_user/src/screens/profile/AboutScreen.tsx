@@ -194,7 +194,10 @@ export default function AboutScreen() {
 
               {/* ACCOUNT Section */}
               <View className="space-y-2 pt-1">
+                {/* Account heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
+                */}
+                {/* ACCOUNT suboptions commented out
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                   {[
                     { icon: User, label: 'Personal Information' },
@@ -220,11 +223,14 @@ export default function AboutScreen() {
                     );
                   })}
                 </View>
+                */}
               </View>
 
               {/* OTHERS Section */}
               <View className="space-y-2 pt-1">
+                {/* Others heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Others</Text></View>
+                */}
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                   {[
                     { icon: Car, label: 'Trip Preferences' },
