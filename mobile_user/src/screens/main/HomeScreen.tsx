@@ -1,5 +1,7 @@
-import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, SafeAreaView, Linking } from 'react-native';
 import React, { useState } from 'react';
+
+const LOGO_TRANSPARENT = require('../../assets/mbgoLogo_transparent.png');
 import {
   Menu,
   Bell,
@@ -13,6 +15,8 @@ import {
   RotateCcw,
   Building2,
   Palmtree,
+  Globe,
+  FileCheck,
   ShieldCheck,
   Headphones,
   Lock,
@@ -54,9 +58,10 @@ import { useNavigation } from '@react-navigation/native';
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
-  const activeScreen = '31';
+  const activeScreen: string = '31';
 
   // Form State for Screen 31
+  const [tripType, setTripType] = useState<'oneway' | 'roundway'>('oneway');
   const [pickup, setPickup] = useState('New Delhi, Delhi');
   const [drop, setDrop] = useState('Jaipur, Rajasthan');
   const [date, setDate] = useState('2025-05-20');
@@ -138,220 +143,228 @@ export default function HomeScreen() {
               SCREEN 31: RIDER HOME & SEARCH (31.png)
              ========================================== */}
           {activeScreen === '31' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View style={{ padding: 12, gap: 10 }}>
               
               {/* Header Bar */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full transition">
-                  <Menu className="w-6 h-6 stroke-[2.2]"/>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 2 }}>
+                <TouchableOpacity onPress={() => navigation.navigate('ProfileMenuScreen')} style={{ padding: 2 }}>
+                  <Menu size={20} color="#0F172A" />
                 </TouchableOpacity>
 
                 {/* Brand Logo */}
-                <View className="">
-                  <View className="flex items-center justify-center flex-row">
-                    <Text className="text-[#002B66]">MB</Text>
-                    <Text className="text-[#FF3B00]">GO</Text>
-                  </View>
-                  <View className="-mt-0.5"><Text className="text-[8px] font-bold text-slate-400 tracking-wider uppercase">
+                <View style={{ alignItems: 'center' }}>
+                  <Image source={LOGO_TRANSPARENT} style={{ width: 100, height: 28 }} resizeMode="contain" />
+                  <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#64748B', marginTop: -3 }}>
                     powered by musafirbaba
-                  </Text></View>
-                </View>
-
-                <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full relative transition">
-                  <Bell className="w-6 h-6 stroke-[2.2]"/>
-                  <Text className="w-2 h-2 rounded-full bg-[#FF3B00] absolute top-1 right-1 border border-white"></Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Greeting & Hero Graphic Header */}
-              <View className="relative pt-1 pb-1 flex justify-between items-start min-h-[105px] flex-row">
-                <View className="space-y-0.5 max-w-[58%] z-10 pt-1">
-                  <Text className="text-xs font-bold text-[#FF3B00]">Hello,</Text>
-                  <Text className="text-xl font-black text-slate-900 leading-tight">
-                    Where would you like to go today?
                   </Text>
                 </View>
 
-                {/* White SUV Car Hero Illustration */}
-                <View className="absolute right-0 -top-1 w-44 h-28 pointer-events-none z-0" pointerEvents="none">
-                  <svg viewBox="0 0 200 120" className="w-full h-full drop-shadow-md">
-                    <path d="M 10 90 Q 60 20 180 80" fill="none" stroke="#E2E8F0" strokeWidth="2" strokeDasharray="4 4"/>
-                    <circle cx="70" cy="50" r="3" fill="#FF3B00"/>
-                    <circle cx="150" cy="40" r="3" fill="#FF3B00"/>
-                    <g transform="translate(40, 25)">
-                      <rect x="10" y="30" width="120" height="35" rx="10" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.5"/>
-                      <path d="M 30 30 L 45 12 L 85 12 L 105 30 Z" fill="#002B66"/>
-                      <circle cx="35" cy="65" r="12" fill="#1E293B" stroke="#FFFFFF" strokeWidth="3"/>
-                      <circle cx="105" cy="65" r="12" fill="#1E293B" stroke="#FFFFFF" strokeWidth="3"/>
-                      <rect x="15" y="40" width="15" height="10" rx="2" fill="#FF3B00"/>
-                      <rect x="110" y="40" width="15" height="10" rx="2" fill="#002B66"/>
-                    </g>
-                  </svg>
-                </View>
+                <TouchableOpacity onPress={() => navigation.navigate('AboutScreen')} style={{ padding: 2, position: 'relative' }}>
+                  <Bell size={20} color="#0F172A" />
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF3B00', position: 'absolute', top: 3, right: 3, borderWidth: 1, borderColor: '#FFFFFF' }} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Greeting & Hero Header */}
+              <View style={{ paddingTop: 2, paddingBottom: 2 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF3B00', marginBottom: 1 }}>Hello,</Text>
+                <Text style={{ fontSize: 18, fontWeight: '900', color: '#0F172A', lineHeight: 22 }}>
+                  Where would you{'\n'}like to go today?
+                </Text>
               </View>
 
               {/* Main Booking Search Card */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm space-y-3 relative z-10">
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 10, position: 'relative', zIndex: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 }}>
                 
+                {/* Trip Type Selector Tab */}
+                <View style={{ flexDirection: 'row', backgroundColor: '#F8FAFC', padding: 3, borderRadius: 10, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                  <TouchableOpacity
+                    onPress={() => setTripType('oneway')}
+                    style={{ flex: 1, paddingVertical: 5, borderRadius: 8, backgroundColor: tripType === 'oneway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: tripType === 'oneway' ? '#000' : 'transparent', shadowOpacity: 0.04, shadowRadius: 2, elevation: tripType === 'oneway' ? 1 : 0 }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: tripType === 'oneway' ? '#FF3B00' : '#64748B' }}>One Way</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setTripType('roundway')}
+                    style={{ flex: 1, paddingVertical: 5, borderRadius: 8, backgroundColor: tripType === 'roundway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: tripType === 'roundway' ? '#000' : 'transparent', shadowOpacity: 0.04, shadowRadius: 2, elevation: tripType === 'roundway' ? 1 : 0 }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: tripType === 'roundway' ? '#FF3B00' : '#64748B' }}>Round Trip</Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* Pick-up Location */}
-                <View className="relative">
-                  <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Pick-up Location</Text>
-                  <View className="flex items-center justify-between border-b border-slate-100 pb-2.5 flex-row">
-                    <View className="flex items-center gap-2.5 flex-1 flex-row">
-                      <View className="w-3.5 h-3.5 rounded-full border-2 border-emerald-500 bg-white flex items-center justify-center shrink-0 flex-row">
-                        <View className="w-1.5 h-1.5 rounded-full bg-emerald-500"></View>
+                <View>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Pick-up Location</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                      <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#10B981', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#10B981' }} />
                       </View>
-                      <TextInput 
+                      <TextInput
                         value={pickup}
                         onChangeText={setPickup}
                         placeholder="Enter pick-up location"
-                        style={{ width: '100%', backgroundColor: 'transparent', fontSize: 12, fontWeight: '800', color: '#0f172a' }}
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontSize: 12, fontWeight: '700', color: '#0F172A', padding: 0 }}
                       />
                     </View>
-                    <TouchableOpacity onPress={() => showToast("Detecting location...")} className="p-1 hover:text-slate-900">
-                      <LocateFixed className="w-4 h-4"/>
+                    <TouchableOpacity onPress={() => showToast("Detecting location...")} style={{ padding: 2 }}>
+                      <LocateFixed size={16} color="#0F172A" />
                     </TouchableOpacity>
                   </View>
                 </View>
 
                 {/* Drop Location */}
-                <View className="relative">
-                  <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Drop Location</Text>
-                  <View className="flex items-center justify-between border-b border-slate-100 pb-2.5 flex-row">
-                    <View className="flex items-center gap-2.5 flex-1 flex-row">
-                      <MapPin className="w-4 h-4 text-[#FF3B00] shrink-0"/>
-                      <TextInput 
+                <View>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Drop Location</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                      <MapPin size={16} color="#FF3B00" />
+                      <TextInput
                         value={drop}
                         onChangeText={setDrop}
                         placeholder="Enter drop location"
-                        style={{ width: '100%', backgroundColor: 'transparent', fontSize: 12, fontWeight: '800', color: '#0f172a' }}
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontSize: 12, fontWeight: '700', color: '#0F172A', padding: 0 }}
                       />
                     </View>
-                    <TouchableOpacity onPress={swapLocations} className="p-1 hover:text-slate-900">
-                      <ArrowUpDown className="w-4 h-4"/>
+                    <TouchableOpacity onPress={swapLocations} style={{ padding: 2 }}>
+                      <ArrowUpDown size={16} color="#0F172A" />
                     </TouchableOpacity>
                   </View>
                 </View>
 
                 {/* Date & Time Selector Row */}
-                <View className="grid grid-cols-2 gap-3 border-b border-slate-100 pb-2.5">
-                  <View className="border-r border-slate-100 pr-2">
-                    <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Date</Text>
-                    <View className="flex items-center gap-2 flex-row">
-                      <Calendar className="w-4 h-4 text-blue-600 shrink-0"/>
-                      <TextInput 
-                        value={date} 
-                        onChangeText={(text) => setDate(text)}
-                        style={{ backgroundColor: 'transparent', width: '100%', fontSize: 12, fontWeight: 'bold', color: '#1e293b' }}
+                <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                  <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#F8FAFC', paddingRight: 6 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Date</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Calendar size={15} color="#3B82F6" />
+                      <TextInput
+                        value={date}
+                        onChangeText={setDate}
+                        style={{ flex: 1, backgroundColor: 'transparent', fontSize: 11, fontWeight: 'bold', color: date ? '#0F172A' : '#CBD5E1', padding: 0 }}
                       />
                     </View>
                   </View>
 
-                  <View className="pl-1">
-                    <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Time</Text>
-                    <View className="flex items-center gap-2 flex-row">
-                      <Clock className="w-4 h-4 text-blue-600 shrink-0"/>
-                      <TextInput 
+                  <View style={{ flex: 1, paddingLeft: 8 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Time</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Clock size={15} color="#3B82F6" />
+                      <TextInput
                         value={time}
                         onChangeText={setTime}
-                        style={{ width: '100%', backgroundColor: 'transparent', fontSize: 12, fontWeight: 'bold', color: '#1e293b' }}
+                        style={{ flex: 1, backgroundColor: 'transparent', fontSize: 11, fontWeight: 'bold', color: time ? '#0F172A' : '#CBD5E1', padding: 0 }}
                       />
                     </View>
                   </View>
                 </View>
 
                 {/* Vehicle Type Picker */}
-                <View>
-                  <Text className="text-[10px] font-bold text-slate-400 block mb-0.5">Vehicle Type</Text>
-                  <View className="flex items-center justify-between pt-0.5 flex-row">
-                    <View className="flex items-center gap-2 flex-row">
-                      <Car className="w-4 h-4 text-[#FF3B00] shrink-0"/>
-                      <Text>{vehicleType}</Text>
+                <TouchableOpacity style={{ borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: '#94A3B8', marginBottom: 2 }}>Vehicle Type</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Car size={15} color="#6366F1" />
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: vehicleType ? '#0F172A' : '#CBD5E1' }}>{vehicleType || 'Select vehicle type'}</Text>
                     </View>
-                    <ChevronRight className="w-4 h-4 text-slate-400"/>
+                    <ChevronRight size={14} color="#94A3B8" />
                   </View>
-                </View>
+                </TouchableOpacity>
 
                 {/* Search Cabs Action Button */}
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => navigation.navigate('SearchDestinationScreen')}
-                  className="w-full bg-[#FF3B00] hover:bg-orange-600 py-3.5 rounded-2xl shadow-lg shadow-orange-500/25 transition active:scale-98 mt-2"
-                ><Text className="text-white font-extrabold text-sm">
-                  Search Cabs
-                </Text></TouchableOpacity>
+                  style={{ width: '100%', height: 38, backgroundColor: '#FF3B00', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13, textAlign: 'center' }}>
+                    Search Cabs
+                  </Text>
+                </TouchableOpacity>
 
               </View>
 
               {/* Popular Services Section */}
-              <View className="space-y-2 pt-1">
-                <View className="flex items-center justify-between flex-row">
-                  <Text className="text-sm font-black text-slate-900 tracking-tight">Popular Services</Text>
-                  <TouchableOpacity className="flex items-center gap-0.5 flex-row"><Text className="text-xs font-bold text-[#FF3B00]">
-                    View All </Text><ChevronRight className="w-3.5 h-3.5"/>
+              <View style={{ gap: 6, paddingTop: 2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 13, fontWeight: '900', color: '#0F172A' }}>Popular Services</Text>
+                  <TouchableOpacity onPress={() => Linking.openURL('https://musafirbaba.com/')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF3B00' }}>View All </Text>
+                    <ChevronRight size={12} color="#FF3B00" />
                   </TouchableOpacity>
                 </View>
 
-                <View className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 flex-row">
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 2 }}>
                   {[
-                    { icon: Plane, label: 'Airport Transfer', color: 'bg-emerald-100 text-emerald-600' },
-                    { icon: Navigation, label: 'Outstation Trips', color: 'bg-orange-100 text-orange-600' },
-                    { icon: RotateCcw, label: 'Hourly Rental', color: 'bg-blue-100 text-blue-600' },
-                    { icon: Building2, label: 'Corporate Travel', color: 'bg-purple-100 text-purple-600' },
-                    { icon: Palmtree, label: 'Tour Packages', color: 'bg-amber-100 text-amber-600' },
+                    { icon: Palmtree, label: 'Tour\nPackages', bg: '#FEF3C7', iconColor: '#F59E0B', action: () => Linking.openURL('https://musafirbaba.com/holidays') },
+                    { icon: Globe, label: 'International\nTrips', bg: '#F0FDF4', iconColor: '#16A34A', action: () => Linking.openURL('https://musafirbaba.com/holidays/international-tour-packages') },
+                    { icon: FileCheck, label: 'Visa\nServices', bg: '#FEF2F2', iconColor: '#EF4444', action: () => Linking.openURL('https://musafirbaba.com/visa') },
+                    { icon: Building2, label: 'Corporate\nTravel', bg: '#F3E8FF', iconColor: '#8B5CF6', action: () => Linking.openURL('https://musafirbaba.com/holidays/mountain-treks') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
                       <TouchableOpacity 
                         key={idx}
-                        onPress={() => navigation.navigate('SearchDestinationScreen')}
-                        className="bg-white border border-slate-200/70 rounded-2xl p-3 flex flex-col items-center justify-center min-w-[76px] space-y-2 cursor-pointer hover:border-orange-300 transition shadow-2xs shrink-0"
+                        onPress={srv.action}
+                        style={{
+                          backgroundColor: '#FFFFFF',
+                          borderWidth: 1,
+                          borderColor: '#F1F5F9',
+                          borderRadius: 14,
+                          padding: 10,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 74,
+                          height: 84,
+                        }}
                       >
-                        <View className={`w-10 h-10 rounded-full flex items-center justify-center ${srv.color}`}>
-                          <Icon className="w-5 h-5"/>
+                        <View style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: srv.bg, marginBottom: 4 }}>
+                          <Icon size={17} color={srv.iconColor} />
                         </View>
-                        <Text className="text-[10px] font-extrabold text-slate-800 leading-tight">{srv.label}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#1E293B', textAlign: 'center', lineHeight: 11 }}>{srv.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
-                </View>
+                </ScrollView>
               </View>
 
               {/* Banner Card */}
-              <View className="bg-gradient-to-r from-orange-50 via-amber-50 to-orange-100 border border-orange-200/70 rounded-3xl p-4 flex items-center justify-between relative overflow-hidden shadow-2xs flex-row">
-                <View className="space-y-1 z-10 max-w-[65%]">
-                  <Text className="text-xs font-black text-slate-900 leading-snug">
-                    Travel with comfort at the best prices
+              <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', borderRadius: 16, padding: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ gap: 2, flex: 1, paddingRight: 8 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '900', color: '#0F172A', lineHeight: 14 }}>
+                    Travel with comfort{'\n'}at the best prices
                   </Text>
-                  <Text className="text-[10px] text-slate-600 font-bold">Safe | Reliable | On-time</Text>
+                  <Text style={{ fontSize: 9, color: '#64748B', fontWeight: '600' }}>Safe | Reliable | On-time</Text>
                   <TouchableOpacity 
                     onPress={() => navigation.navigate('SearchDestinationScreen')}
-                    className="bg-[#FF3B00] hover:bg-orange-600 px-3.5 py-1.5 rounded-xl shadow-md transition active:scale-95 mt-2 inline-block"
-                  ><Text className="text-white text-[10px] font-black">
-                    Book Now
-                  </Text></TouchableOpacity>
+                    style={{ backgroundColor: '#FF3B00', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginTop: 2 }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontSize: 9, fontWeight: '900' }}>Book Now</Text>
+                  </TouchableOpacity>
                 </View>
-                <View className="w-24 h-20 bg-orange-200/40 rounded-2xl flex items-center justify-center shrink-0 flex-row">
-                  <Car className="w-12 h-12 text-[#FF3B00]"/>
+                <View style={{ width: 56, height: 48, borderRadius: 10, backgroundColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
+                  <Car size={26} color="#FF3B00" />
                 </View>
               </View>
 
               {/* Why Travel With MBGO? Section */}
-              <View className="space-y-2 pt-1">
-                <Text className="text-sm font-black text-slate-900 tracking-tight">Why travel with MBGO?</Text>
-                <View className="grid grid-cols-4 gap-2">
+              <View style={{ gap: 6, paddingTop: 2 }}>
+                <Text style={{ fontSize: 13, fontWeight: '900', color: '#0F172A' }}>Why travel with MBGO?</Text>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
                   {[
-                    { icon: ShieldCheck, label: 'Verified Partners', color: 'bg-emerald-100 text-emerald-600' },
-                    { icon: Award, label: 'Best Price Guarantee', color: 'bg-orange-100 text-orange-600' },
-                    { icon: Headphones, label: '24x7 Support', color: 'bg-blue-100 text-blue-600' },
-                    { icon: Lock, label: 'Safe & Secure Ride', color: 'bg-purple-100 text-purple-600' },
+                    { icon: ShieldCheck, label: 'Verified\nPartners', bg: '#ECFDF5', iconColor: '#10B981' },
+                    { icon: Award, label: 'Best Price\nGuarantee', bg: '#FFF5EF', iconColor: '#FF3B00' },
+                    { icon: Headphones, label: '24x7\nSupport', bg: '#EFF6FF', iconColor: '#3B82F6' },
+                    { icon: Lock, label: 'Safe & Secure\nRide', bg: '#F3E8FF', iconColor: '#8B5CF6' },
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <View key={idx} className="bg-white border border-slate-100 rounded-2xl p-2.5 flex flex-col items-center space-y-1.5 shadow-2xs">
-                        <View className={`w-8 h-8 rounded-full flex items-center justify-center ${item.color}`}>
-                          <Icon className="w-4 h-4"/>
+                      <View key={idx} style={{ flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 12, padding: 8, alignItems: 'center', gap: 4 }}>
+                        <View style={{ width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: item.bg }}>
+                          <Icon size={14} color={item.iconColor} />
                         </View>
-                        <Text className="text-[9px] font-extrabold text-slate-800 leading-tight">{item.label}</Text>
+                        <Text style={{ fontSize: 8.5, fontWeight: '800', color: '#1E293B', textAlign: 'center', lineHeight: 10 }}>{item.label}</Text>
                       </View>
                     );
                   })}

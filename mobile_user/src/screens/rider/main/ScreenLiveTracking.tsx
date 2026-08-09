@@ -956,12 +956,12 @@ export default function ScreenLiveTracking({ onNavigate }: { onNavigate: (screen
         </View>
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         
 

@@ -1,4 +1,5 @@
-import { Text,  View, TouchableOpacity, Image , ScrollView } from 'react-native';
+import { Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
+import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import React, { useState } from 'react';
 import {
   Receipt,
@@ -41,11 +42,11 @@ import {
 
 export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen: string) => void }) {
   // Navigation active screen selector: '36' | '37' | '38' | '39' | '40'
-  const activeScreen = '37';
+  const activeScreen = '37' as string;
 
   // Interactive state for FAQs in Help & Support (Screen 37)
-  const [openFaq, setOpenFaq] = useState(null);
-  const toggleFaq = (index) => {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
@@ -54,7 +55,7 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
 
   // Toast notification system
   const [toastMsg, setToastMsg] = useState('');
-  const showToast = (msg) => {
+  const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 2500);
   };
@@ -153,7 +154,10 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
 
               {/* ACCOUNT Section */}
               <View className="space-y-2 pt-1">
+                {/* Account heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
+                */}
+                {/* ACCOUNT suboptions commented out
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
                   {[
                     { icon: User, label: 'Personal Information' },
@@ -178,11 +182,14 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
                     );
                   })}
                 </View>
+                */}
               </View>
 
               {/* OTHERS Section */}
               <View className="space-y-2 pt-1">
+                {/* Others heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Others</Text></View>
+                */}
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
                   {[
                     { icon: Car, label: 'Trip Preferences' },
@@ -227,70 +234,76 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
             <View className="p-4 space-y-4 animate-in fade-in duration-200">
               
               {/* Header */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity onPress={() => onNavigate('36')} className="p-1 hover:bg-slate-100 rounded-full">
-                  <ChevronRight className="w-5 h-5 rotate-180"/>
+              <View className="flex flex-row items-center justify-between pt-1 pb-1">
+                <TouchableOpacity onPress={() => onNavigate('36')} className="p-1">
+                  <ChevronRight size={20} color="#0F172A" style={{ transform: [{ rotate: '180deg' }] }} />
                 </TouchableOpacity>
-                <Text className="text-base font-black text-slate-900">Help & Support</Text>
-                <TouchableOpacity onPress={() => showToast("Opening 24x7 Hotline...")} className="p-1 hover:bg-slate-100 rounded-full">
-                  <Headphones className="w-5 h-5"/>
+                <Text className="text-base font-bold text-slate-900">Help & Support</Text>
+                <TouchableOpacity onPress={() => showToast("Opening 24x7 Hotline...")} className="flex flex-col items-center">
+                  <Headphones size={18} color="#0F172A" />
+                  <Text className="text-[8.5px] text-slate-500 mt-0.5">Support</Text>
                 </TouchableOpacity>
               </View>
 
               {/* Support Agent Banner */}
-              <View className="bg-orange-50 border border-orange-200/80 rounded-3xl p-4 relative overflow-hidden shadow-sm">
-                <View className="flex items-start justify-between flex-row">
-                  {/* Agent Illustration Graphic */}
-                  <View className="w-24 h-24 relative shrink-0">
-                    <View className="w-20 h-20 rounded-full bg-orange-200/60 flex items-center justify-center absolute top-1 left-1 flex-row">
-                      <Headphones className="w-10 h-10 text-[#FF3B00]"/>
+              <View className="bg-[#FFF8F2] border border-orange-100 rounded-2xl p-3 shadow-2xs">
+                <View className="flex flex-row items-center">
+                  {/* Agent Graphic */}
+                  <View className="w-16 h-16 relative shrink-0 justify-center items-center">
+                    <View className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
+                      <Image 
+                        source={{ uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" }} 
+                        className="w-full h-full" 
+                      />
                     </View>
-                    <View className="absolute top-0 right-1 bg-white px-2 py-0.5 rounded-full shadow-sm border border-orange-200"><Text className="text-[#FF3B00] text-[9px] font-black">
-                      Hello!
-                    </Text></View>
+                    <View className="absolute top-0 right-0 bg-white px-1.5 py-0.5 rounded-full shadow-2xs border border-orange-100">
+                      <Text className="text-[#FF3B00] text-[8px] font-bold">Hello!</Text>
+                    </View>
                   </View>
 
-                  <View className="space-y-2 flex-1 pl-2">
-                    <Text className="text-sm font-black text-slate-900 leading-tight">We're here to help you!</Text>
-                    <Text className="text-[10px] text-slate-600 font-bold leading-snug">Our support team is available 24x7 to assist you.</Text>
+                  <View className="flex-1 pl-2 space-y-1">
+                    <Text className="text-sm font-bold text-slate-900 leading-tight">We're here to help you!</Text>
+                    <Text className="text-[9px] text-slate-500 leading-snug">Our support team is available 24x7 to assist you.</Text>
                     
-                    <View className="flex flex-col sm:flex-row gap-2 pt-1">
-                      <TouchableOpacity onPress={() => showToast("Dialing Support +91 1800 123 4567...")} className="bg-[#FF3B00] hover:bg-orange-600 px-3 py-2 rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5 flex-row">
-                        <Phone className="w-3.5 h-3.5"/><Text className="text-white text-[10px] font-black"> Call Support
-                      </Text></TouchableOpacity>
-                      <TouchableOpacity onPress={() => showToast("Starting Live Chat...")} className="bg-white border border-slate-300 hover:bg-slate-50 px-3 py-2 rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5 flex-row">
-                        <MessageSquare className="w-3.5 h-3.5 text-slate-600"/><Text className="text-slate-800 text-[10px] font-black"> Chat with Us
-                      </Text></TouchableOpacity>
+                    <View className="flex flex-row gap-2 pt-1">
+                      <TouchableOpacity onPress={() => showToast("Dialing Support...")} className="bg-[#FF3B00] px-2.5 py-1.5 rounded-lg flex-1 flex flex-row items-center justify-center gap-1 active:opacity-90">
+                        <Phone size={11} color="#FFFFFF" />
+                        <Text className="text-white text-[9px] font-semibold">Call Support</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => showToast("Starting Live Chat...")} className="bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg flex-1 flex flex-row items-center justify-center gap-1 active:opacity-90">
+                        <MessageSquare size={11} color="#475569" />
+                        <Text className="text-slate-700 text-[9px] font-semibold">Chat with Us</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 </View>
               </View>
 
               {/* Quick Help Grid */}
-              <View className="space-y-2 pt-1">
-                <Text className="text-xs font-black text-slate-900">Quick Help</Text>
-                <View className="flex-row flex-wrap gap-2">
+              <View className="space-y-2">
+                <Text className="text-xs font-bold text-slate-900">Quick Help</Text>
+                <View className="bg-white border border-slate-100 rounded-2xl p-3 shadow-2xs flex flex-row flex-wrap justify-between gap-y-3">
                   {[
-                    { icon: Package, label: 'My Bookings', desc: 'View your trips', color: 'bg-orange-100 text-orange-600' },
-                    { icon: Wallet, label: 'Payments', desc: 'Payment related issues', color: 'bg-blue-100 text-blue-600' },
-                    { icon: Car, label: 'Ride & Driver', desc: 'Issues with driver or trip', color: 'bg-emerald-100 text-emerald-600' },
-                    { icon: MapPin, label: 'Locations', desc: 'Pick-up, drop & route issues', color: 'bg-purple-100 text-purple-600' },
-                    { icon: Tag, label: 'Coupons & Offers', desc: 'Coupons not working?', color: 'bg-amber-100 text-amber-600' },
-                    { icon: FileText, label: 'Invoices & Bills', desc: 'Download or view invoices', color: 'bg-pink-100 text-pink-600' },
-                    { icon: RotateCcw, label: 'Refunds', desc: 'Refund status & issues', color: 'bg-cyan-100 text-cyan-600' },
+                    { icon: Package, label: 'My Bookings', desc: 'View your trips', color: 'bg-orange-50 text-[#FF3B00]' },
+                    { icon: Wallet, label: 'Payments', desc: 'Payment related issues', color: 'bg-blue-50 text-blue-600' },
+                    { icon: Car, label: 'Ride & Driver', desc: 'Issues with driver or trip', color: 'bg-emerald-50 text-emerald-600' },
+                    { icon: MapPin, label: 'Locations', desc: 'Pick-up, drop & route issues', color: 'bg-purple-50 text-purple-600' },
+                    { icon: Tag, label: 'Coupons & Offers', desc: 'Coupons not working?', color: 'bg-amber-50 text-amber-600' },
+                    { icon: FileText, label: 'Invoices & Bills', desc: 'Download or view invoices', color: 'bg-pink-50 text-pink-600' },
+                    { icon: RotateCcw, label: 'Refunds', desc: 'Refund status & related issues', color: 'bg-cyan-50 text-cyan-600' },
                     { icon: MoreHorizontal, label: 'Others', desc: 'Other queries and issues', color: 'bg-slate-100 text-slate-600' },
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
                       <TouchableOpacity key={idx} 
                         onPress={() => showToast(`Opening Help topic: ${item.label}...`)}
-                        className="w-[23%] bg-white border border-slate-100 rounded-2xl p-2 flex flex-col items-center space-y-1 shadow-sm hover:border-orange-200 transition cursor-pointer"
+                        className="w-[23%] flex flex-col items-center text-center space-y-0.5"
                       >
-                        <View className={`w-8 h-8 rounded-full flex items-center justify-center ${item.color}`}>
-                          <Icon className="w-4 h-4"/>
+                        <View className={`w-8 h-8 rounded-full flex items-center justify-center ${item.color} mb-0.5`}>
+                          <Icon size={15} />
                         </View>
-                        <Text className="text-[9px] font-black text-slate-900 leading-tight">{item.label}</Text>
-                        <Text className="text-[7px] text-slate-400 font-bold leading-tight">{item.desc}</Text>
+                        <Text className="text-[9px] font-semibold text-slate-900 text-center leading-tight">{item.label}</Text>
+                        <Text className="text-[7px] text-slate-400 text-center leading-tight">{item.desc}</Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -298,63 +311,72 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
               </View>
 
               {/* Common Queries Accordion */}
-              <View className="space-y-2 pt-1">
-                <Text className="text-xs font-black text-slate-900">Common Queries</Text>
-                <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
+              <View className="space-y-2">
+                <Text className="text-xs font-bold text-slate-900">Common Queries</Text>
+                <View className="bg-white border border-slate-100 rounded-2xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                   {[
-                    { q: 'How can I book a ride?', a: 'Enter your pick-up and drop locations, choose date and time, select vehicle type, and tap Search Cabs to proceed.' },
-                    { q: 'What payment methods are available?', a: 'We accept UPI, Credit/Debit Cards, Net Banking, Wallets (Paytm, PhonePe), and Pay Later via Simpl.' },
-                    { q: 'How can I change / cancel my booking?', a: 'Go to My Trips section, select your upcoming booking and tap Edit or Cancel Ride.' },
-                    { q: 'Is it safe to travel with MBGO?', a: 'Yes! All drivers undergo criminal & background checks, and all rides feature live GPS safety tracking.' },
-                    { q: 'How does MBGO Refer & Earn work?', a: 'Share your referral link with friends. When they complete their first ride, you earn bonus wallet cash.' },
-                  ].map((faq, idx) => (
-                    <View key={idx} className="p-3.5 space-y-2">
-                      <TouchableOpacity 
-                        onPress={() => toggleFaq(idx)}
-                        className="w-full flex items-center justify-between hover:text-[#FF3B00] transition flex-row"
-                      >
-                        <Text className="flex items-center gap-2">
-                          <View className="w-1.5 h-1.5 rounded-full bg-[#FF3B00]"></View>
-                          {faq.q}
-                        </Text>
-                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180 text-[#FF3B00]' : ''}`}/>
-                      </TouchableOpacity>
-                      {openFaq === idx && (
-                        <Text className="text-[11px] text-slate-600 font-bold leading-relaxed pl-3.5 border-l-2 border-orange-200">
-                          {faq.a}
-                        </Text>
-                      )}
-                    </View>
-                  ))}
+                    { icon: Clock, iconBg: 'bg-orange-50 text-[#FF3B00]', q: 'How can I book a ride?', a: 'Enter your pick-up and drop locations, choose date and time, select vehicle type, and tap Search Cabs to proceed.' },
+                    { icon: CreditCard, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'What payment methods are available?', a: 'We accept UPI, Credit/Debit Cards, Net Banking, Wallets (Paytm, PhonePe), and Pay Later via Simpl.' },
+                    { icon: Car, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'How can I change / cancel my booking?', a: 'Go to My Trips section, select your upcoming booking and tap Edit or Cancel Ride.' },
+                    { icon: Shield, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'Is it safe to travel with MBGO?', a: 'Yes! All drivers undergo criminal & background checks, and all rides feature live GPS safety tracking.' },
+                    { icon: Gift, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'How does MBGO Refer & Earn work?', a: 'Share your referral link with friends. When they complete their first ride, you earn bonus wallet cash.' },
+                  ].map((faq, idx) => {
+                    const FaqIcon = faq.icon;
+                    return (
+                      <View key={idx} className="p-2.5">
+                        <TouchableOpacity 
+                          onPress={() => toggleFaq(idx)}
+                          className="w-full flex flex-row items-center justify-between"
+                        >
+                          <View className="flex flex-row items-center gap-2 flex-1 pr-2">
+                            <View className={`w-5 h-5 rounded-full flex items-center justify-center ${faq.iconBg}`}>
+                              <FaqIcon size={11} />
+                            </View>
+                            <Text className="text-[11px] font-medium text-slate-800 flex-1">{faq.q}</Text>
+                          </View>
+                          <ChevronDown size={13} color="#94A3B8" style={{ transform: [{ rotate: openFaq === idx ? '180deg' : '0deg' }] }} />
+                        </TouchableOpacity>
+                        {openFaq === idx && (
+                          <Text className="text-[10px] text-slate-500 leading-relaxed pl-7 pt-1.5 mt-1 border-t border-slate-50">
+                            {faq.a}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
 
-              {/* Need More Help Footer */}
-              <View className="space-y-2 pt-1">
-                <Text className="text-xs font-black text-slate-900">Need more help?</Text>
+              {/* Need More Help Section */}
+              <View className="space-y-2">
+                <Text className="text-xs font-bold text-slate-900">Need more help?</Text>
                 
                 <TouchableOpacity onPress={() => showToast("Opening Ticket Submission Form...")}
-                  className="bg-white border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-orange-300 transition shadow-sm flex-row"
+                  className="bg-white border border-slate-100 rounded-xl p-2.5 flex flex-row items-center justify-between shadow-2xs"
                 >
-                  <View className="flex items-center gap-2.5 flex-row">
-                    <View className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-row">
-                      <Mail className="w-4 h-4"/>
+                  <View className="flex flex-row items-center gap-2">
+                    <View className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+                      <Mail size={14} color="#2563EB" />
                     </View>
                     <View>
-                      <View className=""><Text className="text-xs font-black text-slate-900">Submit a Request</Text></View>
-                      <View className=""><Text className="text-[9px] text-slate-400 font-bold">We will get back to you via email</Text></View>
+                      <Text className="text-[11px] font-semibold text-slate-900">Submit a Request</Text>
+                      <Text className="text-[8.5px] text-slate-400">We will get back to you via email</Text>
+                    </View>
                   </View>
-                  </View>
-                  <ChevronRight className="w-4 h-4 text-slate-400"/>
-                  </TouchableOpacity>
+                  <ChevronRight size={13} color="#94A3B8" />
+                </TouchableOpacity>
 
-                <View className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                  <Text className="text-[10px] font-extrabold text-blue-900">Your feedback helps us improve our service.</Text>
-                  <TouchableOpacity onPress={() => showToast("Opening Feedback Dialog...")} className="bg-white border border-blue-200 px-3 py-1 rounded-xl shadow-sm shrink-0 flex items-center gap-1 flex-row"><Text className="text-[10px] font-black text-blue-600">
-                    Give Feedback </Text><ChevronRight className="w-3 h-3"/>
+                <View className="bg-[#F4F8FF] border border-blue-100 rounded-xl p-2 flex flex-row items-center justify-between">
+                  <View className="flex flex-row items-center gap-1.5 flex-1 pr-2">
+                    <AlertCircle size={13} color="#2563EB" />
+                    <Text className="text-[9px] text-blue-900 flex-1">Your feedback helps us improve our service.</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => showToast("Opening Feedback Dialog...")} className="bg-white border border-blue-400 px-2 py-0.5 rounded-lg flex flex-row items-center gap-0.5">
+                    <Text className="text-[9px] font-medium text-blue-600">Give Feedback</Text>
+                    <ChevronRight size={9} color="#2563EB" />
                   </TouchableOpacity>
                 </View>
-                  </View>
+              </View>
 
             </View>
           )}
@@ -386,7 +408,7 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
                       notificationTab === tab ? 'text-[#FF3B00] border-b-2 border-[#FF3B00] font-black' : 'hover:text-slate-800'
                     }`}
                   >
-                    {tab}
+                    <Text>{tab}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -553,7 +575,7 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
                           <Text className="text-slate-400">⇄</Text>
                           <Text>{route.to}</Text>
                         </View>
-                        <View className="">{route.stateFrom}<Text className="text-[9px] text-slate-400 font-bold"> • </Text>{route.stateTo}</View>
+                        <View className=""><Text className="text-[9px] text-slate-400 font-bold">{route.stateFrom} • {route.stateTo}</Text></View>
                       </View>
                       <View className="flex items-center gap-2 flex-row">
                         <Text className="bg-slate-100 text-slate-700 text-[9px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -906,50 +928,16 @@ export default function ScreenHelpSupport({ onNavigate }: { onNavigate: (screen:
 
         </ScrollView>
 
-        {/* Global Bottom App Navigation Bar */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 py-2.5 px-6 flex justify-between items-center z-30 flex-row">
-          
-          <TouchableOpacity 
-            onPress={() => onNavigate('31')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Car className="w-5 h-5"/>
-            <Text>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('35')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Calendar className="w-5 h-5"/>
-            <Text>My Trips</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('32')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Receipt className="w-5 h-5"/>
-            <Text>Bookings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('36')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <User className="w-5 h-5"/>
-            <Text>Profile</Text>
-          </TouchableOpacity>
-
-        </View>
+        {/* Reusable Rider Bottom App Navigation Bar */}
+        <RiderBottomNavbar activeScreen={activeScreen} onNavigate={onNavigate} />
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         
 

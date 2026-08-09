@@ -1,40 +1,171 @@
 import { View, Text, TouchableOpacity, TextInput, Image, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Svg, { Path, Circle, G } from 'react-native-svg';
 import {
   Mail,
   Lock,
   Eye,
   EyeOff,
   ArrowRight,
-  Shield,
+  ArrowLeft,
+  ShieldCheck,
   CheckCircle2,
-  MessageCircle,
   User,
+  UserPlus,
+  KeyRound,
   Phone,
   ChevronRight,
-  Sparkles,
+  ChevronDown,
   Car,
   Headphones,
-  TrendingUp,
   Award,
   Check,
-  Building2,
-  IndianRupee,
-  RefreshCw
 } from 'lucide-react-native';
 import { loginRider, registerRider, verifyRiderOtp, resendRiderOtp, forgotRiderPassword, resetRiderPassword } from '../../../api/riderAuth.api';
 import { useAuthStore } from '../../../store/useAuthStore';
 
-export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeScreen: string, onNavigate: (screen: string) => void }) {
-  // Navigation active screen: 'login' | 'register' | 'forgot'
-  // State passed via props
+// Use the transparent logo asset
+const LOGO_TRANSPARENT = require('../../../assets/mbgoLogo_transparent.png');
 
+// =============================================================================
+// Shared Presentational Components (Explicit React Native Styles)
+// =============================================================================
+
+const GoogleIcon = ({ size = 16 }: { size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <Path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <Path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+    <Path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+  </Svg>
+);
+
+const WorldMapBackground = () => (
+  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2 }} pointerEvents="none">
+    <Svg width="100%" height="100%" viewBox="0 0 400 220" preserveAspectRatio="none">
+      <Path d="M30 40 Q45 20 60 45 T90 35 T120 50 Q110 90 80 100 Q40 90 30 40 Z" fill="#CBD5E1" opacity="0.6" />
+      <Path d="M180 30 Q220 15 260 30 T320 40 T380 35 Q370 80 320 90 Q240 85 180 30 Z" fill="#CBD5E1" opacity="0.6" />
+      <Path d="M210 110 Q240 100 270 120 T280 160 Q230 180 210 110 Z" fill="#CBD5E1" opacity="0.5" />
+      
+      <Path d="M 40 80 Q 180 -10 340 60" fill="none" stroke="#FF5500" strokeWidth="1.2" strokeDasharray="3 3" opacity="0.45" />
+      <Path d="M 90 40 Q 200 80 360 110" fill="none" stroke="#FF5500" strokeWidth="1" strokeDasharray="3 3" opacity="0.3" />
+
+      <Circle cx="40" cy="80" r="4" fill="#FF5500" />
+      <Circle cx="40" cy="80" r="8" fill="#FF5500" opacity="0.2" />
+
+      <Circle cx="340" cy="60" r="4" fill="#FF5500" />
+      <Circle cx="340" cy="60" r="8" fill="#FF5500" opacity="0.2" />
+
+      <Circle cx="360" cy="110" r="3.5" fill="#FF5500" />
+
+      <G x="190" y="24" rotation="12">
+        <Path d="M2 12l5-2 3 5 2-1-2-6 5-2c.6-.3.8-1 .5-1.5-.3-.6-1-.8-1.5-.5L9 6 6 1 4 2l2 5-5 2V12z" fill="#FF5500" opacity="0.75" />
+      </G>
+    </Svg>
+  </View>
+);
+
+const BrandLogo = () => (
+  <View style={{ alignItems: 'center', marginBottom: 2, zIndex: 10 }}>
+    <Image source={LOGO_TRANSPARENT} style={{ width: 130, height: 48 }} resizeMode="contain" />
+  </View>
+);
+
+function StepProgress({ currentStep, steps }: { currentStep: number; steps: { num: number; label: string }[] }) {
+  return (
+    <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10, paddingHorizontal: 4 }}>
+      {steps.map((s, idx) => {
+        const isActive = currentStep === s.num;
+        const isDone = currentStep > s.num;
+        return (
+          <React.Fragment key={s.num}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: isDone ? '#10B981' : isActive ? '#FF5500' : '#F1F5F9', marginRight: 4 }}>
+                {isDone ? <Check size={12} color="#FFFFFF" /> : <Text style={{ fontSize: 10, fontWeight: '900', color: isActive ? '#FFFFFF' : '#94A3B8' }}>{s.num}</Text>}
+              </View>
+              <Text style={{ fontSize: 10, fontWeight: '700', color: isActive ? '#0F172A' : isDone ? '#475569' : '#94A3B8' }}>{s.label}</Text>
+            </View>
+            {idx < steps.length - 1 && (
+              <View style={{ flex: 1, height: 1.5, marginHorizontal: 6, maxWidth: 20, backgroundColor: currentStep > s.num ? '#10B981' : '#E2E8F0' }} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </View>
+  );
+}
+
+function OtpBoxes({
+  digits,
+  onChangeDigit,
+  refsArray,
+}: {
+  digits: string[];
+  onChangeDigit: (value: string, index: number) => void;
+  refsArray: React.MutableRefObject<Array<TextInput | null>>;
+}) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+      {digits.map((digit, idx) => (
+        <TextInput
+          key={idx}
+          ref={(el) => { refsArray.current[idx] = el; }}
+          value={digit}
+          onChangeText={(v) => onChangeDigit(v.replace(/[^0-9]/g, '').slice(-1), idx)}
+          onKeyPress={(e) => {
+            if (e.nativeEvent.key === 'Backspace' && !digits[idx] && idx > 0) {
+              refsArray.current[idx - 1]?.focus();
+            }
+          }}
+          keyboardType="number-pad"
+          maxLength={1}
+          style={{ width: 38, height: 40, textAlign: 'center', fontSize: 16, fontWeight: '900', backgroundColor: '#FAFAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, color: '#0F172A' }}
+        />
+      ))}
+    </View>
+  );
+}
+
+function ResendRow({ timer, isDisabled, onResend }: { timer: number; isDisabled: boolean; onResend: () => void }) {
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4 }}>
+      <Text style={{ fontSize: 11, color: '#64748B', fontWeight: '600' }}>
+        Resend code in: <Text style={{ fontWeight: '900', color: '#FF5500' }}>0:{timer < 10 ? `0${timer}` : timer}</Text>
+      </Text>
+      <TouchableOpacity disabled={isDisabled} onPress={onResend}>
+        <Text style={{ fontSize: 11, fontWeight: '900', color: isDisabled ? '#CBD5E1' : '#FF5500', textDecorationLine: 'underline' }}>Resend OTP</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function FeatureItem({ icon, title, description, showBorder = true }: { icon: React.ReactNode; title: string; description: string; showBorder?: boolean }) {
+  return (
+    <View style={{ flex: 1, flexDirection: 'column', alignItems: 'center', paddingHorizontal: 2, borderRightWidth: showBorder ? 1 : 0, borderRightColor: '#F1F5F9' }}>
+      <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+        {icon}
+      </View>
+      <Text style={{ fontSize: 10, fontWeight: '800', color: '#0B1E3D', textAlign: 'center', marginBottom: 2 }}>{title}</Text>
+      <Text style={{ fontSize: 8, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>{description}</Text>
+    </View>
+  );
+}
+
+function HeroBackButton({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 4, alignSelf: 'flex-start' }}>
+      <ArrowLeft size={12} color="#334155" />
+      <Text style={{ fontSize: 10, fontWeight: '900', color: '#334155', marginLeft: 4 }}>Back</Text>
+    </TouchableOpacity>
+  );
+}
+
+export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeScreen: string, onNavigate: (screen: string) => void }) {
   const setToken = useAuthStore((s) => s.setToken);
   const setProfile = useAuthStore((s) => s.setProfile);
 
   // Form States
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,26 +177,49 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
-  // 'form' -> collecting details, 'otp' -> verifying email before first login
-  const [registerStep, setRegisterStep] = useState<'form' | 'otp'>('form');
-  const [registerOtp, setRegisterOtp] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [registerStep, setRegisterStep] = useState<'form' | 'otp' | 'success'>('form');
+  const [registerOtpDigits, setRegisterOtpDigits] = useState(['', '', '', '', '', '']);
+  const registerOtpRefs = useRef<Array<TextInput | null>>([]);
 
-  // Forgot Password Steps: 1 (Email Input) -> 2 (OTP Input) -> 3 (New Password)
+  // Forgot Password Steps: 1 (Email Input) -> 2 (OTP Input) -> 3 (New Password) -> 4 (Success)
   const [forgotStep, setForgotStep] = useState(1);
   const [forgotEmail, setForgotEmail] = useState('');
-  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotOtpDigits, setForgotOtpDigits] = useState(['', '', '', '', '', '']);
+  const forgotOtpRefs = useRef<Array<TextInput | null>>([]);
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [otpTimer, setOtpTimer] = useState(30);
+  const [isResendDisabled, setIsResendDisabled] = useState(true);
+
+  useEffect(() => {
+    const isOtpStepActive = (activeScreen === 'register' && registerStep === 'otp') || (activeScreen === 'forgot' && forgotStep === 2);
+    if (!isOtpStepActive || otpTimer <= 0) {
+      if (otpTimer <= 0) setIsResendDisabled(false);
+      return;
+    }
+    const interval = setInterval(() => setOtpTimer((prev) => prev - 1), 1000);
+    return () => clearInterval(interval);
+  }, [activeScreen, registerStep, forgotStep, otpTimer]);
+
+  const startOtpCountdown = () => {
+    setOtpTimer(30);
+    setIsResendDisabled(true);
+  };
 
   // Toast System
   const [toastMsg, setToastMsg] = useState('');
-  const showToast = (msg) => {
+  const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 3000);
   };
 
   const handleLogin = async () => {
     if (!email || !password) {
-      showToast('Please enter email and password');
+      showToast('Please enter mobile number/email and password');
       return;
     }
     setIsSubmitting(true);
@@ -76,7 +230,7 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
       showToast('Signed in successfully');
       onNavigate('31');
     } catch (error: any) {
-      showToast(error?.response?.data?.message || 'Invalid email or password');
+      showToast(error?.response?.data?.message || 'Invalid credentials');
     } finally {
       setIsSubmitting(false);
     }
@@ -87,11 +241,17 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
       showToast('Please fill in all fields');
       return;
     }
+    if (!agreedToTerms) {
+      showToast('Please agree to the Terms of Service & Privacy Policy');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await registerRider({ fullName, email, mobileNumber: phone, password: registerPassword });
       showToast('OTP sent to your email');
+      setRegisterOtpDigits(['', '', '', '', '', '']);
       setRegisterStep('otp');
+      startOtpCountdown();
     } catch (error: any) {
       showToast(error?.response?.data?.message || 'Could not create account');
     } finally {
@@ -99,9 +259,17 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
     }
   };
 
+  const handleRegisterOtpChange = (value: string, index: number) => {
+    const next = [...registerOtpDigits];
+    next[index] = value;
+    setRegisterOtpDigits(next);
+    if (value && index < 5) registerOtpRefs.current[index + 1]?.focus();
+  };
+
   const handleVerifyRegisterOtp = async () => {
-    if (!registerOtp) {
-      showToast('Enter the OTP sent to your email');
+    const registerOtp = registerOtpDigits.join('');
+    if (registerOtp.length < 6) {
+      showToast('Enter the 6-digit OTP sent to your email');
       return;
     }
     setIsSubmitting(true);
@@ -110,13 +278,23 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
       const res = await loginRider({ email, password: registerPassword });
       await setToken(res.data.accessToken);
       setProfile({ ...(res.data.profile || {}), email });
-      showToast('Account created successfully!');
-      setRegisterStep('form');
-      onNavigate('31');
+      setRegisterStep('success');
     } catch (error: any) {
       showToast(error?.response?.data?.message || 'Invalid or expired OTP');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendRegisterOtp = async () => {
+    try {
+      await resendRiderOtp({ email });
+      setRegisterOtpDigits(['', '', '', '', '', '']);
+      startOtpCountdown();
+      registerOtpRefs.current[0]?.focus();
+      showToast('OTP resent to your email');
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'Could not resend OTP');
     }
   };
 
@@ -129,7 +307,9 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
     try {
       await forgotRiderPassword({ email: forgotEmail });
       showToast('OTP sent to your email');
+      setForgotOtpDigits(['', '', '', '', '', '']);
       setForgotStep(2);
+      startOtpCountdown();
     } catch (error: any) {
       showToast(error?.response?.data?.message || 'Could not send OTP');
     } finally {
@@ -137,19 +317,52 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
     }
   };
 
+  const handleForgotOtpChange = (value: string, index: number) => {
+    const next = [...forgotOtpDigits];
+    next[index] = value;
+    setForgotOtpDigits(next);
+    if (value && index < 5) forgotOtpRefs.current[index + 1]?.focus();
+  };
+
+  const handleResendForgotOtp = async () => {
+    try {
+      await forgotRiderPassword({ email: forgotEmail });
+      setForgotOtpDigits(['', '', '', '', '', '']);
+      startOtpCountdown();
+      forgotOtpRefs.current[0]?.focus();
+      showToast('OTP resent to your email');
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'Could not resend OTP');
+    }
+  };
+
+  const handleVerifyForgotOtp = () => {
+    const forgotOtp = forgotOtpDigits.join('');
+    if (forgotOtp.length < 6) {
+      showToast('Enter the 6-digit OTP sent to your email');
+      return;
+    }
+    setForgotStep(3);
+  };
+
   const handleResetPassword = async () => {
-    if (!forgotOtp || !newPassword) {
-      showToast('Enter the OTP and a new password');
+    const forgotOtp = forgotOtpDigits.join('');
+    if (!newPassword) {
+      showToast('Please enter a new password');
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToast('Password must be at least 6 characters long');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      showToast('Passwords do not match');
       return;
     }
     setIsSubmitting(true);
     try {
       await resetRiderPassword({ email: forgotEmail, otp: forgotOtp, newPassword });
-      showToast('Password updated! Please sign in.');
-      setForgotStep(1);
-      setForgotOtp('');
-      setNewPassword('');
-      onNavigate('login');
+      setForgotStep(4);
     } catch (error: any) {
       showToast(error?.response?.data?.message || 'Invalid or expired OTP');
     } finally {
@@ -157,190 +370,220 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
     }
   };
 
+  const resetForgotFlow = () => {
+    setForgotStep(1);
+    setForgotEmail('');
+    setForgotOtpDigits(['', '', '', '', '', '']);
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  const showHeroBack =
+    (activeScreen === 'register' && registerStep === 'otp') ||
+    (activeScreen === 'forgot' && (forgotStep === 2 || forgotStep === 3));
+
+  const handleHeroBack = () => {
+    if (activeScreen === 'register') setRegisterStep('form');
+    else if (activeScreen === 'forgot') setForgotStep(forgotStep - 1);
+  };
+
   return (
-    <View className="flex-1 bg-slate-950 selection:bg-[#FF4500] selection:text-white">
-      
+    <View style={{ flex: 1, backgroundColor: '#020617' }}>
       {/* Main Mobile Frame Container */}
-      <View className="flex-1 bg-[#F4F6F9] relative">
-        
-        {/* Scrollable Content Body */}
-        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, backgroundColor: '#F4F6F9', position: 'relative' }}>
+
+        {/* Header Navigation Bar */}
+        <View style={{ width: '100%', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', zIndex: 20, position: 'absolute', top: 0, left: 0, right: 0 }}>
+          <TouchableOpacity onPress={() => showToast('Opening Customer Portal...')} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9' }}>
+            <User size={13} color="#1E293B" />
+            <Text style={{ fontSize: 11, fontWeight: '600', color: '#1E293B', marginLeft: 4, marginRight: 2 }}>Customer Portal</Text>
+            <ChevronRight size={11} color="#1E293B" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Content Body (No Scroll) */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 10, paddingTop: 34 }} showsVerticalScrollIndicator={false}>
 
           {/* =========================================================
-              HERO BACKGROUND SECTION (TOP HALF MATCHING REFERENCE IMAGE)
+              HERO BRAND SECTION
              ========================================================= */}
-          <View className="relative min-h-[290px] w-full bg-slate-50/40 overflow-hidden pt-3 px-5">
-            
-            {/* Real SUV Backdrop Image on Right */}
-            <View className="absolute right-0 top-12 w-[62%] h-[210px] pointer-events-none z-0" pointerEvents="none">
-              <Image source={{ uri: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=1000" }} 
-                accessibilityLabel="MBGO Vehicle" 
-                className="w-full h-full object-cover object-left opacity-90 drop-shadow-xl" />
-              {/* Subtle background skyline & bird graphic details overlay */}
-              <View className="absolute inset-0 bg-sky-50/40"></View>
+          <View style={{ position: 'relative', width: '100%', backgroundColor: '#F3F6FA', paddingTop: 4, paddingHorizontal: 16, paddingBottom: 2, alignItems: 'center', overflow: 'hidden' }}>
+            <WorldMapBackground />
+
+            <View style={{ width: '100%', alignItems: 'flex-start', zIndex: 10, minHeight: showHeroBack ? undefined : 2 }}>
+              {showHeroBack && <HeroBackButton onPress={handleHeroBack} />}
             </View>
 
-            {/* Status Bar */}
-            <View className="relative z-20 flex justify-between items-center pb-2 flex-row">
-              <Text className="text-xs font-black text-slate-800">17:02</Text>
-              <View className="flex items-center gap-1 flex-row">
-                <Text className="text-[10px] font-extrabold text-slate-700">VoLTE</Text>
-                <Text className="text-[10px] bg-slate-200 text-slate-800 px-1 rounded font-black">5G</Text>
-                <View className="w-2.5 h-2.5 rounded-full bg-emerald-500"></View>
-                <Text className="text-[10px] font-bold text-slate-700">33%</Text>
-              </View>
-            </View>
+            <BrandLogo />
 
-            {/* Top Header Bar */}
-            <View className="relative z-20 flex items-center justify-between pt-1 pb-4 flex-row">
-              {/* MBGO Brand Logo */}
-              <View className="flex flex-col">
-                <View className="flex items-center flex-row">
-                  <Text className="text-[#0B132B]">MB</Text>
-                  <Text className="text-[#FF4500]">GO</Text>
-                </View>
-                <View className="mt-0.5"><Text className="text-[8px] font-extrabold text-slate-500 tracking-wider uppercase">
-                  powered by musafirbaba
-                </Text></View>
-              </View>
+            {/* Dynamic Hero Titles per Screen */}
+            {activeScreen === 'login' && (
+              <>
+                <Text style={{ fontSize: 19, fontWeight: '900', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 23 }}>
+                  Your Journey,{'\n'}
+                  <Text style={{ color: '#FF5500' }}>Our Priority.</Text>
+                </Text>
+                <View style={{ width: 28, height: 2, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
+                <Text style={{ fontSize: 11, fontWeight: '500', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 14 }}>
+                  Premium rides.{'\n'}Trusted every mile.
+                </Text>
+              </>
+            )}
 
-              {/* Portal Pill Badge */}
-              <View className="bg-white px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5 border border-slate-200/80 flex-row">
-                <Building2 className="w-3.5 h-3.5 text-[#FF4500]"/>
-                <Text className="text-slate-900 font-extrabold text-[11px]">Rider Portal</Text>
-              </View>
-            </View>
+            {activeScreen === 'register' && (
+              <>
+                <Text style={{ fontSize: 19, fontWeight: '900', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 23 }}>
+                  Start Your Journey,{'\n'}
+                  <Text style={{ color: '#FF5500' }}>Join Us Today.</Text>
+                </Text>
+                <View style={{ width: 28, height: 2, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
+                <Text style={{ fontSize: 11, fontWeight: '500', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 14 }}>
+                  Create an account in seconds{'\n'}to book your next ride.
+                </Text>
+              </>
+            )}
 
-            {/* Hero Heading Slogan */}
-            <View className="relative z-20 w-[135px] pt-1 space-y-1">
-              <Text className="text-2xl font-black text-[#0B132B] leading-tight tracking-tight">
-                {activeScreen === 'login' && (
-                  <>Welcome Back,{'\n'}<Text className="text-[#FF4500]">Rider!</Text></>
-                )}
-                {activeScreen === 'register' && (
-                  <>Create Your{'\n'}<Text className="text-[#FF4500]">Account!</Text></>
-                )}
-                {activeScreen === 'forgot' && (
-                  <>Reset Your{'\n'}<Text className="text-[#FF4500]">Password</Text></>
-                )}
-              </Text>
-              <Text className="text-[11px] font-medium text-slate-600 leading-snug">
-                {activeScreen === 'login' && 'Sign in to manage your trips, bookings and earnings — all in one place.'}
-                {activeScreen === 'register' && 'Join MBGO today to book outstation rides at 0% markup.'}
-                {activeScreen === 'forgot' && 'Enter your registered details to recover your account access.'}
-              </Text>
-            </View>
-
-            {/* Dynamic Swooping Orange Wave Graphic on Left */}
-            <View className="absolute -bottom-2 left-0 w-36 h-20 bg-[#FF4500] rounded-tr-[50px] opacity-90 -z-0"></View>
+            {activeScreen === 'forgot' && (
+              <>
+                <Text style={{ fontSize: 19, fontWeight: '900', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 23 }}>
+                  Account Recovery,{'\n'}
+                  <Text style={{ color: '#FF5500' }}>Made Simple.</Text>
+                </Text>
+                <View style={{ width: 28, height: 2, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
+                <Text style={{ fontSize: 11, fontWeight: '500', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 14 }}>
+                  Follow quick steps to reset{'\n'}your account password.
+                </Text>
+              </>
+            )}
           </View>
 
           {/* =========================================================
-              FLOATING WHITE CARD OVERLAY (FORM SECTION MATCHING IMAGE)
+              FLOATING WHITE CARD OVERLAY (FORM SECTION)
              ========================================================= */}
-          <View className="px-4 -mt-6 relative z-30">
-            <View className="bg-white border border-slate-200/80 rounded-[32px] p-5 shadow-2xl space-y-4">
+          <View style={{ paddingHorizontal: 14, marginTop: 24, zIndex: 30 }}>
+            <View
+              style={{
+                backgroundColor: '#FFFFFF',
+                borderWidth: 1,
+                borderColor: '#F1F5F9',
+                borderRadius: 24,
+                paddingHorizontal: 16,
+                paddingBottom: 16,
+                paddingTop: 28,
+                position: 'relative',
+              }}
+            >
+
+              {/* Stepper Bar (Register/Forgot) */}
+              {(activeScreen === 'register' && registerStep !== 'success') && (
+                <StepProgress currentStep={registerStep === 'form' ? 1 : registerStep === 'otp' ? 2 : 3} steps={[{ num: 1, label: 'Details' }, { num: 2, label: 'OTP' }, { num: 3, label: 'Ready' }]} />
+              )}
+              {(activeScreen === 'forgot' && forgotStep < 4) && (
+                <StepProgress currentStep={forgotStep} steps={[{ num: 1, label: 'Email' }, { num: 2, label: 'OTP' }, { num: 3, label: 'Reset' }]} />
+              )}
+
+              {/* Floating Center Icon Badge (Perfect Circle) */}
+              {!(activeScreen === 'register' && registerStep === 'success') && !(activeScreen === 'forgot' && forgotStep === 4) && (
+                <View style={{ position: 'absolute', top: -22, left: 0, right: 0, alignItems: 'center', justifyContent: 'center' }} pointerEvents="none">
+                  <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF5EF', borderWidth: 2, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
+                    {activeScreen === 'login' && <Car size={22} color="#FF5500" />}
+                    {activeScreen === 'register' && <UserPlus size={22} color="#FF5500" />}
+                    {activeScreen === 'forgot' && <KeyRound size={22} color="#FF5500" />}
+                  </View>
+                </View>
+              )}
 
               {/* ----------------------------------------------------
                   1. SIGN IN SCREEN
                  ---------------------------------------------------- */}
               {activeScreen === 'login' && (
-                <View className="space-y-4 animate-in fade-in duration-200">
-                  <View className="space-y-0.5 pb-1">
-                    <Text className="text-xl font-extrabold text-slate-900">Sign in to your account</Text>
-                    <Text className="text-xs font-semibold text-slate-400">Continue to your rider dashboard</Text>
+                <View style={{ gap: 10 }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Welcome Back!</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B' }}>Sign in to book your next ride</Text>
                   </View>
 
-                  {/* Email Field */}
-                  <View className="space-y-1">
-                    <Text className="block text-xs font-bold text-slate-700">Email Address</Text>
-                    <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition shadow-sm flex-row">
-                      <Mail className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                      <TextInput 
-                        type="email" 
-                        value={email} 
+                  {/* Email ID Field */}
+                  <View style={{ gap: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Email ID</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Mail size={15} color="#94A3B8" />
+                      </View>
+                      <TextInput
+                        value={email}
                         onChangeText={setEmail}
-                        placeholder="partner@example.com" 
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none placeholder:text-slate-400"
+                        placeholder="Enter your email address"
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
                       />
                     </View>
                   </View>
 
                   {/* Password Field */}
-                  <View className="space-y-1">
-                    <View className="flex justify-between items-center flex-row">
-                      <Text className="block text-xs font-bold text-slate-700">Password</Text>
-                      <TouchableOpacity 
-                        onPress={() => { onNavigate('forgot'); setForgotStep(1); }} 
-                        className="hover:underline">
-                        <Text className="text-xs font-bold text-[#FF4500]">Forgot Password?</Text>
+                  <View style={{ gap: 4 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Password</Text>
+                      <TouchableOpacity onPress={() => { onNavigate('forgot'); resetForgotFlow(); }}>
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: '#FF5500' }}>Forgot password?</Text>
                       </TouchableOpacity>
                     </View>
-                    <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition shadow-sm flex-row">
-                      <Lock className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                      <TextInput 
-                        type={showPassword ? 'text' : 'password'} 
-                        value={password} 
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Lock size={15} color="#94A3B8" />
+                      </View>
+                      <TextInput
+                        secureTextEntry={!showPassword}
+                        value={password}
                         onChangeText={setPassword}
-                        placeholder="Enter your password" 
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none placeholder:text-slate-400"
+                        placeholder="Enter your password"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
                       />
-                      <TouchableOpacity 
-                         
-                        onPress={() => setShowPassword(!showPassword)}
-                        className="hover:text-slate-600 transition"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                      <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeOff size={15} color="#94A3B8" /> : <Eye size={15} color="#94A3B8" />}
                       </TouchableOpacity>
                     </View>
-                  </View>
-
-                  {/* Checkbox & WhatsApp Help Row */}
-                  <View className="flex items-center justify-between pt-1 flex-row">
-                    <Text className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 select-none">
-                      <TextInput 
-                        type="checkbox" 
-                        checked={rememberMe} 
-                        onChangeText={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded text-[#FF4500] accent-[#FF4500] border-slate-300 focus:ring-0 cursor-pointer"
-                      />
-                      <Text className="text-xs font-bold text-slate-700">Remember me</Text>
-                    </Text>
-
-                    <TouchableOpacity 
-                      
-                      onPress={() => showToast("Opening WhatsApp Support...")}
-                      className="flex items-center gap-1.5 hover:text-emerald-600 transition bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex-row"
-                    >
-                      <Text className="text-[10px] font-black text-emerald-700">Need help?</Text>
-                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600"/>
-                    </TouchableOpacity>
                   </View>
 
                   {/* Primary CTA Button */}
                   <TouchableOpacity
                     onPress={handleLogin}
                     disabled={isSubmitting}
-                    className="w-full bg-[#FF4500] hover:bg-orange-600 active:scale-98 py-3.5 rounded-2xl shadow-xl shadow-orange-500/25 transition flex items-center justify-center gap-2 mt-2 flex-row"
+                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}
                   >
-                    <Text className="text-white font-bold text-sm">{isSubmitting ? 'Signing in...' : 'Sign In'}</Text>
-                    <ArrowRight className="w-4 h-4 text-white"/>
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Signing in...' : 'Sign In to Continue'}</Text>
+                    <ArrowRight size={15} color="#FFFFFF" />
                   </TouchableOpacity>
 
-                  {/* Divider */}
-                  <View className="relative py-2">
-                    <View className="absolute inset-0 flex items-center flex-row"><View className="w-full border-t border-slate-100"></View></View>
-                    <Text className="relative bg-white px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">OR</Text>
+                  {/* Divider: OR (Commented for now) */}
+                  {/*
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
+                    <View style={{ flex: 1, height: 1, backgroundColor: '#E2E8F0' }} />
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: '#94A3B8', paddingHorizontal: 8 }}>OR</Text>
+                    <View style={{ flex: 1, height: 1, backgroundColor: '#E2E8F0' }} />
                   </View>
+                  */}
+
+                  {/* Google Sign In Button (Commented for now) */}
+                  {/*
+                  <TouchableOpacity
+                    onPress={() => showToast('Google Sign In coming soon')}
+                    style={{ width: '100%', height: 40, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <GoogleIcon size={15} />
+                    <Text style={{ color: '#1E293B', fontWeight: 'bold', fontSize: 12, marginLeft: 6 }}>Continue with Google</Text>
+                  </TouchableOpacity>
+                  */}
 
                   {/* Register Switch Prompt */}
-                  <View className="">
-                    <Text className="text-xs font-bold text-slate-500">Don't have an account? </Text>
-                    <TouchableOpacity 
-                      onPress={() => onNavigate('register')}
-                      className="hover:underline inline-flex items-center gap-0.5"
-                    ><Text className="text-[#FF4500] font-black">
-                      Register Here </Text><ChevronRight className="w-3.5 h-3.5"/>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B' }}>New here?</Text>
+                    <TouchableOpacity onPress={() => onNavigate('register')} style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 4 }}>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#FF5500' }}>Create an account</Text>
+                      <ChevronRight size={12} color="#FF5500" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -350,97 +593,114 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                   2. SIGN UP / REGISTER SCREEN
                  ---------------------------------------------------- */}
               {activeScreen === 'register' && registerStep === 'form' && (
-                <View className="space-y-3 animate-in fade-in duration-200">
-                  <View className="space-y-0.5 pb-1">
-                    <Text className="text-xl font-extrabold text-slate-900">Create New Account</Text>
-                    <Text className="text-xs font-semibold text-slate-400">Fill in your details to get started</Text>
+                <View style={{ gap: 8 }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Create Account</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B' }}>Sign up to manage and book premium rides</Text>
                   </View>
 
                   {/* Full Name */}
-                  <View className="space-y-1">
-                    <Text className="block text-xs font-bold text-slate-700">Full Name</Text>
-                    <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
-                      <User className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                      <TextInput 
-                         
+                  <View style={{ gap: 2 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#0F172A' }}>Full Name</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 38, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 6 }}>
+                        <User size={14} color="#94A3B8" />
+                      </View>
+                      <TextInput
                         value={fullName}
                         onChangeText={setFullName}
-                        placeholder="Ashutosh Rai" 
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
+                        placeholder="John Doe"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
                       />
                     </View>
                   </View>
 
                   {/* Email Address */}
-                  <View className="space-y-1">
-                    <Text className="block text-xs font-bold text-slate-700">Email Address</Text>
-                    <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
-                      <Mail className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                      <TextInput 
-                        type="email" 
+                  <View style={{ gap: 2 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#0F172A' }}>Email ID</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 38, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 6 }}>
+                        <Mail size={14} color="#94A3B8" />
+                      </View>
+                      <TextInput
                         value={email}
                         onChangeText={setEmail}
-                        placeholder="ashutosh@example.com" 
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
+                        placeholder="user@example.com"
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
                       />
                     </View>
                   </View>
 
                   {/* Phone Number */}
-                  <View className="space-y-1">
-                    <Text className="block text-xs font-bold text-slate-700">Mobile Number</Text>
-                    <View className="flex items-center gap-2 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
-                      <Text className="text-xs font-black text-slate-700 border-r border-slate-200 pr-2">+91</Text>
-                      <TextInput 
-                        type="tel" 
+                  <View style={{ gap: 2 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#0F172A' }}>Mobile Number</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 38, backgroundColor: '#FAFAFC' }}>
+                      <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 6, borderRightWidth: 1, borderRightColor: '#E2E8F0', marginRight: 6 }}>
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#0F172A', marginRight: 2 }}>+91</Text>
+                        <ChevronDown size={11} color="#64748B" />
+                      </TouchableOpacity>
+                      <Phone size={14} color="#94A3B8" />
+                      <TextInput
                         value={phone}
                         onChangeText={setPhone}
-                        placeholder="98765 43210" 
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
+                        placeholder="Enter mobile number"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="phone-pad"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A', marginLeft: 6 }}
                       />
                     </View>
                   </View>
 
                   {/* Password */}
-                  <View className="space-y-1">
-                    <Text className="block text-xs font-bold text-slate-700">Password</Text>
-                    <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
-                      <Lock className="w-4 h-4 text-[#FF4500] shrink-0"/>
+                  <View style={{ gap: 2 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#0F172A' }}>Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 38, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 6 }}>
+                        <Lock size={14} color="#94A3B8" />
+                      </View>
                       <TextInput
                         secureTextEntry={!showPassword}
                         value={registerPassword}
                         onChangeText={setRegisterPassword}
-                        placeholder="Create password"
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
+                        placeholder="At least 6 characters"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
                       />
-                      <TouchableOpacity
-
-                        onPress={() => setShowPassword(!showPassword)}
-                        className="hover:text-slate-600"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4"/> : <Eye className="w-4 h-4"/>}
+                      <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeOff size={14} color="#94A3B8" /> : <Eye size={14} color="#94A3B8" />}
                       </TouchableOpacity>
                     </View>
                   </View>
+
+                  {/* Terms & Conditions Agreement */}
+                  <TouchableOpacity onPress={() => setAgreedToTerms(!agreedToTerms)} style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 2 }}>
+                    <View style={{ width: 14, height: 14, borderRadius: 3, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: agreedToTerms ? '#FF5500' : '#CBD5E1', backgroundColor: agreedToTerms ? '#FF5500' : '#FFFFFF', marginRight: 6 }}>
+                      {agreedToTerms && <Check size={10} color="#FFFFFF" />}
+                    </View>
+                    <Text style={{ fontSize: 10, color: '#64748B', flex: 1 }}>
+                      I agree to the <Text style={{ fontWeight: 'bold', color: '#334155', textDecorationLine: 'underline' }}>Terms of Service</Text> & <Text style={{ fontWeight: 'bold', color: '#334155', textDecorationLine: 'underline' }}>Privacy Policy</Text>
+                    </Text>
+                  </TouchableOpacity>
 
                   {/* Register Button */}
                   <TouchableOpacity
                     onPress={handleRegister}
                     disabled={isSubmitting}
-                    className="w-full bg-[#FF4500] hover:bg-orange-600 active:scale-98 py-3.5 rounded-2xl shadow-xl shadow-orange-500/25 transition flex items-center justify-center gap-2 mt-2 flex-row"
+                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
                   >
-                    <Text className="text-white font-bold text-sm">{isSubmitting ? 'Creating account...' : 'Create Account'}</Text>
-                    <Sparkles className="w-4 h-4 text-white"/>
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Sending code...' : 'Send Verification Code'}</Text>
+                    <ArrowRight size={15} color="#FFFFFF" />
                   </TouchableOpacity>
 
-                  <View className="pt-1">
-                    <Text className="text-xs font-bold text-slate-500">Already have an account? </Text>
-                    <TouchableOpacity
-                      onPress={() => onNavigate('login')}
-                      className="hover:underline"
-                    ><Text className="text-[#FF4500] font-black">
-                      Sign In Here
-                    </Text></TouchableOpacity>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B' }}>Already have an account?</Text>
+                    <TouchableOpacity onPress={() => onNavigate('login')}>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#FF5500', marginLeft: 4 }}>Sign In</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               )}
@@ -449,189 +709,215 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                   2b. REGISTER: EMAIL OTP VERIFICATION
                  ---------------------------------------------------- */}
               {activeScreen === 'register' && registerStep === 'otp' && (
-                <View className="space-y-3 animate-in fade-in duration-200">
-                  <View className="space-y-0.5 pb-1">
-                    <Text className="text-xl font-extrabold text-slate-900">Verify Your Email</Text>
-                    <Text className="text-xs font-semibold text-slate-400">Enter the OTP sent to {email}</Text>
+                <View style={{ gap: 8 }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Verify Your Email</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>
+                      We've sent a 6-digit code to{'\n'}
+                      <Text style={{ fontWeight: 'bold', color: '#1E293B' }}>{email}</Text>
+                    </Text>
                   </View>
 
-                  <View className="space-y-1">
-                    <Text className="block text-xs font-bold text-slate-700">OTP Code</Text>
-                    <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] flex-row">
-                      <Shield className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                      <TextInput
-                        value={registerOtp}
-                        onChangeText={setRegisterOtp}
-                        maxLength={6}
-                        placeholder="Enter 6-digit OTP"
-                        className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
-                      />
-                    </View>
-                  </View>
+                  <OtpBoxes digits={registerOtpDigits} onChangeDigit={handleRegisterOtpChange} refsArray={registerOtpRefs} />
+
+                  <ResendRow timer={otpTimer} isDisabled={isResendDisabled} onResend={handleResendRegisterOtp} />
 
                   <TouchableOpacity
                     onPress={handleVerifyRegisterOtp}
                     disabled={isSubmitting}
-                    className="w-full bg-[#FF4500] hover:bg-orange-600 py-3.5 rounded-2xl shadow-xl shadow-orange-500/25 transition flex items-center justify-center gap-2 flex-row"
+                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    <Text className="text-white font-bold text-sm">{isSubmitting ? 'Verifying...' : 'Verify & Continue'}</Text>
-                    <CheckCircle2 className="w-4 h-4"/>
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Verifying...' : 'Verify & Create Account'}</Text>
+                    <CheckCircle2 size={15} color="#FFFFFF" />
                   </TouchableOpacity>
 
-                  <View className="">
-                    <Text className="text-center text-xs font-bold text-slate-400">Didn't receive code? </Text>
-                    <TouchableOpacity
-                      onPress={async () => {
-                        try {
-                          await resendRiderOtp({ email });
-                          showToast('OTP resent to your email');
-                        } catch (error: any) {
-                          showToast(error?.response?.data?.message || 'Could not resend OTP');
-                        }
-                      }}
-                      className="underline"
-                    >
-                      <Text className="text-[#FF4500]">Resend OTP</Text>
+                  <View style={{ alignItems: 'center', paddingTop: 2 }}>
+                    <TouchableOpacity onPress={() => setRegisterStep('form')}>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#64748B', textDecorationLine: 'underline' }}>Change Registration Details</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               )}
 
               {/* ----------------------------------------------------
-                  3. FORGOT PASSWORD SCREEN (MULTI-STEP RECOVERY)
+                  2c. REGISTER: SUCCESS
                  ---------------------------------------------------- */}
-              {activeScreen === 'forgot' && (
-                <View className="space-y-4 animate-in fade-in duration-200">
-                  
-                  {/* Step Indicators */}
-                  <View className="flex justify-center items-center gap-2 pb-1 flex-row">
-                    <View className={`w-7 h-7 rounded-full text-xs font-black flex items-center justify-center transition ${forgotStep >= 1 ? 'bg-[#FF4500] text-white' : 'bg-slate-100 text-slate-400'}`}><Text className="text-xs font-black">1</Text></View>
-                    <View className={`w-8 h-0.5 ${forgotStep >= 2 ? 'bg-[#FF4500]' : 'bg-slate-200'}`}></View>
-                    <View className={`w-7 h-7 rounded-full text-xs font-black flex items-center justify-center transition ${forgotStep >= 2 ? 'bg-[#FF4500] text-white' : 'bg-slate-100 text-slate-400'}`}><Text className="text-xs font-black">2</Text></View>
-                    <View className={`w-8 h-0.5 ${forgotStep >= 3 ? 'bg-[#FF4500]' : 'bg-slate-200'}`}></View>
-                    <View className={`w-7 h-7 rounded-full text-xs font-black flex items-center justify-center transition ${forgotStep >= 3 ? 'bg-[#FF4500] text-white' : 'bg-slate-100 text-slate-400'}`}><Text className="text-xs font-black">3</Text></View>
+              {activeScreen === 'register' && registerStep === 'success' && (
+                <View style={{ alignItems: 'center', paddingVertical: 8 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#ECFDF5', borderWidth: 2, borderColor: '#A7F3D0', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                    <CheckCircle2 size={28} color="#10b981" />
+                  </View>
+                  <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D', marginBottom: 2 }}>Account Created!</Text>
+                  <Text style={{ fontSize: 11, color: '#64748B', textAlign: 'center', marginBottom: 16, paddingHorizontal: 8 }}>
+                    Welcome aboard, <Text style={{ fontWeight: 'bold', color: '#1E293B' }}>{fullName || 'Traveler'}</Text>! Your mbgo account has been created successfully.
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={() => { setRegisterStep('form'); onNavigate('31'); }}
+                    style={{ width: '100%', height: 40, backgroundColor: '#0B1E3D', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>Sign In & Book Ride</Text>
+                    <ArrowRight size={15} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* ----------------------------------------------------
+                  3. FORGOT PASSWORD SCREEN
+                 ---------------------------------------------------- */}
+              {activeScreen === 'forgot' && forgotStep === 1 && (
+                <View style={{ gap: 10 }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Forgot Password?</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>Enter registered Email ID to receive a 6-digit code</Text>
                   </View>
 
-                  {/* STEP 1: ENTER EMAIL / PHONE */}
-                  {forgotStep === 1 && (
-                    <View className="space-y-3">
-                      <View className="space-y-0.5">
-                        <Text className="text-base font-black text-slate-900">Forgot Password?</Text>
-                        <Text className="text-xs font-semibold text-slate-400">Enter email or phone to receive OTP code</Text>
+                  <View style={{ gap: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Registered Email ID</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Mail size={15} color="#94A3B8" />
                       </View>
-
-                      <View className="space-y-1">
-                        <Text className="block text-xs font-bold text-slate-700">Email Address or Phone</Text>
-                        <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] flex-row">
-                          <Mail className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                          <TextInput
-                            value={forgotEmail}
-                            onChangeText={setForgotEmail}
-                            placeholder="you@example.com"
-                            className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
-                          />
-                        </View>
-                      </View>
-
-                      <TouchableOpacity
-                        onPress={handleSendResetOtp}
-                        disabled={isSubmitting}
-                        className="w-full bg-[#FF4500] hover:bg-orange-600 py-3.5 rounded-2xl shadow-xl shadow-orange-500/25 transition flex items-center justify-center gap-2 flex-row"
-                      >
-                        <Text className="text-white font-bold text-sm">{isSubmitting ? 'Sending...' : 'Send Verification Code'}</Text>
-                        <ArrowRight className="w-4 h-4"/>
-                      </TouchableOpacity>
+                      <TextInput
+                        value={forgotEmail}
+                        onChangeText={setForgotEmail}
+                        placeholder="you@example.com"
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
+                      />
                     </View>
-                  )}
-
-                  {/* STEP 2: VERIFY OTP CODE */}
-                  {forgotStep === 2 && (
-                    <View className="space-y-3">
-                      <View className="space-y-0.5">
-                        <Text className="text-base font-black text-slate-900">Enter OTP Code</Text>
-                        <Text className="text-xs font-semibold text-slate-400">Code sent to {forgotEmail}</Text>
-                      </View>
-
-                      <View className="flex justify-center gap-2 py-2 flex-row">
-                        <TextInput
-                          value={forgotOtp}
-                          onChangeText={setForgotOtp}
-                          maxLength={6}
-                          placeholder="••••••"
-                          className="w-40 h-12 text-center text-lg font-black bg-slate-50 border-2 border-[#FF4500] rounded-2xl text-slate-900 shadow-sm"
-                        />
-                      </View>
-
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (!forgotOtp) {
-                            showToast('Enter the OTP sent to your email');
-                            return;
-                          }
-                          setForgotStep(3);
-                        }}
-                        className="w-full bg-[#FF4500] hover:bg-orange-600 py-3.5 rounded-2xl shadow-xl shadow-orange-500/25 transition flex items-center justify-center gap-2 flex-row"
-                      >
-                        <Text className="text-white font-bold text-sm">Verify & Proceed</Text>
-                        <CheckCircle2 className="w-4 h-4"/>
-                      </TouchableOpacity>
-
-                      <View className=""><Text className="text-center text-xs font-bold text-slate-400">
-                        Didn't receive code? </Text><TouchableOpacity onPress={async () => {
-                          try {
-                            await forgotRiderPassword({ email: forgotEmail });
-                            showToast('OTP resent to your email');
-                          } catch (error: any) {
-                            showToast(error?.response?.data?.message || 'Could not resend OTP');
-                          }
-                        }} className="underline"><Text className="text-[#FF4500]">Resend OTP</Text></TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-
-                  {/* STEP 3: SET NEW PASSWORD */}
-                  {forgotStep === 3 && (
-                    <View className="space-y-3">
-                      <View className="space-y-0.5">
-                        <Text className="text-base font-black text-slate-900">Create New Password</Text>
-                        <Text className="text-xs font-semibold text-slate-400">Enter a strong new password for your account</Text>
-                      </View>
-
-                      <View className="space-y-1">
-                        <Text className="block text-xs font-bold text-slate-700">New Password</Text>
-                        <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] flex-row">
-                          <Lock className="w-4 h-4 text-[#FF4500] shrink-0"/>
-                          <TextInput
-                            secureTextEntry={true}
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            placeholder="Enter new password"
-                            className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
-                          />
-                        </View>
-                      </View>
-
-                      <TouchableOpacity
-                        onPress={handleResetPassword}
-                        disabled={isSubmitting}
-                        className="w-full bg-[#FF4500] hover:bg-orange-600 py-3.5 rounded-2xl shadow-xl shadow-orange-500/25 transition flex items-center justify-center gap-2 flex-row"
-                      >
-                        <Text className="text-white font-bold text-sm">{isSubmitting ? 'Updating...' : 'Update Password'}</Text>
-                        <Check className="w-4 h-4"/>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-
-                  {/* Back to Login */}
-                  <View className="pt-1 border-t border-slate-100">
-                    <TouchableOpacity 
-                      onPress={() => { onNavigate('login'); setForgotStep(1); }}
-                      className="hover:underline"
-                    ><Text className="text-[#FF4500] font-black">
-                      ← Back to Sign In
-                    </Text></TouchableOpacity>
                   </View>
 
+                  <TouchableOpacity
+                    onPress={handleSendResetOtp}
+                    disabled={isSubmitting}
+                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Sending...' : 'Send Verification Code'}</Text>
+                    <ArrowRight size={15} color="#FFFFFF" />
+                  </TouchableOpacity>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B' }}>Remembered your password?</Text>
+                    <TouchableOpacity onPress={() => { onNavigate('login'); resetForgotFlow(); }}>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#FF5500', marginLeft: 4 }}>Sign In</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* STEP 2: VERIFY OTP CODE */}
+              {activeScreen === 'forgot' && forgotStep === 2 && (
+                <View style={{ gap: 8 }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Verify OTP Code</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>
+                      We've sent a 6-digit code to{'\n'}
+                      <Text style={{ fontWeight: 'bold', color: '#1E293B' }}>{forgotEmail}</Text>
+                    </Text>
+                  </View>
+
+                  <OtpBoxes digits={forgotOtpDigits} onChangeDigit={handleForgotOtpChange} refsArray={forgotOtpRefs} />
+
+                  <ResendRow timer={otpTimer} isDisabled={isResendDisabled} onResend={handleResendForgotOtp} />
+
+                  <TouchableOpacity
+                    onPress={handleVerifyForgotOtp}
+                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>Verify Code</Text>
+                    <CheckCircle2 size={15} color="#FFFFFF" />
+                  </TouchableOpacity>
+
+                  <View style={{ alignItems: 'center', paddingTop: 2 }}>
+                    <TouchableOpacity onPress={() => setForgotStep(1)}>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#64748B', textDecorationLine: 'underline' }}>Change Email ID</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* STEP 3: SET NEW PASSWORD */}
+              {activeScreen === 'forgot' && forgotStep === 3 && (
+                <View style={{ gap: 10 }}>
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Reset Password</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>Set a strong new password for your mbgo account</Text>
+                  </View>
+
+                  {/* New Password */}
+                  <View style={{ gap: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>New Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Lock size={15} color="#94A3B8" />
+                      </View>
+                      <TextInput
+                        secureTextEntry={!showNewPassword}
+                        value={newPassword}
+                        onChangeText={setNewPassword}
+                        placeholder="At least 6 characters"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
+                      />
+                      <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
+                        {showNewPassword ? <EyeOff size={15} color="#94A3B8" /> : <Eye size={15} color="#94A3B8" />}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Confirm Password */}
+                  <View style={{ gap: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Confirm Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                      <View style={{ marginRight: 8 }}>
+                        <Lock size={15} color="#94A3B8" />
+                      </View>
+                      <TextInput
+                        secureTextEntry={!showConfirmPassword}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder="Re-enter your password"
+                        placeholderTextColor="#94A3B8"
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
+                      />
+                      <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        {showConfirmPassword ? <EyeOff size={15} color="#94A3B8" /> : <Eye size={15} color="#94A3B8" />}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={handleResetPassword}
+                    disabled={isSubmitting}
+                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Updating...' : 'Reset Password'}</Text>
+                    <Check size={15} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* STEP 4: RESET SUCCESS */}
+              {activeScreen === 'forgot' && forgotStep === 4 && (
+                <View style={{ alignItems: 'center', paddingVertical: 8 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#ECFDF5', borderWidth: 2, borderColor: '#A7F3D0', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                    <CheckCircle2 size={28} color="#10b981" />
+                  </View>
+                  <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D', marginBottom: 2 }}>Password Changed!</Text>
+                  <Text style={{ fontSize: 11, color: '#64748B', textAlign: 'center', marginBottom: 16, paddingHorizontal: 8 }}>
+                    Your mbgo account password has been updated successfully. You can now sign in with your new password.
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={() => { resetForgotFlow(); onNavigate('login'); }}
+                    style={{ width: '100%', height: 40, backgroundColor: '#0B1E3D', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>Back to Sign In</Text>
+                    <ArrowRight size={15} color="#FFFFFF" />
+                  </TouchableOpacity>
                 </View>
               )}
 
@@ -639,91 +925,27 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
           </View>
 
           {/* =========================================================
-              BOTTOM 4-COLUMN FEATURE GRID (1:1 MATCH WITH LOGINSCREEN.JPEG)
+              BOTTOM 3-COLUMN FEATURE GRID
              ========================================================= */}
-          <View className="px-4 pt-6 space-y-4">
-            
-            <View className="bg-slate-200/50 border border-slate-200/80 rounded-3xl p-3.5 shadow-sm flex-row flex-wrap gap-1 divide-x divide-slate-200">
-              
-              {/* Pillar 1 */}
-              <View className="flex-1 flex flex-col items-center justify-between px-1 space-y-1">
-                <View className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shadow-sm flex-row">
-                  <Shield className="w-4 h-4"/>
-                </View>
-                <View>
-                  <View className=""><Text className="text-[10px] font-extrabold text-slate-900 leading-tight">Verified Platform</Text></View>
-                  <View className="mt-0.5"><Text className="text-[8px] text-slate-500 font-bold leading-tight">Safe & Trusted</Text></View>
-                </View>
-              </View>
-
-              {/* Pillar 2 */}
-              <View className="flex-1 flex flex-col items-center justify-between px-1 space-y-1">
-                <View className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shadow-sm flex-row">
-                  <IndianRupee className="w-4 h-4"/>
-                </View>
-                <View>
-                  <View className=""><Text className="text-[10px] font-extrabold text-slate-900 leading-tight">Better Earnings</Text></View>
-                  <View className="mt-0.5"><Text className="text-[8px] text-slate-500 font-bold leading-tight">More Opportunities</Text></View>
-                </View>
-              </View>
-
-              {/* Pillar 3 */}
-              <View className="flex-1 flex flex-col items-center justify-between px-1 space-y-1">
-                <View className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shadow-sm flex-row">
-                  <Headphones className="w-4 h-4"/>
-                </View>
-                <View>
-                  <View className=""><Text className="text-[10px] font-extrabold text-slate-900 leading-tight">Dedicated Support</Text></View>
-                  <View className="mt-0.5"><Text className="text-[8px] text-slate-500 font-bold leading-tight">Always with you</Text></View>
-                </View>
-              </View>
-
-              {/* Pillar 4 */}
-              <View className="flex-1 flex flex-col items-center justify-between px-1 space-y-1">
-                <View className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center shadow-sm flex-row">
-                  <TrendingUp className="w-4 h-4"/>
-                </View>
-                <View>
-                  <View className=""><Text className="text-[10px] font-extrabold text-slate-900 leading-tight">Grow With Us</Text></View>
-                  <View className="mt-0.5"><Text className="text-[8px] text-slate-500 font-bold leading-tight">Drive. Earn. Repeat.</Text></View>
-                </View>
-              </View>
-
+          <View style={{ paddingHorizontal: 14, paddingTop: 12, paddingBottom: 8 }}>
+            <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 10, flexDirection: 'row' }}>
+              <FeatureItem icon={<ShieldCheck size={16} color="#FF5500" />} title="Safe & Reliable" description={`Your safety,\nour promise`} />
+              <FeatureItem icon={<Award size={16} color="#FF5500" />} title="Best Experience" description={`Comfort on\nevery ride`} />
+              <FeatureItem icon={<Headphones size={16} color="#FF5500" />} title="24x7 Support" description={`We're always\nhere for you`} showBorder={false} />
             </View>
-
-            {/* Bottom Security Footer Assurance Badge */}
-            <View className="flex items-center justify-center gap-1.5 flex-row">
-              <Shield className="w-3.5 h-3.5 text-emerald-600"/>
-              <Text className="text-[10px] font-medium text-slate-400 tracking-wider">Secure • Reliable • Transparent</Text>
-            </View>
-
           </View>
 
         </ScrollView>
 
         {/* Global Toast Notification */}
-        {toastMsg && (
-          <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
-            <Text className="text-white text-xs font-bold text-center">{toastMsg}</Text>
+        {toastMsg ? (
+          <View style={{ position: 'absolute', top: 16, alignSelf: 'center', backgroundColor: '#0F172A', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, zIndex: 50, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#1E293B' }}>
+            <CheckCircle2 size={14} color="#34d399" />
+            <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700', marginLeft: 6 }}>{toastMsg}</Text>
           </View>
-        )}
-
-        
+        ) : null}
 
       </View>
     </View>
   );
 }
-// FORCE_REBUILD_CACHE_BUST_1786123613895
-console.log('CACHE_BUST_1786124057422');
-
-console.log('CACHE_BUST_BARS_1786124237174');
-
-console.log('CACHE_BUST_FINAL_BARS_1786125430914');
-
-console.log('CACHE_BUST_IMG_TO_IMAGE_1786127909100');
-
-console.log('CACHE_BUST_HTML_TO_RN_1786128166239');
-
-console.log('CACHE_BUST_AST_FIX_1786128723661');

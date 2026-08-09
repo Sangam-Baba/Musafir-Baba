@@ -1,4 +1,5 @@
-import { Text,  View, TouchableOpacity, Image , ScrollView } from 'react-native';
+import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
+import { Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import {
   Receipt,
@@ -36,16 +37,18 @@ import {
   Globe,
   Sliders,
   Check,
-  AlertCircle
+  AlertCircle,
+  Star,
+  Volume2
 } from 'lucide-react-native';
 
 export default function ScreenNotifications({ onNavigate }: { onNavigate: (screen: string) => void }) {
   // Navigation active screen selector: '36' | '37' | '38' | '39' | '40'
-  const activeScreen = '38';
+  const activeScreen: string = '38';
 
   // Interactive state for FAQs in Help & Support (Screen 37)
-  const [openFaq, setOpenFaq] = useState(null);
-  const toggleFaq = (index) => {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
@@ -54,7 +57,7 @@ export default function ScreenNotifications({ onNavigate }: { onNavigate: (scree
 
   // Toast notification system
   const [toastMsg, setToastMsg] = useState('');
-  const showToast = (msg) => {
+  const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 2500);
   };
@@ -153,7 +156,10 @@ export default function ScreenNotifications({ onNavigate }: { onNavigate: (scree
 
               {/* ACCOUNT Section */}
               <View className="space-y-2 pt-1">
+                {/* Account heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
+                */}
+                {/* ACCOUNT suboptions commented out
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
                   {[
                     { icon: User, label: 'Personal Information' },
@@ -178,11 +184,14 @@ export default function ScreenNotifications({ onNavigate }: { onNavigate: (scree
                     );
                   })}
                 </View>
+                */}
               </View>
 
               {/* OTHERS Section */}
               <View className="space-y-2 pt-1">
+                {/* Others heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Others</Text></View>
+                */}
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
                   {[
                     { icon: Car, label: 'Trip Preferences' },
@@ -361,152 +370,235 @@ export default function ScreenNotifications({ onNavigate }: { onNavigate: (scree
 
           {/* ==========================================
               SCREEN 38: NOTIFICATIONS - (38.png)
-             ========================================== */}
+              ========================================== */}
           {activeScreen === '38' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View className="p-4 space-y-3.5 animate-in fade-in duration-200 bg-[#FAFAFA] pb-24">
               
               {/* Header Bar */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity onPress={() => onNavigate('36')} className="p-1 hover:bg-slate-100 rounded-full">
-                  <ChevronRight className="w-5 h-5 rotate-180"/>
+              <View className="flex items-center justify-between py-1 flex-row">
+                <TouchableOpacity onPress={() => onNavigate('36')} className="p-1.5 hover:bg-slate-100 rounded-full">
+                  <ChevronRight className="w-5 h-5 rotate-180 text-slate-900 stroke-[2.5]"/>
                 </TouchableOpacity>
-                <Text className="text-base font-black text-slate-900">Notifications</Text>
+                <Text className="text-base font-bold text-slate-900">Notifications</Text>
                 <TouchableOpacity onPress={() => showToast("All marked as read!")} className="flex items-center gap-1 flex-row">
-                  <CheckCircle2 className="w-3.5 h-3.5"/><Text className="text-[10px] font-black text-[#FF3B00]"> Mark all as read
-                </Text></TouchableOpacity>
+                  <CheckCircle2 className="w-4 h-4 text-[#FF3B00]"/>
+                  <Text className="text-xs font-semibold text-[#FF3B00]">Mark all as read</Text>
+                </TouchableOpacity>
               </View>
 
-              {/* Category Filter Pills */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex border-b border-slate-200 overflow-x-auto no-scrollbar flex-row">
+              {/* Category Filter Segment Control */}
+              <View className="bg-white border border-slate-200/70 rounded-2xl p-1 flex items-center justify-between flex-row">
                 {['All', 'Bookings', 'Payments', 'Offers', 'System'].map((tab) => (
                   <TouchableOpacity 
                     key={tab}
                     onPress={() => setNotificationTab(tab)}
-                    className={`px-4 py-2 text-center transition shrink-0 ${
-                      notificationTab === tab ? 'text-[#FF3B00] border-b-2 border-[#FF3B00] font-black' : 'hover:text-slate-800'
+                    className={`flex-1 py-2 rounded-xl transition items-center justify-center ${
+                      notificationTab === tab 
+                        ? 'border border-orange-200 bg-orange-50/30' 
+                        : ''
                     }`}
                   >
-                    {tab}
+                    <Text className={`text-xs ${
+                      notificationTab === tab ? 'text-[#FF3B00] font-bold' : 'text-slate-600 font-medium'
+                    }`}>
+                      {tab}
+                    </Text>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </View>
 
-              {/* Notification List */}
-              <View className="space-y-3">
+              {/* Notification Grouped Card Container */}
+              <View className="bg-white border border-slate-200/70 rounded-2xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                 
-                {/* Item 1 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-sm space-y-2 relative">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row flex-1 min-w-0">
-                      <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0"></View>
-                      <View className="w-9 h-9 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0 flex-row">
-                        <CheckCircle2 className="w-5 h-5"/>
+                {/* Item 1: Trip Completed */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-[#00875A] mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#00875A] flex items-center justify-center shrink-0">
+                        <Check className="w-4 h-4 text-white stroke-[3]" />
                       </View>
-                      <View className="flex-1 min-w-0">
-                        <Text className="text-xs font-black text-slate-900">Trip Completed</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Your trip from New Delhi to Jaipur has been completed. Thank you for traveling with MBGO!</Text>
-                        <View className="pt-1.5">
-                          <Text className="bg-emerald-50 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-md border border-emerald-200">
-                            Booking ID: MBGO2505200001
-                          </Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Trip Completed</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Your trip from New Delhi to Jaipur has been completed. Thank you for traveling with MBGO!
+                        </Text>
+                        <View className="pt-2">
+                          <View className="bg-emerald-50 text-emerald-800 text-[10px] font-medium px-2.5 py-1 rounded-md border border-emerald-200/50 self-start">
+                            <Text className="text-emerald-800 font-medium text-[10px]">Booking ID: MBGO2505200001</Text>
+                          </View>
                         </View>
-                  </View>
+                      </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">2 mins ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">2 mins ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-5" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 2 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-sm space-y-2 relative">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row flex-1 min-w-0">
-                      <View className="w-2.5 h-2.5 rounded-full bg-blue-500 mt-1 shrink-0"></View>
-                      <View className="w-9 h-9 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0 flex-row">
-                        <CreditCard className="w-5 h-5"/>
+                {/* Item 2: Payment Successful */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-[#00875A] mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#4C82F6] flex items-center justify-center shrink-0">
+                        <CreditCard className="w-4 h-4 text-white" />
                       </View>
-                      <View className="flex-1 min-w-0">
-                        <Text className="text-xs font-black text-slate-900">Payment Successful</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Your payment of ₹6,250 for booking MBGO2505200001 was successful.</Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Payment Successful</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Your payment of ₹6,250 for booking MBGO2505200001 was successful.
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">10 mins ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">10 mins ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 3 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-sm space-y-2">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row flex-1 min-w-0">
-                      <View className="w-9 h-9 rounded-2xl bg-orange-100 flex items-center justify-center shrink-0 flex-row">
-                        <Car className="w-5 h-5"/>
+                {/* Item 3: Driver Assigned */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#FF6B4A] flex items-center justify-center shrink-0">
+                        <Car className="w-4 h-4 text-white" />
                       </View>
-                      <View className="flex-1 min-w-0">
-                        <Text className="text-xs font-black text-slate-900">Driver Assigned</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Ramesh Kumar is assigned to your trip on 20 May 2025 at 08:00 AM.</Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Driver Assigned</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Ramesh Kumar is assigned to your trip on 20 May 2025 at 08:00 AM.
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">1 day ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">1 day ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 4 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-sm space-y-2">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row flex-1 min-w-0">
-                      <View className="w-9 h-9 rounded-2xl bg-purple-100 flex items-center justify-center shrink-0 flex-row">
-                        <Clock className="w-5 h-5"/>
+                {/* Item 4: Trip Reminder */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4 text-white" />
                       </View>
-                      <View className="flex-1 min-w-0">
-                        <Text className="text-xs font-black text-slate-900">Trip Reminder</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Your trip from New Delhi to Jaipur is tomorrow at 08:00 AM. We wish you a safe journey!</Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Trip Reminder</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Your trip from New Delhi to Jaipur is tomorrow at 08:00 AM. We wish you a safe journey!
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">1 day ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">1 day ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 5 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-sm space-y-2">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row flex-1 min-w-0">
-                      <View className="w-9 h-9 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0 flex-row">
-                        <Tag className="w-5 h-5"/>
+                {/* Item 5: Special Offer for You! */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#F59E0B] flex items-center justify-center shrink-0">
+                        <Tag className="w-4 h-4 text-white" />
                       </View>
-                      <View className="flex-1 min-w-0">
-                        <Text className="text-xs font-black text-slate-900">Special Offer for You!</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Get up to 15% OFF on your next booking. Use code: <Text className="text-[#FF3B00] font-black">NEXT15</Text></Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Special Offer for You!</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Get up to 15% OFF on your next booking. Use code: <Text className="text-[#FF3B00] font-bold">NEXT15</Text>
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">3 days ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">3 days ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
+                </TouchableOpacity>
+
+                {/* Item 6: Rate Your Driver */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#14B8A6] flex items-center justify-center shrink-0">
+                        <Star className="w-4 h-4 text-white" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Rate Your Driver</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          How was your experience with Ramesh Kumar? Rate your driver and help us improve.
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">3 days ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
+                </TouchableOpacity>
+
+                {/* Item 7: MBGO Update */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#3B82F6] flex items-center justify-center shrink-0">
+                        <Volume2 className="w-4 h-4 text-white" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">MBGO Update</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          We've improved our app for a better experience. Update now to enjoy new features.
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">5 days ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
 
               </View>
 
               {/* Enable Push Notifications Banner */}
-              <View className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2.5 flex-row">
-                  <Bell className="w-5 h-5 text-blue-600 shrink-0"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black text-blue-950">Enable Push Notifications</Text></View>
-                    <View className=""><Text className="text-[9px] text-slate-500 font-bold">Stay updated with your bookings, offers and alerts.</Text></View>
+              <View className="bg-[#EEF4FF] border border-blue-100 rounded-2xl p-3 flex items-center justify-between flex-row">
+                <View className="flex items-center gap-2.5 flex-row flex-1 pr-2">
+                  <View className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <Bell className="w-4.5 h-4.5 text-blue-600"/>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold text-slate-900">Enable Push Notifications</Text>
+                    <Text className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Stay updated with your bookings, offers and important alerts.</Text>
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-xl shadow-sm shrink-0"><Text className="text-[10px] font-black text-white">
-                  Enable Now
-                </Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} className="bg-[#1B64F2] hover:bg-blue-700 px-3.5 py-2 rounded-xl shadow-xs shrink-0">
+                  <Text className="text-xs font-bold text-white">Enable Now</Text>
+                </TouchableOpacity>
               </View>
 
               {/* Privacy Footer Banner */}
-              <View className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2 flex-row">
-                  <Shield className="w-4 h-4 text-emerald-600"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black">Your Privacy, Our Priority</Text></View>
-                    <View className=""><Text className="text-[9px] text-emerald-700 font-medium">We never share your personal information with anyone.</Text></View>
+              <View className="bg-[#F4FBF7] border border-emerald-100/80 rounded-2xl p-3 flex items-center justify-between flex-row">
+                <View className="flex items-center gap-2.5 flex-row flex-1">
+                  <View className="w-8 h-8 rounded-full bg-emerald-100/70 flex items-center justify-center shrink-0">
+                    <Shield className="w-4 h-4 text-emerald-600"/>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold text-slate-900">Your Privacy, Our Priority</Text>
+                    <Text className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">We never share your personal information with anyone.</Text>
                   </View>
                 </View>
-                <ChevronRight className="w-4 h-4 text-emerald-600"/>
+                <ChevronRight className="w-4 h-4 text-slate-800 shrink-0"/>
               </View>
 
             </View>
@@ -553,7 +645,7 @@ export default function ScreenNotifications({ onNavigate }: { onNavigate: (scree
                           <Text className="text-slate-400">⇄</Text>
                           <Text>{route.to}</Text>
                         </View>
-                        <View className="">{route.stateFrom}<Text className="text-[9px] text-slate-400 font-bold"> • </Text>{route.stateTo}</View>
+                        <View className=""><Text className="text-[9px] text-slate-400 font-bold">{route.stateFrom} • {route.stateTo}</Text></View>
                       </View>
                       <View className="flex items-center gap-2 flex-row">
                         <Text className="bg-slate-100 text-slate-700 text-[9px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -907,49 +999,15 @@ export default function ScreenNotifications({ onNavigate }: { onNavigate: (scree
         </ScrollView>
 
         {/* Global Bottom App Navigation Bar */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 py-2.5 px-6 flex justify-between items-center z-30 flex-row">
-          
-          <TouchableOpacity 
-            onPress={() => onNavigate('31')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Car className="w-5 h-5"/>
-            <Text>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('35')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Calendar className="w-5 h-5"/>
-            <Text>My Trips</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('32')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Receipt className="w-5 h-5"/>
-            <Text>Bookings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('36')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <User className="w-5 h-5"/>
-            <Text>Profile</Text>
-          </TouchableOpacity>
-
-        </View>
+        <RiderBottomNavbar activeScreen={activeScreen} onNavigate={onNavigate} />
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         
 

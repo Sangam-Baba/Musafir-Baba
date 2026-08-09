@@ -4,13 +4,23 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Expo Go (SDK 53+) no longer supports expo-notifications' Android push path at
+// all, and it surfaces that as a hard console.error (which shows as a
+// blocking full-screen error overlay) the moment any Notifications.* API is
+// touched. There's no development build in this workflow yet, so push
+// notifications simply aren't available while testing via Expo Go — every
+// Notifications call below is skipped in that case so the app keeps running.
+const isExpoGo = Constants.executionEnvironment === 'storeClient';
+
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 export const usePushNotifications = () => {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>();
@@ -19,6 +29,11 @@ export const usePushNotifications = () => {
   const responseListener = useRef<Notifications.Subscription>();
 
   useEffect(() => {
+    if (isExpoGo) {
+      console.log('Push notifications are unavailable in Expo Go (SDK 53+) — use a development build to test them.');
+      return;
+    }
+
     registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {

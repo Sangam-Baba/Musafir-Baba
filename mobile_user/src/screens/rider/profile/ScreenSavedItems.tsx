@@ -153,7 +153,10 @@ export default function ScreenSavedItems({ onNavigate }: { onNavigate: (screen: 
 
               {/* ACCOUNT Section */}
               <View className="space-y-2 pt-1">
+                {/* Account heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
+                */}
+                {/* ACCOUNT suboptions commented out
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
                   {[
                     { icon: User, label: 'Personal Information' },
@@ -178,11 +181,14 @@ export default function ScreenSavedItems({ onNavigate }: { onNavigate: (screen: 
                     );
                   })}
                 </View>
+                */}
               </View>
 
               {/* OTHERS Section */}
               <View className="space-y-2 pt-1">
+                {/* Others heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Others</Text></View>
+                */}
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
                   {[
                     { icon: Car, label: 'Trip Preferences' },
@@ -386,7 +392,7 @@ export default function ScreenSavedItems({ onNavigate }: { onNavigate: (screen: 
                       notificationTab === tab ? 'text-[#FF3B00] border-b-2 border-[#FF3B00] font-black' : 'hover:text-slate-800'
                     }`}
                   >
-                    {tab}
+                    <Text>{tab}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -553,7 +559,7 @@ export default function ScreenSavedItems({ onNavigate }: { onNavigate: (screen: 
                           <Text className="text-slate-400">⇄</Text>
                           <Text>{route.to}</Text>
                         </View>
-                        <View className="">{route.stateFrom}<Text className="text-[9px] text-slate-400 font-bold"> • </Text>{route.stateTo}</View>
+                        <View className=""><Text className="text-[9px] text-slate-400 font-bold">{route.stateFrom} • {route.stateTo}</Text></View>
                       </View>
                       <View className="flex items-center gap-2 flex-row">
                         <Text className="bg-slate-100 text-slate-700 text-[9px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -944,12 +950,12 @@ export default function ScreenSavedItems({ onNavigate }: { onNavigate: (screen: 
         </View>
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         
 

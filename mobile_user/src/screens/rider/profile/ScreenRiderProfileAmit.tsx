@@ -1,4 +1,8 @@
-import { Text,  View, TouchableOpacity, Image , ScrollView } from 'react-native';
+import { Text, View, TouchableOpacity, Image, ScrollView, Modal, TextInput, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { updateRiderProfile, uploadRiderProfilePicture } from '../../../api/riderProfile.api';
 import React, { useState } from 'react';
 import {
   Receipt,
@@ -41,11 +45,66 @@ import {
 
 export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (screen: string) => void }) {
   // Navigation active screen selector: '36' | '37' | '38' | '39' | '40'
-  const activeScreen = '36';
+  const activeScreen: string = '36';
+
+  const profile = useAuthStore((s) => s.profile);
+  const setProfile = useAuthStore((s) => s.setProfile);
+
+  // Edit Profile bottom drawer (Screen 36)
+  const [showEditDrawer, setShowEditDrawer] = useState(false);
+  const [editFullName, setEditFullName] = useState('');
+  const [editMobileNumber, setEditMobileNumber] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const openEditDrawer = () => {
+    setEditFullName(profile?.fullName || '');
+    setEditMobileNumber(profile?.mobileNumber || '');
+    setShowEditDrawer(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editFullName.trim()) {
+      showToast('Full name cannot be empty');
+      return;
+    }
+    setIsSavingProfile(true);
+    try {
+      const res = await updateRiderProfile({ fullName: editFullName.trim(), mobileNumber: editMobileNumber.trim() });
+      setProfile({ ...(profile || {}), ...res.data.data });
+      showToast('Profile updated successfully');
+      setShowEditDrawer(false);
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'Could not update profile');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handlePickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const res = await uploadRiderProfilePicture(result.assets[0].uri);
+      setProfile({ ...(profile || {}), profilePicture: res.data.data.profilePicture });
+      showToast('Profile picture updated');
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'Could not upload profile picture');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   // Interactive state for FAQs in Help & Support (Screen 37)
-  const [openFaq, setOpenFaq] = useState(null);
-  const toggleFaq = (index) => {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
@@ -54,107 +113,129 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
 
   // Toast notification system
   const [toastMsg, setToastMsg] = useState('');
-  const showToast = (msg) => {
+  const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 2500);
   };
 
   return (
-    <View className="flex-1 bg-slate-900 selection:bg-orange-500 selection:text-white">
+    <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       
       {/* Main Mobile Frame */}
-      <View className="flex-1 bg-[#FAFAFA] relative">
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', position: 'relative' }}>
         
         
 
         {/* Scrollable Main Body Content */}
-        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 90 }} showsVerticalScrollIndicator={false}>
 
           {/* ==========================================
               SCREEN 36: PROFILE (AMIT SHARMA) - (36.png)
              ========================================== */}
           {activeScreen === '36' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View style={{ padding: 12, gap: 10 }}>
               
               {/* Header */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <View className="w-6"></View>
-                <Text className="text-lg font-black text-slate-900">Profile</Text>
-                <View className="flex items-center gap-3 flex-row">
-                  <TouchableOpacity onPress={() => onNavigate('37')} className="flex flex-col items-center hover:text-orange-600 transition">
-                    <Headphones className="w-5 h-5"/>
-                    <Text className="text-[9px] font-bold text-slate-500 -mt-0.5">Support</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+                <View style={{ width: 40 }} />
+                <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E293B' }}>Profile</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <TouchableOpacity onPress={() => onNavigate('37')} style={{ alignItems: 'center' }}>
+                    <Headphones size={18} color="#475569" />
+                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B', marginTop: 1 }}>Support</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => onNavigate('38')} className="flex flex-col items-center hover:text-orange-600 relative transition">
-                    <Bell className="w-5 h-5"/>
-                    <Text className="w-2 h-2 rounded-full bg-[#FF3B00] absolute top-0 right-0 border border-white"></Text>
-                    <Text className="text-[9px] font-bold text-slate-500 -mt-0.5">Notifications</Text>
+                  <TouchableOpacity onPress={() => onNavigate('38')} style={{ alignItems: 'center', position: 'relative' }}>
+                    <Bell size={18} color="#475569" />
+                    <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#FF5500', position: 'absolute', top: 0, right: 2, borderWidth: 1, borderColor: '#FFFFFF' }} />
+                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B', marginTop: 1 }}>Notifications</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* User Identity Card */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-sm">
-                <View className="flex items-center justify-between flex-row">
-                  <View className="flex items-center gap-3.5 flex-row">
-                    <View className="relative">
-                      <View className="w-16 h-16 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center flex-row">
-                        <Image source={{ uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" }} 
-                          accessibilityLabel="Amit Sharma" 
-                          className="w-full h-full object-cover" />
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <TouchableOpacity onPress={handlePickAvatar} disabled={isUploadingAvatar} style={{ position: 'relative' }}>
+                      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#E2E8F0', borderWidth: 2, borderColor: '#FFFFFF', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+                        {profile?.profilePicture ? (
+                          <Image source={{ uri: profile.profilePicture }}
+                            accessibilityLabel={profile?.fullName || 'Rider'}
+                            style={{ width: '100%', height: '100%' }} />
+                        ) : (
+                          <User size={26} color="#94A3B8" />
+                        )}
+                        {isUploadingAvatar && (
+                          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15,23,42,0.4)', alignItems: 'center', justifyContent: 'center' }}>
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                          </View>
+                        )}
                       </View>
-                      <View className="w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center absolute bottom-0 right-0 border border-white shadow-sm flex-row">
-                        <Camera className="w-3 h-3"/>
+                      <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#475569', alignItems: 'center', justifyContent: 'center', position: 'absolute', bottom: 0, right: 0, borderWidth: 1, borderColor: '#FFFFFF' }}>
+                        <Camera size={10} color="#FFFFFF" />
                       </View>
+                    </TouchableOpacity>
+
+                    <View style={{ gap: 1 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '800', color: '#1E293B' }}>{profile?.fullName || 'Rider'}</Text>
+                      {!!profile?.mobileNumber && (
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B' }}>+91 {profile.mobileNumber}</Text>
+                      )}
+                      {!!profile?.email && (
+                        <Text style={{ fontSize: 10, fontWeight: '500', color: '#64748B' }}>{profile.email}</Text>
+                      )}
+                      {profile?.isEmailVerified && (
+                        <View style={{ paddingTop: 2 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start' }}>
+                            <CheckCircle2 size={11} color="#059669" />
+                            <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#047857' }}>Verified</Text>
+                          </View>
+                        </View>
+                      )}
                     </View>
-
-                    <View className="space-y-0.5">
-                      <Text className="text-base font-black text-slate-900">Amit Sharma</Text>
-                      <View className=""><Text className="text-xs font-bold text-slate-600">+91 98765 43210</Text></View>
-                      <View className=""><Text className="text-[11px] font-medium text-slate-500">amit.sharma@gmail.com</Text></View>
-                      <View className="pt-1">
-                        <Text className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-black px-2 py-0.5 rounded-md border border-emerald-200/60">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600"/> Verified
-                        </Text>
-                      </View>
-                  </View>
                   </View>
 
-                  <TouchableOpacity onPress={() => showToast("Opening Edit Profile...")} className="hover:underline flex items-center gap-0.5 shrink-0 self-start pt-1 flex-row"><Text className="text-xs font-black text-[#FF3B00]">
-                    Edit Profile </Text><ChevronRight className="w-3.5 h-3.5"/>
+                  <TouchableOpacity onPress={openEditDrawer} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingTop: 2 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF5500' }}>Edit Profile </Text>
+                    <ChevronRight size={13} color="#FF5500" />
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* Wallet & Coupons Card Row */}
-              <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-sm flex-row flex-wrap divide-x divide-slate-100">
-                <TouchableOpacity onPress={() => showToast("Opening Wallet...")} className="flex-1 flex items-center gap-3 pr-2 cursor-pointer hover:opacity-80 transition flex-row">
-                  <View className="w-10 h-10 rounded-2xl bg-orange-100/80 flex items-center justify-center shrink-0 flex-row">
-                    <Wallet className="w-5 h-5"/>
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 10, flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity onPress={() => showToast("Opening Wallet...")} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 8 }}>
+                  <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
+                    <Wallet size={18} color="#FF5500" />
                   </View>
-                  <View className="space-y-0.5 flex-1 min-w-0">
-                    <View className=""><Text className="text-[10px] font-extrabold text-slate-500">MB Wallet</Text></View>
-                    <View className=""><Text className="text-xs font-black text-[#FF3B00] truncate">₹1,250.00</Text></View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B' }}>MB Wallet</Text>
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: '#FF5500' }}>₹{(profile?.walletBalance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                   </View>
-                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0"/>
+                  <ChevronRight size={14} color="#94A3B8" />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => showToast("Viewing Available Coupons...")} className="flex-1 flex items-center gap-3 pl-3 cursor-pointer hover:opacity-80 transition flex-row">
-                  <View className="w-10 h-10 rounded-2xl bg-emerald-100/80 flex items-center justify-center shrink-0 flex-row">
-                    <Tag className="w-5 h-5"/>
+                <View style={{ width: 1, height: 28, backgroundColor: '#F1F5F9' }} />
+
+                <TouchableOpacity onPress={() => showToast("Viewing Available Coupons...")} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 10 }}>
+                  <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' }}>
+                    <Tag size={18} color="#10B981" />
                   </View>
-                  <View className="space-y-0.5 flex-1 min-w-0">
-                    <View className=""><Text className="text-[10px] font-extrabold text-slate-500">My Coupons</Text></View>
-                    <View className=""><Text className="text-xs font-black text-emerald-600 truncate">3 Available</Text></View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B' }}>My Coupons</Text>
+                    <Text style={{ fontSize: 12, fontWeight: '800', color: '#10B981' }}>3 Available</Text>
                   </View>
-                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0"/>
+                  <ChevronRight size={14} color="#94A3B8" />
                 </TouchableOpacity>
               </View>
 
               {/* ACCOUNT Section */}
-              <View className="space-y-2 pt-1">
-                <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
-                <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
+              <View style={{ gap: 4, paddingTop: 2 }}>
+                {/* ACCOUNT heading commented out for now
+                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, paddingLeft: 2 }}>ACCOUNT</Text>
+                */}
+                {/* ACCOUNT suboptions commented out
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, overflow: 'hidden' }}>
                   {[
                     { icon: User, label: 'Personal Information' },
                     { icon: MapPin, label: 'Saved Addresses', action: () => onNavigate('39') },
@@ -162,47 +243,50 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                     { icon: FileText, label: 'My Documents' },
                     { icon: Gift, label: 'Refer & Earn' },
                     { icon: Settings, label: 'Settings' },
-                  ].map((item, idx) => {
+                  ].map((item, idx, arr) => {
                     const Icon = item.icon;
                     return (
                       <TouchableOpacity key={idx} 
                         onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
-                        className="p-3.5 flex items-center justify-between hover:bg-slate-50 transition cursor-pointer flex-row"
+                        style={{ paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: idx === arr.length - 1 ? 0 : 1, borderBottomColor: '#F8FAFC' }}
                       >
-                        <View className="flex items-center gap-3 flex-row">
-                          <Icon className="w-4 h-4 text-slate-700"/>
-                          <Text>{item.label}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <Icon size={16} color="#475569" />
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#1E293B' }}>{item.label}</Text>
                         </View>
-                        <ChevronRight className="w-4 h-4 text-slate-400"/>
-                  </TouchableOpacity>
+                        <ChevronRight size={14} color="#94A3B8" />
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
+                */}
               </View>
 
               {/* OTHERS Section */}
-              <View className="space-y-2 pt-1">
-                <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Others</Text></View>
-                <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-sm overflow-hidden">
+              <View style={{ gap: 4, paddingTop: 2 }}>
+                {/* OTHERS heading commented out for now
+                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, paddingLeft: 2 }}>OTHERS</Text>
+                */}
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, overflow: 'hidden' }}>
                   {[
                     { icon: Car, label: 'Trip Preferences' },
                     { icon: Headphones, label: 'Help & Support', action: () => onNavigate('37') },
                     { icon: Shield, label: 'Terms & Conditions' },
                     { icon: Shield, label: 'Privacy Policy' },
                     { icon: HelpCircle, label: 'About MBGO' },
-                  ].map((item, idx) => {
+                  ].map((item, idx, arr) => {
                     const Icon = item.icon;
                     return (
                       <TouchableOpacity key={idx} 
                         onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
-                        className="p-3.5 flex items-center justify-between hover:bg-slate-50 transition cursor-pointer flex-row"
+                        style={{ paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: idx === arr.length - 1 ? 0 : 1, borderBottomColor: '#F8FAFC' }}
                       >
-                        <View className="flex items-center gap-3 flex-row">
-                          <Icon className="w-4 h-4 text-slate-700"/>
-                          <Text>{item.label}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                          <Icon size={16} color="#475569" />
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#1E293B' }}>{item.label}</Text>
                         </View>
-                        <ChevronRight className="w-4 h-4 text-slate-400"/>
-                  </TouchableOpacity>
+                        <ChevronRight size={14} color="#94A3B8" />
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
@@ -211,11 +295,70 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
               {/* Logout Button */}
               <TouchableOpacity 
                 onPress={() => onNavigate('login')}
-                className="w-full bg-white border border-[#FF3B00] hover:bg-orange-50 py-3.5 rounded-2xl transition flex items-center justify-center gap-2 active:scale-98 shadow-sm flex-row"
+                style={{ width: '100%', height: 40, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FF5500', borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}
               >
-                <LogOut className="w-4 h-4"/>
-                <Text>Logout</Text>
+                <LogOut size={16} color="#FF5500" />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#FF5500' }}>Logout</Text>
               </TouchableOpacity>
+
+              {/* Edit Profile Bottom Drawer */}
+              <Modal visible={showEditDrawer} transparent animationType="fade" onRequestClose={() => setShowEditDrawer(false)}>
+                <TouchableOpacity
+                  style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}
+                  onPress={() => setShowEditDrawer(false)}
+                  activeOpacity={1}
+                >
+                  <TouchableOpacity activeOpacity={1} onPress={() => {}} style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, gap: 12 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '900', color: '#0F172A' }}>Edit Profile</Text>
+
+                    <View style={{ gap: 4 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>Full Name</Text>
+                      <TextInput
+                        value={editFullName}
+                        onChangeText={setEditFullName}
+                        placeholder="Your full name"
+                        placeholderTextColor="#94A3B8"
+                        style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 12, height: 42, fontSize: 13, color: '#0F172A', backgroundColor: '#F8FAFC' }}
+                      />
+                    </View>
+
+                    <View style={{ gap: 4 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>Mobile Number</Text>
+                      <TextInput
+                        value={editMobileNumber}
+                        onChangeText={setEditMobileNumber}
+                        placeholder="Your mobile number"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="phone-pad"
+                        style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 12, height: 42, fontSize: 13, color: '#0F172A', backgroundColor: '#F8FAFC' }}
+                      />
+                    </View>
+
+                    <View style={{ gap: 4 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>Email</Text>
+                      <View style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 12, height: 42, justifyContent: 'center', backgroundColor: '#F1F5F9' }}>
+                        <Text style={{ fontSize: 13, color: '#94A3B8' }}>{profile?.email || '-'}</Text>
+                      </View>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={handleSaveProfile}
+                      disabled={isSavingProfile}
+                      style={{ width: '100%', height: 42, backgroundColor: '#FF5500', borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
+                    >
+                      {isSavingProfile ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>Save Changes</Text>
+                      )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => setShowEditDrawer(false)} style={{ alignItems: 'center', paddingVertical: 4 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: '#64748B' }}>Cancel</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </Modal>
 
             </View>
           )}
@@ -386,7 +529,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                       notificationTab === tab ? 'text-[#FF3B00] border-b-2 border-[#FF3B00] font-black' : 'hover:text-slate-800'
                     }`}
                   >
-                    {tab}
+                    <Text>{tab}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -553,7 +696,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                           <Text className="text-slate-400">⇄</Text>
                           <Text>{route.to}</Text>
                         </View>
-                        <View className="">{route.stateFrom}<Text className="text-[9px] text-slate-400 font-bold"> • </Text>{route.stateTo}</View>
+                        <View className=""><Text className="text-[9px] text-slate-400 font-bold">{route.stateFrom} • {route.stateTo}</Text></View>
                       </View>
                       <View className="flex items-center gap-2 flex-row">
                         <Text className="bg-slate-100 text-slate-700 text-[9px] font-black px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -906,50 +1049,16 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
 
         </ScrollView>
 
-        {/* Global Bottom App Navigation Bar */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 py-2.5 px-6 flex justify-between items-center z-30 flex-row">
-          
-          <TouchableOpacity 
-            onPress={() => onNavigate('31')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Car className="w-5 h-5"/>
-            <Text>Home</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('35')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Calendar className="w-5 h-5"/>
-            <Text>My Trips</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('32')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <Receipt className="w-5 h-5"/>
-            <Text>Bookings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => onNavigate('36')}
-            className="flex flex-col items-center flex-1 py-1"
-          >
-            <User className="w-5 h-5"/>
-            <Text>Profile</Text>
-          </TouchableOpacity>
-
-        </View>
+        {/* Reusable Rider Bottom App Navigation Bar */}
+        <RiderBottomNavbar activeScreen={activeScreen} onNavigate={onNavigate} />
 
         {/* Global Notification Toast */}
-        {toastMsg && (
+        {toastMsg ? (
           <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
             <Text>{toastMsg}</Text>
           </View>
-        )}
+        ) : null}
 
         
 

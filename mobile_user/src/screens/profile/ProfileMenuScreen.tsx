@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, SafeAreaView } from 'react-native';
+import RiderBottomNavbar from '../../components/RiderBottomNavbar';
 import React, { useState } from 'react';
 import {
   User,
@@ -36,18 +37,20 @@ import {
   Sliders,
   Check,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  Star,
+  Volume2
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function ProfileMenuScreen() {
   const navigation = useNavigation<any>();
   // Navigation active screen selector: '36' | '37' | '38' | '39' | '40'
-  const activeScreen = '36';
+  const activeScreen: string = '36';
 
   // Interactive state for FAQs in Help & Support (Screen 37)
-  const [openFaq, setOpenFaq] = useState(null);
-  const toggleFaq = (index) => {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
@@ -56,7 +59,7 @@ export default function ProfileMenuScreen() {
 
   // Toast notification system
   const [toastMsg, setToastMsg] = useState('');
-  const showToast = (msg) => {
+  const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 2500);
   };
@@ -68,36 +71,36 @@ export default function ProfileMenuScreen() {
       <View className="w-full max-w-[430px] mb-3 px-3 py-2 flex items-center justify-between gap-1 overflow-x-auto no-scrollbar bg-slate-800/90 rounded-2xl border border-slate-700 shadow-lg flex-row">
         <Text className="text-orange-400 font-black shrink-0">Screens:</Text>
         <View className="flex gap-1 shrink-0 flex-row">
-          <View 
+          <TouchableOpacity 
             onPress={() => navigation.navigate('ProfileMenuScreen')}
             className={`px-2 py-1 rounded-xl transition ${activeScreen === '36' ? 'bg-orange-500 text-white font-black' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
           ><Text>
             36. Profile (Amit)
-          </Text></View>
-          <View 
+          </Text></TouchableOpacity>
+          <TouchableOpacity 
             onPress={() => navigation.navigate('WalletScreen')}
             className={`px-2 py-1 rounded-xl transition ${activeScreen === '37' ? 'bg-orange-500 text-white font-black' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
           ><Text>
             37. Support
-          </Text></View>
-          <View 
+          </Text></TouchableOpacity>
+          <TouchableOpacity 
             onPress={() => navigation.navigate('SettingsScreen')}
             className={`px-2 py-1 rounded-xl transition ${activeScreen === '38' ? 'bg-orange-500 text-white font-black' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
           ><Text>
             38. Notifications
-          </Text></View>
-          <View 
+          </Text></TouchableOpacity>
+          <TouchableOpacity 
             onPress={() => navigation.navigate('SupportScreen')}
             className={`px-2 py-1 rounded-xl transition ${activeScreen === '39' ? 'bg-orange-500 text-white font-black' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
           ><Text>
             39. Saved
-          </Text></View>
-          <View 
+          </Text></TouchableOpacity>
+          <TouchableOpacity 
             onPress={() => navigation.navigate('AboutScreen')}
             className={`px-2 py-1 rounded-xl transition ${activeScreen === '40' ? 'bg-orange-500 text-white font-black' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
           ><Text>
             40. Profile (Ashutosh)
-          </Text></View>
+          </Text></TouchableOpacity>
         </View>
       </View>
 
@@ -194,7 +197,10 @@ export default function ProfileMenuScreen() {
 
               {/* ACCOUNT Section */}
               <View className="space-y-2 pt-1">
+                {/* Account heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
+                */}
+                {/* ACCOUNT suboptions commented out
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                   {[
                     { icon: User, label: 'Personal Information' },
@@ -206,7 +212,7 @@ export default function ProfileMenuScreen() {
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <View 
+                      <TouchableOpacity 
                         key={idx} 
                         onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
                         className="p-3.5 flex items-center justify-between hover:bg-slate-50 transition cursor-pointer flex-row"
@@ -216,15 +222,18 @@ export default function ProfileMenuScreen() {
                           <Text>{item.label}</Text>
                         </View>
                         <ChevronRight className="w-4 h-4 text-slate-400"/>
-                      </View>
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
+                */}
               </View>
 
               {/* OTHERS Section */}
               <View className="space-y-2 pt-1">
+                {/* Others heading commented out for now
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Others</Text></View>
+                */}
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                   {[
                     { icon: Car, label: 'Trip Preferences' },
@@ -235,7 +244,7 @@ export default function ProfileMenuScreen() {
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <View 
+                      <TouchableOpacity 
                         key={idx} 
                         onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
                         className="p-3.5 flex items-center justify-between hover:bg-slate-50 transition cursor-pointer flex-row"
@@ -245,20 +254,20 @@ export default function ProfileMenuScreen() {
                           <Text>{item.label}</Text>
                         </View>
                         <ChevronRight className="w-4 h-4 text-slate-400"/>
-                  </View>
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
               </View>
 
               {/* Logout Button */}
-              <View 
+              <TouchableOpacity 
                 onPress={() => showToast("Logging out...")}
                 className="w-full bg-white border border-[#FF3B00] hover:bg-orange-50 py-3.5 rounded-2xl transition flex items-center justify-center gap-2 active:scale-98 shadow-2xs flex-row"
               >
                 <LogOut className="w-4 h-4"/>
                 <Text>Logout</Text>
-              </View>
+              </TouchableOpacity>
 
             </View>
           )}
@@ -325,7 +334,7 @@ export default function ProfileMenuScreen() {
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <View 
+                      <TouchableOpacity 
                         key={idx} 
                         onPress={() => showToast(`Opening Help topic: ${item.label}...`)}
                         className="bg-white border border-slate-100 rounded-2xl p-2 flex flex-col items-center space-y-1 shadow-2xs hover:border-orange-200 transition cursor-pointer"
@@ -335,7 +344,7 @@ export default function ProfileMenuScreen() {
                         </View>
                         <Text className="text-[9px] font-black text-slate-900 leading-tight">{item.label}</Text>
                         <Text className="text-[7px] text-slate-400 font-bold leading-tight">{item.desc}</Text>
-                      </View>
+                      </TouchableOpacity>
                     );
                   })}
                 </View>
@@ -353,7 +362,7 @@ export default function ProfileMenuScreen() {
                     { q: 'How does MBGO Refer & Earn work?', a: 'Share your referral link with friends. When they complete their first ride, you earn bonus wallet cash.' },
                   ].map((faq, idx) => (
                     <View key={idx} className="p-3.5 space-y-2">
-                      <View 
+                      <TouchableOpacity 
                         onPress={() => toggleFaq(idx)}
                         className="w-full flex items-center justify-between hover:text-[#FF3B00] transition flex-row"
                       >
@@ -362,7 +371,7 @@ export default function ProfileMenuScreen() {
                           {faq.q}
                         </Text>
                         <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180 text-[#FF3B00]' : ''}`}/>
-                      </View>
+                      </TouchableOpacity>
                       {openFaq === idx && (
                         <Text className="text-[11px] text-slate-600 font-bold leading-relaxed pl-3.5 border-l-2 border-orange-200">
                           {faq.a}
@@ -377,7 +386,7 @@ export default function ProfileMenuScreen() {
               <View className="space-y-2 pt-1">
                 <Text className="text-xs font-black text-slate-900">Need more help?</Text>
                 
-                <View 
+                <TouchableOpacity 
                   onPress={() => showToast("Opening Ticket Submission Form...")}
                   className="bg-white border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-orange-300 transition shadow-2xs flex-row"
                 >
@@ -391,7 +400,7 @@ export default function ProfileMenuScreen() {
                   </View>
                   </View>
                   <ChevronRight className="w-4 h-4 text-slate-400"/>
-                  </View>
+                  </TouchableOpacity>
 
                 <View className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
                   <Text className="text-[10px] font-extrabold text-blue-900">Your feedback helps us improve our service.</Text>
@@ -402,156 +411,237 @@ export default function ProfileMenuScreen() {
                   </View>
 
             </View>
-          )}
-
-          {/* ==========================================
+          )}          {/* ==========================================
               SCREEN 38: NOTIFICATIONS - (38.png)
-             ========================================== */}
+              ========================================== */}
           {activeScreen === '38' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
+            <View className="p-4 space-y-3.5 animate-in fade-in duration-200 bg-[#FAFAFA] pb-24">
               
               {/* Header Bar */}
-              <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity onPress={() => navigation.navigate('ProfileMenuScreen')} className="p-1 hover:bg-slate-100 rounded-full">
-                  <ChevronRight className="w-5 h-5 rotate-180"/>
+              <View className="flex items-center justify-between py-1 flex-row">
+                <TouchableOpacity onPress={() => navigation.navigate('ProfileMenuScreen')} className="p-1.5 hover:bg-slate-100 rounded-full">
+                  <ChevronRight className="w-5 h-5 rotate-180 text-slate-900 stroke-[2.5]"/>
                 </TouchableOpacity>
-                <Text className="text-base font-black text-slate-900">Notifications</Text>
+                <Text className="text-base font-bold text-slate-900">Notifications</Text>
                 <TouchableOpacity onPress={() => showToast("All marked as read!")} className="flex items-center gap-1 flex-row">
-                  <CheckCircle2 className="w-3.5 h-3.5"/><Text className="text-[10px] font-black text-[#FF3B00]"> Mark all as read
-                </Text></TouchableOpacity>
+                  <CheckCircle2 className="w-4 h-4 text-[#FF3B00]"/>
+                  <Text className="text-xs font-semibold text-[#FF3B00]">Mark all as read</Text>
+                </TouchableOpacity>
               </View>
 
-              {/* Category Filter Pills */}
-              <View className="flex border-b border-slate-200 overflow-x-auto no-scrollbar flex-row">
+              {/* Category Filter Segment Control */}
+              <View className="bg-white border border-slate-200/70 rounded-2xl p-1 flex items-center justify-between flex-row">
                 {['All', 'Bookings', 'Payments', 'Offers', 'System'].map((tab) => (
-                  <View 
+                  <TouchableOpacity 
                     key={tab}
                     onPress={() => setNotificationTab(tab)}
-                    className={`px-4 py-2 text-center transition shrink-0 ${
-                      notificationTab === tab ? 'text-[#FF3B00] border-b-2 border-[#FF3B00] font-black' : 'hover:text-slate-800'
+                    className={`flex-1 py-2 rounded-xl transition items-center justify-center ${
+                      notificationTab === tab 
+                        ? 'border border-orange-200 bg-orange-50/30' 
+                        : ''
                     }`}
                   >
-                    {tab}
-                  </View>
+                    <Text className={`text-xs ${
+                      notificationTab === tab ? 'text-[#FF3B00] font-bold' : 'text-slate-600 font-medium'
+                    }`}>
+                      {tab}
+                    </Text>
+                  </TouchableOpacity>
                 ))}
               </View>
 
-              {/* Notification List */}
-              <View className="space-y-3">
+              {/* Notification Grouped Card Container */}
+              <View className="bg-white border border-slate-200/70 rounded-2xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                 
-                {/* Item 1 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-2xs space-y-2 relative">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row">
-                      <View className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0"></View>
-                      <View className="w-9 h-9 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0 flex-row">
-                        <CheckCircle2 className="w-5 h-5"/>
+                {/* Item 1: Trip Completed */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-[#00875A] mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#00875A] flex items-center justify-center shrink-0">
+                        <Check className="w-4 h-4 text-white stroke-[3]" />
                       </View>
-                      <View>
-                        <Text className="text-xs font-black text-slate-900">Trip Completed</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Your trip from New Delhi to Jaipur has been completed. Thank you for traveling with MBGO!</Text>
-                        <View className="pt-1.5">
-                          <Text className="bg-emerald-50 text-emerald-800 text-[9px] font-black px-2 py-0.5 rounded-md border border-emerald-200">
-                            Booking ID: MBGO2505200001
-                          </Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Trip Completed</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Your trip from New Delhi to Jaipur has been completed. Thank you for traveling with MBGO!
+                        </Text>
+                        <View className="pt-2">
+                          <View className="bg-emerald-50 text-emerald-800 text-[10px] font-medium px-2.5 py-1 rounded-md border border-emerald-200/50 self-start">
+                            <Text className="text-emerald-800 font-medium text-[10px]">Booking ID: MBGO2505200001</Text>
+                          </View>
                         </View>
-                  </View>
+                      </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">2 mins ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">2 mins ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-5" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 2 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-2xs space-y-2 relative">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row">
-                      <View className="w-2.5 h-2.5 rounded-full bg-blue-500 mt-1 shrink-0"></View>
-                      <View className="w-9 h-9 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0 flex-row">
-                        <CreditCard className="w-5 h-5"/>
+                {/* Item 2: Payment Successful */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-[#00875A] mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#4C82F6] flex items-center justify-center shrink-0">
+                        <CreditCard className="w-4 h-4 text-white" />
                       </View>
-                      <View>
-                        <Text className="text-xs font-black text-slate-900">Payment Successful</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Your payment of ₹6,250 for booking MBGO2505200001 was successful.</Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Payment Successful</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Your payment of ₹6,250 for booking MBGO2505200001 was successful.
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">10 mins ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">10 mins ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 3 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-2xs space-y-2">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row">
-                      <View className="w-9 h-9 rounded-2xl bg-orange-100 flex items-center justify-center shrink-0 flex-row">
-                        <Car className="w-5 h-5"/>
+                {/* Item 3: Driver Assigned */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#FF6B4A] flex items-center justify-center shrink-0">
+                        <Car className="w-4 h-4 text-white" />
                       </View>
-                      <View>
-                        <Text className="text-xs font-black text-slate-900">Driver Assigned</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Ramesh Kumar is assigned to your trip on 20 May 2025 at 08:00 AM.</Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Driver Assigned</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Ramesh Kumar is assigned to your trip on 20 May 2025 at 08:00 AM.
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">1 day ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">1 day ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 4 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-2xs space-y-2">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row">
-                      <View className="w-9 h-9 rounded-2xl bg-purple-100 flex items-center justify-center shrink-0 flex-row">
-                        <Clock className="w-5 h-5"/>
+                {/* Item 4: Trip Reminder */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4 text-white" />
                       </View>
-                      <View>
-                        <Text className="text-xs font-black text-slate-900">Trip Reminder</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Your trip from New Delhi to Jaipur is tomorrow at 08:00 AM. We wish you a safe journey!</Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Trip Reminder</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Your trip from New Delhi to Jaipur is tomorrow at 08:00 AM. We wish you a safe journey!
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">1 day ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">1 day ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
 
-                {/* Item 5 */}
-                <View className="bg-white border border-slate-200/80 rounded-3xl p-3.5 shadow-2xs space-y-2">
-                  <View className="flex items-start justify-between gap-2 flex-row">
-                    <View className="flex items-start gap-2.5 flex-row">
-                      <View className="w-9 h-9 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0 flex-row">
-                        <Tag className="w-5 h-5"/>
+                {/* Item 5: Special Offer for You! */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#F59E0B] flex items-center justify-center shrink-0">
+                        <Tag className="w-4 h-4 text-white" />
                       </View>
-                      <View>
-                        <Text className="text-xs font-black text-slate-900">Special Offer for You!</Text>
-                        <Text className="text-[10px] text-slate-600 font-bold mt-0.5">Get up to 15% OFF on your next booking. Use code: <Text className="text-[#FF3B00] font-black">NEXT15</Text></Text>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Special Offer for You!</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          Get up to 15% OFF on your next booking. Use code: <Text className="text-[#FF3B00] font-bold">NEXT15</Text>
+                        </Text>
                       </View>
                     </View>
-                    <Text className="text-[9px] font-bold text-slate-400 shrink-0">3 days ago</Text>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">3 days ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
+                </TouchableOpacity>
+
+                {/* Item 6: Rate Your Driver */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#14B8A6] flex items-center justify-center shrink-0">
+                        <Star className="w-4 h-4 text-white" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">Rate Your Driver</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          How was your experience with Ramesh Kumar? Rate your driver and help us improve.
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">3 days ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
                   </View>
+                </TouchableOpacity>
+
+                {/* Item 7: MBGO Update */}
+                <TouchableOpacity onPress={() => showToast("Opening notification...")} className="p-3.5 hover:bg-slate-50/60 transition">
+                  <View className="flex items-start justify-between flex-row">
+                    <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
+                      <View className="w-2 h-2 rounded-full bg-transparent mt-3 shrink-0" />
+                      <View className="w-9 h-9 rounded-full bg-[#3B82F6] flex items-center justify-center shrink-0">
+                        <Volume2 className="w-4 h-4 text-white" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-slate-900">MBGO Update</Text>
+                        <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
+                          We've improved our app for a better experience. Update now to enjoy new features.
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
+                      <Text className="text-[10px] font-medium text-slate-400">5 days ago</Text>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
 
               </View>
 
               {/* Enable Push Notifications Banner */}
-              <View className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2.5 flex-row">
-                  <Bell className="w-5 h-5 text-blue-600 shrink-0"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black text-blue-950">Enable Push Notifications</Text></View>
-                    <View className=""><Text className="text-[9px] text-slate-500 font-bold">Stay updated with your bookings, offers and alerts.</Text></View>
+              <View className="bg-[#EEF4FF] border border-blue-100 rounded-2xl p-3 flex items-center justify-between flex-row">
+                <View className="flex items-center gap-2.5 flex-row flex-1 pr-2">
+                  <View className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <Bell className="w-4.5 h-4.5 text-blue-600"/>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold text-slate-900">Enable Push Notifications</Text>
+                    <Text className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Stay updated with your bookings, offers and important alerts.</Text>
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-xl shadow-xs shrink-0"><Text className="text-[10px] font-black text-white">
-                  Enable Now
-                </Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} className="bg-[#1B64F2] hover:bg-blue-700 px-3.5 py-2 rounded-xl shadow-xs shrink-0">
+                  <Text className="text-xs font-bold text-white">Enable Now</Text>
+                </TouchableOpacity>
               </View>
 
               {/* Privacy Footer Banner */}
-              <View className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2 flex-row">
-                  <Shield className="w-4 h-4 text-emerald-600"/>
-                  <View>
-                    <View className=""><Text className="text-xs font-black">Your Privacy, Our Priority</Text></View>
-                    <View className=""><Text className="text-[9px] text-emerald-700 font-medium">We never share your personal information with anyone.</Text></View>
+              <View className="bg-[#F4FBF7] border border-emerald-100/80 rounded-2xl p-3 flex items-center justify-between flex-row">
+                <View className="flex items-center gap-2.5 flex-row flex-1">
+                  <View className="w-8 h-8 rounded-full bg-emerald-100/70 flex items-center justify-center shrink-0">
+                    <Shield className="w-4 h-4 text-emerald-600"/>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-bold text-slate-900">Your Privacy, Our Priority</Text>
+                    <Text className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">We never share your personal information with anyone.</Text>
                   </View>
                 </View>
-                <ChevronRight className="w-4 h-4 text-emerald-600"/>
+                <ChevronRight className="w-4 h-4 text-slate-800 shrink-0"/>
               </View>
 
             </View>
@@ -854,6 +944,8 @@ export default function ProfileMenuScreen() {
               {/* ACCOUNT List */}
               <View className="space-y-2 pt-1">
                 <View className="px-1"><Text className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Account</Text></View>
+                {/* Options under Account commented out for now */}
+                {/* 
                 <View className="bg-white border border-slate-200/80 rounded-3xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
                   <TouchableOpacity onPress={() => showToast("Personal Information...")} className="p-3.5 flex items-center justify-between hover:bg-slate-50 cursor-pointer flex-row">
                     <View className="flex items-center gap-3 flex-row"><User className="w-4 h-4 text-slate-700"/><Text>Personal Information</Text></View>
@@ -887,6 +979,7 @@ export default function ProfileMenuScreen() {
                     <ChevronRight className="w-4 h-4 text-slate-400"/>
                   </TouchableOpacity>
                 </View>
+                */}
               </View>
 
               {/* PREFERENCES List */}
@@ -938,13 +1031,13 @@ export default function ProfileMenuScreen() {
               </View>
 
               {/* Logout Button */}
-              <View 
+              <TouchableOpacity 
                 onPress={() => showToast("Logging out...")}
                 className="w-full bg-white border border-[#FF3B00] hover:bg-orange-50 py-3.5 rounded-2xl transition flex items-center justify-center gap-2 active:scale-98 shadow-2xs flex-row"
               >
                 <LogOut className="w-4 h-4"/>
                 <Text>Logout</Text>
-              </View>
+              </TouchableOpacity>
 
               <View className="pt-1"><Text className="text-[10px] text-center font-extrabold text-slate-400">
                 MBGO is powered by </Text><Text className="text-[#FF3B00]">MusafirBaba</Text>
@@ -955,56 +1048,14 @@ export default function ProfileMenuScreen() {
 
         </ScrollView>
 
-        {/* Global Rider Bottom App Navigation */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 py-2 px-6 flex justify-between items-center z-30 flex-row">
-          
-          <View 
-            onPress={() => navigation.navigate('ProfileMenuScreen')}
-            className={`flex flex-col items-center text-[10px] font-black transition ${activeScreen === '36' ? 'text-[#FF3B00]' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <Car className="w-5 h-5"/>
-            <Text>Home</Text>
-          </View>
-
-          <View 
-            onPress={() => navigation.navigate('SettingsScreen')}
-            className={`flex flex-col items-center text-[10px] font-black transition ${activeScreen === '38' ? 'text-[#FF3B00]' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <Calendar className="w-5 h-5"/>
-            <Text>Bookings</Text>
-          </View>
-
-          <View 
-            onPress={() => navigation.navigate('SupportScreen')}
-            className={`flex flex-col items-center text-[10px] font-black transition ${activeScreen === '39' ? 'text-[#FF3B00]' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <Heart className="w-5 h-5"/>
-            <Text>Saved</Text>
-          </View>
-
-          <View 
-            onPress={() => navigation.navigate('WalletScreen')}
-            className={`flex flex-col items-center text-[10px] font-black transition ${activeScreen === '37' ? 'text-[#FF3B00]' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <Headphones className="w-5 h-5"/>
-            <Text>Support</Text>
-          </View>
-
-          <View 
-            onPress={() => navigation.navigate('AboutScreen')}
-            className={`flex flex-col items-center text-[10px] font-black transition ${activeScreen === '40' ? 'text-[#FF3B00]' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            <User className="w-5 h-5"/>
-            <Text>Profile</Text>
-          </View>
-
-        </View>
+        {/* Reusable Rider Bottom App Navigation Bar */}
+        <RiderBottomNavbar activeScreen={activeScreen} navigation={navigation} />
 
         {/* Global Notification Toast */}
         {toastMsg && (
           <View className="fixed top-6 left-1/2 -translate-x-1/2 bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 animate-in fade-in flex-row">
             <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
-            <Text>{toastMsg}</Text>
+            <Text className="text-white text-xs font-semibold">{toastMsg}</Text>
           </View>
         )}
 

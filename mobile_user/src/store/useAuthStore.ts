@@ -6,6 +6,9 @@ export interface RiderProfile {
   fullName?: string;
   mobileNumber?: string;
   profilePicture?: string;
+  email?: string;
+  walletBalance?: number;
+  isEmailVerified?: boolean;
   [key: string]: any;
 }
 
