@@ -1,10 +1,14 @@
-// Free/no-API-key geo helpers used for ride distance & fare estimation.
-// Kept behind one exported function (getRouteDistanceKm) so the provider
-// (Nominatim + OSRM today) can be swapped for a paid provider later without
-// touching any calling code.
-
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-const NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
+// Geo helpers used for ride distance & fare estimation. Kept behind one
+// exported function (getRouteDistanceKm) so the provider can be swapped
+// for a different one later without touching any calling code.
+//
+// Geocoding/search uses LocationIQ (Nominatim-compatible response shape --
+// same display_name/lat/lon fields) instead of the free public Nominatim
+// instance, since Nominatim rate-limits/blocks requests from shared cloud
+// hosting IPs like Render's, which broke this in production.
+const LOCATIONIQ_SEARCH_URL = "https://us1.locationiq.com/v1/search";
+const LOCATIONIQ_REVERSE_URL = "https://us1.locationiq.com/v1/reverse";
+const LOCATIONIQ_API_KEY = process.env.LOCATIONIQ_API_KEY;
 const OSRM_URL = "https://router.project-osrm.org/route/v1/driving";
 const USER_AGENT = "MusafirBaba-MBGO/1.0 (contact: support@musafirbaba.com)";
 
@@ -28,12 +32,12 @@ function haversineKm(a, b) {
 const ROAD_DISTANCE_CORRECTION_FACTOR = 1.3;
 
 /**
- * Geocode a free-text address into { lat, lng } using Nominatim (OpenStreetMap).
+ * Geocode a free-text address into { lat, lng } using LocationIQ.
  * Returns null if it can't be resolved.
  */
 export async function geocodeAddress(address) {
   try {
-    const url = `${NOMINATIM_URL}?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=in`;
+    const url = `${LOCATIONIQ_SEARCH_URL}?key=${LOCATIONIQ_API_KEY}&q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=in`;
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
     });
@@ -48,14 +52,14 @@ export async function geocodeAddress(address) {
 }
 
 /**
- * Free-text address search (autocomplete) using Nominatim. Returns up to 5
+ * Free-text address search (autocomplete) using LocationIQ. Returns up to 8
  * suggestions with a display label + coordinates. Used to power the
- * pick-up/drop search boxes without a paid Places API.
+ * pick-up/drop search boxes.
  */
 export async function searchAddressSuggestions(query) {
   if (!query || query.trim().length < 3) return [];
   try {
-    const url = `${NOMINATIM_URL}?q=${encodeURIComponent(query)}&format=json&limit=8&countrycodes=in&addressdetails=0`;
+    const url = `${LOCATIONIQ_SEARCH_URL}?key=${LOCATIONIQ_API_KEY}&q=${encodeURIComponent(query)}&format=json&limit=8&countrycodes=in&addressdetails=0`;
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
     });
@@ -79,7 +83,7 @@ export async function searchAddressSuggestions(query) {
  */
 export async function reverseGeocode(lat, lng) {
   try {
-    const url = `${NOMINATIM_REVERSE_URL}?lat=${lat}&lon=${lng}&format=json`;
+    const url = `${LOCATIONIQ_REVERSE_URL}?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lng}&format=json`;
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
     });
