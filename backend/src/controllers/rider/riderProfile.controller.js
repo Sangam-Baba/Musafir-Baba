@@ -1,6 +1,6 @@
 import RiderProfile from "../../models/rider/RiderProfile.js";
 import RiderAuth from "../../models/rider/RiderAuth.js";
-import { uploadToCloudinary } from "../../services/fileUpload.service.js";
+import { uploadToR2 } from "../../services/fileUpload.service.js";
 
 // @route   GET /api/rider/profile
 // @desc    Fetch the logged-in rider's full profile (merges RiderProfile + email from RiderAuth)
@@ -26,6 +26,7 @@ export const getMyProfile = async (req, res) => {
         walletBalance: profile.walletBalance,
         email: auth?.email || "",
         isEmailVerified: auth?.isEmailVerified || false,
+        isVerified: profile.isVerified || false,
       },
     });
   } catch (error) {
@@ -85,11 +86,11 @@ export const uploadProfilePicture = async (req, res) => {
       return res.status(400).json({ success: false, message: "No image file uploaded" });
     }
 
-    const result = await uploadToCloudinary(req.file.buffer, "rider/profilePicture");
+    const fileUrl = await uploadToR2(req.file.buffer, "rider/profilePicture", req.file.mimetype);
 
     const profile = await RiderProfile.findOneAndUpdate(
       { authId },
-      { $set: { profilePicture: result.secure_url } },
+      { $set: { profilePicture: fileUrl } },
       { new: true }
     );
 

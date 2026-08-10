@@ -13,6 +13,10 @@ interface RideDraftState {
   dropCoords: Coords | null;
   rideDate: string;
   rideTime: string;
+  // 'ROUND_TRIP' requires returnDate/returnTime; both stay empty for 'ONE_WAY'.
+  tripType: 'ONE_WAY' | 'ROUND_TRIP';
+  returnDate: string;
+  returnTime: string;
   quote: RideQuote | null;
   selectedOffer: RideOffer | null;
   rideId: string | null;
@@ -20,7 +24,7 @@ interface RideDraftState {
 
   passengerCount: number;
 
-  setSearch: (fields: Partial<Pick<RideDraftState, 'pickup' | 'drop' | 'pickupCoords' | 'dropCoords' | 'rideDate' | 'rideTime' | 'passengerCount'>>) => void;
+  setSearch: (fields: Partial<Pick<RideDraftState, 'pickup' | 'drop' | 'pickupCoords' | 'dropCoords' | 'rideDate' | 'rideTime' | 'tripType' | 'returnDate' | 'returnTime' | 'passengerCount'>>) => void;
   setQuote: (quote: RideQuote, preferredCategory?: string) => void;
   setSelectedOffer: (offer: RideOffer) => void;
   setRide: (rideId: string, totalAmount: number) => void;
@@ -34,6 +38,9 @@ const initialState = {
   dropCoords: null,
   rideDate: '',
   rideTime: '',
+  tripType: 'ONE_WAY' as const,
+  returnDate: '',
+  returnTime: '',
   quote: null,
   selectedOffer: null,
   rideId: null,

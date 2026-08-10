@@ -85,9 +85,9 @@ interface Package {
   image: string;
   pendingUpdates?: any;
 }
-const getAllPackages = async (page: number, search: string) => {
+const getAllPackages = async (page: number, search: string, limit: number) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=10&status=`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -98,10 +98,13 @@ const getAllPackages = async (page: number, search: string) => {
   const data = await res.json();
   return data;
 };
+
+const PAGE_SIZE_OPTIONS = [10, 50, 100, 500];
 function PackagePage() {
   const [filter, setFilter] = useState({ search: "" });
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -119,8 +122,8 @@ function PackagePage() {
     (state) => state.permissions
   ) as string[];
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["packages", page, debouncedSearch],
-    queryFn: () => getAllPackages(page, debouncedSearch),
+    queryKey: ["packages", page, debouncedSearch, pageSize],
+    queryFn: () => getAllPackages(page, debouncedSearch, pageSize),
     enabled: permissions.includes("holidays"),
   });
 
@@ -273,10 +276,29 @@ function PackagePage() {
             onPreview={handlePreview}
           />
           <div className="flex items-center justify-between px-2 py-4">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-              Showing {((page - 1) * 10) + 1} - {Math.min(page * 10, meta.total)} of {meta.total}
-            </p>
-            <Pagination 
+            <div className="flex items-center gap-4">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Showing {meta.total === 0 ? 0 : ((page - 1) * pageSize) + 1} - {Math.min(page * pageSize, meta.total)} of {meta.total}
+              </p>
+              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                Per Page
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="border border-gray-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 normal-case tracking-normal"
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <Pagination
               currentPage={page}
               totalPages={meta.totalPages}
               onPageChange={(p) => setPage(p)}

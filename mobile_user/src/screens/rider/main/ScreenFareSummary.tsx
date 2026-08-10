@@ -55,7 +55,7 @@ import {
   Tag
 } from 'lucide-react-native';
 
-export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: (screen: string) => void; onBack?: () => void }) {
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
   const activeScreen: '31' | '32' | '33' | '34' | '35' = '32';
 
@@ -65,6 +65,9 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
   const dropCoords = useRideStore((s) => s.dropCoords);
   const date = useRideStore((s) => s.rideDate);
   const time = useRideStore((s) => s.rideTime);
+  const tripType = useRideStore((s) => s.tripType);
+  const returnDate = useRideStore((s) => s.returnDate);
+  const returnTime = useRideStore((s) => s.returnTime);
   const quote = useRideStore((s) => s.quote);
   const selectedOffer = useRideStore((s) => s.selectedOffer);
   const passengerCount = useRideStore((s) => s.passengerCount);
@@ -99,6 +102,8 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
         rideTime: time,
         vehicleCategory: selectedOffer.category,
         passengerCount,
+        tripType,
+        ...(tripType === 'ROUND_TRIP' ? { returnDate, returnTime } : {}),
       });
       setRide(res.data.data.rideId, res.data.data.totalAmount);
       onNavigate('33');
@@ -129,7 +134,7 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
               
               {/* Header Bar */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-                <TouchableOpacity onPress={() => onNavigate('31')} style={{ padding: 4, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' }}>
+                <TouchableOpacity onPress={() => (onBack ? onBack() : onNavigate('31'))} style={{ padding: 4, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' }}>
                   <ArrowLeft size={18} color="#0F172A" />
                 </TouchableOpacity>
                 <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A' }}>Fare Summary</Text>
@@ -139,10 +144,10 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
               {/* Card 1: Route & Vehicle Summary Card */}
               <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
                 
-                {/* Top Row: ONE-WAY TRIP badge & Distance */}
+                {/* Top Row: Trip type badge & Distance */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 6 }}>
                   <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 }}>
-                    <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FF5500', letterSpacing: 0.5 }}>ONE-WAY TRIP</Text>
+                    <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FF5500', letterSpacing: 0.5 }}>{tripType === 'ROUND_TRIP' ? 'ROUND TRIP' : 'ONE-WAY TRIP'}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                     <Navigation size={13} color="#475569" />
@@ -206,6 +211,15 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
                     <Text style={{ fontSize: 11, fontWeight: '800', color: '#FF5500' }}>Edit</Text>
                   </TouchableOpacity>
                 </View>
+
+                {tripType === 'ROUND_TRIP' && (
+                  <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, marginTop: 2, flexDirection: 'row', alignItems: 'center' }}>
+                    <Calendar size={13} color="#0F172A" />
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A', marginLeft: 6 }}>
+                      Return: {returnDate || '-'}  <Text style={{ color: '#94A3B8' }}>•</Text>  {returnTime || '-'}
+                    </Text>
+                  </View>
+                )}
 
                 {/* Selected Vehicle Details Sub-Block */}
                 <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -1008,9 +1022,11 @@ export default function ScreenFareSummary({ onNavigate }: { onNavigate: (screen:
 
         {/* Global Notification Toast */}
         {toastMsg ? (
-          <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
-            <Text>{toastMsg}</Text>
+          <View style={{ position: 'absolute', top: 24, left: 16, right: 16, alignItems: 'center', zIndex: 50 }} pointerEvents="none">
+            <View style={{ maxWidth: '100%', backgroundColor: '#0F172A', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}>
+              <CheckCircle2 size={16} color="#34d399" />
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700', flexShrink: 1 }}>{toastMsg}</Text>
+            </View>
           </View>
         ) : null}
 

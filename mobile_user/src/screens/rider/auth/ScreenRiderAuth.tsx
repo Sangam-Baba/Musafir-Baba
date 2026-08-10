@@ -939,9 +939,11 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
         {/* Global Toast Notification */}
         {toastMsg ? (
-          <View style={{ position: 'absolute', top: 16, alignSelf: 'center', backgroundColor: '#0F172A', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, zIndex: 50, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#1E293B' }}>
-            <CheckCircle2 size={14} color="#34d399" />
-            <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700', marginLeft: 6 }}>{toastMsg}</Text>
+          <View style={{ position: 'absolute', top: 24, left: 16, right: 16, alignItems: 'center', zIndex: 50 }} pointerEvents="none">
+            <View style={{ maxWidth: '100%', backgroundColor: '#0F172A', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}>
+              <CheckCircle2 size={16} color="#34d399" />
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700', flexShrink: 1 }}>{toastMsg}</Text>
+            </View>
           </View>
         ) : null}
 

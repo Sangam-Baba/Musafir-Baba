@@ -50,6 +50,9 @@ export const createRide = (payload: {
   rideTime: string;
   vehicleCategory: string;
   passengerCount?: number;
+  tripType?: 'ONE_WAY' | 'ROUND_TRIP';
+  returnDate?: string;
+  returnTime?: string;
 }) => apiClient.post<{ success: boolean; data: { rideId: string; totalAmount: number } }>('/ride', payload);
 
 export const getRideById = (id: string) => apiClient.get(`/ride/${id}`);

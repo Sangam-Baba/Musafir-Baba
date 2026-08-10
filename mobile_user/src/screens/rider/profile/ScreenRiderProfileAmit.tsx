@@ -2,8 +2,8 @@ import { Text, View, TouchableOpacity, Image, ScrollView, Modal, TextInput, Acti
 import * as ImagePicker from 'expo-image-picker';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { useAuthStore } from '../../../store/useAuthStore';
-import { updateRiderProfile, uploadRiderProfilePicture } from '../../../api/riderProfile.api';
-import React, { useState } from 'react';
+import { getRiderProfile, updateRiderProfile, uploadRiderProfilePicture } from '../../../api/riderProfile.api';
+import React, { useEffect, useState } from 'react';
 import {
   Receipt,
   User,
@@ -56,6 +56,18 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
   const [editMobileNumber, setEditMobileNumber] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // The login response only carries fullName/mobileNumber/profilePicture --
+  // isVerified (and other admin/server-driven fields) is never in the store
+  // until we actually fetch the full profile, so do that on mount to pick
+  // up e.g. an admin-side verification that happened after the rider logged in.
+  useEffect(() => {
+    getRiderProfile()
+      .then((res) => setProfile({ ...(profile || {}), ...res.data.data }))
+      .catch(() => {
+        // Non-fatal -- screen still works with whatever is already in the store.
+      });
+  }, []);
 
   const openEditDrawer = () => {
     setEditFullName(profile?.fullName || '');
@@ -184,7 +196,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                       {!!profile?.email && (
                         <Text style={{ fontSize: 10, fontWeight: '500', color: '#64748B' }}>{profile.email}</Text>
                       )}
-                      {profile?.isEmailVerified && (
+                      {profile?.isVerified && (
                         <View style={{ paddingTop: 2 }}>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start' }}>
                             <CheckCircle2 size={11} color="#059669" />
@@ -269,6 +281,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                 */}
                 <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, overflow: 'hidden' }}>
                   {[
+                    { icon: FileText, label: 'Documents', action: () => onNavigate('41') },
                     { icon: Car, label: 'Trip Preferences' },
                     { icon: Headphones, label: 'Help & Support', action: () => onNavigate('37') },
                     { icon: Shield, label: 'Terms & Conditions' },
@@ -1054,9 +1067,11 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
 
         {/* Global Notification Toast */}
         {toastMsg ? (
-          <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
-            <Text>{toastMsg}</Text>
+          <View style={{ position: 'absolute', top: 24, left: 16, right: 16, alignItems: 'center', zIndex: 50 }} pointerEvents="none">
+            <View style={{ maxWidth: '100%', backgroundColor: '#0F172A', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}>
+              <CheckCircle2 size={16} color="#34d399" />
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700', flexShrink: 1 }}>{toastMsg}</Text>
+            </View>
           </View>
         ) : null}
 

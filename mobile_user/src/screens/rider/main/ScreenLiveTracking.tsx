@@ -52,7 +52,7 @@ import {
 import { useRideStore } from '../../../store/useRideStore';
 import { getRideById } from '../../../api/ride.api';
 
-export default function ScreenLiveTracking({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export default function ScreenLiveTracking({ onNavigate, onBack }: { onNavigate: (screen: string) => void; onBack?: () => void }) {
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
   const activeScreen = '34';
 
@@ -547,7 +547,7 @@ export default function ScreenLiveTracking({ onNavigate }: { onNavigate: (screen
               
               {/* Header Bar */}
               <View className="flex items-center justify-between pt-1 flex-row">
-                <TouchableOpacity onPress={() => onNavigate('31')} className="p-1 hover:bg-slate-100 rounded-full">
+                <TouchableOpacity onPress={() => (onBack ? onBack() : onNavigate('31'))} className="p-1 hover:bg-slate-100 rounded-full">
                   <ArrowLeft className="w-5 h-5"/>
                 </TouchableOpacity>
                 <Text className="text-base font-black text-slate-900">Live Tracking</Text>
@@ -957,9 +957,11 @@ export default function ScreenLiveTracking({ onNavigate }: { onNavigate: (screen
 
         {/* Global Notification Toast */}
         {toastMsg ? (
-          <View className="absolute top-6 self-center bg-slate-900 px-4 py-2 rounded-full shadow-2xl z-50 flex items-center gap-2 border border-slate-800 flex-row">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400"/>
-            <Text>{toastMsg}</Text>
+          <View style={{ position: 'absolute', top: 24, left: 16, right: 16, alignItems: 'center', zIndex: 50 }} pointerEvents="none">
+            <View style={{ maxWidth: '100%', backgroundColor: '#0F172A', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#1E293B', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 }}>
+              <CheckCircle2 size={16} color="#34d399" />
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700', flexShrink: 1 }}>{toastMsg}</Text>
+            </View>
           </View>
         ) : null}
 
