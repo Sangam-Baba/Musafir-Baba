@@ -19,11 +19,14 @@ const FALLBACK_OFFERS: RideOffer[] = [
   { category: 'Tempo Traveller', vehicleName: 'Force Motors Traveller 3350', seatingCapacity: 12, baseFare: 6000, driverAllowance: 665, totalAmount: 6665 },
 ];
 
-export default function ScreenVehicleSelection({ onNavigate }: { onNavigate: (screen: string) => void }) {
+export default function ScreenVehicleSelection({ onNavigate, onBack }: { onNavigate: (screen: string) => void; onBack?: () => void }) {
   const pickup = useRideStore((s) => s.pickup);
   const drop = useRideStore((s) => s.drop);
   const rideDate = useRideStore((s) => s.rideDate);
   const rideTime = useRideStore((s) => s.rideTime);
+  const tripType = useRideStore((s) => s.tripType);
+  const returnDate = useRideStore((s) => s.returnDate);
+  const returnTime = useRideStore((s) => s.returnTime);
   const quote = useRideStore((s) => s.quote);
   const selectedOffer = useRideStore((s) => s.selectedOffer);
   const setSelectedOffer = useRideStore((s) => s.setSelectedOffer);
@@ -54,7 +57,7 @@ export default function ScreenVehicleSelection({ onNavigate }: { onNavigate: (sc
           
           {/* Header Bar */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-            <TouchableOpacity onPress={() => onNavigate('31')} style={{ padding: 4, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' }}>
+            <TouchableOpacity onPress={() => (onBack ? onBack() : onNavigate('31'))} style={{ padding: 4, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' }}>
               <ArrowLeft size={18} color="#0F172A" />
             </TouchableOpacity>
             <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A' }}>Choose a Vehicle</Text>
@@ -64,10 +67,10 @@ export default function ScreenVehicleSelection({ onNavigate }: { onNavigate: (sc
           {/* Trip Summary Strip Card */}
           <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
             
-            {/* Top Row: ONE-WAY TRIP badge & Distance */}
+            {/* Top Row: Trip type badge & Distance */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 10 }}>
               <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 }}>
-                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FF5500', letterSpacing: 0.5 }}>ONE-WAY TRIP</Text>
+                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FF5500', letterSpacing: 0.5 }}>{tripType === 'ROUND_TRIP' ? 'ROUND TRIP' : 'ONE-WAY TRIP'}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Navigation size={13} color="#475569" />
@@ -131,6 +134,15 @@ export default function ScreenVehicleSelection({ onNavigate }: { onNavigate: (sc
                 <Text style={{ fontSize: 11, fontWeight: '800', color: '#FF5500' }}>Edit</Text>
               </TouchableOpacity>
             </View>
+
+            {tripType === 'ROUND_TRIP' && (
+              <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, marginTop: 4, flexDirection: 'row', alignItems: 'center' }}>
+                <Calendar size={13} color="#0F172A" />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A', marginLeft: 6 }}>
+                  Return: {returnDate || '-'}  <Text style={{ color: '#94A3B8' }}>•</Text>  {returnTime || '-'}
+                </Text>
+              </View>
+            )}
 
           </View>
 

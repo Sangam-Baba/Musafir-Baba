@@ -23,6 +23,14 @@ const riderProfileSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Admin-controlled only -- set via the admin "mark verified" action, which
+    // itself is server-side gated on profilePicture + a document (both
+    // sides) existing. Never set directly by the rider or by email
+    // verification.
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
     pushToken: {
       type: String,
       default: "",

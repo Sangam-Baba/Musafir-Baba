@@ -11,6 +11,19 @@ import { sendPushNotification } from "../utils/notifications.js";
 const FLAT_DRIVER_ALLOWANCE = 100;
 const DEFAULT_COMMISSION_PERCENT = 15;
 
+// Hardcoded placeholder data used only when no real, active PartnerVehicle
+// serves a category for the requested route -- keeps the rider from hitting
+// a dead-end "no vehicles" search on routes/cities without onboarded
+// partners yet. TODO: replace with an admin-managed collection (see
+// docs/fallback_vehicle_data_spec.md) once that panel exists; this object is
+// the placeholder for that future config.
+const FALLBACK_VEHICLE_RATES = [
+  { category: "Hatchback", vehicleName: "Hatchback (Swift, i10 or similar)", seatingCapacity: 4, perKmRate: 11 },
+  { category: "Sedan", vehicleName: "Sedan (Dzire, Etios or similar)", seatingCapacity: 4, perKmRate: 13 },
+  { category: "SUV", vehicleName: "SUV (Ertiga, Innova or similar)", seatingCapacity: 6, perKmRate: 17 },
+  { category: "Tempo Traveller", vehicleName: "Tempo Traveller (12-16 seater)", seatingCapacity: 12, perKmRate: 22 },
+];
+
 // req.riderId (from the JWT) is the RiderAuth id; RideBooking.rider references
 // RiderProfile, so resolve the profile id once and reuse it (mirrors how the
 // partner controllers resolve PartnerProfile from req.partnerId/authId).
@@ -29,14 +42,13 @@ function cityMatches(address, city) {
 // by matching Active PartnerVehicles to their PartnerSettings rate + serviceable locations.
 async function computeCategoryOffers(pickupAddress, dropAddress, distanceKm) {
   const vehicles = await PartnerVehicle.find({ status: "Active", isDeleted: false }).lean();
-  if (vehicles.length === 0) return [];
 
-  const partnerIds = [...new Set(vehicles.map((v) => String(v.partnerId)))];
-  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds } }).lean();
+  const partnerIds = vehicles.length ? [...new Set(vehicles.map((v) => String(v.partnerId)))] : [];
+  const profiles = partnerIds.length ? await PartnerProfile.find({ _id: { $in: partnerIds } }).lean() : [];
   const profileById = new Map(profiles.map((p) => [String(p._id), p]));
 
   const authIds = profiles.map((p) => String(p.authId));
-  const settingsList = await PartnerSettings.find({ authId: { $in: authIds } }).lean();
+  const settingsList = authIds.length ? await PartnerSettings.find({ authId: { $in: authIds } }).lean() : [];
   const settingsByAuthId = new Map(settingsList.map((s) => [String(s.authId), s]));
 
   const offersByCategory = new Map(); // category -> { fare, partnerId, vehicleId, eligibleCount }
@@ -53,8 +65,10 @@ async function computeCategoryOffers(pickupAddress, dropAddress, distanceKm) {
     );
     if (!vehicleConfig) continue;
 
+    // Only the pickup city needs to match a serviceable location for now
+    // (drop-city matching intentionally disabled per product decision).
     const serviceable = (vehicleConfig.locations || []).some(
-      (loc) => cityMatches(pickupAddress, loc.city) || cityMatches(dropAddress, loc.city)
+      (loc) => cityMatches(pickupAddress, loc.city)
     );
     if (!serviceable) continue;
 
@@ -82,6 +96,24 @@ async function computeCategoryOffers(pickupAddress, dropAddress, distanceKm) {
         eligibleCount: 1,
       });
     }
+  }
+
+  // Fill in any category with no real partner offer using the hardcoded
+  // placeholder rates above, so the rider always sees every vehicle
+  // category priced -- never overrides a real offer that was already found.
+  for (const fallback of FALLBACK_VEHICLE_RATES) {
+    if (offersByCategory.has(fallback.category)) continue;
+    const baseFare = Math.round(fallback.perKmRate * distanceKm);
+    offersByCategory.set(fallback.category, {
+      category: fallback.category,
+      vehicleName: fallback.vehicleName,
+      seatingCapacity: fallback.seatingCapacity,
+      baseFare,
+      driverAllowance: FLAT_DRIVER_ALLOWANCE,
+      totalAmount: baseFare + FLAT_DRIVER_ALLOWANCE,
+      eligibleCount: 0,
+      isFallback: true,
+    });
   }
 
   return Array.from(offersByCategory.values());
@@ -159,10 +191,15 @@ export const createRide = async (req, res) => {
       return res.status(404).json({ success: false, message: "Rider profile not found" });
     }
 
-    const { pickup, drop, rideDate, rideTime, vehicleCategory, passengerCount } = req.body;
+    const { pickup, drop, rideDate, rideTime, vehicleCategory, passengerCount, tripType, returnDate, returnTime } = req.body;
 
     if (!pickup?.address || !drop?.address || !rideDate || !rideTime || !vehicleCategory) {
       return res.status(400).json({ success: false, message: "Missing required ride details" });
+    }
+
+    const isRoundTrip = tripType === "ROUND_TRIP";
+    if (isRoundTrip && (!returnDate || !returnTime)) {
+      return res.status(400).json({ success: false, message: "Return date and time are required for a round trip" });
     }
 
     const route = await getRouteDistance(pickup, drop);
@@ -181,6 +218,8 @@ export const createRide = async (req, res) => {
       drop: { address: drop.address, lat: route.dropCoords.lat, lng: route.dropCoords.lng },
       rideDate,
       rideTime,
+      tripType: isRoundTrip ? "ROUND_TRIP" : "ONE_WAY",
+      ...(isRoundTrip ? { returnDate, returnTime } : {}),
       vehicleCategory,
       passengerCount: passengerCount || 1,
       distanceKm: route.distanceKm,

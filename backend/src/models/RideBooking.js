@@ -29,6 +29,13 @@ const rideBookingSchema = new mongoose.Schema(
     drop: { type: locationPointSchema, required: true },
     rideDate: { type: String, required: true }, // e.g. "2025-05-20"
     rideTime: { type: String, required: true }, // e.g. "08:00 AM"
+    tripType: {
+      type: String,
+      enum: ["ONE_WAY", "ROUND_TRIP"],
+      default: "ONE_WAY",
+    },
+    returnDate: { type: String }, // only set when tripType is "ROUND_TRIP"
+    returnTime: { type: String },
     vehicleCategory: { type: String, required: true }, // e.g. "Sedan", "SUV"
     passengerCount: { type: Number, default: 1 },
     distanceKm: { type: Number, required: true },

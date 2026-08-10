@@ -57,8 +57,10 @@ import adminPartnerVerificationRoutes from "./partner/adminPartnerVerification.r
 import locationMasterRoutes from "./locationMaster.routes.js";
 import riderAuthRoutes from "./rider/riderAuth.routes.js";
 import riderProfileRoutes from "./rider/riderProfile.routes.js";
+import riderDocumentRoutes from "./rider/riderDocument.routes.js";
 import rideRoutes from "./ride.routes.js";
 import adminRideRoutes from "./adminRide.routes.js";
+import adminRiderRoutes from "./adminRider.routes.js";
 
 const router = Router();
 
@@ -69,6 +71,7 @@ router.use("/auth", authRouter);
 // (e.g. GET /admin/rides being matched as staffRouter's GET /admin/:id).
 router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
 router.use("/admin/rides", adminRideRoutes);
+router.use("/admin/riders", adminRiderRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);
 router.use("/booking", bookingRoutes);
@@ -123,6 +126,7 @@ router.use("/partner/auth", partnerAuthRoutes);
 router.use("/partner", partnerRoutes);
 router.use("/rider/auth", riderAuthRoutes);
 router.use("/rider/profile", riderProfileRoutes);
+router.use("/rider/documents", riderDocumentRoutes);
 router.use("/ride", rideRoutes);
 router.use("/", locationMasterRoutes);
 export default router;
