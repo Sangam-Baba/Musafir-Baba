@@ -46,7 +46,7 @@ export default function AboutScreen() {
   const activeScreen = '40';
 
   // Interactive state for FAQs in Help & Support (Screen 37)
-  const [openFaq, setOpenFaq] = useState(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
   };

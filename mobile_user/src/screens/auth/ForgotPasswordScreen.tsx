@@ -1,5 +1,7 @@
 import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, SafeAreaView } from 'react-native';
 import React, { useState } from 'react';
+
+const MBGO_LOGO = require('../../desgin/mbgoLogo.png');
 import {
   Mail,
   Lock,
@@ -27,7 +29,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function ForgotPasswordScreen() {
   const navigation = useNavigation<any>();
   // Navigation active screen: 'login' | 'register' | 'forgot'
-  const activeScreen = 'forgot';
+  const activeScreen: string = 'forgot';
 
   // Form States
   const [showPassword, setShowPassword] = useState(false);
@@ -116,16 +118,8 @@ export default function ForgotPasswordScreen() {
 
             {/* Top Header Bar */}
             <View className="relative z-20 flex items-center justify-between pt-1 pb-4 flex-row">
-              {/* MBGO Brand Logo */}
-              <View className="flex flex-col">
-                <View className="flex items-center flex-row">
-                  <Text className="text-[#0B132B]">MB</Text>
-                  <Text className="text-[#FF4500]">GO</Text>
-                </View>
-                <View className="mt-0.5"><Text className="text-[8px] font-extrabold text-slate-500 tracking-wider uppercase">
-                  powered by musafirbaba
-                </Text></View>
-              </View>
+              {/* MBGO Brand Logo - 3x Enlarged Image */}
+              <Image source={MBGO_LOGO} style={{ width: 220, height: 72 }} resizeMode="contain" />
 
               {/* Portal Pill Badge */}
               <View className="bg-white px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5 border border-slate-200/80 flex-row">
@@ -176,11 +170,11 @@ export default function ForgotPasswordScreen() {
 
                   {/* Email Field */}
                   <View className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Email Address</label>
+                    <Text className="block text-xs font-bold text-slate-700">Email Address</Text>
                     <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition shadow-2xs flex-row">
                       <Mail className="w-4 h-4 text-[#FF4500] shrink-0"/>
                       <TextInput 
-                        type="email" 
+                        keyboardType="email-address" 
                         value={email} 
                         onChangeText={setEmail}
                         placeholder="partner@example.com" 
@@ -192,7 +186,7 @@ export default function ForgotPasswordScreen() {
                   {/* Password Field */}
                   <View className="space-y-1">
                     <View className="flex justify-between items-center flex-row">
-                      <label className="block text-xs font-bold text-slate-700">Password</label>
+                      <Text className="block text-xs font-bold text-slate-700">Password</Text>
                       <TouchableOpacity 
                         onPress={() => { navigation.navigate('ForgotPasswordScreen'); setForgotStep(1); }} 
                         className="hover:underline"
@@ -203,14 +197,13 @@ export default function ForgotPasswordScreen() {
                     <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition shadow-2xs flex-row">
                       <Lock className="w-4 h-4 text-[#FF4500] shrink-0"/>
                       <TextInput 
-                        type={showPassword ? 'text' : 'password'} 
+                        secureTextEntry={!showPassword} 
                         value={password} 
                         onChangeText={setPassword}
                         placeholder="Enter your password" 
                         className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none placeholder:text-slate-400"
                       />
                       <TouchableOpacity 
-                        type="button" 
                         onPress={() => setShowPassword(!showPassword)}
                         className="hover:text-slate-600 transition"
                       >
@@ -221,22 +214,21 @@ export default function ForgotPasswordScreen() {
 
                   {/* Checkbox & WhatsApp Help Row */}
                   <View className="flex items-center justify-between pt-1 flex-row">
-                    <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 select-none">
-                      <TextInput 
-                        type="checkbox" 
-                        checked={rememberMe} 
-                        onChangeText={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded text-[#FF4500] accent-[#FF4500] border-slate-300 focus:ring-0 cursor-pointer"
-                      />
-                      <Text>Remember me</Text>
-                    </label>
+                    <TouchableOpacity 
+                      onPress={() => setRememberMe(!rememberMe)}
+                      className="flex items-center gap-2 cursor-pointer font-bold text-slate-700 select-none flex-row"
+                    >
+                      <View className={`w-4 h-4 rounded border ${rememberMe ? 'bg-[#FF4500] border-[#FF4500]' : 'border-slate-300'} items-center justify-center`}>
+                        {rememberMe && <Text className="text-white text-[10px] font-bold">✓</Text>}
+                      </View>
+                      <Text className="text-xs font-bold text-slate-700">Remember me</Text>
+                    </TouchableOpacity>
 
                     <TouchableOpacity 
-                      type="button"
                       onPress={() => showToast("Opening WhatsApp Support...")}
                       className="flex items-center gap-1.5 hover:text-emerald-600 transition bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex-row"
                     >
-                      <Text>Need help?</Text>
+                      <Text className="text-xs font-bold text-emerald-600">Need help?</Text>
                       <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600"/>
                     </TouchableOpacity>
                   </View>
@@ -281,11 +273,10 @@ export default function ForgotPasswordScreen() {
 
                   {/* Full Name */}
                   <View className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Full Name</label>
+                    <Text className="block text-xs font-bold text-slate-700">Full Name</Text>
                     <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
                       <User className="w-4 h-4 text-[#FF4500] shrink-0"/>
                       <TextInput 
-                         
                         value={fullName}
                         onChangeText={setFullName}
                         placeholder="Ashutosh Rai" 
@@ -296,11 +287,11 @@ export default function ForgotPasswordScreen() {
 
                   {/* Email Address */}
                   <View className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Email Address</label>
+                    <Text className="block text-xs font-bold text-slate-700">Email Address</Text>
                     <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
                       <Mail className="w-4 h-4 text-[#FF4500] shrink-0"/>
                       <TextInput 
-                        type="email" 
+                        keyboardType="email-address" 
                         value={email}
                         onChangeText={setEmail}
                         placeholder="ashutosh@example.com" 
@@ -311,11 +302,11 @@ export default function ForgotPasswordScreen() {
 
                   {/* Phone Number */}
                   <View className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Mobile Number</label>
+                    <Text className="block text-xs font-bold text-slate-700">Mobile Number</Text>
                     <View className="flex items-center gap-2 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
                       <Text className="text-xs font-black text-slate-700 border-r border-slate-200 pr-2">+91</Text>
                       <TextInput 
-                        type="tel" 
+                        keyboardType="phone-pad" 
                         value={phone}
                         onChangeText={setPhone}
                         placeholder="98765 43210" 
@@ -326,16 +317,15 @@ export default function ForgotPasswordScreen() {
 
                   {/* Password */}
                   <View className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Password</label>
+                    <Text className="block text-xs font-bold text-slate-700">Password</Text>
                     <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] transition flex-row">
                       <Lock className="w-4 h-4 text-[#FF4500] shrink-0"/>
                       <TextInput 
-                        type={showPassword ? 'text' : 'password'} 
+                        secureTextEntry={!showPassword} 
                         placeholder="Create password" 
                         className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
                       />
                       <TouchableOpacity 
-                        type="button" 
                         onPress={() => setShowPassword(!showPassword)}
                         className="hover:text-slate-600"
                       >
@@ -393,11 +383,10 @@ export default function ForgotPasswordScreen() {
                       </View>
 
                       <View className="space-y-1">
-                        <label className="block text-xs font-bold text-slate-700">Email Address or Phone</label>
+                        <Text className="block text-xs font-bold text-slate-700">Email Address or Phone</Text>
                         <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-3 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] flex-row">
                           <Mail className="w-4 h-4 text-[#FF4500] shrink-0"/>
                           <TextInput 
-                             
                             defaultValue="ashutosh.rai@gmail.com"
                             className="flex-1 bg-transparent font-bold text-xs text-slate-900 focus:outline-none"
                           />
@@ -429,10 +418,9 @@ export default function ForgotPasswordScreen() {
                         {otpCode.map((digit, idx) => (
                           <TextInput 
                             key={idx}
-                             
                             maxLength={1}
                             value={digit}
-                            readOnly
+                            editable={false}
                             className="w-12 h-12 text-center text-lg font-black bg-slate-50 border-2 border-[#FF4500] rounded-2xl text-slate-900 shadow-2xs"
                           />
                         ))}
@@ -464,7 +452,7 @@ export default function ForgotPasswordScreen() {
                       </View>
 
                       <View className="space-y-1">
-                        <label className="block text-xs font-bold text-slate-700">New Password</label>
+                        <Text className="block text-xs font-bold text-slate-700">New Password</Text>
                         <View className="flex items-center gap-2.5 border border-slate-200 rounded-2xl px-3.5 py-2.5 bg-slate-50/50 focus-within:bg-white focus-within:border-[#FF4500] flex-row">
                           <Lock className="w-4 h-4 text-[#FF4500] shrink-0"/>
                           <TextInput 

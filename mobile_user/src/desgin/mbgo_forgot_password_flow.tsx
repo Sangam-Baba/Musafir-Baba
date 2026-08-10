@@ -4,90 +4,95 @@ import React, { useState, useEffect, useRef } from 'react';
 // [WEB PREVIEW ONLY]: Inline SVG Icons for web preview rendering
 // =============================================================================
 
-const UserIcon = ({ color = "currentColor", size = 18 }) => (
+interface IconProps {
+  color?: string;
+  size?: number;
+}
+
+const UserIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
-const MailIcon = ({ color = "currentColor", size = 18 }) => (
+const MailIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
     <polyline points="22,6 12,13 2,6" />
   </svg>
 );
 
-const LockIcon = ({ color = "currentColor", size = 18 }) => (
+const LockIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
 
-const KeyRoundIcon = ({ color = "#FF5500", size = 26 }) => (
+const KeyRoundIcon = ({ color = "#FF5500", size = 26 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4L2 18z" />
     <circle cx="16.5" cy="7.5" r=".5" fill={color} />
   </svg>
 );
 
-const EyeIcon = ({ color = "currentColor", size = 18 }) => (
+const EyeIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
-const EyeOffIcon = ({ color = "currentColor", size = 18 }) => (
+const EyeOffIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
     <line x1="1" y1="1" x2="23" y2="23" />
   </svg>
 );
 
-const ChevronRightIcon = ({ color = "currentColor", size = 14 }) => (
+const ChevronRightIcon = ({ color = "currentColor", size = 14 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 18 15 12 9 6" />
   </svg>
 );
 
-const ArrowRightIcon = ({ color = "currentColor", size = 18 }) => (
+const ArrowRightIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="5" y1="12" x2="19" y2="12" />
     <polyline points="12 5 19 12 12 19" />
   </svg>
 );
 
-const ArrowLeftIcon = ({ color = "currentColor", size = 18 }) => (
+const ArrowLeftIcon = ({ color = "currentColor", size = 18 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="19" y1="12" x2="5" y2="12" />
     <polyline points="12 19 5 12 12 5" />
   </svg>
 );
 
-const CheckCircleIcon = ({ color = "#10B981", size = 24 }) => (
+const CheckCircleIcon = ({ color = "#10B981", size = 24 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
 
-const ShieldCheckIcon = ({ color = "#FF5500", size = 22 }) => (
+const ShieldCheckIcon = ({ color = "#FF5500", size = 22 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     <path d="M9 12l2 2 4-4" />
   </svg>
 );
 
-const AwardIcon = ({ color = "#FF5500", size = 22 }) => (
+const AwardIcon = ({ color = "#FF5500", size = 22 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="7" />
     <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
   </svg>
 );
 
-const HeadsetIcon = ({ color = "#FF5500", size = 22 }) => (
+const HeadsetIcon = ({ color = "#FF5500", size = 22 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
     <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
@@ -147,7 +152,14 @@ const BrandLogo = () => (
   </div>
 );
 
-const FeatureItem = ({ icon, title, description, showBorder = true }) => (
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  showBorder?: boolean;
+}
+
+const FeatureItem = ({ icon, title, description, showBorder = true }: FeatureItemProps) => (
   <div className={`flex-1 flex flex-col items-center text-center px-1 ${showBorder ? 'border-r border-slate-100' : ''}`}>
     <div className="w-10 h-10 rounded-full bg-[#FFF5EF] flex items-center justify-center mb-1.5 shadow-sm">
       {icon}
@@ -160,7 +172,11 @@ const FeatureItem = ({ icon, title, description, showBorder = true }) => (
 // =============================================================================
 // [NATIVE CODE & WEB PREVIEW]: Flow Progress Stepper
 // =============================================================================
-const StepProgress = ({ currentStep }) => {
+interface StepProgressProps {
+  currentStep: number;
+}
+
+const StepProgress = ({ currentStep }: StepProgressProps) => {
   const steps = [
     { num: 1, label: 'Email' },
     { num: 2, label: 'OTP' },
@@ -221,18 +237,25 @@ export default function App() {
   // UI Toggles
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [modalMessage, setModalMessage] = useState(null);
+  const [modalMessage, setModalMessage] = useState<string | null>(null);
 
   // OTP Resend Countdown Timer (30 seconds)
   const [timer, setTimer] = useState(30);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
 
   // OTP Input Refs for auto-focusing next input box
-  const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
+  const otpRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
+  ];
 
   // Countdown timer handler for Step 2
   useEffect(() => {
-    let interval = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (currentStep === 2 && timer > 0) {
       interval = setInterval(() => {
         setTimer((prev) => prev - 1);
@@ -240,11 +263,13 @@ export default function App() {
     } else if (timer === 0) {
       setIsResendDisabled(false);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [currentStep, timer]);
 
   // Step 1 Submission: Send OTP to Email
-  const handleSendOtp = (e) => {
+  const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailId.trim()) {
       setModalMessage('Please enter your registered Email ID.');
@@ -262,8 +287,8 @@ export default function App() {
   };
 
   // Step 2 OTP Change Handler
-  const handleOtpChange = (value, index) => {
-    if (isNaN(value)) return;
+  const handleOtpChange = (value: string, index: number) => {
+    if (isNaN(Number(value))) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -275,14 +300,14 @@ export default function App() {
   };
 
   // Step 2 OTP KeyDown for Backspace
-  const handleOtpKeyDown = (e, index) => {
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       otpRefs[index - 1].current?.focus();
     }
   };
 
   // Step 2 Submission: Verify OTP
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     const enteredOtp = otp.join('');
     if (enteredOtp.length < 6) {
@@ -302,7 +327,7 @@ export default function App() {
   };
 
   // Step 3 Submission: Reset Password
-  const handleResetPassword = (e) => {
+  const handleResetPassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword.trim()) {
       setModalMessage('Please enter a new password.');
@@ -369,7 +394,7 @@ export default function App() {
             <WorldMapBackground />
             <BrandLogo />
 
-            <h1 className="text-2xl sm:text-[26px] font-black text-[#0B1E3D] leading-tight tracking-tight z-10">
+            <h1 className="text-3xl font-semibold text-[#0B1E3D] leading-snug tracking-tight z-10">
               Account Recovery,<br />
               <span className="text-[#FF5500]">Made Simple.</span>
             </h1>

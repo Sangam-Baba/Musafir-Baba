@@ -24,8 +24,9 @@ import {
 import { loginRider, registerRider, verifyRiderOtp, resendRiderOtp, forgotRiderPassword, resetRiderPassword } from '../../../api/riderAuth.api';
 import { useAuthStore } from '../../../store/useAuthStore';
 
-// Use the transparent logo asset
+// Use high-resolution MBGO brand logo asset
 const LOGO_TRANSPARENT = require('../../../assets/mbgoLogo_transparent.png');
+const MBGO_LOGO = require('../../../desgin/mbgoLogo.png');
 
 // =============================================================================
 // Shared Presentational Components (Explicit React Native Styles)
@@ -66,8 +67,8 @@ const WorldMapBackground = () => (
 );
 
 const BrandLogo = () => (
-  <View style={{ alignItems: 'center', marginBottom: 2, zIndex: 10 }}>
-    <Image source={LOGO_TRANSPARENT} style={{ width: 130, height: 48 }} resizeMode="contain" />
+  <View style={{ alignItems: 'center', marginBottom: 6, zIndex: 10 }}>
+    <Image source={MBGO_LOGO} style={{ width: 220, height: 72 }} resizeMode="contain" />
   </View>
 );
 
@@ -419,12 +420,12 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
             {/* Dynamic Hero Titles per Screen */}
             {activeScreen === 'login' && (
               <>
-                <Text style={{ fontSize: 19, fontWeight: '900', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 23 }}>
+                <Text style={{ fontSize: 23, fontWeight: '600', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 30 }}>
                   Your Journey,{'\n'}
-                  <Text style={{ color: '#FF5500' }}>Our Priority.</Text>
+                  <Text style={{ color: '#FF5500', fontWeight: '600' }}>Our Priority.</Text>
                 </Text>
-                <View style={{ width: 28, height: 2, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
-                <Text style={{ fontSize: 11, fontWeight: '500', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 14 }}>
+                <View style={{ width: 32, height: 2.5, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
+                <Text style={{ fontSize: 13, fontWeight: '400', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 18 }}>
                   Premium rides.{'\n'}Trusted every mile.
                 </Text>
               </>
@@ -432,12 +433,12 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
             {activeScreen === 'register' && (
               <>
-                <Text style={{ fontSize: 19, fontWeight: '900', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 23 }}>
+                <Text style={{ fontSize: 23, fontWeight: '600', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 30 }}>
                   Start Your Journey,{'\n'}
-                  <Text style={{ color: '#FF5500' }}>Join Us Today.</Text>
+                  <Text style={{ color: '#FF5500', fontWeight: '600' }}>Join Us Today.</Text>
                 </Text>
-                <View style={{ width: 28, height: 2, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
-                <Text style={{ fontSize: 11, fontWeight: '500', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 14 }}>
+                <View style={{ width: 32, height: 2.5, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
+                <Text style={{ fontSize: 13, fontWeight: '400', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 18 }}>
                   Create an account in seconds{'\n'}to book your next ride.
                 </Text>
               </>
@@ -445,12 +446,12 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
             {activeScreen === 'forgot' && (
               <>
-                <Text style={{ fontSize: 19, fontWeight: '900', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 23 }}>
+                <Text style={{ fontSize: 23, fontWeight: '600', color: '#0B1E3D', textAlign: 'center', marginTop: 2, zIndex: 10, lineHeight: 30 }}>
                   Account Recovery,{'\n'}
-                  <Text style={{ color: '#FF5500' }}>Made Simple.</Text>
+                  <Text style={{ color: '#FF5500', fontWeight: '600' }}>Made Simple.</Text>
                 </Text>
-                <View style={{ width: 28, height: 2, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
-                <Text style={{ fontSize: 11, fontWeight: '500', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 14 }}>
+                <View style={{ width: 32, height: 2.5, backgroundColor: '#FF5500', borderRadius: 1, marginVertical: 6, zIndex: 10 }} />
+                <Text style={{ fontSize: 13, fontWeight: '400', color: '#475569', textAlign: 'center', zIndex: 10, lineHeight: 18 }}>
                   Follow quick steps to reset{'\n'}your account password.
                 </Text>
               </>
@@ -467,9 +468,9 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 borderWidth: 1,
                 borderColor: '#F1F5F9',
                 borderRadius: 24,
-                paddingHorizontal: 16,
-                paddingBottom: 16,
-                paddingTop: 28,
+                paddingHorizontal: 18,
+                paddingBottom: 20,
+                paddingTop: 34,
                 position: 'relative',
               }}
             >
@@ -479,7 +480,9 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 <StepProgress currentStep={registerStep === 'form' ? 1 : registerStep === 'otp' ? 2 : 3} steps={[{ num: 1, label: 'Details' }, { num: 2, label: 'OTP' }, { num: 3, label: 'Ready' }]} />
               )}
               {(activeScreen === 'forgot' && forgotStep < 4) && (
-                <StepProgress currentStep={forgotStep} steps={[{ num: 1, label: 'Email' }, { num: 2, label: 'OTP' }, { num: 3, label: 'Reset' }]} />
+                <View style={{ marginBottom: 16 }}>
+                  <StepProgress currentStep={forgotStep} steps={[{ num: 1, label: 'Email' }, { num: 2, label: 'OTP' }, { num: 3, label: 'Reset' }]} />
+                </View>
               )}
 
               {/* Floating Center Icon Badge (Perfect Circle) */}
@@ -763,20 +766,20 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
               )}
 
               {/* ----------------------------------------------------
-                  3. FORGOT PASSWORD SCREEN
+                  3. FORGOT PASSWORD SCREEN - STEP 1: EMAIL
                  ---------------------------------------------------- */}
               {activeScreen === 'forgot' && forgotStep === 1 && (
-                <View style={{ gap: 10 }}>
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Forgot Password?</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>Enter registered Email ID to receive a 6-digit code</Text>
+                <View style={{ gap: 16 }}>
+                  <View style={{ alignItems: 'center', marginBottom: 4 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#0B1E3D', marginBottom: 4 }}>Forgot Password?</Text>
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B', textAlign: 'center', lineHeight: 16 }}>Enter registered Email ID to receive a 6-digit code</Text>
                   </View>
 
-                  <View style={{ gap: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Registered Email ID</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#0F172A' }}>Registered Email ID</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#CBD5E1', borderRadius: 10, paddingHorizontal: 12, height: 44, backgroundColor: '#FAFAFC' }}>
                       <View style={{ marginRight: 8 }}>
-                        <Mail size={15} color="#94A3B8" />
+                        <Mail size={16} color="#94A3B8" />
                       </View>
                       <TextInput
                         value={forgotEmail}
@@ -785,7 +788,7 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                         placeholderTextColor="#94A3B8"
                         autoCapitalize="none"
                         keyboardType="email-address"
-                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '500', fontSize: 13, color: '#0F172A' }}
                       />
                     </View>
                   </View>
@@ -793,16 +796,16 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                   <TouchableOpacity
                     onPress={handleSendResetOtp}
                     disabled={isSubmitting}
-                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
+                    style={{ width: '100%', height: 44, backgroundColor: '#FF5500', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 6 }}
                   >
-                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Sending...' : 'Send Verification Code'}</Text>
-                    <ArrowRight size={15} color="#FFFFFF" />
+                    <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 13, marginRight: 8 }}>{isSubmitting ? 'Sending...' : 'Send Verification Code'}</Text>
+                    <ArrowRight size={16} color="#FFFFFF" />
                   </TouchableOpacity>
 
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B' }}>Remembered your password?</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 8 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>Remembered your password?</Text>
                     <TouchableOpacity onPress={() => { onNavigate('login'); resetForgotFlow(); }}>
-                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#FF5500', marginLeft: 4 }}>Sign In</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF5500', marginLeft: 4 }}>Sign In</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -810,12 +813,12 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
               {/* STEP 2: VERIFY OTP CODE */}
               {activeScreen === 'forgot' && forgotStep === 2 && (
-                <View style={{ gap: 8 }}>
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Verify OTP Code</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>
+                <View style={{ gap: 14 }}>
+                  <View style={{ alignItems: 'center', marginBottom: 2 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#0B1E3D', marginBottom: 4 }}>Verify OTP Code</Text>
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B', textAlign: 'center', lineHeight: 16 }}>
                       We've sent a 6-digit code to{'\n'}
-                      <Text style={{ fontWeight: 'bold', color: '#1E293B' }}>{forgotEmail}</Text>
+                      <Text style={{ fontWeight: '600', color: '#1E293B' }}>{forgotEmail}</Text>
                     </Text>
                   </View>
 
@@ -825,15 +828,15 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
                   <TouchableOpacity
                     onPress={handleVerifyForgotOtp}
-                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: '100%', height: 44, backgroundColor: '#FF5500', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
                   >
-                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>Verify Code</Text>
-                    <CheckCircle2 size={15} color="#FFFFFF" />
+                    <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 13, marginRight: 8 }}>Verify Code</Text>
+                    <CheckCircle2 size={16} color="#FFFFFF" />
                   </TouchableOpacity>
 
-                  <View style={{ alignItems: 'center', paddingTop: 2 }}>
+                  <View style={{ alignItems: 'center', paddingTop: 6 }}>
                     <TouchableOpacity onPress={() => setForgotStep(1)}>
-                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#64748B', textDecorationLine: 'underline' }}>Change Email ID</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: '#64748B', textDecorationLine: 'underline' }}>Change Email ID</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -841,18 +844,18 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
               {/* STEP 3: SET NEW PASSWORD */}
               {activeScreen === 'forgot' && forgotStep === 3 && (
-                <View style={{ gap: 10 }}>
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 17, fontWeight: '900', color: '#0B1E3D' }}>Reset Password</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#64748B', textAlign: 'center' }}>Set a strong new password for your mbgo account</Text>
+                <View style={{ gap: 14 }}>
+                  <View style={{ alignItems: 'center', marginBottom: 2 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: '#0B1E3D', marginBottom: 4 }}>Reset Password</Text>
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B', textAlign: 'center', lineHeight: 16 }}>Set a strong new password for your mbgo account</Text>
                   </View>
 
                   {/* New Password */}
-                  <View style={{ gap: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>New Password</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#0F172A' }}>New Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#CBD5E1', borderRadius: 10, paddingHorizontal: 12, height: 44, backgroundColor: '#FAFAFC' }}>
                       <View style={{ marginRight: 8 }}>
-                        <Lock size={15} color="#94A3B8" />
+                        <Lock size={16} color="#94A3B8" />
                       </View>
                       <TextInput
                         secureTextEntry={!showNewPassword}
@@ -860,20 +863,20 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                         onChangeText={setNewPassword}
                         placeholder="At least 6 characters"
                         placeholderTextColor="#94A3B8"
-                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '500', fontSize: 13, color: '#0F172A' }}
                       />
                       <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-                        {showNewPassword ? <EyeOff size={15} color="#94A3B8" /> : <Eye size={15} color="#94A3B8" />}
+                        {showNewPassword ? <EyeOff size={16} color="#94A3B8" /> : <Eye size={16} color="#94A3B8" />}
                       </TouchableOpacity>
                     </View>
                   </View>
 
                   {/* Confirm Password */}
-                  <View style={{ gap: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>Confirm Password</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 10, height: 40, backgroundColor: '#FAFAFC' }}>
+                  <View style={{ gap: 6 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#0F172A' }}>Confirm Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#CBD5E1', borderRadius: 10, paddingHorizontal: 12, height: 44, backgroundColor: '#FAFAFC' }}>
                       <View style={{ marginRight: 8 }}>
-                        <Lock size={15} color="#94A3B8" />
+                        <Lock size={16} color="#94A3B8" />
                       </View>
                       <TextInput
                         secureTextEntry={!showConfirmPassword}
@@ -881,10 +884,10 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                         onChangeText={setConfirmPassword}
                         placeholder="Re-enter your password"
                         placeholderTextColor="#94A3B8"
-                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '600', fontSize: 12, color: '#0F172A' }}
+                        style={{ flex: 1, backgroundColor: 'transparent', fontWeight: '500', fontSize: 13, color: '#0F172A' }}
                       />
                       <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeOff size={15} color="#94A3B8" /> : <Eye size={15} color="#94A3B8" />}
+                        {showConfirmPassword ? <EyeOff size={16} color="#94A3B8" /> : <Eye size={16} color="#94A3B8" />}
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -892,10 +895,10 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                   <TouchableOpacity
                     onPress={handleResetPassword}
                     disabled={isSubmitting}
-                    style={{ width: '100%', height: 40, backgroundColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}
+                    style={{ width: '100%', height: 44, backgroundColor: '#FF5500', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
                   >
-                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 12, marginRight: 6 }}>{isSubmitting ? 'Updating...' : 'Reset Password'}</Text>
-                    <Check size={15} color="#FFFFFF" />
+                    <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 13, marginRight: 8 }}>{isSubmitting ? 'Updating...' : 'Reset Password'}</Text>
+                    <Check size={16} color="#FFFFFF" />
                   </TouchableOpacity>
                 </View>
               )}
