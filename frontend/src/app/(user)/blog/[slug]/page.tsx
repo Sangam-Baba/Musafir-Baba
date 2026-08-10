@@ -18,6 +18,7 @@ import { readingTime } from "@/utils/readingTime";
 import { Clock, Folders, Share2, User, Facebook, Twitter, Instagram, Linkedin, Trophy, Medal, Star } from "lucide-react";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getBlogSchema } from "@/lib/schema/blog.schema";
+import { getBlogAdditionalSchema } from "@/lib/schema/blogAdditionalSchema";
 import { notFound } from "next/navigation";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -157,13 +158,14 @@ export default async function BlogDetailPage({
   const breadcrumbSchema = getBreadcrumbSchema("blog/" + blog.slug);
   const blogSchema = getBlogSchema(
     blog.title,
-    blog.description,
+    blog.metaDescription || blog.excerpt || blog.content?.slice(0, 160),
     blog.slug,
     blog.coverImage?.url,
     blog.createdAt,
     blog.updatedAt,
     blog.author?.name,
   );
+  const additionalSchema = getBlogAdditionalSchema(blog.faqSchema, blog.reviewSchema);
 
   const headings = extractHeadings(blog.content || "");
   const contentWithIds = addIdsToHeadings(blog.content || "");
@@ -434,6 +436,13 @@ export default async function BlogDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {additionalSchema && (
+        <Script
+          id="blog-additional-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(additionalSchema).replace(/</g, "\\u003c") }}
+        />
+      )}
     </div>
   );
 }

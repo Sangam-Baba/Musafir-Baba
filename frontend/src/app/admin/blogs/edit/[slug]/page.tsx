@@ -36,6 +36,18 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Meta description is required." }),
   schemaType: z.array(z.string()).optional(),
+  faqSchema: z
+    .array(z.object({ question: z.string(), answer: z.string() }))
+    .optional(),
+  reviewSchema: z
+    .object({
+      itemName: z.string().optional(),
+      itemType: z.string().optional(),
+      ratingValue: z.number().optional(),
+      authorName: z.string().optional(),
+      reviewBody: z.string().optional(),
+    })
+    .optional(),
   canonicalUrl: z.string().optional(),
   keywords: z.array(z.string()),
   tags: z.array(z.string()).optional(),
@@ -167,6 +179,8 @@ export default function EditBlog() {
       metaDescription: "",
       canonicalUrl: "",
       schemaType: [],
+      faqSchema: [],
+      reviewSchema: { itemName: "", itemType: "Product", ratingValue: undefined, authorName: "", reviewBody: "" },
       keywords: [],
       tags: [],
       coverImage: { url: "", public_id: "", alt: "" },
@@ -183,6 +197,11 @@ export default function EditBlog() {
     name: "footerLinks",
   });
 
+  const faqSchemaArray = useFieldArray({
+    control: form.control,
+    name: "faqSchema",
+  });
+
   useEffect(() => {
     if (blog) {
       form.reset({
@@ -195,6 +214,8 @@ export default function EditBlog() {
         metaDescription: blog.metaDescription,
         canonicalUrl: blog.canonicalUrl,
         schemaType: Array.isArray(blog.schemaType) ? blog.schemaType : (blog.schemaType ? [blog.schemaType] : []),
+        faqSchema: blog.faqSchema ?? [],
+        reviewSchema: blog.reviewSchema ?? { itemName: "", itemType: "Product", ratingValue: undefined, authorName: "", reviewBody: "" },
         keywords: blog.keywords,
         tags: blog.tags,
         coverImage: blog.coverImage,
@@ -244,12 +265,15 @@ export default function EditBlog() {
             className="space-y-6"
           >
             <Tabs defaultValue="content" className="w-full">
-              <TabsList className="grid grid-cols-4 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
+              <TabsList className="grid grid-cols-5 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-6">
                 <TabsTrigger value="content" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Basic Detail
                 </TabsTrigger>
                 <TabsTrigger value="seo" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Media & SEO
+                </TabsTrigger>
+                <TabsTrigger value="structured" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                  Structured Data
                 </TabsTrigger>
                 <TabsTrigger value="org" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
                   Organization
@@ -411,6 +435,79 @@ export default function EditBlog() {
                           </span>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Structured Data Tab */}
+                <TabsContent value="structured" className="mt-0 space-y-6 animate-in fade-in-50 duration-200 max-w-2xl mx-auto">
+                  <div className="space-y-4 p-3 border border-slate-100 rounded-lg bg-slate-50/50">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">FAQ Schema</Label>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => faqSchemaArray.append({ question: "", answer: "" })}
+                        className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100"
+                      >
+                        + Add FAQ
+                      </Button>
+                    </div>
+                    <div className="grid gap-2">
+                      {faqSchemaArray.fields.map((field, index) => (
+                        <div key={field.id} className="flex gap-2 items-start bg-white p-2 rounded-lg border border-slate-100">
+                          <div className="flex-1 space-y-1.5">
+                            <Input {...form.register(`faqSchema.${index}.question`)} placeholder="Question" className="h-8 text-[12px] bg-white border-slate-200" />
+                            <Textarea {...form.register(`faqSchema.${index}.answer`)} placeholder="Answer" className="min-h-[60px] text-[12px] bg-white border-slate-200" />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => faqSchemaArray.remove(index)}
+                            className="text-slate-300 hover:text-red-400 h-8 w-8 shrink-0"
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                      ))}
+                      {faqSchemaArray.fields.length === 0 && (
+                        <p className="text-[11px] text-slate-400">No FAQ items added yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 p-3 border border-slate-100 rounded-lg bg-slate-50/50">
+                    <Label className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 ml-0.5">Review Schema</Label>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold text-slate-400 ml-0.5">Item Name</Label>
+                        <Input {...form.register("reviewSchema.itemName")} placeholder="e.g. Musafir Baba Kedarnath Package" className="h-8 text-[12px] bg-white border-slate-200" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold text-slate-400 ml-0.5">Item Type</Label>
+                        <Input {...form.register("reviewSchema.itemType")} placeholder="Product" className="h-8 text-[12px] bg-white border-slate-200" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold text-slate-400 ml-0.5">Rating (1-5)</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={5}
+                          {...form.register("reviewSchema.ratingValue", { valueAsNumber: true })}
+                          placeholder="5"
+                          className="h-8 text-[12px] bg-white border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold text-slate-400 ml-0.5">Author Name</Label>
+                        <Input {...form.register("reviewSchema.authorName")} placeholder="Reviewer name" className="h-8 text-[12px] bg-white border-slate-200" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[9px] font-bold text-slate-400 ml-0.5">Review Body</Label>
+                      <Textarea {...form.register("reviewSchema.reviewBody")} placeholder="Review text..." className="min-h-[70px] text-[12px] bg-white border-slate-200" />
                     </div>
                   </div>
                 </TabsContent>
