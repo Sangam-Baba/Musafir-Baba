@@ -64,6 +64,22 @@ const blogSchema = new mongoose.Schema(
     canonicalUrl: {
       type: String,
     },
+    // Dynamic FAQPage + Review structured data for this blog post, entered
+    // via the admin's "Structured Data" tab -- independent of schemaType
+    // below, which only ever drives the top-level BlogPosting @type.
+    faqSchema: [
+      {
+        question: { type: String },
+        answer: { type: String },
+      },
+    ],
+    reviewSchema: {
+      itemName: { type: String },
+      itemType: { type: String, default: "Product" },
+      ratingValue: { type: Number, min: 1, max: 5 },
+      authorName: { type: String },
+      reviewBody: { type: String },
+    },
     schemaType: [
       {
         type: String,

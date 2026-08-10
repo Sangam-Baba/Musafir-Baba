@@ -9,7 +9,7 @@ export const getBlogSchema = (
 ) => ({
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  heading: title,
+  headline: title,
   description: description,
   image: img || "https://musafirbaba.com/logo.svg",
   datePublished: createdAt,
