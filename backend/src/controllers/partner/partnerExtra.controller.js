@@ -2,8 +2,10 @@ import PartnerProfile from "../../models/partner/PartnerProfile.js";
 import PartnerVehicle from "../../models/partner/PartnerVehicle.js";
 import PartnerDriver from "../../models/partner/PartnerDriver.js";
 import PartnerBank from "../../models/partner/PartnerBank.js";
+import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
 import { RideBooking } from "../../models/RideBooking.js";
 import { Notification } from "../../models/Notification.js";
+import { cityMatches } from "../../controllers/ride.controller.js";
 import mongoose from "mongoose";
 
 // @desc    Toggle partner's active duty status (online/offline)
@@ -116,16 +118,41 @@ export const getAvailableRides = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found." });
     }
 
-    const categories = await PartnerVehicle.find({
+    // Offline partners shouldn't see the pool at all -- matches the "Go
+    // online to start receiving bookings" messaging already on Home.
+    if (!profile.isOnline) {
+      return res.status(200).json({ success: true, total: 0, data: [] });
+    }
+
+    const vehicles = await PartnerVehicle.find({
       partnerId: profile._id,
       status: "Active",
       isDeleted: false,
-    }).distinct("category");
+    }).lean();
+    const categories = [...new Set(vehicles.map((v) => v.category))];
 
-    const rides = await RideBooking.find({
+    const settings = await PartnerSettings.findOne({ authId: profile.authId }).lean();
+    const vehicleConfigByVehicleId = new Map(
+      (settings?.vehicleConfigs || []).map((c) => [String(c.vehicleId), c])
+    );
+
+    const candidateRides = await RideBooking.find({
       status: "AWAITING_ASSIGNMENT",
       vehicleCategory: { $in: categories },
     }).sort({ createdAt: -1 });
+
+    // A ride is only shown if at least one of this partner's active vehicles
+    // of the matching category has a configured working location covering
+    // the ride's pickup city -- same servicability rule computeCategoryOffers
+    // already uses for fare quotes.
+    const rides = candidateRides.filter((ride) => {
+      const matchingVehicles = vehicles.filter((v) => v.category === ride.vehicleCategory);
+      return matchingVehicles.some((vehicle) => {
+        const vehicleConfig = vehicleConfigByVehicleId.get(String(vehicle._id));
+        if (!vehicleConfig) return false;
+        return (vehicleConfig.locations || []).some((loc) => cityMatches(ride.pickup.address, loc.city));
+      });
+    });
 
     const data = rides.map((ride) => ({
       id: String(ride._id),

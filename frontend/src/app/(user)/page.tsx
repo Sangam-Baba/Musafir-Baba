@@ -1,8 +1,14 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { Users, Star, Briefcase, Globe, Search, ChevronDown } from "lucide-react";
+
+export const metadata: Metadata = {
+  description:
+    "Planning your next trip? Call MusafirBaba - Best travel agency in India for holiday packages, visa assistance, car rentals & flight, bus or hotel bookings",
+};
 
 // ─── Critical above-the-fold: direct imports (Server Components) ───────────
 import SecondSectionServer from "@/components/custom/SecondSectionServer";

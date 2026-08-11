@@ -22,6 +22,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface RideBooking {
   _id: string;
@@ -36,6 +45,25 @@ interface RideBooking {
   totalAmount: number;
   status: string;
   createdAt: string;
+  needsManualAssignment?: boolean;
+}
+
+interface EligibleVehicle {
+  vehicleId: string;
+  category: string;
+  vehicleName: string;
+  registrationNumber: string;
+}
+
+interface EligiblePartner {
+  partnerId: string;
+  fullName: string;
+  mobileNumber: string;
+  isOnline: boolean;
+  vehicles: EligibleVehicle[];
+  workingCities: string[];
+  matchesCategory: boolean;
+  matchesLocation: boolean;
 }
 
 interface RidesApiResponse {
@@ -81,6 +109,25 @@ const getRides = async (accessToken: string, status: string) => {
   return res.json();
 };
 
+interface PartnerPickerFilters {
+  category: string;
+  city: string;
+  onlineOnly: boolean;
+}
+
+const getEligiblePartners = async (accessToken: string, rideId: string, filters: PartnerPickerFilters) => {
+  const params = new URLSearchParams();
+  if (filters.category) params.set("category", filters.category);
+  if (filters.city) params.set("city", filters.city);
+  if (filters.onlineOnly) params.set("onlineOnly", "true");
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/rides/${rideId}/eligible-partners${query}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error("Failed to load eligible partners");
+  return res.json() as Promise<{ success: boolean; total: number; data: EligiblePartner[] }>;
+};
+
 function RideBookingsPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const permissions = useAdminAuthStore((state) => state.permissions) as string[];
@@ -89,6 +136,14 @@ function RideBookingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [actingOnId, setActingOnId] = useState<string | null>(null);
 
+  // Manual partner picker (Release / Reassign now open this instead of
+  // blindly broadcasting) -- see docs discussion: admin picks who gets
+  // notified/assigned rather than the pool auto-selecting.
+  const [pickerRideId, setPickerRideId] = useState<string | null>(null);
+  const [pickerFilters, setPickerFilters] = useState<PartnerPickerFilters>({ category: "", city: "", onlineOnly: false });
+  const [selectedPartnerIds, setSelectedPartnerIds] = useState<Set<string>>(new Set());
+  const [isPickerActing, setIsPickerActing] = useState(false);
+
   const { data, isLoading, isError, error } = useQuery<RidesApiResponse>({
     queryKey: ["adminRideBookings", statusFilter],
     queryFn: () => getRides(accessToken, statusFilter),
@@ -96,6 +151,14 @@ function RideBookingsPage() {
   });
 
   const rides = data?.data ?? [];
+  const pickerRide = rides.find((r) => r._id === pickerRideId) || null;
+
+  const { data: eligibleData, isLoading: isLoadingEligible } = useQuery({
+    queryKey: ["eligiblePartners", pickerRideId, pickerFilters],
+    queryFn: () => getEligiblePartners(accessToken, pickerRideId as string, pickerFilters),
+    enabled: !!pickerRideId,
+  });
+  const eligiblePartners = eligibleData?.data ?? [];
 
   const stats = {
     total: data?.total ?? 0,
@@ -135,9 +198,98 @@ function RideBookingsPage() {
     }
   };
 
-  const handleRelease = (id: string) => callAction(id, "/release", "POST", undefined, "Ride released to eligible partners");
-  const handleReassign = (id: string) => callAction(id, "/reassign", "PATCH", undefined, "Ride moved back to the partner pool");
+  const openPicker = (id: string) => {
+    setPickerFilters({ category: "", city: "", onlineOnly: false });
+    setSelectedPartnerIds(new Set());
+    setPickerRideId(id);
+  };
+
+  // Release: ride is already PAID/AWAITING_ASSIGNMENT, so the picker can
+  // open directly -- no auto-broadcast happens anymore, admin chooses.
+  const handleRelease = (id: string) => openPicker(id);
+
+  // Reassign: clears the current partner/vehicle assignment and puts the
+  // ride back in the pool (no auto-broadcast -- see reassignRide backend),
+  // then opens the same picker so the admin chooses who's next.
+  const handleReassign = async (id: string) => {
+    setActingOnId(id);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/rides/${id}/reassign`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        queryClient.invalidateQueries({ queryKey: ["adminRideBookings"] });
+        openPicker(id);
+      } else {
+        toast.error(result.message || "Could not clear assignment");
+      }
+    } catch {
+      toast.error("Action failed, please try again");
+    } finally {
+      setActingOnId(null);
+    }
+  };
+
   const handleCancel = (id: string) => callAction(id, "/cancel", "PATCH", { reason: "Cancelled by admin" }, "Ride cancelled");
+
+  const togglePartnerSelected = (partnerId: string) => {
+    setSelectedPartnerIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(partnerId)) next.delete(partnerId);
+      else next.add(partnerId);
+      return next;
+    });
+  };
+
+  const handleBroadcastSelected = async () => {
+    if (!pickerRideId || selectedPartnerIds.size === 0) return;
+    setIsPickerActing(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/rides/${pickerRideId}/broadcast`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ partnerIds: [...selectedPartnerIds] }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        toast.success(result.message || "Broadcast sent");
+        queryClient.invalidateQueries({ queryKey: ["adminRideBookings"] });
+        setPickerRideId(null);
+      } else {
+        toast.error(result.message || "Broadcast failed");
+      }
+    } catch {
+      toast.error("Broadcast failed, please try again");
+    } finally {
+      setIsPickerActing(false);
+    }
+  };
+
+  const handleAssignDirect = async (partnerId: string, vehicleId: string) => {
+    if (!pickerRideId) return;
+    setIsPickerActing(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/rides/${pickerRideId}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ partnerId, vehicleId }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        toast.success(result.message || "Ride assigned");
+        queryClient.invalidateQueries({ queryKey: ["adminRideBookings"] });
+        setPickerRideId(null);
+      } else {
+        toast.error(result.message || "Assignment failed");
+      }
+    } catch {
+      toast.error("Assignment failed, please try again");
+    } finally {
+      setIsPickerActing(false);
+    }
+  };
 
   if (!(role === "admin" || role === "superadmin" || permissions.includes("partner-verification"))) {
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
@@ -257,9 +409,14 @@ function RideBookingsPage() {
                       </TableCell>
 
                       <TableCell>
-                        <Badge className={`${getRideStatusColor(ride.status)} border-0`}>
-                          {ride.status.replace(/_/g, " ")}
-                        </Badge>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Badge className={`${getRideStatusColor(ride.status)} border-0`}>
+                            {ride.status.replace(/_/g, " ")}
+                          </Badge>
+                          {ride.needsManualAssignment && (
+                            <Badge className="bg-red-100 text-red-800 border-0">Needs Attention</Badge>
+                          )}
+                        </div>
                       </TableCell>
 
                       <TableCell className="text-slate-700 dark:text-slate-300">
@@ -318,6 +475,111 @@ function RideBookingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Sheet open={!!pickerRideId} onOpenChange={(open) => !open && setPickerRideId(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Assign Partner</SheetTitle>
+            <SheetDescription>
+              {pickerRide
+                ? `${pickerRide.pickup?.address} → ${pickerRide.drop?.address} • ${pickerRide.vehicleCategory} • ₹${Number(pickerRide.totalAmount ?? 0).toLocaleString("en-IN")}`
+                : "Select partners to notify, or assign one directly."}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="px-4 pb-6 space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={pickerFilters.category}
+                onChange={(e) => setPickerFilters((f) => ({ ...f, category: e.target.value }))}
+                className="rounded-md border px-3 py-2 bg-white text-sm"
+              >
+                <option value="">Any Category</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Tempo Traveller">Tempo Traveller</option>
+              </select>
+              <Input
+                placeholder="Filter by city..."
+                value={pickerFilters.city}
+                onChange={(e) => setPickerFilters((f) => ({ ...f, city: e.target.value }))}
+                className="text-sm"
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <Checkbox
+                checked={pickerFilters.onlineOnly}
+                onCheckedChange={(checked) => setPickerFilters((f) => ({ ...f, onlineOnly: checked === true }))}
+              />
+              Online partners only
+            </label>
+
+            <div className="border rounded-lg divide-y max-h-[50vh] overflow-y-auto">
+              {isLoadingEligible ? (
+                <div className="flex justify-center py-8">
+                  <Loader size="sm" message="Loading partners..." />
+                </div>
+              ) : eligiblePartners.length === 0 ? (
+                <p className="text-sm text-slate-500 p-4">No partners match these filters.</p>
+              ) : (
+                eligiblePartners.map((partner) => {
+                  const matchingVehicles = partner.vehicles.filter((v) => v.category === pickerRide?.vehicleCategory);
+                  return (
+                    <div key={partner.partnerId} className="p-3 flex flex-col gap-2">
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          checked={selectedPartnerIds.has(partner.partnerId)}
+                          onCheckedChange={() => togglePartnerSelected(partner.partnerId)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-slate-900 dark:text-white">{partner.fullName}</p>
+                            <Badge className={`${partner.isOnline ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"} border-0`}>
+                              {partner.isOnline ? "Online" : "Offline"}
+                            </Badge>
+                            {partner.matchesCategory && <Badge className="bg-sky-100 text-sky-800 border-0">Category ✓</Badge>}
+                            {partner.matchesLocation && <Badge className="bg-violet-100 text-violet-800 border-0">Location ✓</Badge>}
+                          </div>
+                          <p className="text-xs text-slate-500">{partner.mobileNumber}</p>
+                          <p className="text-xs text-slate-400 truncate">
+                            {partner.vehicles.map((v) => `${v.category} (${v.registrationNumber})`).join(", ")}
+                          </p>
+                        </div>
+                      </div>
+                      {matchingVehicles.length > 0 && (
+                        <div className="flex gap-2 flex-wrap pl-7">
+                          {matchingVehicles.map((v) => (
+                            <Button
+                              key={v.vehicleId}
+                              size="sm"
+                              variant="outline"
+                              disabled={isPickerActing}
+                              onClick={() => handleAssignDirect(partner.partnerId, v.vehicleId)}
+                              className="text-xs h-7"
+                            >
+                              Assign {v.vehicleName} ({v.registrationNumber})
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <Button
+              className="w-full bg-[#FE5300] hover:bg-[#FE5300]"
+              disabled={selectedPartnerIds.size === 0 || isPickerActing}
+              onClick={handleBroadcastSelected}
+            >
+              {isPickerActing ? "Working..." : `Broadcast to Selected (${selectedPartnerIds.size})`}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </main>
   );
 }

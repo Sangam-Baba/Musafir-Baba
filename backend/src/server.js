@@ -6,6 +6,7 @@ import "./config/mongoosePluginInit.js"; // Attach global database Audit tracker
 import connectDb from "./config/db.js";
 import app from "./app.js";
 import { startMembershipExpiryCron } from "./services/membershipUpdate.service.js";
+import { startRideBroadcastExpiryCron } from "./services/rideBroadcastExpiry.service.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -19,6 +20,9 @@ app.get("/", (req, res) => {
 
 // Start membership expiry cron
 startMembershipExpiryCron();
+
+// Start ride broadcast expiry cron
+startRideBroadcastExpiryCron();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

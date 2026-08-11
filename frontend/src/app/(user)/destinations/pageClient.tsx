@@ -102,7 +102,7 @@ function DestinationPageClient({
   <li>Family-friendly destinations with comfort and safety</li>
   <li>Honeymoon destinations offering privacy and romance</li>
   <li>Group tour destinations with shared experiences</li>
-  <li>Backpacking regions for budget-conscious explorers</li>
+  <li><a href="https://musafirbaba.com/blog/backpacking-trip-destinations">Backpacking regions</a> for budget-conscious explorers</li>
   <li>Religious destinations for spiritual journeys</li>
 </ul>
 

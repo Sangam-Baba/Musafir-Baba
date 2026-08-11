@@ -6,7 +6,7 @@ import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
 import { VehicleBooking } from "../models/VehicleBooking.js";
 import { VisaApplication } from "../models/VisaApplication.js";
 import { RideBooking } from "../models/RideBooking.js";
-import { releaseRideToPartnerPool } from "./ride.controller.js";
+import { releaseRideToPartnerPool, getBroadcastExpiry } from "./ride.controller.js";
 import RiderProfile from "../models/rider/RiderProfile.js";
 import RiderAuth from "../models/rider/RiderAuth.js";
 
@@ -806,6 +806,8 @@ export const verifyRideSuccessPayment = async (req, res) => {
     {
       paymentInfo: { txnid, mihpayid, hash, status: "Paid" },
       status: "AWAITING_ASSIGNMENT",
+      broadcastExpiresAt: getBroadcastExpiry(),
+      needsManualAssignment: false,
       $push: {
         statusHistory: [{ status: "PAID" }, { status: "AWAITING_ASSIGNMENT" }],
       },
