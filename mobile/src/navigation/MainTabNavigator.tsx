@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from './types';
@@ -7,10 +7,27 @@ import { BookingsScreen } from '../screens/BookingsScreen';
 import { EarningsScreen } from '../screens/EarningsScreen';
 import { InboxScreen } from '../screens/InboxScreen';
 import { ProfileStack } from './ProfileStack';
+import { useAuthStore } from '../store/useAuthStore';
+import { API_BASE_URL } from '../utils/config';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabNavigator = () => {
+  const token = useAuthStore((state) => state.token);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API_BASE_URL}/partner/notifications`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) setUnreadCount(result.unreadCount ?? 0);
+      })
+      .catch((error) => console.error('Error fetching unread count:', error));
+  }, [token]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -73,7 +90,7 @@ export const MainTabNavigator = () => {
       <Tab.Screen
         name="Inbox"
         component={InboxScreen}
-        options={{ title: 'Inbox', tabBarBadge: 3, tabBarBadgeStyle: { backgroundColor: '#ef4444', fontSize: 10, fontWeight: '800' } }}
+        options={{ title: 'Inbox', tabBarBadge: unreadCount > 0 ? unreadCount : undefined, tabBarBadgeStyle: { backgroundColor: '#ef4444', fontSize: 10, fontWeight: '800' } }}
       />
       <Tab.Screen
         name="Menu"

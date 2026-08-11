@@ -105,6 +105,10 @@ export const InboxScreen = () => {
       case 'Payout': return { icon: 'wallet', color: '#16a34a', bg: '#dcfce7' };
       case 'Document': return { icon: 'document-text', color: '#b45309', bg: '#fef3c7' };
       case 'System': return { icon: 'notifications', color: '#0284c7', bg: '#e0f2fe' };
+      // Backend's Notification model also allows "Ride"/"Payment"/"General" --
+      // no current code creates those for partners, but this fallback keeps
+      // the screen from crashing if one ever shows up.
+      default: return { icon: 'notifications', color: '#64748b', bg: '#f1f5f9' };
     }
   };
 
