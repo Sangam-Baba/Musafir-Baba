@@ -5,9 +5,9 @@ import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Visa Services You Can Trust | Expert Guidance | Musafirbaba",
+  title: "Tourist Visa Services for 180+ Countries | MusafirBaba",
   description:
-    "Need visa help? Musafirbaba offers smooth processing for tourist, work & business visa. Quick, reliable service for Schengen, USA, UK & More.",
+    "Get Tourist Visa Services for 180+ countries with MusafirBaba – Japan, Singapore, Schengen, Hong Kong & more. Fast processing, trusted assistance!",
   alternates: {
     canonical: "https://musafirbaba.com/visa",
   },

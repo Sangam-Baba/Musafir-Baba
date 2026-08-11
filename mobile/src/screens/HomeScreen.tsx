@@ -8,7 +8,9 @@ import {
   ActivityIndicator, 
   TouchableOpacity, 
   Alert,
-  Modal 
+  Modal,
+  Image,
+  Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
@@ -16,6 +18,25 @@ import { API_BASE_URL } from '../utils/config';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../navigation/types';
+
+const BANNER_IMAGES = [
+  require('../../design/bannerImages/mbcb1.jpeg'),
+  require('../../design/bannerImages/mbcb2.jpeg'),
+  require('../../design/bannerImages/mbcb3.jpeg'),
+  require('../../design/bannerImages/mbcb4.jpeg'),
+  require('../../design/bannerImages/mbcb5.jpeg'),
+  require('../../design/bannerImages/mbcb6.jpeg'),
+  require('../../design/bannerImages/mbcb7.jpeg'),
+  require('../../design/bannerImages/mbcb8.jpeg'),
+  require('../../design/bannerImages/mbcb9.jpeg'),
+];
+
+// Infinite loop array: [Last Image Clone, ...Original Images, First Image Clone]
+const INFINITE_BANNER_IMAGES = [
+  BANNER_IMAGES[BANNER_IMAGES.length - 1],
+  ...BANNER_IMAGES,
+  BANNER_IMAGES[0],
+];
 
 type DashboardData = {
   profile?: any;
@@ -37,6 +58,66 @@ export const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Banner Carousel State (1-indexed for Infinite Loop)
+  const bannerRef = React.useRef<ScrollView>(null);
+  const [currentIndex, setCurrentIndex] = useState(1);
+
+  // Initial scroll position setup to index 1 (First real image)
+  useEffect(() => {
+    const cardWidth = Dimensions.get('window').width - 32;
+    if (bannerRef.current) {
+      bannerRef.current.scrollTo({ x: cardWidth, animated: false });
+    }
+  }, []);
+
+  // Smooth Infinite Auto-scroll
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const cardWidth = Dimensions.get('window').width - 32;
+      if (bannerRef.current && cardWidth > 0) {
+        setCurrentIndex((prevIndex) => {
+          const nextIndex = prevIndex + 1;
+          bannerRef.current?.scrollTo({ x: nextIndex * cardWidth, animated: true });
+
+          // Seamless reset when transitioning past the last real image
+          if (nextIndex >= INFINITE_BANNER_IMAGES.length - 1) {
+            setTimeout(() => {
+              bannerRef.current?.scrollTo({ x: 1 * cardWidth, animated: false });
+              setCurrentIndex(1);
+            }, 350);
+          }
+          return nextIndex;
+        });
+      }
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleBannerScroll = (event: any) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const cardWidth = Dimensions.get('window').width - 32;
+    if (cardWidth <= 0) return;
+
+    let index = Math.round(contentOffsetX / cardWidth);
+
+    // If scrolled to end clone (index 10), instantly jump to real index 1
+    if (index >= INFINITE_BANNER_IMAGES.length - 1) {
+      index = 1;
+      bannerRef.current?.scrollTo({ x: 1 * cardWidth, animated: false });
+    }
+    // If scrolled to start clone (index 0), instantly jump to real index 9
+    else if (index <= 0) {
+      index = BANNER_IMAGES.length;
+      bannerRef.current?.scrollTo({ x: BANNER_IMAGES.length * cardWidth, animated: false });
+    }
+
+    setCurrentIndex(index);
+  };
+
+  // Calculate active pagination dot index (0 to 8)
+  const activeDotIndex = (currentIndex - 1 + BANNER_IMAGES.length) % BANNER_IMAGES.length;
 
   const token = useAuthStore((state) => state.token);
   const logout = useAuthStore((state) => state.logout);
@@ -138,7 +219,10 @@ export const HomeScreen = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FE5300" />}
         showsVerticalScrollIndicator={false}
       >
-        {/* Today's Overview Section */}
+        {/* =========================================================
+            TODAY'S OVERVIEW SECTION (Commented out as requested - preserved for future use)
+           ========================================================= */}
+        {/* 
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>Today's Overview</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Earnings')}>
@@ -151,59 +235,94 @@ export const HomeScreen = () => {
 
         <View style={styles.darkOverviewCard}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 8 }}>
-              {/* Today's Earnings */}
-            <View style={styles.overviewCol}>
-              <View style={[styles.metricIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.2)' }]}>
-                <Text style={{ color: '#4ade80', fontWeight: '900', fontSize: 16 }}>₹</Text>
+              <View style={styles.overviewCol}>
+                <View style={[styles.metricIconBox, { backgroundColor: 'rgba(34, 197, 94, 0.2)' }]}>
+                  <Text style={{ color: '#4ade80', fontWeight: '900', fontSize: 16 }}>₹</Text>
+                </View>
+                <Text style={styles.metricValText}>₹0</Text>
+                <Text style={styles.metricLabelText}>Today's Earnings</Text>
+                <View style={styles.metricGrowthRow}>
+                  <Ionicons name="trending-up" size={12} color="#4ade80" />
+                  <Text style={styles.growthGreen}>0% <Text style={styles.growthSub}>vs yesterday</Text></Text>
+                </View>
               </View>
-              <Text style={styles.metricValText}>₹0</Text>
-              <Text style={styles.metricLabelText}>Today's Earnings</Text>
-              <View style={styles.metricGrowthRow}>
-                <Ionicons name="trending-up" size={12} color="#4ade80" />
-                <Text style={styles.growthGreen}>0% <Text style={styles.growthSub}>vs yesterday</Text></Text>
-              </View>
-            </View>
 
-            {/* Trips Today */}
-            <View style={[styles.overviewCol, styles.colBorder]}>
-              <View style={[styles.metricIconBox, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>
-                <Ionicons name="car-sport" size={16} color="#60a5fa" />
+              <View style={[styles.overviewCol, styles.colBorder]}>
+                <View style={[styles.metricIconBox, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>
+                  <Ionicons name="car-sport" size={16} color="#60a5fa" />
+                </View>
+                <Text style={styles.metricValText}>0</Text>
+                <Text style={styles.metricLabelText}>Trips Today</Text>
+                <View style={styles.metricGrowthRow}>
+                  <Ionicons name="trending-up" size={12} color="#4ade80" />
+                  <Text style={styles.growthGreen}>0% <Text style={styles.growthSub}>vs yesterday</Text></Text>
+                </View>
               </View>
-              <Text style={styles.metricValText}>0</Text>
-              <Text style={styles.metricLabelText}>Trips Today</Text>
-              <View style={styles.metricGrowthRow}>
-                <Ionicons name="trending-up" size={12} color="#4ade80" />
-                <Text style={styles.growthGreen}>0% <Text style={styles.growthSub}>vs yesterday</Text></Text>
-              </View>
-            </View>
 
-            {/* Acceptance Rate */}
-            <View style={[styles.overviewCol, styles.colBorder]}>
-              <View style={[styles.metricIconBox, { backgroundColor: 'rgba(168, 85, 247, 0.2)' }]}>
-                <Ionicons name="trending-up" size={16} color="#c084fc" />
+              <View style={[styles.overviewCol, styles.colBorder]}>
+                <View style={[styles.metricIconBox, { backgroundColor: 'rgba(168, 85, 247, 0.2)' }]}>
+                  <Ionicons name="trending-up" size={16} color="#c084fc" />
+                </View>
+                <Text style={styles.metricValText}>98%</Text>
+                <Text style={styles.metricLabelText}>Acceptance Rate</Text>
+                <View style={styles.metricGrowthRow}>
+                  <Ionicons name="trending-up" size={12} color="#4ade80" />
+                  <Text style={styles.growthGreen}>2% <Text style={styles.growthSub}>vs last 7 days</Text></Text>
+                </View>
               </View>
-              <Text style={styles.metricValText}>98%</Text>
-              <Text style={styles.metricLabelText}>Acceptance Rate</Text>
-              <View style={styles.metricGrowthRow}>
-                <Ionicons name="trending-up" size={12} color="#4ade80" />
-                <Text style={styles.growthGreen}>2% <Text style={styles.growthSub}>vs last 7 days</Text></Text>
-              </View>
-            </View>
 
-            {/* Your Rating */}
-            <View style={[styles.overviewCol, styles.colBorder]}>
-              <View style={[styles.metricIconBox, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
-                <Ionicons name="star" size={16} color="#fbbf24" />
+              <View style={[styles.overviewCol, styles.colBorder]}>
+                <View style={[styles.metricIconBox, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+                  <Ionicons name="star" size={16} color="#fbbf24" />
+                </View>
+                <Text style={styles.metricValText}>4.9 ★</Text>
+                <Text style={styles.metricLabelText}>Your Rating</Text>
+                <View style={styles.metricGrowthRow}>
+                  <Ionicons name="trending-up" size={12} color="#4ade80" />
+                  <Text style={styles.growthGreen}>0.1 <Text style={styles.growthSub}>vs last 7 days</Text></Text>
+                </View>
               </View>
-              <Text style={styles.metricValText}>4.9 ★</Text>
-              <Text style={styles.metricLabelText}>Your Rating</Text>
-              <View style={styles.metricGrowthRow}>
-                <Ionicons name="trending-up" size={12} color="#4ade80" />
-                <Text style={styles.growthGreen}>0.1 <Text style={styles.growthSub}>vs last 7 days</Text></Text>
-              </View>
-            </View>
             </ScrollView>
           </View>
+        */}
+
+        {/* =========================================================
+            BANNER CAROUSEL SECTION (Full-view images, Infinite Smooth Loop)
+           ========================================================= */}
+        <View style={styles.carouselContainer}>
+          <ScrollView
+            ref={bannerRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleBannerScroll}
+            scrollEventThrottle={16}
+            contentOffset={{ x: Dimensions.get('window').width - 32, y: 0 }}
+          >
+            {INFINITE_BANNER_IMAGES.map((imgSource, index) => (
+              <View key={index} style={styles.bannerSlide}>
+                <Image 
+                  source={imgSource} 
+                  style={styles.bannerImage}
+                  resizeMode="contain"
+                />
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* Carousel Pagination Dots below the image */}
+          <View style={styles.paginationDotsContainer}>
+            {BANNER_IMAGES.map((_, dotIdx) => (
+              <View
+                key={dotIdx}
+                style={[
+                  styles.dotItem,
+                  activeDotIndex === dotIdx ? styles.activeDotItem : styles.inactiveDotItem
+                ]}
+              />
+            ))}
+          </View>
+        </View>
 
         {/* Quick Actions Grid */}
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Quick Actions</Text>
@@ -577,4 +696,37 @@ const styles = StyleSheet.create({
   modalVal: { fontSize: 12, fontWeight: '800', color: '#0f172a' },
   confirmModalBtn: { backgroundColor: '#FE5300', borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
   confirmModalBtnText: { color: '#ffffff', fontSize: 14, fontWeight: '800' },
+  carouselContainer: {
+    width: '100%',
+    marginBottom: 4,
+  },
+  bannerSlide: {
+    width: Dimensions.get('window').width - 32,
+    height: Math.round((Dimensions.get('window').width - 32) / 1.5),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  paginationDotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  dotItem: {
+    height: 6,
+    borderRadius: 3,
+  },
+  activeDotItem: {
+    width: 20,
+    backgroundColor: '#FE5300',
+  },
+  inactiveDotItem: {
+    width: 6,
+    backgroundColor: '#cbd5e1',
+  },
 });

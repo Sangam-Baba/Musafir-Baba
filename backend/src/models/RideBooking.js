@@ -77,6 +77,12 @@ const rideBookingSchema = new mongoose.Schema(
       default: "PAYMENT_PENDING",
     },
     statusHistory: { type: [statusHistorySchema], default: [] },
+    // When the ride enters AWAITING_ASSIGNMENT, this is set to 10 minutes out --
+    // a cron job flags needsManualAssignment once it passes without anyone
+    // accepting, so the ride surfaces for admin attention. Neither field
+    // changes ride status or blocks partners from still self-accepting.
+    broadcastExpiresAt: { type: Date },
+    needsManualAssignment: { type: Boolean, default: false },
     assignedPartnerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PartnerProfile",

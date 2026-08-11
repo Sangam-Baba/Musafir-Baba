@@ -11,6 +11,14 @@ import { sendPushNotification } from "../utils/notifications.js";
 const FLAT_DRIVER_ALLOWANCE = 100;
 const DEFAULT_COMMISSION_PERCENT = 15;
 
+// How long a ride sits in the auto-broadcast pool before a cron job flags it
+// as needing admin attention (see startBroadcastExpiryCron). Shared so every
+// place that puts a ride into AWAITING_ASSIGNMENT sets the same window.
+export const BROADCAST_WINDOW_MINUTES = 10;
+export function getBroadcastExpiry() {
+  return new Date(Date.now() + BROADCAST_WINDOW_MINUTES * 60 * 1000);
+}
+
 // Hardcoded placeholder data used only when no real, active PartnerVehicle
 // serves a category for the requested route -- keeps the rider from hitting
 // a dead-end "no vehicles" search on routes/cities without onboarded
@@ -33,7 +41,7 @@ async function getRiderProfileId(req) {
 }
 
 // Matches a free-text address like "New Delhi, Delhi" against a serviceable city name.
-function cityMatches(address, city) {
+export function cityMatches(address, city) {
   if (!address || !city) return false;
   return address.toLowerCase().includes(city.toLowerCase());
 }
@@ -330,8 +338,47 @@ export async function releaseRideToPartnerPool(ride) {
   }).lean();
 
   const partnerIds = [...new Set(vehicles.map((v) => String(v.partnerId)))];
-  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds } }).lean();
+  // Only online partners get pinged -- an offline partner can't act on the
+  // notification anyway, and this is the same isOnline field the app's own
+  // "Go Online/Offline" toggle already maintains.
+  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds }, isOnline: true }).lean();
 
+  const authIds = profiles.map((p) => String(p.authId));
+  const settingsList = authIds.length
+    ? await PartnerSettings.find({ authId: { $in: authIds } }).lean()
+    : [];
+  const settingsByAuthId = new Map(settingsList.map((s) => [String(s.authId), s]));
+
+  const vehiclesByPartnerId = new Map();
+  for (const v of vehicles) {
+    const key = String(v.partnerId);
+    if (!vehiclesByPartnerId.has(key)) vehiclesByPartnerId.set(key, []);
+    vehiclesByPartnerId.get(key).push(v);
+  }
+
+  // Also require the partner to have a category-matching vehicle whose
+  // configured working location covers this ride's pickup city -- the same
+  // servicability check computeCategoryOffers already uses for fare quotes.
+  const eligibleProfiles = profiles.filter((profile) => {
+    const settings = settingsByAuthId.get(String(profile.authId));
+    if (!settings) return false;
+    const partnerVehicles = vehiclesByPartnerId.get(String(profile._id)) || [];
+    return partnerVehicles.some((vehicle) => {
+      const vehicleConfig = (settings.vehicleConfigs || []).find(
+        (c) => String(c.vehicleId) === String(vehicle._id)
+      );
+      if (!vehicleConfig) return false;
+      return (vehicleConfig.locations || []).some((loc) => cityMatches(ride.pickup.address, loc.city));
+    });
+  });
+
+  await notifyPartnersAboutRide(ride, eligibleProfiles);
+}
+
+// Shared notify step used both by the automatic pool broadcast above and by
+// the admin's manual "broadcast to selected partners" action -- same
+// notification content either way, just a different partner list feeding in.
+export async function notifyPartnersAboutRide(ride, profiles) {
   for (const profile of profiles) {
     await Notification.create({
       recipientType: "Partner",
