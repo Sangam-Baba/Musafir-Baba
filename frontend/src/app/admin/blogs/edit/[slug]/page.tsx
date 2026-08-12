@@ -495,7 +495,9 @@ export default function EditBlog() {
                           type="number"
                           min={1}
                           max={5}
-                          {...form.register("reviewSchema.ratingValue", { valueAsNumber: true })}
+                          {...form.register("reviewSchema.ratingValue", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                          })}
                           placeholder="5"
                           className="h-8 text-[12px] bg-white border-slate-200"
                         />
