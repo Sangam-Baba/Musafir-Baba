@@ -1,11 +1,10 @@
 import { RideBooking } from "../models/RideBooking.js";
-import { Notification } from "../models/Notification.js";
 import RiderProfile from "../models/rider/RiderProfile.js";
 import PartnerProfile from "../models/partner/PartnerProfile.js";
 import PartnerVehicle from "../models/partner/PartnerVehicle.js";
 import { PartnerSettings } from "../models/partner/PartnerSettings.js";
 import { releaseRideToPartnerPool, notifyPartnersAboutRide, getBroadcastExpiry, cityMatches } from "./ride.controller.js";
-import { sendPushNotification } from "../utils/notifications.js";
+import { notifyUser } from "../services/notification/notificationService.js";
 
 // @route   GET /api/admin/rides
 // @desc    List ride bookings for the admin management view, optionally filtered by status
@@ -215,22 +214,15 @@ export const assignRideToPartner = async (req, res) => {
     ride.statusHistory.push({ status: "ACCEPTED", note: `Directly assigned by admin to partner ${profile._id}` });
     await ride.save();
 
-    await Notification.create({
+    await notifyUser({
       recipientType: "Partner",
       recipientId: profile._id,
       title: "Ride assigned to you",
       message: `${ride.pickup.address} → ${ride.drop.address} • ₹${ride.totalAmount}`,
       type: "Trip",
       data: { rideId: ride._id },
+      pushToken: profile.pushToken,
     });
-    if (profile.pushToken) {
-      await sendPushNotification(
-        profile.pushToken,
-        "Ride assigned to you",
-        `${ride.pickup.address} → ${ride.drop.address} • ₹${ride.totalAmount}`,
-        { rideId: String(ride._id) }
-      );
-    }
 
     return res.status(200).json({ success: true, message: "Ride assigned" });
   } catch (error) {
@@ -279,6 +271,8 @@ export const reassignRide = async (req, res) => {
       return res.status(404).json({ success: false, message: "Ride not found" });
     }
 
+    const previousPartnerId = ride.assignedPartnerId;
+
     ride.assignedPartnerId = undefined;
     ride.assignedVehicleId = undefined;
     ride.assignedDriverId = undefined;
@@ -287,6 +281,21 @@ export const reassignRide = async (req, res) => {
     ride.needsManualAssignment = false;
     ride.statusHistory.push({ status: "AWAITING_ASSIGNMENT", note: "Reassigned by admin" });
     await ride.save();
+
+    if (previousPartnerId) {
+      const previousPartner = await PartnerProfile.findById(previousPartnerId);
+      if (previousPartner) {
+        await notifyUser({
+          recipientType: "Partner",
+          recipientId: previousPartner._id,
+          title: "Ride reassigned",
+          message: `The ride from ${ride.pickup.address} to ${ride.drop.address} has been reassigned by support.`,
+          type: "Trip",
+          data: { rideId: ride._id },
+          pushToken: previousPartner.pushToken,
+        });
+      }
+    }
 
     return res.status(200).json({ success: true, message: "Assignment cleared, ride is back in the pool" });
   } catch (error) {
@@ -310,22 +319,15 @@ export const adminCancelRide = async (req, res) => {
 
     const riderProfile = await RiderProfile.findById(ride.rider);
     if (riderProfile) {
-      await Notification.create({
+      await notifyUser({
         recipientType: "Rider",
         recipientId: riderProfile._id,
         title: "Ride cancelled",
         message: `Your ride from ${ride.pickup.address} to ${ride.drop.address} was cancelled by support.`,
         type: "Ride",
         data: { rideId: ride._id },
+        pushToken: riderProfile.pushToken,
       });
-      if (riderProfile.pushToken) {
-        await sendPushNotification(
-          riderProfile.pushToken,
-          "Ride cancelled",
-          `Your ride from ${ride.pickup.address} to ${ride.drop.address} was cancelled by support.`,
-          { rideId: String(ride._id) }
-        );
-      }
     }
 
     return res.status(200).json({ success: true, message: "Ride cancelled" });

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../store/useAuthStore';
-import { API_BASE_URL } from '../utils/config';
+import { useNotificationStore } from '../store/useNotificationStore';
 
 type NotificationItem = {
   id: string;
@@ -49,54 +48,24 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const InboxScreen = () => {
-  const token = useAuthStore((state) => state.token);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const notifications = useNotificationStore((state) => state.notifications);
+  const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
+  const storeMarkAllRead = useNotificationStore((state) => state.markAllRead);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchNotifications = async (showSpinner = true) => {
-    if (showSpinner) setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/partner/notifications`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        setNotifications(result.data);
-      } else {
-        // setNotifications(MOCK_NOTIFICATIONS);
-        setNotifications([]);
-      }
-    } catch (e) {
-      console.error("Error fetching notifications:", e);
-      // setNotifications(MOCK_NOTIFICATIONS);
-      setNotifications([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   useEffect(() => {
-    fetchNotifications();
+    setLoading(true);
+    storeFetchNotifications().finally(() => setLoading(false));
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchNotifications(false);
+    storeFetchNotifications().finally(() => setRefreshing(false));
   };
 
-  const markAllRead = async () => {
-    // Optimistic UI update
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-    try {
-      await fetch(`${API_BASE_URL}/partner/notifications/mark-read`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-    } catch (e) {
-      console.error("Error marking notifications as read:", e);
-    }
+  const markAllRead = () => {
+    storeMarkAllRead();
   };
 
   const getIcon = (type: NotificationItem['type']) => {

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
+import { useNotificationStore } from '../store/useNotificationStore';
 import { API_BASE_URL } from '../utils/config';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -75,8 +76,9 @@ export const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const notifications = useNotificationStore((state) => state.notifications);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
   // Banner Carousel State (1-indexed for Infinite Loop)
   const bannerRef = React.useRef<ScrollView>(null);
@@ -172,19 +174,8 @@ export const HomeScreen = () => {
 
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
-    try {
-      const res = await fetch(`${API_BASE_URL}/partner/notifications`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (res.ok && result.success) {
-        setNotifications(result.data || []);
-        setUnreadCount(result.unreadCount ?? 0);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  }, [token]);
+    await storeFetchNotifications();
+  }, [token, storeFetchNotifications]);
 
   useEffect(() => {
     fetchNotifications();

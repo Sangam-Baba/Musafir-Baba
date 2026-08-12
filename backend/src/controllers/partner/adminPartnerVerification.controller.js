@@ -8,7 +8,7 @@ import PartnerBank from "../../models/partner/PartnerBank.js";
 import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
 import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
 import sendEmail from "../../services/email.service.js";
-import { sendPushNotification } from "../../utils/notifications.js";
+import { notifyUser } from "../../services/notification/notificationService.js";
 
 // @route   GET /api/admin/partner-verification/pending
 // @desc    Get all partners with their aggregated stats (vehicles, documents)
@@ -247,15 +247,22 @@ export const updatePartnerStatus = async (req, res) => {
     if (shouldSend) {
       await sendEmail(partner.email, subject, htmlBody);
       
-      // Send Push Notification
+      // Notify partner (in-app record + push, if they have a token)
       const pushProfile = await PartnerProfile.findOne({ authId: partnerId });
-      if (pushProfile && pushProfile.pushToken) {
+      if (pushProfile) {
         let pushBody = "Your account status has been updated.";
         if (status === "Approved" || status === "Active") pushBody = "Congratulations! Your partner account is approved.";
         else if (status === "Hold") pushBody = "Your account verification is on hold. Check details.";
         else if (status === "Rejected") pushBody = "Your application was rejected.";
-        
-        await sendPushNotification(pushProfile.pushToken, subject, pushBody);
+
+        await notifyUser({
+          recipientType: "Partner",
+          recipientId: pushProfile._id,
+          title: subject,
+          message: pushBody,
+          type: "Document",
+          pushToken: pushProfile.pushToken,
+        });
       }
     }
 

@@ -6,6 +6,7 @@ import PartnerDocument from "../../models/partner/PartnerDocument.js";
 import PartnerAuth from "../../models/partner/PartnerAuth.js";
 import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
 import sendEmail from "../../services/email.service.js";
+import { notifyUser } from "../../services/notification/notificationService.js";
 
 // Helper function to calculate completion percentage
 const calculateCompletion = async (partnerId) => {
@@ -52,6 +53,15 @@ const buildPartnerDashboard = async (authId) => {
       profileCompletionPercentage: 10,
     });
     await profile.save();
+
+    await notifyUser({
+      recipientType: "Partner",
+      recipientId: profile._id,
+      title: "Welcome to MBConnect!",
+      message: "Your partner account has been created. Complete your profile to start accepting rides.",
+      type: "System",
+      pushToken: profile.pushToken,
+    });
   }
 
   if (!profile) {

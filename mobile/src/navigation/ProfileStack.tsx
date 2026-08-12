@@ -16,6 +16,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
+import { useNotificationStore } from '../store/useNotificationStore';
 import { API_BASE_URL } from '../utils/config';
 import { useCopilot, CopilotProvider, CopilotStep, walkthroughable } from 'react-native-copilot';
 import * as SecureStore from 'expo-secure-store';
@@ -41,9 +42,10 @@ const MenuScreen = ({ navigation }: any) => {
   const storeProfile = useAuthStore((state) => state.profile);
   const logout = useAuthStore((state) => state.logout);
   const { start } = useCopilot();
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
   const [dashboardData, setDashboardData] = useState<any>(null);
-  const [unreadCount, setUnreadCount] = useState<number>(3);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -63,23 +65,16 @@ const MenuScreen = ({ navigation }: any) => {
     if (!token) return;
     if (showSpinner) setLoading(true);
     try {
-      const [dashRes, notifRes] = await Promise.all([
+      const [dashRes] = await Promise.all([
         fetch(`${API_BASE_URL}/partner/profile/dashboard`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch(`${API_BASE_URL}/partner/notifications`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        storeFetchNotifications(),
       ]);
 
       const dashResult = await dashRes.json();
       if (dashRes.ok && dashResult.success) {
         setDashboardData(dashResult.data);
-      }
-
-      const notifResult = await notifRes.json();
-      if (notifRes.ok && notifResult.success) {
-        setUnreadCount(notifResult.unreadCount ?? 3);
       }
     } catch (error) {
       console.error("Error fetching menu dashboard data:", error);
