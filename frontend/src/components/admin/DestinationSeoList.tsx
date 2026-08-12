@@ -44,18 +44,19 @@ export default function DestinationSeoList({
   return (
     <div className="w-full">
       {/* Desktop Table */}
-      <div className="hidden md:block">
-        <Table className="rounded-2xl shadow-md overflow-hidden">
+      <div className="hidden md:block w-full overflow-x-auto">
+        <Table className="rounded-2xl shadow-md table-fixed min-w-[1100px]">
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead className="w-[5%]">Sr.no</TableHead>
-              <TableHead className="w-[20%]">Title</TableHead>
-              <TableHead className="w-[20%]">Description</TableHead>
-              <TableHead className="w-[20%]">Excerpt</TableHead>
-              <TableHead className="w-[20%]">Keywords</TableHead>
-              <TableHead className="w-[20%]">Category</TableHead>
-              <TableHead className="w-[20%]">Destination</TableHead>
-              <TableHead className="w-[25%] text-right">Actions</TableHead>
+              <TableHead className="w-[4%]">Sr.no</TableHead>
+              <TableHead className="w-[14%]">Title</TableHead>
+              <TableHead className="w-[14%]">Description</TableHead>
+              <TableHead className="w-[12%]">Excerpt</TableHead>
+              <TableHead className="w-[12%]">Keywords</TableHead>
+              <TableHead className="w-[10%]">Category</TableHead>
+              <TableHead className="w-[10%]">Destination</TableHead>
+              <TableHead className="w-[8%]">Visit</TableHead>
+              <TableHead className="w-[16%] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -69,20 +70,20 @@ export default function DestinationSeoList({
                 <TableCell className="font-medium">
                   {destinationSeo.length - i}
                 </TableCell>
-                <TableCell className="font-medium">{cat.metaTitle}</TableCell>
-                <TableCell className="font-medium ">
+                <TableCell className="font-medium truncate">{cat.metaTitle}</TableCell>
+                <TableCell className="font-medium truncate">
                   {cat.metaDescription.slice(0, 50)}
                 </TableCell>
-                <TableCell className="font-medium ">
+                <TableCell className="font-medium truncate">
                   {cat.excerpt?.slice(0, 20)}
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium truncate">
                   {cat.keywords.join(", ")}
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium truncate">
                   {cat.categoryId.name}
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium truncate">
                   {cat.destinationId.name}
                 </TableCell>
                 <TableCell>

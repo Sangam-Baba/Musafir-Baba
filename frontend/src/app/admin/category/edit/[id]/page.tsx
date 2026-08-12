@@ -15,6 +15,7 @@ import { X } from "lucide-react";
 import { schemaTypes } from "@/lib/schemaTypes";
 import { Label } from "@/components/ui/label";
 import BlogEditor from "@/components/admin/BlogEditor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Category {
   _id: string;
@@ -186,183 +187,198 @@ export default function CreateCategory() {
         onSubmit={form.handleSubmit((values) => onSubmit(values))}
         className="space-y-6"
       >
-        <input
-          {...form.register("name")}
-          placeholder="Name"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.name && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.name.message}
-          </p>
-        )}
-        <input
-          {...form.register("slug")}
-          placeholder="Parmalink"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.slug && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.slug.message}
-          </p>
-        )}
-        <textarea
-          {...form.register("description")}
-          placeholder="Description"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.description && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.description.message}
-          </p>
-        )}
-        <div className="border rounded p-2">
-          <BlogEditor
-            value={form.getValues("content")}
-            onChange={(val) => form.setValue("content", val)}
-          />
-        </div>
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="basic">Basic Detail</TabsTrigger>
+            <TabsTrigger value="seo">Media & SEO</TabsTrigger>
+            <TabsTrigger value="org">Organization</TabsTrigger>
+          </TabsList>
 
-        <Controller
-          name="packages"
-          control={form.control}
-          render={({ field }) => (
-            <div className="space-y-2">
-              {packages?.map((p: Package) => (
-                <label key={p._id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    value={p._id}
-                    checked={field.value?.includes(p._id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        field.onChange([...(field.value || []), p._id]);
-                      } else {
-                        field.onChange(
-                          field.value?.filter((id) => id !== p._id)
-                        );
-                      }
-                    }}
-                  />
-                  <span>{p.title}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        />
-        <div className="space-y-2">
-          <ImageUploader
-            initialImage={form.getValues("coverImage")}
-            onUpload={(img) => {
-              if (!img) return;
-              return form.setValue("coverImage", {
-                url: img?.url,
-                public_id: img?.public_id,
-                width: img?.width,
-                height: img?.height,
-                alt: img?.alt ?? form.getValues("name"),
-              });
-            }}
-          />
-        </div>
-        {form.watch("coverImage.url") && (
-          <input
-            {...form.register("coverImage.alt")}
-            placeholder="Cover Image Alt"
-            className="w-full border rounded p-2"
-          />
-        )}
-
-        {/* meta */}
-        <input
-          {...form.register("metaTitle")}
-          placeholder="Meta Title"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.metaTitle && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.metaTitle.message}
-          </p>
-        )}
-        <input
-          {...form.register("metaDescription")}
-          placeholder="Meta Description"
-          className="w-full border rounded p-2"
-        />
-        {form.formState.errors.metaDescription && (
-          <p className="text-red-500 text-sm">
-            {form.formState.errors.metaDescription.message}
-          </p>
-        )}
-        <div>
-          <label className="font-semibold">Schema Type</label>
-          <select
-            multiple
-            {...form.register("schemaType")}
-            className="w-full border rounded-lg p-2"
-          >
-            {schemaTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Keywords */}
-        <div className="space-y-2">
-          <Label className="block text-sm font-medium">Keywords</Label>
-          <div className="flex flex-wrap gap-2 border rounded p-2">
-            {form.watch("keywords")?.map((kw, i) => (
-              <span
-                key={i}
-                className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
-              >
-                {kw}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newKeywords = form
-                      .getValues("keywords")
-                      ?.filter((_, idx) => idx !== i);
-                    form.setValue("keywords", newKeywords);
-                  }}
-                  className="text-gray-600 hover:text-red-500"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </span>
-            ))}
-
+          {/* Basic Detail Tab */}
+          <TabsContent value="basic" forceMount className="space-y-6 data-[state=inactive]:hidden">
             <input
-              type=" text"
-              className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
-              placeholder="Type keyword and press Enter"
-              onBlur={(e) => {
-                const arr = e.target.value
-                  .split(",")
-                  .map((v) => v.trim())
-                  .filter(Boolean);
-                if (arr.length > 0) {
-                  form.setValue("keywords", [
-                    ...(form.getValues("keywords") || []),
-                    ...arr,
-                  ]);
-                  e.target.value = "";
-                }
-              }}
+              {...form.register("name")}
+              placeholder="Name"
+              className="w-full border rounded p-2"
             />
-          </div>
-        </div>
+            {form.formState.errors.name && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.name.message}
+              </p>
+            )}
+            <input
+              {...form.register("slug")}
+              placeholder="Parmalink"
+              className="w-full border rounded p-2"
+            />
+            {form.formState.errors.slug && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.slug.message}
+              </p>
+            )}
+            <textarea
+              {...form.register("description")}
+              placeholder="Description"
+              className="w-full border rounded p-2"
+            />
+            {form.formState.errors.description && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.description.message}
+              </p>
+            )}
+            <div className="border rounded p-2">
+              <BlogEditor
+                value={form.getValues("content")}
+                onChange={(val) => form.setValue("content", val)}
+              />
+            </div>
+          </TabsContent>
 
-        <select
-          value={form.watch("isActive") ? "true" : "false"}
-          onChange={(e) => form.setValue("isActive", e.target.value === "true")}
-          className="w-full border rounded p-2"
-        >
-          <option value="false">Draft</option>
-          <option value="true">Published</option>
-        </select>
+          {/* Media & SEO Tab */}
+          <TabsContent value="seo" forceMount className="space-y-6 data-[state=inactive]:hidden">
+            <div className="space-y-2">
+              <ImageUploader
+                initialImage={form.getValues("coverImage")}
+                onUpload={(img) => {
+                  if (!img) return;
+                  return form.setValue("coverImage", {
+                    url: img?.url,
+                    public_id: img?.public_id,
+                    width: img?.width,
+                    height: img?.height,
+                    alt: img?.alt ?? form.getValues("name"),
+                  });
+                }}
+              />
+            </div>
+            {form.watch("coverImage.url") && (
+              <input
+                {...form.register("coverImage.alt")}
+                placeholder="Cover Image Alt"
+                className="w-full border rounded p-2"
+              />
+            )}
+            <input
+              {...form.register("metaTitle")}
+              placeholder="Meta Title"
+              className="w-full border rounded p-2"
+            />
+            {form.formState.errors.metaTitle && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.metaTitle.message}
+              </p>
+            )}
+            <input
+              {...form.register("metaDescription")}
+              placeholder="Meta Description"
+              className="w-full border rounded p-2"
+            />
+            {form.formState.errors.metaDescription && (
+              <p className="text-red-500 text-sm">
+                {form.formState.errors.metaDescription.message}
+              </p>
+            )}
+            <div>
+              <label className="font-semibold">Schema Type</label>
+              <select
+                multiple
+                {...form.register("schemaType")}
+                className="w-full border rounded-lg p-2"
+              >
+                {schemaTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">Keywords</Label>
+              <div className="flex flex-wrap gap-2 border rounded p-2">
+                {form.watch("keywords")?.map((kw, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+                  >
+                    {kw}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newKeywords = form
+                          .getValues("keywords")
+                          ?.filter((_, idx) => idx !== i);
+                        form.setValue("keywords", newKeywords);
+                      }}
+                      className="text-gray-600 hover:text-red-500"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </span>
+                ))}
+
+                <input
+                  type=" text"
+                  className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+                  placeholder="Type keyword and press Enter"
+                  onBlur={(e) => {
+                    const arr = e.target.value
+                      .split(",")
+                      .map((v) => v.trim())
+                      .filter(Boolean);
+                    if (arr.length > 0) {
+                      form.setValue("keywords", [
+                        ...(form.getValues("keywords") || []),
+                        ...arr,
+                      ]);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Organization Tab */}
+          <TabsContent value="org" forceMount className="space-y-6 data-[state=inactive]:hidden">
+            <Controller
+              name="packages"
+              control={form.control}
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {packages?.map((p: Package) => (
+                    <label key={p._id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        value={p._id}
+                        checked={field.value?.includes(p._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            field.onChange([...(field.value || []), p._id]);
+                          } else {
+                            field.onChange(
+                              field.value?.filter((id) => id !== p._id)
+                            );
+                          }
+                        }}
+                      />
+                      <span>{p.title}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            />
+            <select
+              value={form.watch("isActive") ? "true" : "false"}
+              onChange={(e) => form.setValue("isActive", e.target.value === "true")}
+              className="w-full border rounded p-2"
+            >
+              <option value="false">Draft</option>
+              <option value="true">Published</option>
+            </select>
+          </TabsContent>
+        </Tabs>
+
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? "Updating..." : "Update Category"}
         </Button>

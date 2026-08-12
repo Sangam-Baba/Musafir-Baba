@@ -167,6 +167,12 @@ export const NAV_GROUPS = [
         permission: "holidays",
       },
       {
+        label: "Holidays Page",
+        href: "/admin/holidays-page",
+        icon: LayoutTemplate,
+        permission: "holidays",
+      },
+      {
         label: "Customized Packages",
         href: "/admin/customized-tour-package",
         icon: MdDashboardCustomize,

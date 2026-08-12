@@ -3,6 +3,7 @@ import { User } from "../models/User.js";
 
 const ROUTE_PERMISSION_MAP = {
   "/api/packages": "holidays",
+  "/api/holidays-page": "holidays",
   "/api/category": "category",
   "/api/booking": "bookings",
   "/api/destinationseo": "destination-seo",
