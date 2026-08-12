@@ -1,5 +1,4 @@
 import MixedPackagesClient from "./PackagesClient";
-import { Metadata } from "next";
 import Script from "next/script";
 import { getAllCustomizedPackages } from "./customised-tour-packages/page";
 import { Package } from "./[categorySlug]/PackageSlugClient";
@@ -9,6 +8,67 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
+import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
+
+const DEFAULT_HERO_TITLE = "Holidays";
+const DEFAULT_HERO_IMAGE =
+  "https://cdn.musafirbaba.com/images/tour_package_k5ijnt.webp";
+const DEFAULT_META_TITLE =
+  "Affordable Holiday Tour Packages - Domestic & International";
+const DEFAULT_META_DESCRIPTION =
+  "Explore incredible tour package without breaking the bank. Our affordable tour packages cover domestic and international trips. Easy booking and 24/7 support included.";
+
+const getHolidaysPageSettings = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/holidays-page`, {
+    next: { revalidate: 120 },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.data;
+};
+
+export async function generateMetadata() {
+  const settings = await getHolidaysPageSettings();
+
+  const title = settings?.metaTitle || DEFAULT_META_TITLE;
+  const description = settings?.metaDescription || DEFAULT_META_DESCRIPTION;
+  const image = settings?.heroImage?.url || DEFAULT_HERO_IMAGE;
+  const url = "https://musafirbaba.com/holidays";
+
+  const socialData = resolveSocialMetadata({
+    resolvedMetadata: { title, description, image, imageAlt: title },
+    socialOverrides: settings?.social,
+    moduleType: "WEBPAGE",
+  });
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: socialData.openGraph.title,
+      description: socialData.openGraph.description,
+      url,
+      type: socialData.openGraph.type as any,
+      images: [
+        {
+          url: socialData.openGraph.images,
+          width: 1200,
+          height: 630,
+          alt: socialData.openGraph.title || title,
+        },
+      ],
+    },
+    twitter: {
+      card: socialData.twitter.card as any,
+      title: socialData.twitter.title,
+      description: socialData.twitter.description,
+      images: [socialData.twitter.images],
+    },
+  };
+}
 
 export interface Category {
   _id: string;
@@ -24,15 +84,6 @@ export interface Category {
 interface CategoryResponse {
   data: Category[];
 }
-
-export const metadata: Metadata = {
-  title: "Affordable Holiday Tour Packages - Domestic & International",
-  description:
-    "Explore incredible tour package without breaking the bank. Our affordable tour packages cover domestic and international trips. Easy booking and 24/7 support included.",
-  alternates: {
-    canonical: "https://musafirbaba.com/holidays",
-  },
-};
 
 export const getCategory = async (): Promise<CategoryResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
@@ -52,6 +103,7 @@ export default async function PackagesPage() {
   const data = await getPackages();
   const customizedPkgs = await getAllCustomizedPackages();
   const categorydata = await getCategory();
+  const settings = await getHolidaysPageSettings();
   const categories = categorydata?.data ?? [];
 
   const totalCategory = [...categories];
@@ -78,7 +130,7 @@ export default async function PackagesPage() {
     })),
   );
 
-  const content = `
+  const defaultContent = `
 
 <p>
   Planning a holiday should feel exciting—not overwhelming. At MusafirBaba, our holiday packages are designed to simplify travel planning while offering meaningful, well-balanced experiences across India and international destinations.
@@ -215,11 +267,12 @@ export default async function PackagesPage() {
   This ensures a smooth experience from planning to return.
 </p>
 `;
+  const content = settings?.content || defaultContent;
   return (
     <>
       <Hero
-        image="https://cdn.musafirbaba.com/images/tour_package_k5ijnt.webp"
-        title="Holidays"
+        image={settings?.heroImage?.url || DEFAULT_HERO_IMAGE}
+        title={settings?.heroTitle || DEFAULT_HERO_TITLE}
         align="center"
         height="lg"
         overlayOpacity={100}

@@ -30,6 +30,7 @@ import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
 import ReadingProgressBar from "@/components/custom/ReadingProgressBar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 // Fetch blog by slug
 async function getBlog(slug: string, token?: string) {
   const res = await fetch(
@@ -370,6 +371,34 @@ export default async function BlogDetailPage({
                 prose-li:text-gray-700/90 prose-li:mb-2 text-justify">
                 <BlogContent html={contentWithIds} />
               </section>
+
+              {/* FAQ Highlight (from faqSchema) */}
+              {blog.faqSchema && blog.faqSchema.length > 0 && (
+                <div className="mt-14 mb-8 pb-8 border-b border-gray-200">
+                  <div className="flex flex-col gap-2 mb-5">
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">FAQ</h2>
+                    <div className="w-12 h-1 bg-[#FE5300]"></div>
+                  </div>
+                  <Accordion type="single" collapsible className="w-full space-y-2">
+                    {blog.faqSchema.map((faq: { question: string; answer: string }, idx: number) => (
+                      <AccordionItem
+                        value={`faq-${idx}`}
+                        key={idx}
+                        className="border-b border-gray-200 py-1 md:py-2"
+                      >
+                        <AccordionTrigger className="text-xs md:text-sm font-bold font-heading text-black hover:text-[#FE5300] transition-colors hover:no-underline text-left">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-justify pt-3">
+                          <section className="detail-content-headings prose prose-sm max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                            <BlogContent html={faq.answer} />
+                          </section>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              )}
 
               {/* Footer Metadata */}
               <div className="mt-20 py-12 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8">

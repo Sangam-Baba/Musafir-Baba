@@ -49,6 +49,23 @@ type DashboardData = {
   documents?: any[];
 };
 
+type NotificationItem = {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  type: 'Trip' | 'System' | 'Document' | 'Payout';
+  read: boolean;
+};
+
+const RECENT_NOTIF_ICON: Record<string, { icon: string; color: string; bg: string }> = {
+  Trip: { icon: 'car-sport', color: '#FE5300', bg: '#fff7ed' },
+  Payout: { icon: 'wallet', color: '#16a34a', bg: '#dcfce7' },
+  Document: { icon: 'document-text', color: '#b45309', bg: '#fef3c7' },
+  System: { icon: 'notifications', color: '#0284c7', bg: '#e0f2fe' },
+};
+const DEFAULT_NOTIF_ICON = { icon: 'notifications', color: '#64748b', bg: '#f1f5f9' };
+
 type HomeScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Home'>;
 
 export const HomeScreen = () => {
@@ -58,6 +75,8 @@ export const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Banner Carousel State (1-indexed for Infinite Loop)
   const bannerRef = React.useRef<ScrollView>(null);
@@ -151,9 +170,30 @@ export const HomeScreen = () => {
     fetchDashboard();
   }, [fetchDashboard]);
 
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setNotifications(result.data || []);
+        setUnreadCount(result.unreadCount ?? 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchDashboard();
+    fetchNotifications();
   };
 
   if (loading) {
@@ -198,9 +238,11 @@ export const HomeScreen = () => {
             activeOpacity={0.7}
           >
             <Ionicons name="notifications-outline" size={22} color="#0f172a" />
-            <View style={styles.badgeCount}>
-              <Text style={styles.badgeCountText}>3</Text>
-            </View>
+            {unreadCount > 0 && (
+              <View style={styles.badgeCount}>
+                <Text style={styles.badgeCountText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -443,7 +485,8 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Recent Notifications Section */}
+        {/* Recent Notifications Section (Hidden as requested) */}
+        {/* 
         <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
           <Text style={styles.sectionTitle}>Recent Notifications</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Inbox')}>
@@ -454,9 +497,32 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.notifCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }]}>
-           <Text style={{ color: '#94a3b8', fontSize: 13 }}>No recent notifications</Text>
-        </View>
+        {notifications.length === 0 ? (
+          <View style={[styles.notifCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }]}>
+            <Text style={{ color: '#94a3b8', fontSize: 13 }}>No recent notifications</Text>
+          </View>
+        ) : (
+          notifications.slice(0, 3).map((item) => {
+            const iconConfig = RECENT_NOTIF_ICON[item.type] || DEFAULT_NOTIF_ICON;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.notifCard}
+                onPress={() => navigation.navigate('Inbox')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.notifIconBox, { backgroundColor: iconConfig.bg }]}>
+                  <Ionicons name={iconConfig.icon as any} size={18} color={iconConfig.color} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.notifTitle} numberOfLines={1}>{item.title}</Text>
+                  <Text style={styles.notifTime}>{item.time}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        )} 
+        */}
 
         {/* Extra spacing for floating capsule bar */}
         <View style={{ height: 90 }} />

@@ -166,6 +166,15 @@ const MenuScreen = ({ navigation }: any) => {
       onPress: () => navigation.navigate('TripSupport'),
     },
     {
+      title: 'Subscription',
+      subtitle: 'Partner plans & exclusive benefits',
+      icon: 'sparkles-outline' as const,
+      iconBg: '#fff7ed',
+      iconColor: '#FE5300',
+      isComingSoon: true,
+      onPress: () => Alert.alert("Subscription", "Partner subscription plans are coming soon! Stay tuned for exclusive benefits."),
+    },
+    {
       title: 'Contact Support',
       subtitle: 'Chat with our support team',
       icon: 'chatbubble-ellipses-outline' as const,
@@ -360,7 +369,14 @@ const MenuScreen = ({ navigation }: any) => {
               <Ionicons name={item.icon} size={20} color={item.iconColor} />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.rowTitle}>{item.title}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.rowTitle}>{item.title}</Text>
+                {item.isComingSoon && (
+                  <View style={styles.comingSoonBadge}>
+                    <Text style={styles.comingSoonBadgeText}>COMING SOON</Text>
+                  </View>
+                )}
+              </View>
               <Text style={styles.rowSub}>{item.subtitle}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
@@ -447,6 +463,19 @@ const styles = StyleSheet.create({
   iconBox: { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   rowTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
   rowSub: { fontSize: 11, color: '#64748b', marginTop: 2 },
+  comingSoonBadge: {
+    backgroundColor: '#FE5300',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  comingSoonBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
   logoutCard: { backgroundColor: '#fef2f2', borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#fee2e2', marginTop: 20 },
   logoutIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#fee2e2', justifyContent: 'center', alignItems: 'center' },
   logoutTitle: { fontSize: 14, fontWeight: '800', color: '#dc2626' },

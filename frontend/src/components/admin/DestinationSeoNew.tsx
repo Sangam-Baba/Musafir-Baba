@@ -23,6 +23,9 @@ import { schemaTypes } from "@/lib/schemaTypes";
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import BlogEditor from "./BlogEditor";
+import ImageUploader from "./ImageUploader";
+import OpenGraphManager from "./OpenGraphManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Category {
   _id: string;
@@ -46,6 +49,38 @@ const formSchema = z.object({
   schemaType: z.array(z.string()).optional(),
   destinationId: z.string().min(2, { message: "Destination is required." }),
   categoryId: z.string().min(2, { message: "Category is required." }),
+  pageTitle: z.string().optional(),
+  coverImage: z
+    .object({
+      url: z.string().optional(),
+      public_id: z.string().optional(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      alt: z.string().optional(),
+    })
+    .optional(),
+  social: z
+    .object({
+      openGraph: z
+        .object({
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.string().optional(),
+          imageAlt: z.string().optional(),
+          type: z.string().optional(),
+        })
+        .optional(),
+      twitter: z
+        .object({
+          inheritOpenGraph: z.boolean().optional(),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.string().optional(),
+          card: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -137,6 +172,9 @@ function DestinationSeoNew({
       schemaType: [],
       destinationId: "",
       categoryId: "",
+      pageTitle: "",
+      coverImage: { url: "", public_id: "", alt: "" },
+      social: { twitter: { inheritOpenGraph: true } },
     },
   });
 
@@ -161,6 +199,9 @@ function DestinationSeoNew({
         categoryId: destinationSeo.categoryId,
         excerpt: destinationSeo.excerpt,
         content: destinationSeo.content,
+        pageTitle: destinationSeo.pageTitle ?? "",
+        coverImage: destinationSeo.coverImage ?? { url: "", public_id: "", alt: "" },
+        social: destinationSeo.social ?? { twitter: { inheritOpenGraph: true } },
       });
     }
   }, [destinationSeo, form]);
@@ -212,7 +253,7 @@ function DestinationSeoNew({
     return <p>Something went wrong</p>;
 
   return (
-    <div className="flex flex-col max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
+    <div className="flex flex-col w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">
         {id ? "Update" : "Create"} Destination Meta
       </h2>
@@ -272,130 +313,200 @@ function DestinationSeoNew({
             )}
           </div>
 
-          {/* Inputs */}
-          <FormField
-            control={form.control}
-            name="metaTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Meta Title</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Meta title" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="metaDescription"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Meta Description</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Meta description" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="excerpt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Excerpt</FormLabel>
-                <FormControl>
-                  <Textarea {...field} placeholder="Excerpt..." />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="space-y-2">
-            <label htmlFor="content">Content</label>
-            <div className="border rounded p-2">
-              <BlogEditor
-                value={form.getValues("content")}
-                onChange={(val) => form.setValue("content", val)}
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid grid-cols-3 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-4">
+              <TabsTrigger value="basic" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                Basic Detail
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                Media & SEO
+              </TabsTrigger>
+              <TabsTrigger value="social" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
+                Social (OG)
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Basic Detail Tab */}
+            <TabsContent value="basic" forceMount className="space-y-6 data-[state=inactive]:hidden">
+              <FormField
+                control={form.control}
+                name="pageTitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Page Heading (on-page title shown to visitors)</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder='Leave blank to use "Explore Packages in {Destination}"' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
-          <FormField
-            control={form.control}
-            name="schemaType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Schema Type</FormLabel>
-                <FormControl>
-                  <select
-                    multiple
-                    value={field.value || []}
-                    onChange={(e) => {
-                      const value = Array.from(
-                        e.target.selectedOptions,
-                        (option) => option.value
-                      );
-                      field.onChange(value);
-                    }}
-                  >
-                    {schemaTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="excerpt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Excerpt</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} placeholder="Excerpt..." />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="space-y-2">
+                <label htmlFor="content">Content</label>
+                <div className="border rounded p-2">
+                  <BlogEditor
+                    value={form.getValues("content")}
+                    onChange={(val) => form.setValue("content", val)}
+                  />
+                </div>
+              </div>
+            </TabsContent>
 
-          {/* Keywords input */}
-          <div className="space-y-2">
-            <Label className="block text-sm font-medium">Keywords</Label>
-            <div className="flex flex-wrap gap-2 border rounded p-2">
-              {form.watch("keywords")?.map((kw, i) => (
-                <span
-                  key={i}
-                  className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
-                >
-                  {kw}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newKeywords = form
-                        .getValues("keywords")
-                        ?.filter((_, idx) => idx !== i);
-                      form.setValue("keywords", newKeywords);
-                    }}
-                    className="text-gray-600 hover:text-red-500"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </span>
-              ))}
+            {/* Media & SEO Tab */}
+            <TabsContent value="seo" forceMount className="space-y-6 data-[state=inactive]:hidden">
+              <FormField
+                control={form.control}
+                name="metaTitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Meta title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="metaDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Description</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Meta description" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="space-y-2">
+                <Label className="block text-sm font-medium">Cover Image (banner shown on this page)</Label>
+                <div className="border rounded p-2">
+                  <ImageUploader
+                    initialImage={destinationSeo?.coverImage?.url ? destinationSeo.coverImage : undefined}
+                    onUpload={(img) =>
+                      form.setValue("coverImage", {
+                        url: img?.url,
+                        public_id: img?.public_id,
+                        width: img?.width,
+                        height: img?.height,
+                        alt: img?.alt || form.getValues("pageTitle") || form.getValues("metaTitle"),
+                      })
+                    }
+                  />
+                </div>
+                {form.watch("coverImage")?.url && (
+                  <Input
+                    {...form.register("coverImage.alt")}
+                    placeholder="Cover Image Alt Text"
+                  />
+                )}
+              </div>
+              <FormField
+                control={form.control}
+                name="schemaType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Schema Type</FormLabel>
+                    <FormControl>
+                      <select
+                        multiple
+                        value={field.value || []}
+                        onChange={(e) => {
+                          const value = Array.from(
+                            e.target.selectedOptions,
+                            (option) => option.value
+                          );
+                          field.onChange(value);
+                        }}
+                      >
+                        {schemaTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <input
-                type=" text"
-                className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
-                placeholder="Type keyword and press Enter"
-                onBlur={(e) => {
-                  const arr = e.target.value
-                    .split(",")
-                    .map((v) => v.trim())
-                    .filter(Boolean);
-                  if (arr.length > 0) {
-                    form.setValue("keywords", [
-                      ...(form.getValues("keywords") || []),
-                      ...arr,
-                    ]);
-                    e.target.value = "";
-                  }
+              {/* Keywords input */}
+              <div className="space-y-2">
+                <Label className="block text-sm font-medium">Keywords</Label>
+                <div className="flex flex-wrap gap-2 border rounded p-2">
+                  {form.watch("keywords")?.map((kw, i) => (
+                    <span
+                      key={i}
+                      className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
+                    >
+                      {kw}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newKeywords = form
+                            .getValues("keywords")
+                            ?.filter((_, idx) => idx !== i);
+                          form.setValue("keywords", newKeywords);
+                        }}
+                        className="text-gray-600 hover:text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </span>
+                  ))}
+
+                  <input
+                    type=" text"
+                    className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
+                    placeholder="Type keyword and press Enter"
+                    onBlur={(e) => {
+                      const arr = e.target.value
+                        .split(",")
+                        .map((v) => v.trim())
+                        .filter(Boolean);
+                      if (arr.length > 0) {
+                        form.setValue("keywords", [
+                          ...(form.getValues("keywords") || []),
+                          ...arr,
+                        ]);
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Social (OG) Tab */}
+            <TabsContent value="social" forceMount className="data-[state=inactive]:hidden">
+              <OpenGraphManager
+                form={form}
+                moduleType="DESTINATION"
+                baseMetadata={{
+                  title: form.watch("pageTitle") || form.watch("metaTitle") || "",
+                  description: form.watch("metaDescription") || form.watch("excerpt") || "",
+                  image: form.watch("coverImage")?.url || "https://musafirbaba.com/homebanner.webp",
+                  imageAlt: form.watch("pageTitle") || form.watch("metaTitle") || "",
                 }}
               />
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
 
           {/* Buttons */}
           <div className="flex items-center justify-between gap-3">

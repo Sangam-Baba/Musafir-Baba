@@ -6,6 +6,7 @@ import Script from "next/script";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
+import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
 
 export interface Duration {
   days: number;
@@ -57,21 +58,48 @@ export async function generateMetadata({
   const { categorySlug, destination } = await params;
   const pkgData = await getPackageByDestinationSlug(categorySlug, destination);
   const meta = await getDestinationMeta(categorySlug, destination);
+
+  const title = `${meta?.metaTitle || pkgData[0]?.destination?.name}`;
+  const description =
+    meta?.metaDescription || pkgData[0]?.destination?.description;
+  const image =
+    meta?.coverImage?.url ||
+    pkgData[0]?.destination?.coverImage?.url ||
+    "https://musafirbaba.com/homebanner.webp";
+  const url = `https://musafirbaba.com/holidays/${categorySlug}/${destination}`;
+
+  const socialData = resolveSocialMetadata({
+    resolvedMetadata: { title, description, image, imageAlt: title },
+    socialOverrides: meta?.social,
+    moduleType: "DESTINATION",
+  });
+
   return {
-    title: `${meta?.metaTitle || pkgData[0]?.destination?.name}`,
-    description: meta?.metaDescription || pkgData[0]?.destination?.description,
+    title,
+    description,
     keywords: meta?.keywords || pkgData[0]?.destination?.keywords,
     alternates: {
-      canonical: `https://musafirbaba.com/holidays/${categorySlug}/${destination}`,
+      canonical: url,
     },
     openGraph: {
-      title: meta?.metaTitle || pkgData[0]?.destination?.name,
-      description:
-        meta?.metaDescription || pkgData[0]?.destination?.description,
-      url: `https://musafirbaba.com/holidays/${categorySlug}/${destination}`,
-      type: "website",
-      images:
-        meta?.coverImage?.url || "https://musafirbaba.com/homebanner.webp",
+      title: socialData.openGraph.title,
+      description: socialData.openGraph.description,
+      url,
+      type: socialData.openGraph.type as any,
+      images: [
+        {
+          url: socialData.openGraph.images,
+          width: 1200,
+          height: 630,
+          alt: socialData.openGraph.title || title,
+        },
+      ],
+    },
+    twitter: {
+      card: socialData.twitter.card as any,
+      title: socialData.twitter.title,
+      description: socialData.twitter.description,
+      images: [socialData.twitter.images],
     },
   };
 }
@@ -84,6 +112,12 @@ async function DestinationPage({
   const packages = await getPackageByDestinationSlug(categorySlug, destination);
   if (!packages || packages.length === 0) return notFound();
   const meta = await getDestinationMeta(categorySlug, destination);
+
+  const pageHeading =
+    meta?.pageTitle ||
+    `Explore Packages in ${
+      destination.charAt(0).toUpperCase() + destination.slice(1)
+    }`;
 
   const breadcrumbSchema = getBreadcrumbSchema(
     "holidays/" + categorySlug + "/" + destination,
@@ -98,21 +132,19 @@ async function DestinationPage({
   return (
     <section>
       <Hero
-        image={packages[0]?.destination?.coverImage?.url || "/Hero1.jpg"}
-        title={`Explore Packages in ${
-          destination.charAt(0).toUpperCase() + destination.slice(1)
-        }`}
+        image={
+          meta?.coverImage?.url ||
+          packages[0]?.destination?.coverImage?.url ||
+          "/Hero1.jpg"
+        }
+        title={pageHeading}
         description={meta?.excerpt}
         height="lg"
         align="center"
         overlayOpacity={100}
       />
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-5">
-        <Breadcrumb
-          title={`Explore Packages in ${
-            destination.charAt(0).toUpperCase() + destination.slice(1)
-          }`}
-        />
+        <Breadcrumb title={pageHeading} />
       </div>
 
       {/* SHow description */}

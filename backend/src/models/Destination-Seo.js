@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { socialSchema } from "./socialSchema.js";
 
 const destinationSeoSchema = new mongoose.Schema(
   {
@@ -25,6 +26,21 @@ const destinationSeoSchema = new mongoose.Schema(
     },
     content: {
       type: String,
+    },
+    // On-page Hero heading; falls back to the URL-derived title when unset
+    pageTitle: {
+      type: String,
+    },
+    coverImage: {
+      url: String,
+      alt: String,
+      public_id: String,
+      width: Number,
+      height: Number,
+    },
+    social: {
+      type: socialSchema,
+      default: () => ({ twitter: { inheritOpenGraph: true } }),
     },
     schemaType: [
       {
