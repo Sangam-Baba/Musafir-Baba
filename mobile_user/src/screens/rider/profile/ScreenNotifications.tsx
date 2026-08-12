@@ -1,7 +1,7 @@
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { Text, View, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { getMyNotifications, markAllNotificationsRead, RiderNotificationData } from '../../../api/riderNotification.api';
+import { useNotificationStore } from '../../../store/useNotificationStore';
 import {
   Receipt,
   User,
@@ -55,24 +55,17 @@ export default function ScreenNotifications({ onNavigate, onBack }: { onNavigate
 
   // Category tab for Notifications (Screen 38)
   const [notificationTab, setNotificationTab] = useState('All');
-  const [notifications, setNotifications] = useState<RiderNotificationData[]>([]);
+  const notifications = useNotificationStore((state) => state.notifications);
+  const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
+  const storeMarkAllRead = useNotificationStore((state) => state.markAllRead);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
 
   useEffect(() => {
-    getMyNotifications()
-      .then((res) => setNotifications(res.data.data))
-      .catch(() => {
-        // Non-fatal -- the screen still renders with an empty list.
-      })
-      .finally(() => setIsLoadingNotifications(false));
+    storeFetchNotifications().finally(() => setIsLoadingNotifications(false));
   }, []);
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    markAllNotificationsRead().catch(() => {
-      // Silent -- the optimistic update already reflects intent; a retry
-      // isn't critical for a read-state flag.
-    });
+    storeMarkAllRead();
     showToast('All marked as read!');
   };
 

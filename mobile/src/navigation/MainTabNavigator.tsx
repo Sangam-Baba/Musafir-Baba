@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from './types';
@@ -8,24 +8,18 @@ import { EarningsScreen } from '../screens/EarningsScreen';
 import { InboxScreen } from '../screens/InboxScreen';
 import { ProfileStack } from './ProfileStack';
 import { useAuthStore } from '../store/useAuthStore';
-import { API_BASE_URL } from '../utils/config';
+import { useNotificationStore } from '../store/useNotificationStore';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabNavigator = () => {
   const token = useAuthStore((state) => state.token);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE_URL}/partner/notifications`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) setUnreadCount(result.unreadCount ?? 0);
-      })
-      .catch((error) => console.error('Error fetching unread count:', error));
+    storeFetchNotifications().catch((error) => console.error('Error fetching unread count:', error));
   }, [token]);
 
   return (

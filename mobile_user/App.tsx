@@ -5,6 +5,7 @@ import { View, Platform, BackHandler } from 'react-native';
 import { cssText } from './cssText';
 import { useAuthStore } from './src/store/useAuthStore';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
+import { useRealtimeNotifications } from './src/hooks/useRealtimeNotifications';
 import { updateRiderPushToken, getRiderProfile } from './src/api/riderProfile.api';
 
 // NativeWindStyleSheet.setOutput({
@@ -60,6 +61,7 @@ function AppContent() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setProfile = useAuthStore((s) => s.setProfile);
   const { expoPushToken } = usePushNotifications();
+  useRealtimeNotifications();
   const insets = useSafeAreaInsets();
 
   // Screen-to-screen navigation history, so the Android hardware/gesture

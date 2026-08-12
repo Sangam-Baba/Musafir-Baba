@@ -5,12 +5,14 @@ import { AuthStack } from './AuthStack';
 import { MainTabNavigator } from './MainTabNavigator';
 import { View, ActivityIndicator } from 'react-native';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
 import { API_BASE_URL } from '../utils/config';
 
 export const RootNavigator = () => {
   const { isAuthenticated, hasCompletedOnboarding, initialize } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
   const { expoPushToken, notification } = usePushNotifications();
+  useRealtimeNotifications();
 
   useEffect(() => {
     let isMounted = true;

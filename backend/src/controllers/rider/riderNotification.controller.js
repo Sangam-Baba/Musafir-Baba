@@ -1,5 +1,6 @@
 import RiderProfile from "../../models/rider/RiderProfile.js";
 import { Notification } from "../../models/Notification.js";
+import { createTokenRequest } from "../../services/notification/transport.js";
 
 function toRelativeTime(date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
@@ -65,6 +66,25 @@ export const markNotificationsRead = async (req, res) => {
     return res.status(200).json({ success: true, message: "Notifications marked as read" });
   } catch (error) {
     console.error("Mark Rider Notifications Read Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   GET /api/rider/notifications/realtime-token
+// @desc    Issue a short-lived realtime auth token scoped to this rider's own notification channel
+export const getRealtimeToken = async (req, res) => {
+  try {
+    const riderProfile = await RiderProfile.findOne({ authId: req.riderId }).select("_id");
+    if (!riderProfile) {
+      return res.status(404).json({ success: false, message: "Rider profile not found" });
+    }
+
+    const channelName = `notifications:rider:${riderProfile._id}`;
+    const tokenRequest = await createTokenRequest(String(riderProfile._id), channelName);
+
+    return res.status(200).json({ success: true, data: { tokenRequest, channelName } });
+  } catch (error) {
+    console.error("Get Rider Realtime Token Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

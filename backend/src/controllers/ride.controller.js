@@ -1,12 +1,11 @@
 import crypto from "crypto";
 import { RideBooking } from "../models/RideBooking.js";
-import { Notification } from "../models/Notification.js";
 import RiderProfile from "../models/rider/RiderProfile.js";
 import PartnerVehicle from "../models/partner/PartnerVehicle.js";
 import PartnerProfile from "../models/partner/PartnerProfile.js";
 import { PartnerSettings } from "../models/partner/PartnerSettings.js";
 import { getRouteDistance, searchAddressSuggestions, reverseGeocode } from "../services/geo.service.js";
-import { sendPushNotification } from "../utils/notifications.js";
+import { notifyUser } from "../services/notification/notificationService.js";
 
 const FLAT_DRIVER_ALLOWANCE = 100;
 const DEFAULT_COMMISSION_PERCENT = 15;
@@ -380,22 +379,14 @@ export async function releaseRideToPartnerPool(ride) {
 // notification content either way, just a different partner list feeding in.
 export async function notifyPartnersAboutRide(ride, profiles) {
   for (const profile of profiles) {
-    await Notification.create({
+    await notifyUser({
       recipientType: "Partner",
       recipientId: profile._id,
       title: "New ride available",
       message: `${ride.pickup.address} → ${ride.drop.address} • ₹${ride.totalAmount}`,
       type: "Trip", // matches mbconnect's existing InboxScreen icon mapping
       data: { rideId: ride._id },
+      pushToken: profile.pushToken,
     });
-
-    if (profile.pushToken) {
-      await sendPushNotification(
-        profile.pushToken,
-        "New ride available",
-        `${ride.pickup.address} → ${ride.drop.address} • ₹${ride.totalAmount}`,
-        { rideId: String(ride._id) }
-      );
-    }
   }
 }

@@ -2,9 +2,12 @@ import PartnerProfile from "../../models/partner/PartnerProfile.js";
 import PartnerVehicle from "../../models/partner/PartnerVehicle.js";
 import PartnerDriver from "../../models/partner/PartnerDriver.js";
 import PartnerBank from "../../models/partner/PartnerBank.js";
+import RiderProfile from "../../models/rider/RiderProfile.js";
 import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
 import { RideBooking } from "../../models/RideBooking.js";
 import { Notification } from "../../models/Notification.js";
+import { notifyUser } from "../../services/notification/notificationService.js";
+import { createTokenRequest } from "../../services/notification/transport.js";
 import { cityMatches } from "../../controllers/ride.controller.js";
 import mongoose from "mongoose";
 
@@ -211,11 +214,39 @@ export const acceptRide = async (req, res) => {
       return res.status(409).json({ success: false, message: "This ride has already been accepted by another partner." });
     }
 
+    const riderProfile = await RiderProfile.findById(ride.rider);
+    if (riderProfile) {
+      const driver = vehicle.assignedDriverId ? await PartnerDriver.findById(vehicle.assignedDriverId) : null;
+      const vehicleLabel = `${vehicle.color ? vehicle.color + " " : ""}${vehicle.vehicleName} (${vehicle.registrationNumber})`;
+
+      await notifyUser({
+        recipientType: "Rider",
+        recipientId: riderProfile._id,
+        title: "Partner Assigned!",
+        message: driver
+          ? `${driver.name} is on the way in a ${vehicleLabel}.`
+          : `Your ride partner is getting ready in a ${vehicleLabel}.`,
+        type: "Trip",
+        data: { rideId: ride._id },
+        pushToken: riderProfile.pushToken,
+      });
+    }
+
     return res.status(200).json({ success: true, message: "Ride accepted", data: { rideId: ride._id } });
   } catch (error) {
     console.error("Accept Ride Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
+};
+
+// Rider-facing copy for trip status transitions, mirrors mbgo's
+// ScreenLiveTracking.tsx statusMessages verbatim so the push notification and
+// the in-app screen read as one voice. COMPLETED is handled separately below
+// (needs the fare amount), ACCEPTED is handled in acceptRide.
+const RIDER_TRIP_STATUS_COPY = {
+  DRIVER_EN_ROUTE: { title: "Partner is on the way!", message: "Your ride partner is heading to pick-up." },
+  ARRIVED: { title: "Partner has arrived", message: "Your partner is waiting at the pick-up point." },
+  ONGOING: { title: "Trip in progress", message: "Enjoy your ride!" },
 };
 
 // @desc    Update Trip Status
@@ -250,20 +281,47 @@ export const updateBookingStatus = async (req, res) => {
     ride.status = status;
     ride.statusHistory.push({ status });
 
+    const riderProfile = await RiderProfile.findById(ride.rider);
+
+    if (riderProfile && RIDER_TRIP_STATUS_COPY[status]) {
+      await notifyUser({
+        recipientType: "Rider",
+        recipientId: riderProfile._id,
+        title: RIDER_TRIP_STATUS_COPY[status].title,
+        message: RIDER_TRIP_STATUS_COPY[status].message,
+        type: "Trip",
+        data: { rideId: ride._id },
+        pushToken: riderProfile.pushToken,
+      });
+    }
+
     if (status === "COMPLETED") {
       const commission = Math.round((ride.totalAmount * ride.platformCommissionPercent) / 100);
       const netEarning = ride.totalAmount - commission;
       profile.walletBalance = (profile.walletBalance || 0) + netEarning;
       await profile.save();
 
-      await Notification.create({
+      await notifyUser({
         recipientType: "Partner",
         recipientId: profile._id,
         title: "Trip Fare Credited",
         message: `₹${netEarning.toLocaleString("en-IN")} credited to your MB Wallet for completed trip #MB-${String(ride._id).slice(-6).toUpperCase()}.`,
         type: "Trip",
         data: { rideId: ride._id },
+        sendPush: false,
       });
+
+      if (riderProfile) {
+        await notifyUser({
+          recipientType: "Rider",
+          recipientId: riderProfile._id,
+          title: "Trip completed",
+          message: `Trip completed — ₹${ride.totalAmount.toLocaleString("en-IN")} charged. Thanks for riding with MBGO!`,
+          type: "Trip",
+          data: { rideId: ride._id },
+          pushToken: riderProfile.pushToken,
+        });
+      }
     }
 
     await ride.save();
@@ -360,6 +418,15 @@ export const requestPayout = async (req, res) => {
     profile.walletBalance = Math.max(0, profile.walletBalance - amount);
     await profile.save();
 
+    await notifyUser({
+      recipientType: "Partner",
+      recipientId: profile._id,
+      title: "Payout requested",
+      message: `Your withdrawal request for ₹${amount.toLocaleString("en-IN")} has been submitted and is processing.`,
+      type: "Payout",
+      sendPush: false,
+    });
+
     return res.status(201).json({
       success: true,
       payoutId: `PAY-${Date.now().toString().slice(-8)}`,
@@ -441,6 +508,26 @@ export const markNotificationsRead = async (req, res) => {
     });
   } catch (error) {
     console.error("Mark Notifications Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @desc    Issue a short-lived realtime auth token scoped to this partner's own notification channel
+// @route   GET /api/partner/notifications/realtime-token
+export const getRealtimeToken = async (req, res) => {
+  try {
+    const authId = req.partnerId;
+    const profile = await PartnerProfile.findOne({ authId }).select("_id");
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+
+    const channelName = `notifications:partner:${profile._id}`;
+    const tokenRequest = await createTokenRequest(String(profile._id), channelName);
+
+    return res.status(200).json({ success: true, data: { tokenRequest, channelName } });
+  } catch (error) {
+    console.error("Get Partner Realtime Token Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

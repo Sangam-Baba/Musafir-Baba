@@ -9,8 +9,16 @@ export interface RiderNotificationData {
   read: boolean;
 }
 
+export interface RealtimeTokenResponse {
+  tokenRequest: Record<string, unknown>;
+  channelName: string;
+}
+
 export const getMyNotifications = () =>
   apiClient.get<{ success: boolean; unreadCount: number; data: RiderNotificationData[] }>('/rider/notifications');
 
 export const markAllNotificationsRead = () =>
   apiClient.patch<{ success: boolean; message: string }>('/rider/notifications/mark-read');
+
+export const getNotificationsRealtimeToken = () =>
+  apiClient.get<{ success: boolean; data: RealtimeTokenResponse }>('/rider/notifications/realtime-token');

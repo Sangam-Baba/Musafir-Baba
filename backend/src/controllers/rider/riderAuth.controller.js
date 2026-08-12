@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import RiderAuth from "../../models/rider/RiderAuth.js";
 import RiderProfile from "../../models/rider/RiderProfile.js";
 import sendEmail from "../../services/email.service.js";
+import { notifyUser } from "../../services/notification/notificationService.js";
 
 // Helper: Generate a 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -101,6 +102,18 @@ export const verifyOTP = async (req, res) => {
     rider.otpExpiry = undefined;
     rider.status = "Active";
     await rider.save();
+
+    const riderProfile = await RiderProfile.findOne({ authId: rider._id });
+    if (riderProfile) {
+      await notifyUser({
+        recipientType: "Rider",
+        recipientId: riderProfile._id,
+        title: "Welcome to MBGO!",
+        message: "Your account is verified. Book your first ride and enjoy the journey!",
+        type: "General",
+        pushToken: riderProfile.pushToken,
+      });
+    }
 
     return res.status(200).json({
       success: true,
