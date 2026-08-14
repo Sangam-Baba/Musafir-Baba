@@ -104,6 +104,12 @@ export default function ScreenPaymentGateway({ onNavigate, onBack }: { onNavigat
     }
   };
 
+  // Shown after a successful payment instead of a fleeting toast -- the
+  // rider should clearly see the ride is confirmed, and the wording adapts
+  // to whether the trip is more or less than 24h away (see
+  // detailsRevealAt from getRideById).
+  const [rideConfirmation, setRideConfirmation] = useState<{ category: string; revealMessage: string } | null>(null);
+
   const handlePaymentWebViewNavigation = async (navState: { url: string }) => {
     const { url } = navState;
     const isTerminal = url.includes(`${API_BASE_URL}/payment/success-ride`) ||
@@ -117,16 +123,25 @@ export default function ScreenPaymentGateway({ onNavigate, onBack }: { onNavigat
     setCheckoutHtml(null);
     try {
       const res = await getRideById(rideId);
-      const status = res.data?.data?.status;
+      const rideData = res.data?.data;
+      const status = rideData?.status;
       if (status && status !== 'PAYMENT_PENDING' && status !== 'CANCELLED') {
-        showToast('Payment successful!');
-        onNavigate('34');
+        const revealAt = rideData?.detailsRevealAt ? new Date(rideData.detailsRevealAt) : null;
+        const revealMessage = revealAt && revealAt.getTime() <= Date.now()
+          ? 'Driver & vehicle details will be shared as soon as a partner is assigned.'
+          : 'Driver & vehicle details will be shared 24 hours before your trip.';
+        setRideConfirmation({ category: rideData?.vehicleCategory || 'ride', revealMessage });
       } else {
         showToast('Payment was not completed');
       }
     } catch {
       showToast('Could not confirm payment status');
     }
+  };
+
+  const dismissRideConfirmation = () => {
+    setRideConfirmation(null);
+    onNavigate('35');
   };
 
   return (
@@ -968,6 +983,27 @@ export default function ScreenPaymentGateway({ onNavigate, onBack }: { onNavigat
                 )}
               />
             )}
+          </View>
+        </Modal>
+
+        {/* Ride Confirmed */}
+        <Modal visible={!!rideConfirmation} animationType="fade" transparent onRequestClose={dismissRideConfirmation}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+            <View style={{ backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, alignItems: 'center' }}>
+              <CheckCircle2 size={48} color="#059669" />
+              <Text style={{ fontSize: 18, fontWeight: '800', color: '#0f172a', marginTop: 12, textAlign: 'center' }}>
+                Ride Confirmed! 🎉
+              </Text>
+              <Text style={{ fontSize: 13, color: '#475569', marginTop: 8, textAlign: 'center', lineHeight: 20 }}>
+                Your {rideConfirmation?.category} ride is booked. {rideConfirmation?.revealMessage}
+              </Text>
+              <TouchableOpacity
+                onPress={dismissRideConfirmation}
+                style={{ marginTop: 20, backgroundColor: '#FF3B00', paddingVertical: 12, paddingHorizontal: 32, borderRadius: 14, width: '100%', alignItems: 'center' }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 14 }}>View My Trips</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Modal>
 

@@ -238,6 +238,11 @@ export const loginPartner = async (req, res) => {
       success: true,
       message: "Logged in successfully",
       accessToken,
+      // Also returned in the body (alongside the existing httpOnly cookie
+      // above) -- React Native's fetch/axios don't reliably persist and
+      // resend cookies the way a browser does, so the mobile app stores this
+      // explicitly to be able to call /refresh itself.
+      refreshToken,
     });
   } catch (error) {
     console.error("Partner Login Error:", error);
@@ -285,7 +290,10 @@ export const logoutPartner = async (req, res) => {
 // @desc    Refresh access token using HTTP-only cookie
 export const refreshAccessToken = async (req, res) => {
   try {
-    const { partner_refresh_token } = req.cookies;
+    // Prefer the httpOnly cookie (web clients); fall back to a token in the
+    // body for React Native clients, which don't reliably persist/resend
+    // cookies across requests the way a browser does.
+    const partner_refresh_token = req.cookies?.partner_refresh_token || req.body?.refreshToken;
 
     if (!partner_refresh_token) {
       return res.status(401).json({ success: false, message: "No refresh token provided" });

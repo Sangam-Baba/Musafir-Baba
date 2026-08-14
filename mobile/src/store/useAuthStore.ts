@@ -11,10 +11,12 @@ export interface PartnerProfile {
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   profile: PartnerProfile | null;
   isAuthenticated: boolean;
   hasCompletedOnboarding: boolean;
-  setToken: (token: string) => Promise<void>;
+  setToken: (token: string, refreshToken?: string) => Promise<void>;
+  updateAccessToken: (token: string) => Promise<void>;
   setProfile: (profile: PartnerProfile | null) => void;
   setOnboardingComplete: (status: boolean) => Promise<void>;
   logout: () => Promise<void>;
@@ -23,12 +25,22 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
+  refreshToken: null,
   profile: null,
   isAuthenticated: false,
   hasCompletedOnboarding: false,
-  setToken: async (token: string) => {
+  setToken: async (token: string, refreshToken?: string) => {
     await setItem('partner_token', token);
-    set({ token, isAuthenticated: true });
+    if (refreshToken) {
+      await setItem('partner_refresh_token', refreshToken);
+    }
+    set({ token, ...(refreshToken ? { refreshToken } : {}), isAuthenticated: true });
+  },
+  // Used by the silent-refresh flow to swap in a freshly issued access token
+  // without touching the stored refresh token.
+  updateAccessToken: async (token: string) => {
+    await setItem('partner_token', token);
+    set({ token });
   },
   setProfile: (profile: PartnerProfile | null) => {
     set({ profile });
@@ -53,16 +65,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error('Logout API Call Error:', error);
     } finally {
       await removeItem('partner_token');
+      await removeItem('partner_refresh_token');
       await removeItem('onboarding_complete');
-      set({ token: null, profile: null, isAuthenticated: false, hasCompletedOnboarding: false });
+      set({ token: null, refreshToken: null, profile: null, isAuthenticated: false, hasCompletedOnboarding: false });
     }
   },
   initialize: async () => {
     const token = await getItem('partner_token');
+    const refreshToken = await getItem('partner_refresh_token');
     const onboardingStatus = await getItem('onboarding_complete');
     if (token) {
-      set({ 
-        token, 
+      set({
+        token,
+        refreshToken,
         isAuthenticated: true,
         hasCompletedOnboarding: onboardingStatus === 'true'
       });

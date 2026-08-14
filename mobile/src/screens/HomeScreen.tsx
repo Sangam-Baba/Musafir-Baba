@@ -6,9 +6,8 @@ import {
   ScrollView, 
   RefreshControl, 
   ActivityIndicator, 
-  TouchableOpacity, 
+  TouchableOpacity,
   Alert,
-  Modal,
   Image,
   Dimensions
 } from 'react-native';
@@ -19,6 +18,7 @@ import { API_BASE_URL } from '../utils/config';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../navigation/types';
+import { SafeModal } from '../components/SafeModal';
 
 const BANNER_IMAGES = [
   require('../../design/bannerImages/mbcb1.jpeg'),
@@ -569,7 +569,7 @@ export const HomeScreen = () => {
       </View>
 
       {/* Trip Details Modal Sheet */}
-      <Modal
+      <SafeModal
         visible={showDetailsModal}
         transparent
         animationType="slide"
@@ -616,7 +616,7 @@ export const HomeScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </SafeModal>
     </View>
   );
 };

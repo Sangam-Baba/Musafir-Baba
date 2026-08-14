@@ -6,7 +6,8 @@ import { CustomizedTourBooking } from "../models/CustomizedTourBooking.js";
 import { VehicleBooking } from "../models/VehicleBooking.js";
 import { VisaApplication } from "../models/VisaApplication.js";
 import { RideBooking } from "../models/RideBooking.js";
-import { releaseRideToPartnerPool, getBroadcastExpiry } from "./ride.controller.js";
+import { releaseRideToPartnerPool, getBroadcastExpiry, isWithin24h, REVEAL_WINDOW_HOURS } from "./ride.controller.js";
+import { notifyUser } from "../services/notification/notificationService.js";
 import RiderProfile from "../models/rider/RiderProfile.js";
 import RiderAuth from "../models/rider/RiderAuth.js";
 
@@ -820,6 +821,27 @@ export const verifyRideSuccessPayment = async (req, res) => {
       await releaseRideToPartnerPool(ride);
     } catch (error) {
       console.error("Release Ride To Partner Pool Error:", error.message);
+    }
+
+    try {
+      const riderProfile = await RiderProfile.findById(ride.rider);
+      if (riderProfile) {
+        const revealMessage = isWithin24h(ride)
+          ? "Driver & vehicle details will be shared as soon as a partner is assigned."
+          : `Driver & vehicle details will be shared ${REVEAL_WINDOW_HOURS} hours before your trip.`;
+
+        await notifyUser({
+          recipientType: "Rider",
+          recipientId: riderProfile._id,
+          title: "Ride Confirmed!",
+          message: `Your ${ride.vehicleCategory} ride is booked! ${revealMessage}`,
+          type: "Trip",
+          data: { rideId: ride._id },
+          pushToken: riderProfile.pushToken,
+        });
+      }
+    } catch (error) {
+      console.error("Ride Confirmed Notification Error:", error.message);
     }
   }
   console.log("Ride Payment Verified:", data, ride);

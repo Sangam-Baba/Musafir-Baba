@@ -1,0 +1,36 @@
+name: Deploy Backend to musafirbabaserver
+
+# Runs only on the dedicated self-hosted runner registered for this repo
+# (label: musafirbabaserver). Only fires when backend/ actually changes on
+# main, so frontend/mobile-only pushes never trigger a redeploy here.
+# This is fully separate from Vercel's and Render's own deploy pipelines --
+# it does not touch either of them.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-musafirbabaserver
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: musafirbabaserver
+    steps:
+      - name: Sync backend/ from main and rebuild the container
+        run: |
+          cd ~/server/docker/musafirbaba-backend
+          git fetch origin main
+          git reset --hard origin/main
+          docker compose up -d --build
+
+      - name: Verify the container came back up healthy
+        run: |
+          sleep 5
+          docker ps --filter "name=musafirbaba-backend" --format "{{.Status}}" | grep -q healthy \
+            && echo "Deploy verified healthy" \
+            || (echo "Container is not healthy after deploy" && exit 1)

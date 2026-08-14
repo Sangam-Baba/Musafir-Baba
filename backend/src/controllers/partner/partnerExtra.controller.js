@@ -8,7 +8,7 @@ import { RideBooking } from "../../models/RideBooking.js";
 import { Notification } from "../../models/Notification.js";
 import { notifyUser } from "../../services/notification/notificationService.js";
 import { createTokenRequest } from "../../services/notification/transport.js";
-import { cityMatches } from "../../controllers/ride.controller.js";
+import { cityMatches, isWithin24h, isDetailsRevealed, getRideDateTime, REVEAL_WINDOW_HOURS } from "../../controllers/ride.controller.js";
 import mongoose from "mongoose";
 
 // @desc    Toggle partner's active duty status (online/offline)
@@ -77,28 +77,49 @@ export const getBookings = async (req, res) => {
     })
       .populate("rider", "fullName mobileNumber")
       .populate("assignedVehicleId", "vehicleName registrationNumber brand model")
-      .populate("assignedDriverId", "fullName")
+      .populate("assignedDriverId", "name")
       .sort({ createdAt: -1 });
 
-    const data = rides.map((ride) => ({
-      id: String(ride._id),
-      tripId: `MB-${String(ride._id).slice(-6).toUpperCase()}`,
-      pickupLocation: ride.pickup.address,
-      dropoffLocation: ride.drop.address,
-      pickupTime: ride.rideTime,
-      date: ride.rideDate,
-      fare: ride.totalAmount,
-      status: toPartnerStatus(ride.status),
-      customerName: ride.rider?.fullName || "Rider",
-      customerPhone: ride.rider?.mobileNumber || "",
-      vehicleName: ride.assignedVehicleId
-        ? `${ride.assignedVehicleId.brand} ${ride.assignedVehicleId.model}`
-        : "",
-      vehicleReg: ride.assignedVehicleId?.registrationNumber || "",
-      driverName: ride.assignedDriverId?.fullName || "",
-      tripType: "Outstation",
-      distance: `${ride.distanceKm} km`,
-    }));
+    const data = rides.map((ride) => {
+      // Rider's name/phone stay hidden until REVEAL_WINDOW_HOURS before the
+      // trip -- everything else (pickup/drop, timing, fare) the partner
+      // already saw in the available-rides pool before accepting, so it
+      // stays visible regardless.
+      const revealed = isDetailsRevealed(ride);
+      const rideDateTime = getRideDateTime(ride);
+
+      return {
+        id: String(ride._id),
+        tripId: `MB-${String(ride._id).slice(-6).toUpperCase()}`,
+        pickupLocation: ride.pickup.address,
+        dropoffLocation: ride.drop.address,
+        // Coordinates, additive alongside the address strings above -- lets
+        // the app render a small static map card for this trip.
+        pickupCoords: { lat: ride.pickup.lat, lng: ride.pickup.lng },
+        dropCoords: { lat: ride.drop.lat, lng: ride.drop.lng },
+        pickupTime: ride.rideTime,
+        date: ride.rideDate,
+        fare: ride.totalAmount,
+        status: toPartnerStatus(ride.status),
+        // Raw RideBooking status, additive alongside the collapsed `status`
+        // above -- lets the app tell ACCEPTED/DRIVER_EN_ROUTE/ARRIVED apart
+        // (all shown as "Scheduled") so it knows which trip action to offer.
+        rawStatus: ride.status,
+        customerName: revealed ? ride.rider?.fullName || "Rider" : "",
+        customerPhone: revealed ? ride.rider?.mobileNumber || "" : "",
+        customerDetailsRevealed: revealed,
+        customerDetailsRevealAt: rideDateTime
+          ? new Date(rideDateTime.getTime() - REVEAL_WINDOW_HOURS * 60 * 60 * 1000)
+          : null,
+        vehicleName: ride.assignedVehicleId
+          ? `${ride.assignedVehicleId.brand} ${ride.assignedVehicleId.model}`
+          : "",
+        vehicleReg: ride.assignedVehicleId?.registrationNumber || "",
+        driverName: ride.assignedDriverId?.name || "",
+        tripType: "Outstation",
+        distance: `${ride.distanceKm} km`,
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -194,6 +215,13 @@ export const acceptRide = async (req, res) => {
       return res.status(400).json({ success: false, message: "You need an active, approved vehicle to accept rides." });
     }
 
+    // rideDate/rideTime are immutable once a ride is created (no edit-ride
+    // feature exists), so reading them ahead of the atomic accept below is
+    // race-safe -- only the AWAITING_ASSIGNMENT -> ACCEPTED transition
+    // itself needs the atomic guard.
+    const rideBeforeAccept = await RideBooking.findById(req.params.id).select("rideDate rideTime");
+    const willRevealImmediately = rideBeforeAccept ? isWithin24h(rideBeforeAccept) : false;
+
     // Atomic guard: only succeeds if the ride is still awaiting assignment.
     // Whichever partner's request lands first wins; everyone else gets the message below.
     const ride = await RideBooking.findOneAndUpdate(
@@ -204,6 +232,11 @@ export const acceptRide = async (req, res) => {
           assignedPartnerId: profile._id,
           assignedVehicleId: vehicle._id,
           assignedDriverId: vehicle.assignedDriverId,
+          // If the trip is already within the reveal window at acceptance
+          // time, this notification below carries full details immediately,
+          // so the later reveal cron has nothing left to announce for this
+          // ride -- mark it done now to avoid a redundant second notification.
+          detailsRevealNotified: willRevealImmediately,
         },
         $push: { statusHistory: { status: "ACCEPTED", note: `Accepted by partner ${profile._id}` } },
       },
@@ -219,13 +252,17 @@ export const acceptRide = async (req, res) => {
       const driver = vehicle.assignedDriverId ? await PartnerDriver.findById(vehicle.assignedDriverId) : null;
       const vehicleLabel = `${vehicle.color ? vehicle.color + " " : ""}${vehicle.vehicleName} (${vehicle.registrationNumber})`;
 
+      const message = willRevealImmediately
+        ? (driver
+            ? `${driver.name} is on the way in a ${vehicleLabel}.`
+            : `Your ride partner is getting ready in a ${vehicleLabel}.`)
+        : `A partner has been assigned to your ${ride.vehicleCategory} booking. Driver & vehicle details will be shared ${REVEAL_WINDOW_HOURS} hours before your trip.`;
+
       await notifyUser({
         recipientType: "Rider",
         recipientId: riderProfile._id,
         title: "Partner Assigned!",
-        message: driver
-          ? `${driver.name} is on the way in a ${vehicleLabel}.`
-          : `Your ride partner is getting ready in a ${vehicleLabel}.`,
+        message,
         type: "Trip",
         data: { rideId: ride._id },
         pushToken: riderProfile.pushToken,
@@ -249,13 +286,32 @@ const RIDER_TRIP_STATUS_COPY = {
   ONGOING: { title: "Trip in progress", message: "Enjoy your ride!" },
 };
 
+// Only one legal next step per current status -- rejects skipping a step
+// (e.g. ACCEPTED straight to COMPLETED) or moving backward.
+const NEXT_STATUS = {
+  ACCEPTED: "DRIVER_EN_ROUTE",
+  DRIVER_EN_ROUTE: "ARRIVED",
+  ARRIVED: "ONGOING",
+  ONGOING: "COMPLETED",
+};
+
+const EARTH_RADIUS_KM = 6371;
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return EARTH_RADIUS_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // @desc    Update Trip Status
 // @route   PATCH /api/partner/bookings/:id/status
 export const updateBookingStatus = async (req, res) => {
   try {
     const authId = req.partnerId;
     const { id } = req.params;
-    const { status, otpCode } = req.body;
+    const { status, otpCode, lat, lng } = req.body;
 
     if (!status) {
       return res.status(400).json({ success: false, message: "Status is required." });
@@ -269,6 +325,32 @@ export const updateBookingStatus = async (req, res) => {
     const ride = await RideBooking.findOne({ _id: id, assignedPartnerId: profile._id });
     if (!ride) {
       return res.status(404).json({ success: false, message: "Booking not found." });
+    }
+
+    if (NEXT_STATUS[ride.status] !== status) {
+      return res.status(409).json({ success: false, message: `Cannot move from ${ride.status} to ${status}.` });
+    }
+
+    // DRIVER_EN_ROUTE/ARRIVED both require the rider's contact details to
+    // already be revealed -- otherwise the partner would have no way to
+    // actually reach the rider despite claiming to be en route or arrived.
+    if ((status === "DRIVER_EN_ROUTE" || status === "ARRIVED") && !isDetailsRevealed(ride)) {
+      return res.status(403).json({
+        success: false,
+        message: "Rider contact details aren't available yet -- check back closer to the trip.",
+      });
+    }
+
+    if (status === "ARRIVED") {
+      if (typeof lat !== "number" || typeof lng !== "number") {
+        return res.status(400).json({ success: false, message: "Location is required to mark arrival." });
+      }
+      if (distanceKm(lat, lng, ride.pickup.lat, ride.pickup.lng) > 5) {
+        return res.status(403).json({
+          success: false,
+          message: "You need to be within 5 km of the pickup location to mark arrival.",
+        });
+      }
     }
 
     // status values coming from the partner app: DRIVER_EN_ROUTE | ARRIVED | ONGOING | COMPLETED

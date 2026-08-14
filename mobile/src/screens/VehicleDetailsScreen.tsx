@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image, Modal, Linking, RefreshControl, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image, Linking, RefreshControl, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
+import { SafeModal } from '../components/SafeModal';
 
 export const VehicleDetailsScreen = () => {
   const navigation = useNavigation<any>();
@@ -319,7 +320,7 @@ export const VehicleDetailsScreen = () => {
       </ScrollView>
 
       {/* Image Viewer Modal */}
-      <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
+      <SafeModal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{viewerTitle}</Text>
@@ -333,7 +334,7 @@ export const VehicleDetailsScreen = () => {
             resizeMode="contain"
           />
         </View>
-      </Modal>
+      </SafeModal>
     </View>
   );
 };

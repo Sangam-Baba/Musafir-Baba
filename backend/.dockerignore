@@ -1,0 +1,25 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+.git
+.gitignore
+*.log
+
+# Loose local scratch / migration / one-off test scripts kept in the repo
+# root -- not needed at runtime and should never ship inside the image.
+check_db*.js
+db_backup.js
+db_restore.js
+fake-checkin.js
+fix-*.js
+fix_*.js
+get_latest_attendance.js
+inject_audit.js
+migrate.js
+migrateAttendance.js
+print_records.js
+query-attendance.js
+test-*.js
+test_*.js
+trigger_sync.js

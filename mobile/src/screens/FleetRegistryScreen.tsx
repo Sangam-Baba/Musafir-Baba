@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, Modal, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { colors } from '../theme/colors';
 import { InputField } from '../components/InputField';
 import * as DocumentPicker from 'expo-document-picker';
+import { SafeModal } from '../components/SafeModal';
 
 type NavigationProp = StackNavigationProp<ProfileStackParamList, 'FleetRegistry'>;
 
@@ -231,7 +232,7 @@ export const FleetRegistryScreen = () => {
       </View>
 
       {/* VEHICLE & DRIVER DETAIL MODAL */}
-      <Modal visible={!!selectedVehicle} animationType="slide" presentationStyle="pageSheet">
+      <SafeModal visible={!!selectedVehicle} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="car-sport" size={22} color="#FE5300" style={{ marginRight: 8 }} />
@@ -322,10 +323,10 @@ export const FleetRegistryScreen = () => {
             <Button title="Close Details" type="outline" onPress={() => setSelectedVehicle(null)} style={{ marginTop: 24 }} />
           </ScrollView>
         ) : null}
-      </Modal>
+      </SafeModal>
 
       {/* ADD VEHICLE & DRIVER MODAL */}
-      <Modal visible={isModalVisible} animationType="slide" presentationStyle="pageSheet">
+      <SafeModal visible={isModalVisible} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Add Driver & Vehicle</Text>
           <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
@@ -364,7 +365,7 @@ export const FleetRegistryScreen = () => {
 
           <Button title="Save Driver & Vehicle" onPress={submitAddFleet} disabled={!!uploadingDoc} style={{ marginTop: 12 }} />
         </ScrollView>
-      </Modal>
+      </SafeModal>
     </View>
   );
 };

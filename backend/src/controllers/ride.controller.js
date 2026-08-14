@@ -18,6 +18,49 @@ export function getBroadcastExpiry() {
   return new Date(Date.now() + BROADCAST_WINDOW_MINUTES * 60 * 1000);
 }
 
+// Driver/vehicle identity (rider side) and rider contact details (partner
+// side) stay hidden until this many hours before the scheduled trip -- see
+// getRideById / partnerExtra.controller.js's getBookings / acceptRide.
+export const REVEAL_WINDOW_HOURS = 24;
+const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
+
+// Parses rideDate ("YYYY-MM-DD") + rideTime ("HH:MM AM/PM") -- the only
+// place these strings are combined into an actual instant anywhere in the
+// codebase -- into the real UTC Date they represent, treating them as
+// Asia/Kolkata wall-clock time (matching the timezone the broadcast-expiry
+// and details-reveal crons already run in). Doesn't depend on the server
+// process's own timezone.
+export function getRideDateTime(ride) {
+  const [year, month, day] = ride.rideDate.split("-").map(Number);
+  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(String(ride.rideTime).trim());
+  if (!year || !month || !day || !match) return null;
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const meridiem = match[3].toUpperCase();
+  if (meridiem === "PM" && hour !== 12) hour += 12;
+  if (meridiem === "AM" && hour === 12) hour = 0;
+
+  return new Date(Date.UTC(year, month - 1, day, hour, minute) - IST_OFFSET_MS);
+}
+
+// True once we're within REVEAL_WINDOW_HOURS of the scheduled trip --
+// independent of whether a partner has actually been assigned yet, so it can
+// also be used to predict/word a message before acceptance happens.
+export function isWithin24h(ride) {
+  const rideDateTime = getRideDateTime(ride);
+  if (!rideDateTime) return false;
+  return rideDateTime.getTime() - Date.now() <= REVEAL_WINDOW_HOURS * 60 * 60 * 1000;
+}
+
+const ASSIGNED_STATUSES = ["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING", "COMPLETED"];
+
+// The actual gating condition used to decide whether to include
+// driver/vehicle/rider-contact identity in an API response.
+export function isDetailsRevealed(ride) {
+  return ASSIGNED_STATUSES.includes(ride.status) && isWithin24h(ride);
+}
+
 // Hardcoded placeholder data used only when no real, active PartnerVehicle
 // serves a category for the requested route -- keeps the rider from hitting
 // a dead-end "no vehicles" search on routes/cities without onboarded
@@ -263,13 +306,28 @@ export const getRideById = async (req, res) => {
     const ride = await RideBooking.findOne({ _id: req.params.id, rider: riderId })
       .populate("assignedPartnerId", "fullName mobileNumber")
       .populate("assignedVehicleId", "vehicleName registrationNumber brand model")
-      .populate("assignedDriverId", "fullName mobileNumber");
+      .populate("assignedDriverId", "name mobile");
 
     if (!ride) {
       return res.status(404).json({ success: false, message: "Ride not found" });
     }
 
-    return res.status(200).json({ success: true, data: ride });
+    // Driver/vehicle identity stays hidden until REVEAL_WINDOW_HOURS before
+    // the trip -- see isDetailsRevealed. The rider still sees the vehicle
+    // *category* (a separate, always-visible top-level field) either way.
+    const data = ride.toObject();
+    const rideDateTime = getRideDateTime(ride);
+    data.detailsRevealed = isDetailsRevealed(ride);
+    data.detailsRevealAt = rideDateTime
+      ? new Date(rideDateTime.getTime() - REVEAL_WINDOW_HOURS * 60 * 60 * 1000)
+      : null;
+    if (!data.detailsRevealed) {
+      data.assignedDriverId = null;
+      data.assignedVehicleId = null;
+      data.assignedPartnerId = null;
+    }
+
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error("Get Ride By Id Error:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
