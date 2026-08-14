@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 import { BankDetailsForm } from '../components/ProfileForms/BankDetailsForm';
+import { SafeModal } from '../components/SafeModal';
 
 export const BankAccountScreen = () => {
   const navigation = useNavigation<any>();
@@ -174,7 +175,7 @@ export const BankAccountScreen = () => {
       </View>
 
       {/* Update Bank Modal */}
-      <Modal visible={showUpdateModal} transparent animationType="slide">
+      <SafeModal visible={showUpdateModal} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: '#ffffff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '90%' }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -189,7 +190,7 @@ export const BankAccountScreen = () => {
             }} />
           </View>
         </View>
-      </Modal>
+      </SafeModal>
     </View>
   );
 };

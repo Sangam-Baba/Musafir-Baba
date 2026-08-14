@@ -54,7 +54,7 @@ export const LoginScreen = () => {
       const data = await res.json();
 
       if (res.ok && (data.success || data.accessToken)) {
-        setToken(data.accessToken);
+        setToken(data.accessToken, data.refreshToken);
       } else {
         setErrorMessage(data.message || 'Invalid credentials. Please try again.');
       }

@@ -5,30 +5,39 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Modal,
   FlatList,
   StatusBar,
   Platform,
   ActivityIndicator,
   RefreshControl,
-  Alert
+  Alert,
+  TextInput,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { Button } from '../components/Button';
+import { SafeModal } from '../components/SafeModal';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
+import { buildTripMapUrl, distanceKm } from '../utils/staticMap';
 
 type Booking = {
   id: string;
   tripId: string;
   pickupLocation: string;
   dropoffLocation: string;
+  pickupCoords?: { lat: number; lng: number };
+  dropCoords?: { lat: number; lng: number };
   pickupTime: string;
   date: string;
   fare: number;
   status: 'Ongoing' | 'Scheduled' | 'Completed' | 'Cancelled';
+  rawStatus?: 'ACCEPTED' | 'DRIVER_EN_ROUTE' | 'ARRIVED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
   customerName: string;
   customerPhone: string;
+  customerDetailsRevealed?: boolean;
+  customerDetailsRevealAt?: string;
   vehicleName: string;
   vehicleReg: string;
   driverName: string;
@@ -137,19 +146,50 @@ const MOCK_BOOKINGS: Booking[] = [
 
 export const BookingsScreen = () => {
   const token = useAuthStore((state) => state.token);
-  const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Available'>('All');
+  const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Available'>('All');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [availableRides, setAvailableRides] = useState<AvailableRide[]>([]);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
+  const [partnerLocation, setPartnerLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Preview-only location fix for the map card -- separate from the
+  // permission-gated fetch inside handleMarkArrived, which is the one that
+  // actually submits with the PATCH request. Silently does nothing if
+  // permission isn't granted yet; the map just falls back to pickup-only.
+  useEffect(() => {
+    if (!selectedBooking || !['ACCEPTED', 'DRIVER_EN_ROUTE', 'ARRIVED'].includes(selectedBooking.rawStatus || '')) {
+      setPartnerLocation(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const position = await Location.getCurrentPositionAsync({}).catch(() => null);
+      if (!cancelled && position) {
+        setPartnerLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBooking?.id, selectedBooking?.rawStatus]);
 
   const fetchBookings = async (showSpinner = true) => {
     if (showSpinner) setLoading(true);
     try {
-      const tabParam = activeFilter === 'All' ? 'Ongoing' : activeFilter;
-      const res = await fetch(`${API_BASE_URL}/partner/bookings?tab=${tabParam}`, {
+      // "All" is intentionally sent as-is: the backend's tab switch has no
+      // case for it, so it falls through to its default branch, which
+      // returns every non-pool status (ACCEPTED..CANCELLED). Previously this
+      // mapped to "Ongoing", which silently limited "All" to ongoing trips
+      // only.
+      const res = await fetch(`${API_BASE_URL}/partner/bookings?tab=${activeFilter}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -225,7 +265,95 @@ export const BookingsScreen = () => {
     }
   };
 
+  const handleUpdateStatus = async (
+    newStatus: 'DRIVER_EN_ROUTE' | 'ARRIVED' | 'ONGOING' | 'COMPLETED',
+    otpCode?: string,
+    location?: { lat: number; lng: number }
+  ) => {
+    if (!selectedBooking) return;
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/bookings/${selectedBooking.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus, otpCode, ...location }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        const updated: Booking = {
+          ...selectedBooking,
+          rawStatus: newStatus,
+          status: newStatus === 'ONGOING' ? 'Ongoing' : newStatus === 'COMPLETED' ? 'Completed' : selectedBooking.status,
+        };
+        setSelectedBooking(updated);
+        setBookings((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+        setOtpInput('');
+      } else {
+        Alert.alert('Could not update trip', result.message || 'Please try again.');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Could not update trip status. Please try again.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleMarkArrived = async () => {
+    setFetchingLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Location required', 'Location permission is needed to confirm you\'ve arrived at the pickup point.');
+        return;
+      }
+      const position = await Location.getCurrentPositionAsync({});
+      await handleUpdateStatus('ARRIVED', undefined, {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+    } catch (e) {
+      Alert.alert('Error', 'Could not get your location. Please try again.');
+    } finally {
+      setFetchingLocation(false);
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedBooking(null);
+    setOtpInput('');
+  };
+
   const filteredBookings = bookings;
+
+  // Which map stage to render for the currently-open trip, mirroring the
+  // approved design mockup: locked (rider details not revealed yet),
+  // enroute/arrived (partner's live position near pickup), ongoing (full
+  // pickup->drop route). Only computed for the statuses that actually show
+  // a map card below.
+  const mapStage: 'locked' | 'enroute' | 'arrived' | 'ongoing' | null = (() => {
+    if (!selectedBooking?.rawStatus) return null;
+    if (selectedBooking.customerDetailsRevealed === false) {
+      return ['ACCEPTED', 'DRIVER_EN_ROUTE'].includes(selectedBooking.rawStatus) ? 'locked' : null;
+    }
+    if (selectedBooking.rawStatus === 'ACCEPTED' || selectedBooking.rawStatus === 'DRIVER_EN_ROUTE') return 'enroute';
+    if (selectedBooking.rawStatus === 'ARRIVED') return 'arrived';
+    if (selectedBooking.rawStatus === 'ONGOING') return 'ongoing';
+    return null;
+  })();
+
+  const mapUri =
+    mapStage && selectedBooking?.pickupCoords
+      ? buildTripMapUrl(mapStage, selectedBooking.pickupCoords, selectedBooking.dropCoords, partnerLocation || undefined)
+      : null;
+
+  const distanceFromPickupKm =
+    partnerLocation && selectedBooking?.pickupCoords
+      ? distanceKm(partnerLocation, selectedBooking.pickupCoords)
+      : null;
+  const isOutOfRange = distanceFromPickupKm !== null && distanceFromPickupKm > 5;
 
   const getStatusStyle = (status: Booking['status']) => {
     switch (status) {
@@ -251,7 +379,7 @@ export const BookingsScreen = () => {
 
         {/* Filter Pills */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContainer}>
-          {(['Available', 'All', 'Ongoing', 'Scheduled', 'Completed'] as const).map((filter) => (
+          {(['Available', 'All', 'Ongoing', 'Scheduled', 'Completed', 'Cancelled'] as const).map((filter) => (
             <TouchableOpacity
               key={filter}
               style={[styles.filterPill, activeFilter === filter && styles.filterPillActive]}
@@ -417,13 +545,13 @@ export const BookingsScreen = () => {
       )}
 
       {/* Booking Details Modal */}
-      <Modal visible={!!selectedBooking} animationType="slide" presentationStyle="pageSheet">
+      <SafeModal visible={!!selectedBooking} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="receipt-outline" size={22} color="#FE5300" style={{ marginRight: 8 }} />
             <Text style={styles.modalTitle}>Trip Details</Text>
           </View>
-          <TouchableOpacity onPress={() => setSelectedBooking(null)} style={styles.closeBtn}>
+          <TouchableOpacity onPress={closeModal} style={styles.closeBtn}>
             <Ionicons name="close" size={22} color="#0f172a" />
           </TouchableOpacity>
         </View>
@@ -443,6 +571,31 @@ export const BookingsScreen = () => {
               <Text style={styles.modalFare}>Total Fare: ₹{selectedBooking.fare}</Text>
               <Text style={styles.modalSub}>{selectedBooking.tripType} • {selectedBooking.distance}</Text>
             </View>
+
+            {/* Trip Map -- pickup/partner/drop pins, varies by stage */}
+            {mapStage === 'locked' && (
+              <View style={styles.lockedPanel}>
+                <View style={styles.lockBadge}>
+                  <Ionicons name="lock-closed" size={18} color="#b45309" />
+                </View>
+                <Text style={styles.lockedTitle}>Available 24 hours before trip</Text>
+                <Text style={styles.lockedBody}>Rider contact details and trip actions unlock closer to pickup time.</Text>
+              </View>
+            )}
+
+            {mapStage && mapStage !== 'locked' && mapUri && (
+              <View style={styles.mapCard}>
+                <Image source={{ uri: mapUri }} style={styles.mapImage} resizeMode="cover" />
+                {mapStage !== 'ongoing' && distanceFromPickupKm !== null && (
+                  <View style={[styles.mapChip, isOutOfRange && styles.mapChipError]}>
+                    <View style={[styles.mapChipDot, { backgroundColor: isOutOfRange ? '#ef4444' : '#16a34a' }]} />
+                    <Text style={[styles.mapChipText, isOutOfRange && { color: '#ef4444' }]}>
+                      {distanceFromPickupKm.toFixed(1)} km {isOutOfRange ? 'away' : 'to pickup'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             {/* Route Map Timeline */}
             <Text style={styles.sectionTitle}>PICKUP & DROP ROUTE</Text>
@@ -472,9 +625,15 @@ export const BookingsScreen = () => {
                 <Ionicons name="person-circle-outline" size={20} color="#FE5300" style={{ marginRight: 10 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.infoLabel}>Passenger</Text>
-                  <Text style={styles.infoVal}>{selectedBooking.customerName}</Text>
+                  {selectedBooking.customerDetailsRevealed === false ? (
+                    <Text style={styles.infoVal}>Rider contact details available 24 hours before trip</Text>
+                  ) : (
+                    <Text style={styles.infoVal}>{selectedBooking.customerName}</Text>
+                  )}
                 </View>
-                <Text style={styles.phoneVal}>{selectedBooking.customerPhone}</Text>
+                {selectedBooking.customerDetailsRevealed === false ? null : (
+                  <Text style={styles.phoneVal}>{selectedBooking.customerPhone}</Text>
+                )}
               </View>
 
               <View style={styles.infoDivider} />
@@ -498,10 +657,110 @@ export const BookingsScreen = () => {
               </View>
             </View>
 
-            <Button title="Close Details" type="outline" onPress={() => setSelectedBooking(null)} style={{ marginTop: 16 }} />
+            {/* Trip Action -- progresses ACCEPTED -> DRIVER_EN_ROUTE -> ARRIVED -> ONGOING -> COMPLETED.
+                Locked panel above already covers the ACCEPTED/DRIVER_EN_ROUTE case when rider
+                details aren't revealed yet, so these buttons only render once mapStage isn't 'locked'. */}
+            {selectedBooking.rawStatus === 'ACCEPTED' && mapStage !== 'locked' && (
+              <TouchableOpacity
+                style={[styles.actionButton, updatingStatus && { opacity: 0.6 }]}
+                onPress={() => handleUpdateStatus('DRIVER_EN_ROUTE')}
+                disabled={updatingStatus}
+                activeOpacity={0.85}
+              >
+                {updatingStatus ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <>
+                    <Ionicons name="navigate-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                    <Text style={styles.actionButtonText}>Start Journey to Pickup</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {selectedBooking.rawStatus === 'DRIVER_EN_ROUTE' && mapStage !== 'locked' && (
+              <>
+              <TouchableOpacity
+                style={[styles.actionButton, isOutOfRange && styles.actionButtonError, (updatingStatus || fetchingLocation) && { opacity: 0.6 }]}
+                onPress={handleMarkArrived}
+                disabled={updatingStatus || fetchingLocation}
+                activeOpacity={0.85}
+              >
+                {updatingStatus || fetchingLocation ? (
+                  <>
+                    <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 6 }} />
+                    {fetchingLocation && <Text style={styles.actionButtonText}>Getting your location…</Text>}
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="location-outline" size={16} color={isOutOfRange ? '#ef4444' : '#ffffff'} style={{ marginRight: 6 }} />
+                    <Text style={[styles.actionButtonText, isOutOfRange && { color: '#ef4444' }]}>Mark Arrived at Pickup</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+              {isOutOfRange && (
+                <View style={styles.errorBanner}>
+                  <Ionicons name="alert-circle-outline" size={14} color="#ef4444" style={{ marginRight: 6, marginTop: 1 }} />
+                  <Text style={styles.errorBannerText}>
+                    You need to be within 5 km of the pickup location to mark arrival.
+                  </Text>
+                </View>
+              )}
+              </>
+            )}
+
+            {selectedBooking.rawStatus === 'ARRIVED' && (
+              <View style={styles.otpSection}>
+                <Text style={styles.infoLabel}>ENTER CUSTOMER OTP TO START TRIP</Text>
+                <TextInput
+                  style={styles.otpInput}
+                  value={otpInput}
+                  onChangeText={setOtpInput}
+                  placeholder="Enter OTP"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                />
+                <TouchableOpacity
+                  style={[styles.actionButton, (updatingStatus || !otpInput) && { opacity: 0.6 }]}
+                  onPress={() => handleUpdateStatus('ONGOING', otpInput)}
+                  disabled={updatingStatus || !otpInput}
+                  activeOpacity={0.85}
+                >
+                  {updatingStatus ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <>
+                      <Ionicons name="play-circle-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                      <Text style={styles.actionButtonText}>Start Trip</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {selectedBooking.rawStatus === 'ONGOING' && (
+              <TouchableOpacity
+                style={[styles.actionButton, updatingStatus && { opacity: 0.6 }]}
+                onPress={() => handleUpdateStatus('COMPLETED')}
+                disabled={updatingStatus}
+                activeOpacity={0.85}
+              >
+                {updatingStatus ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-done-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                    <Text style={styles.actionButtonText}>Complete Trip</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
+            <Button title="Close Details" type="outline" onPress={closeModal} style={{ marginTop: 12 }} />
           </ScrollView>
         ) : null}
-      </Modal>
+      </SafeModal>
     </View>
   );
 };
@@ -664,6 +923,129 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 13,
     fontWeight: '800',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FE5300',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 4,
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  otpSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  otpInput: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
+    letterSpacing: 4,
+    marginTop: 8,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  mapCard: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    marginBottom: 4,
+  },
+  mapImage: {
+    width: '100%',
+    height: 160,
+    backgroundColor: '#f1f5f9',
+  },
+  mapChip: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  mapChipError: {
+    backgroundColor: '#fef2f2',
+  },
+  mapChipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 5,
+  },
+  mapChipText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  lockedPanel: {
+    alignItems: 'center',
+    textAlign: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 4,
+  },
+  lockBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  lockedTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  lockedBody: {
+    fontSize: 12.5,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 260,
+  },
+  actionButtonError: {
+    backgroundColor: '#fee2e2',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fee2e2',
+    borderRadius: 12,
+    padding: 10,
+    marginTop: 10,
+  },
+  errorBannerText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#ef4444',
+    lineHeight: 17,
   },
 
   /* Empty State */

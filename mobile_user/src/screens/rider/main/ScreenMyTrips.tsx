@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
+import { useNotificationStore } from '../../../store/useNotificationStore';
 import React, { useState, useEffect } from 'react';
 import {
   Menu,
@@ -52,6 +53,26 @@ import {
 } from 'lucide-react-native';
 import { getMyRides } from '../../../api/ride.api';
 
+// Maps the real RideBooking status enum to trip-card display info -- copy
+// matches ScreenLiveTracking.tsx's statusMessages so the wording is
+// consistent wherever a rider sees ride status in the app.
+const TRIP_STATUS_DISPLAY: Record<string, { badge: string; detail: string; color: string; bg: string; border: string }> = {
+  PAID: { badge: 'Upcoming', detail: 'Finding you a partner...', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
+  AWAITING_ASSIGNMENT: { badge: 'Upcoming', detail: 'Finding you a partner...', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
+  ACCEPTED: { badge: 'Upcoming', detail: 'Partner assigned', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+  DRIVER_EN_ROUTE: { badge: 'Upcoming', detail: 'Partner is on the way', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+  ARRIVED: { badge: 'Upcoming', detail: 'Partner has arrived', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+  ONGOING: { badge: 'Ongoing', detail: 'Trip in progress', color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+  COMPLETED: { badge: 'Completed', detail: 'Trip Completed', color: '#059669', bg: '#ECFDF5', border: '#A7F3D0' },
+  CANCELLED: { badge: 'Cancelled', detail: 'Cancelled', color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
+};
+const DEFAULT_TRIP_STATUS_DISPLAY = TRIP_STATUS_DISPLAY.AWAITING_ASSIGNMENT;
+
+const TRIP_TYPE_LABEL: Record<string, string> = {
+  ONE_WAY: 'One Way',
+  ROUND_TRIP: 'Round Trip',
+};
+
 export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: string) => void }) {
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
   const activeScreen: string = '35';
@@ -73,7 +94,9 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
   const [paymentMethod, setPaymentMethod] = useState('upi_cards');
 
   // Screen 35 Trips tab
-  const [tripsTab, setTripsTab] = useState('completed'); // 'upcoming' | 'completed' | 'cancelled'
+  const [tripsTab, setTripsTab] = useState('upcoming'); // 'upcoming' | 'completed' | 'cancelled'
+  const unreadNotificationCount = useNotificationStore((state) => state.unreadCount);
+  const fetchNotificationsForBadge = useNotificationStore((state) => state.fetchNotifications);
 
   // Toast notification state
   const [toastMsg, setToastMsg] = useState('');
@@ -100,6 +123,10 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
       cancelled = true;
     };
   }, [tripsTab]);
+
+  useEffect(() => {
+    fetchNotificationsForBadge();
+  }, []);
 
   const swapLocations = () => {
     const temp = pickup;
@@ -543,7 +570,12 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 <Text className="text-base font-black text-slate-900">Live Tracking</Text>
                 <View className="flex items-center gap-2 flex-row">
                   <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full"><Headphones className="w-5 h-5"/></TouchableOpacity>
-                  <TouchableOpacity className="p-1 hover:bg-slate-100 rounded-full relative"><Bell className="w-5 h-5"/><Text className="w-2 h-2 rounded-full bg-[#FF3B00] absolute top-1 right-1"></Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => onNavigate('38')} className="p-1 hover:bg-slate-100 rounded-full relative">
+                    <Bell className="w-5 h-5"/>
+                    {unreadNotificationCount > 0 ? (
+                      <Text className="w-2 h-2 rounded-full bg-[#FF3B00] absolute top-1 right-1"></Text>
+                    ) : null}
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -719,10 +751,12 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
               {/* Header Bar */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
                 <Text style={{ fontSize: 18, fontWeight: '900', color: '#0F172A' }}>My Trips</Text>
-                <TouchableOpacity style={{ alignItems: 'center', position: 'relative' }}>
+                <TouchableOpacity onPress={() => onNavigate('38')} style={{ alignItems: 'center', position: 'relative' }}>
                   <View style={{ position: 'relative' }}>
                     <Bell size={20} color="#0F172A" />
-                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF5500', position: 'absolute', top: 0, right: 0 }} />
+                    {unreadNotificationCount > 0 ? (
+                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF5500', position: 'absolute', top: 0, right: 0 }} />
+                    ) : null}
                   </View>
                   <Text style={{ fontSize: 8, fontWeight: '700', color: '#64748B', marginTop: 1 }}>Notifications</Text>
                 </TouchableOpacity>
@@ -801,54 +835,30 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '700', color: '#94A3B8', paddingVertical: 12 }}>Loading trips...</Text>
               )}
 
-              {/* Trip Cards List: Render real API trips if available, otherwise render MOCK DUMMY TRIPS matching target screenshot */}
-              {(!isLoadingTrips && trips.length > 0 ? trips : [
-                {
-                  _id: 'MBGO2505200001',
-                  status: 'COMPLETED',
-                  pickup: { address: 'New Delhi, Delhi' },
-                  drop: { address: 'Jaipur, Rajasthan' },
-                  rideDate: '20 May 2025',
-                  rideTime: '08:00 AM',
-                  tripType: 'One Way',
-                  passengers: '2 Passengers',
-                  bags: '2 Bags',
-                  vehicleCategory: 'Sedan',
-                  vehicleSubtext: 'Dzire, Etios, Amaze or similar',
-                  seats: '4 Seats',
-                  ac: true,
-                  totalAmount: 6250,
-                  driverName: 'Ramesh Kumar',
-                  driverRating: '4.8',
-                  completedTime: '20 May 2025, 01:45 PM'
-                },
-                {
-                  _id: 'MBGO1805200002',
-                  status: 'COMPLETED',
-                  pickup: { address: 'Gurugram, Haryana' },
-                  drop: { address: 'Agra, Uttar Pradesh' },
-                  rideDate: '18 May 2025',
-                  rideTime: '07:30 AM',
-                  tripType: 'Round Trip',
-                  passengers: '3 Passengers',
-                  bags: '3 Bags',
-                  vehicleCategory: 'SUV',
-                  vehicleSubtext: 'Ertiga, Carens or similar',
-                  seats: '6 Seats',
-                  ac: true,
-                  totalAmount: 9750,
-                  driverName: 'Mahesh Yadav',
-                  driverRating: '4.7',
-                  completedTime: '18 May 2025, 06:30 PM'
-                }
-              ]).map((trip, idx) => (
+              {!isLoadingTrips && trips.length === 0 && (
+                <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40, gap: 8 }}>
+                  <Calendar size={32} color="#CBD5E1" />
+                  <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#334155' }}>
+                    No {tripsTab} trips yet
+                  </Text>
+                  <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#94A3B8', textAlign: 'center', paddingHorizontal: 24 }}>
+                    {tripsTab === 'upcoming' ? "Trips you book will show up here." : `You don't have any ${tripsTab} trips.`}
+                  </Text>
+                </View>
+              )}
+
+              {/* Trip Cards List: real API trips only */}
+              {trips.map((trip, idx) => {
+                const statusDisplay = TRIP_STATUS_DISPLAY[trip.status] || DEFAULT_TRIP_STATUS_DISPLAY;
+                const StatusIcon = trip.status === 'COMPLETED' ? CheckCircle2 : trip.status === 'CANCELLED' ? XCircle : Clock;
+                return (
                 <View key={trip._id || idx} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
-                  
+
                   {/* Card Header: Status Badge & Booking ID */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                    <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                      <CheckCircle2 size={10} color="#059669" />
-                      <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#059669' }}>Completed</Text>
+                    <View style={{ backgroundColor: statusDisplay.bg, borderWidth: 1, borderColor: statusDisplay.border, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                      <StatusIcon size={10} color={statusDisplay.color} />
+                      <Text style={{ fontSize: 9.5, fontWeight: '800', color: statusDisplay.color }}>{statusDisplay.badge}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748B' }}>Booking ID: {trip._id}</Text>
@@ -901,17 +911,12 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
 
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                         <ArrowUpDown size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.tripType || 'One Way'}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{TRIP_TYPE_LABEL[trip.tripType] || trip.tripType || 'One Way'}</Text>
                       </View>
 
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                         <Users size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.passengers || '2 Passengers'}</Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Briefcase size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.bags || '2 Bags'}</Text>
+                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.passengerCount || 1} Passenger{(trip.passengerCount || 1) > 1 ? 's' : ''}</Text>
                       </View>
                     </View>
 
@@ -920,17 +925,9 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                       <Text style={{ fontSize: 11.5, fontWeight: '900', color: '#0F172A', textAlign: 'center' }}>
                         {trip.vehicleCategory || 'Sedan'}
                       </Text>
-                      <Text style={{ fontSize: 8, fontWeight: '600', color: '#64748B', textAlign: 'center' }} numberOfLines={1}>
-                        {trip.vehicleSubtext || 'Dzire, Etios'}
-                      </Text>
 
                       <View style={{ width: 46, height: 26, borderRadius: 6, backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center', marginVertical: 2 }}>
                         <Car size={16} color="#FF5500" />
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#475569' }}>{trip.seats || '4 Seats'}</Text>
-                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#059669' }}>• AC</Text>
                       </View>
                     </View>
 
@@ -938,29 +935,41 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
 
                   {/* Middle Info Bar: 2-Row Responsive Non-Overflowing Layout */}
                   <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, gap: 6 }}>
-                    {/* Row 1: Total Amount & Driver */}
+                    {/* Row 1: Total Amount & Driver (driver only shown once actually assigned) */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Total Amount</Text>
-                        <Text style={{ fontSize: 12.5, fontWeight: '900', color: '#059669' }}>₹{(trip.totalAmount || 6250).toLocaleString('en-IN')}</Text>
+                        <Text style={{ fontSize: 12.5, fontWeight: '900', color: '#059669' }}>₹{(trip.totalAmount || 0).toLocaleString('en-IN')}</Text>
                         <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
                           <Text style={{ fontSize: 8, fontWeight: '800', color: '#059669' }}>Paid ✓</Text>
                         </View>
                       </View>
 
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Driver</Text>
-                        <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#0F172A' }}>{trip.driverName || 'Ramesh Kumar'}</Text>
-                        <View style={{ backgroundColor: '#059669', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
-                          <Text style={{ fontSize: 7.5, fontWeight: '800', color: '#FFFFFF' }}>★ {trip.driverRating || '4.8'}</Text>
+                      {trip.driverName ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                          <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Driver</Text>
+                          <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#0F172A' }}>{trip.driverName}</Text>
+                          {trip.driverRating ? (
+                            <View style={{ backgroundColor: '#059669', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                              <Text style={{ fontSize: 7.5, fontWeight: '800', color: '#FFFFFF' }}>★ {trip.driverRating}</Text>
+                            </View>
+                          ) : null}
                         </View>
-                      </View>
+                      ) : (
+                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Partner not assigned yet</Text>
+                      )}
                     </View>
 
-                    {/* Row 2: Trip Completion Time */}
+                    {/* Row 2: status-appropriate timing detail */}
                     <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Trip Completed</Text>
-                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>{trip.completedTime || '20 May 2025, 01:45 PM'}</Text>
+                      <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>
+                        {trip.status === 'COMPLETED' ? 'Trip Completed' : trip.status === 'CANCELLED' ? 'Status' : 'Scheduled'}
+                      </Text>
+                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>
+                        {trip.status === 'COMPLETED' || trip.status === 'CANCELLED'
+                          ? statusDisplay.detail
+                          : `${trip.rideDate || ''} ${trip.rideTime || ''}`.trim()}
+                      </Text>
                     </View>
                   </View>
 
@@ -983,7 +992,8 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                   </View>
 
                 </View>
-              ))}
+                );
+              })}
 
               {/* Support Card Banner */}
               <View style={{ backgroundColor: '#F0F9FF', borderWidth: 1, borderColor: '#BAE6FD', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>

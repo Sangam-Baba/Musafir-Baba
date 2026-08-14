@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/config';
-import { getItem, removeItem } from '../utils/storage';
+import { getItem } from '../utils/storage';
+import { refreshAccessToken, isRefreshEndpoint } from './tokenRefresh';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -20,9 +21,20 @@ apiClient.interceptors.request.use(async (config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
-      await removeItem('partner_token');
-      // Dispatch custom event or handle store update directly from UI layer
+    const config = error.config;
+    if (
+      error.response?.status === 401 &&
+      config &&
+      !config.__retried &&
+      !isRefreshEndpoint(config.url || '')
+    ) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        config.__retried = true;
+        config.headers.Authorization = `Bearer ${newToken}`;
+        return apiClient(config);
+      }
+      // refreshAccessToken already logged the store out on failure
     }
     return Promise.reject(error);
   }

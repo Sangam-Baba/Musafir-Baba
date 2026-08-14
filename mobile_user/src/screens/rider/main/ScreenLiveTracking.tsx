@@ -70,6 +70,15 @@ export default function ScreenLiveTracking({ onNavigate, onBack }: { onNavigate:
   const pickup = ride?.pickup?.address || draftPickup;
   const drop = ride?.drop?.address || draftDrop;
 
+  // Driver/vehicle identity is hidden by the backend (assignedDriverId/
+  // assignedVehicleId/assignedPartnerId come back null) until 24h before the
+  // trip -- distinguish "not assigned yet" from "assigned but not revealed
+  // yet" so we don't show the misleading "Waiting for partner..." once a
+  // partner has actually accepted.
+  const PARTNER_ASSIGNED_STATUSES = ['ACCEPTED', 'DRIVER_EN_ROUTE', 'ARRIVED', 'ONGOING', 'COMPLETED'];
+  const isPartnerAssigned = PARTNER_ASSIGNED_STATUSES.includes(ride?.status);
+  const detailsGated = isPartnerAssigned && ride?.detailsRevealed === false;
+
   useEffect(() => {
     if (!rideId) return;
     let cancelled = false;
@@ -612,20 +621,24 @@ export default function ScreenLiveTracking({ onNavigate, onBack }: { onNavigate:
                 <View className="flex items-center justify-between flex-row">
                   <View className="flex items-center gap-3 flex-row">
                     <View className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center flex-row"><Text className="text-white font-black text-sm">
-                      {ride?.assignedDriverId?.fullName ? ride.assignedDriverId.fullName.slice(0, 2).toUpperCase() : '-'}
+                      {detailsGated ? '—' : (ride?.assignedDriverId?.name ? ride.assignedDriverId.name.slice(0, 2).toUpperCase() : '-')}
                     </Text></View>
                     <View>
                       <Text className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                        {ride?.assignedDriverId?.fullName || ride?.assignedPartnerId?.fullName || 'Waiting for partner...'}
+                        {detailsGated
+                          ? 'Details available soon'
+                          : (ride?.assignedDriverId?.name || ride?.assignedPartnerId?.fullName || 'Waiting for partner...')}
                       </Text>
                       <View className="mt-0.5"><Text className="text-[10px] font-bold text-slate-500">
-                        {ride?.assignedVehicleId ? `${ride.assignedVehicleId.registrationNumber} • ${ride.assignedVehicleId.brand} ${ride.assignedVehicleId.model}` : 'Vehicle not yet assigned'}
+                        {detailsGated
+                          ? 'Driver & vehicle details will be shared 24 hours before your trip.'
+                          : (ride?.assignedVehicleId ? `${ride.assignedVehicleId.registrationNumber} • ${ride.assignedVehicleId.brand} ${ride.assignedVehicleId.model}` : 'Vehicle not yet assigned')}
                       </Text></View>
                     </View>
                   </View>
 
                   <View className="flex items-center gap-2 flex-row">
-                    <TouchableOpacity onPress={() => showToast(ride?.assignedPartnerId?.mobileNumber ? `Calling ${ride.assignedPartnerId.mobileNumber}...` : 'Partner not yet assigned')} className="p-2.5 bg-emerald-100 rounded-2xl hover:bg-emerald-200 transition">
+                    <TouchableOpacity onPress={() => showToast(detailsGated ? 'Partner contact available 24 hours before your trip' : (ride?.assignedPartnerId?.mobileNumber ? `Calling ${ride.assignedPartnerId.mobileNumber}...` : 'Partner not yet assigned'))} className="p-2.5 bg-emerald-100 rounded-2xl hover:bg-emerald-200 transition">
                       <Phone className="w-4 h-4"/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => showToast("Chat coming soon")} className="p-2.5 bg-blue-100 rounded-2xl hover:bg-blue-200 transition">

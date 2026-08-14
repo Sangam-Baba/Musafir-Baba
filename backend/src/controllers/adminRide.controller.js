@@ -279,6 +279,10 @@ export const reassignRide = async (req, res) => {
     ride.status = "AWAITING_ASSIGNMENT";
     ride.broadcastExpiresAt = undefined;
     ride.needsManualAssignment = false;
+    // Whichever partner accepts next needs their own reveal notification
+    // cycle -- don't leave this stuck "already notified" from the previous
+    // assignment.
+    ride.detailsRevealNotified = false;
     ride.statusHistory.push({ status: "AWAITING_ASSIGNMENT", note: "Reassigned by admin" });
     await ride.save();
 

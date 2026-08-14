@@ -98,6 +98,11 @@ const rideBookingSchema = new mongoose.Schema(
     tripStartOtp: { type: String },
     platformCommissionPercent: { type: Number, default: 15 },
     cancelReason: { type: String },
+    // Tracks whether the one-time "driver & vehicle / rider contact details
+    // are now available" notification has fired for this ride, so the
+    // reveal cron never sends it twice. Not used to decide *whether* details
+    // are revealed -- that's always computed live from rideDate/rideTime.
+    detailsRevealNotified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator, RefreshControl, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput, ActivityIndicator, RefreshControl, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
+import { SafeModal } from '../components/SafeModal';
 
 export const PersonalDetailsScreen = () => {
   const navigation = useNavigation<any>();
@@ -511,7 +512,7 @@ export const PersonalDetailsScreen = () => {
         )}
       </ScrollView>
 
-      <Modal visible={showEditModal} transparent animationType="slide">
+      <SafeModal visible={showEditModal} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: '#ffffff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '80%' }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -701,7 +702,7 @@ export const PersonalDetailsScreen = () => {
             </ScrollView>
           </View>
         </View>
-      </Modal>
+      </SafeModal>
     </View>
   );
 };
