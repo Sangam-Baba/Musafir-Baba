@@ -1,9 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
-import { Users, Star, Briefcase, Globe, Search, ChevronDown } from "lucide-react";
 
 export const metadata: Metadata = {
   description:
@@ -16,7 +14,18 @@ import VisaHome from "@/components/custom/VisaHome";
 import { SevenSection } from "@/components/custom/SevenSection";
 import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
 import BlogsHome from "@/components/custom/BlogsHome";
-import HeroSearchBox from "@/components/custom/HeroSearchBox";
+import HeroSearchWidget from "@/components/custom/HeroSearchWidget";
+import HeroStatsRail from "@/components/custom/HeroStatsRail";
+import TrySearchChips from "@/components/custom/TrySearchChips";
+import TrustBadgesRow from "@/components/custom/TrustBadgesRow";
+import QuickServiceTiles from "@/components/custom/QuickServiceTiles";
+import TravelMoodSection from "@/components/custom/TravelMoodSection";
+import ExploreDestinationsPanel from "@/components/custom/ExploreDestinationsPanel";
+import VisaMadeEasySection from "@/components/custom/VisaMadeEasySection";
+import WhyChooseBanner from "@/components/custom/WhyChooseBanner";
+import TestimonialsBanner from "@/components/custom/TestimonialsBanner";
+import TravelStoriesNewsSection from "@/components/custom/TravelStoriesNewsSection";
+import HomeCTABanner from "@/components/custom/HomeCTABanner";
 
 // ─── Below-the-fold Client Components (dynamic imports to defer JS) ──
 import dynamic from "next/dynamic";
@@ -43,11 +52,6 @@ const Partners = dynamic(
   () => import("@/components/custom/Partners"),
   { loading: () => <div className="h-40 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
 );
-const Newslatter = dynamic(
-  () => import("@/components/common/Newslatter"),
-  { loading: () => <div className="h-40 animate-pulse bg-[#FE5300] rounded-xl mx-4 my-2" /> }
-);
-
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
 import { getLocalSchema } from "@/lib/schema/local.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
@@ -151,10 +155,16 @@ export default async function HomePage() {
   return (
     <main>
       {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
-      <section className="w-full px-6 md:px-14 lg:px-20 py-3 md:py-4 lg:py-6 relative flex flex-col items-start justify-between h-[calc(100vh-130px)] min-h-[480px] overflow-hidden">
+      {/* Header is now `fixed` and transparent-over-photo on this page (see
+          components/common/Header.tsx), so it no longer reserves layout
+          space above the hero the way the old in-flow header did. h-screen
+          + top padding replaces the old h-[calc(100vh-130px)] trick, so the
+          photo still runs full-bleed behind the nav while the actual content
+          (badge/heading/search) clears it. */}
+      <section className="w-full px-6 md:px-14 lg:px-20 pt-20 md:pt-28 lg:pt-32 pb-3 md:pb-4 lg:pb-6 relative flex flex-col items-start justify-between h-screen min-h-[560px] overflow-hidden">
         <Image
           // src="/homebanner32.avif"
-          src="/homebannertest1.avif"
+          src="/homebanner004.avif"
           alt="Home Banner"
           fill
           priority
@@ -162,7 +172,9 @@ export default async function HomePage() {
         />
 
         <div className="w-full max-w-full mx-auto flex flex-col items-start mt-2 md:mt-4 relative z-10">
-          
+
+          <HeroStatsRail />
+
           <style dangerouslySetInnerHTML={{__html: `
             @keyframes customBlink {
               0%, 100% { opacity: 1; }
@@ -205,112 +217,70 @@ export default async function HomePage() {
             </span>
           </div>
           
-          <h1 className="text-4xl md:text-5xl lg:text-[60px] font-medium text-white leading-[1.1] tracking-tight mb-1 md:mb-2 w-full">
-            Book your <span className="italic font-serif text-[#FE5300]">dream trip</span><br className="hidden md:block"/> in just 60 seconds
+          <h1 className="text-4xl md:text-5xl lg:text-[60px] font-medium text-gray-900 leading-[1.1] tracking-tight mb-1 md:mb-2 w-full max-w-2xl">
+            Where will your <span className="italic font-serif text-[#FE5300]">next story</span> begin?
           </h1>
-          
-          <p className="text-sm md:text-base text-gray-200 font-light max-w-2xl mb-4 md:mb-8">
-            Curated tours and seamless visa assistance — all in one place.
+
+          <p className="text-sm md:text-base text-gray-700 font-light max-w-2xl mb-1 md:mb-2">
+            From mountains and beaches to spiritual journeys and global adventures — we plan every trip like it&apos;s our own.
           </p>
 
           {/* Search Interface Container */}
-          <HeroSearchBox />
+          <HeroSearchWidget />
 
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full max-w-[530px] mb-4 relative z-20">
-            {[
-              { label: "Mountain treks", slug: "mountain-treks" },
-              { label: "Honeymoon", slug: "honeymoon-packages" },
-              { label: "Religious tours", slug: "religious-tours" },
-              { label: "Weekend trips", slug: "weekend-getaways" },
-              { label: "Family Tours", slug: "family-tours" },
-              { label: "Group Tour", slug: "group-tour-packages" },
-            ].map((pill, idx) => {
-              const isActive = pill.label === "Religious tours";
-              return (
-                <Link 
-                  href={`/holidays/${pill.slug}`}
-                  key={idx}
-                  className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[11px] md:text-[13px] font-medium transition-all ${
-                    isActive 
-                      ? "border border-[#FE5300] text-[#FE5300] bg-white shadow-sm" 
-                      : "border border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 bg-white"
-                  }`}
-                >
-                  {pill.label}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Suggestion chips */}
+          <TrySearchChips />
 
-        </div>
-
-        {/* Bottom Stats Banner */}
-        <div className="w-full mx-auto border-t border-white/20 pt-4 pb-2 mt-auto relative z-20">
-          <div className="flex flex-wrap justify-center items-center gap-y-4 md:gap-y-0 w-full max-w-6xl mx-auto">
-            
-            {/* Stat 1 */}
-            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
-              <Users className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
-              <div className="flex flex-col">
-                <span className="text-lg md:text-[22px] font-semibold text-white leading-tight">24,247</span>
-                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Happy travellers</span>
-              </div>
-            </div>
-
-            {/* Stat 2 */}
-            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
-              <Star className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
-              <div className="flex flex-col">
-                <span className="text-lg md:text-[22px] font-semibold text-white flex items-center gap-1.5 leading-tight">4.8 <Star className="w-3.5 h-3.5 fill-white text-white" /></span>
-                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Google rating</span>
-              </div>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4 md:border-r border-white/20">
-              <Briefcase className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
-              <div className="flex flex-col">
-                <span className="text-lg md:text-[22px] font-semibold text-white leading-tight">500+</span>
-                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Tour packages</span>
-              </div>
-            </div>
-
-            {/* Stat 4 */}
-            <div className="w-1/2 md:w-1/4 flex items-center justify-center gap-4">
-              <Globe className="w-6 h-6 md:w-7 md:h-7 text-[#FE5300]" strokeWidth={1.5} />
-              <div className="flex flex-col">
-                <span className="text-lg md:text-[22px] font-semibold text-white leading-tight">180+</span>
-                <span className="text-[12px] md:text-[14px] text-gray-300 font-normal">Visa countries</span>
-              </div>
-            </div>
-
-          </div>
         </div>
 
       </section>
 
+      {/* ── New: Trust badges / quick-service tiles / category carousel ─── */}
+      <TrustBadgesRow />
+      <QuickServiceTiles />
+      <Suspense fallback={<div className="h-64 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
+        <TravelMoodSection />
+      </Suspense>
+
       {/* ── Above-the-fold Server Sections (streamed) ─────────────────── */}
+      {/* VisaHome temporarily disabled per request — keep for future use,
+          do not delete.
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
         <VisaHome />
       </Suspense>
+      */}
 
       <Suspense fallback={<div className="min-h-[600px] bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
         <FeaturedTourSSG />
       </Suspense>
 
+      {/* ── New: Explore Destinations / Visa Made Easy interactive map panels ── */}
+      <section className="w-full px-4 md:px-10 py-8 md:py-10">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-5">
+          <ExploreDestinationsPanel />
+          <Suspense fallback={<div className="h-[420px] bg-gray-100 animate-pulse rounded-2xl" />}>
+            <VisaMadeEasySection />
+          </Suspense>
+        </div>
+      </section>
+
       {/* ── Below-the-fold Components (Server & Client interweaved) ──────── */}
+      {/* DestinationSection temporarily disabled per request — superseded by
+          the Explore Destinations panel above; keep for future use, do not
+          delete.
       <DestinationSection />
-      <WhyChoose />
-      <LazyTestimonial data={testi} />
-      <SectionFive />
+      */}
+      <WhyChooseBanner />
+      <TestimonialsBanner />
+      {/* Fixed sequence per request: testimonials → blog/news → partners → enquiry form */}
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl mx-4 my-2" />}>
-        <BlogsHome />
+        <TravelStoriesNewsSection />
       </Suspense>
       <Partners />
+      <SectionFive />
       <Faqs faqs={faqs} />
-      <Newslatter />
-      
+      <HomeCTABanner />
+
       <Suspense fallback={null}>
         <LoginAutoOpen />
       </Suspense>

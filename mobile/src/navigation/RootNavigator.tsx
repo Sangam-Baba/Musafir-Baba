@@ -8,9 +8,12 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
 import { API_BASE_URL } from '../utils/config';
 
+import ScreenSplash from '../screens/ScreenSplash';
+
 export const RootNavigator = () => {
   const { isAuthenticated, hasCompletedOnboarding, initialize } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const { expoPushToken, notification } = usePushNotifications();
   useRealtimeNotifications();
 
@@ -34,6 +37,13 @@ export const RootNavigator = () => {
   }, [initialize]);
 
   useEffect(() => {
+    if (isReady) {
+      const timer = setTimeout(() => setShowSplash(false), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [isReady]);
+
+  useEffect(() => {
     if (isAuthenticated && expoPushToken) {
       const token = useAuthStore.getState().token;
       fetch(`${API_BASE_URL}/partner/push-token`, {
@@ -44,12 +54,8 @@ export const RootNavigator = () => {
     }
   }, [isAuthenticated, expoPushToken]);
 
-  if (!isReady) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FE5300" />
-      </View>
-    );
+  if (!isReady || showSplash) {
+    return <ScreenSplash />;
   }
 
   return (

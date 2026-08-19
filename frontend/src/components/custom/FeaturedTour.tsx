@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import PackageCard from "./PackageCard";
+import FeaturedPackageCard from "./FeaturedPackageCard";
 import { ArrowRight } from "lucide-react";
 import {
   Carousel,
@@ -103,7 +103,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
               >
                 <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
                   {tab.categoryPackages.slice(0, 4).map((pkg) => (
-                    <PackageCard
+                    <FeaturedPackageCard
                       key={pkg._id}
                       priority={true}
                       pkg={{
@@ -137,7 +137,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                         .map((pkg, i) => (
                           <CarouselItem key={i}>
                             <div className="p-1">
-                              <PackageCard
+                              <FeaturedPackageCard
                                 key={pkg._id}
                                 priority={i < 2}
                                 pkg={{

@@ -29,6 +29,7 @@ if (Platform.OS === 'web') {
 
 // Import Screens (to be created)
 import ScreenRiderAuth from './src/screens/rider/auth/ScreenRiderAuth';
+import ScreenSplash from './src/screens/rider/common/ScreenSplash';
 
 // Journey Screens
 import ScreenRiderHome from './src/screens/rider/main/ScreenRiderHome';
@@ -144,8 +145,17 @@ function AppContent() {
     }
   }, [isInitializing, isAuthenticated]);
 
-  if (isInitializing) {
-    return <View style={{ flex: 1, backgroundColor: '#F8FAFC' }} />;
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    if (!isInitializing) {
+      const timer = setTimeout(() => setShowSplash(false), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [isInitializing]);
+
+  if (isInitializing || showSplash) {
+    return <ScreenSplash />;
   }
 
   const renderScreen = () => {

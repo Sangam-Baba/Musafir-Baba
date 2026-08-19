@@ -1,33 +1,81 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronDown } from "lucide-react";
+import { NAV_LINKS } from "@/config/navLinks";
 
-export function Navbar({ onClose }: { onClose?: () => void }) {
+export function Navbar({
+  onClose,
+  variant = "light",
+}: {
+  onClose?: () => void;
+  variant?: "light" | "dark";
+}) {
   const pathname = usePathname();
-
-  const navLinks = [
-    { name: "Holiday packages", href: "/holidays" },
-    { name: "Car rental", href: "/rental" },
-    { name: "Visa", href: "/visa" },
-    { name: "Blog", href: "/blog" },
-  ];
+  const isDark = variant === "dark";
 
   return (
     <nav className="flex lg:items-center w-full">
       <ul className="flex flex-col md:flex-row lg:items-center md:gap-6 gap-6 lg:gap-8 w-full justify-center">
-        {navLinks.map((link) => {
-          const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`);
+        {NAV_LINKS.map((link) => {
+          const isActive =
+            pathname === link.href || pathname?.startsWith(`${link.href}/`);
           return (
-            <li key={link.name} className="relative font-medium text-[15px] text-gray-800 hover:text-[#FE5300] transition-colors py-2 md:py-3">
-              <Link onClick={onClose} href={link.href} className="flex items-center">
-                {link.name}
+            <li
+              key={link.label}
+              className="relative group/nav-item font-medium text-[15px] py-2 md:py-3"
+            >
+              <Link
+                onClick={onClose}
+                href={link.href}
+                className={`flex items-center gap-1 transition-colors ${
+                  isDark
+                    ? "text-gray-900 hover:text-gray-900/70"
+                    : "text-gray-800 hover:text-[#FE5300]"
+                }`}
+              >
+                {link.label}
+                {link.dropdown && (
+                  <ChevronDown
+                    className="w-3.5 h-3.5 opacity-70 transition-transform duration-200 group-hover/nav-item:rotate-180"
+                    aria-hidden="true"
+                  />
+                )}
               </Link>
+
               {/* Active / Hover Bottom Border */}
-              <div 
+              <div
                 className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#FE5300] rounded-t-sm transition-all duration-300 ${
-                  isActive ? "opacity-100" : "opacity-0 hover:opacity-100"
+                  isActive
+                    ? "opacity-100"
+                    : "opacity-0 group-hover/nav-item:opacity-100"
                 }`}
               />
+
+              {/* Dropdown: always in the DOM as real links, so it's crawlable
+                  and keyboard-usable without depending on JS to reveal it */}
+              {link.dropdown && (
+                <div
+                  className="invisible opacity-0 translate-y-1 pointer-events-none
+                    group-hover/nav-item:visible group-hover/nav-item:opacity-100 group-hover/nav-item:translate-y-0 group-hover/nav-item:pointer-events-auto
+                    group-focus-within/nav-item:visible group-focus-within/nav-item:opacity-100 group-focus-within/nav-item:translate-y-0 group-focus-within/nav-item:pointer-events-auto
+                    transition-all duration-150 absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50"
+                >
+                  <ul className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[210px]">
+                    {link.dropdown.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          onClick={onClose}
+                          className="block px-4 py-2 text-[14px] text-gray-700 hover:bg-orange-50 hover:text-[#FE5300] transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </li>
           );
         })}

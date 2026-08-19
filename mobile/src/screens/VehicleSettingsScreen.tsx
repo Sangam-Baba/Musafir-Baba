@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { Button } from '../components/Button';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const VehicleSettingsScreen = () => {
+  const navigation = useNavigation<any>();
   const setOnboardingComplete = useAuthStore((state) => state.setOnboardingComplete);
 
   const handleComplete = () => {
@@ -14,6 +16,9 @@ export const VehicleSettingsScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
         <Text style={styles.title}>Vehicle Settings</Text>
         <Text style={styles.subtitle}>Configure pricing & operational hubs for your approved vehicles.</Text>
       </View>
@@ -57,6 +62,12 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
+  },
+  backBtn: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    padding: 4,
+    marginLeft: -4,
   },
   title: {
     fontSize: 24,

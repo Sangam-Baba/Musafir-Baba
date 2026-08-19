@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useNotificationStore } from '../store/useNotificationStore';
 
 type NotificationItem = {
@@ -48,6 +49,7 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const InboxScreen = () => {
+  const navigation = useNavigation<any>();
   const notifications = useNotificationStore((state) => state.notifications);
   const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
   const storeMarkAllRead = useNotificationStore((state) => state.markAllRead);
@@ -86,6 +88,11 @@ export const InboxScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
+          {navigation.canGoBack() && (
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+              <Ionicons name="arrow-back" size={22} color="#0f172a" />
+            </TouchableOpacity>
+          )}
           <Text style={styles.title}>Inbox & Notifications</Text>
           <Text style={styles.subtitle}>System alerts, trip dispatch & document updates.</Text>
         </View>
@@ -144,6 +151,7 @@ export const InboxScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   header: { padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  backBtn: { alignSelf: 'flex-start', marginBottom: 8, padding: 4, marginLeft: -4 },
   title: { fontSize: 24, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#64748b' },
   readAllBtn: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e2e8f0', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10 },

@@ -1,6 +1,12 @@
+"use client";
+
+import * as React from "react";
 import Image from "next/image";
+import Autoplay from "embla-carousel-autoplay";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 export default function Partners() {
+  // Same 12 partners as before — only the layout changed, data is untouched.
   const partners = [
     {
       name: "VFS Global",
@@ -52,28 +58,52 @@ export default function Partners() {
     },
   ];
 
+  // Same Embla carousel + autoplay-on-hover-pause pattern already used in
+  // Testimonial.tsx and FeaturedTour.tsx elsewhere in the app.
+  const plugin = React.useRef(
+    Autoplay({ delay: 2200, stopOnInteraction: false }),
+  );
+
   return (
-    <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-10 py-6 md:py-8 border-t border-gray-100 border-b">
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-16 w-full">
-        <h2 className="text-[#FE5300] text-[11px] md:text-[13px] font-bold tracking-[0.1em] uppercase shrink-0 whitespace-nowrap">
-          OUR TRUSTED PARTNERS
+    <section className="max-w-7xl mx-auto px-4 md:px-10 py-8 md:py-10">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
+          Our <span className="text-[#FE5300]">Trusted Partners</span>
         </h2>
-        <div className="flex flex-wrap gap-x-6 gap-y-5 md:gap-x-10 md:gap-y-6 items-center">
-          {partners.map((partner, i) => (
-            <div key={i} className="flex items-center justify-center cursor-default">
-              <div className="relative w-16 h-8 md:w-24 md:h-10">
-                <Image
-                  src={partner.image}
-                  alt={partner.name}
-                  fill
-                  sizes="(max-width: 768px) 64px, 96px"
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+        <p className="text-[14px] md:text-[16px] text-gray-600 mt-1">
+          Brands we work with to plan and book your trips.
+        </p>
       </div>
+
+      <Carousel
+        plugins={[plugin.current]}
+        opts={{ align: "start", loop: true }}
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-3">
+          {partners.map((partner) => (
+            <CarouselItem
+              key={partner.name}
+              className="pl-3 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6"
+            >
+              <div className="flex flex-col items-center justify-center gap-2 border border-gray-200 rounded-xl px-3 py-4 hover:border-[#FE5300]/40 hover:shadow-sm transition-all h-full">
+                <div className="relative w-full h-9">
+                  <Image
+                    src={partner.image}
+                    alt={partner.name}
+                    fill
+                    sizes="120px"
+                    className="object-contain"
+                  />
+                </div>
+                <span className="text-[10px] text-gray-500 text-center leading-tight">{partner.name}</span>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
     </section>
   );
 }
