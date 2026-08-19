@@ -173,6 +173,9 @@ export const FleetRegistryScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
         <Text style={styles.title}>Fleet Registry</Text>
         <Text style={styles.subtitle}>Register vehicles & tap any card to view details.</Text>
       </View>
@@ -384,6 +387,12 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 16,
+  },
+  backBtn: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    padding: 4,
+    marginLeft: -4,
   },
   title: {
     fontSize: 24,

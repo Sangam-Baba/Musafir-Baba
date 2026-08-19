@@ -20,12 +20,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Newslatter from "./Newslatter";
 function Footer() {
   return (
     <div className="mt-12 md:mt-20">
       {/* Desktop Footer */}
-      <div className="hidden md:flex md:flex-row  gap-6  py-15 px-4 md:px-10 lg:px-25 items-center md:items-start justify-between ">
-        <div className="md:w-[30%] flex flex-col gap-2 ">
+      <div className="hidden md:grid md:grid-cols-12 gap-6 py-15 px-4 md:px-10 lg:px-25 items-start">
+        <div className="md:col-span-3 flex flex-col gap-2 ">
           <Image src={logo} alt="logo" />
           <p>
             {" "}
@@ -53,15 +54,15 @@ function Footer() {
           </div>
         </div>
         {/*     Services */}
-        <div className="md:w-[20%] flex flex-col gap-2">
+        <div className="md:col-span-2 flex flex-col gap-2">
           <FooterItem title="Services" />
         </div>
         {/* About us */}
-        <div className="md:w-[20%] flex flex-col gap-2">
+        <div className="md:col-span-2 flex flex-col gap-2">
           <FooterItem title="About Us" />
         </div>
         {/* contact us */}
-        <div className="md:w-[30%] space-y-4">
+        <div className="md:col-span-3 space-y-4">
           <div>
             <p className="text-lg font-bold">Contact Us</p>
             <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
@@ -137,6 +138,10 @@ function Footer() {
               </div>
             </div>
           </div>
+        </div>
+        {/* Newsletter */}
+        <div className="md:col-span-2">
+          <Newslatter />
         </div>
       </div>
       {/* Mobile Footer */}
@@ -257,6 +262,16 @@ function Footer() {
                   />
                 </Link>
               </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* === Newsletter === */}
+          <AccordionItem value="newsletter" className=" border-gray-200">
+            <AccordionTrigger className="flex justify-between items-center px-5 py-3 text-lg font-semibold text-gray-800 hover:text-[#FE5300] transition-all">
+              <span>Newsletter</span>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-4 text-gray-700 text-sm animate-fadeIn">
+              <Newslatter />
             </AccordionContent>
           </AccordionItem>
 

@@ -1,11 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export const EarningsTrendScreen = () => {
+  const navigation = useNavigation<any>();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+        </TouchableOpacity>
         <Text style={styles.title}>Earnings Trend Analytics</Text>
         <Text style={styles.subtitle}>Peak demand hours, top performing routes & revenue analysis.</Text>
       </View>
@@ -60,6 +65,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   contentContainer: { padding: 16, paddingBottom: 40 },
   header: { marginBottom: 16 },
+  backBtn: { alignSelf: 'flex-start', marginBottom: 8, padding: 4, marginLeft: -4 },
   title: { fontSize: 24, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#64748b' },
   sectionTitle: { fontSize: 11, fontWeight: '800', color: '#94a3b8', letterSpacing: 0.8, marginBottom: 12, marginLeft: 4 },

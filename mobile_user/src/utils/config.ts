@@ -2,7 +2,8 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 // Live Server API URL for production APK builds
-const PROD_API_URL = 'https://musafir-baba-backend.onrender.com/api';
+// const PROD_API_URL = 'https://musafir-baba-backend.onrender.com/api';
+const PROD_API_URL = 'https://musafirbabaserver.3mongoose.online/api';
 
 // "localhost" only resolves to the backend when the client and the backend
 // share the same machine (true for the web preview). A physical device or

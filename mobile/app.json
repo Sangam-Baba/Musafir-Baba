@@ -13,10 +13,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.musafirbaba.mobile"
+      "bundleIdentifier": "com.musafirbaba.mobile",
+      "icon": "./assets/icon.png"
     },
     "android": {
       "package": "com.musafirbaba.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/android/ic_launcher-web.png",
+        "backgroundColor": "#ffffff"
+      },
       "usesCleartextTraffic": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -25,7 +30,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icons/android/ic_launcher-web.png"
     },
     "plugins": [
       "expo-secure-store",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useId } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,7 +73,27 @@ const createContact = async (formData: EnquiryFromType) => {
   return res.json();
 };
 
-export default function QueryForm({ className, variant = "default" }: { className?: string; variant?: "default" | "minimal" }) {
+export default function QueryForm({
+  className,
+  variant = "default",
+  formId,
+}: {
+  className?: string;
+  variant?: "default" | "minimal" | "grid";
+  /** Only meaningful for variant="grid": lets the caller (SectionFive)
+   *  render its own submit button elsewhere in the layout, linked back to
+   *  this form via the standard HTML `form="..."` attribute — the button
+   *  isn't rendered inside <form> for "grid" mode; the caller supplies it. */
+  formId?: string;
+}) {
+  // "grid" is purely additive: an opt-in third variant, only used by
+  // SectionFive.tsx today. Every existing "default"/"minimal" caller (7+
+  // pages plus MobileBottom/QueryDailogBox) never passes "grid" or formId,
+  // so this flag is false for them and their rendered output is byte-for-byte
+  // unchanged — same fields, same validation, same single-column flow.
+  const isGrid = variant === "grid";
+  const generatedId = useId();
+  const resolvedFormId = formId || generatedId;
   const router = useRouter();
   const pathname = usePathname();
   const [captcha, setCaptcha] = useState({ n1: 0, n2: 0 });
@@ -239,9 +259,9 @@ export default function QueryForm({ className, variant = "default" }: { classNam
     isStateValid;
 
   return (
-    <Card className={`w-full max-w-[480px] mx-auto rounded-2xl p-0 ${variant === "minimal" ? "shadow-none border-none bg-transparent" : "shadow-xl bg-white"} ${className || ""}`}>
-      <CardContent className={`space-y-3 ${variant === "minimal" ? "p-0" : "p-4 md:p-6"}`}>
-        {variant !== "minimal" && (
+    <Card className={`w-full ${isGrid ? "max-w-[720px]" : "max-w-[480px]"} mx-auto rounded-2xl p-0 ${variant === "minimal" || isGrid ? "shadow-none border-none bg-transparent" : "shadow-xl bg-white"} ${className || ""}`}>
+      <CardContent className={`space-y-3 ${variant === "minimal" || isGrid ? "p-0" : "p-4 md:p-6"}`}>
+        {variant === "default" && (
           <div className="text-center space-y-0.5 mb-2">
             <h4 className="text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">
               Get a Free Quote
@@ -254,7 +274,16 @@ export default function QueryForm({ className, variant = "default" }: { classNam
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2.5">
+          <form
+            id={isGrid ? resolvedFormId : undefined}
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={isGrid ? "grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-2.5" : "space-y-2.5"}
+          >
+            {/* Row: Name | Email — plain DOM order, no wrapper divs, so this
+                is a pure additive change: existing variants keep the exact
+                same flat sibling structure and space-y-2.5 margins they
+                always had; "grid" just adds md:grid-cols-2 so the same two
+                fields sit side by side instead of stacked. */}
             <FormField
               control={form.control}
               name="name"
@@ -300,6 +329,7 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                 )}
               />
 
+            {/* Row: Phone | State+City */}
             <FormField
               control={form.control}
               name="phone"
@@ -309,7 +339,11 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                 );
 
                 return (
-                  <FormItem className="relative pt-1.5">
+                  // Phone needs real room (country selector + input + WhatsApp
+                  // toggle) — it always spans the full row in grid mode rather
+                  // than being squeezed into a half column, same width it
+                  // already gets in every other variant.
+                  <FormItem className={`relative pt-1.5 ${isGrid ? "md:col-span-2" : ""}`}>
                     <FormControl>
                       <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
                         <Phone className="w-4 h-4 text-orange-500 shrink-0" />
@@ -367,8 +401,9 @@ export default function QueryForm({ className, variant = "default" }: { classNam
               }}
             />
 
-            {/* State and City */}
-            <div className="flex gap-3">
+            {/* State and City — also full width in grid mode, same reasoning
+                as Phone above */}
+            <div className={`flex gap-3 ${isGrid ? "md:col-span-2" : ""}`}>
                <FormField
                   control={form.control}
                   name="state"
@@ -443,12 +478,12 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                />
             </div>
 
-            {/* Interest Multi-select */}
+            {/* Everything below spans both columns in grid mode */}
             <FormField
               control={form.control}
               name="interests"
               render={({ field }) => (
-                <FormItem className="space-y-1 px-1">
+                <FormItem className={`space-y-1 px-1 ${isGrid ? "md:col-span-2" : ""}`}>
                   <div className="flex items-center gap-2">
                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">I am interested in:</Label>
                   </div>
@@ -467,8 +502,8 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                           }}
                           className={`
                             px-3 py-1 rounded-full text-[12px] font-semibold transition-all duration-200 border
-                            ${isSelected 
-                              ? "bg-orange-500 text-white border-orange-500 shadow-md scale-105" 
+                            ${isSelected
+                              ? "bg-orange-500 text-white border-orange-500 shadow-md scale-105"
                               : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:text-orange-500"}
                           `}
                         >
@@ -487,7 +522,7 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                 control={form.control}
                 name="message"
                 render={({ field }) => (
-                  <FormItem className="relative animate-in slide-in-from-top-2 duration-300 pt-1.5">
+                  <FormItem className={`relative animate-in slide-in-from-top-2 duration-300 pt-1.5 ${isGrid ? "md:col-span-2" : ""}`}>
                     <FormControl>
                         <div className="relative flex gap-2 border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus-within:ring-2 focus-within:ring-orange-500 transition-all">
                           <MessageCircleCode className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" />
@@ -511,7 +546,7 @@ export default function QueryForm({ className, variant = "default" }: { classNam
               control={form.control}
               name="policy"
               render={({ field }) => (
-                <FormItem className="flex items-center gap-2 space-y-0">
+                <FormItem className={`flex items-center gap-2 space-y-0 ${isGrid ? "md:col-span-2" : ""}`}>
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -539,7 +574,7 @@ export default function QueryForm({ className, variant = "default" }: { classNam
               )}
             />
 
-            <div className="space-y-1 relative pt-1.5 animate-in slide-in-from-top-2 duration-300">
+            <div className={`space-y-1 relative pt-1.5 animate-in slide-in-from-top-2 duration-300 ${isGrid ? "md:col-span-2" : ""}`}>
                 <div className="relative flex items-center gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-blue-50/30 transition-all focus-within:border-orange-500 focus-within:bg-orange-50/10">
                     <div className="bg-orange-500 text-white px-2 py-0.5 rounded text-[12px] font-black shadow-sm select-none tracking-widest min-w-[70px] text-center relative z-20">
                         {captcha.n1}+{captcha.n2}
@@ -575,13 +610,20 @@ export default function QueryForm({ className, variant = "default" }: { classNam
                 )}
             </div>
 
-            <Button
-              type="submit"
-              disabled={!isHumanVerified || mutation.isPending}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
-            >
-              {mutation.isPending ? "Sending..." : "Send Enquiry"}
-            </Button>
+            {/* "grid" mode delegates the submit button to the caller
+                (SectionFive), rendered elsewhere via form={resolvedFormId}
+                so it can sit in its own separate column, matching the
+                reference layout. Every other variant keeps its own
+                full-width button right here, unchanged. */}
+            {!isGrid && (
+              <Button
+                type="submit"
+                disabled={!isHumanVerified || mutation.isPending}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
+              >
+                {mutation.isPending ? "Sending..." : "Send Enquiry"}
+              </Button>
+            )}
           </form>
         </Form>
       </CardContent>

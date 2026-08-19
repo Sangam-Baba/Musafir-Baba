@@ -1,79 +1,79 @@
-import React from "react";
-import Image from "next/image";
 import LazyQueryFormInView from "./LazyQueryFormInView";
-import { Star, Clock, ShieldCheck, MessageCircle } from "lucide-react";
+import { Headset, Plane, Phone } from "lucide-react";
+import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
+
+// The outer container is redesigned here. The form's fields, validation and
+// submit logic (QueryForm.tsx) are untouched — that component is reused
+// across 7+ pages plus the sitewide MobileBottom/QueryDailogBox widgets. The
+// 2-column look uses QueryForm's new opt-in "grid" variant (CSS placement
+// only, same fields/logic). In "grid" mode QueryForm doesn't render its own
+// submit button — this file renders it instead, linked back to the form via
+// the standard HTML `form="..."` attribute, so it can sit in its own column
+// exactly like the reference. Every other QueryForm caller keeps its own
+// built-in button, unaffected.
+const ENQUIRY_FORM_ID = "section-five-enquiry-form";
 
 function SectionFive() {
   return (
-    <section className="w-full bg-white px-4 md:px-10 py-12 md:py-20 border-t border-gray-100">
-      <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
-        
-        {/* Header */}
-        <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left mb-6">
-          <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
-            PLAN YOUR TRIP
-          </span>
-          <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
-            <span>Get a</span> free quote
+    <section className="w-full bg-white px-4 md:px-10 py-8 md:py-10">
+      <div className="w-full max-w-7xl mx-auto border border-gray-100 rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-[0_2px_16px_rgba(254,83,0,0.05)]">
+        {/* Left: intro panel — ~1/4 width */}
+        <div className="md:w-1/4 flex-shrink-0 bg-[#fef9f5] p-8 md:p-10 flex flex-col justify-center">
+          <h2 className="text-[26px] font-bold text-gray-900 leading-tight mb-4">
+            Plan your trip with our <span className="text-[#FE5300]">travel</span> experts!
           </h2>
-          <p className="text-[14px] md:text-[16px] text-gray-600 max-w-3xl">
-            Share trip details — get a custom plan within 24 hours.
+          <p className="text-[13.5px] text-gray-600 leading-relaxed mb-10">
+            Share your details and we&apos;ll get back to you with the best travel options.
           </p>
+          <div className="mt-auto flex items-center gap-4 text-[#FE5300] opacity-80">
+            <Headset className="w-6 h-6 flex-shrink-0" strokeWidth={1.5} />
+            <span className="flex-1 border-t border-dashed border-[#FE5300]" />
+            <Plane className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+          </div>
         </div>
 
-        {/* Main Box */}
-        <div className="w-full border border-gray-200 rounded-2xl bg-white p-6 md:p-10 shadow-sm flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
-          
-          {/* Left Text Container (Split into Graphic & Text) */}
-          <div className="flex flex-col w-full lg:w-[55%] pb-8 lg:pb-0 lg:pr-12">
-            
-            {/* Top Row: Decorative Mountain Graphic */}
-            <div className="w-full flex-1 min-h-[200px] bg-gradient-to-b from-blue-50 to-white rounded-2xl relative overflow-hidden mb-8 border border-gray-100">
-              <Image 
-                src="/enqueryImage1.avif" 
-                alt="Plan your trip" 
-                fill 
-                className="object-cover" 
-              />
-            </div>
+        {/* Middle: the real, unmodified enquiry form — ~1/2 width */}
+        <div className="md:w-2/4 p-8 md:p-10 bg-white">
+          <LazyQueryFormInView variant="grid" formId={ENQUIRY_FORM_ID} />
+        </div>
 
-            {/* Bottom Row: Text Content */}
-            <div className="flex flex-col">
-              <p className="text-[15px] text-gray-600 leading-relaxed mb-8">
-                Our team will get back to you with a personalised itinerary, pricing, and availability — no commitment required.
-              </p>
+        {/* Right: submit button (linked to the form above by id) + real
+            contact info — ~1/4 width */}
+        <div className="md:w-1/4 flex-shrink-0 bg-white p-8 md:p-10 border-t md:border-t-0 md:border-l border-gray-100 flex flex-col justify-center items-center">
+          <button
+            type="submit"
+            form={ENQUIRY_FORM_ID}
+            className="w-full bg-[#FE5300] hover:bg-[#e04800] text-white font-semibold py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 mb-8 transform hover:-translate-y-0.5"
+          >
+            SEND ENQUIRY
+          </button>
 
-              <div className="flex flex-col gap-5">
-                <div className="flex items-center gap-4">
-                  <Star className="w-5 h-5 text-[#FE5300]" strokeWidth={1.75} />
-                  <span className="text-[15px] text-gray-600 font-medium">4.8 Google rating · 24,247 travellers served</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Clock className="w-5 h-5 text-[#FE5300]" strokeWidth={1.75} />
-                  <span className="text-[15px] text-gray-600 font-medium">Response within 2 hours on WhatsApp</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <ShieldCheck className="w-5 h-5 text-[#FE5300]" strokeWidth={1.75} />
-                  <span className="text-[15px] text-gray-600 font-medium">No hidden charges · Transparent pricing</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <MessageCircle className="w-5 h-5 text-[#FE5300]" strokeWidth={1.75} />
-                  <span className="text-[15px] text-gray-600 font-medium">Also reach us on +91 92896 02447</span>
-                </div>
-              </div>
-            </div>
+          <div className="w-full flex items-center gap-3 mb-8">
+            <span className="h-px bg-gray-200 flex-1" />
+            <span className="text-[12px] text-gray-400 uppercase font-medium">Or</span>
+            <span className="h-px bg-gray-200 flex-1" />
           </div>
 
-          {/* Right Form Container */}
-          <div className="w-full lg:w-[45%] flex flex-col justify-center pt-8 lg:pt-0 lg:pl-12">
-            <div className="w-full xl:max-w-xl mx-auto flex flex-col">
-              <h3 className="text-[22px] md:text-[28px] font-medium text-gray-900 mb-6">
-                Talk to a travel expert
-              </h3>
-              <LazyQueryFormInView variant="minimal" />
-            </div>
+          <div className="text-center w-full">
+            <p className="text-gray-600 font-medium mb-3 text-[14px]">Talk to our travel expert</p>
+            <a
+              href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
+              className="flex items-center justify-center gap-3 text-[18px] font-bold text-[#FE5300] hover:text-[#e04800] transition-colors group"
+            >
+              <span className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 transition-colors">
+                <Phone className="w-3.5 h-3.5" />
+              </span>
+              {CONTACT_INFO.PHONE_NUMBER_FORMATTED}
+            </a>
+            <a
+              href={getWhatsAppLink()}
+              target="_blank"
+              rel="nofollow noopener noreferrer"
+              className="block text-[11px] text-gray-400 mt-4 hover:text-[#25D366] transition-colors"
+            >
+              24/7 available on Call &amp; WhatsApp
+            </a>
           </div>
-
         </div>
       </div>
     </section>
