@@ -43,6 +43,7 @@ export default function TravelMoodCarousel({ categories }: { categories: MoodCat
       >
         {categories.map((cat) => {
           const { icon: Icon, color } = MOOD_META[cat.slug] ?? DEFAULT_MOOD_META;
+          const cardImage = cat.cardImage?.url ? cat.cardImage : cat.coverImage;
           return (
             <Link
               key={cat.id}
@@ -50,10 +51,10 @@ export default function TravelMoodCarousel({ categories }: { categories: MoodCat
               className="group flex-shrink-0 w-[150px] sm:w-[170px] snap-start"
             >
               <div className="relative h-[190px] sm:h-[210px] rounded-2xl overflow-hidden bg-gray-100">
-                {cat.coverImage.url && (
+                {cardImage.url && (
                   <Image
-                    src={cat.coverImage.url}
-                    alt={cat.coverImage.alt || cat.name}
+                    src={cardImage.url}
+                    alt={cardImage.alt || cat.name}
                     fill
                     sizes="170px"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

@@ -13,17 +13,16 @@ export default function AdminProtected({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-
-  // 1. Immediate Bypass for Login/Logout pages
-  // This ensures they render instantly without any auth checks or loaders
-  if (pathname === "/admin/login" || pathname === "/admin/logout") {
-    return <>{children}</>;
-  }
+  // Hooks must run unconditionally on every render, so this can no longer be
+  // an early return above the hooks below — it now only gates what each hook
+  // does, and the actual bypass render happens after all hooks are called.
+  const isAuthBypassPath = pathname === "/admin/login" || pathname === "/admin/logout";
 
   const { accessToken, refreshAccessToken, clearAuth, role, permissions } = useAdminAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isAuthBypassPath) return;
     let mounted = true;
 
     async function bootstrap() {
@@ -108,7 +107,13 @@ export default function AdminProtected({
     return () => {
       mounted = false;
     };
-  }, [accessToken, clearAuth, refreshAccessToken, router]);
+  }, [isAuthBypassPath, accessToken, clearAuth, refreshAccessToken, router]);
+
+  // Immediate bypass for Login/Logout pages — renders instantly without any
+  // auth checks or loaders, same as before, just moved below the hooks.
+  if (isAuthBypassPath) {
+    return <>{children}</>;
+  }
 
   if (loading) return <Loader />;
 

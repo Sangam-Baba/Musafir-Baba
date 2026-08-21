@@ -5,6 +5,7 @@ export interface MoodCategory {
   name: string;
   slug: string;
   coverImage: { url: string; alt: string };
+  cardImage?: { url: string; alt: string };
 }
 
 // Same fetch pattern as src/app/(user)/holidays/page.tsx's getCategory() —
@@ -17,11 +18,12 @@ async function getCategories(): Promise<MoodCategory[]> {
   const data = await res.json();
   return (data?.data ?? [])
     .filter((c: { isActive?: boolean }) => c.isActive !== false)
-    .map((c: { _id: string; name: string; slug: string; coverImage?: { url: string; alt: string } }) => ({
+    .map((c: { _id: string; name: string; slug: string; coverImage?: { url: string; alt: string }; cardImage?: { url: string; alt: string } }) => ({
       id: c._id,
       name: c.name,
       slug: c.slug,
       coverImage: c.coverImage ?? { url: "", alt: c.name },
+      cardImage: c.cardImage,
     }));
 }
 
