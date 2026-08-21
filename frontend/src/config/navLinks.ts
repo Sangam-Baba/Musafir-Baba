@@ -55,7 +55,7 @@ export const NAV_LINKS: NavLink[] = [
   // (RentalsClient accepts an initialVehicleType prop but no page ever passes
   // it), so a dropdown here would just be decorative items linking to the
   // same page. Flat link until real rental subcategory pages exist.
-  { label: "Rentals", href: "/rental" },
+  { label: "Car Rentals", href: "/rental" },
   { label: "Travel Stories", href: "/blog" },
   { label: "About Us", href: "/about-us" },
 ];

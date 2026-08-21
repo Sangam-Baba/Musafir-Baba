@@ -1,5 +1,6 @@
+import Image from "next/image";
 import LazyQueryFormInView from "./LazyQueryFormInView";
-import { Headset, Plane, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
 
 // The outer container is redesigned here. The form's fields, validation and
@@ -18,17 +19,23 @@ function SectionFive() {
     <section className="w-full bg-white px-4 md:px-10 py-8 md:py-10">
       <div className="w-full max-w-7xl mx-auto border border-gray-100 rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-[0_2px_16px_rgba(254,83,0,0.05)]">
         {/* Left: intro panel — ~1/4 width */}
-        <div className="md:w-1/4 flex-shrink-0 bg-[#fef9f5] p-8 md:p-10 flex flex-col justify-center">
-          <h2 className="text-[26px] font-bold text-gray-900 leading-tight mb-4">
-            Plan your trip with our <span className="text-[#FE5300]">travel</span> experts!
-          </h2>
-          <p className="text-[13.5px] text-gray-600 leading-relaxed mb-10">
-            Share your details and we&apos;ll get back to you with the best travel options.
-          </p>
-          <div className="mt-auto flex items-center gap-4 text-[#FE5300] opacity-80">
-            <Headset className="w-6 h-6 flex-shrink-0" strokeWidth={1.5} />
-            <span className="flex-1 border-t border-dashed border-[#FE5300]" />
-            <Plane className="w-5 h-5 flex-shrink-0" strokeWidth={1.5} />
+        <div className="md:w-1/4 flex-shrink-0 bg-[#fef9f5] p-6 md:p-8 flex flex-col justify-between">
+          <div>
+            <h2 className="text-[24px] md:text-[26px] font-bold text-gray-900 leading-tight mb-3">
+              Plan your trip with our <span className="text-[#FE5300]">travel</span> experts!
+            </h2>
+            <p className="text-[13.5px] text-gray-600 leading-relaxed">
+              Share your details and we&apos;ll get back to you with the best travel options.
+            </p>
+          </div>
+          <div className="mt-4 flex justify-center w-full">
+            <Image
+              src="/queryformimg.png"
+              alt="Plan your trip"
+              width={400}
+              height={200}
+              className="w-full h-auto max-w-full object-contain"
+            />
           </div>
         </div>
 

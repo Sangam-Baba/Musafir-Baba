@@ -28,9 +28,19 @@ const getAllVehicles = async () => {
   return data?.data;
 };
 
-async function page() {
+async function page({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const sp = await searchParams;
+  const initialVehicleType = typeof sp.vehicleType === "string" ? sp.vehicleType : undefined;
+  const initialLocationId = typeof sp.location === "string" ? sp.location : undefined;
+  const initialSeats = typeof sp.seats === "string" ? sp.seats : undefined;
+  const initialPrice = typeof sp.price === "string" ? Number(sp.price) : undefined;
+
   const vehicles = await getAllVehicles();
-  
+
   const content = `
 <p>Travel plans often require flexibility, comfort, and independence. Whether you are exploring a city, planning a road trip, or simply need reliable transport during your journey, car and bike rentals offer the convenience of travelling at your own pace. The MusafirBaba Rentals page brings together a range of vehicles that travellers can choose from based on their travel needs, preferences, and budget.</p>
 
@@ -192,7 +202,13 @@ async function page() {
         </div>
       </div>
 
-      <RentalsClient vehicles={vehicles} />
+      <RentalsClient
+        vehicles={vehicles}
+        initialVehicleType={initialVehicleType}
+        initialLocationId={initialLocationId}
+        initialSeats={initialSeats}
+        initialPrice={initialPrice}
+      />
     </div>
   );
 }

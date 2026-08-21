@@ -54,18 +54,12 @@ export default function Header() {
     <header
       className={`w-full z-50 ${isHome ? "fixed top-0 left-0 right-0 transition-colors duration-300" : ""} ${
         overlay
-          ? "bg-gradient-to-b from-black/60 via-black/25 to-transparent border-b border-transparent"
+          ? "bg-gradient-to-b from-black/70 via-black/35 to-transparent border-b border-transparent"
           : "bg-white border-b border-gray-200"
       }`}
     >
       {overlay ? (
-        /* ===== SINGLE-ROW TRANSPARENT NAV (homepage hero only) =====
-           A dedicated, self-contained layout — not a restyled version of
-           the two-row block below — so the solid header's markup (right
-           below, in the `else` branch) is never touched by this state.
-           Social links / Pay Now / Login aren't shown in this specific
-           transient window; they're one scroll (40px) or one navigation
-           away via the solid header, not removed from the app. */
+        /* ===== SINGLE-ROW TRANSPARENT NAV (homepage hero only) ===== */
         <div className="w-full flex items-center justify-between px-4 md:px-10 py-3">
           {/* Mobile menu */}
           <button
@@ -76,9 +70,7 @@ export default function Header() {
             <Menu className="w-6 h-6" />
           </button>
 
-          {/* LOGO — no background/box, just a soft drop-shadow for legibility
-              against the photo (overlay state only; the solid header below
-              needs neither). */}
+          {/* LOGO */}
           <div className="flex items-center">
             <Link href="/" className="block w-32 md:w-44">
               <Image
@@ -100,11 +92,11 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-4">
             <a
               href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
-              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
             >
-              <Phone className="w-4 h-4" />
+              <Phone className="w-4 h-4 text-white" />
               <span className="flex flex-col leading-tight text-left">
-                <span className="text-[10px] text-white/70">Call Us</span>
+                <span className="text-[10px] text-white/80">Call Us</span>
                 <span className="text-[13px] font-semibold tracking-wide">
                   {CONTACT_INFO.PHONE_NUMBER_FORMATTED}
                 </span>
@@ -115,7 +107,7 @@ export default function Header() {
               target="_blank"
               rel="nofollow noopener noreferrer"
               aria-label="Chat on WhatsApp"
-              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white transition-colors flex-shrink-0"
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white transition-colors flex-shrink-0 shadow-md"
             >
               <FaWhatsapp size={18} />
             </a>

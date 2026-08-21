@@ -26,16 +26,28 @@ interface CombinedInterface extends Package {
 export default function MixedPackagesClient({
   data,
   category,
+  initialSearch,
+  initialCategory,
+  initialPrice,
+  initialDuration,
 }: {
   data: CombinedInterface[];
   category: Category[];
+  // Optional seed values — only used to set the initial filter state (e.g.
+  // when arriving here from the homepage hero search with query params).
+  // Everything below this still works exactly as before with none of these
+  // passed in.
+  initialSearch?: string;
+  initialCategory?: string;
+  initialPrice?: number;
+  initialDuration?: number;
 }) {
   const [filter, setFilter] = useState({
-    search: "",
-    category: "",
+    search: initialSearch || "",
+    category: initialCategory || "",
     sort: "",
-    price: 500000,
-    duration: 25,
+    price: initialPrice || 500000,
+    duration: initialDuration || 25,
   });
   const [filteredPkgs, setFilteredPkgs] = useState<CombinedInterface[]>(
     data ?? [],

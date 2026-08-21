@@ -108,7 +108,17 @@ const getPackages = async () => {
   }
   return res.json();
 };
-export default async function PackagesPage() {
+export default async function PackagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const sp = await searchParams;
+  const initialSearch = typeof sp.search === "string" ? sp.search : undefined;
+  const initialCategory = typeof sp.category === "string" ? sp.category : undefined;
+  const initialPrice = typeof sp.price === "string" ? Number(sp.price) : undefined;
+  const initialDuration = typeof sp.duration === "string" ? Number(sp.duration) : undefined;
+
   const data = await getPackages();
   const customizedPkgs = await getAllCustomizedPackages();
   const categorydata = await getCategory();
@@ -294,7 +304,14 @@ export default async function PackagesPage() {
       <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
         <ReadMore content={content} />
       </div>
-      <MixedPackagesClient data={totalPkgs} category={totalCategory} />
+      <MixedPackagesClient
+        data={totalPkgs}
+        category={totalCategory}
+        initialSearch={initialSearch}
+        initialCategory={initialCategory}
+        initialPrice={initialPrice}
+        initialDuration={initialDuration}
+      />
       {/* JSON-LD Schema */}
       <Script
         id="breadcrumb-schema"

@@ -50,12 +50,26 @@ export interface VisaInterface {
   visas?: any[];
 }
 
-function VisaClientPage({ visa }: { visa: VisaInterface[] }) {
+function VisaClientPage({
+  visa,
+  initialCountry,
+  initialVisaType,
+  initialMaxPrice,
+}: {
+  visa: VisaInterface[];
+  // Optional seed values — only used to set the initial filter state (e.g.
+  // when arriving here from the homepage hero search with query params).
+  // Everything below this still works exactly as before with none of these
+  // passed in.
+  initialCountry?: string;
+  initialVisaType?: string;
+  initialMaxPrice?: number;
+}) {
   const [search, setSearch] = React.useState({
-    country: "",
-    visaType: "",
+    country: initialCountry || "",
+    visaType: initialVisaType || "",
     minPrice: 0,
-    maxPrice: 5000000,
+    maxPrice: initialMaxPrice || 5000000,
   });
 
   const content = `

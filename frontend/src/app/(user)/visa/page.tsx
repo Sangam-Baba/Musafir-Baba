@@ -30,7 +30,16 @@ export const getVisa = async () => {
   return data?.data; // []
 };
 
-export default async function VisaMainPage() {
+export default async function VisaMainPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const sp = await searchParams;
+  const initialCountry = typeof sp.country === "string" ? sp.country : undefined;
+  const initialVisaType = typeof sp.visaType === "string" ? sp.visaType : undefined;
+  const initialMaxPrice = typeof sp.maxPrice === "string" ? Number(sp.maxPrice) : undefined;
+
   const visa = await getVisa();
   const breadcrumb = getBreadcrumbSchema("visa");
   const collection = getCollectionSchema(
@@ -43,7 +52,12 @@ export default async function VisaMainPage() {
 
   return (
     <>
-      <VisaClientPage visa={visa} />
+      <VisaClientPage
+        visa={visa}
+        initialCountry={initialCountry}
+        initialVisaType={initialVisaType}
+        initialMaxPrice={initialMaxPrice}
+      />
       <Script
         key="breadcrumb-schema"
         type="application/ld+json"
