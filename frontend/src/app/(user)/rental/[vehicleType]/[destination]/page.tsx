@@ -10,8 +10,11 @@ const getVehicleTypeBySlug = async (slug: string) => {
     next: { revalidate: 60 }
   });
   if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error("Failed to fetch vehicle type");
+    // Any failure (genuine 404 or a transient backend blip) routes through
+    // the same `!typeData -> notFound()` handling the page already has
+    // below, instead of throwing and crashing the entire static build.
+    if (res.status !== 404) console.error("Failed to fetch vehicle type:", res.status);
+    return null;
   }
   const data = await res.json();
   return data?.data;
@@ -22,8 +25,8 @@ const getDestinationBySlug = async (slug: string) => {
     next: { revalidate: 60 }
   });
   if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error("Failed to fetch destination");
+    if (res.status !== 404) console.error("Failed to fetch destination:", res.status);
+    return null;
   }
   const data = await res.json();
   return data?.data;
@@ -33,7 +36,10 @@ const getAllVehicles = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/all`, {
     next: { revalidate: 60 }
   });
-  if (!res.ok) throw new Error("Failed to fetch Vehicles");
+  if (!res.ok) {
+    console.error("Failed to fetch vehicles:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data;
 };

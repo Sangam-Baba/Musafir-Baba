@@ -31,7 +31,14 @@ const getOffices = async () => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/webpage?parent=travel-agency`,
   );
-  if (!res.ok) throw new Error("Failed to fetch offices");
+  if (!res.ok) {
+    // A transient backend blip during build used to throw here and crash
+    // the entire static export (all pages), not just this one. `offices`
+    // below is used without optional chaining (`.sort(...)`), so this
+    // degrades to an empty list rather than undefined.
+    console.error("Failed to fetch offices:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data;
 };

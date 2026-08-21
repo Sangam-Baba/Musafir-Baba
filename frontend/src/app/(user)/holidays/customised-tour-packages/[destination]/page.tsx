@@ -50,7 +50,13 @@ export async function getPackageByDestinationSlug(slug: string) {
     },
   );
   if (res.status === 404) return notFound();
-  if (!res.ok) throw new Error("Failed to fetch packages");
+  if (!res.ok) {
+    // Falls through to the existing `!packages || packages.length === 0 ->
+    // notFound()` handling below instead of throwing and crashing the
+    // entire static build.
+    console.error("Failed to fetch packages:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data;
 }

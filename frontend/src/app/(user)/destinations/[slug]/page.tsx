@@ -106,7 +106,14 @@ const getDestinationBySlug = async (slug: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/destination/slug/${slug}`,
   );
-  if (!res.ok) throw new Error("Failed to fetch destination");
+  if (!res.ok) {
+    // Matches the graceful `return null` already used by
+    // getGroupPackageByDestinationSlug() above — the rest of this page
+    // already tolerates an undefined destination via optional chaining, so
+    // this no longer needs to throw and crash the entire static build.
+    console.error("Failed to fetch destination:", res.status);
+    return null;
+  }
   const data = await res.json();
   return data?.data;
 };
