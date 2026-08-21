@@ -164,7 +164,7 @@ export default async function HomePage() {
       <section className="w-full px-6 md:px-14 lg:px-20 pt-20 md:pt-28 lg:pt-32 pb-3 md:pb-4 lg:pb-6 relative flex flex-col items-start justify-between h-screen min-h-[560px] overflow-hidden">
         <Image
           // src="/homebanner32.avif"
-          src="/homebanner004.avif"
+          src="/homebanner007.avif"
           alt="Home Banner"
           fill
           priority

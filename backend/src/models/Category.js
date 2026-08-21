@@ -53,6 +53,13 @@ const categorySchema = new mongoose.Schema(
       width: Number,
       height: Number,
     },
+    cardImage: {
+      url: String,
+      alt: String,
+      public_id: String,
+      width: Number,
+      height: Number,
+    },
     isActive: {
       type: Boolean,
       default: true,

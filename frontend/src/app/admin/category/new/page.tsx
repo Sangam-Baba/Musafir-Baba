@@ -52,6 +52,15 @@ const formSchema = z.object({
       alt: z.string().optional(),
     })
     .optional(),
+  cardImage: z
+    .object({
+      url: z.string().url().optional(),
+      public_id: z.string().optional(),
+      width: z.number().optional(),
+      height: z.number().optional(),
+      alt: z.string().optional(),
+    })
+    .optional(),
   packages: z.string().array().optional(),
   isActive: z.boolean(),
 });
@@ -204,6 +213,36 @@ export default function CreateCategory() {
               <input
                 {...form.register("coverImage.alt")}
                 placeholder="Cover Image Alt"
+                className="w-full border rounded p-2"
+              />
+            )}
+
+            <div className="space-y-2">
+              <Label className="block text-sm font-medium">
+                Card Image (used in &quot;Choose your travel mood&quot; section) — recommended size 600x800px (portrait)
+              </Label>
+              <ImageUploader
+                className="aspect-[3/4] max-w-xs"
+                onUpload={(img) =>
+                  form.setValue("cardImage", {
+                    url: img?.url,
+                    public_id: img?.public_id,
+                    width: img?.width,
+                    height: img?.height,
+                    alt: img?.alt ?? form.getValues("name"),
+                  })
+                }
+              />
+              {form.formState.errors.cardImage && (
+                <p className="text-red-500 text-sm">
+                  {form.formState.errors.cardImage.message}
+                </p>
+              )}
+            </div>
+            {form.watch("cardImage") && (
+              <input
+                {...form.register("cardImage.alt")}
+                placeholder="Card Image Alt"
                 className="w-full border rounded p-2"
               />
             )}
