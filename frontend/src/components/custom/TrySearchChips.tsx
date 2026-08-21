@@ -7,7 +7,7 @@ import Link from "next/link";
 const SUGGESTIONS = [
   { label: "Honeymoon getaways", href: "/holidays/honeymoon-packages" },
   { label: "Family trip ideas", href: "/holidays/family-tours" },
-  { label: "Visa for Japan", href: "/visa/japan-visa" },
+  { label: "Visa services", href: "/visa" },
   { label: "Long weekend trips", href: "/holidays/weekend-getaways" },
 ];
 

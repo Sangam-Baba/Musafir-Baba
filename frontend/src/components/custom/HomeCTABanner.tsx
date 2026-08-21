@@ -24,19 +24,20 @@ const FEATURES = [
 export default function HomeCTABanner() {
   return (
     <section className="relative w-full overflow-hidden mt-8 md:mt-10">
-      <div className="absolute inset-0 bg-gradient-to-r from-[#c9450f] via-[#FE5300] to-[#f39c12]" />
-      <div className="absolute inset-y-0 left-0 hidden md:block w-[260px] lg:w-[320px] overflow-hidden">
+      {/* Background Image that smoothly blends from scenic hiker on left to vibrant orange on right */}
+      <div className="absolute inset-0 bg-[#FE5300]">
         <Image
-          src="/homeCTA.png"
-          alt=""
+          src="/ctabannerimage.avif"
+          alt="Create your next memory"
           fill
-          sizes="320px"
-          className="object-cover object-left"
+          sizes="100vw"
+          className="object-cover object-left md:object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#FE5300]" />
+        {/* Soft overlay ensuring crisp text contrast on the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FE5300]/10 via-35% to-[#FE5300]/60 pointer-events-none" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:pl-[280px] md:pr-10 lg:pl-[340px] py-8 md:py-9 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:pl-[340px] md:pr-10 lg:pl-[420px] py-8 md:py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="flex flex-col gap-3">
           <h2 className="text-2xl md:text-[30px] leading-tight font-bold text-white">
             Ready to create your next{" "}

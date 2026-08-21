@@ -132,7 +132,7 @@ export default function ExploreDestinationsPanel() {
                     : "bg-white/60 border-transparent hover:bg-white"
                 }`}
               >
-                <span className="w-[30px] h-[30px] rounded-md bg-gradient-to-br from-sky-200 to-blue-300 flex items-center justify-center text-[15px] flex-shrink-0">
+                <span className="text-[24px] leading-none flex-shrink-0" aria-hidden="true">
                   {item.emoji}
                 </span>
                 <div className="min-w-0">

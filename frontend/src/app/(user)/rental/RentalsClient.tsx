@@ -46,21 +46,25 @@ const MIN_PRICE = 500;
 
 const SEAT_OPTIONS = ["4", "5", "6", "7", "8", "9", "10", "12", "14", "17", "20", "26"];
 
-export default function RentalsClient({ 
-  vehicles, 
+export default function RentalsClient({
+  vehicles,
   initialVehicleType,
-  initialLocationId 
-}: { 
+  initialLocationId,
+  initialSeats,
+  initialPrice,
+}: {
   vehicles: IVehicle[],
   initialVehicleType?: string,
-  initialLocationId?: string
+  initialLocationId?: string,
+  initialSeats?: string,
+  initialPrice?: number,
 }) {
   const [filter, setFilter] = useState({
     search: "",
     vehicleType: initialVehicleType || "", // car | bike | tempo-traveller
     sort: "",        // asc | desc
-    price: MAX_PRICE,
-    seats: "",       // only for cars (4-wheeler) — blank = all
+    price: initialPrice || MAX_PRICE,
+    seats: initialSeats || "",       // only for cars (4-wheeler) — blank = all
     location: initialLocationId || "",    // location _id
   });
 

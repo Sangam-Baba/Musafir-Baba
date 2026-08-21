@@ -56,7 +56,7 @@ export default function TestimonialsBanner() {
   return (
     <section className="w-full px-4 md:px-10 py-8 md:py-10">
       <div className="max-w-7xl mx-auto bg-[#FAFAFB] border border-gray-100 rounded-[24px] p-6 md:p-8">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 lg:items-start">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 lg:items-center">
           {/* Left: heading + Google rating */}
           <div className="lg:w-[220px] flex-shrink-0 flex flex-col gap-4">
             <h2 className="text-[20px] md:text-[22px] font-bold text-gray-900 leading-snug">
@@ -70,7 +70,7 @@ export default function TestimonialsBanner() {
                   <span className="text-[17px] font-bold text-gray-900">4.8</span>
                   <Stars count={5} />
                 </div>
-                <span className="text-[11px] text-gray-500">(2,300+ Reviews)</span>
+                <span className="text-[11px] text-gray-500">(300+ Reviews)</span>
               </div>
             </div>
 
