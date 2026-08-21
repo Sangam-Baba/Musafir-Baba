@@ -49,7 +49,14 @@ async function getBlogs(page: number, category?: string) {
     },
   );
 
-  if (!res.ok) throw new Error("Failed to fetch blogs");
+  if (!res.ok) {
+    // A transient backend blip during build used to throw here and crash
+    // the entire static export (all pages), not just this one. `blogs`
+    // below is used without optional chaining, so the fallback shape has
+    // to match this endpoint's real `{ data, pages }` response shape.
+    console.error("Failed to fetch blogs:", res.status);
+    return { data: [], pages: 0 };
+  }
   const data = await res.json();
   return data;
 }

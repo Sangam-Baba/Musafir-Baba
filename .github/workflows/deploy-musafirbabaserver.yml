@@ -30,7 +30,21 @@ jobs:
 
       - name: Verify the container came back up healthy
         run: |
-          sleep 5
-          docker ps --filter "name=musafirbaba-backend" --format "{{.Status}}" | grep -q healthy \
-            && echo "Deploy verified healthy" \
-            || (echo "Container is not healthy after deploy" && exit 1)
+          # The image's HEALTHCHECK has start-period=15s and interval=30s, so
+          # Docker can't report "healthy" until ~30s+ after the container
+          # starts. A flat `sleep 5` here checked long before that was
+          # possible and failed on essentially every deploy regardless of
+          # whether the backend actually came up fine. Poll instead, with a
+          # generous timeout, so this only fails when the container is truly
+          # not healthy.
+          for i in $(seq 1 24); do
+            status=$(docker ps --filter "name=musafirbaba-backend" --format "{{.Status}}")
+            if echo "$status" | grep -q healthy; then
+              echo "Deploy verified healthy"
+              exit 0
+            fi
+            echo "Waiting for container to become healthy... ($status)"
+            sleep 5
+          done
+          echo "Container is not healthy after deploy"
+          exit 1

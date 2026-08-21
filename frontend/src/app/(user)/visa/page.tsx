@@ -18,7 +18,14 @@ export const getVisa = async () => {
       revalidate: 60,
     },
   });
-  if (!res.ok) throw new Error("Failed to fetch visas");
+  if (!res.ok) {
+    // A transient backend blip during build used to throw here and crash
+    // the entire static export (all pages), not just this one. Degrade to
+    // an empty list instead — matches the array shape callers already
+    // expect (see the `// []` below).
+    console.error("Failed to fetch visas:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data; // []
 };

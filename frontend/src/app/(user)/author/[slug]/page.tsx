@@ -25,7 +25,10 @@ async function getBlogs(category?: string) {
     }
   );
 
-  if (!res.ok) throw new Error("Failed to fetch blogs");
+  if (!res.ok) {
+    console.error("Failed to fetch blogs:", res.status);
+    return [];
+  }
   const data = await res.json();
   // console.log(data);
   return data.data;

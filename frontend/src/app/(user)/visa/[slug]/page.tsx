@@ -87,7 +87,10 @@ const getRelatedPages = async (slug: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/visa/related/${slug}`,
   );
-  if (!res.ok) throw new Error("Failed to fetch related pages");
+  if (!res.ok) {
+    console.error("Failed to fetch related pages:", res.status);
+    return { data: [] };
+  }
   const data = await res.json();
   return data;
 };

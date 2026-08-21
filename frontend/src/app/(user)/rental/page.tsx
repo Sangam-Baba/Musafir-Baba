@@ -17,7 +17,13 @@ export const metadata: Metadata = {
 
 const getAllVehicles = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/all`);
-  if (!res.ok) throw new Error("Failed to fetch Vehicles");
+  if (!res.ok) {
+    // A transient backend blip during build used to throw here and crash
+    // the entire static export (all pages), not just this one. Degrade to
+    // an empty list instead so the rest of the site still builds/renders.
+    console.error("Failed to fetch vehicles:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data;
 };

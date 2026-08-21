@@ -41,7 +41,15 @@ export async function getNews(page: number) {
     },
   );
 
-  if (!res.ok) throw new Error("Failed to fetch News");
+  if (!res.ok) {
+    // A transient backend blip during build used to throw here and crash
+    // the entire static export (all pages), not just this one. Degrade to
+    // an empty list instead — `news`/`totalPages` below are used without
+    // optional chaining, so the fallback shape has to match this endpoint's
+    // real `{ data, pages }` response shape.
+    console.error("Failed to fetch news:", res.status);
+    return { data: [], pages: 0 };
+  }
   const data = await res.json();
   return data;
 }

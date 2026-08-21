@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import RentalPageClient from "./pageClient";
 
 export interface IVehicleUserData {
@@ -60,7 +61,13 @@ const getVehicleBySlug = async (slug: string) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/slug/${slug}`,
   );
-  if (!res.ok) throw new Error("Failed to fetch vehicle");
+  if (!res.ok) {
+    // A failure here (genuine 404 or a transient backend blip) now routes
+    // through notFound() below instead of throwing and crashing the entire
+    // static build.
+    if (res.status !== 404) console.error("Failed to fetch vehicle:", res.status);
+    return null;
+  }
   const data = await res.json();
   return data?.data;
 };
@@ -70,7 +77,10 @@ const getRelatedVehicles = async (slug: string) => {
     `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/related/${slug}`,
   );
 
-  if (!res.ok) throw new Error("Failed to fetch related vehicles");
+  if (!res.ok) {
+    console.error("Failed to fetch related vehicles:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data;
 };
@@ -100,6 +110,10 @@ async function page({ params }: { params: Promise<{ vehicleType: string, destina
   const relatedVehicles = await getRelatedVehicles(slug);
 
   const vehicle = await getVehicleBySlug(slug);
+
+  if (!vehicle) {
+    notFound();
+  }
 
   return (
     <RentalPageClient vehicle={vehicle} relatedVehicles={relatedVehicles} />

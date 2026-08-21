@@ -89,14 +89,23 @@ export const getCategory = async (): Promise<CategoryResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
     next: { revalidate: 120 },
   });
-  if (!res.ok) throw new Error("Failed to fetch posts");
+  if (!res.ok) {
+    // A transient backend blip during build used to throw here and crash
+    // the entire static export (all pages), not just this one. Degrade to
+    // an empty list instead so the rest of the site still builds/renders.
+    console.error("Failed to fetch categories:", res.status);
+    return { data: [] };
+  }
   return res.json();
 };
 const getPackages = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages`, {
     next: { revalidate: 120 },
   });
-  if (!res.ok) throw new Error("Failed to fetch posts");
+  if (!res.ok) {
+    console.error("Failed to fetch packages:", res.status);
+    return { data: [] };
+  }
   return res.json();
 };
 export default async function PackagesPage() {
