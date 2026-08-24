@@ -1,6 +1,6 @@
 import Image from "next/image";
 import LazyQueryFormInView from "./LazyQueryFormInView";
-import { Phone } from "lucide-react";
+import { Phone, Send } from "lucide-react";
 import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
 
 // The outer container is redesigned here. The form's fields, validation and
@@ -50,9 +50,10 @@ function SectionFive() {
           <button
             type="submit"
             form={ENQUIRY_FORM_ID}
-            className="w-full bg-[#FE5300] hover:bg-[#e04800] text-white font-semibold py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 mb-8 transform hover:-translate-y-0.5"
+            className="w-full bg-[#FE5300] hover:bg-[#e04800] text-white font-semibold py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 mb-8 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
-            SEND ENQUIRY
+            <span>SEND ENQUIRY</span>
+            <Send className="w-4 h-4" />
           </button>
 
           <div className="w-full flex items-center gap-3 mb-8">

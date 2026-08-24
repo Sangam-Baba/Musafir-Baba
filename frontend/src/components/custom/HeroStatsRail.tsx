@@ -8,7 +8,7 @@ const STATS = [
   { label: "Google Rating", value: "4.8", stars: true, caption: "(300+ Reviews)" },
   { label: "Happy Travellers", value: "24,000+" },
   { label: "Visa Success Rate", value: "98%" },
-  { label: "Trusted Since", value: "2020" },
+  { label: "Trusted Since", value: "2016" },
 ];
 
 export default function HeroStatsRail() {
