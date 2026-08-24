@@ -16,6 +16,7 @@ import {
   CircleCheck,
   MapPin,
   RefreshCcw,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -619,9 +620,10 @@ export default function QueryForm({
               <Button
                 type="submit"
                 disabled={!isHumanVerified || mutation.isPending}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-lg py-2.5 font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98] flex items-center justify-center gap-2"
               >
-                {mutation.isPending ? "Sending..." : "Send Enquiry"}
+                <Send className="w-4 h-4" />
+                <span>{mutation.isPending ? "Sending..." : "Send Enquiry"}</span>
               </Button>
             )}
           </form>

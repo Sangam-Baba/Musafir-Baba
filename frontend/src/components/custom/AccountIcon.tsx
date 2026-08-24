@@ -47,10 +47,11 @@ export function AccountIcon() {
       ) : (
         <div className="group">
           <Button
-            className="h-8 w-28 bg-[#FE5300] border-2 border-[#FE5300] text-white hover:bg-white hover:text-[#FE5300] rounded-md font-bold shadow-sm transition-all"
+            className="h-8 w-28 bg-[#FE5300] border-2 border-[#FE5300] text-white hover:bg-white hover:text-[#FE5300] rounded-md font-bold shadow-sm transition-all flex items-center justify-center gap-1.5"
             onClick={() => openDialog("login", undefined)}
           >
-            Login
+            <User className="w-3.5 h-3.5" />
+            <span>Login</span>
           </Button>
         </div>
       )}

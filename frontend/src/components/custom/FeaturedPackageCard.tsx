@@ -125,12 +125,12 @@ export default function FeaturedPackageCard({
               </div>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100/80 p-1.5 rounded-xl transition-all duration-150">
-              <div className="w-6 h-6 rounded-lg bg-blue-50 flex shrink-0 items-center justify-center text-blue-600">
+              <div className="w-6 h-6 rounded-lg bg-orange-50 flex shrink-0 items-center justify-center text-[#FE5300]">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m-6 4h6m-7 8l3.5-3.5M6 21l-1.5-1.5M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h8m4-11l2 2-2 2m2-2H12"></path></svg>
               </div>
               <div className="min-w-0">
                 <p className="text-[9px] text-slate-400 font-normal leading-tight">Price</p>
-                <span className="text-slate-700 font-semibold text-[12px] truncate block leading-tight">₹{Number(pkg?.price ?? 9999).toLocaleString("en-IN")}/-</span>
+                <span className="text-[#FE5300] font-bold text-[13px] truncate block leading-tight">₹{Number(pkg?.price ?? 9999).toLocaleString("en-IN")}/-</span>
               </div>
             </div>
           </div>

@@ -64,17 +64,27 @@ export function Navbar({
                     transition-all duration-150 absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50"
                 >
                   <ul className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[210px]">
-                    {link.dropdown.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          onClick={onClose}
-                          className="block px-4 py-2 text-[14px] text-gray-700 hover:bg-orange-50 hover:text-[#FE5300] transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
+                    {link.dropdown.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <li key={item.label}>
+                          <Link
+                            href={item.href}
+                            onClick={onClose}
+                            className="flex items-center gap-2.5 px-4 py-2 text-[13.5px] text-gray-700 hover:bg-orange-50 hover:text-[#FE5300] transition-colors group/item"
+                          >
+                            {item.emoji ? (
+                              <span className="text-[15px] leading-none flex-shrink-0" aria-hidden="true">
+                                {item.emoji}
+                              </span>
+                            ) : Icon ? (
+                              <Icon className="w-4 h-4 text-gray-400 group-hover/item:text-[#FE5300] transition-colors flex-shrink-0" />
+                            ) : null}
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

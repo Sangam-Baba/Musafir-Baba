@@ -259,6 +259,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: "https://musafirbaba.com/mbconnect",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: "https://musafirbaba.com/mbgo",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     ...blogs.map((blog: blog) => ({
       url: `https://musafirbaba.com/blog/${blog.slug}`,
       lastModified: new Date(blog.updatedAt),

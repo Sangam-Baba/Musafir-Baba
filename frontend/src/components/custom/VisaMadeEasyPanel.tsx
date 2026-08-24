@@ -94,9 +94,10 @@ export default function VisaMadeEasyPanel({ durations }: { durations: VisaDurati
           </ul>
           <Link
             href={`/visa/${activeSpot.slug}`}
-            className="block text-center bg-[#1D4ED8] hover:bg-[#1a43bd] text-white text-[11px] font-bold py-1.5 rounded-lg transition-colors"
+            className="flex items-center justify-center gap-1 bg-[#1D4ED8] hover:bg-[#1a43bd] text-white text-[11px] font-bold py-1.5 rounded-lg transition-colors"
           >
-            Apply Now
+            <span>Apply Now</span>
+            <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
       </div>

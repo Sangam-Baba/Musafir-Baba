@@ -33,9 +33,33 @@ async function FooterItem({ title }: FooterItemProps) {
           </li>
         ))}
         {title === "Services" && (
-          <li className="text-[#FE5300] font-semibold hover:text-[#e04a00]" key="partner-portal">
-            <Link href="/partner/login">Partner Portal</Link>
-          </li>
+          <>
+            <li key="mbconnect" className="pt-1">
+              <Link
+                href="/mbconnect"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50/90 hover:bg-orange-100 border border-orange-200/80 text-[#FE5300] font-semibold text-xs transition-all shadow-xs group"
+              >
+                <span>MBConnect</span>
+                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#FE5300] text-white shadow-xs">
+                  NEW
+                </span>
+              </Link>
+            </li>
+            <li key="mbgo">
+              <Link
+                href="/mbgo"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50/90 hover:bg-orange-100 border border-orange-200/80 text-[#FE5300] font-semibold text-xs transition-all shadow-xs group"
+              >
+                <span>MBGo</span>
+                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#FE5300] text-white shadow-xs">
+                  NEW
+                </span>
+              </Link>
+            </li>
+            <li className="text-[#FE5300] font-semibold hover:text-[#e04a00] pt-1" key="partner-portal">
+              <Link href="/partner/login">Partner Portal</Link>
+            </li>
+          </>
         )}
       </ul>
     </section>

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Star } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import badrinath from "../../../public/badrinath.jpg";
 import kashmir from "../../../public/kashmir.jpg";
 import himachal from "../../../public/Himachal.jpg";
@@ -80,9 +80,10 @@ export default function TestimonialsBanner() {
               href="https://www.google.com/maps?cid=14436397618581292545"
               target="_blank"
               rel="nofollow noopener noreferrer"
-              className="text-[12px] font-semibold text-gray-700 hover:text-[#FE5300] transition-colors"
+              className="text-[12px] font-semibold text-gray-700 hover:text-[#FE5300] transition-colors inline-flex items-center gap-1.5"
             >
-              Read our reviews on Google
+              <span>Read our reviews on Google</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
 

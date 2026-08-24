@@ -14,6 +14,7 @@ import {
   Menu,
   Phone,
   Search,
+  CreditCard,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import logo from "../../../public/logo.png";
@@ -146,10 +147,11 @@ export default function Header() {
               <div className="flex items-center gap-3 ml-2">
                 <Button
                   asChild
-                  className="hidden md:flex h-8 px-5 rounded-md font-bold text-[#d35400] bg-white hover:bg-gray-100 transition-all shadow-sm"
+                  className="hidden md:flex h-8 px-4 rounded-md font-bold text-[#d35400] bg-white hover:bg-gray-100 transition-all shadow-sm flex items-center gap-1.5"
                 >
                   <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
-                    Pay Now
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Pay Now</span>
                   </Link>
                 </Button>
 
