@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Sparkles, Palmtree, FileCheck2, Car, Plane, Hotel, MessageCircle } from "lucide-react";
+import { MapPin, Sparkles, Palmtree, FileCheck2, Car, Plane, Hotel, MessageCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -80,10 +80,12 @@ export default function HeroSearchWidget({
   // maxPrice) — no 4th one exists to bring over, so only 3 are shown here.
   const [visa, setVisa] = useState(VISA_DEFAULTS);
 
+  const [isSearching, setIsSearching] = useState(false);
   const showSeatsFilter = rental.vehicleType === "car" || rental.vehicleType === "";
 
   const handleSubmit = () => {
     if (!activeTabConfig.enabled || !activeTabConfig.href) return;
+    setIsSearching(true);
 
     const params = new URLSearchParams();
     if (activeTab === "holidays") {
@@ -116,9 +118,12 @@ export default function HeroSearchWidget({
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setIsSearching(false);
+              }}
               title={tab.enabled ? undefined : "Coming soon — tap to see how to reach us"}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12.5px] font-semibold flex-shrink-0 transition-colors ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12.5px] font-semibold flex-shrink-0 transition-colors cursor-pointer ${
                 isActive
                   ? "bg-[#FE5300] text-white"
                   : tab.enabled
@@ -379,10 +384,20 @@ export default function HeroSearchWidget({
       <button
         type="button"
         onClick={handleSubmit}
-        className="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-[13px] font-bold tracking-wide transition-colors bg-[#FE5300] text-white hover:bg-[#e04800]"
+        disabled={isSearching}
+        className="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-[13px] font-bold tracking-wide transition-all bg-[#FE5300] text-white hover:bg-[#e04800] active:scale-[0.99] cursor-pointer shadow-sm disabled:opacity-80"
       >
-        <Sparkles className="w-4 h-4" />
-        {activeTab === "holidays" ? "PLAN MY TRIP" : activeTab === "rentals" ? "FIND VEHICLES" : "SEARCH VISAS"}
+        {isSearching ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin text-white" />
+            <span>Searching...</span>
+          </>
+        ) : (
+          <>
+            <Sparkles className="w-4 h-4" />
+            <span>{activeTab === "holidays" ? "PLAN MY TRIP" : activeTab === "rentals" ? "FIND VEHICLES" : "SEARCH VISAS"}</span>
+          </>
+        )}
       </button>
       </>
       )}
