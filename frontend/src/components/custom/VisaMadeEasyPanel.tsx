@@ -2,9 +2,15 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import WorldMap, { type WorldSpot } from "./WorldMap";
+import type { WorldSpot } from "./WorldMap";
 import { VISA_SPOTS, MAP_CENTER, MAP_SCALE } from "./VisaMadeEasySection";
+
+const WorldMap = dynamic(() => import("./WorldMap"), {
+  ssr: false,
+  loading: () => <div className="w-full h-full animate-pulse bg-gray-100/60 rounded-xl" />,
+});
 
 export interface VisaDurations {
   [slug: string]: string;
