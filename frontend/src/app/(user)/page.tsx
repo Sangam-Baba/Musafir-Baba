@@ -276,7 +276,7 @@ export default async function HomePage() {
             Where will your <span className="italic font-serif text-[#FE5300]">next story</span> begin?
           </h1>
 
-          <p className="text-sm md:text-base text-gray-700 font-light max-w-2xl mb-1 md:mb-2">
+          <p className="text-sm md:text-base text-gray-600 font-light max-w-2xl mb-1 md:mb-2">
             From mountains and beaches to spiritual journeys and global adventures — we plan every trip like it&apos;s our own.
           </p>
 

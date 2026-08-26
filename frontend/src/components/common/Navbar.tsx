@@ -65,9 +65,31 @@ export function Navbar({
                     group-focus-within/nav-item:visible group-focus-within/nav-item:opacity-100 group-focus-within/nav-item:translate-y-0 group-focus-within/nav-item:pointer-events-auto
                     transition-all duration-150 absolute left-1/2 -translate-x-1/2 top-full pt-2 z-50"
                 >
-                  <ul className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[210px]">
+                  <ul className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[220px]">
                     {link.dropdown.map((item) => {
                       const Icon = item.icon;
+                      const isViewAll = item.label.toLowerCase().startsWith("view all");
+
+                      if (isViewAll) {
+                        return (
+                          <li key={item.label} className="mt-1 pt-1 border-t border-gray-100 px-1.5">
+                            <Link
+                              href={item.href}
+                              onClick={onClose}
+                              className="flex items-center justify-between gap-2 px-3 py-2 text-[13px] font-bold text-[#FE5300] bg-orange-50/80 hover:bg-[#FE5300] hover:text-white rounded-lg transition-all group/item shadow-2xs"
+                            >
+                              <span className="flex items-center gap-2">
+                                {Icon && (
+                                  <Icon className="w-4 h-4 text-[#FE5300] group-hover/item:text-white transition-colors flex-shrink-0" />
+                                )}
+                                <span>{item.label}</span>
+                              </span>
+                              <span className="text-[12px] group-hover/item:translate-x-0.5 transition-transform">→</span>
+                            </Link>
+                          </li>
+                        );
+                      }
+
                       return (
                         <li key={item.label}>
                           <Link

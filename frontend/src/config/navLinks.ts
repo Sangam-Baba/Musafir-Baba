@@ -36,10 +36,11 @@ export const NAV_LINKS: NavLink[] = [
     dropdown: [
       { label: "Uttarakhand", href: "/destinations/uttarakhand", icon: Mountain },
       { label: "Rajasthan", href: "/destinations/rajasthan", icon: Landmark },
+      { label: "Himachal", href: "/destinations/himachal-pradesh", icon: Mountain },
       { label: "Kerala", href: "/destinations/kerala", icon: Palmtree },
-      { label: "Singapore", href: "/destinations/singapore", icon: Building2, emoji: "🇸🇬" },
       { label: "Dubai", href: "/destinations/dubai", icon: Sparkles, emoji: "🇦🇪" },
-      { label: "Bali", href: "/destinations/bali", icon: Sun, emoji: "🇮🇩" },
+      { label: "Singapore", href: "/destinations/singapore", icon: Building2, emoji: "🇸🇬" },
+      { label: "Thailand", href: "/destinations/thailand", icon: Sun, emoji: "🇹🇭" },
       { label: "View all destinations", href: "/destinations", icon: ArrowRight },
     ],
   },

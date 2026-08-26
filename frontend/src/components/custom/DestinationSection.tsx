@@ -219,10 +219,10 @@ export function DestinationSection() {
               </div>
               <div className="md:w-1/2">
                 <div className="relative group overflow-hidden rounded-2xl h-full">
-                  <Link href="/destinations/bali">
+                  <Link href="/destinations/indonesia">
                     <Image
                       src="https://cdn.musafirbaba.com/images/Bali_sc5oct.jpg"
-                      alt="Bali"
+                      alt="Indonesia"
                       className="rounded-2xl w-full md:h-118 h-56 object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       width={500}
@@ -231,7 +231,7 @@ export function DestinationSection() {
                   </Link>
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent rounded-2xl" />
                   <h4 className="pointer-events-none absolute bottom-4 left-5 text-white text-[20px] font-semibold tracking-wide">
-                    Bali
+                    Indonesia
                   </h4>
                 </div>
               </div>
@@ -364,8 +364,8 @@ export function DestinationSection() {
                 img: "https://cdn.musafirbaba.com/images/Untitled_design_4_yrnksb.jpg",
               },
               {
-                title: "Bali",
-                href: "/destinations/bali",
+                title: "Indonesia",
+                href: "/destinations/indonesia",
                 img: "https://cdn.musafirbaba.com/images/Bali_sc5oct.jpg",
               },
               {

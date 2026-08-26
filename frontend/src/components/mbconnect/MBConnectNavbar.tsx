@@ -48,7 +48,6 @@ export default function MBConnectNavbar() {
             width={1384}
             height={345}
             style={{ width: "100%", height: "auto" }}
-            className={overlay ? "drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]" : ""}
             priority
           />
         </Link>
@@ -60,11 +59,7 @@ export default function MBConnectNavbar() {
               href={link.href}
               className={`text-[14px] xl:text-[14.5px] transition-colors ${
                 link.label === "Home"
-                  ? overlay
-                    ? "text-white font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-                    : "text-[#FE5300] font-bold"
-                  : overlay
-                  ? "text-white/95 hover:text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+                  ? "text-[#FE5300] font-bold"
                   : "text-gray-800 font-semibold hover:text-[#FE5300]"
               }`}
             >
@@ -85,7 +80,7 @@ export default function MBConnectNavbar() {
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
-          className={`lg:hidden p-2 -mr-2 transition-colors rounded-lg ${overlay ? "text-white" : "text-gray-800"}`}
+          className="lg:hidden p-2 -mr-2 transition-colors rounded-lg text-gray-800 hover:text-[#FE5300]"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
         >
           {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

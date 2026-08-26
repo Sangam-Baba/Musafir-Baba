@@ -27,7 +27,7 @@ const DOMESTIC_LIST: { slug: string; label: string; packages: string; image: Sta
 const INTERNATIONAL_SPOTS: (WorldSpot & { packages: string })[] = [
   { slug: "singapore", label: "Singapore", packages: "40+ Packages", coordinates: [103.8198, 1.3521], emoji: "🇸🇬" },
   { slug: "dubai", label: "Dubai", packages: "50+ Packages", coordinates: [55.2708, 25.2048], emoji: "🇦🇪" },
-  { slug: "bali", label: "Bali", packages: "35+ Packages", coordinates: [115.1889, -8.4095], emoji: "🇮🇩" },
+  { slug: "indonesia", label: "Indonesia", packages: "35+ Packages", coordinates: [115.1889, -8.4095], emoji: "🇮🇩" },
   { slug: "thailand", label: "Thailand", packages: "45+ Packages", coordinates: [100.9925, 15.87], emoji: "🇹🇭" },
   { slug: "japan", label: "Japan", packages: "30+ Packages", coordinates: [138.2529, 36.2048], emoji: "🇯🇵" },
   { slug: "maldives", label: "Maldives", packages: "25+ Packages", coordinates: [73.2207, 3.2028], emoji: "🇲🇻" },
