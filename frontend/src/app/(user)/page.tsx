@@ -239,8 +239,8 @@ export default async function HomePage() {
               animation: customBlink 1.2s ease-in-out infinite;
             }
             @keyframes customBreathe {
-              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-              50% { transform: scale(1.02); box-shadow: 0 0 10px 0 rgba(245, 158, 11, 0.25); }
+              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+              50% { transform: scale(1.02); box-shadow: 0 0 10px 0 rgba(16, 185, 129, 0.25); }
             }
             .animate-custom-breathe {
               animation: customBreathe 3s ease-in-out infinite;
@@ -265,10 +265,10 @@ export default async function HomePage() {
             }
           `}} />
 
-          <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-md border border-amber-200 mb-4 shadow-sm animate-custom-breathe">
+          <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-md border border-emerald-200 mb-4 shadow-sm animate-custom-breathe">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-custom-blink"></span>
-            <span className="text-[10px] md:text-xs font-bold tracking-[0.12em] text-amber-900 uppercase pt-[1px]">
-              India's Most Trusted Travel Partner
+            <span className="text-[10px] md:text-xs font-bold tracking-[0.12em] text-emerald-950 uppercase pt-[1px]">
+              India&apos;s Most Trusted Travel Partner
             </span>
           </div>
           

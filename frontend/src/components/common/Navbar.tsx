@@ -45,14 +45,16 @@ export function Navbar({
                 )}
               </Link>
 
-              {/* Active / Hover Bottom Border */}
-              <div
-                className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#FE5300] rounded-t-sm transition-all duration-300 ${
-                  isActive
-                    ? "opacity-100"
-                    : "opacity-0 group-hover/nav-item:opacity-100"
-                }`}
-              />
+              {/* Active / Hover Bottom Border (light mode only) */}
+              {!isDark && (
+                <div
+                  className={`absolute bottom-0 left-0 w-full h-[3px] bg-[#FE5300] rounded-t-sm transition-all duration-300 ${
+                    isActive
+                      ? "opacity-100"
+                      : "opacity-0 group-hover/nav-item:opacity-100"
+                  }`}
+                />
+              )}
 
               {/* Dropdown: always in the DOM as real links, so it's crawlable
                   and keyboard-usable without depending on JS to reveal it */}

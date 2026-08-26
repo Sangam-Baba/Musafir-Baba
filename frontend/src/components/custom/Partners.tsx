@@ -88,17 +88,16 @@ export default function Partners() {
               key={partner.name}
               className="pl-3 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6"
             >
-              <div className="flex flex-col items-center justify-center gap-2 border border-gray-200 rounded-xl px-3 py-4 hover:border-[#FE5300]/40 hover:shadow-sm transition-all h-full">
-                <div className="relative w-full h-9">
+              <div className="flex items-center justify-center border border-gray-200 rounded-xl px-4 py-5 md:py-6 bg-white hover:border-[#FE5300]/40 hover:shadow-md transition-all h-24 sm:h-28">
+                <div className="relative w-full h-12 sm:h-14">
                   <Image
                     src={partner.image}
                     alt={partner.name}
                     fill
-                    sizes="120px"
+                    sizes="(max-width: 640px) 140px, (max-width: 1024px) 180px, 200px"
                     className="object-contain"
                   />
                 </div>
-                <span className="text-[10px] text-gray-500 text-center leading-tight">{partner.name}</span>
               </div>
             </CarouselItem>
           ))}

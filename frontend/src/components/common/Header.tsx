@@ -55,7 +55,7 @@ export default function Header() {
     <header
       className={`w-full z-50 ${isHome ? "fixed top-0 left-0 right-0 transition-colors duration-300" : ""} ${
         overlay
-          ? "bg-gradient-to-b from-black/70 via-black/35 to-transparent border-b border-transparent"
+          ? "bg-transparent border-b border-transparent"
           : "bg-white border-b border-gray-200"
       }`}
     >
