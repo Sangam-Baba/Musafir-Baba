@@ -306,11 +306,10 @@ export const processState = async (session, message, entities, intent) => {
             </div>
           </div>
         `;
-        const toEmail =
-          process.env.ADMIN_NOTIFICATION_EMAIL ||
-          (process.env.NODE_ENV === "development"
-            ? "shubham.jauhari@musafirbaba.com"
-            : "care@musafirbaba.com");
+        // TEMPORARY: same care@musafirbaba.com delivery issue as the
+        // contact-form notification (see contact.controller.js) — routing
+        // here for now. Revert to "care@musafirbaba.com" once fixed.
+        const toEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
         await sendEmail(toEmail, subject, emailBody);
 
       } catch (err) {

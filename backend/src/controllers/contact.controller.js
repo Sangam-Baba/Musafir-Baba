@@ -74,11 +74,14 @@ const createContact = async (req, res) => {
         </div>
       </div>
     `;
-    const toEmail =
-      process.env.ADMIN_NOTIFICATION_EMAIL ||
-      (process.env.NODE_ENV === "development"
-        ? "shubham.jauhari@musafirbaba.com"
-        : "care@musafirbaba.com");
+    // TEMPORARY: care@musafirbaba.com stopped receiving these notification
+    // emails (confirmed via several diagnostic Resend sends — all accepted
+    // with real message IDs, none arrived at care@, in inbox or spam — while
+    // other mailboxes, including a non-Workspace external address, receive
+    // the same emails fine). Routing here for now so leads aren't missed
+    // while the care@ mailbox delivery issue is investigated separately.
+    // Revert to "care@musafirbaba.com" once fixed.
+    const toEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
 
     const clientSubject = "Thank you for reaching out to us.";
     const clientEmailBody = thankYouEnquirySubmit(name);
