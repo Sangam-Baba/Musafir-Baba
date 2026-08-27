@@ -306,7 +306,11 @@ export const processState = async (session, message, entities, intent) => {
             </div>
           </div>
         `;
-        const toEmail = process.env.NODE_ENV === "development" ? "shubham.jauhari@musafirbaba.com" : "care@musafirbaba.com";
+        const toEmail =
+          process.env.ADMIN_NOTIFICATION_EMAIL ||
+          (process.env.NODE_ENV === "development"
+            ? "shubham.jauhari@musafirbaba.com"
+            : "care@musafirbaba.com");
         await sendEmail(toEmail, subject, emailBody);
 
       } catch (err) {
