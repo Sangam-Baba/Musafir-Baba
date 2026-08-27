@@ -74,28 +74,29 @@ const createContact = async (req, res) => {
         </div>
       </div>
     `;
-    const toEmail = process.env.NODE_ENV === "development" ? "shubham.jauhari@musafirbaba.com" : "care@musafirbaba.com";
-    const emailResponse = await sendEmail(
-      toEmail,
-      subject,
-      emailBody
-    );
+    const toEmail =
+      process.env.ADMIN_NOTIFICATION_EMAIL ||
+      (process.env.NODE_ENV === "development"
+        ? "shubham.jauhari@musafirbaba.com"
+        : "care@musafirbaba.com");
 
     const clientSubject = "Thank you for reaching out to us.";
     const clientEmailBody = thankYouEnquirySubmit(name);
-    const clientEmailResponse = await sendEmail(
-      email,
-      clientSubject,
-      clientEmailBody
-    );
-    if (
-      !emailResponse ||
-      emailResponse.error !== null ||
-      !clientEmailResponse ||
-      clientEmailResponse.error !== null
-    ) {
-      console.error("Email sending failed:", emailResponse.error);
-    }
+
+    // Send admin alert (with replyTo customer email) & customer confirmation in parallel
+    Promise.allSettled([
+      sendEmail(toEmail, subject, emailBody, [], contact.email),
+      sendEmail(email, clientSubject, clientEmailBody)
+    ]).then(([adminRes, clientRes]) => {
+      if (adminRes.status === "fulfilled" && adminRes.value?.error) {
+        console.error("Admin Enquiry Email Error:", adminRes.value.error);
+      }
+      if (clientRes.status === "fulfilled" && clientRes.value?.error) {
+        console.error("Client Confirmation Email Error:", clientRes.value.error);
+      }
+    }).catch((err) => {
+      console.error("Email sending unexpected error:", err);
+    });
     res.status(201).json({
       success: true,
       message: "Contact created successfully",
