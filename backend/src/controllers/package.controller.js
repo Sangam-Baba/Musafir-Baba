@@ -72,34 +72,46 @@ const editPackage = async (req, res) => {
         return res.status(404).json({ success: false, message: "Package not found" });
       }
 
-      if (existingPkg.status === "published") {
-        let staffName = "Unknown Staff";
-        if (req.user && req.user.sub) {
-          const staffObj = await Staff.findById(req.user.sub).select("name");
-          if (staffObj) {
-            staffName = staffObj.name;
-          }
+      // Every staff edit to an existing package — draft or published — is
+      // held for admin approval rather than written live. Previously this
+      // only applied to already-published packages, so a staff edit to a
+      // draft package went straight to live fields with no review step.
+      let staffName = "Unknown Staff";
+      if (req.user && req.user.sub) {
+        const staffObj = await Staff.findById(req.user.sub).select("name");
+        if (staffObj) {
+          staffName = staffObj.name;
         }
-
-        existingPkg.pendingUpdates = {
-          data: { ...req.body },
-          updatedBy: req.user.name || staffName,
-          updatedAt: new Date()
-        };
-        await existingPkg.save();
-
-        return res.json({
-          success: true,
-          message: "Package edits saved as pending for admin approval",
-          data: existingPkg,
-        });
       }
+
+      existingPkg.pendingUpdates = {
+        data: { ...req.body },
+        updatedBy: req.user.name || staffName,
+        updatedAt: new Date()
+      };
+      await existingPkg.save();
+
+      return res.json({
+        success: true,
+        message: "Package edits saved as pending for admin approval",
+        data: existingPkg,
+      });
     }
 
-    const pkg = await Package.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // Admin/superadmin direct edit. If this package currently has a
+    // pending staff edit sitting on it, that snapshot was taken before
+    // this edit and is now stale relative to the fields being saved here —
+    // clear it so a later "Approve" can't silently resurrect the old,
+    // pre-this-edit data over the admin's own changes. The frontend warns
+    // the admin about this pending edit before letting the save proceed.
+    const pkg = await Package.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, pendingUpdates: null },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
     if (!pkg) {
       return res
         .status(404)
@@ -124,14 +136,21 @@ const approvePackageUpdates = async (req, res) => {
       return res.status(404).json({ success: false, message: "Package not found" });
     }
 
-    let updateData = { status: "published" };
+    // publish=true forces the package live regardless of its prior status
+    // ("Approve & Publish"). Otherwise the approved edits are applied but
+    // the package's status before this approval is preserved as-is
+    // ("Approve" only — e.g. a draft stays a draft).
+    const shouldPublish = req.body.publish === true;
+
+    let updateData = {};
     if (pkg.pendingUpdates && pkg.pendingUpdates.data) {
-      updateData = { ...pkg.pendingUpdates.data, status: "published" };
+      updateData = { ...pkg.pendingUpdates.data };
       if (!updateData.author || updateData.author === "") {
         const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i });
         updateData.author = defaultAuthor ? defaultAuthor._id : null;
       }
     }
+    updateData.status = shouldPublish ? "published" : pkg.status;
 
     const updatedPkg = await Package.findByIdAndUpdate(
       req.params.id,
@@ -141,7 +160,9 @@ const approvePackageUpdates = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Package published successfully",
+      message: shouldPublish
+        ? "Package approved and published successfully"
+        : "Package changes approved successfully",
       data: updatedPkg,
     });
   } catch (error) {
@@ -308,9 +329,23 @@ const getPackages = async (req, res) => {
       query.destination = dest._id;
     }
 
-    // ✅ Search filter (title only)
+    // ✅ Search filter (title or destination name/country/state/city) — the
+    // admin UI's placeholder ("Search by name or destination") always
+    // promised both, but this previously only matched title.
     if (search) {
-      query.title = { $regex: search, $options: "i" };
+      const matchingDestinations = await Destination.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { country: { $regex: search, $options: "i" } },
+          { state: { $regex: search, $options: "i" } },
+          { city: { $regex: search, $options: "i" } },
+        ],
+      }).select("_id");
+      const searchOr = [{ title: { $regex: search, $options: "i" } }];
+      if (matchingDestinations.length > 0) {
+        searchOr.push({ destination: { $in: matchingDestinations.map((d) => d._id) } });
+      }
+      query.$and = [...(query.$and || []), { $or: searchOr }];
     }
     // console.log(query);
     // ✅ Query execution

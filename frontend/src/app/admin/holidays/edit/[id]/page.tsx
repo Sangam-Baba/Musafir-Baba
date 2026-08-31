@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { clearCache } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -227,6 +228,7 @@ export default function CreatePackagePage() {
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
+  const role = useAdminAuthStore((state) => state.role) as string;
   const params = useParams();
   const id = params.id as string;
   const queryClient = useQueryClient();
@@ -453,6 +455,21 @@ export default function CreatePackagePage() {
   });
 
   const onSubmit: SubmitHandler<PackageFormValues> = (values) => {
+    // If an admin edits directly while a staff member's change is still
+    // sitting unapproved on this package, saving here overwrites the live
+    // fields and discards that pending change (it can no longer be
+    // approved afterward — approving it after this point would just
+    // resurrect stale pre-this-edit data). Warn before it happens instead
+    // of it happening silently.
+    if (
+      pkg?.pendingUpdates &&
+      ["admin", "superadmin"].includes(role) &&
+      !confirm(
+        `This package has unapproved changes from ${pkg.pendingUpdates.updatedBy} awaiting your review. Saving your own edit now will discard those pending changes instead of approving/rejecting them. Continue anyway?`
+      )
+    ) {
+      return;
+    }
     mutation.mutate(values);
   };
 

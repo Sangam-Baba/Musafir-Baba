@@ -74,11 +74,17 @@ const createContact = async (req, res) => {
         </div>
       </div>
     `;
+    // TEMPORARY: care@musafirbaba.com isn't receiving notification emails
+    // (confirmed the send pipeline itself works — several diagnostic tests
+    // via Resend were all accepted with real message IDs, but never arrived
+    // at care@, in inbox or spam — while other mailboxes, including a
+    // non-Workspace external address, receive these same emails fine).
+    // Routing admin notifications to abhimars235@gmail.com for now so leads
+    // aren't missed while the care@ mailbox delivery issue (likely a
+    // filter/rule specific to that mailbox) is investigated separately.
+    // Revert to "care@musafirbaba.com" once fixed.
     const toEmail =
-      process.env.ADMIN_NOTIFICATION_EMAIL ||
-      (process.env.NODE_ENV === "development"
-        ? "shubham.jauhari@musafirbaba.com"
-        : "care@musafirbaba.com");
+      process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
 
     const clientSubject = "Thank you for reaching out to us.";
     const clientEmailBody = thankYouEnquirySubmit(name);

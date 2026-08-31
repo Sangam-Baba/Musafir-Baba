@@ -10,6 +10,13 @@ import { Loader2 } from "lucide-react";
 import PackagesList from "@/components/admin/PackagesList";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import PreviewDrawer from "@/components/admin/PreviewDrawer";
 interface Batch {
   startDate: string;
@@ -85,9 +92,15 @@ interface Package {
   image: string;
   pendingUpdates?: any;
 }
-const getAllPackages = async (page: number, search: string, limit: number) => {
+const getAllPackages = async (
+  page: number,
+  search: string,
+  limit: number,
+  status: string,
+  destination: string
+) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=${status}&destination=${destination}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -99,10 +112,32 @@ const getAllPackages = async (page: number, search: string, limit: number) => {
   return data;
 };
 
-const PAGE_SIZE_OPTIONS = [10, 50, 100, 500];
+interface DestinationOption {
+  _id: string;
+  name: string;
+  state: string;
+}
+// Same endpoint/shape src/app/admin/holidays/new/page.tsx already uses for
+// its own destination dropdown — duplicated locally rather than imported
+// across page files, to keep the two pages independent.
+const getDestinations = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`);
+  if (!res.ok) throw new Error("Failed to get destinations");
+  const data = await res.json();
+  return data?.data ?? [];
+};
+
+// 512+ packages already exist today and growing, so the page-size cap
+// needs real headroom above the old 500 max, not a bump that'll be too
+// small again soon.
+const PAGE_SIZE_OPTIONS = [10, 50, 100, 500, 2000];
 function PackagePage() {
   const [filter, setFilter] = useState({ search: "" });
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  // "" matches the existing default (no status filter — shows everything,
+  // same as before this filter existed).
+  const [statusFilter, setStatusFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -122,8 +157,14 @@ function PackagePage() {
     (state) => state.permissions
   ) as string[];
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["packages", page, debouncedSearch, pageSize],
-    queryFn: () => getAllPackages(page, debouncedSearch, pageSize),
+    queryKey: ["packages", page, debouncedSearch, pageSize, statusFilter, locationFilter],
+    queryFn: () => getAllPackages(page, debouncedSearch, pageSize, statusFilter, locationFilter),
+    enabled: permissions.includes("holidays"),
+  });
+
+  const { data: destinations } = useQuery({
+    queryKey: ["destinations"],
+    queryFn: getDestinations,
     enabled: permissions.includes("holidays"),
   });
 
@@ -163,7 +204,15 @@ function PackagePage() {
     }
   };
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string, publish: boolean) => {
+    if (
+      !confirm(
+        publish
+          ? "Approve these changes and publish the package live?"
+          : "Approve these changes? The package's current status (draft/published) will stay as-is."
+      )
+    )
+      return;
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/packages/${id}/approve`,
@@ -173,10 +222,11 @@ function PackagePage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
+          body: JSON.stringify({ publish }),
         }
       );
       if (!res.ok) throw new Error("Failed to approve package");
-      toast.success("Package approved successfully");
+      toast.success(publish ? "Package approved and published" : "Package changes approved");
       
       // Trigger frontend cache revalidation using Server Action
       try {
@@ -235,6 +285,43 @@ function PackagePage() {
               setPage(1);
             }}
           />
+          <Select
+            value={statusFilter || "all"}
+            onValueChange={(v) => {
+              setStatusFilter(v === "all" ? "" : v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-[160px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={locationFilter || "all"}
+            onValueChange={(v) => {
+              setLocationFilter(v === "all" ? "" : v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {(destinations ?? [])
+                .filter((dest: DestinationOption) => dest.state && dest.state.trim() !== "")
+                .map((dest: DestinationOption) => (
+                  <SelectItem key={dest._id} value={dest.state}>
+                    {dest.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
         </div>
         <button
           onClick={() => router.push("/admin/holidays/new")}
