@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ExternalLink, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Edit, Trash2, ExternalLink, CheckCircle, CheckCheck, XCircle, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 interface Package {
   id: string;
@@ -26,7 +26,7 @@ interface PackageTableProps {
   role?: string;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onApprove?: (id: string) => void;
+  onApprove?: (id: string, publish: boolean) => void;
   onReject?: (id: string) => void;
   onPreview?: (id: string) => void;
 }
@@ -111,10 +111,20 @@ export default function AuthorsList({
                           <Button
                             variant="outline"
                             className="h-7 w-7 p-0 border-slate-200 text-green-500 hover:text-green-700 hover:bg-green-50 transition-colors"
-                            onClick={() => onApprove(cat.id)}
-                            title="Approve & Publish"
+                            onClick={() => onApprove(cat.id, false)}
+                            title="Approve (keeps current status — draft stays draft, published stays published)"
                           >
                             <CheckCircle className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                        {onApprove && (
+                          <Button
+                            variant="outline"
+                            className="h-7 w-7 p-0 border-slate-200 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 transition-colors"
+                            onClick={() => onApprove(cat.id, true)}
+                            title="Approve & Publish"
+                          >
+                            <CheckCheck className="w-3.5 h-3.5" />
                           </Button>
                         )}
                         {onReject && cat.status.toLowerCase().includes('pending updates') && (
@@ -189,9 +199,20 @@ export default function AuthorsList({
                         variant="outline"
                         size="sm"
                         className="flex-1 text-green-600 border-green-200 hover:bg-green-50"
-                        onClick={() => onApprove(cat.id)}
+                        onClick={() => onApprove(cat.id, false)}
+                        title="Keeps current status — draft stays draft, published stays published"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" /> Approve
+                      </Button>
+                    )}
+                    {onApprove && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                        onClick={() => onApprove(cat.id, true)}
+                      >
+                        <CheckCheck className="w-4 h-4 mr-1" /> Publish
                       </Button>
                     )}
                     {onReject && cat.status.toLowerCase().includes('pending updates') && (
