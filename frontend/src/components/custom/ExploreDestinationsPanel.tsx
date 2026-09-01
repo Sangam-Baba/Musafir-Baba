@@ -279,9 +279,9 @@ export default function ExploreDestinationsPanel() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2 max-h-[280px] overflow-y-auto pr-1 mb-4 scrollbar-thin scrollbar-thumb-gray-200">
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-3 pt-1 mb-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
             {filteredInternational.length === 0 ? (
-              <div className="col-span-full py-8 text-center text-gray-400 text-[12.5px]">
+              <div className="w-full py-6 text-center text-gray-400 text-[12.5px]">
                 No destinations found matching &quot;{searchQuery}&quot;
               </div>
             ) : (
@@ -293,7 +293,7 @@ export default function ExploreDestinationsPanel() {
                     href={`/destinations/${item.slug}`}
                     onMouseEnter={() => setActive(item.slug)}
                     onMouseLeave={() => setActive(null)}
-                    className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 border transition-all cursor-pointer ${
+                    className={`flex items-center gap-2.5 rounded-xl px-3 py-2 border transition-all cursor-pointer flex-shrink-0 min-w-[165px] ${
                       isHovered
                         ? "bg-orange-50 border-[#FE5300]/50 shadow-xs scale-[1.02]"
                         : "bg-white/80 border-gray-100 hover:bg-white hover:border-gray-200"
