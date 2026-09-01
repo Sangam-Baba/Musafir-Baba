@@ -41,9 +41,12 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
     <section className="w-full bg-white px-4 md:px-10 py-12 md:py-20 border-t border-gray-100">
       <div className="w-full max-w-7xl mx-auto flex flex-col items-start">
         
-        {/* Header Section */}
-        <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-          <div className="flex flex-col gap-1 items-start">
+        {/* Header Section — centered, matching the other homepage section
+            headings, with the "View all" link moved below it instead of
+            beside it (a justify-between row can't center the text block
+            without pushing it out of line with the link). */}
+        <div className="w-full flex flex-col items-center text-center gap-2 mb-6">
+          <div className="flex flex-col gap-1 items-center">
             <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
               TOP-RATED PACKAGES
             </span>
@@ -54,10 +57,10 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
               Top-rated holiday packages curated for every journey.
             </p>
           </div>
-          
-          <Link 
-            href={`/holidays/${active}`} 
-            className="flex items-center gap-1 text-[#FE5300] font-medium hover:text-[#e04800] transition-colors shrink-0 mb-1 pb-1"
+
+          <Link
+            href={`/holidays/${active}`}
+            className="flex items-center gap-1 text-[#FE5300] font-medium hover:text-[#e04800] transition-colors shrink-0"
           >
             View all <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
