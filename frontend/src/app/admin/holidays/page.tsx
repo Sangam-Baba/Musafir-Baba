@@ -88,6 +88,9 @@ interface Package {
   createdAt: string;
   updatedAt: string;
   isFeatured: boolean;
+  isBestSeller?: boolean;
+  packagePercent?: number;
+  author?: { name?: string } | string | null;
   status: "draft" | "published";
   image: string;
   pendingUpdates?: any;
@@ -352,6 +355,13 @@ function PackagePage() {
                       : "0",
                     url: `/holidays/${b.mainCategory?.slug}/${b.destination?.state}/${b.slug}`,
                     status: b.pendingUpdates ? (b.pendingUpdates.updatedBy ? `Pending Updates by ${b.pendingUpdates.updatedBy}` : "Pending Updates") : (b.status === "published" ? "Published" : "Draft"),
+                    days: b.duration?.days,
+                    nights: b.duration?.nights,
+                    isFeatured: b.isFeatured,
+                    isBestSeller: b.isBestSeller,
+                    packagePercent: b.packagePercent,
+                    maxPeople: b.maxPeople,
+                    author: typeof b.author === "string" ? b.author : b.author?.name,
                   }))
                 : []
             }

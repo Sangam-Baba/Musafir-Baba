@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -10,8 +11,123 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ExternalLink, CheckCircle, CheckCheck, XCircle, Eye } from "lucide-react";
+import { Edit, Trash2, ExternalLink, CheckCircle, CheckCheck, XCircle, Eye, Columns3 } from "lucide-react";
 import { motion } from "framer-motion";
+
+// Client-side-only column visibility toggle for the desktop table.
+// Stored per-browser in localStorage; purely a display preference —
+// it never touches package data, props, or any handler passed in.
+const COLUMN_VISIBILITY_STORAGE_KEY = "mb_admin_packages_visible_columns";
+const TOGGLEABLE_COLUMNS = [
+  { key: "name", label: "Name" },
+  { key: "location", label: "Location" },
+  { key: "price", label: "Price" },
+  { key: "url", label: "URL" },
+  { key: "status", label: "Status" },
+  { key: "days", label: "Days" },
+  { key: "nights", label: "Nights" },
+  { key: "isFeatured", label: "Featured" },
+  { key: "isBestSeller", label: "Best Seller" },
+  { key: "packagePercent", label: "Package %" },
+  { key: "maxPeople", label: "Max People" },
+  { key: "author", label: "Author" },
+] as const;
+type ToggleableColumnKey = (typeof TOGGLEABLE_COLUMNS)[number]["key"];
+type ColumnVisibility = Record<ToggleableColumnKey, boolean>;
+const DEFAULT_COLUMN_VISIBILITY: ColumnVisibility = {
+  name: true,
+  location: true,
+  price: true,
+  url: true,
+  status: true,
+  days: false,
+  nights: false,
+  isFeatured: false,
+  isBestSeller: false,
+  packagePercent: false,
+  maxPeople: false,
+  author: false,
+};
+
+function useColumnVisibility() {
+  const [visibleColumns, setVisibleColumns] = useState<ColumnVisibility>(DEFAULT_COLUMN_VISIBILITY);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(COLUMN_VISIBILITY_STORAGE_KEY);
+      if (raw) setVisibleColumns((prev) => ({ ...prev, ...JSON.parse(raw) }));
+    } catch {
+      // ignore malformed/unavailable storage — feature is purely cosmetic
+    }
+  }, []);
+
+  const toggleColumn = (key: ToggleableColumnKey) => {
+    setVisibleColumns((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        window.localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // ignore storage failures — feature is purely cosmetic
+      }
+      return next;
+    });
+  };
+
+  return { visibleColumns, toggleColumn };
+}
+
+function ColumnVisibilityMenu({
+  visibleColumns,
+  toggleColumn,
+}: {
+  visibleColumns: ColumnVisibility;
+  toggleColumn: (key: ToggleableColumnKey) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open]);
+
+  return (
+    <div className="relative hidden md:inline-block" ref={ref}>
+      <Button
+        type="button"
+        variant="outline"
+        className="h-8 gap-1.5 border-slate-200 text-slate-500 hover:text-slate-700 text-xs"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Columns3 className="w-3.5 h-3.5" />
+        Columns
+      </Button>
+      {open && (
+        <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-slate-100 bg-white p-2 shadow-lg">
+          {TOGGLEABLE_COLUMNS.map((col) => (
+            <label
+              key={col.key}
+              className="flex items-center gap-2 px-2 py-1.5 text-[13px] text-slate-600 rounded hover:bg-slate-50 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={visibleColumns[col.key]}
+                onChange={() => toggleColumn(col.key)}
+                className="h-3.5 w-3.5 rounded border-slate-300"
+              />
+              {col.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface Package {
   id: string;
   name: string;
@@ -20,6 +136,13 @@ interface Package {
   location: string;
   price: string;
   status: string;
+  days?: number;
+  nights?: number;
+  isFeatured?: boolean;
+  isBestSeller?: boolean;
+  packagePercent?: number;
+  maxPeople?: number;
+  author?: string;
 }
 interface PackageTableProps {
   packages: Package[];
@@ -41,19 +164,54 @@ export default function AuthorsList({
   onPreview,
 }: PackageTableProps) {
   const length = packages.length;
+  const { visibleColumns, toggleColumn } = useColumnVisibility();
   return (
     <div className="w-full">
+      <div className="hidden md:flex justify-end mb-2">
+        <ColumnVisibilityMenu visibleColumns={visibleColumns} toggleColumn={toggleColumn} />
+      </div>
       {/* Desktop Table */}
       <div className="hidden md:block">
         <Table className="border border-slate-100 shadow-sm rounded-xl overflow-hidden bg-white">
           <TableHeader>
             <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
               <TableHead className="w-[5%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10 px-4">Sr.No</TableHead>
-              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Name</TableHead>
-              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Location</TableHead>
-              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Price</TableHead>
-              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">URL</TableHead>
-              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Status</TableHead>
+              {visibleColumns.name && (
+                <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Name</TableHead>
+              )}
+              {visibleColumns.location && (
+                <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Location</TableHead>
+              )}
+              {visibleColumns.price && (
+                <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Price</TableHead>
+              )}
+              {visibleColumns.url && (
+                <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">URL</TableHead>
+              )}
+              {visibleColumns.status && (
+                <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Status</TableHead>
+              )}
+              {visibleColumns.days && (
+                <TableHead className="w-[8%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Days</TableHead>
+              )}
+              {visibleColumns.nights && (
+                <TableHead className="w-[8%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Nights</TableHead>
+              )}
+              {visibleColumns.isFeatured && (
+                <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Featured</TableHead>
+              )}
+              {visibleColumns.isBestSeller && (
+                <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Best Seller</TableHead>
+              )}
+              {visibleColumns.packagePercent && (
+                <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Package %</TableHead>
+              )}
+              {visibleColumns.maxPeople && (
+                <TableHead className="w-[10%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Max People</TableHead>
+              )}
+              {visibleColumns.author && (
+                <TableHead className="w-[12%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Author</TableHead>
+              )}
               <TableHead className="w-[20%] text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right h-10 pr-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -70,39 +228,84 @@ export default function AuthorsList({
                     {length - i}
                   </span>
                 </TableCell>
-                <TableCell className="py-2">
-                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
-                    {cat.name}
-                  </span>
-                </TableCell>
-                <TableCell className="py-2">
-                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
-                    {cat.location}
-                  </span>
-                </TableCell>
-                <TableCell className="py-2">
-                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
-                    Rs. {cat.price}
-                  </span>
-                </TableCell>
-                <TableCell className="py-2">
-                  <a
-                    href={cat.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-400 lowercase font-mono group/link"
-                  >
-                    <ExternalLink size={12} className="opacity-40 group-hover/link:opacity-100 group-hover/link:scale-110 transition-all duration-300 ease-in-out" />
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out truncate max-w-[150px]">
-                      Visit
+                {visibleColumns.name && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
+                      {cat.name}
                     </span>
-                  </a>
-                </TableCell>
-                <TableCell className="py-2">
-                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded capitalize ${cat.status.toLowerCase() === 'published' ? 'text-green-600 bg-green-50/80' : cat.status.toLowerCase().includes('pending updates') ? 'text-amber-600 bg-amber-50/80' : 'text-slate-600 bg-slate-50/80'}`}>
-                    {cat.status}
-                  </span>
-                </TableCell>
+                  </TableCell>
+                )}
+                {visibleColumns.location && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
+                      {cat.location}
+                    </span>
+                  </TableCell>
+                )}
+                {visibleColumns.price && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] font-semibold text-slate-700 tracking-tight">
+                      Rs. {cat.price}
+                    </span>
+                  </TableCell>
+                )}
+                {visibleColumns.url && (
+                  <TableCell className="py-2">
+                    <a
+                      href={cat.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-400 lowercase font-mono group/link"
+                    >
+                      <ExternalLink size={12} className="opacity-40 group-hover/link:opacity-100 group-hover/link:scale-110 transition-all duration-300 ease-in-out" />
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out truncate max-w-[150px]">
+                        Visit
+                      </span>
+                    </a>
+                  </TableCell>
+                )}
+                {visibleColumns.status && (
+                  <TableCell className="py-2">
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded capitalize ${cat.status.toLowerCase() === 'published' ? 'text-green-600 bg-green-50/80' : cat.status.toLowerCase().includes('pending updates') ? 'text-amber-600 bg-amber-50/80' : 'text-slate-600 bg-slate-50/80'}`}>
+                      {cat.status}
+                    </span>
+                  </TableCell>
+                )}
+                {visibleColumns.days && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.days ?? "-"}</span>
+                  </TableCell>
+                )}
+                {visibleColumns.nights && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.nights ?? "-"}</span>
+                  </TableCell>
+                )}
+                {visibleColumns.isFeatured && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.isFeatured ? "Yes" : "No"}</span>
+                  </TableCell>
+                )}
+                {visibleColumns.isBestSeller && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.isBestSeller ? "Yes" : "No"}</span>
+                  </TableCell>
+                )}
+                {visibleColumns.packagePercent && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.packagePercent ?? 0}%</span>
+                  </TableCell>
+                )}
+                {visibleColumns.maxPeople && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.maxPeople ?? "-"}</span>
+                  </TableCell>
+                )}
+                {visibleColumns.author && (
+                  <TableCell className="py-2">
+                    <span className="text-[13px] text-slate-700">{cat.author || "-"}</span>
+                  </TableCell>
+                )}
                 <TableCell className="py-2 text-right pr-4">
                   <div className="flex justify-end gap-1.5">
                     {(cat.status.toLowerCase() === 'draft' || cat.status.toLowerCase().includes('pending updates')) && role && ['admin', 'superadmin'].includes(role) && (
