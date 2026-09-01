@@ -135,13 +135,13 @@ function VisaClientPage({
 
   return (
     <section className="bg-slate-50/60 min-h-screen pb-10">
-      <div className="">
+      <div className="relative">
         <Hero
-          image="/Heroimg.jpg"
+          image="/newiamges/visabanner.avif"
           title="Visa Services for 180+ Countries"
+          align="center"
+          height="lg"
           overlayOpacity={100}
-          aspectRatio="aspect-auto"
-          className="h-[140px] md:h-[180px] lg:h-[200px] [&>div.relative.z-10]:!pt-0 [&>div.relative.z-10]:!pb-0"
         />
       </div>
 

@@ -153,7 +153,7 @@ function DestinationPageClient({
     <section className="flex flex-col">
       <div className="relative">
         <Hero
-          image="/Heroimg.jpg"
+          image="/newiamges/destinationbanner.avif"
           title="Destinations"
           align="center"
           height="lg"

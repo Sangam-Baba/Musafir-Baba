@@ -11,8 +11,7 @@ import ReadMore from "@/components/common/ReadMore";
 import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
 
 const DEFAULT_HERO_TITLE = "Holidays";
-const DEFAULT_HERO_IMAGE =
-  "https://cdn.musafirbaba.com/images/tour_package_k5ijnt.webp";
+const DEFAULT_HERO_IMAGE = "/newiamges/holidaybanner.avif";
 const DEFAULT_META_TITLE =
   "Affordable Holiday Tour Packages - Domestic & International";
 const DEFAULT_META_DESCRIPTION =

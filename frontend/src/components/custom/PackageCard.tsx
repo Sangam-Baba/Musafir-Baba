@@ -86,14 +86,6 @@ export default function PackageCard({
         {/* Protective Vignettes */}
         <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-slate-950/60 via-slate-950/10 to-transparent pointer-events-none"></div>
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-950/40 to-transparent pointer-events-none"></div>
-        
-        {/* Vibrant Orange Price Badge */}
-        <div className="absolute top-3 left-3 bg-gradient-to-r from-orange-600 to-amber-500 backdrop-blur-md border border-orange-400/30 shadow-lg shadow-orange-500/20 rounded-xl py-1.5 px-3 transition-all duration-300">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-            <span className="text-[12px] font-bold font-sans text-white tracking-tight">₹{Number(pkg?.price ?? 9999).toLocaleString("en-IN")}/- onwards</span>
-          </div>
-        </div>
       </div>
 
       {/* Content Space */}
@@ -124,12 +116,12 @@ export default function PackageCard({
               </div>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100/80 p-1.5 rounded-xl transition-all duration-150">
-              <div className="w-6 h-6 rounded-lg bg-blue-50 flex shrink-0 items-center justify-center text-blue-600">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <div className="w-6 h-6 rounded-lg bg-orange-50 flex shrink-0 items-center justify-center text-[#FE5300]">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m-6 4h6m-7 8l3.5-3.5M6 21l-1.5-1.5M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h8m4-11l2 2-2 2m2-2H12"></path></svg>
               </div>
               <div className="min-w-0">
-                <p className="text-[9px] text-slate-400 font-normal leading-tight">Location</p>
-                <span className="text-slate-700 font-semibold text-[12px] truncate block leading-tight">{pkg.destination}</span>
+                <p className="text-[9px] text-slate-400 font-normal leading-tight">Price</p>
+                <span className="text-[#FE5300] font-bold text-[13px] truncate block leading-tight">₹{Number(pkg?.price ?? 9999).toLocaleString("en-IN")}/-</span>
               </div>
             </div>
           </div>

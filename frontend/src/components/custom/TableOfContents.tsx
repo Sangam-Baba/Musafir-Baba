@@ -56,6 +56,15 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     }
   }
 
+  const scrollToHeading = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const yOffset = -100;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="w-full pt-2">
       <div className="flex items-center justify-between mb-4 border-b border-gray-50 pb-3">
@@ -82,28 +91,27 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
           
           <div className="flex flex-col gap-0.5 mt-1">
             {visibleHeadings.map((heading) => (
-              <a
+              <div
                 key={`${heading.id}-${heading.originalIndex}`}
-                href={`#${heading.id}`}
+                role="button"
+                tabIndex={0}
                 className={cn(
-                  "group relative py-2 pr-3 transition-all duration-200 border-l-[3px] border-transparent flex items-start justify-between gap-2 rounded-r-lg",
-                  "hover:border-[#FE5300] hover:text-[#FE5300] hover:bg-orange-50/50 text-gray-600",
+                  "group relative py-2 pr-3 transition-all duration-200 border-l-[3px] border-transparent flex items-start justify-between gap-2 rounded-r-lg cursor-pointer select-none",
+                  "hover:border-[#FE5300] hover:text-[#FE5300] hover:bg-orange-50/50 text-gray-600 focus:outline-none focus-visible:bg-orange-50/70 focus-visible:border-[#FE5300]",
                   heading.level === 2 ? "pl-4 text-[13px] font-semibold" : "",
                   heading.level === 3 ? "pl-8 text-[12px] font-medium text-gray-500" : "",
                   heading.level >= 4 ? "pl-11 text-[11px] font-normal text-gray-400" : ""
                 )}
-                onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.getElementById(heading.id);
-                  if (element) {
-                    const yOffset = -100;
-                    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                    window.scrollTo({ top: y, behavior: 'smooth' });
+                onClick={() => scrollToHeading(heading.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    scrollToHeading(heading.id);
                   }
                 }}
               >
                 <span 
-                  className="relative z-10 flex-1 leading-snug" 
+                  className="relative z-10 flex-1 leading-snug text-left" 
                   title={heading.text.replace(/<[^>]*>?/gm, '')}
                   dangerouslySetInnerHTML={{ __html: heading.text }}
                 />
@@ -112,6 +120,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                     type="button"
                     onClick={(e) => toggleSection(heading.id, e)}
                     className="p-1 hover:bg-white/80 rounded-md transition-colors relative z-20 text-gray-400 group-hover:text-[#FE5300]"
+                    aria-label={heading.isCollapsed ? "Expand subsection" : "Collapse subsection"}
                   >
                     {heading.isCollapsed ? (
                       <ChevronRight size={14} />
@@ -120,7 +129,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                     )}
                   </button>
                 )}
-              </a>
+              </div>
             ))}
           </div>
         </nav>
