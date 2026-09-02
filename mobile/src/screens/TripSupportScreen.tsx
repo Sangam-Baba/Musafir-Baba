@@ -78,8 +78,8 @@ export const TripSupportScreen = () => {
         <View style={styles.faqSection}>
           <Text style={styles.sectionTitle}>FREQUENTLY ASKED QUESTIONS</Text>
           {[
-            { q: "How are trip payouts settled?", a: "Weekly settlements are processed every Tuesday directly to your registered HDFC Bank account." },
-            { q: "What should I do if a passenger cancels?", a: "Cancellation fee of ₹150 is automatically credited to your wallet if passenger cancels after 5 mins." },
+            { q: "How are trip payouts settled?", a: "Trip earnings first appear as a pending balance in your wallet, then our team reviews and releases them to your available balance, which you can withdraw to your registered bank account." },
+            { q: "What should I do if a passenger cancels?", a: "Report it through the trip screen or contact partner support -- any applicable cancellation charge is reviewed and credited to your wallet manually." },
             { q: "How to renew expired vehicle RC/Insurance?", a: "Go to Profile -> KYCDocuments -> Vehicle Documents and upload the new digital PDF." },
           ].map((item, idx) => (
             <View key={idx} style={styles.faqCard}>

@@ -49,13 +49,10 @@ export const PayoutHistoryScreen = () => {
     fetchBankAndPayouts();
   };
 
-  const bankName = bankInfo?.bankName || 'HDFC Bank';
-  const accountEnding = bankInfo?.accountNumber ? bankInfo.accountNumber.slice(-4) : '4321';
-
-  const records: PayoutRecord[] = [
-    { id: 's1', settlementId: 'SET-9901', amount: 12850, date: '28 Jul 2026', bankName, accountEnding, status: 'Completed', utrNumber: 'UTR-982104928172' },
-    { id: 's2', settlementId: 'SET-9900', amount: 9400, date: '21 Jul 2026', bankName, accountEnding, status: 'Completed', utrNumber: 'UTR-982101189230' },
-  ];
+  // No payout/settlement history is persisted by the backend yet (only the
+  // wallet balance itself is tracked) -- showing an honest empty state
+  // instead of fabricated settlement records until that exists.
+  const records: PayoutRecord[] = [];
 
   const downloadReceipt = (record: PayoutRecord) => {
     Alert.alert("Receipt Downloaded", `Settlement receipt for ${record.settlementId} saved to downloads.`);
@@ -96,8 +93,17 @@ export const PayoutHistoryScreen = () => {
       <FlatList
         data={records}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16, paddingTop: 4 }}
+        contentContainerStyle={{ padding: 16, paddingTop: 4, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 }}>
+            <Ionicons name="receipt-outline" size={32} color="#94a3b8" style={{ marginBottom: 10 }} />
+            <Text style={{ fontSize: 14, fontWeight: '700', color: '#334155' }}>No settlements yet</Text>
+            <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 4, textAlign: 'center', paddingHorizontal: 32 }}>
+              Your payout history will appear here once a settlement is processed.
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>

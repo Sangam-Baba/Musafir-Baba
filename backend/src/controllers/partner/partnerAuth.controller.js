@@ -219,7 +219,7 @@ export const loginPartner = async (req, res) => {
       role: "Partner",
     };
 
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY || "fallback_secret", { expiresIn: "15m" });
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY || "fallback_secret", { expiresIn: "1d" });
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET_KEY || "fallback_refresh_secret", { expiresIn: "7d" });
 
     partner.lastLogin = new Date();
@@ -327,7 +327,7 @@ export const refreshAccessToken = async (req, res) => {
           partnerId: partner._id,
           role: "Partner",
         };
-        const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY || "fallback_secret", { expiresIn: "15m" });
+        const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY || "fallback_secret", { expiresIn: "1d" });
 
         return res.status(200).json({
           success: true,

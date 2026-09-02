@@ -15,46 +15,16 @@ export const EarningsTrendScreen = () => {
         <Text style={styles.subtitle}>Peak demand hours, top performing routes & revenue analysis.</Text>
       </View>
 
-      {/* Top Performing Routes Card */}
-      <Text style={styles.sectionTitle}>TOP PERFORMING ROUTES</Text>
+      {/* Route and surge analytics require trip-route aggregation that
+          isn't built on the backend yet -- showing an honest placeholder
+          instead of fabricated routes/revenue until that exists. */}
       <View style={styles.card}>
-        {[
-          { route: "Delhi T3 Airport → Noida Sec 62", rides: 28, revenue: "₹42,500" },
-          { route: "Gurugram Cyber Hub → Delhi Airport", rides: 22, revenue: "₹31,200" },
-          { route: "Delhi → Agra Outstation", rides: 8, revenue: "₹28,400" },
-        ].map((item, idx) => (
-          <View key={idx} style={styles.routeRow}>
-            <View style={styles.iconBox}>
-              <Ionicons name="navigate" size={16} color="#FE5300" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.routeName}>{item.route}</Text>
-              <Text style={styles.routeSub}>{item.rides} Trips Completed</Text>
-            </View>
-            <Text style={styles.revenue}>{item.revenue}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Peak Hours Surge Insights */}
-      <Text style={styles.sectionTitle}>PEAK HOURLY SURGE INSIGHTS</Text>
-      <View style={styles.card}>
-        <View style={styles.insightRow}>
-          <Ionicons name="flame" size={20} color="#dc2626" style={{ marginRight: 10 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.insightTitle}>Morning Airport Peak (06:00 AM - 09:30 AM)</Text>
-            <Text style={styles.insightSub}>High demand from Delhi T3 & Aerocity hotels. Average 1.5x surge fares.</Text>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.insightRow}>
-          <Ionicons name="time" size={20} color="#FE5300" style={{ marginRight: 10 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.insightTitle}>Evening Outstation Peak (05:00 PM - 08:30 PM)</Text>
-            <Text style={styles.insightSub}>High demand for Agra, Jaipur, and Chandigarh one-way outstation trips.</Text>
-          </View>
+        <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+          <Ionicons name="analytics-outline" size={32} color="#94a3b8" style={{ marginBottom: 10 }} />
+          <Text style={{ fontSize: 14, fontWeight: '700', color: '#334155' }}>Analytics coming soon</Text>
+          <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 4, textAlign: 'center', paddingHorizontal: 24 }}>
+            Route and peak-hour insights aren't available yet. Check back later.
+          </Text>
         </View>
       </View>
     </ScrollView>
