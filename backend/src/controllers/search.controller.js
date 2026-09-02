@@ -34,26 +34,26 @@ export const globalSearch = async (req, res) => {
       vehicles,
       aboutus,
     ] = await Promise.all([
-      Blog.find({ title: regex }).select("title slug").limit(limit).lean(),
-      News.find({ title: regex }).select("title slug").limit(limit).lean(),
+      Blog.find({ title: regex, status: "published" }).select("title slug").limit(limit).lean(),
+      News.find({ title: regex, status: "published" }).select("title slug").limit(limit).lean(),
       Category.find({ name: regex }).select("name slug").limit(limit).lean(),
-      Package.find({ title: regex })
+      Package.find({ title: regex, status: "published" })
         .populate("mainCategory", "slug")
         .populate("destination", "state")
         .select("title slug mainCategory destination")
         .limit(limit)
         .lean(),
-      Destination.find({ name: regex }).select("name state").limit(limit).lean(),
-      WebPage.find({ title: regex }).select("title fullSlug").limit(limit).lean(),
+      Destination.find({ name: regex, status: "published" }).select("name state").limit(limit).lean(),
+      WebPage.find({ title: regex, status: "published" }).select("title fullSlug").limit(limit).lean(),
       Visa.find({ country: regex }).select("country slug").limit(limit).lean(),
-      CustomizedTourPackage.find({ title: regex }).select("title slug").limit(limit).lean(),
+      CustomizedTourPackage.find({ title: regex, status: "published" }).select("title slug").limit(limit).lean(),
       DestinationSeo.find({ title: regex })
         .populate("categoryId", "slug name")
         .populate("destinationId", "state name")
         .select("title categoryId destinationId")
         .limit(limit)
         .lean(),
-      Vehicle.find({ title: regex }).populate("location", "name").select("title slug vehicleType location").limit(limit).lean(),
+      Vehicle.find({ title: regex, status: "published" }).populate("location", "name").select("title slug vehicleType location").limit(limit).lean(),
       AboutUs.find({ title: regex }).select("title").limit(limit).lean(),
     ]);
 
