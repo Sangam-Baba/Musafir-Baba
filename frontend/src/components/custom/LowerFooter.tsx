@@ -14,12 +14,22 @@ interface Footer {
 }
 
 const getFooter = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
-    next: { revalidate: 120 },
-  });
-  if (!res.ok) throw new Error("Failed to fetch footer");
-  const data = await res.json();
-  return data.data as Footer[];
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
+      next: { revalidate: 120 },
+    });
+    if (!res.ok) {
+      // A transient backend blip during build used to throw here and crash
+      // the entire static export (all pages), not just the footer.
+      console.error("Failed to fetch footer:", res.status);
+      return [];
+    }
+    const data = await res.json();
+    return data.data as Footer[];
+  } catch (error) {
+    console.error("Failed to fetch footer:", error);
+    return [];
+  }
 };
 
 async function LowerFooterItem() {
