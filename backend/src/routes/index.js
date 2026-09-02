@@ -55,6 +55,7 @@ import holidayRoutes from "./holiday.routes.js";
 import partnerAuthRoutes from "./partner/partnerAuth.routes.js";
 import partnerRoutes from "./partner/partner.routes.js";
 import adminPartnerVerificationRoutes from "./partner/adminPartnerVerification.routes.js";
+import adminPartnerWalletRoutes from "./partner/adminPartnerWallet.routes.js";
 import locationMasterRoutes from "./locationMaster.routes.js";
 import riderAuthRoutes from "./rider/riderAuth.routes.js";
 import riderProfileRoutes from "./rider/riderProfile.routes.js";
@@ -72,6 +73,7 @@ router.use("/auth", authRouter);
 // since staffRouter has a "GET /:id" route that would otherwise shadow them
 // (e.g. GET /admin/rides being matched as staffRouter's GET /admin/:id).
 router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
+router.use("/admin/partner-wallets", adminPartnerWalletRoutes);
 router.use("/admin/rides", adminRideRoutes);
 router.use("/admin/riders", adminRiderRoutes);
 router.use("/admin", staffRouter);

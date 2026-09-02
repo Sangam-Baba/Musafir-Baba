@@ -13,41 +13,6 @@ type NotificationItem = {
   read: boolean;
 };
 
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'n1',
-    title: 'Trip Fare Credited',
-    message: '₹1,850 credited to your MB Wallet for completed trip #MB-89241.',
-    time: '10 mins ago',
-    type: 'Trip',
-    read: false,
-  },
-  {
-    id: 'n2',
-    title: 'Weekly Payout Processed',
-    message: 'Settlement of ₹12,850 successfully initiated to HDFC Bank (••4321).',
-    time: '2 hours ago',
-    type: 'Payout',
-    read: false,
-  },
-  {
-    id: 'n3',
-    title: 'Vehicle Insurance Notice',
-    message: 'Insurance policy for DL01AB1234 expires in 14 days. Upload renewal document.',
-    time: '1 day ago',
-    type: 'Document',
-    read: true,
-  },
-  {
-    id: 'n4',
-    title: 'High Demand Surge Alert',
-    message: '1.4x Surge active near IGI Airport Terminal 3. Go online to earn extra incentives.',
-    time: '2 days ago',
-    type: 'System',
-    read: true,
-  },
-];
-
 export const InboxScreen = () => {
   const navigation = useNavigation<any>();
   const notifications = useNotificationStore((state) => state.notifications);

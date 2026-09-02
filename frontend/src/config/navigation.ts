@@ -154,6 +154,12 @@ export const NAV_GROUPS = [
         icon: UserRoundCheck,
         permission: "partner-verification", // reuse permission or use a generic one
       },
+      {
+        label: "Partner Wallets",
+        href: "/admin/fleet/wallets",
+        icon: IndianRupee,
+        permission: "partner-verification", // reuse permission or use a generic one
+      },
     ],
   },
   {

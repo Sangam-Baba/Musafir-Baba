@@ -8,6 +8,7 @@ import { RideBooking } from "../../models/RideBooking.js";
 import { Notification } from "../../models/Notification.js";
 import { notifyUser } from "../../services/notification/notificationService.js";
 import { createTokenRequest } from "../../services/notification/transport.js";
+import PartnerWalletTransaction from "../../models/partner/PartnerWalletTransaction.js";
 import { cityMatches, isWithin24h, isDetailsRevealed, getRideDateTime, REVEAL_WINDOW_HOURS } from "../../controllers/ride.controller.js";
 import mongoose from "mongoose";
 
@@ -380,14 +381,28 @@ export const updateBookingStatus = async (req, res) => {
     if (status === "COMPLETED") {
       const commission = Math.round((ride.totalAmount * ride.platformCommissionPercent) / 100);
       const netEarning = ride.totalAmount - commission;
-      profile.walletBalance = (profile.walletBalance || 0) + netEarning;
+      // Lands in the pending bucket, not the spendable balance -- only an
+      // admin manually releasing it (see admin wallet routes) moves it into
+      // walletBalance. No automatic timer; the 24h message below is
+      // driver-facing only.
+      profile.pendingWalletBalance = (profile.pendingWalletBalance || 0) + netEarning;
       await profile.save();
+
+      await PartnerWalletTransaction.create({
+        partnerId: authId,
+        type: "trip_pending_credit",
+        amount: netEarning,
+        walletBalanceAfter: profile.walletBalance || 0,
+        pendingWalletBalanceAfter: profile.pendingWalletBalance,
+        bookingId: ride._id,
+        note: `Trip #MB-${String(ride._id).slice(-6).toUpperCase()} completed`,
+      });
 
       await notifyUser({
         recipientType: "Partner",
         recipientId: profile._id,
-        title: "Trip Fare Credited",
-        message: `₹${netEarning.toLocaleString("en-IN")} credited to your MB Wallet for completed trip #MB-${String(ride._id).slice(-6).toUpperCase()}.`,
+        title: "Trip Fare Pending",
+        message: `₹${netEarning.toLocaleString("en-IN")} for trip #MB-${String(ride._id).slice(-6).toUpperCase()} will be added to your wallet within 24 hours.`,
         type: "Trip",
         data: { rideId: ride._id },
         sendPush: false,
@@ -469,6 +484,8 @@ export const getEarnings = async (req, res) => {
         growthPercent: 0,
         chartData,
         recentPayouts: [],
+        availableBalance: profile.walletBalance || 0,
+        pendingBalance: profile.pendingWalletBalance || 0,
       },
     });
   } catch (error) {

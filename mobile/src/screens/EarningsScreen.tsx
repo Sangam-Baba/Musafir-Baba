@@ -15,26 +15,6 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 
-type PayoutItem = {
-  id: string;
-  amount: number;
-  date: string;
-  status: 'Completed' | 'Processing';
-  bankName: string;
-  accountEnding: string;
-  referenceId: string;
-};
-
-const WEEKLY_DATA = [
-  { day: 'Mon', amount: 2400, height: 60 },
-  { day: 'Tue', amount: 3100, height: 80 },
-  { day: 'Wed', amount: 1800, height: 45 },
-  { day: 'Thu', amount: 4200, height: 100 },
-  { day: 'Fri', amount: 3500, height: 85 },
-  { day: 'Sat', amount: 5100, height: 115 },
-  { day: 'Sun', amount: 2840, height: 70 },
-];
-
 export const EarningsScreen = () => {
   const [timeframe, setTimeframe] = useState<'Week' | 'Month' | 'Year'>('Week');
   const navigation = useNavigation<any>();
@@ -82,15 +62,6 @@ export const EarningsScreen = () => {
     fetchEarnings(false);
   };
 
-  const bankName = earnings?.bankInfo?.bankName || 'HDFC Bank';
-  const accountEnding = earnings?.bankInfo?.accountNumber ? earnings.bankInfo.accountNumber.slice(-4) : '4321';
-
-  const MOCK_PAYOUTS: PayoutItem[] = [
-    { id: 'p1', amount: 12850, date: '28 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628104928172' },
-    { id: 'p2', amount: 9400, date: '21 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628101189230' },
-    { id: 'p3', amount: 14200, date: '14 Jul 2026', status: 'Completed', bankName, accountEnding, referenceId: 'UPI/628098877123' },
-  ];
-
   const chartData = (earnings?.chartData || []).map((item: any) => ({
     ...item,
     day: item.day,
@@ -98,7 +69,6 @@ export const EarningsScreen = () => {
     height: item.height || Math.min(115, Math.max(10, (item.amount / 50)))
   }));
 
-  // const recentPayouts = earnings?.recentPayouts || MOCK_PAYOUTS;
   const recentPayouts = earnings?.recentPayouts || [];
 
   return (
@@ -164,6 +134,24 @@ export const EarningsScreen = () => {
         </View>
       </View>
 
+      {/* Wallet Balance: Available vs Pending */}
+      <Text style={styles.sectionHeader}>WALLET BALANCE</Text>
+      <View style={styles.walletRow}>
+        <View style={[styles.walletCard, styles.walletCardAvailable]}>
+          <Text style={styles.walletLabel}>Available</Text>
+          <Text style={styles.walletAmount}>₹{(earnings?.availableBalance || 0).toLocaleString('en-IN')}</Text>
+        </View>
+        <View style={[styles.walletCard, styles.walletCardPending]}>
+          <Text style={styles.walletLabel}>Pending</Text>
+          <Text style={[styles.walletAmount, { color: '#b45309' }]}>
+            ₹{(earnings?.pendingBalance || 0).toLocaleString('en-IN')}
+          </Text>
+          {(earnings?.pendingBalance || 0) > 0 && (
+            <Text style={styles.walletHint}>Added to your wallet within 24 hours</Text>
+          )}
+        </View>
+      </View>
+
       {/* Fare Breakdown Grid */}
       <Text style={styles.sectionHeader}>EARNINGS BREAKDOWN</Text>
       <View style={styles.breakdownCard}>
@@ -176,19 +164,6 @@ export const EarningsScreen = () => {
             <Text style={styles.bdSub}>Gross fare from completed rides</Text>
           </View>
           <Text style={styles.bdAmount}>₹{(earnings?.grossTripFare || 0).toLocaleString('en-IN')}</Text>
-        </View>
-
-        <View style={styles.bdDivider} />
-
-        <View style={styles.bdRow}>
-          <View style={[styles.bdIconBox, { backgroundColor: '#dcfce7' }]}>
-            <Ionicons name="gift-outline" size={18} color="#16a34a" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bdTitle}>Bonuses & Incentives</Text>
-            <Text style={styles.bdSub}>Peak hours & fleet milestone rewards</Text>
-          </View>
-          <Text style={[styles.bdAmount, { color: '#16a34a' }]}>+₹{(earnings?.taxes || 0).toLocaleString('en-IN')}</Text>
         </View>
 
         <View style={styles.bdDivider} />
@@ -213,7 +188,12 @@ export const EarningsScreen = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.payoutsCard}>
-        {recentPayouts.map((payout: any, index: number) => (
+        {recentPayouts.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 8 }}>
+            <Ionicons name="business-outline" size={22} color="#94a3b8" style={{ marginBottom: 6 }} />
+            <Text style={{ fontSize: 13, color: '#64748b', fontWeight: '600' }}>No settlements yet</Text>
+          </View>
+        ) : recentPayouts.map((payout: any, index: number) => (
           <View key={payout.id}>
             {index > 0 && <View style={styles.payoutDivider} />}
             <View style={styles.payoutRow}>
@@ -381,6 +361,41 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: 12,
     marginLeft: 4,
+  },
+  walletRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  walletCard: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+  },
+  walletCardAvailable: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#dcfce7',
+  },
+  walletCardPending: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  walletLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  walletAmount: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#15803d',
+  },
+  walletHint: {
+    fontSize: 10,
+    color: '#92400e',
+    marginTop: 4,
   },
   breakdownCard: {
     backgroundColor: '#ffffff',

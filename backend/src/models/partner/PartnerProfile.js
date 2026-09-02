@@ -73,6 +73,20 @@ const partnerProfileSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // Spendable balance — only increased via an admin releasing funds from
+    // pendingWalletBalance, or a manual admin adjustment. Never written to
+    // directly on trip completion.
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
+    // Trip earnings land here first on ride completion and stay here until
+    // an admin manually releases them into walletBalance (no automatic
+    // timer — the 24-hour window is driver-facing messaging only).
+    pendingWalletBalance: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
