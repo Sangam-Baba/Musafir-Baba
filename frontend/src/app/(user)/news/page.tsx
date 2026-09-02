@@ -283,7 +283,7 @@ export default async function NewsPage({
   return (
     <section className="w-full ">
       <Hero
-        image="https://cdn.musafirbaba.com/images/News.jpg"
+        image="/newiamges/newspage-banner.avif"
         title="News"
         overlayOpacity={100}
       />
