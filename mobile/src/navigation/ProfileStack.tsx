@@ -32,6 +32,7 @@ import { UpdateVehicleScreen } from '../screens/UpdateVehicleScreen';
 import { BankDetailsScreen } from '../screens/BankDetailsScreen';
 import { BankAccountScreen } from '../screens/BankAccountScreen';
 import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
+import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
 
@@ -141,14 +142,18 @@ const MenuScreen = ({ navigation }: any) => {
       iconColor: '#2563eb',
       onPress: () => navigation.navigate('ServiceAreaPricing'),
     },
-    {
-      title: 'Payout & Bank Details',
-      subtitle: 'Manage bank accounts and payouts',
-      icon: 'business-outline' as const,
-      iconBg: '#e0f2fe',
-      iconColor: '#0284c7',
-      onPress: () => navigation.navigate('PayoutHistory'),
-    },
+    ...(FINANCIAL_FEATURES_ENABLED
+      ? [
+          {
+            title: 'Payout & Bank Details',
+            subtitle: 'Manage bank accounts and payouts',
+            icon: 'business-outline' as const,
+            iconBg: '#e0f2fe',
+            iconColor: '#0284c7',
+            onPress: () => navigation.navigate('PayoutHistory'),
+          },
+        ]
+      : []),
   ];
 
   const supportItems = [
@@ -271,25 +276,27 @@ const MenuScreen = ({ navigation }: any) => {
           <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
         </View>
 
-        <View style={styles.walletBox}>
-          <View style={styles.walletLeft}>
-            <View style={styles.walletIconCircle}>
-              <Ionicons name="wallet-outline" size={18} color="#16a34a" />
+        {FINANCIAL_FEATURES_ENABLED && (
+          <View style={styles.walletBox}>
+            <View style={styles.walletLeft}>
+              <View style={styles.walletIconCircle}>
+                <Ionicons name="wallet-outline" size={18} color="#16a34a" />
+              </View>
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.walletLabel}>Wallet Balance</Text>
+                <Text style={styles.walletVal}>₹{walletBalance.toLocaleString('en-IN')}</Text>
+              </View>
             </View>
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.walletLabel}>Wallet Balance</Text>
-              <Text style={styles.walletVal}>₹{walletBalance.toLocaleString('en-IN')}</Text>
-            </View>
-          </View>
 
-          <TouchableOpacity 
-            style={styles.viewWalletBtn}
-            onPress={() => navigation.navigate('PayoutHistory')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.viewWalletText}>View Wallet &gt;</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={styles.viewWalletBtn}
+              onPress={() => navigation.navigate('PayoutHistory')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.viewWalletText}>View Wallet &gt;</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </WalkthroughableTouchableOpacity>
       </CopilotStep>
 
@@ -298,7 +305,7 @@ const MenuScreen = ({ navigation }: any) => {
         {accountItems.map((item, idx) => {
           let stepProps = null;
           // Grouping Profile (idx 0) and Bank (idx 4) instructions on the Profile step
-          if (idx === 0) stepProps = { text: "First, complete your personal profile and add your bank details for payouts.", order: 10, name: "stepProfile" };
+          if (idx === 0) stepProps = { text: FINANCIAL_FEATURES_ENABLED ? "First, complete your personal profile and add your bank details for payouts." : "First, complete your personal profile.", order: 10, name: "stepProfile" };
           else if (idx === 1) stepProps = { text: "Second, upload your identity and business documents.", order: 11, name: "stepDocs" };
           else if (idx === 2) stepProps = { text: "Third, add your vehicles and driver information here.", order: 12, name: "stepVehicles" };
 
@@ -407,8 +414,12 @@ export const ProfileStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileMenu" component={MenuScreen} />
       <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
-      <Stack.Screen name="BankDetails" component={BankDetailsScreen} />
-      <Stack.Screen name="BankAccount" component={BankAccountScreen} />
+      {FINANCIAL_FEATURES_ENABLED && (
+        <>
+          <Stack.Screen name="BankDetails" component={BankDetailsScreen} />
+          <Stack.Screen name="BankAccount" component={BankAccountScreen} />
+        </>
+      )}
       <Stack.Screen name="IdentityProof" component={IdentityProofScreen} />
       <Stack.Screen name="VehiclesList" component={VehiclesListScreen} />
       <Stack.Screen name="VehicleDetails" component={VehicleDetailsScreen} />
@@ -420,10 +431,14 @@ export const ProfileStack = () => {
       <Stack.Screen name="BackgroundCheck" component={BackgroundCheckScreen} />
       <Stack.Screen name="TripSupport" component={TripSupportScreen} />
       <Stack.Screen name="Inbox" component={InboxScreen} />
-      <Stack.Screen name="PayoutHistory" component={PayoutHistoryScreen} />
+      {FINANCIAL_FEATURES_ENABLED && (
+        <>
+          <Stack.Screen name="PayoutHistory" component={PayoutHistoryScreen} />
+          <Stack.Screen name="EarningsTrend" component={EarningsTrendScreen} />
+        </>
+      )}
       <Stack.Screen name="ProfilePhoto" component={ProfilePhotoScreen} />
       <Stack.Screen name="VerifiedPartner" component={VerifiedPartnerScreen} />
-      <Stack.Screen name="EarningsTrend" component={EarningsTrendScreen} />
     </Stack.Navigator>
   );
 };
