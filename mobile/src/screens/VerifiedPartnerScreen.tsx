@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { API_BASE_URL } from '../utils/config';
+import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 export const VerifiedPartnerScreen = () => {
   const token = useAuthStore((state) => state.token);
@@ -64,7 +65,12 @@ export const VerifiedPartnerScreen = () => {
 
   // Track if they have uploaded everything required, regardless of verification status
   const isEverythingUploaded = !!(
-    aadhaarDoc && panDoc && profile?.profilePicture && bank?.accountNumber && vehicles.length > 0 && drivers.length > 0
+    aadhaarDoc &&
+    panDoc &&
+    profile?.profilePicture &&
+    (!FINANCIAL_FEATURES_ENABLED || bank?.accountNumber) &&
+    vehicles.length > 0 &&
+    drivers.length > 0
   );
 
   const verifiedDate = auth?.createdAt 
@@ -108,14 +114,18 @@ export const VerifiedPartnerScreen = () => {
       screen: 'VehiclesList',
       icon: 'people-outline'
     },
-    {
-      title: 'Bank Account Details',
-      subtitle: isBankVerified ? `${bank.bankName} (••${bank.accountNumber?.slice(-4) || '4321'})` : 'No Bank Account Linked',
-      isVerified: isBankVerified,
-      status: isBankVerified ? 'Verified' : 'Pending',
-      screen: 'BankDetails',
-      icon: 'business-outline'
-    }
+    ...(FINANCIAL_FEATURES_ENABLED
+      ? [
+          {
+            title: 'Bank Account Details',
+            subtitle: isBankVerified ? `${bank.bankName} (••${bank.accountNumber?.slice(-4) || '4321'})` : 'No Bank Account Linked',
+            isVerified: isBankVerified,
+            status: isBankVerified ? 'Verified' : 'Pending',
+            screen: 'BankDetails',
+            icon: 'business-outline'
+          }
+        ]
+      : [])
   ];
 
   return (

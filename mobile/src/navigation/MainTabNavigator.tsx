@@ -9,6 +9,7 @@ import { InboxScreen } from '../screens/InboxScreen';
 import { ProfileStack } from './ProfileStack';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNotificationStore } from '../store/useNotificationStore';
+import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -76,11 +77,13 @@ export const MainTabNavigator = () => {
         component={BookingsScreen}
         options={{ title: 'Bookings' }}
       />
-      <Tab.Screen
-        name="Earnings"
-        component={EarningsScreen}
-        options={{ title: 'Earnings' }}
-      />
+      {FINANCIAL_FEATURES_ENABLED && (
+        <Tab.Screen
+          name="Earnings"
+          component={EarningsScreen}
+          options={{ title: 'Earnings' }}
+        />
+      )}
       <Tab.Screen
         name="Inbox"
         component={InboxScreen}

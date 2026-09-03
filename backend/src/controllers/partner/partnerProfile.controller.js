@@ -7,6 +7,7 @@ import PartnerAuth from "../../models/partner/PartnerAuth.js";
 import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
 import sendEmail from "../../services/email.service.js";
 import { notifyUser } from "../../services/notification/notificationService.js";
+import { FINANCIAL_FEATURES_ENABLED } from "../../config/features.js";
 
 // Helper function to calculate completion percentage
 const calculateCompletion = async (partnerId) => {
@@ -18,8 +19,15 @@ const calculateCompletion = async (partnerId) => {
   const address = await PartnerAddress.findOne({ partnerId: profile?._id });
   if (address && address.city && address.state) score += 20;
 
-  const bank = await PartnerBank.findOne({ partnerId: profile?._id, isPrimary: true });
-  if (bank) score += 20;
+  // While FINANCIAL_FEATURES_ENABLED is false, the mobile app has no UI for
+  // adding bank details (see /mobile/FINANCIAL_FEATURES_TOGGLE.md), so this
+  // requirement is waived rather than permanently blocking partners at 80%.
+  if (FINANCIAL_FEATURES_ENABLED) {
+    const bank = await PartnerBank.findOne({ partnerId: profile?._id, isPrimary: true });
+    if (bank) score += 20;
+  } else {
+    score += 20;
+  }
 
   const vehicle = await PartnerVehicle.findOne({ partnerId: profile?._id, isDeleted: false });
   if (vehicle) score += 20;

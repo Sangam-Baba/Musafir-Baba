@@ -7,6 +7,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 import { SafeModal } from '../components/SafeModal';
+import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 export const PersonalDetailsScreen = () => {
   const navigation = useNavigation<any>();
@@ -197,7 +198,12 @@ export const PersonalDetailsScreen = () => {
   const drivers = dashboardData?.drivers || [];
 
   const isEverythingUploaded = !!(
-    aadhaarDoc && panDoc && partnerProfile?.profilePicture && bank?.accountNumber && vehicles.length > 0 && drivers.length > 0
+    aadhaarDoc &&
+    panDoc &&
+    partnerProfile?.profilePicture &&
+    (!FINANCIAL_FEATURES_ENABLED || bank?.accountNumber) &&
+    vehicles.length > 0 &&
+    drivers.length > 0
   );
 
   const submitForApproval = async () => {
@@ -464,17 +470,19 @@ export const PersonalDetailsScreen = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.linkRow, { borderBottomWidth: 0 }]}
-            onPress={() => navigation.navigate('BankAccount')}
-          >
-            <Ionicons name="business-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
-            <Text style={styles.linkText}>Account and bank information</Text>
-            <View style={styles.verifiedGreenTag}>
-              <Text style={styles.verifiedGreenTagText}>Verified</Text>
-              <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
-            </View>
-          </TouchableOpacity>
+          {FINANCIAL_FEATURES_ENABLED && (
+            <TouchableOpacity
+              style={[styles.linkRow, { borderBottomWidth: 0 }]}
+              onPress={() => navigation.navigate('BankAccount')}
+            >
+              <Ionicons name="business-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
+              <Text style={styles.linkText}>Account and bank information</Text>
+              <View style={styles.verifiedGreenTag}>
+                <Text style={styles.verifiedGreenTagText}>Verified</Text>
+                <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
 
         {!isLocked && (
