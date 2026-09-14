@@ -37,6 +37,8 @@ export interface ListUserInterface {
   availableLeaveBalance?: number;
   totalShortLeaveBalance?: number;
   availableShortLeaveBalance?: number;
+  joiningDate?: string | null;
+  dateOfLeaving?: string | null;
 }
 
 interface QueryResponse {
@@ -229,6 +231,8 @@ function UsersPage() {
             availableLeaveBalance: b.availableLeaveBalance,
             totalShortLeaveBalance: b.totalShortLeaveBalance,
             availableShortLeaveBalance: b.availableShortLeaveBalance,
+            joiningDate: b.joiningDate,
+            dateOfLeaving: b.dateOfLeaving,
           }))}
           onStatusChange={(id) => {
             setEditId(id);

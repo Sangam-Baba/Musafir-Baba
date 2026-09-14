@@ -47,6 +47,14 @@ const staffSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    joiningDate: {
+      type: Date,
+      default: null,
+    },
+    dateOfLeaving: {
+      type: Date,
+      default: null,
+    },
     totalLeaveBalance: {
       type: Number,
       default: 0,

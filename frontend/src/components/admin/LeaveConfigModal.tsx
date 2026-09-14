@@ -13,12 +13,21 @@ interface LeaveConfigModalProps {
 
 export default function LeaveConfigModal({ user, onClose, onSuccess }: LeaveConfigModalProps) {
   const [loading, setLoading] = useState(false);
+  const toDateInputValue = (value?: string | Date | null) => {
+    if (!value) return "";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  };
+
   const [formData, setFormData] = useState({
     attendanceEligible: user.attendanceEligible ?? true,
     totalLeaveBalance: user.totalLeaveBalance ?? 0,
     availableLeaveBalance: user.availableLeaveBalance ?? 0,
     totalShortLeaveBalance: user.totalShortLeaveBalance ?? 0,
     availableShortLeaveBalance: user.availableShortLeaveBalance ?? 0,
+    joiningDate: toDateInputValue(user.joiningDate),
+    dateOfLeaving: toDateInputValue(user.dateOfLeaving),
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,6 +151,34 @@ export default function LeaveConfigModal({ user, onClose, onSuccess }: LeaveConf
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+            <div className="space-y-1">
+              <label className="text-[12px] font-bold text-slate-600">Joining Date</label>
+              <input
+                type="date"
+                name="joiningDate"
+                value={formData.joiningDate}
+                onChange={handleChange}
+                className="w-full p-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:border-[#FE5300] transition-colors"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[12px] font-bold text-slate-600">Date of Leaving</label>
+              <input
+                type="date"
+                name="dateOfLeaving"
+                value={formData.dateOfLeaving}
+                onChange={handleChange}
+                className="w-full p-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:border-[#FE5300] transition-colors"
+              />
+            </div>
+          </div>
+          {formData.dateOfLeaving && (
+            <p className="text-[11px] font-semibold text-red-600 -mt-2">
+              Setting a Date of Leaving will deactivate this account immediately on save.
+            </p>
+          )}
 
           <div className="pt-2 flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={onClose} className="h-9 text-sm font-semibold">

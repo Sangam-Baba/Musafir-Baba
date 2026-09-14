@@ -145,7 +145,7 @@ const loginAdmin = async (req, res) => {
         .json({ success: false, message: "Staff not register" });
     }
 
-    if (user.isActive === false) {
+    if (user.isActive === false || user.dateOfLeaving) {
       return res
         .status(403)
         .json({ success: false, message: "Account has been deactivated. Please contact an administrator." });
@@ -340,6 +340,16 @@ const updateAdmin = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Admin not found" });
     }
+    // A staffer with a recorded Date of Leaving cannot be flipped back to
+    // Active through the plain toggle (or any other call to this generic
+    // endpoint) -- Date of Leaving must be cleared in Settings first, which
+    // is a deliberate, auditable action rather than a one-click toggle.
+    if (req.body?.isActive === true && admin.dateOfLeaving) {
+      return res.status(400).json({
+        success: false,
+        message: "This staff member has a recorded Date of Leaving and cannot be reactivated here. Clear their Date of Leaving in Settings first.",
+      });
+    }
     if (req.body?.password) {
       const hashedpassword = await bcrypt.hash(req.body.password, 10);
       req.body.password = hashedpassword;
@@ -474,6 +484,8 @@ const adjustLeaveBalance = async (req, res) => {
       totalShortLeaveBalance,
       availableShortLeaveBalance,
       attendanceEligible,
+      joiningDate,
+      dateOfLeaving,
     } = req.body;
 
     if (!id) {
@@ -491,6 +503,9 @@ const adjustLeaveBalance = async (req, res) => {
       totalShortLeaveBalance: staff.totalShortLeaveBalance,
       availableShortLeaveBalance: staff.availableShortLeaveBalance,
       attendanceEligible: staff.attendanceEligible,
+      joiningDate: staff.joiningDate,
+      dateOfLeaving: staff.dateOfLeaving,
+      isActive: staff.isActive,
     };
 
     if (totalLeaveBalance !== undefined) staff.totalLeaveBalance = totalLeaveBalance;
@@ -498,6 +513,16 @@ const adjustLeaveBalance = async (req, res) => {
     if (totalShortLeaveBalance !== undefined) staff.totalShortLeaveBalance = totalShortLeaveBalance;
     if (availableShortLeaveBalance !== undefined) staff.availableShortLeaveBalance = availableShortLeaveBalance;
     if (attendanceEligible !== undefined) staff.attendanceEligible = attendanceEligible;
+    if (joiningDate !== undefined) staff.joiningDate = joiningDate ? new Date(joiningDate) : null;
+    // Setting a leaving date immediately deactivates the account (no scheduler
+    // involved) — clearing it back to empty does NOT re-activate automatically,
+    // since that would silently undo what may have been a separate, deliberate
+    // manual deactivation.
+    if (dateOfLeaving !== undefined) {
+      const newDateOfLeaving = dateOfLeaving ? new Date(dateOfLeaving) : null;
+      staff.dateOfLeaving = newDateOfLeaving;
+      if (newDateOfLeaving) staff.isActive = false;
+    }
 
     await staff.save();
 
@@ -518,6 +543,9 @@ const adjustLeaveBalance = async (req, res) => {
           totalShortLeaveBalance: staff.totalShortLeaveBalance,
           availableShortLeaveBalance: staff.availableShortLeaveBalance,
           attendanceEligible: staff.attendanceEligible,
+          joiningDate: staff.joiningDate,
+          dateOfLeaving: staff.dateOfLeaving,
+          isActive: staff.isActive,
         }
       },
       metadata: {

@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { ListUserInterface } from "@/app/admin/role/page";
 import { useState } from "react";
 import LeaveConfigModal from "./LeaveConfigModal";
+import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 interface UsersTableProps {
   users: ListUserInterface[];
@@ -30,6 +31,11 @@ export default function UsersList({
   onDelete,
 }: UsersTableProps) {
   const [configUser, setConfigUser] = useState<ListUserInterface | null>(null);
+  const currentRole = useAdminAuthStore((s) => s.role);
+  // Joining/leaving dates are HR-sensitive and already admin-only server-side
+  // (PATCH /admin/:id/leave-balance is role-gated to admin/superadmin) --
+  // hiding the entry point for anyone else keeps the UI consistent with that.
+  const canManageDates = currentRole === "admin" || currentRole === "superadmin";
 
   return (
     <div className="w-full">
@@ -107,26 +113,35 @@ export default function UsersList({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={`h-6 px-2 rounded-sm text-[9px] font-black uppercase tracking-widest ${
+                    disabled={!cat.isActive && !!cat.dateOfLeaving}
+                    title={!cat.isActive && cat.dateOfLeaving ? "This staff member has left and cannot be reactivated here" : undefined}
+                    className={`h-6 px-2 rounded-sm text-[9px] font-black uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed ${
                       cat.isActive
                         ? "bg-green-50 text-green-600 hover:bg-green-100"
                         : "bg-red-50 text-red-500 hover:bg-red-100"
                     }`}
                     onClick={() => onToggleActive(cat._id, cat.isActive)}
                   >
-                    {cat.isActive ? "Active" : "Inactive"}
+                    {cat.isActive ? "Active" : cat.dateOfLeaving ? "Left" : "Inactive"}
                   </Button>
+                  {!cat.isActive && cat.dateOfLeaving && (
+                    <div className="text-[9px] text-slate-400 mt-1">
+                      Left {new Date(cat.dateOfLeaving).toLocaleDateString("en-IN")}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="py-2 text-right">
                   <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      title="Leave Config"
-                      className="h-7 w-7 p-0 text-slate-400 hover:text-blue-500 hover:bg-blue-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
-                      onClick={() => setConfigUser(cat)}
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                    </Button>
+                    {canManageDates && (
+                      <Button
+                        variant="ghost"
+                        title="Leave Config"
+                        className="h-7 w-7 p-0 text-slate-400 hover:text-blue-500 hover:bg-blue-50 opacity-40 group-hover:opacity-100 hover:scale-110 transition-all duration-300"
+                        onClick={() => setConfigUser(cat)}
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       title="Edit Profile"
@@ -165,15 +180,22 @@ export default function UsersList({
                 )}
               </div>
               <h3 className="text-sm text-slate-500">{cat.email}</h3>
+              {!cat.isActive && cat.dateOfLeaving && (
+                <p className="text-[11px] text-slate-400">
+                  Left {new Date(cat.dateOfLeaving).toLocaleDateString("en-IN")}
+                </p>
+              )}
               <div className="flex flex-wrap gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 w-[48%]"
-                  onClick={() => setConfigUser(cat)}
-                >
-                  <Settings className="w-4 h-4 mr-1" /> Config
-                </Button>
+                {canManageDates && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 w-[48%]"
+                    onClick={() => setConfigUser(cat)}
+                  >
+                    <Settings className="w-4 h-4 mr-1" /> Config
+                  </Button>
+                )}
                 <Button
                   variant="default"
                   size="sm"
@@ -185,10 +207,12 @@ export default function UsersList({
                 <Button
                   variant={cat.isActive ? "default" : "secondary"}
                   size="sm"
-                  className={`flex-1 w-[48%] ${cat.isActive ? "bg-green-600" : "text-red-600 bg-red-50"}`}
+                  disabled={!cat.isActive && !!cat.dateOfLeaving}
+                  title={!cat.isActive && cat.dateOfLeaving ? "This staff member has left and cannot be reactivated here" : undefined}
+                  className={`flex-1 w-[48%] disabled:opacity-60 disabled:cursor-not-allowed ${cat.isActive ? "bg-green-600" : "text-red-600 bg-red-50"}`}
                   onClick={() => onToggleActive(cat._id, cat.isActive)}
                 >
-                  {cat.isActive ? "Active" : "Inactive"}
+                  {cat.isActive ? "Active" : cat.dateOfLeaving ? "Left" : "Inactive"}
                 </Button>
                 <Button
                   variant="destructive"
