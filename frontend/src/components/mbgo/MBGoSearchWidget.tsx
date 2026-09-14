@@ -3,6 +3,10 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRightLeft } from "lucide-react";
+import { toast } from "sonner";
+import LocationAutocompleteInput from "./LocationAutocompleteInput";
+import { getRideQuote } from "@/lib/rideApi";
+import { useRideBookingStore } from "@/store/useRideBookingStore";
 
 function CarFrontIcon({ className = "" }: { className?: string }) {
   return (
@@ -43,25 +47,104 @@ const TABS = [
   { id: "rental", label: "Rental", icon: CalendarRentalIcon },
 ];
 
+function to12Hour(hhmm: string) {
+  if (!hhmm) return "";
+  const [h, m] = hhmm.split(":").map(Number);
+  const ampm = h >= 12 ? "PM" : "AM";
+  let hours = h % 12;
+  if (hours === 0) hours = 12;
+  return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")} ${ampm}`;
+}
+
+function to24Hour(display: string) {
+  if (!display) return "";
+  const match = display.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+  if (!match) return "";
+  const [, h, m, ampm] = match;
+  let hours = parseInt(h, 10);
+  if (ampm.toUpperCase() === "PM" && hours !== 12) hours += 12;
+  if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
+  return `${String(hours).padStart(2, "0")}:${m}`;
+}
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
 export default function MBGoSearchWidget() {
   const router = useRouter();
+  const setSearch = useRideBookingStore((s) => s.setSearch);
+  const setQuote = useRideBookingStore((s) => s.setQuote);
+
   const [activeTab, setActiveTab] = useState("local");
   const [pickup, setPickup] = useState("");
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [drop, setDrop] = useState("");
-  const [dateTime, setDateTime] = useState("Today, 10:00 AM");
+  const [dropCoords, setDropCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [rideDate, setRideDate] = useState(todayStr());
+  const [rideTime, setRideTime] = useState("10:00 AM");
+  const [tripType, setTripType] = useState<"ONE_WAY" | "ROUND_TRIP">("ONE_WAY");
+  const [returnDate, setReturnDate] = useState("");
+  const [returnTime, setReturnTime] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const isRideTab = activeTab !== "rental";
+
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (activeTab === "rental") {
       router.push("/rental");
-    } else {
-      router.push(`/rental?type=${activeTab}&pickup=${encodeURIComponent(pickup)}&drop=${encodeURIComponent(drop)}`);
+      return;
+    }
+
+    if (!pickup || !drop) {
+      toast.error("Enter both pickup and drop locations");
+      return;
+    }
+    if (tripType === "ROUND_TRIP" && (!returnDate || !returnTime)) {
+      toast.error("Please select a return date and time for your round trip");
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await getRideQuote({
+        pickup: { address: pickup, ...(pickupCoords || {}) },
+        drop: { address: drop, ...(dropCoords || {}) },
+      });
+
+      if (!res.data.offers.length) {
+        toast.error("No vehicles currently serve this route");
+        return;
+      }
+
+      setSearch({
+        activeTab: activeTab as "local" | "outstation" | "airport",
+        pickup,
+        drop,
+        pickupCoords,
+        dropCoords,
+        rideDate,
+        rideTime,
+        tripType,
+        returnDate: tripType === "ROUND_TRIP" ? returnDate : "",
+        returnTime: tripType === "ROUND_TRIP" ? returnTime : "",
+      });
+      setQuote(res.data);
+      router.push("/mbgo/vehicles");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not fetch fare, please try again");
+    } finally {
+      setIsSearching(false);
     }
   };
 
   const handleSwap = () => {
+    const p = pickup;
+    const pc = pickupCoords;
     setPickup(drop);
-    setDrop(pickup);
+    setPickupCoords(dropCoords);
+    setDrop(p);
+    setDropCoords(pc);
   };
 
   return (
@@ -94,11 +177,31 @@ export default function MBGoSearchWidget() {
         })}
       </div>
 
+      {/* Trip type toggle (One Way / Round Trip) - only for ride-hailing tabs */}
+      {isRideTab && (
+        <div className="flex items-center gap-2 mt-4">
+          {(["ONE_WAY", "ROUND_TRIP"] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setTripType(type)}
+              className={`px-3 py-1.5 rounded-full text-[12px] font-bold border transition-colors ${
+                tripType === type
+                  ? "bg-[#FE5300] border-[#FE5300] text-white"
+                  : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              {type === "ONE_WAY" ? "One Way" : "Round Trip"}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Search Input Bar Form */}
-      <form onSubmit={handleSearch} className="mt-5 sm:mt-6">
+      <form onSubmit={handleSearch} className="mt-3 sm:mt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3.5 items-center">
           {/* Pickup Location */}
-          <div className="lg:col-span-4 relative flex items-center bg-white hover:bg-gray-50/50 focus-within:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 transition-colors shadow-2xs">
+          <div className="lg:col-span-3 relative flex items-center bg-white hover:bg-gray-50/50 focus-within:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 transition-colors shadow-2xs">
             {/* Green target ring icon matching design */}
             <span className="w-3.5 h-3.5 rounded-full border-2 border-emerald-500 flex items-center justify-center flex-shrink-0 mr-3">
               <span className="w-1 h-1 rounded-full bg-emerald-500" />
@@ -108,10 +211,12 @@ export default function MBGoSearchWidget() {
               <label className="text-[11px] font-medium text-gray-500 leading-none">
                 Pickup Location
               </label>
-              <input
-                type="text"
+              <LocationAutocompleteInput
                 value={pickup}
-                onChange={(e) => setPickup(e.target.value)}
+                onChange={(address, coords) => {
+                  setPickup(address);
+                  setPickupCoords(coords);
+                }}
                 placeholder="Enter pickup location"
                 className="w-full bg-transparent text-[13.5px] font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none mt-1 truncate"
               />
@@ -128,7 +233,7 @@ export default function MBGoSearchWidget() {
           </div>
 
           {/* Drop Location */}
-          <div className="lg:col-span-4 relative flex items-center bg-white hover:bg-gray-50/50 focus-within:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 transition-colors shadow-2xs">
+          <div className="lg:col-span-3 relative flex items-center bg-white hover:bg-gray-50/50 focus-within:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 transition-colors shadow-2xs">
             {/* Red location diamond/pin matching design */}
             <span className="w-3.5 h-3.5 text-red-500 flex items-center justify-center flex-shrink-0 mr-3">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
@@ -140,10 +245,12 @@ export default function MBGoSearchWidget() {
               <label className="text-[11px] font-medium text-gray-500 leading-none">
                 Drop Location
               </label>
-              <input
-                type="text"
+              <LocationAutocompleteInput
                 value={drop}
-                onChange={(e) => setDrop(e.target.value)}
+                onChange={(address, coords) => {
+                  setDrop(address);
+                  setDropCoords(coords);
+                }}
                 placeholder="Where to?"
                 className="w-full bg-transparent text-[13.5px] font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none mt-1 truncate"
               />
@@ -151,27 +258,27 @@ export default function MBGoSearchWidget() {
           </div>
 
           {/* Date & Time */}
-          <div className="lg:col-span-2 relative flex items-center justify-between bg-white hover:bg-gray-50/50 focus-within:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 transition-colors shadow-2xs">
+          <div className="lg:col-span-4 relative flex items-center bg-white hover:bg-gray-50/50 focus-within:bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 transition-colors shadow-2xs">
             <div className="flex flex-col flex-1 min-w-0">
               <label className="text-[11px] font-medium text-gray-500 leading-none">
                 Date &amp; Time
               </label>
-              <input
-                type="text"
-                value={dateTime}
-                onChange={(e) => setDateTime(e.target.value)}
-                className="w-full bg-transparent text-[13.5px] font-bold text-gray-900 focus:outline-none mt-1 truncate"
-              />
-            </div>
-
-            {/* Orange Calendar Icon on the right matching design */}
-            <div className="w-6 h-6 rounded-md border border-[#FE5300]/80 text-[#FE5300] flex items-center justify-center ml-2 flex-shrink-0">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
-                <rect width="18" height="18" x="3" y="4" rx="2" />
-                <path d="M3 10h18" />
-                <path d="M8 2v4" />
-                <path d="M16 2v4" />
-              </svg>
+              <div className="flex items-center gap-2 mt-1">
+                <input
+                  type="date"
+                  value={rideDate}
+                  min={todayStr()}
+                  onChange={(e) => setRideDate(e.target.value)}
+                  className="min-w-0 basis-[58%] bg-transparent text-[12.5px] font-bold text-gray-900 focus:outline-none"
+                />
+                <span className="text-gray-300 shrink-0">|</span>
+                <input
+                  type="time"
+                  value={to24Hour(rideTime)}
+                  onChange={(e) => setRideTime(e.target.value ? to12Hour(e.target.value) : "")}
+                  className="min-w-0 basis-[42%] bg-transparent text-[12.5px] font-bold text-gray-900 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 
@@ -179,12 +286,46 @@ export default function MBGoSearchWidget() {
           <div className="lg:col-span-2">
             <button
               type="submit"
-              className="w-full bg-[#FE5300] hover:bg-[#e04800] active:scale-[0.98] text-white font-bold text-[14.5px] py-3.5 px-4 rounded-xl shadow-md shadow-orange-500/20 transition-all flex items-center justify-center cursor-pointer"
+              disabled={isSearching}
+              className="w-full bg-[#FE5300] hover:bg-[#e04800] active:scale-[0.98] text-white font-bold text-[14.5px] py-3.5 px-4 rounded-xl shadow-md shadow-orange-500/20 transition-all flex items-center justify-center cursor-pointer disabled:opacity-70"
             >
-              Search Vehicles
+              {isSearching ? "Searching..." : "Search Vehicles"}
             </button>
           </div>
         </div>
+
+        {/* Return Date & Time - only for Round Trip */}
+        {isRideTab && tripType === "ROUND_TRIP" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5 mt-3">
+            <div className="relative flex items-center bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 shadow-2xs">
+              <div className="flex flex-col flex-1 min-w-0">
+                <label className="text-[11px] font-medium text-gray-500 leading-none">
+                  Return Date
+                </label>
+                <input
+                  type="date"
+                  value={returnDate}
+                  min={rideDate || todayStr()}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="w-full bg-transparent text-[13px] font-bold text-gray-900 focus:outline-none mt-1"
+                />
+              </div>
+            </div>
+            <div className="relative flex items-center bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 shadow-2xs">
+              <div className="flex flex-col flex-1 min-w-0">
+                <label className="text-[11px] font-medium text-gray-500 leading-none">
+                  Return Time
+                </label>
+                <input
+                  type="time"
+                  value={to24Hour(returnTime)}
+                  onChange={(e) => setReturnTime(e.target.value ? to12Hour(e.target.value) : "")}
+                  className="w-full bg-transparent text-[13px] font-bold text-gray-900 focus:outline-none mt-1"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

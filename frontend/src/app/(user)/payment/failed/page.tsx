@@ -1,7 +1,14 @@
 import { XCircle } from "lucide-react";
 import Link from "next/link";
 
-export default function FailurePage() {
+export default async function FailurePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const { from } = await searchParams;
+  const isFromMbgo = from === "mbgo";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -24,10 +31,10 @@ export default function FailurePage() {
         {/* Actions */}
         <div className="flex flex-col gap-3">
           <Link
-            href="/"
+            href={isFromMbgo ? "/mbgo" : "/"}
             className="w-full rounded-lg bg-red-600 px-4 py-2.5 text-white font-medium hover:bg-red-700 transition"
           >
-            Go Back Home
+            {isFromMbgo ? "Back to MBGo" : "Go Back Home"}
           </Link>
         </div>
       </div>

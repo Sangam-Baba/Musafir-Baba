@@ -846,7 +846,10 @@ export const verifyRideSuccessPayment = async (req, res) => {
   }
   console.log("Ride Payment Verified:", data, ride);
 
-  return res.redirect(`${process.env.FRONTEND_URL}/payment/success`);
+  // Tagged with ?from=mbgo (unlike every other booking type's redirect
+  // above) so the shared success page can send the rider back into the
+  // MBGo flow instead of the generic site dashboard.
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/success?from=mbgo`);
 };
 
 export const verifyRideFailurePayment = async (req, res) => {
@@ -890,5 +893,5 @@ export const verifyRideFailurePayment = async (req, res) => {
   ).exec();
   console.log("Ride Payment Failed:", data, ride);
 
-  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed`);
+  return res.redirect(`${process.env.FRONTEND_URL}/payment/failed?from=mbgo`);
 };
