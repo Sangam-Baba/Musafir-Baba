@@ -3,6 +3,7 @@ import { RootProvider } from "@/providers/root-provider";
 import { Toaster } from "@/components/ui/sonner";
 import MBGoNavbar from "@/components/mbgo/MBGoNavbar";
 import MBGoFooter from "@/components/mbgo/MBGoFooter";
+import { RiderAuthDialog } from "@/components/mbgo/RiderAuthDialog";
 import "../globals.css";
 
 export default function MBGoLayout({
@@ -17,6 +18,7 @@ export default function MBGoLayout({
         <main className="flex-1 flex flex-col w-full">{children}</main>
         <MBGoFooter />
         <Toaster />
+        <RiderAuthDialog />
       </div>
     </RootProvider>
   );
