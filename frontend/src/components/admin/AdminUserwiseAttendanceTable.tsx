@@ -57,7 +57,11 @@ export default function AdminUserwiseAttendanceTable() {
       const response = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin`);
       const res = await response.json();
       if (res && res.success) {
-        setStaffList(res.data.filter((s: any) => s.attendanceEligible !== false && s.email !== "admin@musafirbaba.com" && s.isActive !== false));
+        // Keep currently-active staff (unchanged), plus anyone who has a
+        // recorded Date of Leaving -- so a former staffer can still be
+        // selected here to view the attendance they actually logged before
+        // they left, instead of disappearing from the list entirely.
+        setStaffList(res.data.filter((s: any) => s.attendanceEligible !== false && s.email !== "admin@musafirbaba.com" && (s.isActive !== false || s.dateOfLeaving)));
       }
     } catch (error) {
       console.error("Failed to fetch staff:", error);

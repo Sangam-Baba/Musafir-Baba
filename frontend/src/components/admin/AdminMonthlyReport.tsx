@@ -169,6 +169,19 @@ export default function AdminMonthlyReport() {
                       <TableCell className="py-3">
                         <div className="text-[13px] font-semibold text-slate-700">{record.staff.name}</div>
                         <div className="text-[11px] text-slate-400">{record.staff.email}</div>
+                        {(record.staff.joiningDate || record.staff.dateOfLeaving) && (
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {record.staff.joiningDate && (
+                              <span>Joined {new Date(record.staff.joiningDate).toLocaleDateString("en-IN")}</span>
+                            )}
+                            {record.staff.joiningDate && record.staff.dateOfLeaving && <span> &bull; </span>}
+                            {record.staff.dateOfLeaving && (
+                              <span className="text-red-500 font-medium">
+                                Left {new Date(record.staff.dateOfLeaving).toLocaleDateString("en-IN")}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="py-3 text-center">
                         <div className="text-[13px] font-bold text-slate-500">{record.daysInMonth}</div>

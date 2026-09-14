@@ -756,20 +756,23 @@ export const getMonthlyReport = async (req, res, next) => {
       daysToCalculate = nowIST.getDate();
     }
 
-    // Fetch all staff eligible for attendance
+    // Fetch all staff eligible for attendance. Include anyone active today,
+    // plus anyone who left on/after this report month's first day -- so a
+    // staffer who has since left still shows their real history for the
+    // month(s) they actually worked, instead of vanishing from past reports.
     let staffQuery = {
-      isActive: true,
+      $or: [{ isActive: true }, { dateOfLeaving: { $gte: startDate } }],
       role: { $in: ["staff", "admin", "superadmin"] },
       attendanceEligible: { $ne: false },
       email: { $ne: "admin@musafirbaba.com" }
     };
-    
+
     // If a normal staff member requests the report, only fetch their own data
     if (req.user.role === "staff") {
       staffQuery._id = req.user.sub;
     }
 
-    const allStaff = await Staff.find(staffQuery).select("name email totalLeaveBalance");
+    const allStaff = await Staff.find(staffQuery).select("name email totalLeaveBalance joiningDate dateOfLeaving");
 
     // Fetch all attendance records for the month
     const records = await Attendance.find({
@@ -782,7 +785,17 @@ export const getMonthlyReport = async (req, res, next) => {
     });
     const holidayDates = holidays.map(h => h.date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
 
-    const reportData = allStaff.map(staffMember => {
+    // Exclude anyone whose joining date is entirely after this report month
+    // (e.g. viewing August for someone who joined in September) -- the query
+    // above only handles the "left before this month" side; this handles the
+    // "not yet joined by this month" side, so they don't show up with a full
+    // month of fabricated Absent/Holiday days before they ever started.
+    const staffInWindow = allStaff.filter(staffMember => {
+      if (staffMember.joiningDate && new Date(staffMember.joiningDate) > endDate) return false;
+      return true;
+    });
+
+    const reportData = staffInWindow.map(staffMember => {
       let presentCount = 0;
       let lateCount = 0;
       let halfDayCount = 0;
@@ -792,7 +805,25 @@ export const getMonthlyReport = async (req, res, next) => {
       let holidayCount = 0;
       let wfhCount = 0;
 
-      for (let i = 1; i <= daysToCalculate; i++) {
+      // Clamp the counted range to when this staffer actually joined/left,
+      // when that falls within this exact report month -- otherwise behave
+      // exactly as before (count the whole month).
+      let startDay = 1;
+      if (staffMember.joiningDate) {
+        const jd = new Date(staffMember.joiningDate);
+        if (jd.getFullYear() === year && (jd.getMonth() + 1) === m) {
+          startDay = jd.getDate();
+        }
+      }
+      let endDay = daysToCalculate;
+      if (staffMember.dateOfLeaving) {
+        const ld = new Date(staffMember.dateOfLeaving);
+        if (ld.getFullYear() === year && (ld.getMonth() + 1) === m) {
+          endDay = Math.min(daysToCalculate, ld.getDate());
+        }
+      }
+
+      for (let i = startDay; i <= endDay; i++) {
         // Target IST date string (YYYY-MM-DD)
         const targetDateStr = `${year}-${String(m).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
         
@@ -834,7 +865,9 @@ export const getMonthlyReport = async (req, res, next) => {
           _id: staffMember._id,
           name: staffMember.name,
           email: staffMember.email,
-          totalLeaveBalance: staffMember.totalLeaveBalance || 0
+          totalLeaveBalance: staffMember.totalLeaveBalance || 0,
+          joiningDate: staffMember.joiningDate || null,
+          dateOfLeaving: staffMember.dateOfLeaving || null
         },
         presentCount,
         lateCount,
@@ -844,7 +877,7 @@ export const getMonthlyReport = async (req, res, next) => {
         absentCount,
         holidayCount,
         wfhCount,
-        daysInMonth: daysToCalculate
+        daysInMonth: Math.max(0, endDay - startDay + 1)
       };
     });
 
