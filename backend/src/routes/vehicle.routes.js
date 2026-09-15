@@ -7,6 +7,7 @@ import {
   getVehicleBySlug,
   getAllPublishedVehicle,
   getRelatedVehicle,
+  getVehicleFilters,
 } from "../controllers/vehicle.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -24,6 +25,7 @@ vehicleRoutes.post(
 );
 vehicleRoutes.get("/", getAllVehicle);
 vehicleRoutes.get("/all", getAllPublishedVehicle);
+vehicleRoutes.get("/filters", getVehicleFilters);
 vehicleRoutes.get("/slug/:slug", getVehicleBySlug);
 vehicleRoutes.get("/related/:slug", getRelatedVehicle);
 vehicleRoutes.get(

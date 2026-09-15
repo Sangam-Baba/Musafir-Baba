@@ -164,9 +164,11 @@ const getAllVehicle = async (req, res) => {
 
 const getAllPublishedVehicle = async (req, res) => {
   try {
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     const allVehicle = await Vehicle.find({ status: "published" })
       .populate("location", "name city state")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -177,6 +179,48 @@ const getAllPublishedVehicle = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server Error for getAllPublishedVehicle",
+    });
+  }
+};
+
+// Lightweight companion to getAllPublishedVehicle for callers that only need
+// the distinct vehicle types + locations for filter dropdowns (e.g. the
+// homepage hero widget) -- avoids pulling every published vehicle's full
+// document (galleries, long rich-text fields) just to read two small lists.
+const getVehicleFilters = async (req, res) => {
+  try {
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    const vehicles = await Vehicle.find({ status: "published" })
+      .select("vehicleType location")
+      .populate("location", "name")
+      .lean();
+
+    const types = Array.from(
+      new Set(
+        vehicles
+          .map((v) => v.vehicleType?.toLowerCase())
+          .filter((t) => Boolean(t))
+      )
+    );
+
+    const seenLocations = new Map();
+    vehicles.forEach((v) => {
+      if (v.location?._id && !seenLocations.has(String(v.location._id))) {
+        seenLocations.set(String(v.location._id), {
+          id: v.location._id,
+          name: v.location.name,
+        });
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { types, locations: Array.from(seenLocations.values()) },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error for getVehicleFilters",
     });
   }
 };
@@ -274,4 +318,5 @@ export {
   getVehicleBySlug,
   getAllPublishedVehicle,
   getRelatedVehicle,
+  getVehicleFilters,
 };

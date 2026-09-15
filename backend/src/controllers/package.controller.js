@@ -392,9 +392,10 @@ const getPackages = async (req, res) => {
 
 const getPackageByCategorySlug = async (req, res) => {
   try {
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     const { slug } = req.params;
     const { limit, minimal } = req.query;
-    
+
     const category = await Category.findOne({ slug });
     if (!category) {
       return res
