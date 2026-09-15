@@ -9,12 +9,9 @@ export const metadata: Metadata = {
 };
 
 // ─── Critical above-the-fold: direct imports (Server Components) ───────────
-import SecondSectionServer from "@/components/custom/SecondSectionServer";
-import VisaHome from "@/components/custom/VisaHome";
 import { SevenSection } from "@/components/custom/SevenSection";
 import FeaturedTourSSG from "@/components/custom/FeaturedTourSSG";
-import BlogsHome from "@/components/custom/BlogsHome";
-import HeroSearchWidget from "@/components/custom/HeroSearchWidget";
+import HeroSearchWidgetServer, { HeroSearchWidgetFallback } from "@/components/custom/HeroSearchWidgetServer";
 import HeroStatsRail from "@/components/custom/HeroStatsRail";
 import TrySearchChips from "@/components/custom/TrySearchChips";
 import TrustBadgesRow from "@/components/custom/TrustBadgesRow";
@@ -37,7 +34,6 @@ const DestinationSection = dynamic(
   () => import("@/components/custom/DestinationSection").then((mod) => ({ default: mod.DestinationSection })),
   { loading: () => <div className="h-64 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
 );
-import { LazyVideoSection, LazyTestimonial, LazyImageGallery } from "@/components/custom/LazyCarousels";
 const Faqs = dynamic(
   () => import("@/components/custom/Faqs").then((mod) => ({ default: mod.Faqs })),
   { loading: () => <div className="h-64 animate-pulse bg-gray-50 rounded-xl mx-4 my-2" /> }
@@ -147,65 +143,10 @@ const images = [
   { id: 8, url: "/frame8.webp", alt: "Group tour adventure" },
 ];
 
-// Same `/category` endpoint holidays/page.tsx and TravelMoodSection.tsx
-// already fetch (Next.js dedupes identical fetch calls, so this doesn't add
-// a real extra network round-trip) — feeds the hero search widget's
-// Holidays "Package Type" dropdown with real category slugs.
-async function getHeroCategories(): Promise<{ id: string; name: string; slug: string }[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return (data?.data ?? []).map((c: { _id: string; name: string; slug: string }) => ({
-    id: c._id,
-    name: c.name,
-    slug: c.slug,
-  }));
-}
-
-// Same `/vehicle/all` endpoint rental/page.tsx already fetches — derives the
-// unique vehicle types and locations for the hero widget's Rentals tab,
-// mirroring the exact derivation RentalsClient.tsx does client-side.
-async function getHeroVehicleFilters(): Promise<{
-  types: string[];
-  locations: { id: string; name: string }[];
-}> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/all`, {
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return { types: [], locations: [] };
-  const data = await res.json();
-  const vehicles: { vehicleType?: string; location?: { _id: string; name: string } }[] =
-    data?.data ?? [];
-
-  // RentalsClient.tsx's own Category dropdown always normalizes vehicleType
-  // to lowercase (both its SelectItem values and its `=== "car"` seats-filter
-  // check) — matching that convention here so a value round-tripped through
-  // the URL lands on the right selected option there instead of showing
-  // blank (filtering itself was already case-insensitive either way).
-  const types = Array.from(
-    new Set(vehicles.map((v) => v.vehicleType?.toLowerCase()).filter((t): t is string => Boolean(t))),
-  );
-
-  const seenLocations = new Map<string, { id: string; name: string }>();
-  vehicles.forEach((v) => {
-    if (v.location?._id && !seenLocations.has(v.location._id)) {
-      seenLocations.set(v.location._id, { id: v.location._id, name: v.location.name });
-    }
-  });
-
-  return { types, locations: Array.from(seenLocations.values()) };
-}
-
 export default async function HomePage() {
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalSchema();
   const breadcrumbSchema = getBreadcrumbSchema("/");
-  const [heroCategories, heroVehicleFilters] = await Promise.all([
-    getHeroCategories(),
-    getHeroVehicleFilters(),
-  ]);
 
   return (
     <main>
@@ -223,6 +164,7 @@ export default async function HomePage() {
           alt="Home Banner"
           fill
           priority
+          sizes="100vw"
           className="object-cover -z-10"
         />
 
@@ -281,7 +223,9 @@ export default async function HomePage() {
           </p>
 
           {/* Search Interface Container */}
-          <HeroSearchWidget categories={heroCategories} vehicleFilters={heroVehicleFilters} />
+          <Suspense fallback={<HeroSearchWidgetFallback />}>
+            <HeroSearchWidgetServer />
+          </Suspense>
 
           {/* Suggestion chips */}
           <TrySearchChips />

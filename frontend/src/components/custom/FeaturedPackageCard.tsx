@@ -84,6 +84,7 @@ export default function FeaturedPackageCard({
             alt={pkg.name}
             fill
             priority={priority}
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
         ) : (

@@ -108,7 +108,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                   {tab.categoryPackages.slice(0, 4).map((pkg) => (
                     <FeaturedPackageCard
                       key={pkg._id}
-                      priority={true}
+                      priority={isActive}
                       pkg={{
                         id: pkg._id,
                         name: pkg.title,
@@ -142,7 +142,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                             <div className="p-1">
                               <FeaturedPackageCard
                                 key={pkg._id}
-                                priority={i < 2}
+                                priority={isActive && i < 2}
                                 pkg={{
                                   id: pkg._id,
                                   name: pkg.title,
