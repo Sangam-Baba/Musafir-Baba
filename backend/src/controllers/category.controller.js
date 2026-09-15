@@ -28,6 +28,7 @@ const createCategory = async (req, res) => {
 
 const getCategory = async (req, res) => {
   try {
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     const filter = req.query.all === "true" ? {} : { isActive: true };
     const categories = await Category.find(filter)
       .sort({ createdAt: -1 })

@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  // browsersListForSwc: true,
+  // browsersListForSwc: true, // not a valid NextConfig key in Next 16 (removed upstream);
+  // SWC already reads `browserslist` from package.json natively in this version.
   productionBrowserSourceMaps: false,
   images: {
     minimumCacheTTL: 31536000, // 1 year cache

@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 
 import { QueryProvider } from "./query-provider";
 //import { ToastProvider } from "./toast-provider";

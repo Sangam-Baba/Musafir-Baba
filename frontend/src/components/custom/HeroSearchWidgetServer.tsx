@@ -17,38 +17,21 @@ async function getHeroCategories(): Promise<{ id: string; name: string; slug: st
   }));
 }
 
-// Same `/vehicle/all` endpoint rental/page.tsx already fetches — derives the
-// unique vehicle types and locations for the hero widget's Rentals tab,
-// mirroring the exact derivation RentalsClient.tsx does client-side.
+// Dedicated `/vehicle/filters` endpoint (returns just the distinct vehicle
+// types + locations, already lowercased/deduped server-side the same way
+// RentalsClient.tsx's own Category dropdown normalizes vehicleType) — much
+// lighter than fetching every published vehicle's full document via
+// `/vehicle/all` just to derive these two small lists.
 async function getHeroVehicleFilters(): Promise<{
   types: string[];
   locations: { id: string; name: string }[];
 }> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/all`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/filters`, {
     next: { revalidate: 300 },
   });
   if (!res.ok) return { types: [], locations: [] };
   const data = await res.json();
-  const vehicles: { vehicleType?: string; location?: { _id: string; name: string } }[] =
-    data?.data ?? [];
-
-  // RentalsClient.tsx's own Category dropdown always normalizes vehicleType
-  // to lowercase (both its SelectItem values and its `=== "car"` seats-filter
-  // check) — matching that convention here so a value round-tripped through
-  // the URL lands on the right selected option there instead of showing
-  // blank (filtering itself was already case-insensitive either way).
-  const types = Array.from(
-    new Set(vehicles.map((v) => v.vehicleType?.toLowerCase()).filter((t): t is string => Boolean(t))),
-  );
-
-  const seenLocations = new Map<string, { id: string; name: string }>();
-  vehicles.forEach((v) => {
-    if (v.location?._id && !seenLocations.has(v.location._id)) {
-      seenLocations.set(v.location._id, { id: v.location._id, name: v.location.name });
-    }
-  });
-
-  return { types, locations: Array.from(seenLocations.values()) };
+  return data?.data ?? { types: [], locations: [] };
 }
 
 // Isolates the two data fetches behind their own async Server Component so
