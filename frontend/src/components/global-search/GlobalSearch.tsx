@@ -2,9 +2,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Search, X } from "lucide-react";
 import { useSearch, SearchResult } from "./useSearch";
-import SearchDropdown from "./SearchDropdown";
+
+// Code-split: SearchDropdown pulls in framer-motion, which the header (and
+// therefore every page, including the homepage) would otherwise ship eagerly
+// even though nobody has opened search yet. Only rendering it once the
+// dropdown should actually be open (below) means this chunk isn't fetched
+// until then.
+const SearchDropdown = dynamic(() => import("./SearchDropdown"), { ssr: false });
 
 export default function GlobalSearch() {
   const router = useRouter();
@@ -103,15 +110,17 @@ export default function GlobalSearch() {
         </div>
       </div>
 
-      <SearchDropdown
-        isOpen={isOpen && query.length >= 2}
-        isLoading={isLoading}
-        results={results}
-        query={query}
-        onClose={() => setIsOpen(false)}
-        onSelect={handleSelect}
-        selectedIndex={selectedIndex}
-      />
+      {isOpen && query.length >= 2 && (
+        <SearchDropdown
+          isOpen={isOpen && query.length >= 2}
+          isLoading={isLoading}
+          results={results}
+          query={query}
+          onClose={() => setIsOpen(false)}
+          onSelect={handleSelect}
+          selectedIndex={selectedIndex}
+        />
+      )}
     </div>
   );
 }
