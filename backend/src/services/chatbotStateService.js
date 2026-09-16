@@ -100,9 +100,8 @@ export const processState = async (session, message, entities, intent) => {
 
     case STATES.VISA_AWAITING_DATES:
       context.travelDate = message;
-      session.currentState = STATES.IDLE;
       isFlowComplete = true;
-      
+
       const visaSearch = await KnowledgeBase.find(
         { $text: { $search: `${context.destination} visa` }, category: "visa" },
         { score: { $meta: "textScore" } }
@@ -110,12 +109,18 @@ export const processState = async (session, message, entities, intent) => {
 
       if (visaSearch.length > 0) {
         const snippet = visaSearch[0].content.length > 150 ? visaSearch[0].content.substring(0, 150) + "..." : visaSearch[0].content;
-        responseText = `Perfect. I found details for ${context.destination}:\n\n${snippet}\n\nWe handle the full application for you — no embassy visits needed. Want me to get the process started?`;
+        responseText = `Perfect. I found details for ${context.destination}:\n\n${snippet}\n\nWe handle the full application for you — no embassy visits needed.`;
         responseUrl = visaSearch[0].url;
       } else {
         responseText = `I have noted you need a ${context.purpose || "Tourist"} visa for ${context.destination} traveling ${context.travelDate}. Our agent will contact you with exact details.`;
       }
-      quickReplies = ["Connect with team"];
+      // Continue straight into contact collection instead of leaving this as
+      // an optional "Connect with team" click -- otherwise everything above
+      // is captured nowhere if the user doesn't click it (see chatbot lead
+      // notification gap investigation).
+      responseText += "\n\nTo have our expert reach out, may I get your name?";
+      session.currentState = STATES.CONTACT_AWAITING_NAME;
+      quickReplies = [];
       break;
 
     // --- PACKAGE FLOW ---
@@ -162,7 +167,6 @@ export const processState = async (session, message, entities, intent) => {
 
     case STATES.PKG_AWAITING_DATES:
       context.travelDate = message;
-      session.currentState = STATES.IDLE;
       isFlowComplete = true;
 
       const pkgSearch = await KnowledgeBase.find(
@@ -176,11 +180,17 @@ export const processState = async (session, message, entities, intent) => {
           const absoluteUrl = pkg.url ? (process.env.NEXT_PUBLIC_BASE_URL || "https://musafirbaba.com") + pkg.url : "";
           responseText += `${index + 1}. ${pkg.title}\n${absoluteUrl}\n\n`;
         });
-        responseText += `Would you like more details on any of these, or shall I connect you with our team to customise one for you?`;
+        responseText += `I can also connect you with our team to customise one of these for you.`;
       } else {
         responseText = `Awesome. I have noted your requirements for ${context.destination}. Our holiday experts will contact you with the best packages matching your budget.`;
       }
-      quickReplies = ["Connect with team"];
+      // Continue straight into contact collection instead of leaving this as
+      // an optional "Connect with team" click -- otherwise everything above
+      // is captured nowhere if the user doesn't click it (see chatbot lead
+      // notification gap investigation).
+      responseText += "\n\nMay I get your name?";
+      session.currentState = STATES.CONTACT_AWAITING_NAME;
+      quickReplies = [];
       break;
 
     // --- RENTAL FLOW ---
@@ -199,11 +209,16 @@ export const processState = async (session, message, entities, intent) => {
 
     case STATES.RENTAL_AWAITING_DATE:
       context.date = message;
-      session.currentState = STATES.IDLE;
       isFlowComplete = true;
 
       responseText = `Thanks!\n\nLet me check availability for a ${context.rentalType} in ${context.location} based on those details. Our team will confirm pricing within 1–2 hours.`;
-      quickReplies = ["Connect me now", "Send details on WhatsApp"];
+      // Continue straight into contact collection instead of leaving this as
+      // an optional "Connect me now" click -- otherwise everything above is
+      // captured nowhere if the user doesn't click it (see chatbot lead
+      // notification gap investigation).
+      responseText += "\n\nMay I get your name so they can reach you?";
+      session.currentState = STATES.CONTACT_AWAITING_NAME;
+      quickReplies = [];
       break;
 
     // --- CONTACT FLOW ---
@@ -309,7 +324,17 @@ export const processState = async (session, message, entities, intent) => {
         // TEMPORARY: same care@musafirbaba.com delivery issue as the
         // contact-form notification (see contact.controller.js) — routing
         // here for now. Revert to "care@musafirbaba.com" once fixed.
-        const toEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
+        // Same 3-address backup list as contact.controller.js so a chatbot
+        // lead is never missed if one inbox has a delivery issue.
+        const primaryNotificationEmail =
+          process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
+        const backupNotificationEmails = [
+          "abhi.task24@gmail.com",
+          "musafirbaba365@gmail.com",
+        ];
+        const toEmail = Array.from(
+          new Set([primaryNotificationEmail, ...backupNotificationEmails])
+        );
         await sendEmail(toEmail, subject, emailBody);
 
       } catch (err) {
