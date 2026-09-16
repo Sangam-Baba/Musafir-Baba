@@ -81,7 +81,18 @@ const createContact = async (req, res) => {
     // the same emails fine). Routing here for now so leads aren't missed
     // while the care@ mailbox delivery issue is investigated separately.
     // Revert to "care@musafirbaba.com" once fixed.
-    const toEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
+    // Two more mailboxes added as backups so a query notification is never
+    // missed even if one inbox has a delivery issue -- all recipients below
+    // get the same email.
+    const primaryNotificationEmail =
+      process.env.ADMIN_NOTIFICATION_EMAIL || "abhimars235@gmail.com";
+    const backupNotificationEmails = [
+      "abhi.task24@gmail.com",
+      "musafirbaba365@gmail.com",
+    ];
+    const toEmail = Array.from(
+      new Set([primaryNotificationEmail, ...backupNotificationEmails])
+    );
 
     const clientSubject = "Thank you for reaching out to us.";
     const clientEmailBody = thankYouEnquirySubmit(name);
