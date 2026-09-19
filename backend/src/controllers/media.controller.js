@@ -6,73 +6,143 @@ import { Blog } from "../models/Blog.js";
 import { WebPage } from "../models/WebPage.js";
 import { News } from "../models/News.js";
 import { Package } from "../models/Package.js";
+import { Category } from "../models/Category.js";
+import { Destination } from "../models/Destination.js";
 
 // Media usage is found by searching the serialised text of every Blog, WebPage,
 // News and Package. Downloading those collections is slow, so a copy is kept in
-// memory and on disk. Each check then only fetches documents changed since the
-// last check and drops deleted ones, instead of re-downloading everything.
+// memory and on disk. A check only fetches documents changed since the last one
+// and drops deleted ones. A full reload runs in the background now and then to
+// catch anything an incremental check could miss (e.g. edits without updatedAt).
+const USAGE_FRESH_MS = 10 * 1000; // a copy verified this recently is "fresh"
+const USAGE_WAIT_MS = 5 * 1000; // longest a click waits for a verification
+const USAGE_RECONCILE_MS = 6 * 60 * 60 * 1000;
+const USAGE_CACHE_FILE = path.join(os.tmpdir(), "mb-media-usage-cache-v2.json");
+const USAGE_LEGACY_CACHE_FILE = path.join(os.tmpdir(), "mb-media-usage-cache.json");
+
 const usageCollections = [
   { type: "Blog", model: Blog, toPath: (d) => (d.slug ? `/blog/${d.slug}` : null) },
   { type: "WebPage", model: WebPage, toPath: (d) => (d.fullSlug ? `/${d.fullSlug}` : null) },
   { type: "News", model: News, toPath: (d) => (d.slug ? `/news/${d.slug}` : null) },
   { type: "Package", model: Package, toPath: (d) => d.canonicalUrl || null },
 ];
-const USAGE_CACHE_FILE = path.join(os.tmpdir(), "mb-media-usage-cache.json");
 
-const usageState = {}; // type -> { docs: Map<id, entry>, max: latest updatedAt (ms) }
+// verifiedAt: when this collection was last successfully checked (0 = not yet
+// in this process). docs: id -> { type, title, status, path, str, updatedAt }.
+const usageState = {};
 usageCollections.forEach((c) => {
-  usageState[c.type] = { docs: new Map(), max: 0 };
+  usageState[c.type] = { docs: new Map(), max: 0, verifiedAt: 0 };
 });
-let usageDiskLoaded = false;
+let usageInit = null;
 let usageSyncing = null;
+let usageReconciling = null;
+
+const logUsageError = (label) => (err) => console.log(label, err.message);
 
 const loadUsageFromDisk = async () => {
   try {
     const saved = JSON.parse(await fs.readFile(USAGE_CACHE_FILE, "utf8"));
     usageCollections.forEach((c) => {
       if (!saved[c.type]) return;
-      usageState[c.type] = { docs: new Map(saved[c.type].docs), max: saved[c.type].max };
+      usageState[c.type].docs = new Map(saved[c.type].docs);
+      usageState[c.type].max = saved[c.type].max;
     });
   } catch {
     // No usable cache file yet; the first sync will build it.
   }
+  fs.unlink(USAGE_LEGACY_CACHE_FILE).catch(() => {});
 };
 
-const saveUsageToDisk = async () => {
-  try {
-    const out = {};
-    usageCollections.forEach((c) => {
-      out[c.type] = { max: usageState[c.type].max, docs: [...usageState[c.type].docs] };
+// Saves are queued one after another; each writes the newest state at that moment.
+let usageSaveChain = Promise.resolve();
+const saveUsageToDisk = () => {
+  usageSaveChain = usageSaveChain.then(async () => {
+    try {
+      const out = {};
+      usageCollections.forEach((c) => {
+        out[c.type] = { max: usageState[c.type].max, docs: [...usageState[c.type].docs] };
+      });
+      const tmp = `${USAGE_CACHE_FILE}.${process.pid}.${Date.now()}`;
+      await fs.writeFile(tmp, JSON.stringify(out), { mode: 0o600 });
+      await fs.rename(tmp, USAGE_CACHE_FILE);
+    } catch (err) {
+      console.log("Failed to save media usage cache", err.message);
+    }
+  });
+  return usageSaveChain;
+};
+
+const initUsage = () => {
+  if (!usageInit) {
+    usageInit = loadUsageFromDisk().then(() => {
+      setInterval(() => {
+        runUsageReconcile().catch(logUsageError("Media usage full recheck failed"));
+      }, USAGE_RECONCILE_MS).unref();
     });
-    await fs.writeFile(USAGE_CACHE_FILE, JSON.stringify(out));
-  } catch (err) {
-    console.log("Failed to save media usage cache", err.message);
   }
+  return usageInit;
 };
 
+// Turns fetched documents into cache entries (id -> entry).
+const buildUsageEntries = async (c, docs) => {
+  const entries = new Map();
+  docs.forEach((d) => {
+    entries.set(String(d._id), {
+      type: c.type,
+      title: d.title || "",
+      status: d.status || "",
+      path: c.toPath(d),
+      str: JSON.stringify(d),
+      updatedAt: d.updatedAt ? new Date(d.updatedAt).getTime() : 0,
+    });
+  });
+
+  if (c.type === "Package") {
+    // Packages saved without a canonicalUrl get the same URL the model would build.
+    const missing = docs.filter((d) => !d.canonicalUrl && d.mainCategory && d.destination && d.slug);
+    if (missing.length) {
+      const [cats, dests] = await Promise.all([
+        Category.find({ _id: { $in: missing.map((d) => d.mainCategory) } }).select("slug").lean(),
+        Destination.find({ _id: { $in: missing.map((d) => d.destination) } }).select("slug").lean(),
+      ]);
+      const catSlug = new Map(cats.map((x) => [String(x._id), x.slug]));
+      const destSlug = new Map(dests.map((x) => [String(x._id), x.slug]));
+      missing.forEach((d) => {
+        const cs = catSlug.get(String(d.mainCategory));
+        const ds = destSlug.get(String(d.destination));
+        if (cs && ds) entries.get(String(d._id)).path = `/holidays/${cs}/${ds}/${d.slug}`;
+      });
+    }
+  }
+  return entries;
+};
+
+// Applies fetched entries to a collection's copy. Contains no awaits, so it
+// cannot interleave with another sync.
+const applyUsageEntries = (st, entries) => {
+  let dirty = false;
+  entries.forEach((entry, id) => {
+    const existing = st.docs.get(id);
+    if (existing && (existing.updatedAt || 0) > entry.updatedAt) return; // keep the newer copy
+    if (!existing || existing.str !== entry.str || existing.path !== entry.path) dirty = true;
+    st.docs.set(id, entry);
+    if (entry.updatedAt > st.max) st.max = entry.updatedAt;
+  });
+  return dirty;
+};
+
+// Quick check: fetch only what changed since last time, drop what was deleted.
 const syncUsageCollection = async (c) => {
   const st = usageState[c.type];
+  const startedAt = Date.now();
   const [ids, changed] = await Promise.all([
     c.model.find().select("_id").lean(),
     st.docs.size > 0
       ? c.model.find({ updatedAt: { $gte: new Date(st.max) } }).lean()
       : c.model.find().lean(),
   ]);
-  let dirty = false;
-  changed.forEach((d) => {
-    const entry = {
-      type: c.type,
-      title: d.title || "",
-      status: d.status || "",
-      path: c.toPath(d),
-      str: JSON.stringify(d),
-    };
-    const id = String(d._id);
-    if (st.docs.get(id)?.str !== entry.str) dirty = true;
-    st.docs.set(id, entry);
-    const updated = d.updatedAt ? new Date(d.updatedAt).getTime() : 0;
-    if (updated > st.max) st.max = updated;
-  });
+  const entries = await buildUsageEntries(c, changed);
+  let dirty = applyUsageEntries(st, entries);
   const live = new Set(ids.map((i) => String(i._id)));
   [...st.docs.keys()].forEach((id) => {
     if (!live.has(id)) {
@@ -80,25 +150,83 @@ const syncUsageCollection = async (c) => {
       dirty = true;
     }
   });
+  st.verifiedAt = startedAt;
+  if (dirty) saveUsageToDisk();
   return dirty;
 };
 
-const getUsageSources = async () => {
-  if (!usageDiskLoaded) {
-    usageDiskLoaded = true;
-    await loadUsageFromDisk();
-  }
+// Full reload: re-reads everything. Slow, so it only ever runs in the background.
+const reconcileUsageCollection = async (c) => {
+  const st = usageState[c.type];
+  const startIds = new Set(st.docs.keys());
+  const docs = await c.model.find().lean();
+  const entries = await buildUsageEntries(c, docs);
+  let dirty = applyUsageEntries(st, entries);
+  startIds.forEach((id) => {
+    // Only drop what we already had; anything added meanwhile is kept.
+    if (!entries.has(id)) {
+      st.docs.delete(id);
+      dirty = true;
+    }
+  });
+  if (dirty) saveUsageToDisk();
+  return dirty;
+};
+
+const runInParallel = async (fn) => {
+  const results = await Promise.allSettled(usageCollections.map(fn));
+  const failed = results.find((r) => r.status === "rejected");
+  if (failed) throw failed.reason; // other collections were still recorded
+};
+
+// One check at a time; callers arriving meanwhile share it. Always .catch() the result.
+const runUsageSync = () => {
   if (!usageSyncing) {
-    usageSyncing = Promise.all(usageCollections.map(syncUsageCollection))
-      .then((dirty) => {
-        if (dirty.some(Boolean)) saveUsageToDisk();
-      })
-      .finally(() => {
-        usageSyncing = null;
-      });
+    usageSyncing = runInParallel(syncUsageCollection).finally(() => {
+      usageSyncing = null;
+    });
   }
-  await usageSyncing;
+  return usageSyncing;
+};
+
+const runUsageReconcile = () => {
+  if (!usageReconciling) {
+    usageReconciling = runInParallel(reconcileUsageCollection).finally(() => {
+      usageReconciling = null;
+    });
+  }
+  return usageReconciling;
+};
+
+const getUsageSources = async () => {
+  await initUsage();
+  await runUsageSync();
   return usageCollections.flatMap((c) => [...usageState[c.type].docs.values()]);
+};
+
+// Starts building the copy in the background (called once at boot).
+const warmUsageIndex = () =>
+  initUsage()
+    .then(() => runUsageSync())
+    .catch(logUsageError("Media usage warm-up failed"));
+
+const isUsageFresh = () =>
+  usageCollections.every((c) => Date.now() - usageState[c.type].verifiedAt < USAGE_FRESH_MS);
+
+const matchUsage = (url) => {
+  const usage = [];
+  const usageDetails = [];
+  if (url) {
+    usageCollections.forEach((c) => {
+      usageState[c.type].docs.forEach((src) => {
+        if (src.str.includes(url)) {
+          if (!usage.includes(src.type)) usage.push(src.type);
+          usageDetails.push({ type: src.type, title: src.title, status: src.status, path: src.path });
+        }
+      });
+    });
+  }
+  return { usage, usageDetails };
 };
 
 // Sets media.usage (type names, as before) and media.usageDetails (each page using it).
@@ -208,19 +336,63 @@ const deleteMedia = async (req, res) => {
   }
 };
 
+// "Used" is answered straight from the saved copy. "Unused" is only answered
+// when the copy was verified just now; otherwise the answer is "verifying".
 const getMediaUsage = async (req, res) => {
   try {
     const media = await Media.findById(req.params.id).select("url").lean();
     if (!media) {
       return res.status(404).json({ success: false, message: "Invalid Id" });
     }
-    await attachUsage([media]);
+    await initUsage();
+    let result = matchUsage(media.url);
+    let fresh = isUsageFresh();
+    if (!fresh) {
+      const sync = runUsageSync().catch(logUsageError("Media usage sync failed"));
+      if (result.usageDetails.length === 0) {
+        let timer;
+        await Promise.race([
+          sync,
+          new Promise((resolve) => {
+            timer = setTimeout(resolve, USAGE_WAIT_MS);
+          }),
+        ]);
+        clearTimeout(timer);
+        result = matchUsage(media.url);
+        fresh = isUsageFresh();
+      }
+    }
+    const states = usageCollections.map((c) => usageState[c.type]);
+    const verified = states.every((st) => st.verifiedAt > 0);
     res.status(200).json({
       success: true,
-      data: { usage: media.usage, usageDetails: media.usageDetails },
+      data: {
+        ...result,
+        status: result.usageDetails.length > 0 ? "used" : fresh ? "unused" : "verifying",
+        fresh,
+        pendingSections: usageCollections
+          .filter((c) => usageState[c.type].verifiedAt === 0)
+          .map((c) => c.type),
+        lastVerified: verified
+          ? new Date(Math.min(...states.map((st) => st.verifiedAt))).toISOString()
+          : null,
+        reconciling: !!usageReconciling,
+      },
     });
   } catch (error) {
     console.log("Media usage getting failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// Starts a full background reload of the usage copy; does not wait for it.
+const refreshMediaUsage = async (req, res) => {
+  try {
+    await initUsage();
+    runUsageReconcile().catch(logUsageError("Media usage full recheck failed"));
+    res.status(202).json({ success: true, message: "Full recheck started" });
+  } catch (error) {
+    console.log("Media usage refresh failed", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -231,7 +403,7 @@ const getAllMedia = async (req, res) => {
     let pagination = null;
 
     // Optional: build the usage cache in the background so per-image lookups are fast.
-    if (req.query.prefetchUsage === "true") getUsageSources().catch(() => {});
+    if (req.query.prefetchUsage === "true") warmUsageIndex();
 
     const filter = {};
     if (req.query.search) {
@@ -310,4 +482,4 @@ const getAllMedia = async (req, res) => {
   }
 };
 
-export { createMedia, getAllMedia, getMediaUsage, getMediaById, updateMedia, deleteMedia };
+export { createMedia, getAllMedia, getMediaUsage, refreshMediaUsage, warmUsageIndex, getMediaById, updateMedia, deleteMedia };
