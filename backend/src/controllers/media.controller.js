@@ -1,8 +1,129 @@
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
 import { Media } from "../models/Media.js";
 import { Blog } from "../models/Blog.js";
 import { WebPage } from "../models/WebPage.js";
 import { News } from "../models/News.js";
 import { Package } from "../models/Package.js";
+
+// Media usage is found by searching the serialised text of every Blog, WebPage,
+// News and Package. Downloading those collections is slow, so a copy is kept in
+// memory and on disk. Each check then only fetches documents changed since the
+// last check and drops deleted ones, instead of re-downloading everything.
+const usageCollections = [
+  { type: "Blog", model: Blog, toPath: (d) => (d.slug ? `/blog/${d.slug}` : null) },
+  { type: "WebPage", model: WebPage, toPath: (d) => (d.fullSlug ? `/${d.fullSlug}` : null) },
+  { type: "News", model: News, toPath: (d) => (d.slug ? `/news/${d.slug}` : null) },
+  { type: "Package", model: Package, toPath: (d) => d.canonicalUrl || null },
+];
+const USAGE_CACHE_FILE = path.join(os.tmpdir(), "mb-media-usage-cache.json");
+
+const usageState = {}; // type -> { docs: Map<id, entry>, max: latest updatedAt (ms) }
+usageCollections.forEach((c) => {
+  usageState[c.type] = { docs: new Map(), max: 0 };
+});
+let usageDiskLoaded = false;
+let usageSyncing = null;
+
+const loadUsageFromDisk = async () => {
+  try {
+    const saved = JSON.parse(await fs.readFile(USAGE_CACHE_FILE, "utf8"));
+    usageCollections.forEach((c) => {
+      if (!saved[c.type]) return;
+      usageState[c.type] = { docs: new Map(saved[c.type].docs), max: saved[c.type].max };
+    });
+  } catch {
+    // No usable cache file yet; the first sync will build it.
+  }
+};
+
+const saveUsageToDisk = async () => {
+  try {
+    const out = {};
+    usageCollections.forEach((c) => {
+      out[c.type] = { max: usageState[c.type].max, docs: [...usageState[c.type].docs] };
+    });
+    await fs.writeFile(USAGE_CACHE_FILE, JSON.stringify(out));
+  } catch (err) {
+    console.log("Failed to save media usage cache", err.message);
+  }
+};
+
+const syncUsageCollection = async (c) => {
+  const st = usageState[c.type];
+  const [ids, changed] = await Promise.all([
+    c.model.find().select("_id").lean(),
+    st.docs.size > 0
+      ? c.model.find({ updatedAt: { $gte: new Date(st.max) } }).lean()
+      : c.model.find().lean(),
+  ]);
+  let dirty = false;
+  changed.forEach((d) => {
+    const entry = {
+      type: c.type,
+      title: d.title || "",
+      status: d.status || "",
+      path: c.toPath(d),
+      str: JSON.stringify(d),
+    };
+    const id = String(d._id);
+    if (st.docs.get(id)?.str !== entry.str) dirty = true;
+    st.docs.set(id, entry);
+    const updated = d.updatedAt ? new Date(d.updatedAt).getTime() : 0;
+    if (updated > st.max) st.max = updated;
+  });
+  const live = new Set(ids.map((i) => String(i._id)));
+  [...st.docs.keys()].forEach((id) => {
+    if (!live.has(id)) {
+      st.docs.delete(id);
+      dirty = true;
+    }
+  });
+  return dirty;
+};
+
+const getUsageSources = async () => {
+  if (!usageDiskLoaded) {
+    usageDiskLoaded = true;
+    await loadUsageFromDisk();
+  }
+  if (!usageSyncing) {
+    usageSyncing = Promise.all(usageCollections.map(syncUsageCollection))
+      .then((dirty) => {
+        if (dirty.some(Boolean)) saveUsageToDisk();
+      })
+      .finally(() => {
+        usageSyncing = null;
+      });
+  }
+  await usageSyncing;
+  return usageCollections.flatMap((c) => [...usageState[c.type].docs.values()]);
+};
+
+// Sets media.usage (type names, as before) and media.usageDetails (each page using it).
+const attachUsage = async (mediaList) => {
+  const sources = await getUsageSources();
+  mediaList.forEach((media) => {
+    const usage = [];
+    const usageDetails = [];
+    if (media.url) {
+      sources.forEach((src) => {
+        if (src.str.includes(media.url)) {
+          if (!usage.includes(src.type)) usage.push(src.type);
+          usageDetails.push({
+            type: src.type,
+            title: src.title,
+            status: src.status,
+            path: src.path,
+          });
+        }
+      });
+    }
+    media.usage = usage;
+    media.usageDetails = usageDetails;
+  });
+};
 
 const createMedia = async (req, res) => {
   try {
@@ -87,10 +208,30 @@ const deleteMedia = async (req, res) => {
   }
 };
 
+const getMediaUsage = async (req, res) => {
+  try {
+    const media = await Media.findById(req.params.id).select("url").lean();
+    if (!media) {
+      return res.status(404).json({ success: false, message: "Invalid Id" });
+    }
+    await attachUsage([media]);
+    res.status(200).json({
+      success: true,
+      data: { usage: media.usage, usageDetails: media.usageDetails },
+    });
+  } catch (error) {
+    console.log("Media usage getting failed", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 const getAllMedia = async (req, res) => {
   try {
     let allMedia;
     let pagination = null;
+
+    // Optional: build the usage cache in the background so per-image lookups are fast.
+    if (req.query.prefetchUsage === "true") getUsageSources().catch(() => {});
 
     const filter = {};
     if (req.query.search) {
@@ -104,21 +245,7 @@ const getAllMedia = async (req, res) => {
     if (req.query.usageFilter && req.query.usageFilter !== "All") {
       allMedia = await Media.find(filter).sort({ createdAt: -1 }).lean();
 
-      const blogsString = JSON.stringify(await Blog.find().lean());
-      const webPagesString = JSON.stringify(await WebPage.find().lean());
-      const newsString = JSON.stringify(await News.find().lean());
-      const packagesString = JSON.stringify(await Package.find().lean());
-
-      allMedia.forEach((media) => {
-        const usage = [];
-        if (media.url) {
-          if (blogsString.includes(media.url)) usage.push("Blog");
-          if (webPagesString.includes(media.url)) usage.push("WebPage");
-          if (newsString.includes(media.url)) usage.push("News");
-          if (packagesString.includes(media.url)) usage.push("Package");
-        }
-        media.usage = usage;
-      });
+      await attachUsage(allMedia);
 
       if (req.query.usageFilter === "Unused") {
         allMedia = allMedia.filter((m) => !m.usage || m.usage.length === 0);
@@ -166,21 +293,7 @@ const getAllMedia = async (req, res) => {
 
     if (req.query.withUsage === "true") {
       try {
-        const blogsString = JSON.stringify(await Blog.find().lean());
-        const webPagesString = JSON.stringify(await WebPage.find().lean());
-        const newsString = JSON.stringify(await News.find().lean());
-        const packagesString = JSON.stringify(await Package.find().lean());
-
-        allMedia.forEach((media) => {
-          const usage = [];
-          if (media.url) {
-            if (blogsString.includes(media.url)) usage.push("Blog");
-            if (webPagesString.includes(media.url)) usage.push("WebPage");
-            if (newsString.includes(media.url)) usage.push("News");
-            if (packagesString.includes(media.url)) usage.push("Package");
-          }
-          media.usage = usage;
-        });
+        await attachUsage(allMedia);
       } catch (err) {
         console.log("Failed to check media usage", err.message);
       }
@@ -197,4 +310,4 @@ const getAllMedia = async (req, res) => {
   }
 };
 
-export { createMedia, getAllMedia, getMediaById, updateMedia, deleteMedia };
+export { createMedia, getAllMedia, getMediaUsage, getMediaById, updateMedia, deleteMedia };
