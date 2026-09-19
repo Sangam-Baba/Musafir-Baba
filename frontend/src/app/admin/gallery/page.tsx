@@ -12,7 +12,19 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import Pagination from "@/components/common/Pagination";
 
-type UploadedFile = BaseUploadedFile & { title?: string; description?: string; usage?: string[] };
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+
+type UsageDetail = { type: string; title: string; status: string; path: string | null };
+
+type UploadedFile = BaseUploadedFile & {
+  title?: string;
+  description?: string;
+  usage?: string[];
+  usageDetails?: UsageDetail[];
+  folder?: string;
+  pages?: number;
+  createdAt?: string;
+};
 
 interface MediaUploadInterface {
   alt?: string;
@@ -24,7 +36,7 @@ const allMedia = async (accessToken: string, page: number, search: string, usage
   const query = new URLSearchParams({
     page: page.toString(),
     limit: "20",
-    withUsage: "true"
+    prefetchUsage: "true"
   });
   
   if (search) query.append("search", search);
@@ -35,6 +47,14 @@ const allMedia = async (accessToken: string, page: number, search: string, usage
   });
   
   return await res.json();
+};
+
+const getMediaUsage = async (accessToken: string, id: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/media/${id}/usage`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error("Failed to load usage");
+  return res.json();
 };
 
 const deleteMedia = async (accessToken: string, id: string) => {
@@ -96,6 +116,16 @@ export default function Page() {
     enabled: true,
   });
 
+  // Usage is looked up per image on click (the list itself stays fast). The
+  // "Used in…" filter already returns it with each item, so skip the lookup then.
+  const needsUsage = !!selectedMedia?._id && !selectedMedia.usageDetails;
+  const { data: usageResponse, isLoading: usageLoading, isError: usageError } = useQuery({
+    queryKey: ["media-usage", selectedMedia?._id],
+    queryFn: () => getMediaUsage(accessToken, selectedMedia?._id as string),
+    enabled: needsUsage,
+  });
+  const usageDetails: UsageDetail[] | undefined = selectedMedia?.usageDetails ?? usageResponse?.data?.usageDetails;
+
   const mediaList = response?.data || [];
   const pagination = response?.pagination || { currentPage: 1, totalPages: 1 };
 
@@ -117,7 +147,7 @@ export default function Page() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["media-gallery"] });
       toast.success("Media updated successfully");
-      setSelectedMedia(prev => prev ? { ...prev, ...updated.data, usage: prev.usage } : updated.data);
+      setSelectedMedia(prev => prev ? { ...prev, ...updated.data, usage: prev.usage, usageDetails: prev.usageDetails } : updated.data);
     },
     onError: (error) => {
       console.log(error);
@@ -297,20 +327,58 @@ export default function Page() {
           </div>
 
           <div className="space-y-4">
-             {selectedMedia.usage && selectedMedia.usage.length > 0 && (
+             <div>
+                <label className="text-xs font-medium text-gray-500 uppercase">File Info</label>
+                <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-gray-700">
+                  {selectedMedia.format && (<><dt className="text-gray-500">Format</dt><dd className="uppercase">{selectedMedia.format}</dd></>)}
+                  {selectedMedia.width && selectedMedia.height && (<><dt className="text-gray-500">Dimensions</dt><dd>{selectedMedia.width} × {selectedMedia.height}px</dd></>)}
+                  {selectedMedia.pages ? (<><dt className="text-gray-500">Pages</dt><dd>{selectedMedia.pages}</dd></>) : null}
+                  {selectedMedia.folder && (<><dt className="text-gray-500">Folder</dt><dd className="break-all">{selectedMedia.folder}</dd></>)}
+                  {selectedMedia.public_id && (<><dt className="text-gray-500">Public ID</dt><dd className="break-all">{selectedMedia.public_id}</dd></>)}
+                  {selectedMedia.createdAt && (<><dt className="text-gray-500">Uploaded</dt><dd>{new Date(selectedMedia.createdAt).toLocaleString()}</dd></>)}
+                </dl>
+             </div>
+
+             {usageDetails === undefined ? (
                <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase">Used In</label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedMedia.usage.map(u => (
-                      <span key={u} className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        {u}
-                      </span>
-                    ))}
-                  </div>
+                  <span className="text-xs text-gray-500">
+                    {usageError ? "Could not load usage." : usageLoading ? "Checking where this is used… (the very first check can take a minute)" : ""}
+                  </span>
                </div>
-             )}
-             
-             {(selectedMedia.usage === undefined || selectedMedia.usage.length === 0) && (
+             ) : usageDetails.length > 0 ? (
+               <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase">
+                    Used In ({usageDetails.length})
+                  </label>
+                  <ul className="mt-1 space-y-2 max-h-56 overflow-y-auto">
+                    {usageDetails.map((u, idx) => (
+                      <li key={`${u.type}-${u.path}-${idx}`} className="bg-white border rounded-md p-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">{u.type}</span>
+                          {u.status && (
+                            <span className={`px-2 py-0.5 rounded-full ${u.status === "published" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                              {u.status}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 font-medium text-gray-800 break-words">{u.title || "Untitled"}</p>
+                        {u.path ? (
+                          <a
+                            href={`${SITE_URL}${u.path}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#FE5300] hover:underline break-all"
+                          >
+                            {SITE_URL}{u.path} ↗
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">No page URL available</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+               </div>
+             ) : (
                <div>
                   <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full">
                     Unused

@@ -3,6 +3,7 @@ import {
   createMedia,
   getAllMedia,
   getMediaById,
+  getMediaUsage,
   updateMedia,
   deleteMedia,
 } from "../controllers/media.controller.js";
@@ -25,6 +26,13 @@ mediaRoutes.get(
   validateSession,
   authorizedRoles(["admin", "superadmin", "staff"]),
   getAllMedia
+);
+mediaRoutes.get(
+  "/:id/usage",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin", "staff"]),
+  getMediaUsage
 );
 mediaRoutes.get(
   "/:id",
