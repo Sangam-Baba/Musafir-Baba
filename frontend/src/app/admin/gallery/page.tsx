@@ -16,6 +16,16 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
 
 type UsageDetail = { type: string; title: string; status: string; path: string | null };
 
+type UsageInfo = {
+  usageDetails: UsageDetail[];
+  status: "used" | "unused" | "verifying";
+  fresh: boolean;
+  pendingSections: string[];
+  lastVerified: string | null;
+};
+
+const MAX_USAGE_POLLS = 40; // re-ask every 3s while verifying, for up to ~2 minutes
+
 type UploadedFile = BaseUploadedFile & {
   title?: string;
   description?: string;
@@ -54,6 +64,15 @@ const getMediaUsage = async (accessToken: string, id: string) => {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error("Failed to load usage");
+  return res.json();
+};
+
+const refreshMediaUsage = async (accessToken: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/media/usage/refresh`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error("Failed to start refresh");
   return res.json();
 };
 
@@ -119,12 +138,30 @@ export default function Page() {
   // Usage is looked up per image on click (the list itself stays fast). The
   // "Used in…" filter already returns it with each item, so skip the lookup then.
   const needsUsage = !!selectedMedia?._id && !selectedMedia.usageDetails;
-  const { data: usageResponse, isLoading: usageLoading, isError: usageError } = useQuery({
+  const usageQuery = useQuery({
     queryKey: ["media-usage", selectedMedia?._id],
     queryFn: () => getMediaUsage(accessToken, selectedMedia?._id as string),
     enabled: needsUsage,
+    refetchInterval: (query) =>
+      query.state.data?.data?.status === "verifying" && query.state.dataUpdateCount < MAX_USAGE_POLLS ? 3000 : false,
   });
-  const usageDetails: UsageDetail[] | undefined = selectedMedia?.usageDetails ?? usageResponse?.data?.usageDetails;
+  const usageInfo: UsageInfo | undefined = usageQuery.data?.data;
+  const usageDetails: UsageDetail[] | undefined = selectedMedia?.usageDetails ?? usageInfo?.usageDetails;
+  const usageStatus: UsageInfo["status"] | undefined = selectedMedia?.usageDetails
+    ? selectedMedia.usageDetails.length > 0 ? "used" : "unused"
+    : usageInfo?.status;
+  const usagePolls = queryClient.getQueryState(["media-usage", selectedMedia?._id])?.dataUpdateCount ?? 0;
+  const usageGaveUp = usageStatus === "verifying" && usagePolls >= MAX_USAGE_POLLS;
+
+  const handleRefreshUsage = async () => {
+    try {
+      await refreshMediaUsage(accessToken);
+      toast.success("Full recheck started in the background");
+      usageQuery.refetch();
+    } catch {
+      toast.error("Could not start the recheck");
+    }
+  };
 
   const mediaList = response?.data || [];
   const pagination = response?.pagination || { currentPage: 1, totalPages: 1 };
@@ -339,17 +376,28 @@ export default function Page() {
                 </dl>
              </div>
 
-             {usageDetails === undefined ? (
+             {usageStatus === undefined || usageStatus === "verifying" ? (
                <div>
                   <span className="text-xs text-gray-500">
-                    {usageError ? "Could not load usage." : usageLoading ? "Checking where this is used… (the very first check can take a minute)" : ""}
+                    {usageQuery.isError
+                      ? "Could not load usage."
+                      : usageGaveUp
+                        ? "Could not confirm yet. Use Refresh usage below and try again."
+                        : usageStatus === "verifying"
+                          ? `Not sure yet, still checking${usageInfo?.pendingSections?.length ? `: ${usageInfo.pendingSections.join(", ")}` : ""}…`
+                          : "Checking where this is used… (the very first check can take a minute)"}
                   </span>
                </div>
-             ) : usageDetails.length > 0 ? (
+             ) : usageStatus === "used" && usageDetails ? (
                <div>
                   <label className="text-xs font-medium text-gray-500 uppercase">
                     Used In ({usageDetails.length})
                   </label>
+                  {usageInfo?.pendingSections?.length ? (
+                    <p className="text-[11px] text-amber-600 mt-1">
+                      Still checking {usageInfo.pendingSections.join(", ")}. More places may appear.
+                    </p>
+                  ) : null}
                   <ul className="mt-1 space-y-2 max-h-56 overflow-y-auto">
                     {usageDetails.map((u, idx) => (
                       <li key={`${u.type}-${u.path}-${idx}`} className="bg-white border rounded-md p-2 text-xs">
@@ -362,7 +410,11 @@ export default function Page() {
                           )}
                         </div>
                         <p className="mt-1 font-medium text-gray-800 break-words">{u.title || "Untitled"}</p>
-                        {u.path ? (
+                        {u.path && u.status && u.status !== "published" ? (
+                          <span className="text-gray-400 break-all" title="This page is not live yet">
+                            {SITE_URL}{u.path} (not live, {u.status})
+                          </span>
+                        ) : u.path ? (
                           <a
                             href={`${SITE_URL}${u.path}`}
                             target="_blank"
@@ -383,6 +435,19 @@ export default function Page() {
                   <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full">
                     Unused
                   </span>
+               </div>
+             )}
+
+             {usageInfo && (
+               <div className="flex items-center justify-between text-[11px] text-gray-500">
+                  <span>
+                    {!usageInfo.fresh && usageInfo.lastVerified
+                      ? `Last verified ${new Date(usageInfo.lastVerified).toLocaleString()}`
+                      : ""}
+                  </span>
+                  <button type="button" onClick={handleRefreshUsage} className="text-[#FE5300] hover:underline">
+                    Refresh usage
+                  </button>
                </div>
              )}
 
