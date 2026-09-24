@@ -93,11 +93,11 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-4">
             <a
               href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
-              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+              className="flex items-center gap-2 text-black hover:text-black/70 transition-colors"
             >
-              <Phone className="w-4 h-4 text-white" />
+              <Phone className="w-4 h-4 text-black" />
               <span className="flex flex-col leading-tight text-left">
-                <span className="text-[10px] text-white/80">Call Us</span>
+                <span className="text-[10px] text-black/70">Call Us</span>
                 <span className="text-[13px] font-semibold tracking-wide">
                   {CONTACT_INFO.PHONE_NUMBER_FORMATTED}
                 </span>
