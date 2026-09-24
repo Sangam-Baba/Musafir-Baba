@@ -110,11 +110,6 @@ export default function SearchDropdown({
                       </span>
                     </div>
                   </div>
-                  <div className="shrink-0 ml-2">
-                    <span className="px-1.5 py-0.5 text-[9px] font-semibold tracking-wider uppercase rounded bg-slate-50 text-slate-400 border border-slate-100/50">
-                      {result.type}
-                    </span>
-                  </div>
                 </div>
               ))}
             </div>

@@ -37,7 +37,15 @@ export function useSearch(query: string) {
         );
         if (!res.ok) throw new Error("Search failed");
         const data = await res.json();
-        setResults(data.data || []);
+        const rawResults: SearchResult[] = data.data || [];
+
+        // Show packages first, then everything else, preserving the
+        // backend's original relative ordering within each group.
+        const isPackage = (r: SearchResult) =>
+          r.type === "Package" || r.type === "Customized Package";
+        const packages = rawResults.filter(isPackage);
+        const others = rawResults.filter((r) => !isPackage(r));
+        setResults([...packages, ...others]);
       } catch (err: any) {
         if (err.name !== "AbortError") {
           console.error("Search fetch error:", err);
