@@ -12,19 +12,23 @@ export const ThankYouPage = () => {
           <img src="/Itinerary/highqualitylogo.png" alt="Musafir Baba" style={{ height: '42px', objectFit: 'contain' }} />
         </div>
 
-        {/* Heading */}
-        <h1 style={{ 
-          fontFamily: "'Playfair Display', serif", 
-          fontStyle: 'italic', 
-          fontSize: '44px', 
-          color: luxuryTheme.orange, 
-          lineHeight: 1.2, 
+        {/* Heading — a PDF-export caption, not real page content, so this is
+            a <div> rather than an <h1>: the page's actual <h1> is the
+            package title in SlugClients.tsx, and this template renders
+            off-screen on every page load (see ItineraryTemplate.tsx), so an
+            <h1> here would wrongly become the page's first/duplicate h1. */}
+        <div style={{
+          fontFamily: "'Playfair Display', serif",
+          fontStyle: 'italic',
+          fontSize: '44px',
+          color: luxuryTheme.orange,
+          lineHeight: 1.2,
           marginBottom: '16px',
           fontWeight: 500,
           textAlign: 'center'
         }}>
           Thank you for choosing<br/>Musafirbaba
-        </h1>
+        </div>
 
 
 
