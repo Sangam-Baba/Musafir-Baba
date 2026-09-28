@@ -287,6 +287,12 @@ const getPackages = async (req, res) => {
       search,
       slug,
       status = "published",
+      // Optional "asc" | "desc" — sorts by last-modified (updatedAt) when
+      // explicitly requested (currently only the admin packages list sends
+      // this). Left undefined, behavior is byte-for-byte unchanged from
+      // before this existed, so every other caller of this endpoint (the
+      // public /holidays listing page, etc.) keeps its original ordering.
+      sort,
     } = req.query;
 
     const query = {};
@@ -348,6 +354,16 @@ const getPackages = async (req, res) => {
       query.$and = [...(query.$and || []), { $or: searchOr }];
     }
     // console.log(query);
+    // ✅ Sort — defaults to the original createdAt-desc ordering; only
+    // switches to last-modified ordering when a caller explicitly passes
+    // ?sort=asc|desc (see comment above).
+    let sortOption = { createdAt: -1 };
+    if (sort === "asc") {
+      sortOption = { updatedAt: 1 };
+    } else if (sort === "desc") {
+      sortOption = { updatedAt: -1 };
+    }
+
     // ✅ Query execution
     const packages = await Package.find(query)
       .populate(
@@ -358,7 +374,7 @@ const getPackages = async (req, res) => {
       .populate("mainCategory", "_id name slug")
       .populate("author", "name role about avatar")
       .populate("reviews")
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .skip((page - 1) * limit)
       .limit(Number(limit))
       .lean();

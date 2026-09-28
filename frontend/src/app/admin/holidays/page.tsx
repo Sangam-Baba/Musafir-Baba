@@ -100,10 +100,11 @@ const getAllPackages = async (
   search: string,
   limit: number,
   status: string,
-  destination: string
+  destination: string,
+  sort: string
 ) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=${status}&destination=${destination}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=${status}&destination=${destination}&sort=${sort}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -141,6 +142,8 @@ function PackagePage() {
   // same as before this filter existed).
   const [statusFilter, setStatusFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
+  // Default: last modified first, newest to oldest.
+  const [sort, setSort] = useState("desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -160,8 +163,8 @@ function PackagePage() {
     (state) => state.permissions
   ) as string[];
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["packages", page, debouncedSearch, pageSize, statusFilter, locationFilter],
-    queryFn: () => getAllPackages(page, debouncedSearch, pageSize, statusFilter, locationFilter),
+    queryKey: ["packages", page, debouncedSearch, pageSize, statusFilter, locationFilter, sort],
+    queryFn: () => getAllPackages(page, debouncedSearch, pageSize, statusFilter, locationFilter, sort),
     enabled: permissions.includes("holidays"),
   });
 
@@ -323,6 +326,21 @@ function PackagePage() {
                     {dest.name}
                   </SelectItem>
                 ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={sort}
+            onValueChange={(v) => {
+              setSort(v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-[190px]">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">Last Modified (Newest)</SelectItem>
+              <SelectItem value="asc">Last Modified (Oldest)</SelectItem>
             </SelectContent>
           </Select>
         </div>
