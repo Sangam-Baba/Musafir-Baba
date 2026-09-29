@@ -20,22 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as XLSX from "xlsx";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
-
-interface SitemapItem {
-  title: string;
-  url: string;
-  category: string;
-  fullUrl?: string;
-  metaTitle?: string;
-  metaDescription?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  createdBy?: string;
-  author?: string;
-  pageType?: string;
-  pageCategory?: string;
-  keywords?: string;
-}
+import { buildSitemapItems, filterSitemapItems, type SitemapItem } from "@/lib/sitemapUtils";
 
 const categories: Record<string, { label: string; icon: any; color: string }> = {
   webpage: { label: "Web Page", icon: Layout, color: "text-blue-500" },
@@ -53,7 +38,6 @@ const categories: Record<string, { label: string; icon: any; color: string }> = 
 
 interface SitemapTableProps {
   data: SitemapItem[];
-  allFilteredData: SitemapItem[];
   totalItems: number;
   totalPages: number;
   currentPage: number;
@@ -63,19 +47,19 @@ interface SitemapTableProps {
 
 const ITEMS_PER_PAGE = 10;
 
-export default function SitemapTable({ 
-  data, 
-  allFilteredData,
-  totalItems, 
-  totalPages, 
-  currentPage, 
-  currentSearch, 
-  currentCategory 
+export default function SitemapTable({
+  data,
+  totalItems,
+  totalPages,
+  currentPage,
+  currentSearch,
+  currentCategory
 }: SitemapTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState(currentSearch);
+  const [isExporting, setIsExporting] = useState(false);
   const { role } = useAdminAuthStore();
 
   // Sync internal search term with URL search param
@@ -111,33 +95,48 @@ export default function SitemapTable({
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const handleExport = () => {
+  const handleExport = async () => {
     // Only admins or superadmins can export
     if (role !== "admin" && role !== "superadmin") return;
 
-    // Prepare data for Excel
-    const exportData = allFilteredData.map((item, index) => ({
-      "S.No.": index + 1,
-      "Title": item.title || "",
-      "URL": item.fullUrl || "",
-      "Meta Title": item.metaTitle || "",
-      "Meta Description": item.metaDescription || "",
-      "Keywords": item.keywords || "",
-      "Type of Page": item.pageType || "",
-      "Page Category": item.pageCategory || "",
-      "Created By": item.createdBy || "",
-      "Author": item.author || "",
-      "Created At": item.createdAt || "",
-      "Updated At": item.updatedAt || "",
-    }));
+    // The full (potentially 1000+ row) dataset is no longer shipped to the
+    // browser on every page load just in case Export gets clicked -- fetch
+    // it here, on demand, using the exact same source + merge/filter logic
+    // the server page uses, so the export matches what's currently visible.
+    setIsExporting(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const source = await fetch(`${baseUrl}/admin/sitemap-source`).then((r) => r.json());
+      const allItems = buildSitemapItems(source);
+      const allFilteredData = filterSitemapItems(allItems, currentSearch, currentCategory);
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sitemap Data");
-    
-    // Generate file name with current date
-    const date = new Date().toISOString().split("T")[0];
-    XLSX.writeFile(workbook, `Sitemap_Export_${date}.xlsx`);
+      const exportData = allFilteredData.map((item, index) => ({
+        "S.No.": index + 1,
+        "Title": item.title || "",
+        "URL": item.fullUrl || "",
+        "Meta Title": item.metaTitle || "",
+        "Meta Description": item.metaDescription || "",
+        "Keywords": item.keywords || "",
+        "Type of Page": item.pageType || "",
+        "Page Category": item.pageCategory || "",
+        "Created By": item.createdBy || "",
+        "Author": item.author || "",
+        "Created At": item.createdAt || "",
+        "Updated At": item.updatedAt || "",
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sitemap Data");
+
+      // Generate file name with current date
+      const date = new Date().toISOString().split("T")[0];
+      XLSX.writeFile(workbook, `Sitemap_Export_${date}.xlsx`);
+    } catch (error) {
+      console.error("Sitemap export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -158,12 +157,13 @@ export default function SitemapTable({
 
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "superadmin") && (
-            <Button 
-              onClick={handleExport} 
-              variant="outline" 
-              className="h-8 text-xs bg-slate-50 border-none hover:bg-green-50 hover:text-green-600 transition-colors"
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              variant="outline"
+              className="h-8 text-xs bg-slate-50 border-none hover:bg-green-50 hover:text-green-600 transition-colors disabled:opacity-60"
             >
-              Export to Excel
+              {isExporting ? "Preparing..." : "Export to Excel"}
             </Button>
           )}
           <div className="relative">

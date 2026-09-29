@@ -1,4 +1,5 @@
 import { Router } from "express";
+import sitemapDataRoutes from "./sitemapData.routes.js";
 import pkgRoutes from "./package.routes.js";
 import authRouter from "./auth.routes.js";
 import staffRouter from "./staff.routes.js";
@@ -76,6 +77,7 @@ router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
 router.use("/admin/partner-wallets", adminPartnerWalletRoutes);
 router.use("/admin/rides", adminRideRoutes);
 router.use("/admin/riders", adminRiderRoutes);
+router.use("/admin/sitemap-source", sitemapDataRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);
 router.use("/booking", bookingRoutes);
