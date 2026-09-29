@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +31,16 @@ export function AdminSidebar() {
   const role = useAdminAuthStore((s) => s.role);
   const permissions = useAdminAuthStore((s) => s.permissions) as string[];
   const pathname = usePathname();
+
+  // Link navigation is client-side but the active-pill highlight only
+  // updates once usePathname() reflects the new route, so a click had no
+  // visible feedback until the page finished transitioning. Tracking the
+  // just-clicked href here gives an immediate pressed/loading state, which
+  // clears itself as soon as the route actually changes.
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   const filteredNavGroups = NAV_GROUPS.map((group) => ({
     ...group,
@@ -90,19 +102,29 @@ export function AdminSidebar() {
                       {group.items.map((item) => {
                         const Icon = item.icon;
                         const active = pathname === item.href;
+                        const isPendingItem = !active && pendingHref === item.href;
                         return (
                           <SidebarMenuSubItem key={item.href}>
                             <Link
                               href={item.href}
-                              className={`flex items-center gap-3 rounded-full px-3.5 py-2 transition-all duration-300 text-[13px] font-semibold group/item relative ${
+                              onClick={() => {
+                                if (!active) setPendingHref(item.href);
+                              }}
+                              className={`flex items-center gap-3 rounded-full px-3.5 py-2 transition-all duration-150 text-[13px] font-semibold group/item relative ${
                                 active
                                   ? "bg-gradient-to-r from-[#FE5300] to-[#ff7a3d] text-white shadow-lg shadow-orange-500/30 scale-[1.02]"
-                                  : "text-slate-600 dark:text-slate-400 hover:bg-[#87E87F]/10 hover:text-slate-900 dark:hover:text-white active:scale-[0.98]"
+                                  : isPendingItem
+                                  ? "bg-[#87E87F]/20 text-slate-900 dark:text-white scale-[0.98]"
+                                  : "text-slate-600 dark:text-slate-400 hover:bg-[#87E87F]/10 hover:text-slate-900 dark:hover:text-white active:scale-[0.98] active:duration-75"
                               }`}
                             >
-                              <Icon className={`h-4.5 w-4.5 shrink-0 transition-all duration-300 ${
-                                active ? "text-white scale-110" : "text-slate-400 group-hover/item:text-[#87E87F] group-hover/item:scale-110"
-                              }`} />
+                              {isPendingItem ? (
+                                <Loader2 className="h-4.5 w-4.5 shrink-0 animate-spin text-[#2d5a27] dark:text-[#87E87F]" />
+                              ) : (
+                                <Icon className={`h-4.5 w-4.5 shrink-0 transition-all duration-300 ${
+                                  active ? "text-white scale-110" : "text-slate-400 group-hover/item:text-[#87E87F] group-hover/item:scale-110"
+                                }`} />
+                              )}
                               <span className="group-data-[collapsible=icon]:hidden">
                                 {item.label}
                               </span>

@@ -417,9 +417,18 @@ function SlugClients({
                             value={`itinerary-${i}`}
                             className="relative border-b-0 group w-full"
                           >
-                            {/* SVG Curved Route Line (Only drawn if not last item) */}
+                            {/* Mobile: a plain straight dashed line reads much
+                                cleaner on a narrow screen than the alternating
+                                S-curve below, which needs the wide zig-zag
+                                swing to look intentional. Desktop (md:+) keeps
+                                the original curve completely untouched. */}
                             {!isLast && (
-                              <div className="absolute top-[28px] left-[28px] w-[40px] h-full z-0 pointer-events-none">
+                              <div className="md:hidden absolute left-[15px] top-[28px] bottom-0 w-0 border-l-2 border-dashed border-[#FE5300] z-0 pointer-events-none"></div>
+                            )}
+
+                            {/* SVG Curved Route Line (desktop only, unchanged; only drawn if not last item) */}
+                            {!isLast && (
+                              <div className="hidden md:block absolute top-[28px] left-[28px] w-[40px] h-full z-0 pointer-events-none">
                                 <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
                                   {isEven ? (
                                     <path d="M 0 0 C 0 50, 100 50, 100 100" stroke="#FE5300" strokeWidth="2.5" strokeDasharray="6 6" fill="none" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
@@ -430,14 +439,16 @@ function SlugClients({
                               </div>
                             )}
 
-                            {/* Node Marker */}
-                            <div className={`absolute top-[20px] ${isEven ? 'left-[20px]' : 'left-[60px]'} w-[16px] h-[16px] rounded-full bg-white border-[3px] border-[#FE5300] shadow-md z-20 flex items-center justify-center group-hover:scale-125 transition-all duration-300`}>
+                            {/* Node Marker: fixed single position on mobile (no
+                                alternating swing); desktop keeps the original
+                                alternating left-20/left-60 placement exactly. */}
+                            <div className={`absolute top-[20px] left-[8px] ${isEven ? 'md:left-[20px]' : 'md:left-[60px]'} w-[16px] h-[16px] rounded-full bg-white border-[3px] border-[#FE5300] shadow-md z-20 flex items-center justify-center group-hover:scale-125 transition-all duration-300`}>
                                {i === 0 && <div className="w-[6px] h-[6px] bg-green-500 rounded-full"></div>}
                                {isLast && i !== 0 && <div className="w-[6px] h-[6px] bg-red-500 rounded-full"></div>}
                             </div>
 
                             {/* Content Card */}
-                            <div className="ml-[90px] md:ml-[110px] relative z-30 pb-6 md:pb-8 pr-4 sm:pr-6 md:pr-8">
+                            <div className="ml-[36px] md:ml-[110px] relative z-30 pb-6 md:pb-8 pr-4 sm:pr-6 md:pr-8">
                               <div className="bg-white border border-gray-100/80 hover:border-[#FE5300]/30 shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-300">
                                 <AccordionTrigger
                                   className="text-sm font-semibold text-gray-800 hover:no-underline p-3 md:p-4 flex items-start transition-colors duration-200 focus-visible:ring-0 focus-visible:outline-none"
@@ -686,21 +697,24 @@ function SlugClients({
         <WhyChoose />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-between items-end bg-white md:hidden mb-13 py-2 px-4 border-b border-gray-400">
-        <CardHeader className="flex flex-col justify-between  ">
-          <p className="whitespace-nowrap">
-            Starting from{" "}
-            <span className="text-sm text-muted-foreground line-through">
-              ₹ {dicountedPrice}
-            </span>
-          </p>
-          <CardTitle className="text-3xl font-semibold tracking-tight text-[#FE5300] whitespace-nowrap">
-            ₹ {price.toLocaleString()}{" "}
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              per person
-            </span>
-          </CardTitle>
-        </CardHeader>
+      {/* right-20 (not right-0) leaves the bottom-right corner clear of the
+          site-wide floating "AI Help" chat launcher (FloatingButton.tsx,
+          fixed at bottom-[85px] right-4), which would otherwise sit on top
+          of the Book Now button now that this bar is actually visible above
+          the bottom nav. Styled as a flat "shelf" (matching MobileBottom's
+          own border-t, no extra shadow/rounding) so it reads as one
+          continuous footer with the nav below it, not a separate floating
+          card. */}
+      <div className="fixed bottom-[65px] left-0 right-20 z-50 flex items-center justify-between gap-2 bg-white md:hidden py-2.5 px-4 border-t border-gray-100">
+        <p className="leading-tight">
+          <span className="text-[11px] text-muted-foreground line-through mr-1">
+            ₹{dicountedPrice}
+          </span>
+          <span className="text-lg font-bold text-[#FE5300]">
+            ₹{price.toLocaleString()}
+          </span>
+          <span className="text-[11px] text-muted-foreground ml-1">/person</span>
+        </p>
 
         <Button
           onClick={() => {
@@ -712,8 +726,8 @@ function SlugClients({
               router.push(`./${pkg.slug}/${pkg._id}`);
             }
           }}
-          size={"lg"}
-          className=" bg-[#FE5300] hover:bg-[#FE5300] text-md"
+          size={"sm"}
+          className="bg-[#FE5300] hover:bg-[#FE5300] font-semibold shrink-0"
         >
           Book Now
         </Button>

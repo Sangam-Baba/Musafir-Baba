@@ -58,7 +58,35 @@ export default function VisaAtAGlance({ html }: { html: string }) {
   ];
 
   return (
-    <div className="relative flex flex-col items-center w-full mb-6">
+    <>
+      {/* Mobile: the two-column zig-zag/pillar design below needs md:+ width
+          to read cleanly, so mobile gets its own simple stacked-row list
+          instead of trying to reflow the same pillar/connector-pin math. */}
+      <div className="flex md:hidden flex-col gap-2 w-full mb-6">
+        {rows.map((row, index) => {
+          const theme = hoverThemes[index % hoverThemes.length];
+          return (
+            <div
+              key={index}
+              className={`flex items-center gap-3 w-full bg-gradient-to-b from-white to-gray-50/50 border border-gray-200/60 rounded-xl px-3 py-2.5 ${theme.border}`}
+            >
+              <div className={`w-8 h-8 rounded-full bg-emerald-50/50 border border-emerald-100/50 flex items-center justify-center shrink-0 text-emerald-500 [&>svg]:w-4 [&>svg]:h-4`}>
+                {getIconForLabel(row.label)}
+              </div>
+              <div className="flex flex-col justify-center overflow-hidden flex-1">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">
+                  {row.label}
+                </span>
+                <span className="text-[13px] font-black text-gray-800 leading-tight">
+                  {row.value}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="relative hidden md:flex flex-col items-center w-full mb-6">
       {/* Sleek Central Pillar */}
       <div className="absolute top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-gray-200 to-transparent left-1/2 -translate-x-1/2 z-0"></div>
 
@@ -109,6 +137,7 @@ export default function VisaAtAGlance({ html }: { html: string }) {
           );
         })}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
