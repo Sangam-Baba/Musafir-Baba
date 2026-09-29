@@ -13,7 +13,6 @@ interface SpeechChunk {
 }
 
 export default function TextToSpeech({ targetId }: TextToSpeechProps) {
-  const [mounted, setMounted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [speed, setSpeed] = useState<number>(1);
@@ -23,7 +22,6 @@ export default function TextToSpeech({ targetId }: TextToSpeechProps) {
   const activeMarkRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       synthRef.current = window.speechSynthesis;
     }
@@ -337,8 +335,12 @@ export default function TextToSpeech({ targetId }: TextToSpeechProps) {
     }
   };
 
-  if (!mounted) return null;
-
+  // Previously this returned null until a post-mount effect flipped a
+  // `mounted` flag, so the whole card (and its "Read More" placement below
+  // it) popped in ~1s+ after paint once JS hydrated -- a real, measured
+  // layout shift pushing everything below it down. Nothing in this JSX
+  // touches window/document directly (only the click handlers do, and those
+  // can't fire before hydration anyway), so it's safe to render immediately.
   return (
     <>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-gray-100 shadow-lg shadow-gray-200/50 rounded-2xl px-5 py-4 mb-8 w-full max-w-2xl select-none mx-auto sm:mx-0 TextToSpeech">

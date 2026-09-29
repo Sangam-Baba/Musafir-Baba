@@ -404,7 +404,7 @@ export default function QueryForm({
 
             {/* State and City — also full width in grid mode, same reasoning
                 as Phone above */}
-            <div className={`flex gap-3 ${isGrid ? "md:col-span-2" : ""}`}>
+            <div className={`flex flex-col sm:flex-row gap-3 ${isGrid ? "md:col-span-2" : ""}`}>
                <FormField
                   control={form.control}
                   name="state"
