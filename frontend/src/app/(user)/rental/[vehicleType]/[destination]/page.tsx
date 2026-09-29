@@ -50,9 +50,16 @@ export async function generateMetadata({ params }: { params: Promise<{ vehicleTy
 
   if (!destData) return { title: "Not Found" };
 
-  const url = destData.canonicalUrl 
-    ? `https://musafirbaba.com${destData.canonicalUrl}`
-    : `https://musafirbaba.com/rental/${destination}`;
+  // destData.canonicalUrl is a single admin-set field on the pickup
+  // destination itself (e.g. "Delhi"), shared across every vehicle type --
+  // it has no way to encode which vehicleType this specific page is for, so
+  // it can never be a correct canonical here (it was making /rental/car/delhi
+  // and /rental/traveller/delhi both canonicalize to the same /rental/delhi).
+  // This page always self-references its own real URL instead. Unaffected:
+  // every other route reading a canonicalUrl (blog/news/webpage/visa/the
+  // sibling rental[vehicleType] and rental[...]/[slug] pages) reads it from
+  // its own entity's own field, not this shared destination record.
+  const url = `https://musafirbaba.com/rental/${vehicleType}/${destination}`;
 
   return {
     title: destData.metaTitle || `${destData.title || destData.name} Rentals - MusafirBaba`,
