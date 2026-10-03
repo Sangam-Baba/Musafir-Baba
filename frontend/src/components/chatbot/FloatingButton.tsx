@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { MessageCircle, X, Bot } from "lucide-react";
 
 // Lazy load the ChatWidget so it doesn't block the main thread on page load.
@@ -15,6 +16,15 @@ export default function FloatingButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTeaser, setShowTeaser] = useState(false);
   const reappearTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Package detail pages (/holidays/[categorySlug]/[destination]/[packageSlug])
+  // render an extra sticky price/"Book Now" bar above the mobile bottom nav
+  // (see SlugClients.tsx, fixed bottom-[65px] md:hidden) that this button's
+  // default offset doesn't account for -- bump it up only on that exact
+  // route shape so every other page's position is untouched.
+  const pathname = usePathname();
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const hasStickyPriceBar = segments[0] === "holidays" && segments.length === 4;
 
   // Initial appearance after page load
   useEffect(() => {
@@ -78,7 +88,7 @@ export default function FloatingButton() {
       {!isOpen && showTeaser && (
         <div
           onClick={handleOpenChat}
-          className="fixed bottom-[145px] right-4 md:bottom-36 md:right-6 z-50 w-72 sm:w-80 bg-white/95 backdrop-blur-xl p-3.5 rounded-2xl shadow-[0_12px_35px_-8px_rgba(249,115,22,0.25)] border border-orange-100/80 cursor-pointer group hover:border-[#FE5300]/40 transition-all duration-300 animate-in fade-in slide-in-from-bottom-3"
+          className={`fixed ${hasStickyPriceBar ? "bottom-[205px]" : "bottom-[145px]"} right-4 md:bottom-36 md:right-6 z-50 w-72 sm:w-80 bg-white/95 backdrop-blur-xl p-3.5 rounded-2xl shadow-[0_12px_35px_-8px_rgba(249,115,22,0.25)] border border-orange-100/80 cursor-pointer group hover:border-[#FE5300]/40 transition-all duration-300 animate-in fade-in slide-in-from-bottom-3`}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -129,7 +139,7 @@ export default function FloatingButton() {
       {!isOpen && (
         <button
           onClick={handleOpenChat}
-          className="fixed bottom-[85px] right-4 md:bottom-24 md:right-6 z-50 p-3.5 md:p-4 bg-gradient-to-tr from-orange-500 to-amber-500 text-white rounded-full shadow-[0_10px_25px_-5px_rgba(249,115,22,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.6)] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group"
+          className={`fixed ${hasStickyPriceBar ? "bottom-[145px]" : "bottom-[85px]"} right-4 md:bottom-24 md:right-6 z-50 p-3.5 md:p-4 bg-gradient-to-tr from-orange-500 to-amber-500 text-white rounded-full shadow-[0_10px_25px_-5px_rgba(249,115,22,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(249,115,22,0.6)] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center group`}
           aria-label="Open Chat Assistant"
         >
           <MessageCircle size={26} className="group-hover:rotate-12 transition-transform duration-300" />

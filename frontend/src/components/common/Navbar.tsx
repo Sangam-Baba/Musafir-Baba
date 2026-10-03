@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -7,12 +8,95 @@ import { NAV_LINKS } from "@/config/navLinks";
 export function Navbar({
   onClose,
   variant = "light",
+  mobile = false,
 }: {
   onClose?: () => void;
   variant?: "light" | "dark";
+  // Touch screens have no hover, so the desktop group-hover dropdown below
+  // never reveals -- tapping the label just navigates away immediately.
+  // When true, renders an accordion-style tap-to-expand dropdown instead,
+  // only for the Sidebar's instance of this component (desktop instances
+  // never pass this, so their markup/behavior is untouched).
+  mobile?: boolean;
 }) {
   const pathname = usePathname();
   const isDark = variant === "dark";
+  const [openLabel, setOpenLabel] = useState<string | null>(null);
+
+  if (mobile) {
+    return (
+      <nav className="flex w-full">
+        <ul className="flex flex-col w-full">
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              pathname === link.href || pathname?.startsWith(`${link.href}/`);
+            const isOpen = openLabel === link.label;
+            return (
+              <li key={link.label} className="font-medium text-[15px]">
+                <div className="flex items-center justify-between">
+                  <Link
+                    onClick={onClose}
+                    href={link.href}
+                    className={`flex-1 py-2 transition-colors ${
+                      isActive ? "text-[#FE5300]" : "text-gray-800 hover:text-[#FE5300]"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                  {link.dropdown && (
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-label={`${isOpen ? "Collapse" : "Expand"} ${link.label} menu`}
+                      onClick={() => setOpenLabel(isOpen ? null : link.label)}
+                      className="p-2 -mr-2"
+                    >
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-200 opacity-70 ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  )}
+                </div>
+
+                {/* Dropdown: always in the DOM as real links, so it's
+                    crawlable and keyboard-usable without depending on JS */}
+                {link.dropdown && (
+                  <ul
+                    className={`${isOpen ? "block" : "hidden"} pl-3 pb-2 border-l border-gray-100 ml-1`}
+                  >
+                    {link.dropdown.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <li key={item.label}>
+                          <Link
+                            href={item.href}
+                            onClick={onClose}
+                            className="flex items-center gap-2.5 px-2 py-2 text-[13.5px] text-gray-700 hover:text-[#FE5300] transition-colors"
+                          >
+                            {item.emoji ? (
+                              <span className="text-[15px] leading-none flex-shrink-0" aria-hidden="true">
+                                {item.emoji}
+                              </span>
+                            ) : Icon ? (
+                              <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            ) : null}
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    );
+  }
 
   return (
     <nav className="flex lg:items-center w-full">

@@ -157,7 +157,7 @@ export default async function HomePage() {
           + top padding replaces the old h-[calc(100vh-130px)] trick, so the
           photo still runs full-bleed behind the nav while the actual content
           (badge/heading/search) clears it. */}
-      <section className="w-full px-6 md:px-14 lg:px-20 pt-20 md:pt-28 lg:pt-32 pb-3 md:pb-4 lg:pb-6 relative flex flex-col items-start justify-between h-screen min-h-[560px] overflow-hidden">
+      <section className="w-full px-6 md:px-14 lg:px-20 pt-20 md:pt-28 lg:pt-32 pb-3 md:pb-4 lg:pb-6 relative flex flex-col items-start justify-between min-h-screen overflow-visible md:h-screen md:overflow-hidden">
         <Image
           // src="/homebanner32.avif"
           src="/homebanner007.avif"

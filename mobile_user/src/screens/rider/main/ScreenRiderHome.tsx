@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image } from 'react-native';
+import { WebView } from 'react-native-webview';
 import React, { useState, useEffect, useRef, createElement } from 'react';
 import * as Location from 'expo-location';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -21,6 +22,8 @@ import {
   RotateCcw,
   Building2,
   Palmtree,
+  Bus,
+  TrainFront,
   Globe,
   FileCheck,
   ShieldCheck,
@@ -69,6 +72,12 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
   const setSearch = useRideStore((s) => s.setSearch);
   const setQuote = useRideStore((s) => s.setQuote);
+
+  // In-app browser for the Popular Services cards -- these link out to
+  // marketing pages on musafirbaba.com that don't have an in-app flow yet,
+  // so rather than leaving the app via Linking.openURL, show them inside a
+  // WebView frame the rider can close back into the app.
+  const [inAppBrowserUrl, setInAppBrowserUrl] = useState<string | null>(null);
 
   // Form State for Screen 31
   const [tripType, setTripType] = useState<'oneway' | 'roundway'>('oneway');
@@ -755,7 +764,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
               <View style={{ gap: 10, paddingTop: 8 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Popular Services</Text>
-                  <TouchableOpacity onPress={() => Linking.openURL('https://musafirbaba.com/')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity onPress={() => setInAppBrowserUrl('https://musafirbaba.com/')} style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF4500' }}>View All </Text>
                     <ChevronRight size={14} color="#FF4500" />
                   </TouchableOpacity>
@@ -764,11 +773,13 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 {/* Horizontal Scroll / Cards List matching design */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 2 }}>
                   {[
-                    { icon: Plane, label: 'Airport\nTransfer', bg: '#DCFCE7', iconColor: '#16A34A', action: () => Linking.openURL('https://musafirbaba.com/cab-rental') },
-                    { icon: Navigation, label: 'Outstation\nTrips', bg: '#FFEDD5', iconColor: '#EA580C', action: () => Linking.openURL('https://musafirbaba.com/outstation-taxi') },
-                    { icon: Clock, label: 'Hourly\nRental', bg: '#E0F2FE', iconColor: '#0284C7', action: () => Linking.openURL('https://musafirbaba.com/local-taxi-rental') },
-                    { icon: Building2, label: 'Corporate\nTravel', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => Linking.openURL('https://musafirbaba.com/corporate') },
-                    { icon: Palmtree, label: 'Tour\nPackages', bg: '#FEF3C7', iconColor: '#D97706', action: () => Linking.openURL('https://musafirbaba.com/holidays') },
+                    { icon: Plane, label: 'Airport\nTransfer', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
+                    { icon: Navigation, label: 'Outstation\nTrips', bg: '#FFEDD5', iconColor: '#EA580C', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
+                    { icon: Clock, label: 'Hourly\nRental', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
+                    { icon: Building2, label: 'Corporate\nTravel', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
+                    { icon: Palmtree, label: 'Tour\nPackages', bg: '#FEF3C7', iconColor: '#D97706', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
+                    { icon: Bus, label: 'Bus\nBooking', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.redbus.in/bus-tickets') },
+                    { icon: TrainFront, label: 'Train\nBooking', bg: '#DBEAFE', iconColor: '#2563EB', action: () => setInAppBrowserUrl('https://www.redbus.in/railways') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
@@ -1750,7 +1761,27 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
           </View>
         ) : null}
 
-        
+        {/* In-app browser for Popular Services cards (marketing pages that
+            don't have a dedicated in-app flow yet) */}
+        <Modal visible={!!inAppBrowserUrl} animationType="slide" onRequestClose={() => setInAppBrowserUrl(null)}>
+          <View style={{ flex: 1, paddingTop: 40 }}>
+            <TouchableOpacity onPress={() => setInAppBrowserUrl(null)} style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 6 }}>
+              <ArrowLeft size={18} color="#0F172A" />
+              <Text style={{ fontWeight: '700' }}>Close</Text>
+            </TouchableOpacity>
+            {inAppBrowserUrl && (
+              <WebView
+                source={{ uri: inAppBrowserUrl }}
+                startInLoadingState
+                renderLoading={() => (
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <ActivityIndicator size="large" color="#FF3B00" />
+                  </View>
+                )}
+              />
+            )}
+          </View>
+        </Modal>
 
       </View>
     </View>

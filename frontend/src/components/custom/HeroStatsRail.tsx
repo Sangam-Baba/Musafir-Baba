@@ -18,6 +18,7 @@ export default function HeroStatsRail() {
         flex md:flex-col gap-2 md:gap-2.5
         overflow-x-auto md:overflow-visible
         w-full md:w-auto
+        mb-4 md:mb-0
         md:absolute md:right-0 md:top-0
         relative z-20
         [-ms-overflow-style:none] [scrollbar-width:none]

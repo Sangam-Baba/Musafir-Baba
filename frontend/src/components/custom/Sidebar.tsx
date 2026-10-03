@@ -57,9 +57,12 @@ export default function Sidebar() {
         </div>
 
         <nav className="px-4 py-2">
-          <Navbar onClose={closeSidebar} />
+          <Navbar onClose={closeSidebar} mobile />
         </nav>
-        <Button className="mx-4 my-2 md:hidden bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300] text-white">
+        <Button
+          asChild
+          className="mx-4 my-2 md:hidden bg-gradient-to-r from-[#eb3b23] to-[#f8b914] hover:bg-[#FE5300] text-white"
+        >
           <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
             Pay Now
           </Link>
