@@ -12,4 +12,4 @@
 //
 // Mirrored on the backend at backend/src/config/features.js -- keep both in
 // sync when flipping this back on.
-export const FINANCIAL_FEATURES_ENABLED = false;
+export const FINANCIAL_FEATURES_ENABLED = true;

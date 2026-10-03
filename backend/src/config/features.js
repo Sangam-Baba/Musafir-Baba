@@ -11,4 +11,4 @@
 // Flip back to true together with the mobile flag once the Play Console
 // developer account is converted to an Organization account and the
 // wallet/bank UI is re-enabled.
-export const FINANCIAL_FEATURES_ENABLED = false;
+export const FINANCIAL_FEATURES_ENABLED = true;
