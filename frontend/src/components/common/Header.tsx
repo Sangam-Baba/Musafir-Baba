@@ -61,7 +61,7 @@ export default function Header() {
     >
       {overlay ? (
         /* ===== SINGLE-ROW TRANSPARENT NAV (homepage hero only) ===== */
-        <div className="w-full flex items-center justify-between px-4 md:px-10 py-3">
+        <div className="w-full flex items-center justify-start md:justify-between px-4 md:px-10 py-3">
           {/* Mobile menu */}
           <button
             aria-label="Open menu"
@@ -72,7 +72,7 @@ export default function Header() {
           </button>
 
           {/* LOGO */}
-          <div className="flex items-center">
+          <div className="flex items-center ml-2 md:ml-0">
             <Link href="/" className="block w-32 md:w-44">
               <Image
                 src={logo}
