@@ -120,10 +120,16 @@ export const createRidePayment = async (req, res) => {
     const riderAuth = await RiderAuth.findById(req.riderId);
 
     const txnid = `MBGO${Date.now()}`;
-    const amount = ride.totalAmount;
+    // PayU requires amount as a string with exactly 2 decimal places --
+    // ride.totalAmount is a plain Number (e.g. 7461), which PayU's own
+    // validation rejects before it even gets to hash verification.
+    const amount = Number(ride.totalAmount).toFixed(2);
     const productinfo = "MBGO Ride Booking";
     const firstname = riderProfile.fullName || "Rider";
-    const email = riderAuth?.email || "";
+    // Riders authenticate via phone/OTP and commonly have no email on file.
+    // PayU requires a syntactically valid email, so fall back to a
+    // synthetic one derived from their phone rather than sending "".
+    const email = riderAuth?.email || `${riderProfile.mobileNumber}@mbgo.in`;
     const phone = riderProfile.mobileNumber || "";
     const udf1 = String(ride._id);
     // Derived from the incoming request rather than the BACKEND_URL env var

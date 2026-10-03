@@ -75,6 +75,7 @@ export default function ScreenPaymentGateway({ onNavigate, onBack }: { onNavigat
   const [tripsTab, setTripsTab] = useState('completed'); // 'upcoming' | 'completed' | 'cancelled'
 
   const [checkoutHtml, setCheckoutHtml] = useState<string | null>(null);
+  const [checkoutBaseUrl, setCheckoutBaseUrl] = useState<string | null>(null);
   const [isStartingPayment, setIsStartingPayment] = useState(false);
 
   // Referenced only by the unreachable Screen 32 block bundled below (dead code, never rendered)
@@ -96,6 +97,7 @@ export default function ScreenPaymentGateway({ onNavigate, onBack }: { onNavigat
     setIsStartingPayment(true);
     try {
       const res = await initiateRidePayment(rideId);
+      setCheckoutBaseUrl(new URL(res.data.payuUrl).origin);
       setCheckoutHtml(buildPayUAutoSubmitHtml(res.data));
     } catch (error: any) {
       showToast(error?.response?.data?.message || 'Could not start payment, please try again');
@@ -973,7 +975,11 @@ export default function ScreenPaymentGateway({ onNavigate, onBack }: { onNavigat
             </TouchableOpacity>
             {checkoutHtml && (
               <WebView
-                source={{ html: checkoutHtml }}
+                // baseUrl anchors the auto-submitting form to a real https
+                // origin instead of about:blank/null -- without it, Android
+                // WebView can silently drop the POST navigation to PayU,
+                // leaving a blank screen with no error.
+                source={{ html: checkoutHtml, baseUrl: checkoutBaseUrl ?? undefined }}
                 onNavigationStateChange={handlePaymentWebViewNavigation}
                 startInLoadingState
                 renderLoading={() => (
