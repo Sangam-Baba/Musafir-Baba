@@ -14,6 +14,8 @@ import {
   Tag,
   Gift,
   Award,
+  ShieldCheck,
+  Lock,
   ChevronRight,
   ChevronDown,
   MapPin,
@@ -305,8 +307,31 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                 </View>
               </View>
 
+              {/* Why travel with MBGO? */}
+              <View style={{ gap: 10 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Why travel with MBGO?</Text>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  {[
+                    { icon: ShieldCheck, label: 'Verified\nPartners', bg: '#DCFCE7', iconColor: '#16A34A' },
+                    { icon: Award, label: 'Best Price\nGuarantee', bg: '#FFF5EF', iconColor: '#FF4500' },
+                    { icon: Headphones, label: '24x7\nSupport', bg: '#E0F2FE', iconColor: '#0284C7' },
+                    { icon: Lock, label: 'Safe & Secure\nRide', bg: '#F3E8FF', iconColor: '#7C3AED' },
+                  ].map((item, idx) => {
+                    const Icon = item.icon;
+                    return (
+                      <View key={idx} style={{ flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 14, padding: 8, alignItems: 'center', gap: 4 }}>
+                        <View style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: item.bg }}>
+                          <Icon size={16} color={item.iconColor} />
+                        </View>
+                        <Text style={{ fontSize: 9.5, fontWeight: '500', color: '#111827', textAlign: 'center', lineHeight: 12 }}>{item.label}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
               {/* Logout Button */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => onNavigate('login')}
                 style={{ width: '100%', height: 40, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FF5500', borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}
               >

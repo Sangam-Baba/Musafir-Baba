@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, useWindowDimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
 import React, { useState, useEffect, useRef, createElement } from 'react';
 import * as Location from 'expo-location';
@@ -23,6 +23,7 @@ import {
   Building2,
   Palmtree,
   Bus,
+  Hotel,
   TrainFront,
   Globe,
   FileCheck,
@@ -78,6 +79,11 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   // so rather than leaving the app via Linking.openURL, show them inside a
   // WebView frame the rider can close back into the app.
   const [inAppBrowserUrl, setInAppBrowserUrl] = useState<string | null>(null);
+  const { width: screenWidth } = useWindowDimensions();
+  const logoWidth = Math.min(220, Math.round(screenWidth * 0.5));
+  const logoHeight = Math.round((logoWidth * 72) / 220);
+  const bannerWidth = Math.min(175, Math.round(screenWidth * 0.42));
+  const bannerHeight = Math.round((bannerWidth * 100) / 175);
 
   // Form State for Screen 31
   const [tripType, setTripType] = useState<'oneway' | 'roundway'>('oneway');
@@ -351,7 +357,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
         
 
         {/* Scrollable Main Screen Content */}
-        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 84 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
           {/* ==========================================
               SCREEN 31: RIDER HOME & SEARCH (31.png)
@@ -367,7 +373,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Prominent 3x Large Brand Logo */}
                 <View style={{ alignItems: 'center' }}>
-                  <Image source={MBGO_LOGO} style={{ width: 220, height: 72 }} resizeMode="contain" />
+                  <Image source={MBGO_LOGO} style={{ width: logoWidth, height: logoHeight }} resizeMode="contain" />
                 </View>
 
                 <TouchableOpacity onPress={() => onNavigate('38')} style={{ padding: 4, position: 'relative' }}>
@@ -390,7 +396,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 <View style={{ flex: 1.2, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
                   <Image 
                     source={HOME_BANNER_IMAGE} 
-                    style={{ width: 175, height: 100, marginBottom: -4 }} 
+                    style={{ width: bannerWidth, height: bannerHeight, marginBottom: -4 }} 
                     resizeMode="contain" 
                   />
                 </View>
@@ -770,16 +776,16 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                   </TouchableOpacity>
                 </View>
 
+
                 {/* Horizontal Scroll / Cards List matching design */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 2 }}>
+                <View style={{ position: 'relative' }}>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
                   {[
-                    { icon: Plane, label: 'Airport\nTransfer', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
-                    { icon: Navigation, label: 'Outstation\nTrips', bg: '#FFEDD5', iconColor: '#EA580C', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
-                    { icon: Clock, label: 'Hourly\nRental', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
-                    { icon: Building2, label: 'Corporate\nTravel', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
-                    { icon: Palmtree, label: 'Tour\nPackages', bg: '#FEF3C7', iconColor: '#D97706', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
-                    { icon: Bus, label: 'Bus\nBooking', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.redbus.in/bus-tickets') },
-                    { icon: TrainFront, label: 'Train\nBooking', bg: '#DBEAFE', iconColor: '#2563EB', action: () => setInAppBrowserUrl('https://www.redbus.in/railways') },
+                    { icon: Palmtree, label: 'Tour', bg: '#FEF3C7', iconColor: '#D97706', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
+                    { icon: FileCheck, label: 'Visa', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/visa') },
+                    { icon: Bus, label: 'Bus', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.makemytrip.com/bus-tickets/') },
+                    { icon: Hotel, label: 'Hotel', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://www.makemytrip.com/hotels/') },
+                    { icon: Plane, label: 'Flight', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://www.makemytrip.com/flights/') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
@@ -794,8 +800,8 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           padding: 10,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: 78,
-                          height: 88,
+                          flex: 1,
+                          height: 96,
                           shadowColor: '#0F172A',
                           shadowOffset: { width: 0, height: 2 },
                           shadowOpacity: 0.02,
@@ -803,24 +809,29 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           elevation: 1,
                         }}
                       >
-                        <View style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: srv.bg, marginBottom: 6 }}>
-                          <Icon size={20} color={srv.iconColor} />
+                        <View style={{ width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center", backgroundColor: srv.bg, marginBottom: 6 }}>
+                          <Icon size={22} color={srv.iconColor} />
                         </View>
-                        <Text style={{ fontSize: 11, fontWeight: '500', color: '#111827', textAlign: 'center', lineHeight: 13 }}>{srv.label}</Text>
+                        <Text style={{ fontSize: 11, fontWeight: "600", color: "#111827", textAlign: "center", lineHeight: 13 }}>{srv.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
-                </ScrollView>
-              </View>
+                </View>
 
-              {/* Promotional Banner Card */}
+                </View>
+                </View>
+
+              {/* Promotional Banner Card -- temporarily hidden, adds unwanted
+                  scroll height on the home screen. Flip to `true` to restore;
+                  nothing below was changed. */}
+              {false && (
               <View style={{ backgroundColor: '#FDEDEA', borderWidth: 1, borderColor: '#FCD7C8', borderRadius: 16, minHeight: 115, justifyContent: 'center', marginTop: 4, position: 'relative', overflow: 'hidden', padding: 14 }}>
                 {/* Right Side Illustration - Soft Feathered Blend & Margin Crop */}
                 <View style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '62%', height: '100%', overflow: 'hidden', justifyContent: 'center', alignItems: 'flex-end' }}>
-                  <Image 
-                    source={SECOND_BANNER_IMAGE} 
-                    style={{ width: '110%', height: '100%', marginLeft: '-5%' }} 
-                    resizeMode="contain" 
+                  <Image
+                    source={SECOND_BANNER_IMAGE}
+                    style={{ width: '110%', height: '100%', marginLeft: '-5%' }}
+                    resizeMode="contain"
                   />
                   {/* Soft Feather Blur Overlay on Left Image Edge */}
                   <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 30, backgroundColor: '#FDEDEA', opacity: 0.75, zIndex: 1 }} />
@@ -832,7 +843,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                     Travel with comfort{'\n'}at the best prices
                   </Text>
                   <Text style={{ fontSize: 10, color: '#334155', fontWeight: '600' }}>Safe | Reliable | On-time</Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={() => onNavigate('32')}
                     style={{ backgroundColor: '#FF3B00', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start', marginTop: 4 }}
                   >
@@ -840,29 +851,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                   </TouchableOpacity>
                 </View>
               </View>
-
-              {/* Why Travel With MBGO? Section */}
-              <View style={{ gap: 10, paddingTop: 8 }}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Why travel with MBGO?</Text>
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  {[
-                    { icon: ShieldCheck, label: 'Verified\nPartners', bg: '#DCFCE7', iconColor: '#16A34A' },
-                    { icon: Award, label: 'Best Price\nGuarantee', bg: '#FFF5EF', iconColor: '#FF4500' },
-                    { icon: Headphones, label: '24x7\nSupport', bg: '#E0F2FE', iconColor: '#0284C7' },
-                    { icon: Lock, label: 'Safe & Secure\nRide', bg: '#F3E8FF', iconColor: '#7C3AED' },
-                  ].map((item, idx) => {
-                    const Icon = item.icon;
-                    return (
-                      <View key={idx} style={{ flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 14, padding: 8, alignItems: 'center', gap: 4 }}>
-                        <View style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: item.bg }}>
-                          <Icon size={16} color={item.iconColor} />
-                        </View>
-                        <Text style={{ fontSize: 9.5, fontWeight: '500', color: '#111827', textAlign: 'center', lineHeight: 12 }}>{item.label}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
+              )}
 
             </View>
           )}
