@@ -11,6 +11,7 @@ import { createTokenRequest } from "../../services/notification/transport.js";
 import PartnerWalletTransaction from "../../models/partner/PartnerWalletTransaction.js";
 import { cityMatches, isWithin24h, isDetailsRevealed, getRideDateTime, REVEAL_WINDOW_HOURS } from "../../controllers/ride.controller.js";
 import mongoose from "mongoose";
+import { getRidePartnerEarning } from "../../services/rideFare.service.js";
 
 // @desc    Toggle partner's active duty status (online/offline)
 // @route   PATCH /api/partner/status
@@ -379,8 +380,9 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     if (status === "COMPLETED") {
-      const commission = Math.round((ride.totalAmount * ride.platformCommissionPercent) / 100);
-      const netEarning = ride.totalAmount - commission;
+      // Same formula as before for existing rides; admin-priced rides use the
+      // commission/payout fixed at booking (see getRidePartnerEarning).
+      const { netEarning } = getRidePartnerEarning(ride);
       // Lands in the pending bucket, not the spendable balance -- only an
       // admin manually releasing it (see admin wallet routes) moves it into
       // walletBalance. No automatic timer; the 24h message below is
@@ -458,19 +460,20 @@ export const getEarnings = async (req, res) => {
       updatedAt: { $gte: since },
     });
 
+    // For rides priced the original way these are exactly the previous
+    // numbers (platformAndTaxes is 0); admin-priced rides also separate out
+    // the platform charges/taxes that aren't partner money.
+    const earnings = completedRides.map((r) => getRidePartnerEarning(r));
     const grossTripFare = completedRides.reduce((sum, r) => sum + r.totalAmount, 0);
-    const platformCommission = completedRides.reduce(
-      (sum, r) => sum + Math.round((r.totalAmount * r.platformCommissionPercent) / 100),
-      0
-    );
-    const totalNetEarnings = grossTripFare - platformCommission;
+    const platformCommission = earnings.reduce((sum, e) => sum + e.commission, 0);
+    const taxes = earnings.reduce((sum, e) => sum + e.platformAndTaxes, 0);
+    const totalNetEarnings = grossTripFare - platformCommission - taxes;
 
     const dayTotals = new Map();
-    for (const ride of completedRides) {
+    completedRides.forEach((ride, i) => {
       const day = ride.updatedAt.toLocaleDateString("en-IN", { weekday: "short" });
-      const commission = Math.round((ride.totalAmount * ride.platformCommissionPercent) / 100);
-      dayTotals.set(day, (dayTotals.get(day) || 0) + (ride.totalAmount - commission));
-    }
+      dayTotals.set(day, (dayTotals.get(day) || 0) + earnings[i].netEarning);
+    });
     const chartData = Array.from(dayTotals.entries()).map(([day, amount]) => ({ day, amount }));
 
     return res.status(200).json({
@@ -480,7 +483,7 @@ export const getEarnings = async (req, res) => {
         totalNetEarnings,
         grossTripFare,
         platformCommission,
-        taxes: 0,
+        taxes,
         growthPercent: 0,
         chartData,
         recentPayouts: [],

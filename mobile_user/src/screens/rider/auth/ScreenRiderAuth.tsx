@@ -544,6 +544,11 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 <ArrowRight size={16} color="#FFFFFF" strokeWidth={2.5} />
               </TouchableOpacity>
 
+              {/* Divider + Google Sign In -- temporarily hidden (Google
+                  sign-in is just a "coming soon" stub, not wired up yet).
+                  Flip to `true` to restore; nothing else changed. */}
+              {false && (
+              <>
               {/* Divider: OR */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 2 }}>
                 <View style={{ flex: 1, height: 1, backgroundColor: '#F1F5F9' }} />
@@ -569,6 +574,8 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 <GoogleIcon size={16} />
                 <Text style={{ color: '#0F172A', fontWeight: '700', fontSize: 13, marginLeft: 8 }}>Continue with Google</Text>
               </TouchableOpacity>
+              </>
+              )}
 
               {/* Register Switch Prompt */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>

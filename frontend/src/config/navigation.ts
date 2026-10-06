@@ -149,6 +149,12 @@ export const NAV_GROUPS = [
         permission: "partner-verification", // reuse permission or use a generic one
       },
       {
+        label: "Ride Pricing",
+        href: "/admin/ride-pricing",
+        icon: Tags,
+        permission: "ride-pricing", // must match the backend's adminRidePricing.routes.js permission
+      },
+      {
         label: "Rider Verification",
         href: "/admin/rider-verification",
         icon: UserRoundCheck,

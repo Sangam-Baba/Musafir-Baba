@@ -37,6 +37,10 @@ const rideBookingSchema = new mongoose.Schema(
     returnDate: { type: String }, // only set when tripType is "ROUND_TRIP"
     returnTime: { type: String },
     vehicleCategory: { type: String, required: true }, // e.g. "Sedan", "SUV"
+    // Rate-card vehicle name the rider picked (e.g. "Rumion / Ertiga"); only
+    // set on admin-priced rides. vehicleCategory stays the partner category
+    // ("SUV") so partner matching/dispatch is unchanged.
+    vehicleType: { type: String },
     passengerCount: { type: Number, default: 1 },
     distanceKm: { type: Number, required: true },
     fareBreakdown: {
@@ -44,8 +48,22 @@ const rideBookingSchema = new mongoose.Schema(
       driverAllowance: { type: Number, default: 0 },
       tollAndTaxes: { type: Number, default: 0 },
       discount: { type: Number, default: 0 },
+      // Below: only set on admin-priced rides (pricingVersion 2).
+      nightAllowance: { type: Number },
+      platformCharges: { type: Number },
+      taxes: { type: Number },
+      billableKm: { type: Number },
+      ratePerKm: { type: Number },
+      days: { type: Number },
     },
     totalAmount: { type: Number, required: true },
+    // Absent on rides priced the original way. 2 = admin rate card
+    // (services/rideFare.service.js); those rides also carry the exact
+    // commission and partner payout fixed at booking time.
+    pricingVersion: { type: Number },
+    commissionAmount: { type: Number },
+    partnerPayout: { type: Number },
+    payableOnTripNote: { type: String },
     paymentMethod: {
       type: String,
       enum: ["PayU", "Cash"],

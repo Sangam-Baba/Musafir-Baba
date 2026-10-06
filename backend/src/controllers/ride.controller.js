@@ -6,6 +6,8 @@ import PartnerProfile from "../models/partner/PartnerProfile.js";
 import { PartnerSettings } from "../models/partner/PartnerSettings.js";
 import { getRouteDistance, searchAddressSuggestions, reverseGeocode } from "../services/geo.service.js";
 import { notifyUser } from "../services/notification/notificationService.js";
+import { RidePricingConfig, RIDE_PRICING_CONFIG_KEY } from "../models/RidePricingConfig.js";
+import { calculateRideFare, PRICING_VERSION } from "../services/rideFare.service.js";
 
 const FLAT_DRIVER_ALLOWANCE = 100;
 const DEFAULT_COMMISSION_PERCENT = 15;
@@ -169,6 +171,83 @@ async function computeCategoryOffers(pickupAddress, dropAddress, distanceKm) {
   return Array.from(offersByCategory.values());
 }
 
+// ---- Admin rate-card pricing (pricingVersion 2) ----
+// Used only while the admin pricing switch is ON (RidePricingConfig.enabled).
+// While it's OFF, getRideQuote/createRide take the original
+// computeCategoryOffers path above, unchanged.
+
+// The admin rate card, or null when admin pricing is switched off / not set up.
+export async function getActivePricingConfig() {
+  return RidePricingConfig.findOne({ key: RIDE_PRICING_CONFIG_KEY, enabled: true }).lean();
+}
+
+// How many active partner vehicles of each partner category serve this pickup
+// city -- same matching rules as computeCategoryOffers. Informational only
+// (eligibleCount); never affects the price.
+async function countEligibleVehiclesByCategory(pickupAddress) {
+  const vehicles = await PartnerVehicle.find({ status: "Active", isDeleted: false }).lean();
+  if (!vehicles.length) return new Map();
+
+  const partnerIds = [...new Set(vehicles.map((v) => String(v.partnerId)))];
+  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds } }).lean();
+  const profileById = new Map(profiles.map((p) => [String(p._id), p]));
+
+  const authIds = profiles.map((p) => String(p.authId));
+  const settingsList = authIds.length ? await PartnerSettings.find({ authId: { $in: authIds } }).lean() : [];
+  const settingsByAuthId = new Map(settingsList.map((s) => [String(s.authId), s]));
+
+  const counts = new Map();
+  for (const vehicle of vehicles) {
+    const profile = profileById.get(String(vehicle.partnerId));
+    const settings = profile && settingsByAuthId.get(String(profile.authId));
+    const vehicleConfig = settings && (settings.vehicleConfigs || []).find(
+      (c) => String(c.vehicleId) === String(vehicle._id)
+    );
+    if (!vehicleConfig) continue;
+    if (!(vehicleConfig.locations || []).some((loc) => cityMatches(pickupAddress, loc.city))) continue;
+    counts.set(vehicle.category, (counts.get(vehicle.category) || 0) + 1);
+  }
+  return counts;
+}
+
+// One offer per active rate-card vehicle type. Keeps the existing offer shape
+// (category / vehicleName / seatingCapacity / baseFare / driverAllowance /
+// totalAmount / eligibleCount) so current clients keep working, and adds the
+// full breakdown under `fare`. `category` is the rate-card name the rider
+// picks and sends back to createRide.
+async function computeRateCardOffers(config, pickupAddress, trip) {
+  const eligibleCounts = await countEligibleVehiclesByCategory(pickupAddress);
+
+  return (config.vehicleTypes || [])
+    .filter((vehicle) => vehicle.isActive)
+    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    .map((vehicle) => {
+      const fare = calculateRideFare({ rate: vehicle, settings: config, trip });
+      return {
+        category: vehicle.name,
+        vehicleName: `${vehicle.capacityLabel || vehicle.seatingCapacity} seater • AC`,
+        seatingCapacity: vehicle.seatingCapacity,
+        baseFare: fare.vehicleFare,
+        driverAllowance: fare.driverAllowance,
+        totalAmount: fare.totalAmount,
+        eligibleCount: eligibleCounts.get(vehicle.partnerCategory) || 0,
+        partnerCategory: vehicle.partnerCategory,
+        pricingVersion: PRICING_VERSION,
+        fare,
+      };
+    });
+}
+
+function getTripFromRequest(body, routeKm) {
+  return {
+    tripType: body.tripType === "ROUND_TRIP" ? "ROUND_TRIP" : "ONE_WAY",
+    routeKm,
+    rideDate: body.rideDate,
+    rideTime: body.rideTime,
+    returnDate: body.returnDate,
+  };
+}
+
 // @route   GET /api/ride/geocode/search?q=...
 // @desc    Free-text address search (autocomplete) for the pick-up/drop fields.
 export const searchLocations = async (req, res) => {
@@ -214,6 +293,25 @@ export const getRideQuote = async (req, res) => {
     }
 
     const route = await getRouteDistance(pickup, drop);
+
+    const pricingConfig = await getActivePricingConfig();
+    if (pricingConfig) {
+      const trip = getTripFromRequest(req.body, route.distanceKm);
+      const rateCardOffers = await computeRateCardOffers(pricingConfig, pickup.address, trip);
+      return res.status(200).json({
+        success: true,
+        data: {
+          distanceKm: route.distanceKm,
+          durationMin: route.durationMin,
+          offers: rateCardOffers,
+          pricingVersion: PRICING_VERSION,
+          tripType: trip.tripType,
+          days: rateCardOffers[0]?.fare.days ?? 1,
+          payableOnTripNote: pricingConfig.payableOnTripNote,
+        },
+      });
+    }
+
     const offers = await computeCategoryOffers(pickup.address, drop.address, route.distanceKm);
 
     return res.status(200).json({
@@ -253,6 +351,62 @@ export const createRide = async (req, res) => {
     }
 
     const route = await getRouteDistance(pickup, drop);
+
+    const pricingConfig = await getActivePricingConfig();
+    if (pricingConfig) {
+      // Re-priced server-side from the rate card -- never trusts a client amount.
+      const trip = getTripFromRequest(req.body, route.distanceKm);
+      const rateCardOffers = await computeRateCardOffers(pricingConfig, pickup.address, trip);
+      const rateCardOffer = rateCardOffers.find((o) => o.category === vehicleCategory);
+      if (!rateCardOffer) {
+        return res.status(400).json({ success: false, message: "This vehicle type is not available right now. Please search again." });
+      }
+      const { fare } = rateCardOffer;
+
+      const ride = await RideBooking.create({
+        rider: riderProfile._id,
+        pickup: { address: pickup.address, lat: route.pickupCoords.lat, lng: route.pickupCoords.lng },
+        drop: { address: drop.address, lat: route.dropCoords.lat, lng: route.dropCoords.lng },
+        rideDate,
+        rideTime,
+        tripType: isRoundTrip ? "ROUND_TRIP" : "ONE_WAY",
+        ...(isRoundTrip ? { returnDate, returnTime } : {}),
+        // Partner category drives dispatch; the rate-card name is kept for display.
+        vehicleCategory: rateCardOffer.partnerCategory,
+        vehicleType: rateCardOffer.category,
+        passengerCount: passengerCount || 1,
+        distanceKm: route.distanceKm,
+        fareBreakdown: {
+          baseFare: fare.vehicleFare,
+          driverAllowance: fare.driverAllowance,
+          tollAndTaxes: 0,
+          discount: 0,
+          nightAllowance: fare.nightAllowance,
+          platformCharges: fare.platformCharges,
+          taxes: fare.taxes,
+          billableKm: fare.billableKm,
+          ratePerKm: fare.ratePerKm,
+          days: fare.days,
+        },
+        totalAmount: fare.totalAmount,
+        platformCommissionPercent: Number(pricingConfig.commissionPercent) || 0,
+        pricingVersion: PRICING_VERSION,
+        commissionAmount: fare.commission,
+        partnerPayout: fare.partnerPayout,
+        payableOnTripNote: pricingConfig.payableOnTripNote,
+        tripStartOtp: String(Math.floor(1000 + Math.random() * 9000)),
+        statusHistory: [{ status: "PAYMENT_PENDING" }],
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          rideId: ride._id,
+          totalAmount: ride.totalAmount,
+        },
+      });
+    }
+
     const offers = await computeCategoryOffers(pickup.address, drop.address, route.distanceKm);
     const offer = offers.find((o) => o.category === vehicleCategory);
 

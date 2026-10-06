@@ -1,7 +1,11 @@
-import { Text, View, TouchableOpacity, Image, ScrollView, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { Text, View, TouchableOpacity, Image, ScrollView, Modal, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { WebView } from 'react-native-webview';
+import { ArrowLeft as ArrowLeftIcon } from 'lucide-react-native';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { useNotificationStore } from '../../../store/useNotificationStore';
+import { useRideStore } from '../../../store/useRideStore';
 import { getRiderProfile, updateRiderProfile, uploadRiderProfilePicture } from '../../../api/riderProfile.api';
 import React, { useEffect, useState } from 'react';
 import {
@@ -14,6 +18,8 @@ import {
   Tag,
   Gift,
   Award,
+  ShieldCheck,
+  Lock,
   ChevronRight,
   ChevronDown,
   MapPin,
@@ -42,6 +48,18 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react-native';
+
+const PROFILE_CARD = {
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#EEF2F6',
+  borderRadius: 16,
+  padding: 14,
+  shadowColor: '#0F172A',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.04,
+  shadowRadius: 8,
+};
 
 export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (screen: string) => void }) {
   // Navigation active screen selector: '36' | '37' | '38' | '39' | '40'
@@ -114,6 +132,43 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
     }
   };
 
+  // In-app browser for policy pages hosted on the website (same pattern as
+  // the Home screen's Popular Services cards).
+  const [inAppBrowserUrl, setInAppBrowserUrl] = useState<string | null>(null);
+
+  // Real unread count for the bell dot (previously always shown).
+  const unreadNotificationCount = useNotificationStore((state) => state.unreadCount);
+  const fetchNotificationsForBadge = useNotificationStore((state) => state.fetchNotifications);
+  useEffect(() => {
+    fetchNotificationsForBadge();
+  }, []);
+
+  // Logout previously only switched to the login screen and never cleared the
+  // stored session, so the rider was signed straight back in on next launch.
+  // useAuthStore.logout() revokes + clears the session; App.tsx then routes
+  // to login automatically once isAuthenticated becomes false. The ride draft
+  // is reset too so the next rider on this device doesn't see this one's search.
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const performLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      useRideStore.getState().reset();
+      await useAuthStore.getState().logout();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+  const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      if (typeof window === 'undefined' || window.confirm('Log out of MBGO?')) performLogout();
+      return;
+    }
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log out', style: 'destructive', onPress: performLogout },
+    ]);
+  };
+
   // Interactive state for FAQs in Help & Support (Screen 37)
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const toggleFaq = (index: number) => {
@@ -134,7 +189,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
     <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       
       {/* Main Mobile Frame */}
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', position: 'relative' }}>
+      <View style={{ flex: 1, backgroundColor: '#F8FAFC', position: 'relative' }}>
         
         
 
@@ -145,229 +200,239 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
               SCREEN 36: PROFILE (AMIT SHARMA) - (36.png)
              ========================================== */}
           {activeScreen === '36' && (
-            <View style={{ padding: 12, gap: 10 }}>
-              
+            <View style={{ padding: 12, gap: 12 }}>
+
               {/* Header */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-                <View style={{ width: 40 }} />
-                <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E293B' }}>Profile</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <TouchableOpacity onPress={() => onNavigate('37')} style={{ alignItems: 'center' }}>
-                    <Headphones size={18} color="#475569" />
-                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B', marginTop: 1 }}>Support</Text>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: '#0F172A', letterSpacing: -0.3 }}>Profile</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <TouchableOpacity onPress={() => onNavigate('37')} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+                    <Headphones size={18} color="#0F172A" strokeWidth={2} />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => onNavigate('38')} style={{ alignItems: 'center', position: 'relative' }}>
-                    <Bell size={18} color="#475569" />
-                    <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#FF5500', position: 'absolute', top: 0, right: 2, borderWidth: 1, borderColor: '#FFFFFF' }} />
-                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B', marginTop: 1 }}>Notifications</Text>
+                  <TouchableOpacity onPress={() => onNavigate('38')} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}>
+                    <Bell size={18} color="#0F172A" strokeWidth={2} />
+                    {unreadNotificationCount > 0 ? (
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4500', position: 'absolute', top: 8, right: 9, borderWidth: 1.5, borderColor: '#FFFFFF' }} />
+                    ) : null}
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* User Identity Card */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <TouchableOpacity onPress={handlePickAvatar} disabled={isUploadingAvatar} style={{ position: 'relative' }}>
-                      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#E2E8F0', borderWidth: 2, borderColor: '#FFFFFF', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-                        {profile?.profilePicture ? (
-                          <Image source={{ uri: profile.profilePicture }}
-                            accessibilityLabel={profile?.fullName || 'Rider'}
-                            style={{ width: '100%', height: '100%' }} />
-                        ) : (
-                          <User size={26} color="#94A3B8" />
-                        )}
-                        {isUploadingAvatar && (
-                          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15,23,42,0.4)', alignItems: 'center', justifyContent: 'center' }}>
-                            <ActivityIndicator size="small" color="#FFFFFF" />
-                          </View>
-                        )}
+              <View style={{ ...PROFILE_CARD, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                <TouchableOpacity onPress={handlePickAvatar} disabled={isUploadingAvatar} style={{ position: 'relative' }}>
+                  <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#F1F5F9', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+                    {profile?.profilePicture ? (
+                      <Image source={{ uri: profile.profilePicture }}
+                        accessibilityLabel={profile?.fullName || 'Rider'}
+                        style={{ width: '100%', height: '100%' }} />
+                    ) : (
+                      <User size={28} color="#94A3B8" strokeWidth={1.75} />
+                    )}
+                    {isUploadingAvatar && (
+                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15,23,42,0.4)', alignItems: 'center', justifyContent: 'center' }}>
+                        <ActivityIndicator size="small" color="#FFFFFF" />
                       </View>
-                      <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: '#475569', alignItems: 'center', justifyContent: 'center', position: 'absolute', bottom: 0, right: 0, borderWidth: 1, borderColor: '#FFFFFF' }}>
-                        <Camera size={10} color="#FFFFFF" />
-                      </View>
-                    </TouchableOpacity>
+                    )}
+                  </View>
+                  <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', position: 'absolute', bottom: -2, right: -2, borderWidth: 2, borderColor: '#FFFFFF' }}>
+                    <Camera size={11} color="#FFFFFF" strokeWidth={2} />
+                  </View>
+                </TouchableOpacity>
 
-                    <View style={{ gap: 1 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '800', color: '#1E293B' }}>{profile?.fullName || 'Rider'}</Text>
-                      {!!profile?.mobileNumber && (
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B' }}>+91 {profile.mobileNumber}</Text>
-                      )}
-                      {!!profile?.email && (
-                        <Text style={{ fontSize: 10, fontWeight: '500', color: '#64748B' }}>{profile.email}</Text>
-                      )}
-                      {profile?.isVerified && (
-                        <View style={{ paddingTop: 2 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start' }}>
-                            <CheckCircle2 size={11} color="#059669" />
-                            <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#047857' }}>Verified</Text>
-                          </View>
-                        </View>
-                      )}
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontSize: 17, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }} numberOfLines={1}>{profile?.fullName || 'Rider'}</Text>
+                  {!!profile?.mobileNumber && (
+                    <Text style={{ fontSize: 12.5, fontWeight: '500', color: '#475569' }}>+91 {profile.mobileNumber}</Text>
+                  )}
+                  {!!profile?.email && (
+                    <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B' }} numberOfLines={1}>{profile.email}</Text>
+                  )}
+                  {profile?.isVerified && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#ECFDF5', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, alignSelf: 'flex-start', marginTop: 4 }}>
+                      <CheckCircle2 size={12} color="#059669" strokeWidth={2} />
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: '#047857' }}>Verified</Text>
+                    </View>
+                  )}
+                </View>
+
+                <TouchableOpacity onPress={openEditDrawer} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FFF5EF' }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF4500' }}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Wallet & Coupons */}
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity onPress={() => showToast("MB Wallet is coming soon")} activeOpacity={0.85} style={{ ...PROFILE_CARD, flex: 1, gap: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
+                      <Wallet size={17} color="#FF4500" strokeWidth={2} />
+                    </View>
+                    <View style={{ backgroundColor: '#FF4500', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
+                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#FFFFFF' }}>Coming soon</Text>
                     </View>
                   </View>
-
-                  <TouchableOpacity onPress={openEditDrawer} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingTop: 2 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF5500' }}>Edit Profile </Text>
-                    <ChevronRight size={13} color="#FF5500" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Wallet & Coupons Card Row */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 10, flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => showToast("Opening Wallet...")} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 8 }}>
-                  <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
-                    <Wallet size={18} color="#FF5500" />
+                  <View>
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>MB Wallet</Text>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A', marginTop: 1 }}>₹{(profile?.walletBalance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B' }}>MB Wallet</Text>
-                    <Text style={{ fontSize: 12, fontWeight: '800', color: '#FF5500' }}>₹{(profile?.walletBalance ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                  </View>
-                  <ChevronRight size={14} color="#94A3B8" />
                 </TouchableOpacity>
-
-                <View style={{ width: 1, height: 28, backgroundColor: '#F1F5F9' }} />
-
-                <TouchableOpacity onPress={() => showToast("Viewing Available Coupons...")} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 10 }}>
-                  <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' }}>
-                    <Tag size={18} color="#10B981" />
+                <TouchableOpacity onPress={() => showToast("Coupons are coming soon")} activeOpacity={0.85} style={{ ...PROFILE_CARD, flex: 1, gap: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' }}>
+                      <Tag size={17} color="#059669" strokeWidth={2} />
+                    </View>
+                    <View style={{ backgroundColor: '#10B981', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
+                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#FFFFFF' }}>Coming soon</Text>
+                    </View>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B' }}>My Coupons</Text>
-                    <Text style={{ fontSize: 12, fontWeight: '800', color: '#10B981' }}>3 Available</Text>
+                  <View>
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>Coupons</Text>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#0F172A', marginTop: 3 }}>View offers</Text>
                   </View>
-                  <ChevronRight size={14} color="#94A3B8" />
                 </TouchableOpacity>
               </View>
 
-              {/* ACCOUNT Section */}
-              <View style={{ gap: 4, paddingTop: 2 }}>
-                {/* ACCOUNT heading commented out for now
-                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, paddingLeft: 2 }}>ACCOUNT</Text>
-                */}
-                {/* ACCOUNT suboptions commented out
-                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, overflow: 'hidden' }}>
-                  {[
-                    { icon: User, label: 'Personal Information' },
-                    { icon: MapPin, label: 'Saved Addresses', action: () => onNavigate('39') },
-                    { icon: CreditCard, label: 'Payment Methods' },
-                    { icon: FileText, label: 'My Documents' },
-                    { icon: Gift, label: 'Refer & Earn' },
-                    { icon: Settings, label: 'Settings' },
-                  ].map((item, idx, arr) => {
-                    const Icon = item.icon;
-                    return (
-                      <TouchableOpacity key={idx} 
-                        onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
-                        style={{ paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: idx === arr.length - 1 ? 0 : 1, borderBottomColor: '#F8FAFC' }}
-                      >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <Icon size={16} color="#475569" />
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#1E293B' }}>{item.label}</Text>
+              {/* Menu */}
+              <View style={{ ...PROFILE_CARD, padding: 0, overflow: 'hidden' }}>
+                {[
+                  { icon: FileText, label: 'Documents', tint: '#2563EB', bg: '#EFF6FF', action: () => onNavigate('41') },
+                  { icon: Car, label: 'Trip Preferences', tint: '#EA580C', bg: '#FFF5EF', comingSoon: true, action: () => showToast('Trip Preferences is coming soon') },
+                  { icon: Headphones, label: 'Help & Support', tint: '#059669', bg: '#ECFDF5', action: () => onNavigate('37') },
+                  { icon: Shield, label: 'Terms & Conditions', tint: '#475569', bg: '#F1F5F9', action: () => setInAppBrowserUrl('https://musafirbaba.com/mbgo/terms-and-conditions') },
+                  { icon: Lock, label: 'Privacy Policy', tint: '#475569', bg: '#F1F5F9', action: () => setInAppBrowserUrl('https://musafirbaba.com/mbgo/privacy-policies') },
+                  { icon: HelpCircle, label: 'About MBGO', tint: '#7C3AED', bg: '#F5F3FF' },
+                ].map((item, idx, arr) => {
+                  const Icon = item.icon;
+                  return (
+                    <TouchableOpacity key={idx}
+                      onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
+                      style={{ paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: idx === arr.length - 1 ? 0 : 1, borderBottomColor: '#F1F5F9' }}
+                    >
+                      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: item.bg, alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon size={16} color={item.tint} strokeWidth={2} />
+                      </View>
+                      <Text style={{ flex: 1, fontSize: 14, fontWeight: '500', color: '#0F172A' }}>{item.label}</Text>
+                      {'comingSoon' in item && item.comingSoon && (
+                        <View style={{ backgroundColor: item.tint, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
+                          <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#FFFFFF' }}>Coming soon</Text>
                         </View>
-                        <ChevronRight size={14} color="#94A3B8" />
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-                */}
+                      )}
+                      <ChevronRight size={16} color="#CBD5E1" strokeWidth={2} />
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
-              {/* OTHERS Section */}
-              <View style={{ gap: 4, paddingTop: 2 }}>
-                {/* OTHERS heading commented out for now
-                <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, paddingLeft: 2 }}>OTHERS</Text>
-                */}
-                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, overflow: 'hidden' }}>
+              {/* Why travel with MBGO? */}
+              <View style={{ gap: 10, paddingTop: 4 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Why travel with MBGO?</Text>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
                   {[
-                    { icon: FileText, label: 'Documents', action: () => onNavigate('41') },
-                    { icon: Car, label: 'Trip Preferences' },
-                    { icon: Headphones, label: 'Help & Support', action: () => onNavigate('37') },
-                    { icon: Shield, label: 'Terms & Conditions' },
-                    { icon: Shield, label: 'Privacy Policy' },
-                    { icon: HelpCircle, label: 'About MBGO' },
-                  ].map((item, idx, arr) => {
+                    { icon: ShieldCheck, label: 'Verified\npartners', bg: '#ECFDF5', iconColor: '#059669' },
+                    { icon: Award, label: 'Best price\nguarantee', bg: '#FFF5EF', iconColor: '#FF4500' },
+                    { icon: Headphones, label: '24x7\nsupport', bg: '#EFF6FF', iconColor: '#2563EB' },
+                    { icon: Lock, label: 'Safe &\nsecure', bg: '#F5F3FF', iconColor: '#7C3AED' },
+                  ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <TouchableOpacity key={idx} 
-                        onPress={item.action || (() => showToast(`Opening ${item.label}...`))}
-                        style={{ paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: idx === arr.length - 1 ? 0 : 1, borderBottomColor: '#F8FAFC' }}
-                      >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <Icon size={16} color="#475569" />
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#1E293B' }}>{item.label}</Text>
+                      <View key={idx} style={{ flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 4, alignItems: 'center', gap: 8 }}>
+                        <View style={{ width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: item.bg }}>
+                          <Icon size={17} color={item.iconColor} strokeWidth={2} />
                         </View>
-                        <ChevronRight size={14} color="#94A3B8" />
-                      </TouchableOpacity>
+                        <Text style={{ fontSize: 11, fontWeight: '500', color: '#334155', textAlign: 'center', lineHeight: 14 }}>{item.label}</Text>
+                      </View>
                     );
                   })}
                 </View>
               </View>
 
               {/* Logout Button */}
-              <TouchableOpacity 
-                onPress={() => onNavigate('login')}
-                style={{ width: '100%', height: 40, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FF5500', borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}
+              <TouchableOpacity
+                onPress={handleLogout}
+                disabled={isLoggingOut}
+                style={{ width: '100%', height: 46, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA', borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}
               >
-                <LogOut size={16} color="#FF5500" />
-                <Text style={{ fontSize: 12, fontWeight: '800', color: '#FF5500' }}>Logout</Text>
+                {isLoggingOut ? <ActivityIndicator size="small" color="#DC2626" /> : <LogOut size={16} color="#DC2626" strokeWidth={2} />}
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#DC2626' }}>{isLoggingOut ? 'Logging out...' : 'Log out'}</Text>
               </TouchableOpacity>
+
+              {/* In-app browser for Terms & Conditions / Privacy Policy */}
+              <Modal visible={!!inAppBrowserUrl} animationType="slide" onRequestClose={() => setInAppBrowserUrl(null)}>
+                <View style={{ flex: 1, paddingTop: 40, backgroundColor: '#FFFFFF' }}>
+                  <TouchableOpacity onPress={() => setInAppBrowserUrl(null)} style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 6 }}>
+                    <ArrowLeftIcon size={18} color="#0F172A" />
+                    <Text style={{ fontWeight: '700' }}>Close</Text>
+                  </TouchableOpacity>
+                  {inAppBrowserUrl && (
+                    <WebView
+                      source={{ uri: inAppBrowserUrl }}
+                      startInLoadingState
+                      renderLoading={() => (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                          <ActivityIndicator size="large" color="#FF3B00" />
+                        </View>
+                      )}
+                    />
+                  )}
+                </View>
+              </Modal>
 
               {/* Edit Profile Bottom Drawer */}
               <Modal visible={showEditDrawer} transparent animationType="fade" onRequestClose={() => setShowEditDrawer(false)}>
                 <TouchableOpacity
-                  style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}
+                  style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'flex-end' }}
                   onPress={() => setShowEditDrawer(false)}
                   activeOpacity={1}
                 >
-                  <TouchableOpacity activeOpacity={1} onPress={() => {}} style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, gap: 12 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '900', color: '#0F172A' }}>Edit Profile</Text>
+                  <TouchableOpacity activeOpacity={1} onPress={() => {}} style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 24, gap: 14 }}>
+                    <View style={{ alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: '#E2E8F0' }} />
+                    <Text style={{ fontSize: 17, fontWeight: '600', color: '#0F172A' }}>Edit profile</Text>
 
-                    <View style={{ gap: 4 }}>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>Full Name</Text>
+                    <View style={{ gap: 6 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>Full name</Text>
                       <TextInput
                         value={editFullName}
                         onChangeText={setEditFullName}
                         placeholder="Your full name"
                         placeholderTextColor="#94A3B8"
-                        style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 12, height: 42, fontSize: 13, color: '#0F172A', backgroundColor: '#F8FAFC' }}
+                        style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 14, height: 46, fontSize: 14, color: '#0F172A', backgroundColor: '#F8FAFC' }}
                       />
                     </View>
 
-                    <View style={{ gap: 4 }}>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>Mobile Number</Text>
+                    <View style={{ gap: 6 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>Mobile number</Text>
                       <TextInput
                         value={editMobileNumber}
                         onChangeText={setEditMobileNumber}
                         placeholder="Your mobile number"
                         placeholderTextColor="#94A3B8"
                         keyboardType="phone-pad"
-                        style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 12, height: 42, fontSize: 13, color: '#0F172A', backgroundColor: '#F8FAFC' }}
+                        style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 14, height: 46, fontSize: 14, color: '#0F172A', backgroundColor: '#F8FAFC' }}
                       />
                     </View>
 
-                    <View style={{ gap: 4 }}>
-                      <Text style={{ fontSize: 11, fontWeight: '700', color: '#475569' }}>Email</Text>
-                      <View style={{ borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 12, height: 42, justifyContent: 'center', backgroundColor: '#F1F5F9' }}>
-                        <Text style={{ fontSize: 13, color: '#94A3B8' }}>{profile?.email || '-'}</Text>
+                    <View style={{ gap: 6 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>Email</Text>
+                      <View style={{ borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 12, paddingHorizontal: 14, height: 46, justifyContent: 'center', backgroundColor: '#F1F5F9' }}>
+                        <Text style={{ fontSize: 14, color: '#94A3B8' }}>{profile?.email || '-'}</Text>
                       </View>
                     </View>
 
                     <TouchableOpacity
                       onPress={handleSaveProfile}
                       disabled={isSavingProfile}
-                      style={{ width: '100%', height: 42, backgroundColor: '#FF5500', borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
+                      style={{ width: '100%', height: 48, backgroundColor: '#FF4500', borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
                     >
                       {isSavingProfile ? (
                         <ActivityIndicator size="small" color="#FFFFFF" />
                       ) : (
-                        <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>Save Changes</Text>
+                        <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 15 }}>Save changes</Text>
                       )}
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => setShowEditDrawer(false)} style={{ alignItems: 'center', paddingVertical: 4 }}>
-                      <Text style={{ fontSize: 12, fontWeight: '700', color: '#64748B' }}>Cancel</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '500', color: '#64748B' }}>Cancel</Text>
                     </TouchableOpacity>
                   </TouchableOpacity>
                 </TouchableOpacity>

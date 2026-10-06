@@ -64,7 +64,7 @@ export default function ScreenHelpSupport({ onNavigate, onBack }: { onNavigate: 
     <View className="flex-1 bg-slate-900 selection:bg-orange-500 selection:text-white">
       
       {/* Main Mobile Frame */}
-      <View className="flex-1 bg-[#FAFAFA] relative">
+      <View className="flex-1 bg-[#F8FAFC] relative">
         
         
 
@@ -231,79 +231,68 @@ export default function ScreenHelpSupport({ onNavigate, onBack }: { onNavigate: 
               SCREEN 37: HELP & SUPPORT - (37.png)
              ========================================== */}
           {activeScreen === '37' && (
-            <View className="p-4 space-y-4 animate-in fade-in duration-200">
-              
+            <View style={{ padding: 12, gap: 14 }}>
+
               {/* Header */}
-              <View className="flex flex-row items-center justify-between pt-1 pb-1">
-                <TouchableOpacity onPress={() => (onBack ? onBack() : onNavigate('36'))} className="p-1">
-                  <ChevronRight size={20} color="#0F172A" style={{ transform: [{ rotate: '180deg' }] }} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+                <TouchableOpacity
+                  onPress={() => (onBack ? onBack() : onNavigate('36'))}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <ChevronRight size={18} color="#0F172A" strokeWidth={2} style={{ transform: [{ rotate: '180deg' }] }} />
                 </TouchableOpacity>
-                <Text className="text-base font-bold text-slate-900">Help & Support</Text>
-                <TouchableOpacity onPress={() => showToast("Opening 24x7 Hotline...")} className="flex flex-col items-center">
-                  <Headphones size={18} color="#0F172A" />
-                  <Text className="text-[8.5px] text-slate-500 mt-0.5">Support</Text>
-                </TouchableOpacity>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }}>Help & support</Text>
+                <View style={{ width: 36 }} />
               </View>
 
-              {/* Support Agent Banner */}
-              <View className="bg-[#FFF8F2] border border-orange-100 rounded-2xl p-3 shadow-2xs">
-                <View className="flex flex-row items-center">
-                  {/* Agent Graphic */}
-                  <View className="w-16 h-16 relative shrink-0 justify-center items-center">
-                    <View className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
-                      <Image 
-                        source={{ uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" }} 
-                        className="w-full h-full" 
-                      />
-                    </View>
-                    <View className="absolute top-0 right-0 bg-white px-1.5 py-0.5 rounded-full shadow-2xs border border-orange-100">
-                      <Text className="text-[#FF3B00] text-[8px] font-bold">Hello!</Text>
-                    </View>
+              {/* Contact card */}
+              <View style={{ backgroundColor: '#FFF5EF', borderRadius: 18, padding: 16, gap: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                    <Headphones size={22} color="#FF4500" strokeWidth={1.75} />
                   </View>
-
-                  <View className="flex-1 pl-2 space-y-1">
-                    <Text className="text-sm font-bold text-slate-900 leading-tight">We're here to help you!</Text>
-                    <Text className="text-[9px] text-slate-500 leading-snug">Our support team is available 24x7 to assist you.</Text>
-                    
-                    <View className="flex flex-row gap-2 pt-1">
-                      <TouchableOpacity onPress={() => showToast("Dialing Support...")} className="bg-[#FF3B00] px-2.5 py-1.5 rounded-lg flex-1 flex flex-row items-center justify-center gap-1 active:opacity-90">
-                        <Phone size={11} color="#FFFFFF" />
-                        <Text className="text-white text-[9px] font-semibold">Call Support</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => showToast("Starting Live Chat...")} className="bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg flex-1 flex flex-row items-center justify-center gap-1 active:opacity-90">
-                        <MessageSquare size={11} color="#475569" />
-                        <Text className="text-slate-700 text-[9px] font-semibold">Chat with Us</Text>
-                      </TouchableOpacity>
-                    </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A' }}>How can we help?</Text>
+                    <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', marginTop: 2 }}>Our support team is available 24x7.</Text>
                   </View>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <TouchableOpacity onPress={() => showToast("Dialing Support...")} activeOpacity={0.85} style={{ flex: 1, height: 44, borderRadius: 12, backgroundColor: '#FF4500', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <Phone size={15} color="#FFFFFF" strokeWidth={2} />
+                    <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#FFFFFF' }}>Call us</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => showToast("Starting Live Chat...")} activeOpacity={0.85} style={{ flex: 1, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FED7C3', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <MessageSquare size={15} color="#0F172A" strokeWidth={2} />
+                    <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#0F172A' }}>Chat with us</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
               {/* Quick Help Grid */}
-              <View className="space-y-2">
-                <Text className="text-xs font-bold text-slate-900">Quick Help</Text>
-                <View className="bg-white border border-slate-100 rounded-2xl p-3 shadow-2xs flex flex-row flex-wrap justify-between gap-y-3">
+              <View style={{ gap: 10 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Browse topics</Text>
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 6, flexDirection: 'row', flexWrap: 'wrap', rowGap: 16 }}>
                   {[
-                    { icon: Package, label: 'My Bookings', desc: 'View your trips', color: 'bg-orange-50 text-[#FF3B00]' },
-                    { icon: Wallet, label: 'Payments', desc: 'Payment related issues', color: 'bg-blue-50 text-blue-600' },
-                    { icon: Car, label: 'Ride & Driver', desc: 'Issues with driver or trip', color: 'bg-emerald-50 text-emerald-600' },
-                    { icon: MapPin, label: 'Locations', desc: 'Pick-up, drop & route issues', color: 'bg-purple-50 text-purple-600' },
-                    { icon: Tag, label: 'Coupons & Offers', desc: 'Coupons not working?', color: 'bg-amber-50 text-amber-600' },
-                    { icon: FileText, label: 'Invoices & Bills', desc: 'Download or view invoices', color: 'bg-pink-50 text-pink-600' },
-                    { icon: RotateCcw, label: 'Refunds', desc: 'Refund status & related issues', color: 'bg-cyan-50 text-cyan-600' },
-                    { icon: MoreHorizontal, label: 'Others', desc: 'Other queries and issues', color: 'bg-slate-100 text-slate-600' },
+                    { icon: Package, label: 'My bookings', tint: '#EA580C', bg: '#FFF5EF', action: () => onNavigate('35') },
+                    { icon: Wallet, label: 'Payments', tint: '#2563EB', bg: '#EFF6FF' },
+                    { icon: Car, label: 'Ride & driver', tint: '#059669', bg: '#ECFDF5' },
+                    { icon: MapPin, label: 'Locations', tint: '#7C3AED', bg: '#F5F3FF' },
+                    { icon: Tag, label: 'Offers', tint: '#D97706', bg: '#FFFBEB' },
+                    { icon: FileText, label: 'Invoices', tint: '#DB2777', bg: '#FDF2F8' },
+                    { icon: RotateCcw, label: 'Refunds', tint: '#0891B2', bg: '#ECFEFF' },
+                    { icon: MoreHorizontal, label: 'Others', tint: '#475569', bg: '#F1F5F9' },
                   ].map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <TouchableOpacity key={idx} 
-                        onPress={() => showToast(`Opening Help topic: ${item.label}...`)}
-                        className="w-[23%] flex flex-col items-center text-center space-y-0.5"
+                      <TouchableOpacity key={idx}
+                        onPress={item.action || (() => showToast(`Opening Help topic: ${item.label}...`))}
+                        style={{ width: '25%', alignItems: 'center', gap: 8 }}
                       >
-                        <View className={`w-8 h-8 rounded-full flex items-center justify-center ${item.color} mb-0.5`}>
-                          <Icon size={15} />
+                        <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: item.bg, alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon size={18} color={item.tint} strokeWidth={2} />
                         </View>
-                        <Text className="text-[9px] font-semibold text-slate-900 text-center leading-tight">{item.label}</Text>
-                        <Text className="text-[7px] text-slate-400 text-center leading-tight">{item.desc}</Text>
+                        <Text style={{ fontSize: 11.5, fontWeight: '500', color: '#334155', textAlign: 'center' }}>{item.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -311,33 +300,28 @@ export default function ScreenHelpSupport({ onNavigate, onBack }: { onNavigate: 
               </View>
 
               {/* Common Queries Accordion */}
-              <View className="space-y-2">
-                <Text className="text-xs font-bold text-slate-900">Common Queries</Text>
-                <View className="bg-white border border-slate-100 rounded-2xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
+              <View style={{ gap: 10 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Frequently asked</Text>
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, overflow: 'hidden' }}>
                   {[
-                    { icon: Clock, iconBg: 'bg-orange-50 text-[#FF3B00]', q: 'How can I book a ride?', a: 'Enter your pick-up and drop locations, choose date and time, select vehicle type, and tap Search Cabs to proceed.' },
-                    { icon: CreditCard, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'What payment methods are available?', a: 'We accept UPI, Credit/Debit Cards, Net Banking, Wallets (Paytm, PhonePe), and Pay Later via Simpl.' },
-                    { icon: Car, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'How can I change / cancel my booking?', a: 'Go to My Trips section, select your upcoming booking and tap Edit or Cancel Ride.' },
-                    { icon: Shield, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'Is it safe to travel with MBGO?', a: 'Yes! All drivers undergo criminal & background checks, and all rides feature live GPS safety tracking.' },
-                    { icon: Gift, iconBg: 'bg-[#FFF0EB] text-[#FF5500]', q: 'How does MBGO Refer & Earn work?', a: 'Share your referral link with friends. When they complete their first ride, you earn bonus wallet cash.' },
-                  ].map((faq, idx) => {
-                    const FaqIcon = faq.icon;
+                    { q: 'How do I book a ride?', a: 'Enter your pick-up and drop locations, choose the date and time, tap Search Cabs, pick a vehicle and pay to confirm.' },
+                    { q: 'What payment methods are available?', a: 'You can pay securely through PayU using UPI, debit/credit cards, net banking or wallets.' },
+                    { q: 'How can I change or cancel my booking?', a: 'Contact our support team with your Booking ID (shown in My Trips) and we will help you change or cancel it.' },
+                    { q: 'When will I get driver details?', a: 'Driver and vehicle details are shared once a partner is assigned, and no earlier than 24 hours before your trip.' },
+                    { q: 'Are tolls and parking included?', a: 'Fuel and driver charges are included in your fare. Tolls, parking, state taxes and permits are paid on the trip.' },
+                  ].map((faq, idx, arr) => {
+                    const isOpen = openFaq === idx;
                     return (
-                      <View key={idx} className="p-2.5">
-                        <TouchableOpacity 
+                      <View key={idx} style={{ borderBottomWidth: idx === arr.length - 1 ? 0 : 1, borderBottomColor: '#F1F5F9' }}>
+                        <TouchableOpacity
                           onPress={() => toggleFaq(idx)}
-                          className="w-full flex flex-row items-center justify-between"
+                          style={{ paddingHorizontal: 14, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}
                         >
-                          <View className="flex flex-row items-center gap-2 flex-1 pr-2">
-                            <View className={`w-5 h-5 rounded-full flex items-center justify-center ${faq.iconBg}`}>
-                              <FaqIcon size={11} />
-                            </View>
-                            <Text className="text-[11px] font-medium text-slate-800 flex-1">{faq.q}</Text>
-                          </View>
-                          <ChevronDown size={13} color="#94A3B8" style={{ transform: [{ rotate: openFaq === idx ? '180deg' : '0deg' }] }} />
+                          <Text style={{ flex: 1, fontSize: 13.5, fontWeight: '500', color: '#0F172A' }}>{faq.q}</Text>
+                          <ChevronDown size={16} color="#94A3B8" strokeWidth={2} style={{ transform: [{ rotate: isOpen ? '180deg' : '0deg' }] }} />
                         </TouchableOpacity>
-                        {openFaq === idx && (
-                          <Text className="text-[10px] text-slate-500 leading-relaxed pl-7 pt-1.5 mt-1 border-t border-slate-50">
+                        {isOpen && (
+                          <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', lineHeight: 19, paddingHorizontal: 14, paddingBottom: 14, marginTop: -4 }}>
                             {faq.a}
                           </Text>
                         )}
@@ -347,33 +331,33 @@ export default function ScreenHelpSupport({ onNavigate, onBack }: { onNavigate: 
                 </View>
               </View>
 
-              {/* Need More Help Section */}
-              <View className="space-y-2">
-                <Text className="text-xs font-bold text-slate-900">Need more help?</Text>
-                
-                <TouchableOpacity onPress={() => showToast("Opening Ticket Submission Form...")}
-                  className="bg-white border border-slate-100 rounded-xl p-2.5 flex flex-row items-center justify-between shadow-2xs"
-                >
-                  <View className="flex flex-row items-center gap-2">
-                    <View className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-                      <Mail size={14} color="#2563EB" />
+              {/* Need More Help */}
+              <View style={{ gap: 10 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Still need help?</Text>
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, overflow: 'hidden' }}>
+                  <TouchableOpacity onPress={() => showToast("Opening Ticket Submission Form...")}
+                    style={{ paddingHorizontal: 14, paddingVertical: 13, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}
+                  >
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center' }}>
+                      <Mail size={16} color="#2563EB" strokeWidth={2} />
                     </View>
-                    <View>
-                      <Text className="text-[11px] font-semibold text-slate-900">Submit a Request</Text>
-                      <Text className="text-[8.5px] text-slate-400">We will get back to you via email</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '500', color: '#0F172A' }}>Submit a request</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B', marginTop: 1 }}>We'll reply by email</Text>
                     </View>
-                  </View>
-                  <ChevronRight size={13} color="#94A3B8" />
-                </TouchableOpacity>
-
-                <View className="bg-[#F4F8FF] border border-blue-100 rounded-xl p-2 flex flex-row items-center justify-between">
-                  <View className="flex flex-row items-center gap-1.5 flex-1 pr-2">
-                    <AlertCircle size={13} color="#2563EB" />
-                    <Text className="text-[9px] text-blue-900 flex-1">Your feedback helps us improve our service.</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => showToast("Opening Feedback Dialog...")} className="bg-white border border-blue-400 px-2 py-0.5 rounded-lg flex flex-row items-center gap-0.5">
-                    <Text className="text-[9px] font-medium text-blue-600">Give Feedback</Text>
-                    <ChevronRight size={9} color="#2563EB" />
+                    <ChevronRight size={16} color="#CBD5E1" strokeWidth={2} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => showToast("Opening Feedback Dialog...")}
+                    style={{ paddingHorizontal: 14, paddingVertical: 13, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+                  >
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#F5F3FF', alignItems: 'center', justifyContent: 'center' }}>
+                      <Heart size={16} color="#7C3AED" strokeWidth={2} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '500', color: '#0F172A' }}>Give feedback</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B', marginTop: 1 }}>Help us improve MBGO</Text>
+                    </View>
+                    <ChevronRight size={16} color="#CBD5E1" strokeWidth={2} />
                   </TouchableOpacity>
                 </View>
               </View>

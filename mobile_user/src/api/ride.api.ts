@@ -24,13 +24,41 @@ export interface RideOffer {
   driverAllowance: number;
   totalAmount: number;
   eligibleCount: number;
+  // Only present when the backend prices from the admin rate card.
+  pricingVersion?: number;
+  partnerCategory?: string;
+  fare?: RideFareBreakdown;
+}
+
+export interface RideFareBreakdown {
+  tripType: 'ONE_WAY' | 'ROUND_TRIP';
+  actualKm: number;
+  billableKm: number;
+  days: number;
+  nights: number;
+  ratePerKm: number;
+  vehicleFare: number;
+  driverAllowance: number;
+  nightAllowance: number;
+  platformCharges: number;
+  taxes: number;
+  totalAmount: number;
 }
 
 export interface RideQuote {
   distanceKm: number;
   durationMin: number;
   offers: RideOffer[];
+  // Only present when the backend prices from the admin rate card.
+  pricingVersion?: number;
+  tripType?: 'ONE_WAY' | 'ROUND_TRIP';
+  days?: number;
+  payableOnTripNote?: string;
 }
+
+// True when an offer carries the admin rate-card breakdown.
+export const isRateCardOffer = (offer?: RideOffer | null): offer is RideOffer & { fare: RideFareBreakdown } =>
+  !!offer && offer.pricingVersion === 2 && !!offer.fare;
 
 interface LocationPayload {
   address: string;
@@ -41,6 +69,12 @@ interface LocationPayload {
 export const getRideQuote = (payload: {
   pickup: LocationPayload;
   drop: LocationPayload;
+  // Optional trip details -- used by the admin rate card (round trips are
+  // priced by days). Ignored by the backend's original pricing.
+  tripType?: 'ONE_WAY' | 'ROUND_TRIP';
+  rideDate?: string;
+  rideTime?: string;
+  returnDate?: string;
 }) => apiClient.post<{ success: boolean; data: RideQuote }>('/ride/quote', payload);
 
 export const createRide = (payload: {

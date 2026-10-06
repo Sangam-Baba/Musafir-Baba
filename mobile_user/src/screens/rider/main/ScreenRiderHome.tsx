@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, useWindowDimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
 import React, { useState, useEffect, useRef, createElement } from 'react';
 import * as Location from 'expo-location';
@@ -23,6 +23,7 @@ import {
   Building2,
   Palmtree,
   Bus,
+  Hotel,
   TrainFront,
   Globe,
   FileCheck,
@@ -66,6 +67,34 @@ import {
 import { getRideQuote, searchLocations, reverseGeocode, LocationSuggestion } from '../../../api/ride.api';
 import { useRideStore } from '../../../store/useRideStore';
 
+// ---- Search form styling (presentation only) ----
+const FORM_LABEL = { fontSize: 11, fontWeight: '500' as const, color: '#94A3B8', marginBottom: 3 };
+const FORM_VALUE = { fontSize: 14, fontWeight: '500' as const, color: '#0F172A' };
+const FORM_TILE = {
+  flex: 1,
+  backgroundColor: '#F8FAFC',
+  borderWidth: 1,
+  borderColor: '#EEF2F6',
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  paddingVertical: 9,
+};
+// Style for the web-only <input type="date|time"> elements.
+const webPickerInputStyle = (hasValue: boolean) => ({
+  flex: 1,
+  width: '100%',
+  minWidth: 0,
+  padding: 0,
+  border: 'none',
+  outline: 'none',
+  background: 'transparent',
+  fontSize: 14,
+  fontWeight: '500',
+  color: hasValue ? '#0F172A' : '#94A3B8',
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+});
+
 export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: string) => void }) {
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
   const activeScreen: string = '31';
@@ -78,11 +107,22 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   // so rather than leaving the app via Linking.openURL, show them inside a
   // WebView frame the rider can close back into the app.
   const [inAppBrowserUrl, setInAppBrowserUrl] = useState<string | null>(null);
+  const { width: screenWidth } = useWindowDimensions();
+  const logoWidth = Math.min(220, Math.round(screenWidth * 0.5));
+  const logoHeight = Math.round((logoWidth * 72) / 220);
+  const bannerWidth = Math.min(175, Math.round(screenWidth * 0.42));
+  const bannerHeight = Math.round((bannerWidth * 100) / 175);
 
   // Form State for Screen 31
-  const [tripType, setTripType] = useState<'oneway' | 'roundway'>('oneway');
-  const [pickup, setPickup] = useState('New Delhi, Delhi');
-  const [drop, setDrop] = useState('Jaipur, Rajasthan');
+  // Pre-filled from the last search in the ride store (if any), so coming
+  // back here via "Edit" on the vehicle screen keeps what the rider entered
+  // instead of resetting to the defaults. The store only holds a search
+  // after a successful "Search Cabs", so a fresh app start is unchanged.
+  const [draft] = useState(() => useRideStore.getState());
+  const hasDraft = !!draft.pickup;
+  const [tripType, setTripType] = useState<'oneway' | 'roundway'>(hasDraft && draft.tripType === 'ROUND_TRIP' ? 'roundway' : 'oneway');
+  const [pickup, setPickup] = useState(hasDraft ? draft.pickup : 'New Delhi, Delhi');
+  const [drop, setDrop] = useState(hasDraft ? draft.drop : 'Jaipur, Rajasthan');
   // Coordinates from the selected autocomplete suggestion (or GPS), so the
   // backend can skip re-geocoding the address text -- forward-geocoding a
   // long reverse-geocoded display string (e.g. "Municipal Corporation,
@@ -90,15 +130,15 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   // which was causing "Could not resolve pickup/drop location" failures.
   // Cleared whenever the user free-types so we don't send stale coords for
   // a manually-edited address.
-  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [dropCoords, setDropCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(hasDraft ? draft.pickupCoords : null);
+  const [dropCoords, setDropCoords] = useState<{ lat: number; lng: number } | null>(hasDraft ? draft.dropCoords : null);
+  const [date, setDate] = useState(hasDraft ? draft.rideDate : '');
+  const [time, setTime] = useState(hasDraft ? draft.rideTime : '');
   // Return date/time only apply (and are required) for a Round Trip -- see
   // the "One Way" / "Round Trip" toggle below, which previously changed
   // color but didn't actually do anything.
-  const [returnDate, setReturnDate] = useState('');
-  const [returnTime, setReturnTime] = useState('');
+  const [returnDate, setReturnDate] = useState(hasDraft ? draft.returnDate : '');
+  const [returnTime, setReturnTime] = useState(hasDraft ? draft.returnTime : '');
   const [vehicleType, setVehicleType] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -109,7 +149,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   const [showReturnTimePicker, setShowReturnTimePicker] = useState(false);
   const [showVehiclePicker, setShowVehiclePicker] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [passengerCount, setPassengerCount] = useState(1);
+  const [passengerCount, setPassengerCount] = useState(hasDraft ? draft.passengerCount : 1);
 
   const VEHICLE_CATEGORIES = [
     { category: 'Hatchback', label: 'Hatchback (Swift, i10 or similar)' },
@@ -199,6 +239,9 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   // form (Vehicle Type, Search Cabs button, etc.) up/down on every
   // keystroke and made typing feel janky.
   const [pickupFieldHeight, setPickupFieldHeight] = useState(0);
+  // Display-only: while a location field isn't being edited, show its full
+  // address wrapped (an input is single-line and cuts long addresses off).
+  const [editingLocation, setEditingLocation] = useState<'pickup' | 'drop' | null>(null);
   const [dropFieldHeight, setDropFieldHeight] = useState(0);
 
   useEffect(() => {
@@ -288,6 +331,10 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
       const res = await getRideQuote({
         pickup: { address: pickup, ...(pickupCoords || {}) },
         drop: { address: drop, ...(dropCoords || {}) },
+        tripType: tripType === 'roundway' ? 'ROUND_TRIP' : 'ONE_WAY',
+        rideDate: date,
+        rideTime: time,
+        ...(tripType === 'roundway' ? { returnDate } : {}),
       });
       if (!res.data.data.offers.length) {
         showToast('No vehicles currently serve this route');
@@ -351,7 +398,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
         
 
         {/* Scrollable Main Screen Content */}
-        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 84 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
           {/* ==========================================
               SCREEN 31: RIDER HOME & SEARCH (31.png)
@@ -367,7 +414,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Prominent 3x Large Brand Logo */}
                 <View style={{ alignItems: 'center' }}>
-                  <Image source={MBGO_LOGO} style={{ width: 220, height: 72 }} resizeMode="contain" />
+                  <Image source={MBGO_LOGO} style={{ width: logoWidth, height: logoHeight }} resizeMode="contain" />
                 </View>
 
                 <TouchableOpacity onPress={() => onNavigate('38')} style={{ padding: 4, position: 'relative' }}>
@@ -390,147 +437,169 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 <View style={{ flex: 1.2, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
                   <Image 
                     source={HOME_BANNER_IMAGE} 
-                    style={{ width: 175, height: 100, marginBottom: -4 }} 
+                    style={{ width: bannerWidth, height: bannerHeight, marginBottom: -4 }} 
                     resizeMode="contain" 
                   />
                 </View>
               </View>
 
               {/* Main Booking Search Card */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 14, gap: 12, position: 'relative', zIndex: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 }}>
-                
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 20, padding: 16, gap: 14, position: 'relative', zIndex: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 3 }}>
+
                 {/* Trip Type Selector Tab */}
                 {/* LOGIC PRESERVED - DO NOT CHANGE setTripType */}
-                <View style={{ flexDirection: 'row', backgroundColor: '#F8FAFC', padding: 4, borderRadius: 24, borderWidth: 1, borderColor: '#F1F5F9' }}>
+                <View style={{ flexDirection: 'row', backgroundColor: '#F1F5F9', padding: 4, borderRadius: 12 }}>
                   <TouchableOpacity
                     onPress={() => setTripType('oneway')}
-                    style={{ flex: 1, paddingVertical: 8, borderRadius: 20, backgroundColor: tripType === 'oneway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: tripType === 'oneway' ? '#000' : 'transparent', shadowOpacity: 0.05, shadowRadius: 3, elevation: tripType === 'oneway' ? 1 : 0 }}
+                    style={{ flex: 1, height: 36, borderRadius: 9, backgroundColor: tripType === 'oneway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: tripType === 'oneway' ? 0.08 : 0, shadowRadius: 3, elevation: tripType === 'oneway' ? 1 : 0 }}
                   >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: tripType === 'oneway' ? '#FF4500' : '#6B7280' }}>One Way</Text>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: tripType === 'oneway' ? '#FF4500' : '#64748B' }}>One Way</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => setTripType('roundway')}
-                    style={{ flex: 1, paddingVertical: 8, borderRadius: 20, backgroundColor: tripType === 'roundway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: tripType === 'roundway' ? '#000' : 'transparent', shadowOpacity: 0.05, shadowRadius: 3, elevation: tripType === 'roundway' ? 1 : 0 }}
+                    style={{ flex: 1, height: 36, borderRadius: 9, backgroundColor: tripType === 'roundway' ? '#FFFFFF' : 'transparent', alignItems: 'center', justifyContent: 'center', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: tripType === 'roundway' ? 0.08 : 0, shadowRadius: 3, elevation: tripType === 'roundway' ? 1 : 0 }}
                   >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: tripType === 'roundway' ? '#FF4500' : '#6B7280' }}>Round Trip</Text>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: tripType === 'roundway' ? '#FF4500' : '#64748B' }}>Round Trip</Text>
                   </TouchableOpacity>
                 </View>
 
-                {/* Pick-up Location */}
-                {/* LOGIC PRESERVED - Autocomplete & GPS handlers intact */}
-                <View style={{ position: 'relative', zIndex: activeField === 'pickup' ? 20 : 1 }}>
-                  <View onLayout={(e) => setPickupFieldHeight(e.nativeEvent.layout.height)}>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Pick-up Location</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                        <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: '#10B981', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
-                          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#10B981' }} />
-                        </View>
-                        <TextInput
-                          value={pickup}
-                          onChangeText={(t) => { setPickup(t); setPickupCoords(null); }}
-                          onFocus={() => setActiveField('pickup')}
-                          placeholder="Enter pick-up location"
-                          placeholderTextColor="#94A3B8"
-                          style={{ flex: 1, backgroundColor: 'transparent', fontSize: 14, fontWeight: '500', color: '#111827', padding: 0 }}
-                        />
-                      </View>
-                      <TouchableOpacity onPress={handleUseCurrentLocation} disabled={isLocating} style={{ padding: 4 }}>
-                        {isLocating ? <ActivityIndicator size="small" color="#FF4500" /> : <LocateFixed size={18} color="#111827" />}
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  {activeField === 'pickup' && pickup.trim().length >= 3 && (
-                    <View style={{ position: 'absolute', top: pickupFieldHeight + 4, left: 0, right: 0, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 4 }}>
-                      {isSearchingPickup && (
-                        <View style={{ padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <ActivityIndicator size="small" color="#FF4500" />
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>Searching...</Text>
-                        </View>
-                      )}
-                      {!isSearchingPickup && pickupSuggestions.length === 0 && (
-                        <View style={{ padding: 8 }}>
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>No matching locations found</Text>
-                        </View>
-                      )}
-                      {!isSearchingPickup && pickupSuggestions.map((s, idx) => (
-                        <TouchableOpacity
-                          key={idx}
-                          onPress={() => {
-                            setPickup(s.address);
-                            setPickupCoords({ lat: s.lat, lng: s.lng });
-                            setActiveField(null);
-                            setPickupSuggestions([]);
-                          }}
-                          style={{ paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' }}
-                        >
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#334155' }}>{s.address}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
-                </View>
+                {/* Pick-up + Drop grouped in one box with a route timeline */}
+                <View style={{ position: 'relative', zIndex: activeField ? 30 : 2, borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 14, backgroundColor: '#FFFFFF' }}>
+                  {/* Timeline connector between the two dots */}
+                  <View pointerEvents="none" style={{ position: 'absolute', left: 18.25, top: 37, height: pickupFieldHeight, width: 1.5, backgroundColor: '#E2E8F0', zIndex: 0 }} />
 
-                {/* Drop Location */}
-                {/* LOGIC PRESERVED - Autocomplete & Swap handlers intact */}
-                <View style={{ position: 'relative', zIndex: activeField === 'drop' ? 20 : 1 }}>
-                  <View onLayout={(e) => setDropFieldHeight(e.nativeEvent.layout.height)}>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Drop Location</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                        <MapPin size={18} color="#EF4444" />
-                        <TextInput
-                          value={drop}
-                          onChangeText={(t) => { setDrop(t); setDropCoords(null); }}
-                          onFocus={() => setActiveField('drop')}
-                          placeholder="Enter drop location"
-                          placeholderTextColor="#94A3B8"
-                          style={{ flex: 1, backgroundColor: 'transparent', fontSize: 14, fontWeight: '500', color: '#111827', padding: 0 }}
-                        />
+                  {/* Pick-up Location */}
+                  {/* LOGIC PRESERVED - Autocomplete & GPS handlers intact */}
+                  <View style={{ position: 'relative', zIndex: activeField === 'pickup' ? 20 : 1 }}>
+                    <View onLayout={(e) => setPickupFieldHeight(e.nativeEvent.layout.height)} style={{ flexDirection: 'row', alignItems: 'flex-start', paddingLeft: 13, paddingRight: 8, paddingVertical: 11, gap: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}>
+                      <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: '#10B981', borderWidth: 3, borderColor: '#D1FAE5', marginTop: 20 }} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={FORM_LABEL}>Pick-up</Text>
+                        {editingLocation === 'pickup' ? (
+                          <TextInput
+                            value={pickup}
+                            onChangeText={(t) => { setPickup(t); setPickupCoords(null); }}
+                            onFocus={() => setActiveField('pickup')}
+                            onBlur={() => setEditingLocation(null)}
+                            autoFocus
+                            placeholder="Enter pick-up location"
+                            placeholderTextColor="#94A3B8"
+                            style={{ ...FORM_VALUE, lineHeight: 20, backgroundColor: 'transparent', padding: 0 }}
+                          />
+                        ) : (
+                          <TouchableOpacity activeOpacity={0.6} onPress={() => setEditingLocation('pickup')}>
+                            <Text style={{ ...FORM_VALUE, lineHeight: 20, color: pickup ? '#0F172A' : '#94A3B8' }} numberOfLines={3}>
+                              {pickup || 'Enter pick-up location'}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
-                      <TouchableOpacity onPress={swapLocations} style={{ padding: 4 }}>
-                        <ArrowUpDown size={18} color="#111827" />
+                      <TouchableOpacity onPress={handleUseCurrentLocation} disabled={isLocating} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ alignSelf: 'center', width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
+                        {isLocating ? <ActivityIndicator size="small" color="#FF4500" /> : <LocateFixed size={17} color="#334155" strokeWidth={2} />}
                       </TouchableOpacity>
                     </View>
+                    {activeField === 'pickup' && pickup.trim().length >= 3 && (
+                      <View style={{ position: 'absolute', top: pickupFieldHeight + 4, left: 0, right: 0, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, shadowColor: '#0F172A', shadowOpacity: 0.08, shadowRadius: 10, elevation: 6, overflow: 'hidden' }}>
+                        {isSearchingPickup && (
+                          <View style={{ padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <ActivityIndicator size="small" color="#FF4500" />
+                            <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>Searching...</Text>
+                          </View>
+                        )}
+                        {!isSearchingPickup && pickupSuggestions.length === 0 && (
+                          <View style={{ padding: 12 }}>
+                            <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>No matching locations found</Text>
+                          </View>
+                        )}
+                        {!isSearchingPickup && pickupSuggestions.map((s, idx) => (
+                          <TouchableOpacity
+                            key={idx}
+                            onPress={() => {
+                              setPickup(s.address);
+                              setPickupCoords({ lat: s.lat, lng: s.lng });
+                              setActiveField(null);
+                              setPickupSuggestions([]);
+                            }}
+                            style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}
+                          >
+                            <MapPin size={15} color="#94A3B8" strokeWidth={2} style={{ marginTop: 1 }} />
+                            <Text style={{ flex: 1, fontSize: 12.5, fontWeight: '500', color: '#334155', lineHeight: 17 }}>{s.address}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
                   </View>
-                  {activeField === 'drop' && drop.trim().length >= 3 && (
-                    <View style={{ position: 'absolute', top: dropFieldHeight + 4, left: 0, right: 0, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 4 }}>
-                      {isSearchingDrop && (
-                        <View style={{ padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                          <ActivityIndicator size="small" color="#FF4500" />
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>Searching...</Text>
-                        </View>
-                      )}
-                      {!isSearchingDrop && dropSuggestions.length === 0 && (
-                        <View style={{ padding: 8 }}>
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#94A3B8' }}>No matching locations found</Text>
-                        </View>
-                      )}
-                      {!isSearchingDrop && dropSuggestions.map((s, idx) => (
-                        <TouchableOpacity
-                          key={idx}
-                          onPress={() => {
-                            setDrop(s.address);
-                            setDropCoords({ lat: s.lat, lng: s.lng });
-                            setActiveField(null);
-                            setDropSuggestions([]);
-                          }}
-                          style={{ paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' }}
-                        >
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#334155' }}>{s.address}</Text>
-                        </TouchableOpacity>
-                      ))}
+
+                  {/* Drop Location */}
+                  {/* LOGIC PRESERVED - Autocomplete & Swap handlers intact */}
+                  <View style={{ position: 'relative', zIndex: activeField === 'drop' ? 20 : 1 }}>
+                    <View onLayout={(e) => setDropFieldHeight(e.nativeEvent.layout.height)} style={{ flexDirection: 'row', alignItems: 'flex-start', paddingLeft: 13, paddingRight: 8, paddingVertical: 11, gap: 12 }}>
+                      <View style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: '#FF4500', borderWidth: 3, borderColor: '#FFE4D5', marginTop: 20 }} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={FORM_LABEL}>Drop</Text>
+                        {editingLocation === 'drop' ? (
+                          <TextInput
+                            value={drop}
+                            onChangeText={(t) => { setDrop(t); setDropCoords(null); }}
+                            onFocus={() => setActiveField('drop')}
+                            onBlur={() => setEditingLocation(null)}
+                            autoFocus
+                            placeholder="Enter drop location"
+                            placeholderTextColor="#94A3B8"
+                            style={{ ...FORM_VALUE, lineHeight: 20, backgroundColor: 'transparent', padding: 0 }}
+                          />
+                        ) : (
+                          <TouchableOpacity activeOpacity={0.6} onPress={() => setEditingLocation('drop')}>
+                            <Text style={{ ...FORM_VALUE, lineHeight: 20, color: drop ? '#0F172A' : '#94A3B8' }} numberOfLines={3}>
+                              {drop || 'Enter drop location'}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      <TouchableOpacity onPress={swapLocations} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }} style={{ alignSelf: 'center', width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
+                        <ArrowUpDown size={17} color="#334155" strokeWidth={2} />
+                      </TouchableOpacity>
                     </View>
-                  )}
+                    {activeField === 'drop' && drop.trim().length >= 3 && (
+                      <View style={{ position: 'absolute', top: dropFieldHeight + 4, left: 0, right: 0, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, shadowColor: '#0F172A', shadowOpacity: 0.08, shadowRadius: 10, elevation: 6, overflow: 'hidden' }}>
+                        {isSearchingDrop && (
+                          <View style={{ padding: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <ActivityIndicator size="small" color="#FF4500" />
+                            <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>Searching...</Text>
+                          </View>
+                        )}
+                        {!isSearchingDrop && dropSuggestions.length === 0 && (
+                          <View style={{ padding: 12 }}>
+                            <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>No matching locations found</Text>
+                          </View>
+                        )}
+                        {!isSearchingDrop && dropSuggestions.map((s, idx) => (
+                          <TouchableOpacity
+                            key={idx}
+                            onPress={() => {
+                              setDrop(s.address);
+                              setDropCoords({ lat: s.lat, lng: s.lng });
+                              setActiveField(null);
+                              setDropSuggestions([]);
+                            }}
+                            style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}
+                          >
+                            <MapPin size={15} color="#94A3B8" strokeWidth={2} style={{ marginTop: 1 }} />
+                            <Text style={{ flex: 1, fontSize: 12.5, fontWeight: '500', color: '#334155', lineHeight: 17 }}>{s.address}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
                 </View>
 
                 {/* Date & Time Selector Row */}
                 {/* LOGIC PRESERVED - Date & Time Pickers intact */}
-                <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                  <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#F1F5F9', paddingRight: 8 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Date</Text>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <View style={FORM_TILE}>
+                    <Text style={FORM_LABEL}>{tripType === 'roundway' ? 'Pick-up date' : 'Date'}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Calendar size={16} color="#3B82F6" />
+                      <Calendar size={15} color="#64748B" strokeWidth={2} />
                       {isWeb ? (
                         createElement('input', {
                           type: 'date',
@@ -538,55 +607,31 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           min: formatDate(new Date()),
                           onChange: (e: any) => setDate(e.target.value),
                           className: 'mbgo-native-datetime-input',
-                          style: {
-                            flex: 1,
-                            width: '100%',
-                            padding: 0,
-                            border: 'none',
-                            outline: 'none',
-                            background: 'transparent',
-                            fontSize: 13,
-                            fontWeight: '500',
-                            color: date ? '#111827' : '#94A3B8',
-                            fontFamily: 'inherit',
-                            cursor: 'pointer',
-                          },
+                          style: webPickerInputStyle(!!date),
                         })
                       ) : (
                         <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 13, fontWeight: '500', color: date ? '#111827' : '#94A3B8' }}>{date || 'Select date'}</Text>
+                          <Text style={{ ...FORM_VALUE, color: date ? '#0F172A' : '#94A3B8' }}>{date || 'Select date'}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
                   </View>
 
-                  <View style={{ flex: 1, paddingLeft: 10 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Time</Text>
+                  <View style={FORM_TILE}>
+                    <Text style={FORM_LABEL}>{tripType === 'roundway' ? 'Pick-up time' : 'Time'}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Clock size={16} color="#3B82F6" />
+                      <Clock size={15} color="#64748B" strokeWidth={2} />
                       {isWeb ? (
                         createElement('input', {
                           type: 'time',
                           value: to24Hour(time),
                           onChange: (e: any) => setTime(e.target.value ? to12Hour(e.target.value) : ''),
                           className: 'mbgo-native-datetime-input',
-                          style: {
-                            flex: 1,
-                            width: '100%',
-                            padding: 0,
-                            border: 'none',
-                            outline: 'none',
-                            background: 'transparent',
-                            fontSize: 13,
-                            fontWeight: '500',
-                            color: time ? '#111827' : '#94A3B8',
-                            fontFamily: 'inherit',
-                            cursor: 'pointer',
-                          },
+                          style: webPickerInputStyle(!!time),
                         })
                       ) : (
                         <TouchableOpacity onPress={() => setShowTimePicker(true)} style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 13, fontWeight: '500', color: time ? '#111827' : '#94A3B8' }}>{time || 'Select time'}</Text>
+                          <Text style={{ ...FORM_VALUE, color: time ? '#0F172A' : '#94A3B8' }}>{time || 'Select time'}</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -617,11 +662,11 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Return Date & Time -- only applies to Round Trip */}
                 {tripType === 'roundway' && (
-                  <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                    <View style={{ flex: 1, borderRightWidth: 1, borderRightColor: '#F1F5F9', paddingRight: 8 }}>
-                      <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Return Date</Text>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={FORM_TILE}>
+                      <Text style={FORM_LABEL}>Return date</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Calendar size={16} color="#10B981" />
+                        <Calendar size={15} color="#64748B" strokeWidth={2} />
                         {isWeb ? (
                           createElement('input', {
                             type: 'date',
@@ -629,55 +674,31 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             min: date || formatDate(new Date()),
                             onChange: (e: any) => setReturnDate(e.target.value),
                             className: 'mbgo-native-datetime-input',
-                            style: {
-                              flex: 1,
-                              width: '100%',
-                              padding: 0,
-                              border: 'none',
-                              outline: 'none',
-                              background: 'transparent',
-                              fontSize: 13,
-                              fontWeight: '500',
-                              color: returnDate ? '#111827' : '#94A3B8',
-                              fontFamily: 'inherit',
-                              cursor: 'pointer',
-                            },
+                            style: webPickerInputStyle(!!returnDate),
                           })
                         ) : (
                           <TouchableOpacity onPress={() => setShowReturnDatePicker(true)} style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 13, fontWeight: '500', color: returnDate ? '#111827' : '#94A3B8' }}>{returnDate || 'Select date'}</Text>
+                            <Text style={{ ...FORM_VALUE, color: returnDate ? '#0F172A' : '#94A3B8' }}>{returnDate || 'Select date'}</Text>
                           </TouchableOpacity>
                         )}
                       </View>
                     </View>
 
-                    <View style={{ flex: 1, paddingLeft: 10 }}>
-                      <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Return Time</Text>
+                    <View style={FORM_TILE}>
+                      <Text style={FORM_LABEL}>Return time</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Clock size={16} color="#10B981" />
+                        <Clock size={15} color="#64748B" strokeWidth={2} />
                         {isWeb ? (
                           createElement('input', {
                             type: 'time',
                             value: to24Hour(returnTime),
                             onChange: (e: any) => setReturnTime(e.target.value ? to12Hour(e.target.value) : ''),
                             className: 'mbgo-native-datetime-input',
-                            style: {
-                              flex: 1,
-                              width: '100%',
-                              padding: 0,
-                              border: 'none',
-                              outline: 'none',
-                              background: 'transparent',
-                              fontSize: 13,
-                              fontWeight: '500',
-                              color: returnTime ? '#111827' : '#94A3B8',
-                              fontFamily: 'inherit',
-                              cursor: 'pointer',
-                            },
+                            style: webPickerInputStyle(!!returnTime),
                           })
                         ) : (
                           <TouchableOpacity onPress={() => setShowReturnTimePicker(true)} style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 13, fontWeight: '500', color: returnTime ? '#111827' : '#94A3B8' }}>{returnTime || 'Select time'}</Text>
+                            <Text style={{ ...FORM_VALUE, color: returnTime ? '#0F172A' : '#94A3B8' }}>{returnTime || 'Select time'}</Text>
                           </TouchableOpacity>
                         )}
                       </View>
@@ -709,25 +730,24 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Vehicle Type Picker */}
                 {/* LOGIC PRESERVED - Vehicle Picker Modal intact */}
-                <TouchableOpacity onPress={() => setShowVehiclePicker(true)} style={{ borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                  <Text style={{ fontSize: 11, fontWeight: '500', color: '#6B7280', marginBottom: 2 }}>Vehicle Type</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Car size={16} color="#6366F1" />
-                      <Text style={{ fontSize: 13, fontWeight: '500', color: vehicleType ? '#111827' : '#94A3B8' }}>{vehicleType || 'Select vehicle type'}</Text>
-                    </View>
-                    <ChevronRight size={16} color="#94A3B8" />
+                <TouchableOpacity onPress={() => setShowVehiclePicker(true)} style={{ ...FORM_TILE, flex: undefined, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Car size={16} color="#64748B" strokeWidth={2} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={FORM_LABEL}>Vehicle preference <Text style={{ color: '#CBD5E1' }}>(optional)</Text></Text>
+                    <Text style={{ ...FORM_VALUE, color: vehicleType ? '#0F172A' : '#94A3B8' }} numberOfLines={1}>{vehicleType || 'Any vehicle'}</Text>
                   </View>
+                  <ChevronRight size={16} color="#94A3B8" strokeWidth={2} />
                 </TouchableOpacity>
 
                 <Modal visible={showVehiclePicker} transparent animationType="fade" onRequestClose={() => setShowVehiclePicker(false)}>
                   <TouchableOpacity
-                    style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}
+                    style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'flex-end' }}
                     onPress={() => setShowVehiclePicker(false)}
                     activeOpacity={1}
                   >
-                    <View style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, gap: 8 }}>
-                      <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', paddingBottom: 2 }}>Select Vehicle Type</Text>
+                    <View style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 24, gap: 8 }}>
+                      <View style={{ alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: '#E2E8F0', marginBottom: 8 }} />
+                      <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A', paddingBottom: 4 }}>Vehicle preference</Text>
                       {VEHICLE_CATEGORIES.map((v) => (
                         <TouchableOpacity
                           key={v.category}
@@ -736,10 +756,10 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                             setVehicleType(v.label);
                             setShowVehiclePicker(false);
                           }}
-                          style={{ padding: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: selectedCategory === v.category ? '#FFF5EF' : '#F8FAFC', borderWidth: selectedCategory === v.category ? 1 : 0, borderColor: '#FF4500' }}
+                          style={{ paddingHorizontal: 14, paddingVertical: 13, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: selectedCategory === v.category ? '#FFF5EF' : '#F8FAFC', borderWidth: 1, borderColor: selectedCategory === v.category ? '#FF4500' : '#EEF2F6' }}
                         >
-                          <Car size={16} color="#FF4500" />
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#1E293B' }}>{v.label}</Text>
+                          <Car size={17} color={selectedCategory === v.category ? '#FF4500' : '#64748B'} strokeWidth={2} />
+                          <Text style={{ fontSize: 13.5, fontWeight: '500', color: '#0F172A' }}>{v.label}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -751,9 +771,11 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 <TouchableOpacity
                   onPress={handleSearchCabs}
                   disabled={isSearching}
-                  style={{ width: '100%', height: 38, backgroundColor: '#FF3B00', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
+                  activeOpacity={0.85}
+                  style={{ width: '100%', height: 48, backgroundColor: isSearching ? '#FDA584' : '#FF4500', borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 2, shadowColor: '#FF4500', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 3 }}
                 >
-                  <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 13, textAlign: 'center' }}>
+                  {isSearching && <ActivityIndicator size="small" color="#FFFFFF" />}
+                  <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 15, letterSpacing: 0.1 }}>
                     {isSearching ? 'Searching...' : 'Search Cabs'}
                   </Text>
                 </TouchableOpacity>
@@ -770,16 +792,16 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                   </TouchableOpacity>
                 </View>
 
+
                 {/* Horizontal Scroll / Cards List matching design */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 2 }}>
+                <View style={{ position: 'relative' }}>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
                   {[
-                    { icon: Plane, label: 'Airport\nTransfer', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
-                    { icon: Navigation, label: 'Outstation\nTrips', bg: '#FFEDD5', iconColor: '#EA580C', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
-                    { icon: Clock, label: 'Hourly\nRental', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://musafirbaba.com/rental') },
-                    { icon: Building2, label: 'Corporate\nTravel', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
-                    { icon: Palmtree, label: 'Tour\nPackages', bg: '#FEF3C7', iconColor: '#D97706', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
-                    { icon: Bus, label: 'Bus\nBooking', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.redbus.in/bus-tickets') },
-                    { icon: TrainFront, label: 'Train\nBooking', bg: '#DBEAFE', iconColor: '#2563EB', action: () => setInAppBrowserUrl('https://www.redbus.in/railways') },
+                    { icon: Palmtree, label: 'Tour', bg: '#FEF3C7', iconColor: '#D97706', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
+                    { icon: FileCheck, label: 'Visa', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/visa') },
+                    { icon: Bus, label: 'Bus', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.makemytrip.com/bus-tickets/') },
+                    { icon: Hotel, label: 'Hotel', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://www.makemytrip.com/hotels/') },
+                    { icon: Plane, label: 'Flight', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://www.makemytrip.com/flights/') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
@@ -794,8 +816,8 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           padding: 10,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: 78,
-                          height: 88,
+                          flex: 1,
+                          height: 96,
                           shadowColor: '#0F172A',
                           shadowOffset: { width: 0, height: 2 },
                           shadowOpacity: 0.02,
@@ -803,24 +825,29 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                           elevation: 1,
                         }}
                       >
-                        <View style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: srv.bg, marginBottom: 6 }}>
-                          <Icon size={20} color={srv.iconColor} />
+                        <View style={{ width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center", backgroundColor: srv.bg, marginBottom: 6 }}>
+                          <Icon size={22} color={srv.iconColor} />
                         </View>
-                        <Text style={{ fontSize: 11, fontWeight: '500', color: '#111827', textAlign: 'center', lineHeight: 13 }}>{srv.label}</Text>
+                        <Text style={{ fontSize: 11, fontWeight: "600", color: "#111827", textAlign: "center", lineHeight: 13 }}>{srv.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
-                </ScrollView>
-              </View>
+                </View>
 
-              {/* Promotional Banner Card */}
+                </View>
+                </View>
+
+              {/* Promotional Banner Card -- temporarily hidden, adds unwanted
+                  scroll height on the home screen. Flip to `true` to restore;
+                  nothing below was changed. */}
+              {false && (
               <View style={{ backgroundColor: '#FDEDEA', borderWidth: 1, borderColor: '#FCD7C8', borderRadius: 16, minHeight: 115, justifyContent: 'center', marginTop: 4, position: 'relative', overflow: 'hidden', padding: 14 }}>
                 {/* Right Side Illustration - Soft Feathered Blend & Margin Crop */}
                 <View style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '62%', height: '100%', overflow: 'hidden', justifyContent: 'center', alignItems: 'flex-end' }}>
-                  <Image 
-                    source={SECOND_BANNER_IMAGE} 
-                    style={{ width: '110%', height: '100%', marginLeft: '-5%' }} 
-                    resizeMode="contain" 
+                  <Image
+                    source={SECOND_BANNER_IMAGE}
+                    style={{ width: '110%', height: '100%', marginLeft: '-5%' }}
+                    resizeMode="contain"
                   />
                   {/* Soft Feather Blur Overlay on Left Image Edge */}
                   <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 30, backgroundColor: '#FDEDEA', opacity: 0.75, zIndex: 1 }} />
@@ -832,7 +859,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                     Travel with comfort{'\n'}at the best prices
                   </Text>
                   <Text style={{ fontSize: 10, color: '#334155', fontWeight: '600' }}>Safe | Reliable | On-time</Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={() => onNavigate('32')}
                     style={{ backgroundColor: '#FF3B00', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start', marginTop: 4 }}
                   >
@@ -840,29 +867,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                   </TouchableOpacity>
                 </View>
               </View>
-
-              {/* Why Travel With MBGO? Section */}
-              <View style={{ gap: 10, paddingTop: 8 }}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Why travel with MBGO?</Text>
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  {[
-                    { icon: ShieldCheck, label: 'Verified\nPartners', bg: '#DCFCE7', iconColor: '#16A34A' },
-                    { icon: Award, label: 'Best Price\nGuarantee', bg: '#FFF5EF', iconColor: '#FF4500' },
-                    { icon: Headphones, label: '24x7\nSupport', bg: '#E0F2FE', iconColor: '#0284C7' },
-                    { icon: Lock, label: 'Safe & Secure\nRide', bg: '#F3E8FF', iconColor: '#7C3AED' },
-                  ].map((item, idx) => {
-                    const Icon = item.icon;
-                    return (
-                      <View key={idx} style={{ flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 14, padding: 8, alignItems: 'center', gap: 4 }}>
-                        <View style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: item.bg }}>
-                          <Icon size={16} color={item.iconColor} />
-                        </View>
-                        <Text style={{ fontSize: 9.5, fontWeight: '500', color: '#111827', textAlign: 'center', lineHeight: 12 }}>{item.label}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
+              )}
 
             </View>
           )}

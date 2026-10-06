@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, ActivityIndicator } from 'react-native';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { useNotificationStore } from '../../../store/useNotificationStore';
 import React, { useState, useEffect } from 'react';
@@ -52,6 +52,7 @@ import {
   Award
 } from 'lucide-react-native';
 import { getMyRides } from '../../../api/ride.api';
+import { inr, formatDisplayDate, AddressLine, MetaChip } from './rideUi';
 
 // Maps the real RideBooking status enum to trip-card display info -- copy
 // matches ScreenLiveTracking.tsx's statusMessages so the wording is
@@ -746,272 +747,178 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
               SCREEN 35: MY TRIPS (35.png)
              ========================================== */}
           {activeScreen === '35' && (
-            <View style={{ padding: 12, gap: 10 }}>
-              
+            <View style={{ padding: 12, gap: 12 }}>
+
               {/* Header Bar */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-                <Text style={{ fontSize: 18, fontWeight: '900', color: '#0F172A' }}>My Trips</Text>
-                <TouchableOpacity onPress={() => onNavigate('38')} style={{ alignItems: 'center', position: 'relative' }}>
-                  <View style={{ position: 'relative' }}>
-                    <Bell size={20} color="#0F172A" />
-                    {unreadNotificationCount > 0 ? (
-                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF5500', position: 'absolute', top: 0, right: 0 }} />
-                    ) : null}
-                  </View>
-                  <Text style={{ fontSize: 8, fontWeight: '700', color: '#64748B', marginTop: 1 }}>Notifications</Text>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: '#0F172A', letterSpacing: -0.3 }}>My Trips</Text>
+                <TouchableOpacity
+                  onPress={() => onNavigate('38')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Bell size={18} color="#0F172A" strokeWidth={2} />
+                  {unreadNotificationCount > 0 ? (
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4500', position: 'absolute', top: 8, right: 9, borderWidth: 1.5, borderColor: '#FFFFFF' }} />
+                  ) : null}
                 </TouchableOpacity>
               </View>
 
               {/* Status Tabs (Upcoming, Completed, Cancelled) */}
-              <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingTop: 2 }}>
-                <TouchableOpacity 
-                  onPress={() => setTripsTab('upcoming')}
-                  style={{ flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, borderBottomWidth: tripsTab === 'upcoming' ? 2 : 0, borderBottomColor: '#FF5500' }}
-                >
-                  <Calendar size={14} color={tripsTab === 'upcoming' ? '#FF5500' : '#64748B'} />
-                  <Text style={{ fontSize: 12, fontWeight: tripsTab === 'upcoming' ? '800' : '600', color: tripsTab === 'upcoming' ? '#FF5500' : '#64748B' }}>Upcoming</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  onPress={() => setTripsTab('completed')}
-                  style={{ flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, borderBottomWidth: tripsTab === 'completed' ? 2 : 0, borderBottomColor: '#FF5500' }}
-                >
-                  <CheckCircle2 size={14} color={tripsTab === 'completed' ? '#FF5500' : '#64748B'} />
-                  <Text style={{ fontSize: 12, fontWeight: tripsTab === 'completed' ? '800' : '600', color: tripsTab === 'completed' ? '#FF5500' : '#64748B' }}>Completed</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  onPress={() => setTripsTab('cancelled')}
-                  style={{ flex: 1, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, borderBottomWidth: tripsTab === 'cancelled' ? 2 : 0, borderBottomColor: '#FF5500' }}
-                >
-                  <XCircle size={14} color={tripsTab === 'cancelled' ? '#FF5500' : '#64748B'} />
-                  <Text style={{ fontSize: 12, fontWeight: tripsTab === 'cancelled' ? '800' : '600', color: tripsTab === 'cancelled' ? '#FF5500' : '#64748B' }}>Cancelled</Text>
-                </TouchableOpacity>
+              <View style={{ flexDirection: 'row', backgroundColor: '#F1F5F9', padding: 4, borderRadius: 12 }}>
+                {([
+                  { key: 'upcoming', label: 'Upcoming' },
+                  { key: 'completed', label: 'Completed' },
+                  { key: 'cancelled', label: 'Cancelled' },
+                ] as const).map((tab) => {
+                  const isActive = tripsTab === tab.key;
+                  return (
+                    <TouchableOpacity
+                      key={tab.key}
+                      onPress={() => setTripsTab(tab.key)}
+                      style={{ flex: 1, height: 36, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? '#FFFFFF' : 'transparent', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 1 }, shadowOpacity: isActive ? 0.08 : 0, shadowRadius: 3, elevation: isActive ? 1 : 0 }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: isActive ? '#FF4500' : '#64748B' }}>{tab.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
-
-              {/* Filter Pills Row */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <TouchableOpacity style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#FF5500' }}>All Trips</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#64748B' }}>Outstation</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#64748B' }}>Local</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Filter size={12} color="#475569" />
-                  <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#475569' }}>Filter</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Refer & Earn Banner */}
-              <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
-                    <Gift size={18} color="#FF5500" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A' }}>Refer & Earn</Text>
-                    <Text style={{ fontSize: 9.5, fontWeight: '600', color: '#64748B', marginTop: 1 }}>Refer your friends and earn exciting rewards.</Text>
-                  </View>
-                </View>
-                <TouchableOpacity onPress={() => showToast("Opening Referral Program...")} style={{ height: 30, backgroundColor: '#FF5500', borderRadius: 8, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#FFFFFF' }}>Refer Now</Text>
-                  <ChevronRight size={12} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Completed Trips Header */}
-              <Text style={{ fontSize: 14, fontWeight: '900', color: '#0F172A', paddingTop: 2 }}>
-                {tripsTab === 'completed' ? 'Completed Trips' : tripsTab === 'upcoming' ? 'Upcoming Trips' : 'Cancelled Trips'}
-              </Text>
 
               {isLoadingTrips && (
-                <Text style={{ textAlign: 'center', fontSize: 11, fontWeight: '700', color: '#94A3B8', paddingVertical: 12 }}>Loading trips...</Text>
+                <View style={{ alignItems: 'center', paddingVertical: 40, gap: 10 }}>
+                  <ActivityIndicator size="small" color="#FF4500" />
+                  <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>Loading your trips...</Text>
+                </View>
               )}
 
               {!isLoadingTrips && trips.length === 0 && (
-                <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40, gap: 8 }}>
-                  <Calendar size={32} color="#CBD5E1" />
-                  <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#334155' }}>
-                    No {tripsTab} trips yet
+                <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 44, paddingHorizontal: 24, gap: 10, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#EEF2F6' }}>
+                  <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
+                    <Calendar size={24} color="#FF4500" strokeWidth={1.75} />
+                  </View>
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F172A' }}>No {tripsTab} trips</Text>
+                  <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', textAlign: 'center', lineHeight: 18 }}>
+                    {tripsTab === 'upcoming' ? 'Trips you book will show up here.' : `You don't have any ${tripsTab} trips yet.`}
                   </Text>
-                  <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#94A3B8', textAlign: 'center', paddingHorizontal: 24 }}>
-                    {tripsTab === 'upcoming' ? "Trips you book will show up here." : `You don't have any ${tripsTab} trips.`}
-                  </Text>
+                  {tripsTab === 'upcoming' && (
+                    <TouchableOpacity onPress={() => onNavigate('31')} style={{ marginTop: 4, height: 40, paddingHorizontal: 18, borderRadius: 10, backgroundColor: '#FF4500', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: '#FFFFFF' }}>Book a ride</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
 
               {/* Trip Cards List: real API trips only */}
-              {trips.map((trip, idx) => {
+              {!isLoadingTrips && trips.map((trip, idx) => {
                 const statusDisplay = TRIP_STATUS_DISPLAY[trip.status] || DEFAULT_TRIP_STATUS_DISPLAY;
                 const StatusIcon = trip.status === 'COMPLETED' ? CheckCircle2 : trip.status === 'CANCELLED' ? XCircle : Clock;
+                const shortId = trip._id ? `MB-${String(trip._id).slice(-6).toUpperCase()}` : '';
+                const isPaid = trip.paymentInfo?.status === 'Paid';
+                const isFinished = trip.status === 'COMPLETED' || trip.status === 'CANCELLED';
                 return (
-                <View key={trip._id || idx} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
+                <View key={trip._id || idx} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, padding: 14, gap: 12, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 }}>
 
-                  {/* Card Header: Status Badge & Booking ID */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 8 }}>
-                    <View style={{ backgroundColor: statusDisplay.bg, borderWidth: 1, borderColor: statusDisplay.border, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                      <StatusIcon size={10} color={statusDisplay.color} />
-                      <Text style={{ fontSize: 9.5, fontWeight: '800', color: statusDisplay.color }}>{statusDisplay.badge}</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Text style={{ fontSize: 10, fontWeight: '700', color: '#64748B' }}>Booking ID: {trip._id}</Text>
-                      <TouchableOpacity onPress={() => showToast("Booking ID copied!")}>
-                        <Copy size={11} color="#94A3B8" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  {/* 3-Column Layout: Route, Schedule, Vehicle Box */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
-                    
-                    {/* Col 1: Route Timeline */}
-                    <View style={{ flex: 1, gap: 10, position: 'relative', minWidth: 0, paddingRight: 4 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
-                        <View style={{ width: 9, height: 9, borderRadius: 4.5, borderWidth: 1.5, borderColor: '#10B981', backgroundColor: '#FFFFFF', marginTop: 3 }} />
-                        <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#0F172A' }} numberOfLines={1}>
-                            {trip.pickup?.address || trip.pickupLocation}
-                          </Text>
-                          <Text style={{ fontSize: 8.5, fontWeight: '600', color: '#94A3B8', marginTop: 1 }}>Pick-up</Text>
-                        </View>
+                  {/* Status + amount */}
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                    <View style={{ flex: 1, gap: 4 }}>
+                      <View style={{ alignSelf: 'flex-start', backgroundColor: statusDisplay.bg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <StatusIcon size={12} color={statusDisplay.color} strokeWidth={2} />
+                        <Text style={{ fontSize: 11.5, fontWeight: '600', color: statusDisplay.color }}>{statusDisplay.badge}</Text>
                       </View>
-
-                      {/* Vertical line */}
-                      <View style={{ position: 'absolute', left: 4, top: 12, bottom: 16, width: 1, borderStyle: 'dashed', borderWidth: 0.5, borderColor: '#CBD5E1' }} />
-
-                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 5 }}>
-                        <View style={{ width: 9, height: 9, borderRadius: 4.5, borderWidth: 1.5, borderColor: '#FF5500', backgroundColor: '#FFFFFF', marginTop: 3 }} />
-                        <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#0F172A' }} numberOfLines={1}>
-                            {trip.drop?.address || trip.dropLocation}
-                          </Text>
-                          <Text style={{ fontSize: 8.5, fontWeight: '600', color: '#94A3B8', marginTop: 1 }}>Drop</Text>
-                        </View>
-                      </View>
-                    </View>
-
-                    {/* Col 2: Schedule & Specs */}
-                    <View style={{ width: 88, gap: 3, borderLeftWidth: 1, borderLeftColor: '#F1F5F9', paddingLeft: 5 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Calendar size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.rideDate || '20 May 2025'}</Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Clock size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.rideTime || '08:00 AM'}</Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <ArrowUpDown size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{TRIP_TYPE_LABEL[trip.tripType] || trip.tripType || 'One Way'}</Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <Users size={10} color="#64748B" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#334155' }}>{trip.passengerCount || 1} Passenger{(trip.passengerCount || 1) > 1 ? 's' : ''}</Text>
-                      </View>
-                    </View>
-
-                    {/* Col 3: Vehicle Info & Graphic */}
-                    <View style={{ width: 85, gap: 2, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderLeftColor: '#F1F5F9', paddingLeft: 5 }}>
-                      <Text style={{ fontSize: 11.5, fontWeight: '900', color: '#0F172A', textAlign: 'center' }}>
-                        {trip.vehicleCategory || 'Sedan'}
-                      </Text>
-
-                      <View style={{ width: 46, height: 26, borderRadius: 6, backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center', marginVertical: 2 }}>
-                        <Car size={16} color="#FF5500" />
-                      </View>
-                    </View>
-
-                  </View>
-
-                  {/* Middle Info Bar: 2-Row Responsive Non-Overflowing Layout */}
-                  <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, gap: 6 }}>
-                    {/* Row 1: Total Amount & Driver (driver only shown once actually assigned) */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Total Amount</Text>
-                        <Text style={{ fontSize: 12.5, fontWeight: '900', color: '#059669' }}>₹{(trip.totalAmount || 0).toLocaleString('en-IN')}</Text>
-                        <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
-                          <Text style={{ fontSize: 8, fontWeight: '800', color: '#059669' }}>Paid ✓</Text>
-                        </View>
-                      </View>
-
-                      {trip.driverName ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                          <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Driver</Text>
-                          <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#0F172A' }}>{trip.driverName}</Text>
-                          {trip.driverRating ? (
-                            <View style={{ backgroundColor: '#059669', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
-                              <Text style={{ fontSize: 7.5, fontWeight: '800', color: '#FFFFFF' }}>★ {trip.driverRating}</Text>
-                            </View>
-                          ) : null}
-                        </View>
-                      ) : (
-                        <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>Partner not assigned yet</Text>
+                      {!isFinished && (
+                        <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B' }}>{statusDisplay.detail}</Text>
                       )}
                     </View>
-
-                    {/* Row 2: status-appropriate timing detail */}
-                    <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text style={{ fontSize: 8.5, fontWeight: '700', color: '#94A3B8' }}>
-                        {trip.status === 'COMPLETED' ? 'Trip Completed' : trip.status === 'CANCELLED' ? 'Status' : 'Scheduled'}
-                      </Text>
-                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#334155' }}>
-                        {trip.status === 'COMPLETED' || trip.status === 'CANCELLED'
-                          ? statusDisplay.detail
-                          : `${trip.rideDate || ''} ${trip.rideTime || ''}`.trim()}
-                      </Text>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={{ fontSize: 17, fontWeight: '700', color: '#0F172A', letterSpacing: -0.3 }}>{inr(trip.totalAmount || 0)}</Text>
+                      <Text style={{ fontSize: 11, fontWeight: '500', color: isPaid ? '#059669' : '#94A3B8' }}>{isPaid ? 'Paid' : 'Total fare'}</Text>
                     </View>
                   </View>
 
-                  {/* Card Action Buttons Row */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <TouchableOpacity onPress={() => showToast("Downloading Invoice...")} style={{ flex: 1, height: 32, borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: '#FFFFFF' }}>
-                      <Download size={11} color="#FF5500" />
-                      <Text style={{ fontSize: 9, fontWeight: '800', color: '#FF5500' }}>Download Invoice</Text>
-                    </TouchableOpacity>
+                  {/* Route */}
+                  <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <View style={{ alignItems: 'center', paddingTop: 5, width: 12 }}>
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#10B981', borderWidth: 2, borderColor: '#D1FAE5' }} />
+                      <View style={{ flex: 1, width: 1.5, backgroundColor: '#E2E8F0', marginVertical: 4, borderRadius: 1 }} />
+                      <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#FF5500', borderWidth: 2, borderColor: '#FFE4D5' }} />
+                    </View>
+                    <View style={{ flex: 1, gap: 12 }}>
+                      <AddressLine label="Pickup" address={trip.pickup?.address || trip.pickupLocation || '-'} />
+                      <AddressLine label="Drop" address={trip.drop?.address || trip.dropLocation || '-'} />
+                    </View>
+                  </View>
 
-                    <TouchableOpacity onPress={() => showToast("Opening Receipt...")} style={{ flex: 1, height: 32, borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: '#FFFFFF' }}>
-                      <Receipt size={11} color="#FF5500" />
-                      <Text style={{ fontSize: 9, fontWeight: '800', color: '#FF5500' }}>Get Receipt</Text>
-                    </TouchableOpacity>
+                  {/* Trip details */}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                    <MetaChip icon={<Calendar size={11} color="#64748B" strokeWidth={2} />} label={`${trip.rideDate ? formatDisplayDate(trip.rideDate) : '-'}${trip.rideTime ? `, ${trip.rideTime}` : ''}`} />
+                    <MetaChip label={TRIP_TYPE_LABEL[trip.tripType] || trip.tripType || 'One Way'} />
+                    <MetaChip icon={<Car size={11} color="#64748B" strokeWidth={2} />} label={trip.vehicleType || trip.vehicleCategory || 'Cab'} />
+                    <MetaChip icon={<Users size={11} color="#64748B" strokeWidth={2} />} label={`${trip.passengerCount || 1}`} />
+                  </View>
 
-                    <TouchableOpacity onPress={() => onNavigate('31')} style={{ flex: 1, height: 32, borderWidth: 1, borderColor: '#FF5500', borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, backgroundColor: '#FFF5EF' }}>
-                      <RotateCw size={11} color="#FF5500" />
-                      <Text style={{ fontSize: 9, fontWeight: '800', color: '#FF5500' }}>Book Again</Text>
+                  {trip.driverName ? (
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>
+                      Driver: <Text style={{ fontWeight: '600', color: '#0F172A' }}>{trip.driverName}</Text>{trip.driverRating ? `  ★ ${trip.driverRating}` : ''}
+                    </Text>
+                  ) : null}
+
+                  {/* Footer: booking id + action */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 10, gap: 8 }}>
+                    <TouchableOpacity onPress={() => showToast("Booking ID copied!")} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <Text style={{ fontSize: 11.5, fontWeight: '500', color: '#94A3B8' }}>Booking ID</Text>
+                      <Text style={{ fontSize: 11.5, fontWeight: '600', color: '#475569' }}>{shortId}</Text>
+                      <Copy size={12} color="#94A3B8" strokeWidth={2} />
                     </TouchableOpacity>
+                    {isFinished ? (
+                      <TouchableOpacity onPress={() => onNavigate('31')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: '#FFF5EF' }}>
+                        <RotateCw size={13} color="#FF4500" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF4500' }}>Book again</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity onPress={() => onNavigate('37')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: '#F1F5F9' }}>
+                        <Headphones size={13} color="#334155" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#334155' }}>Get help</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
 
                 </View>
                 );
               })}
 
-              {/* Support Card Banner */}
-              <View style={{ backgroundColor: '#F0F9FF', borderWidth: 1, borderColor: '#BAE6FD', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                  <Headphones size={18} color="#0284C7" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#0369A1' }}>Need help with your trip?</Text>
-                    <Text style={{ fontSize: 9.5, fontWeight: '600', color: '#0284C7' }}>Our support team is available 24x7 to assist you.</Text>
-                  </View>
+              {/* Support Card */}
+              <TouchableOpacity
+                onPress={() => onNavigate('37')}
+                activeOpacity={0.85}
+                style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 2 }}
+              >
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center' }}>
+                  <Headphones size={18} color="#2563EB" strokeWidth={2} />
                 </View>
-                <TouchableOpacity onPress={() => showToast("Opening Support...")} style={{ height: 28, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#0284C7', borderRadius: 6, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                  <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#0284C7' }}>Contact Support</Text>
-                  <ChevronRight size={10} color="#0284C7" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#0F172A' }}>Need help with a trip?</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B', marginTop: 1 }}>Our support team is available 24x7.</Text>
+                </View>
+                <ChevronRight size={16} color="#94A3B8" strokeWidth={2} />
+              </TouchableOpacity>
+
+              {/* Refer & Earn */}
+              <View style={{ backgroundColor: '#FFF5EF', borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                  <Gift size={18} color="#FF4500" strokeWidth={2} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#0F172A' }}>Refer & earn</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B', marginTop: 1 }}>Invite friends and earn rewards.</Text>
+                </View>
+                <TouchableOpacity onPress={() => showToast("Opening Referral Program...")} style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: '#FF4500' }}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: '#FFFFFF' }}>Invite</Text>
                 </TouchableOpacity>
               </View>
 
             </View>
           )}
+
 
         </ScrollView>
 
