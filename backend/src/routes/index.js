@@ -65,6 +65,7 @@ import riderNotificationRoutes from "./rider/riderNotification.routes.js";
 import rideRoutes from "./ride.routes.js";
 import adminRideRoutes from "./adminRide.routes.js";
 import adminRiderRoutes from "./adminRider.routes.js";
+import adminRidePricingRoutes from "./adminRidePricing.routes.js";
 
 const router = Router();
 
@@ -77,6 +78,7 @@ router.use("/admin/partner-verification", adminPartnerVerificationRoutes);
 router.use("/admin/partner-wallets", adminPartnerWalletRoutes);
 router.use("/admin/rides", adminRideRoutes);
 router.use("/admin/riders", adminRiderRoutes);
+router.use("/admin/ride-pricing", adminRidePricingRoutes);
 router.use("/admin/sitemap-source", sitemapDataRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);

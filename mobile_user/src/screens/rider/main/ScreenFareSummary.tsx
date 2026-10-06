@@ -1,6 +1,11 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, Modal, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
-import { createRide } from '../../../api/ride.api';
+import { WebView } from 'react-native-webview';
+import { Bus as BusIcon, Info as InfoIcon } from 'lucide-react-native';
+import { createRide, getRideById, isRateCardOffer, type RideOffer } from '../../../api/ride.api';
+import { initiateRidePayment, buildPayUAutoSubmitHtml } from '../../../api/payment.api';
+import { API_BASE_URL } from '../../../utils/config';
+import { inr, plural, formatDisplayDate, AddressLine, MetaChip, RATE_CARD_TINT } from './rideUi';
 import { useRideStore } from '../../../store/useRideStore';
 import {
   Menu,
@@ -55,6 +60,61 @@ import {
   Tag
 } from 'lucide-react-native';
 
+// One line of the fare breakdown.
+function FareRow({ label, detail, amount, bold }: { label: string; detail?: string; amount: number; bold?: boolean }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: bold ? 14 : 13, fontWeight: bold ? '600' : '500', color: bold ? '#0F172A' : '#334155' }}>{label}</Text>
+        {!!detail && <Text style={{ fontSize: 11.5, fontWeight: '400', color: '#94A3B8', marginTop: 2 }}>{detail}</Text>}
+      </View>
+      <Text style={{ fontSize: bold ? 17 : 13, fontWeight: bold ? '700' : '500', color: '#0F172A', letterSpacing: bold ? -0.3 : 0 }}>{inr(amount)}</Text>
+    </View>
+  );
+}
+
+// Fare breakdown for the selected offer. Admin rate-card offers show every
+// component (rows that are 0 are hidden); offers from the original pricing
+// show their real base fare + driver allowance. The total is always the
+// offer's totalAmount -- the same amount the backend charges.
+function ReviewFareBreakdown({ offer, distanceKm }: { offer: RideOffer; distanceKm?: number }) {
+  if (isRateCardOffer(offer)) {
+    const { fare } = offer;
+    const minApplied = fare.billableKm > fare.actualKm;
+    return (
+      <View style={{ gap: 12 }}>
+        <FareRow
+          label="Vehicle fare"
+          detail={`${fare.billableKm.toLocaleString('en-IN')} km × ₹${fare.ratePerKm}/km${minApplied ? ` (min for ${plural(fare.days, 'day')})` : ''}`}
+          amount={fare.vehicleFare}
+        />
+        {fare.driverAllowance > 0 && <FareRow label="Driver allowance" detail={plural(fare.days, 'day')} amount={fare.driverAllowance} />}
+        {fare.nightAllowance > 0 && <FareRow label="Night allowance" detail={plural(fare.nights, 'night')} amount={fare.nightAllowance} />}
+        {fare.platformCharges > 0 && <FareRow label="Platform charges" amount={fare.platformCharges} />}
+        {fare.taxes > 0 && <FareRow label="Taxes" amount={fare.taxes} />}
+      </View>
+    );
+  }
+  return (
+    <View style={{ gap: 12 }}>
+      <FareRow label="Base fare" detail={distanceKm ? `${distanceKm} km` : undefined} amount={offer.baseFare} />
+      {offer.driverAllowance > 0 && <FareRow label="Driver allowance" amount={offer.driverAllowance} />}
+    </View>
+  );
+}
+
+const CARD = {
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#EEF2F6',
+  borderRadius: 16,
+  padding: 14,
+  shadowColor: '#0F172A',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.04,
+  shadowRadius: 8,
+};
+
 export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: (screen: string) => void; onBack?: () => void }) {
   // Navigation active screen: '31' | '32' | '33' | '34' | '35'
   const activeScreen: '31' | '32' | '33' | '34' | '35' = '32';
@@ -87,6 +147,44 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
     setTimeout(() => setToastMsg(''), 2500);
   };
 
+  // ---- Review & pay: one screen creates the booking and opens PayU ----
+  const rideId = useRideStore((s) => s.rideId);
+  const rideKey = useRideStore((s) => s.rideKey);
+  const bookedTotal = useRideStore((s) => s.totalAmount);
+  const [checkoutHtml, setCheckoutHtml] = useState<string | null>(null);
+  const [checkoutBaseUrl, setCheckoutBaseUrl] = useState<string | null>(null);
+  const [rideConfirmation, setRideConfirmation] = useState<{ category: string; revealMessage: string } | null>(null);
+
+  // Identifies this exact trip + vehicle. If an unpaid booking was already
+  // created for it (e.g. the rider closed PayU and taps Pay again), that
+  // booking is reused instead of creating a duplicate.
+  const bookingKey = JSON.stringify([pickup, drop, date, time, tripType, returnDate, returnTime, selectedOffer?.category, passengerCount]);
+  const existingRideId = rideId && rideKey === bookingKey ? rideId : null;
+  // What will actually be charged: the booked amount once a booking exists
+  // for this trip, otherwise the quoted amount.
+  const payableAmount = (existingRideId && bookedTotal) || selectedOffer?.totalAmount || 0;
+
+  const createBooking = async () => {
+    const res = await createRide({
+      pickup: { address: pickup, ...(pickupCoords || {}) },
+      drop: { address: drop, ...(dropCoords || {}) },
+      rideDate: date,
+      rideTime: time,
+      vehicleCategory: selectedOffer!.category,
+      passengerCount,
+      tripType,
+      ...(tripType === 'ROUND_TRIP' ? { returnDate, returnTime } : {}),
+    });
+    setRide(res.data.data.rideId, res.data.data.totalAmount, bookingKey);
+    return res.data.data;
+  };
+
+  const openCheckout = async (id: string) => {
+    const res = await initiateRidePayment(id);
+    setCheckoutBaseUrl(new URL(res.data.payuUrl).origin);
+    setCheckoutHtml(buildPayUAutoSubmitHtml(res.data));
+  };
+
   const handleProceedToBooking = async () => {
     if (!selectedOffer) {
       showToast('Please search for cabs again');
@@ -95,299 +193,222 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
     }
     setIsBooking(true);
     try {
-      const res = await createRide({
-        pickup: { address: pickup, ...(pickupCoords || {}) },
-        drop: { address: drop, ...(dropCoords || {}) },
-        rideDate: date,
-        rideTime: time,
-        vehicleCategory: selectedOffer.category,
-        passengerCount,
-        tripType,
-        ...(tripType === 'ROUND_TRIP' ? { returnDate, returnTime } : {}),
-      });
-      setRide(res.data.data.rideId, res.data.data.totalAmount);
-      onNavigate('33');
+      let id = existingRideId;
+      if (!id) {
+        const booking = await createBooking();
+        id = booking.rideId;
+        // The backend re-prices at booking time; if that differs from the
+        // quote, show the new amount and let the rider confirm it.
+        if (booking.totalAmount !== selectedOffer.totalAmount) {
+          showToast(`Fare updated to ${inr(booking.totalAmount)}. Tap Pay to continue.`);
+          return;
+        }
+      }
+      try {
+        await openCheckout(id);
+      } catch (error: any) {
+        // A reused booking may no longer be payable (e.g. it was cancelled);
+        // create a fresh one once and retry.
+        if (existingRideId && error?.response?.status === 400) {
+          const booking = await createBooking();
+          await openCheckout(booking.rideId);
+        } else {
+          throw error;
+        }
+      }
     } catch (error: any) {
-      showToast(error?.response?.data?.message || 'Could not create booking, please try again');
+      showToast(error?.response?.data?.message || 'Could not start payment, please try again');
     } finally {
       setIsBooking(false);
     }
   };
 
+  // Same success/failure detection as the standalone payment screen.
+  const handlePaymentWebViewNavigation = async (navState: { url: string }) => {
+    const { url } = navState;
+    const currentRideId = useRideStore.getState().rideId;
+    const isTerminal = url.includes(`${API_BASE_URL}/payment/success-ride`) ||
+      url.includes(`${API_BASE_URL}/payment/failure-ride`) ||
+      url.includes('/payment/success') ||
+      url.includes('/payment/failed') ||
+      url.includes('/payment/failure');
+
+    if (!isTerminal || !currentRideId) return;
+
+    setCheckoutHtml(null);
+    try {
+      const res = await getRideById(currentRideId);
+      const rideData = res.data?.data;
+      const status = rideData?.status;
+      if (status && status !== 'PAYMENT_PENDING' && status !== 'CANCELLED') {
+        // Paid -- forget the fingerprint so a new trip creates a new booking.
+        setRide(currentRideId, rideData?.totalAmount ?? payableAmount, null);
+        const revealAt = rideData?.detailsRevealAt ? new Date(rideData.detailsRevealAt) : null;
+        const revealMessage = revealAt && revealAt.getTime() <= Date.now()
+          ? 'Driver & vehicle details will be shared as soon as a partner is assigned.'
+          : 'Driver & vehicle details will be shared 24 hours before your trip.';
+        setRideConfirmation({ category: rideData?.vehicleType || rideData?.vehicleCategory || 'ride', revealMessage });
+      } else {
+        showToast('Payment was not completed');
+      }
+    } catch {
+      showToast('Could not confirm payment status');
+    }
+  };
+
+  const dismissRideConfirmation = () => {
+    setRideConfirmation(null);
+    onNavigate('35');
+  };
+
+  const tint = RATE_CARD_TINT[selectedOffer?.partnerCategory || selectedOffer?.category || ''] || RATE_CARD_TINT.Sedan;
+  const VehicleIcon = (selectedOffer?.partnerCategory || selectedOffer?.category) === 'Tempo Traveller' ? BusIcon : Car;
+
   return (
     <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
       
       {/* Main Mobile App Viewport Container */}
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', position: 'relative' }}>
+      <View style={{ flex: 1, backgroundColor: '#F8FAFC', position: 'relative' }}>
         
         
 
         {/* Scrollable Main Screen Content */}
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
 
 
           {/* ==========================================
               SCREEN 32: FARE SUMMARY (32.png)
              ========================================== */}
           {activeScreen === '32' && (
-            <View style={{ padding: 12, gap: 10 }}>
-              
+            <View style={{ padding: 12, gap: 12 }}>
+
               {/* Header Bar */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-                <TouchableOpacity onPress={() => (onBack ? onBack() : onNavigate('31'))} style={{ padding: 4, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' }}>
-                  <ArrowLeft size={18} color="#0F172A" />
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4, paddingBottom: 2 }}>
+                <TouchableOpacity
+                  onPress={() => (onBack ? onBack() : onNavigate('31'))}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <ArrowLeft size={18} color="#0F172A" strokeWidth={2} />
                 </TouchableOpacity>
-                <Text style={{ fontSize: 16, fontWeight: '800', color: '#0F172A' }}>Fare Summary</Text>
-                <View style={{ width: 28 }} />
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }}>Review & pay</Text>
+                <View style={{ width: 36 }} />
               </View>
 
-              {/* Card 1: Route & Vehicle Summary Card */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
-                
-                {/* Top Row: Trip type badge & Distance */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 6 }}>
-                  <View style={{ backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 }}>
-                    <Text style={{ fontSize: 9.5, fontWeight: '800', color: '#FF5500', letterSpacing: 0.5 }}>{tripType === 'ROUND_TRIP' ? 'ROUND TRIP' : 'ONE-WAY TRIP'}</Text>
+              {/* Trip card */}
+              <View style={{ ...CARD, gap: 12 }}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ alignItems: 'center', paddingTop: 5, width: 12 }}>
+                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#10B981', borderWidth: 2, borderColor: '#D1FAE5' }} />
+                    <View style={{ flex: 1, width: 1.5, backgroundColor: '#E2E8F0', marginVertical: 4, borderRadius: 1 }} />
+                    <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#FF5500', borderWidth: 2, borderColor: '#FFE4D5' }} />
                   </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Navigation size={13} color="#475569" />
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#475569' }}>{quote?.distanceKm ?? 298.4} km</Text>
+                  <View style={{ flex: 1, gap: 14 }}>
+                    <AddressLine label="Pickup" address={pickup || '-'} lines={2} />
+                    <AddressLine label="Drop" address={drop || '-'} lines={2} />
                   </View>
                 </View>
 
-                {/* Pickup & Drop Timeline */}
-                <View style={{ gap: 10, paddingVertical: 2, position: 'relative' }}>
-                  
-                  {/* Pickup Location */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, flex: 1 }}>
-                      <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: '#10B981', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
-                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#10B981' }} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 9, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 }}>PICKUP LOCATION</Text>
-                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A', marginTop: 1 }} numberOfLines={1}>
-                          {pickup || 'New Delhi, Delhi'}
+                <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 12, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                  <View style={{ flex: 1, gap: 8 }}>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                      <MetaChip highlight label={tripType === 'ROUND_TRIP' ? 'Round trip' : 'One way'} />
+                      {!!quote?.distanceKm && (
+                        <MetaChip icon={<Navigation size={11} color="#64748B" strokeWidth={2} />} label={`${Math.round(quote.distanceKm).toLocaleString('en-IN')} km`} />
+                      )}
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Calendar size={13} color="#64748B" strokeWidth={2} />
+                      <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>{formatDisplayDate(date)}, {time}</Text>
+                    </View>
+                    {tripType === 'ROUND_TRIP' && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Calendar size={13} color="#64748B" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>
+                          Return {returnDate ? formatDisplayDate(returnDate) : '-'}, {returnTime || '-'}
                         </Text>
                       </View>
-                    </View>
-                    <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>Delhi NCR</Text>
-                    </View>
+                    )}
                   </View>
-
-                  {/* Vertical Dashed Line */}
-                  <View style={{ position: 'absolute', left: 6, top: 16, bottom: 20, width: 1, borderStyle: 'dashed', borderWidth: 0.5, borderColor: '#CBD5E1' }} />
-
-                  {/* Drop Location */}
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, flex: 1 }}>
-                      <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: '#FF5500', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
-                        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#FF5500' }} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 9, fontWeight: '800', color: '#94A3B8', letterSpacing: 0.5 }}>DROP LOCATION</Text>
-                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A', marginTop: 1 }} numberOfLines={1}>
-                          {drop || 'Jaipur, Rajasthan'}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={{ backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>Pink City</Text>
-                    </View>
-                  </View>
-
-                </View>
-
-                {/* Date/Time Footer */}
-                <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, marginTop: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Calendar size={13} color="#0F172A" />
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>
-                      {date || '2026-08-13'}  <Text style={{ color: '#94A3B8' }}>•</Text>  {time || '02:34 PM'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => onNavigate('31')}>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#FF5500' }}>Edit</Text>
+                  <TouchableOpacity
+                    onPress={() => onNavigate('31')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FFF5EF' }}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF5500' }}>Edit</Text>
                   </TouchableOpacity>
                 </View>
+              </View>
 
-                {tripType === 'ROUND_TRIP' && (
-                  <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, marginTop: 2, flexDirection: 'row', alignItems: 'center' }}>
-                    <Calendar size={13} color="#0F172A" />
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A', marginLeft: 6 }}>
-                      Return: {returnDate || '-'}  <Text style={{ color: '#94A3B8' }}>•</Text>  {returnTime || '-'}
-                    </Text>
+              {/* Vehicle card */}
+              {selectedOffer && (
+                <View style={{ ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: tint.bg, alignItems: 'center', justifyContent: 'center' }}>
+                    <VehicleIcon size={22} color={tint.icon} strokeWidth={1.75} />
                   </View>
-                )}
-
-                {/* Selected Vehicle Details Sub-Block */}
-                <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 48, height: 44, borderRadius: 12, backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
-                    <Car size={22} color="#FF5500" />
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }} numberOfLines={2}>{selectedOffer.category}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Users size={12} color="#64748B" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>{selectedOffer.seatingCapacity} seats</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Snowflake size={12} color="#64748B" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>AC</Text>
+                      </View>
+                    </View>
                   </View>
+                  <TouchableOpacity
+                    onPress={() => (onBack ? onBack() : onNavigate('vehicle-select'))}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#F1F5F9' }}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#334155' }}>Change</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
-                  <View style={{ flex: 1, gap: 2 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#0F172A' }}>
-                        {selectedOffer?.category || 'Sedan'}
+              {/* Fare breakdown */}
+              {selectedOffer && (
+                <View style={{ ...CARD, gap: 14 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Fare breakdown</Text>
+                  <ReviewFareBreakdown offer={selectedOffer} distanceKm={quote?.distanceKm} />
+                  <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 12 }}>
+                    <FareRow label="Total payable" amount={payableAmount} bold />
+                  </View>
+                  {!!quote?.payableOnTripNote && isRateCardOffer(selectedOffer) && (
+                    <View style={{ backgroundColor: '#FFFBEB', borderRadius: 10, padding: 10, flexDirection: 'row', gap: 8 }}>
+                      <InfoIcon size={14} color="#B45309" strokeWidth={2} style={{ marginTop: 1 }} />
+                      <Text style={{ flex: 1, fontSize: 11.5, fontWeight: '400', color: '#92400E', lineHeight: 16 }}>
+                        <Text style={{ fontWeight: '600' }}>Pay on trip: </Text>{quote.payableOnTripNote}
                       </Text>
-                      <TouchableOpacity onPress={() => onNavigate('vehicle-select')} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                        <Edit2 size={11} color="#FF5500" />
-                        <Text style={{ fontSize: 10, fontWeight: '800', color: '#FF5500' }}>Change</Text>
-                      </TouchableOpacity>
                     </View>
-
-                    <Text style={{ fontSize: 10, fontWeight: '500', color: '#64748B' }} numberOfLines={1}>
-                      {selectedOffer?.vehicleName || 'Maruti Suzuki Dzire VDI'}
-                    </Text>
-
-                    {/* Inline Feature Badges */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 3 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5 }}>
-                        <Users size={9.5} color="#475569" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#475569' }}>
-                          {selectedOffer?.seatingCapacity || passengerCount || 4} Passengers
-                        </Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5 }}>
-                        <Briefcase size={9.5} color="#475569" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#475569' }}>
-                          {selectedOffer?.category === 'SUV' ? '4 Bags' : '2 Bags'}
-                        </Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 5 }}>
-                        <Snowflake size={9.5} color="#059669" />
-                        <Text style={{ fontSize: 9, fontWeight: '700', color: '#059669' }}>
-                          AC Vehicle
-                        </Text>
-                      </View>
-                    </View>
-
-                  </View>
+                  )}
                 </View>
+              )}
 
-              </View>
-
-              {/* Card 2: Fare Breakdown & Savings Card */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 8, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingBottom: 6 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '800', color: '#0F172A' }}>Fare Breakdown</Text>
-                  <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>Amount (₹)</Text>
+              {/* Payment info */}
+              <View style={{ ...CARD, gap: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ShieldCheck size={16} color="#059669" strokeWidth={2} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#0F172A' }}>Secure payment via PayU</Text>
                 </View>
-
-                <View style={{ gap: 6 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <View style={{ width: 18, height: 18, borderRadius: 4, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' }}>
-                        <Car size={11} color="#475569" />
-                      </View>
-                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#334155' }}>Base Fare ({quote?.distanceKm || 298.4} km)</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {['UPI', 'Cards', 'Net banking', 'Wallets'].map((m) => (
+                    <View key={m} style={{ backgroundColor: '#F1F5F9', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
+                      <Text style={{ fontSize: 11.5, fontWeight: '500', color: '#475569' }}>{m}</Text>
                     </View>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>{(selectedOffer?.baseFare || 5200).toLocaleString('en-IN')}</Text>
-                  </View>
-
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <View style={{ width: 18, height: 18, borderRadius: 4, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' }}>
-                        <User size={11} color="#475569" />
-                      </View>
-                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#334155' }}>Driver Allowance</Text>
-                    </View>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>{(selectedOffer?.driverAllowance || 450).toLocaleString('en-IN')}</Text>
-                  </View>
-
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <View style={{ width: 18, height: 18, borderRadius: 4, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' }}>
-                        <Zap size={11} color="#475569" />
-                      </View>
-                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#334155' }}>Toll & Taxes</Text>
-                    </View>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#0F172A' }}>300</Text>
-                  </View>
-
-                  <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', borderStyle: 'dashed', paddingTop: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <View style={{ width: 18, height: 18, borderRadius: 4, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' }}>
-                        <Tag size={11} color="#059669" />
-                      </View>
-                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#059669' }}>Discount (WELCOME10)</Text>
-                    </View>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: '#059669' }}>-200</Text>
-                  </View>
-
-                  <View style={{ borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 6, marginTop: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View>
-                      <Text style={{ fontSize: 13, fontWeight: '900', color: '#0F172A' }}>Total Amount</Text>
-                      <Text style={{ fontSize: 8.5, fontWeight: '500', color: '#94A3B8' }}>All inclusive of taxes</Text>
-                    </View>
-                    <Text style={{ fontSize: 16, fontWeight: '900', color: '#0F172A' }}>₹{(selectedOffer?.totalAmount || 6250).toLocaleString('en-IN')}</Text>
-                  </View>
+                  ))}
                 </View>
-
-                {/* Integrated Savings Strip */}
-                <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1, borderColor: '#A7F3D0', borderRadius: 10, padding: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <ShieldCheck size={16} color="#059669" />
-                    <View>
-                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#047857' }}>You are saving ₹1,050 on this booking</Text>
-                      <Text style={{ fontSize: 8.5, fontWeight: '600', color: '#059669' }}>Best price guaranteed!</Text>
-                    </View>
-                  </View>
-                  <Award size={14} color="#059669" />
-                </View>
-
-              </View>
-
-              {/* Card 3: Payment Total & Booking Action Button */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6 }}>
-                
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: '#FFF5EF', borderWidth: 1, borderColor: '#FFE8D9', alignItems: 'center', justifyContent: 'center' }}>
-                      <Wallet size={16} color="#FF5500" />
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>To be paid</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                        <CheckCircle2 size={10} color="#059669" />
-                        <Text style={{ fontSize: 9, fontWeight: '800', color: '#059669' }}>100% Secure Payment</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <Text style={{ fontSize: 17, fontWeight: '900', color: '#0F172A' }}>₹{(selectedOffer?.totalAmount || 6250).toLocaleString('en-IN')}</Text>
-                </View>
-
-                {/* Primary Action Button */}
-                <TouchableOpacity
-                  onPress={handleProceedToBooking}
-                  disabled={isBooking}
-                  style={{ width: '100%', height: 40, backgroundColor: isBooking ? '#CBD5E1' : '#FF5500', borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, gap: 6 }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12.5, textAlign: 'center' }}>
-                    {isBooking ? 'Booking...' : 'Proceed to Booking'}
-                  </Text>
-                  <ArrowRight size={15} color="#FFFFFF" />
-                </TouchableOpacity>
-
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                  <ShieldCheck size={11} color="#059669" />
-                  <Text style={{ fontSize: 9, fontWeight: '600', color: '#64748B' }}>
-                    Your payment and personal details are 100% secure.
-                  </Text>
-                </View>
-
+                <Text style={{ fontSize: 11.5, fontWeight: '400', color: '#94A3B8', lineHeight: 16 }}>
+                  Your ride is confirmed once the payment succeeds.
+                </Text>
               </View>
 
             </View>
           )}
 
-          {/* ==========================================
-              SCREEN 33: PAYMENT SCREEN (33.png)
-             ========================================== */}
           {activeScreen === '33' && (
             <View style={{ padding: 12, gap: 10 }}>
               
@@ -1018,7 +1039,25 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
 
         </ScrollView>
 
-        {/* No bottom navbar on Fare Summary detail flow screen */}
+        {/* Sticky pay bar */}
+        {selectedOffer && (
+          <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#EEF2F6', paddingHorizontal: 14, paddingTop: 10, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12, zIndex: 40 }}>
+            <View>
+              <Text style={{ fontSize: 11, fontWeight: '500', color: '#94A3B8' }}>Total payable</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#0F172A', letterSpacing: -0.3 }}>{inr(payableAmount)}</Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleProceedToBooking}
+              disabled={isBooking}
+              activeOpacity={0.85}
+              style={{ flex: 1, height: 48, borderRadius: 12, backgroundColor: isBooking ? '#FDA584' : '#FF4500', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#FF4500', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 3 }}
+            >
+              {isBooking ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Lock size={15} color="#FFFFFF" strokeWidth={2} />}
+              <Text style={{ fontSize: 15, fontWeight: '600', color: '#FFFFFF' }}>{isBooking ? 'Please wait...' : `Pay ${inr(payableAmount)}`}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
 
         {/* Global Notification Toast */}
         {toastMsg ? (
@@ -1029,6 +1068,58 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
             </View>
           </View>
         ) : null}
+
+        {/* PayU Checkout WebView */}
+        <Modal visible={!!checkoutHtml} animationType="slide" onRequestClose={() => setCheckoutHtml(null)}>
+          <View style={{ flex: 1, paddingTop: 40, backgroundColor: '#FFFFFF' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Lock size={14} color="#059669" strokeWidth={2} />
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#0F172A' }}>Secure payment</Text>
+              </View>
+              <TouchableOpacity onPress={() => setCheckoutHtml(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#FF5500' }}>Close</Text>
+              </TouchableOpacity>
+            </View>
+            {checkoutHtml && (
+              <WebView
+                // baseUrl anchors the auto-submitting form to a real https
+                // origin instead of about:blank/null -- without it, Android
+                // WebView can silently drop the POST navigation to PayU.
+                source={{ html: checkoutHtml, baseUrl: checkoutBaseUrl ?? undefined }}
+                onNavigationStateChange={handlePaymentWebViewNavigation}
+                startInLoadingState
+                renderLoading={() => (
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <ActivityIndicator size="large" color="#FF4500" />
+                  </View>
+                )}
+              />
+            )}
+          </View>
+        </Modal>
+
+        {/* Ride Confirmed */}
+        <Modal visible={!!rideConfirmation} animationType="fade" transparent onRequestClose={dismissRideConfirmation}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.55)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+            <View style={{ backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, alignItems: 'center' }}>
+              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle2 size={34} color="#059669" strokeWidth={2} />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '600', color: '#0F172A', marginTop: 14, textAlign: 'center' }}>Ride confirmed</Text>
+              <Text style={{ fontSize: 13, fontWeight: '400', color: '#475569', marginTop: 8, textAlign: 'center', lineHeight: 20 }}>
+                Your {rideConfirmation?.category} ride is booked. {rideConfirmation?.revealMessage}
+              </Text>
+              <TouchableOpacity
+                onPress={dismissRideConfirmation}
+                style={{ marginTop: 20, backgroundColor: '#FF4500', height: 46, borderRadius: 12, width: '100%', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 14 }}>View my trips</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
 
         
 

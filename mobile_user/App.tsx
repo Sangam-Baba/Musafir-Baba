@@ -47,6 +47,11 @@ import ScreenSavedItems from './src/screens/rider/profile/ScreenSavedItems';
 import ScreenRiderProfileAshutosh from './src/screens/rider/profile/ScreenRiderProfileAshutosh';
 import ScreenRiderDocuments from './src/screens/rider/profile/ScreenRiderDocuments';
 
+// Bottom-tab screens (Home, My Trips, Profile): opening one doesn't stack on
+// top of the others -- see navigate() below.
+const HOME_SCREEN = '31';
+const ROOT_TAB_SCREENS = ['31', '35', '36'];
+
 export default function App() {
   return (
     <SafeAreaProvider>
@@ -65,46 +70,118 @@ function AppContent() {
   useRealtimeNotifications();
   const insets = useSafeAreaInsets();
 
-  // Screen-to-screen navigation history, so the Android hardware/gesture
-  // back button steps back through the app's own screens instead of
-  // immediately exiting (the app uses this activeScreen switch instead of
-  // React Navigation, so there's no built-in back stack to fall back on).
-  // Kept in a ref (not state) since it doesn't need to trigger re-renders.
+  // Screen-to-screen navigation history, so back (Android hardware/gesture
+  // back, on-screen back arrows, and the browser's Back/Forward on web)
+  // steps through the app's own screens instead of exiting (the app uses
+  // this activeScreen switch instead of React Navigation, so there's no
+  // built-in back stack to fall back on). Kept in refs (not state) since it
+  // doesn't need to trigger re-renders.
   const historyRef = useRef<string[]>([]);
+  // Screens stepped back from (web Forward button only); cleared on any new navigation.
+  const forwardRef = useRef<string[]>([]);
+  const activeScreenRef = useRef(activeScreen);
+  // Position of the current entry in the browser's history (web only).
+  const webIndexRef = useRef(0);
+  const isWeb = Platform.OS === 'web';
+
+  const showScreen = useCallback((screen: string) => {
+    activeScreenRef.current = screen;
+    setActiveScreen(screen);
+  }, []);
+
+  // Clears all history (used when the auth state flips between login and home).
+  const resetTo = useCallback((screen: string) => {
+    historyRef.current = [];
+    forwardRef.current = [];
+    showScreen(screen);
+  }, [showScreen]);
 
   const navigate = useCallback((screen: string) => {
-    setActiveScreen((current) => {
-      if (current !== screen) historyRef.current.push(current);
-      return screen;
-    });
-  }, []);
+    const current = activeScreenRef.current;
+    if (current === screen) return;
+    if (ROOT_TAB_SCREENS.includes(screen)) {
+      // Bottom-tab destinations behave like a mobile app's tabs: they don't
+      // pile up on each other. Back from any tab goes to Home, and back from
+      // Home leaves the app. This also stops e.g. "View my trips" after a
+      // payment from leaving the already-paid review screen behind it.
+      historyRef.current = screen === HOME_SCREEN ? [] : [HOME_SCREEN];
+    } else {
+      historyRef.current.push(current);
+    }
+    forwardRef.current = [];
+    if (isWeb) {
+      try {
+        webIndexRef.current += 1;
+        window.history.pushState({ mbgoIndex: webIndexRef.current }, '', '/');
+      } catch (e) {}
+    }
+    showScreen(screen);
+  }, [isWeb, showScreen]);
+
+  // Steps back one screen in our own history. Returns false if there's nothing to go back to.
+  const popHistory = useCallback(() => {
+    const previous = historyRef.current.pop();
+    if (!previous) return false;
+    forwardRef.current.push(activeScreenRef.current);
+    showScreen(previous);
+    return true;
+  }, [showScreen]);
 
   // Real "go back one step" -- pops the actual path the user took, instead
   // of a screen's own header back-arrow jumping to a hardcoded fixed
   // destination regardless of how the user actually got there. Passed to
-  // every screen as `onBack`, alongside the existing `onNavigate` (still
-  // used for forward/specific jumps, e.g. "Continue to Payment").
+  // screens as `onBack`, alongside the existing `onNavigate` (still used
+  // for forward/specific jumps, e.g. "Continue to Payment").
   const goBack = useCallback(() => {
-    setActiveScreen((current) => {
-      const previous = historyRef.current.pop();
-      if (previous) return previous;
-      // No history (e.g. deep-linked straight into a screen) -- fall back
-      // to a sensible root instead of doing nothing.
-      return isAuthenticated ? '31' : 'login';
-    });
-  }, [isAuthenticated]);
+    if (historyRef.current.length > 0) {
+      if (isWeb) {
+        // Let the browser step back too, so its Back/Forward buttons stay in
+        // sync; the popstate listener below does the actual screen change.
+        try {
+          window.history.back();
+          return;
+        } catch (e) {}
+      }
+      popHistory();
+      return;
+    }
+    // No history (e.g. deep-linked straight into a screen) -- fall back
+    // to a sensible root instead of doing nothing.
+    showScreen(isAuthenticated ? HOME_SCREEN : 'login');
+  }, [isWeb, isAuthenticated, popHistory, showScreen]);
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (historyRef.current.length > 0) {
-        setActiveScreen(historyRef.current.pop() as string);
-        return true; // handled -- stay in the app
-      }
-      return false; // no history left (e.g. on Home) -- let the OS exit the app as normal
+      // true = handled, stay in the app; false = nothing left (e.g. on Home),
+      // let the OS exit the app as normal.
+      return popHistory();
     });
     return () => subscription.remove();
-  }, []);
+  }, [popHistory]);
+
+  useEffect(() => {
+    if (!isWeb) return;
+    try {
+      window.history.replaceState({ mbgoIndex: 0 }, '', '/');
+    } catch (e) {}
+    const onPopState = (event: PopStateEvent) => {
+      const index = typeof event.state?.mbgoIndex === 'number' ? event.state.mbgoIndex : 0;
+      if (index < webIndexRef.current) {
+        popHistory();
+      } else if (index > webIndexRef.current) {
+        // Browser Forward: re-open the screen we last stepped back from.
+        const next = forwardRef.current.pop();
+        if (next) {
+          historyRef.current.push(activeScreenRef.current);
+          showScreen(next);
+        }
+      }
+      webIndexRef.current = index;
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [isWeb, popHistory, showScreen]);
 
   useEffect(() => {
     initialize();
@@ -129,8 +206,7 @@ function AppContent() {
   useEffect(() => {
     // Once a stored session is restored, skip straight past the auth screens.
     if (!isInitializing && isAuthenticated && ['login', 'register', 'forgot'].includes(activeScreen)) {
-      historyRef.current = [];
-      setActiveScreen('31');
+      resetTo(HOME_SCREEN);
     }
   }, [isInitializing, isAuthenticated]);
 
@@ -140,8 +216,7 @@ function AppContent() {
     // to login instead of leaving the user stranded on a screen where every
     // API call now silently fails.
     if (!isInitializing && !isAuthenticated && !['login', 'register', 'forgot'].includes(activeScreen)) {
-      historyRef.current = [];
-      setActiveScreen('login');
+      resetTo('login');
     }
   }, [isInitializing, isAuthenticated]);
 

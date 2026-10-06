@@ -110,6 +110,10 @@ export default function MBGoSearchWidget() {
       const res = await getRideQuote({
         pickup: { address: pickup, ...(pickupCoords || {}) },
         drop: { address: drop, ...(dropCoords || {}) },
+        tripType,
+        rideDate,
+        rideTime,
+        ...(tripType === "ROUND_TRIP" ? { returnDate } : {}),
       });
 
       if (!res.data.offers.length) {

@@ -142,7 +142,11 @@ export default function MBGoBookingPage() {
                 <p className="text-[10.5px] font-bold text-gray-500">Amount (₹)</p>
               </div>
               <div className="flex items-center justify-between text-[12.5px]">
-                <span className="text-gray-600 font-semibold">Base Fare ({quote.distanceKm} km)</span>
+                <span className="text-gray-600 font-semibold">
+                  {selectedOffer.fare
+                    ? `Vehicle Fare (${selectedOffer.fare.billableKm} km × ₹${selectedOffer.fare.ratePerKm})`
+                    : `Base Fare (${quote.distanceKm} km)`}
+                </span>
                 <span className="font-extrabold text-gray-900">
                   {selectedOffer.baseFare.toLocaleString("en-IN")}
                 </span>
@@ -153,12 +157,33 @@ export default function MBGoBookingPage() {
                   {selectedOffer.driverAllowance.toLocaleString("en-IN")}
                 </span>
               </div>
+              {selectedOffer.fare &&
+                (
+                  [
+                    ["Night Allowance", selectedOffer.fare.nightAllowance],
+                    ["Platform Charges", selectedOffer.fare.platformCharges],
+                    ["Taxes", selectedOffer.fare.taxes],
+                  ] as const
+                )
+                  .filter(([, amount]) => amount > 0)
+                  .map(([label, amount]) => (
+                    <div key={label} className="flex items-center justify-between text-[12.5px]">
+                      <span className="text-gray-600 font-semibold">{label}</span>
+                      <span className="font-extrabold text-gray-900">{amount.toLocaleString("en-IN")}</span>
+                    </div>
+                  ))}
               <div className="flex items-center justify-between pt-2.5 mt-1 border-t border-gray-50">
                 <p className="text-[14px] font-black text-gray-900">Total Amount</p>
                 <p className="text-[18px] font-black text-gray-900">
                   ₹{selectedOffer.totalAmount.toLocaleString("en-IN")}
                 </p>
               </div>
+              {selectedOffer.fare && quote.payableOnTripNote && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-[11.5px] text-amber-900">
+                  <span className="font-bold">Payable on trip (not included above): </span>
+                  {quote.payableOnTripNote}
+                </div>
+              )}
             </div>
           </div>
 

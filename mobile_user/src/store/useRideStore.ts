@@ -20,6 +20,10 @@ interface RideDraftState {
   quote: RideQuote | null;
   selectedOffer: RideOffer | null;
   rideId: string | null;
+  // Fingerprint of the trip the unpaid rideId was created for -- lets the
+  // review/pay screen reuse that booking instead of creating a duplicate
+  // when the rider taps Pay again for the exact same trip.
+  rideKey: string | null;
   totalAmount: number | null;
 
   passengerCount: number;
@@ -27,7 +31,7 @@ interface RideDraftState {
   setSearch: (fields: Partial<Pick<RideDraftState, 'pickup' | 'drop' | 'pickupCoords' | 'dropCoords' | 'rideDate' | 'rideTime' | 'tripType' | 'returnDate' | 'returnTime' | 'passengerCount'>>) => void;
   setQuote: (quote: RideQuote, preferredCategory?: string) => void;
   setSelectedOffer: (offer: RideOffer) => void;
-  setRide: (rideId: string, totalAmount: number) => void;
+  setRide: (rideId: string, totalAmount: number, rideKey?: string | null) => void;
   reset: () => void;
 }
 
@@ -44,6 +48,7 @@ const initialState = {
   quote: null,
   selectedOffer: null,
   rideId: null,
+  rideKey: null,
   totalAmount: null,
   passengerCount: 1,
 };
@@ -57,6 +62,6 @@ export const useRideStore = create<RideDraftState>((set) => ({
       selectedOffer: (preferredCategory && quote.offers.find((o) => o.category === preferredCategory)) || quote.offers[0] || null,
     }),
   setSelectedOffer: (offer) => set({ selectedOffer: offer }),
-  setRide: (rideId, totalAmount) => set({ rideId, totalAmount }),
+  setRide: (rideId, totalAmount, rideKey = null) => set({ rideId, totalAmount, rideKey }),
   reset: () => set(initialState),
 }));

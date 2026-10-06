@@ -70,13 +70,13 @@ export default function ScreenNotifications({ onNavigate, onBack }: { onNavigate
   };
 
   const NOTIFICATION_TYPE_STYLE: Record<string, { bg: string; icon: React.ReactNode }> = {
-    Ride: { bg: '#FF6B4A', icon: <Car size={16} color="#FFFFFF" /> },
-    Trip: { bg: '#FF6B4A', icon: <Car size={16} color="#FFFFFF" /> },
-    Payment: { bg: '#4C82F6', icon: <CreditCard size={16} color="#FFFFFF" /> },
-    Payout: { bg: '#4C82F6', icon: <CreditCard size={16} color="#FFFFFF" /> },
-    Document: { bg: '#8B5CF6', icon: <FileText size={16} color="#FFFFFF" /> },
-    General: { bg: '#F59E0B', icon: <Tag size={16} color="#FFFFFF" /> },
-    System: { bg: '#3B82F6', icon: <Volume2 size={16} color="#FFFFFF" /> },
+    Ride: { bg: '#FF6B4A', icon: <Car size={18} color="#FFFFFF" strokeWidth={2} /> },
+    Trip: { bg: '#FF6B4A', icon: <Car size={18} color="#FFFFFF" strokeWidth={2} /> },
+    Payment: { bg: '#4C82F6', icon: <CreditCard size={18} color="#FFFFFF" strokeWidth={2} /> },
+    Payout: { bg: '#4C82F6', icon: <CreditCard size={18} color="#FFFFFF" strokeWidth={2} /> },
+    Document: { bg: '#8B5CF6', icon: <FileText size={18} color="#FFFFFF" strokeWidth={2} /> },
+    General: { bg: '#F59E0B', icon: <Tag size={18} color="#FFFFFF" strokeWidth={2} /> },
+    System: { bg: '#3B82F6', icon: <Volume2 size={18} color="#FFFFFF" strokeWidth={2} /> },
   };
 
   const NOTIFICATION_TAB_TYPES: Record<string, string[]> = {
@@ -101,7 +101,7 @@ export default function ScreenNotifications({ onNavigate, onBack }: { onNavigate
     <View className="flex-1 bg-slate-900 selection:bg-orange-500 selection:text-white">
       
       {/* Main Mobile Frame */}
-      <View className="flex-1 bg-[#FAFAFA] relative">
+      <View className="flex-1 bg-[#F8FAFC] relative">
         
         
 
@@ -407,108 +407,105 @@ export default function ScreenNotifications({ onNavigate, onBack }: { onNavigate
               SCREEN 38: NOTIFICATIONS - (38.png)
               ========================================== */}
           {activeScreen === '38' && (
-            <View className="p-4 space-y-3.5 animate-in fade-in duration-200 bg-[#FAFAFA] pb-24">
-              
+            <View style={{ padding: 12, gap: 12 }}>
+
               {/* Header Bar */}
-              <View className="flex items-center justify-between py-1 flex-row">
-                <TouchableOpacity onPress={() => (onBack ? onBack() : onNavigate('36'))} className="p-1.5 hover:bg-slate-100 rounded-full">
-                  <ChevronRight className="w-5 h-5 rotate-180 text-slate-900 stroke-[2.5]"/>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
+                <TouchableOpacity
+                  onPress={() => (onBack ? onBack() : onNavigate('36'))}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <ChevronRight size={18} color="#0F172A" strokeWidth={2} style={{ transform: [{ rotate: '180deg' }] }} />
                 </TouchableOpacity>
-                <Text className="text-base font-bold text-slate-900">Notifications</Text>
-                <TouchableOpacity onPress={handleMarkAllRead} className="flex items-center gap-1 flex-row">
-                  <CheckCircle2 className="w-4 h-4 text-[#FF3B00]"/>
-                  <Text className="text-xs font-semibold text-[#FF3B00]">Mark all as read</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }}>Notifications</Text>
+                <TouchableOpacity onPress={handleMarkAllRead} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FFF5EF' }}>
+                  <Check size={13} color="#FF4500" strokeWidth={2.25} />
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF4500' }}>Read all</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Category Filter Segment Control */}
-              <View className="bg-white border border-slate-200/70 rounded-2xl p-1 flex items-center justify-between flex-row">
-                {['All', 'Bookings', 'Payments', 'Offers', 'System'].map((tab) => (
-                  <TouchableOpacity 
-                    key={tab}
-                    onPress={() => setNotificationTab(tab)}
-                    className={`flex-1 py-2 rounded-xl transition items-center justify-center ${
-                      notificationTab === tab 
-                        ? 'border border-orange-200 bg-orange-50/30' 
-                        : ''
-                    }`}
-                  >
-                    <Text className={`text-xs ${
-                      notificationTab === tab ? 'text-[#FF3B00] font-bold' : 'text-slate-600 font-medium'
-                    }`}>
-                      {tab}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              {/* Category Filter */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
+                {['All', 'Bookings', 'Payments', 'Offers', 'System'].map((tab) => {
+                  const isActive = notificationTab === tab;
+                  return (
+                    <TouchableOpacity
+                      key={tab}
+                      onPress={() => setNotificationTab(tab)}
+                      style={{ height: 34, paddingHorizontal: 16, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? '#0F172A' : '#FFFFFF', borderWidth: 1, borderColor: isActive ? '#0F172A' : '#E2E8F0' }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: isActive ? '600' : '500', color: isActive ? '#FFFFFF' : '#475569' }}>{tab}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
 
-              {/* Notification Grouped Card Container */}
+              {/* Notification List */}
               {isLoadingNotifications ? (
-                <View className="py-10 items-center justify-center">
-                  <ActivityIndicator color="#FF3B00" />
+                <View style={{ paddingVertical: 40, alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <ActivityIndicator color="#FF4500" />
+                  <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>Loading notifications...</Text>
                 </View>
               ) : filteredNotifications.length === 0 ? (
-                <View className="bg-white border border-slate-200/70 rounded-2xl p-6 items-center justify-center">
-                  <Text className="text-xs font-semibold text-slate-400">No notifications yet</Text>
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, paddingVertical: 40, paddingHorizontal: 24, alignItems: 'center', gap: 10 }}>
+                  <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
+                    <Bell size={24} color="#FF4500" strokeWidth={1.75} />
+                  </View>
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F172A' }}>You're all caught up</Text>
+                  <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', textAlign: 'center' }}>
+                    {notificationTab === 'All' ? 'New updates about your rides will appear here.' : `No ${notificationTab.toLowerCase()} notifications yet.`}
+                  </Text>
                 </View>
               ) : (
-                <View className="bg-white border border-slate-200/70 rounded-2xl divide-y divide-slate-100 shadow-2xs overflow-hidden">
-                  {filteredNotifications.map((item) => {
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, overflow: 'hidden', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 }}>
+                  {filteredNotifications.map((item, idx) => {
                     const style = NOTIFICATION_TYPE_STYLE[item.type] || NOTIFICATION_TYPE_STYLE.General;
+                    const isLast = idx === filteredNotifications.length - 1;
                     return (
-                      <TouchableOpacity key={item.id} onPress={() => showToast(item.title)} className="p-3.5 hover:bg-slate-50/60 transition">
-                        <View className="flex items-start justify-between flex-row">
-                          <View className="flex items-start gap-2.5 flex-row flex-1 pr-1">
-                            <View className={`w-2 h-2 rounded-full mt-3 shrink-0 ${item.read ? 'bg-transparent' : 'bg-[#00875A]'}`} />
-                            <View className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: style.bg }}>
-                              {style.icon}
-                            </View>
-                            <View className="flex-1">
-                              <Text className="text-xs font-bold text-slate-900">{item.title}</Text>
-                              <Text className="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">
-                                {item.message}
-                              </Text>
-                            </View>
-                          </View>
-                          <View className="flex items-end justify-between h-full shrink-0 pt-0.5 pl-1">
-                            <Text className="text-[10px] font-medium text-slate-400">{item.time}</Text>
-                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 mt-4" />
-                          </View>
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => showToast(item.title)}
+                        activeOpacity={0.7}
+                        style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: item.read ? '#FFFFFF' : '#FFFAF6', borderBottomWidth: isLast ? 0 : 1, borderBottomColor: '#F1F5F9' }}
+                      >
+                        <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: style.bg }}>
+                          {style.icon}
                         </View>
+                        <View style={{ flex: 1, gap: 3 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                            <Text style={{ flex: 1, fontSize: 14, fontWeight: item.read ? '500' : '600', color: '#0F172A' }}>{item.title}</Text>
+                            <Text style={{ fontSize: 11, fontWeight: '500', color: '#94A3B8', marginTop: 2 }}>{item.time}</Text>
+                          </View>
+                          <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', lineHeight: 18 }}>{item.message}</Text>
+                        </View>
+                        {!item.read && (
+                          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4500', marginTop: 6 }} />
+                        )}
                       </TouchableOpacity>
                     );
                   })}
                 </View>
               )}
 
-              {/* Enable Push Notifications Banner */}
-              <View className="bg-[#EEF4FF] border border-blue-100 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2.5 flex-row flex-1 pr-2">
-                  <View className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <Bell className="w-4.5 h-4.5 text-blue-600"/>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-xs font-bold text-slate-900">Enable Push Notifications</Text>
-                    <Text className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">Stay updated with your bookings, offers and important alerts.</Text>
-                  </View>
+              {/* Enable Push Notifications */}
+              <View style={{ backgroundColor: '#EFF6FF', borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                  <Bell size={18} color="#2563EB" strokeWidth={2} />
                 </View>
-                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} className="bg-[#1B64F2] hover:bg-blue-700 px-3.5 py-2 rounded-xl shadow-xs shrink-0">
-                  <Text className="text-xs font-bold text-white">Enable Now</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#0F172A' }}>Push notifications</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B', marginTop: 1, lineHeight: 16 }}>Get ride updates and alerts instantly.</Text>
+                </View>
+                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, backgroundColor: '#2563EB' }}>
+                  <Text style={{ fontSize: 12.5, fontWeight: '600', color: '#FFFFFF' }}>Enable</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Privacy Footer Banner */}
-              <View className="bg-[#F4FBF7] border border-emerald-100/80 rounded-2xl p-3 flex items-center justify-between flex-row">
-                <View className="flex items-center gap-2.5 flex-row flex-1">
-                  <View className="w-8 h-8 rounded-full bg-emerald-100/70 flex items-center justify-center shrink-0">
-                    <Shield className="w-4 h-4 text-emerald-600"/>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-xs font-bold text-slate-900">Your Privacy, Our Priority</Text>
-                    <Text className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">We never share your personal information with anyone.</Text>
-                  </View>
-                </View>
-                <ChevronRight className="w-4 h-4 text-slate-800 shrink-0"/>
+              {/* Privacy note */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
+                <Shield size={14} color="#059669" strokeWidth={2} />
+                <Text style={{ flex: 1, fontSize: 11.5, fontWeight: '400', color: '#64748B' }}>Your privacy matters. We never share your personal information.</Text>
               </View>
 
             </View>
