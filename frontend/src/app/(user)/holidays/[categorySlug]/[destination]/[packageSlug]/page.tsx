@@ -11,6 +11,7 @@ import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
 import { notFound } from "next/navigation";
 import { Reviews } from "@/app/admin/holidays/new/page";
 import { stripHtml } from "@/lib/utils";
+import { TabConfigItem } from "@/lib/packageTabs";
 
 interface Destination {
   _id: string;
@@ -47,7 +48,6 @@ export interface Itinerary {
   title: string;
   description: string;
 }
-
 interface Image {
   url: string;
   public_id: string;
@@ -85,6 +85,7 @@ export interface GroupPackageInterface {
   cta?: string;
   banner_text?: string[];
   helpfulResources?: { title: string; url: string }[];
+  tabsConfig?: TabConfigItem[];
   isFeatured: boolean;
   status: "draft" | "published";
   createdAt: string;

@@ -17,7 +17,9 @@
         "EXPO_PUBLIC_API_URL": "https://musafir-baba-backend.onrender.com/api"
       }
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true
+    }
   },
   "submit": {
     "production": {}
