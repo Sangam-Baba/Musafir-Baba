@@ -139,6 +139,21 @@ const packageSchema = new mongoose.Schema(
         url: { type: String },
       },
     ],
+    // Optional admin-controlled tab order/content for the package detail
+    // page. Left undefined (the default for every package created before
+    // this field existed), the frontend falls back to its original
+    // hardcoded tab order — so this is purely additive and never changes
+    // behavior unless an admin explicitly edits it via the "Tabs" admin tab.
+    tabsConfig: [
+      {
+        key: { type: String, required: true },
+        label: { type: String, required: true },
+        type: { type: String, enum: ["builtin", "custom"], default: "builtin" },
+        builtinKey: { type: String },
+        content: { type: String },
+        hidden: { type: Boolean, default: false },
+      },
+    ],
     isBestSeller: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
     packagePercent: { type: Number, min: 0, max: 100, default: 0 },

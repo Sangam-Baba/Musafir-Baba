@@ -35,6 +35,7 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
 import PackageCard from "@/components/custom/PackageCard";
 import { GroupPackageInterface } from "./page";
+import { TabConfigItem, BuiltinTabKey, DEFAULT_TABS_CONFIG, ALWAYS_VISIBLE_BUILTIN_KEYS } from "@/lib/packageTabs";
 import ReadMore from "@/components/common/ReadMore";
 import EffectCardRelatedPackages from "@/components/custom/EffectCardRelatedPackages";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
@@ -42,15 +43,12 @@ import TextToSpeech from "@/components/custom/TextToSpeech";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import PackageEssentialsList from "@/components/custom/PackageEssentialsList";
 
-type TabKey =
-  | "whychoose"
-  | "description"
-  | "itineraries"
-  | "hotels"
-  | "includeexclude"
-  | "whychoosemusafirbaba"
-  | "faqs"
-  | "helpfulresources";
+// Was a closed union of the 8 built-in tab keys. Widened to a plain string
+// so admin-defined custom tabs (arbitrary generated keys) can flow through
+// the same active-tab/scroll-spy/click-handler plumbing below without any
+// of that logic needing to change — it only ever compares/stores this value
+// and never relies on it being one of a fixed set.
+type TabKey = string;
 
 export interface Duration {
   days: number;
@@ -95,16 +93,51 @@ function SlugClients({
     }
   }, [active]);
 
-  const tabs: { key: TabKey; label: string }[] = [
-    ...(pkg.whyChooseThisPackage ? [{ key: "whychoose" as TabKey, label: "Why Choose" }] : []),
-    { key: "description", label: "Overview" },
-    { key: "itineraries", label: "Itinerary" },
-    ...(pkg.hotelsAndAccommodation ? [{ key: "hotels" as TabKey, label: "Hotels" }] : []),
-    { key: "includeexclude", label: "Inclusions" },
-    { key: "whychoosemusafirbaba", label: "Why Us" },
-    ...(pkg.faqs && pkg.faqs.length > 0 ? [{ key: "faqs" as TabKey, label: "FAQs" }] : []),
-    ...(pkg.helpfulResources && pkg.helpfulResources.length > 0 ? [{ key: "helpfulresources" as TabKey, label: "Resources" }] : []),
-  ];
+  // Whether each built-in tab has anything to show — same rules the old
+  // hardcoded array used, just centralized so both the default config and a
+  // package's own custom tabsConfig are checked against them consistently.
+  // An admin can still force a builtin tab hidden via `hidden: true` even
+  // when its content is non-empty (e.g. temporarily pulling "Hotels" without
+  // deleting the content) — see the `entry.hidden` check in
+  // `visibleTabsConfig` below.
+  const builtinAvailability: Record<BuiltinTabKey, boolean> = {
+    whychoose: !!pkg.whyChooseThisPackage,
+    description: true,
+    itineraries: true,
+    hotels: !!pkg.hotelsAndAccommodation,
+    includeexclude: true,
+    whychoosemusafirbaba: true,
+    faqs: !!(pkg.faqs && pkg.faqs.length > 0),
+    helpfulresources: !!(pkg.helpfulResources && pkg.helpfulResources.length > 0),
+  };
+
+  // A package only has `tabsConfig` once an admin has explicitly edited tab
+  // order/content for it via the admin "Tabs" tab. Every package that
+  // predates this feature (or was never touched there) has none, so it
+  // falls through to DEFAULT_TABS_CONFIG — which is the exact same 8 keys,
+  // in the exact same order, as the hardcoded array this replaces.
+  const resolvedTabsConfig: TabConfigItem[] =
+    pkg.tabsConfig && pkg.tabsConfig.length > 0 ? pkg.tabsConfig : DEFAULT_TABS_CONFIG;
+
+  const visibleTabsConfig = resolvedTabsConfig.filter((entry) => {
+    const isAlwaysVisible = entry.type === "builtin" && ALWAYS_VISIBLE_BUILTIN_KEYS.has(entry.builtinKey as BuiltinTabKey);
+    if (entry.hidden && !isAlwaysVisible) return false;
+    if (entry.type === "custom") return !!(entry.content && entry.content.trim());
+    return builtinAvailability[entry.builtinKey as BuiltinTabKey] ?? false;
+  });
+
+  const tabs: { key: TabKey; label: string }[] = visibleTabsConfig.map((entry) => ({
+    key: entry.key,
+    label: entry.label,
+  }));
+
+  // Position of each visible tab within the resolved order, used to drive
+  // the `order` CSS property on each (already independently-styled) content
+  // section below instead of physically reordering their JSX — so none of
+  // those sections' own markup/logic has to change to become reorderable.
+  const tabOrderIndex: Record<string, number> = {};
+  visibleTabsConfig.forEach((entry, i) => { tabOrderIndex[entry.key] = i; });
+  const customTabEntries = visibleTabsConfig.filter((entry) => entry.type === "custom");
 
   const tabKeys = tabs.map((t) => t.key);
   useEffect(() => {
@@ -370,8 +403,8 @@ function SlugClients({
             {/* Content */}
             <div className="mt-10 w-full flex flex-col gap-8">
               
-              {pkg.whyChooseThisPackage && (
-                <div id="whychoose" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {pkg.whyChooseThisPackage && tabOrderIndex["whychoose"] !== undefined && (
+                <div id="whychoose" style={{ order: tabOrderIndex["whychoose"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Why Choose This Package?</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
@@ -382,7 +415,7 @@ function SlugClients({
                 </div>
               )}
 
-              <div id="description" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              <div id="description" style={{ order: tabOrderIndex["description"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
                   <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Package Overview</h2>
                   <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
@@ -395,7 +428,7 @@ function SlugClients({
                 </section>
               </div>
 
-              <div id="itineraries" className="scroll-mt-40 mb-8 pb-6 border-b border-gray-200 last:border-0 overflow-hidden">
+              <div id="itineraries" style={{ order: tabOrderIndex["itineraries"] }} className="scroll-mt-40 mb-8 pb-6 border-b border-gray-200 last:border-0 overflow-hidden">
                   <div className="flex flex-col gap-2 mb-6">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Journey Route</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
@@ -495,8 +528,8 @@ function SlugClients({
                   </div>
               </div>
 
-              {pkg.hotelsAndAccommodation && (
-                <div id="hotels" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {pkg.hotelsAndAccommodation && tabOrderIndex["hotels"] !== undefined && (
+                <div id="hotels" style={{ order: tabOrderIndex["hotels"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Hotels & Accommodation</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
@@ -507,7 +540,7 @@ function SlugClients({
                 </div>
               )}
 
-              <div id="includeexclude" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              <div id="includeexclude" style={{ order: tabOrderIndex["includeexclude"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <div className="flex flex-col gap-2 mb-5">
@@ -542,8 +575,8 @@ function SlugClients({
                 </div>
               </div>
 
-              {pkg.faqs && pkg.faqs.length > 0 && (
-                <div id="faqs" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {pkg.faqs && pkg.faqs.length > 0 && tabOrderIndex["faqs"] !== undefined && (
+                <div id="faqs" style={{ order: tabOrderIndex["faqs"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">FAQs</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
@@ -577,7 +610,20 @@ function SlugClients({
                 </div>
               )}
 
-              <div id="author" className="scroll-mt-40 mb-8">
+              {/* Not a tab itself (no pill/scroll-spy entry), so it has no
+                  order of its own in tabsConfig. It always rendered directly
+                  after FAQs before this feature existed, so it keeps doing
+                  that — pinned at (FAQs' order + 0.5) wherever FAQs ends up,
+                  or at the very end if a package has no FAQs tab at all. */}
+              {/* CSS `order` only accepts integers — a fractional offset
+                  (previously +0.5) is invalid and silently discarded by the
+                  browser, falling back to order:0 and tying with whichever
+                  tab is first. +1 is a valid integer; it still lands Author
+                  right after FAQs because, among tied order values, flexbox
+                  breaks ties by source order, and this block's source
+                  position is fixed right after the FAQs block and before
+                  Resources/custom tabs, whatever the admin's chosen order. */}
+              <div id="author" style={{ order: tabOrderIndex["faqs"] !== undefined ? tabOrderIndex["faqs"] + 1 : Number.MAX_SAFE_INTEGER }} className="scroll-mt-40 mb-8">
                 <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-4 shadow-sm">
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
@@ -609,11 +655,27 @@ function SlugClients({
                 </div>
               </div>
 
-              {pkg.helpfulResources && pkg.helpfulResources.length > 0 && (
-                <div id="helpfulresources" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0 w-full">
+              {pkg.helpfulResources && pkg.helpfulResources.length > 0 && tabOrderIndex["helpfulresources"] !== undefined && (
+                <div id="helpfulresources" style={{ order: tabOrderIndex["helpfulresources"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0 w-full">
                   <HelpfulResources data={pkg.helpfulResources} />
                 </div>
               )}
+
+              {/* Admin-created custom tabs (via tabsConfig) — same visual
+                  pattern as the "Why Choose"/"Hotels" sections above, just
+                  generic since their content is arbitrary rich text rather
+                  than a dedicated pkg field. */}
+              {customTabEntries.map((entry) => (
+                <div key={entry.key} id={entry.key} style={{ order: tabOrderIndex[entry.key] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+                  <div className="flex flex-col gap-2 mb-5">
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{entry.label}</h2>
+                    <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
+                  </div>
+                  <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">
+                    <BlogContent html={entry.content || ""} />
+                  </section>
+                </div>
+              ))}
             </div>
           </div>
         </section>

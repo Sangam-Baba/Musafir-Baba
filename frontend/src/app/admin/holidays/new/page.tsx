@@ -16,16 +16,16 @@ import { toast } from "sonner";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Loader } from "@/components/custom/loader";
-import { Textarea } from "@/components/ui/textarea";
 import { CreateBatchModal } from "@/components/admin/Newbatch";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { CreateReviewsModal } from "@/components/admin/CreateEditReviews";
 import { X } from "lucide-react";
 import { AddOnItems } from "./AddOnItems";
-import SmallEditor from "@/components/admin/SmallEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OpenGraphManager from "@/components/admin/OpenGraphManager";
 import { getAllAuthors } from "../../webpage/new/page";
+import PackageTabsEditor from "@/components/admin/PackageTabsEditor";
+import { TabConfigItem, DEFAULT_TABS_CONFIG } from "@/lib/packageTabs";
 
 interface Image {
   url: string;
@@ -252,6 +252,11 @@ export default function CreatePackagePage() {
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
+  // Kept outside react-hook-form — see the matching declaration and its
+  // comment in admin/holidays/edit/[id]/page.tsx for why. A brand-new
+  // package has no existing data to merge with, so this just starts as the
+  // same default order every package used before this feature existed.
+  const [tabsConfig, setTabsConfig] = useState<TabConfigItem[]>(DEFAULT_TABS_CONFIG);
   const defaultValues: PackageFormValues = {
     title: "",
     author: "",
@@ -314,7 +319,10 @@ export default function CreatePackagePage() {
   const form = useForm<PackageFormValues>({ defaultValues });
 
   const addOnsArray = useFieldArray({ control: form.control, name: "addOns" });
-  const helpfulResourcesArray = useFieldArray({ control: form.control, name: "helpfulResources" });
+  // Itinerary/Inclusions/Exclusions/FAQs/Helpful Resources field arrays now
+  // live only inside PackageTabsEditor (via the "Tabs" tab) — removed here
+  // since their render blocks moved there too, so these would otherwise be
+  // an unused second subscription to the same data.
   // const batchArray = useFieldArray({ control: form.control, name: "batch" });
   const coverImageArray = useFieldArray({
     control: form.control,
@@ -328,19 +336,6 @@ export default function CreatePackagePage() {
   const highlightsArray = useFieldArray({
     control: form.control,
     name: "highlights",
-  });
-  const inclusionsArray = useFieldArray({
-    control: form.control,
-    name: "inclusions",
-  });
-  const exclusionsArray = useFieldArray({
-    control: form.control,
-    name: "exclusions",
-  });
-  const faqsArray = useFieldArray({ control: form.control, name: "faqs" });
-  const itineraryArray = useFieldArray({
-    control: form.control,
-    name: "itinerary",
   });
   const reviewsArray = useFieldArray({
     control: form.control,
@@ -424,7 +419,9 @@ export default function CreatePackagePage() {
   }, [form]);
 
   const onSubmit: SubmitHandler<PackageFormValues> = (values) => {
-    mutation.mutate(values);
+    // tabsConfig lives outside react-hook-form (see its state declaration
+    // above), merged in by hand the same way the edit page does.
+    mutation.mutate({ ...values, tabsConfig } as PackageFormValues & { tabsConfig: TabConfigItem[] });
   };
   const schemaTypes = ["Collection", "Product", "FAQ", "Review"];
 
@@ -438,7 +435,7 @@ export default function CreatePackagePage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="batch">Batch & Pricing</TabsTrigger>
@@ -446,6 +443,7 @@ export default function CreatePackagePage() {
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="faqs">FAQs & Review</TabsTrigger>
                 <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="social">Social (OG)</TabsTrigger>
+                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="tabs">Tabs</TabsTrigger>
               </TabsList>
 
               {/* TAB 1: BASIC INFO */}
@@ -495,15 +493,14 @@ export default function CreatePackagePage() {
 
               {/* TAB 2: CONTENT */}
               <TabsContent value="content" className="space-y-5">
-                <FormField control={form.control} name="description" render={({ field }) => (
-                  <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Description</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
-                )} />
+                {/* Description (Overview), Inclusions, Exclusions, Itinerary,
+                    Why Choose This Package and Hotels & Accommodation moved
+                    to the "Tabs" tab — they were editable from both places,
+                    which was confusing/redundant. Same form fields, same
+                    data; the Tabs tab is now the one place for them. */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Highlights</FormLabel>{highlightsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`highlights.${index}`)} placeholder="Enter highlight" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => highlightsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => highlightsArray.append("")}>Add Highlight</Button></div>
-                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Inclusions</FormLabel>{inclusionsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`inclusions.${index}`)} placeholder="Enter inclusion" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => inclusionsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => inclusionsArray.append("")}>Add Inclusion</Button></div>
-                  <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Exclusions</FormLabel>{exclusionsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`exclusions.${index}`)} placeholder="Enter exclusion" /><Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => exclusionsArray.remove(index)}>Remove</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => exclusionsArray.append("")}>Add Exclusion</Button></div>
                 </div>
-                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Itinerary</FormLabel>{itineraryArray.fields.map((field, index) => (<div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2 p-3 bg-gray-50 border rounded-md"><div className="flex flex-col gap-2"><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`itinerary.${index}.title` as const)} placeholder="Day Title" /><Textarea className="text-xs p-2 min-h-[60px]" {...form.register(`itinerary.${index}.description` as const)} placeholder="Day Description" /><Input className="h-7 text-xs px-2 rounded-sm" {...form.register(`itinerary.${index}.tip` as const)} placeholder="Day Tip (Optional)" /></div><div className="flex flex-col gap-2 justify-between"><div><FormLabel className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Location Image (Optional)</FormLabel><ImageUploader onUpload={(img) => { if (!img) return null; form.setValue(`itinerary.${index}.locationImage` as const, { url: img.url, public_id: img.public_id, alt: img.alt ?? "Itinerary Image" }); }} /></div><Button type="button" variant="destructive" size="sm" className="self-end h-7 text-[10px] w-full mt-2" onClick={() => itineraryArray.remove(index)}>Remove Step</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => itineraryArray.append({ title: "", description: "" })}>Add Itinerary Step</Button></div>
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
                 {/* Additional Content Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -512,12 +509,6 @@ export default function CreatePackagePage() {
                   )} />
                   <FormField control={form.control} name="packageAtAGlance" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Package At A Glance</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="whyChooseThisPackage" render={({ field }) => (
-                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Why Choose This Package</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="hotelsAndAccommodation" render={({ field }) => (
-                    <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Hotels & Accommodation</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
                   <FormField control={form.control} name="cta" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">CTA</FormLabel><FormControl><BlogEditor value={field.value} onChange={field.onChange} /></FormControl><FormMessage className="text-[10px]" /></FormItem>
@@ -535,22 +526,6 @@ export default function CreatePackagePage() {
                   <Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => bannerTextArray.append("")}>Add Banner Row</Button>
                 </div>
 
-                {/* Helpful Resources */}
-                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</FormLabel>
-                    <Button type="button" variant="secondary" size="sm" onClick={() => helpfulResourcesArray.append({ title: "", url: "" })} className="text-[9px] font-black uppercase h-7 px-3 bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200">
-                      + Add Resource
-                    </Button>
-                  </div>
-                  {helpfulResourcesArray.fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2">
-                      <Input className="h-7 text-xs px-2 rounded-sm flex-1" {...form.register(`helpfulResources.${index}.title`)} placeholder="Resource Title" />
-                      <Input className="h-7 text-xs px-2 rounded-sm flex-1" {...form.register(`helpfulResources.${index}.url`)} placeholder="Resource URL" />
-                      <Button type="button" variant="destructive" size="sm" className="h-7 px-2" onClick={() => helpfulResourcesArray.remove(index)}>X</Button>
-                    </div>
-                  ))}
-                </div>
 
                   <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Add Ons</FormLabel>{addOnsArray.fields.map((field, index) => (<AddOnItems key={field.id} index={index} form={form} removeAddOn={() => addOnsArray.remove(index)} />))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => addOnsArray.append({ title: "", items: [{ title: "", price: 0 }] })}>+ Add Add-On</Button></div>
               </TabsContent>
@@ -599,7 +574,9 @@ export default function CreatePackagePage() {
 
               {/* TAB 6: FAQS & REVIEWS */}
               <TabsContent value="faqs" className="space-y-5">
-                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">FAQs</FormLabel>{faqsArray.fields.map((field, index) => (<div key={field.id} className="flex gap-2"><div className="grid gap-2 mb-2 flex-1 border border-gray-100 p-2 rounded bg-gray-50"><Input className="h-7 text-xs px-2 rounded-sm bg-white" {...form.register(`faqs.${index}.question`)} placeholder="Question" /><div className="border border-gray-200 rounded p-2 bg-white"><SmallEditor value={form.getValues(`faqs.${index}.answer`)} onChange={(val) => form.setValue(`faqs.${index}.answer`, val)} /></div></div><Button type="button" variant="destructive" size="sm" className="h-7 px-2 mt-2" onClick={() => faqsArray.remove(index)}>X</Button></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => faqsArray.append({ question: "", answer: "" })}>Add FAQ</Button></div>
+                {/* FAQs moved to the "Tabs" tab (same field, one editing
+                    location instead of two). Reviews stay here — they're
+                    testimonials, not part of the tabsConfig/tab system. */}
                 <div className="bg-white p-3 border rounded-md shadow-sm space-y-3"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Reviews</FormLabel>{reviewsArray.fields.map((field, index) => (<div key={field.id} className="flex justify-between items-center p-2 bg-gray-50 border rounded-md mb-2"><span className="font-medium text-xs">{reviewsDetails[index]?.name || `Review ${index + 1}`}</span><div className="flex gap-2"><Button type="button" variant="outline" size="sm" className="h-7 px-2 text-[10px]" onClick={() => handleReviewsEdit(form.getValues(`reviews.${index}`))}>Edit</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={async () => { const res = await deleteReview(accessToken, form.getValues(`reviews.${index}`)); if (res) reviewsArray.remove(index); }}>Delete</Button><Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-[10px]" onClick={() => reviewsArray.remove(index)}>Remove Link</Button></div></div>))}<Button type="button" size="sm" className="h-7 text-[11px]" onClick={() => setShowReviewsModal(true)}>+ Add New Review</Button></div>
               </TabsContent>
 
@@ -615,6 +592,13 @@ export default function CreatePackagePage() {
                     imageAlt: form.watch("metaTitle") || form.watch("title") || ""
                   }} 
                 />
+              </TabsContent>
+
+              {/* TAB 8: TABS (order/visibility/custom tabs on the package page) */}
+              <TabsContent value="tabs" className="space-y-3">
+                <div className="bg-white p-3 border rounded-md shadow-sm">
+                  <PackageTabsEditor value={tabsConfig} onChange={setTabsConfig} form={form} />
+                </div>
               </TabsContent>
             </Tabs>
 
