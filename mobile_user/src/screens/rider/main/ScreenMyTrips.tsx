@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Image } from 'react-native';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { useNotificationStore } from '../../../store/useNotificationStore';
 import React, { useState, useEffect } from 'react';
@@ -53,6 +53,9 @@ import {
 } from 'lucide-react-native';
 import { getMyRides } from '../../../api/ride.api';
 import { inr, formatDisplayDate, AddressLine, MetaChip } from './rideUi';
+import { getMyTourAppBookings, tourBookingCode, type TourAppBooking } from '../../../api/tour.api';
+import { useTourStore } from '../../../store/useTourStore';
+import { bookingStatusLook, travellerSummary } from '../tours/ScreenTourBooking';
 
 // Maps the real RideBooking status enum to trip-card display info -- copy
 // matches ScreenLiveTracking.tsx's statusMessages so the wording is
@@ -124,6 +127,31 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
       cancelled = true;
     };
   }, [tripsTab]);
+
+  // Holiday package bookings (separate API from rides). Loaded alongside the
+  // rides list and bucketed into the same Upcoming/Completed/Cancelled tabs.
+  const [tripFilter, setTripFilter] = useState<'all' | 'cabs' | 'tours'>('all');
+  const [tourBookings, setTourBookings] = useState<TourAppBooking[]>([]);
+  const setViewedTourBooking = useTourStore((s) => s.setViewedBooking);
+  useEffect(() => {
+    let cancelled = false;
+    getMyTourAppBookings()
+      .then((res) => {
+        if (!cancelled) setTourBookings(res.data.data || []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [tripsTab]);
+  const visibleTourBookings = tourBookings.filter((b) => {
+    const ended = new Date(b.endDate || b.startDate).getTime() < Date.now();
+    if (tripsTab === 'cancelled') return b.bookingStatus === 'Cancelled';
+    if (tripsTab === 'completed') return b.bookingStatus === 'Confirmed' && ended;
+    return (b.bookingStatus === 'Confirmed' && !ended) || (b.bookingStatus === 'PaymentPending' && !ended);
+  });
+  const visibleRideCount = tripFilter === 'tours' ? 0 : trips.length;
+  const visibleTourCount = tripFilter === 'cabs' ? 0 : visibleTourBookings.length;
 
   useEffect(() => {
     fetchNotificationsForBadge();
@@ -784,6 +812,22 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 })}
               </View>
 
+              {/* Service filter */}
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {([
+                  { key: 'all', label: 'All' },
+                  { key: 'cabs', label: `Cabs${trips.length ? ` (${trips.length})` : ''}` },
+                  { key: 'tours', label: `Tour Packages${visibleTourBookings.length ? ` (${visibleTourBookings.length})` : ''}` },
+                ] as const).map((f) => {
+                  const active = tripFilter === f.key;
+                  return (
+                    <TouchableOpacity key={f.key} onPress={() => setTripFilter(f.key)} style={{ height: 34, paddingHorizontal: 14, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: active ? '#FF4500' : '#E2E8F0', backgroundColor: active ? '#FFF5EF' : '#FFFFFF' }}>
+                      <Text style={{ fontSize: 12.5, fontWeight: '600', color: active ? '#FF4500' : '#475569' }}>{f.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
               {isLoadingTrips && (
                 <View style={{ alignItems: 'center', paddingVertical: 40, gap: 10 }}>
                   <ActivityIndicator size="small" color="#FF4500" />
@@ -791,7 +835,7 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 </View>
               )}
 
-              {!isLoadingTrips && trips.length === 0 && (
+              {!isLoadingTrips && visibleRideCount === 0 && visibleTourCount === 0 && (
                 <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 44, paddingHorizontal: 24, gap: 10, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#EEF2F6' }}>
                   <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
                     <Calendar size={24} color="#FF4500" strokeWidth={1.75} />
@@ -808,8 +852,66 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 </View>
               )}
 
+              {/* Holiday package bookings (from the Tours flow) */}
+              {!isLoadingTrips && tripFilter !== 'cabs' && visibleTourBookings.map((b) => {
+                const look = bookingStatusLook(b);
+                const t = travellerSummary(b);
+                const isPaid = b.paymentInfo?.status === 'Paid';
+                const paid = isPaid ? b.payNowAmount : 0;
+                const balance = b.totalAmount - paid;
+                return (
+                  <View key={b._id} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, padding: 12, gap: 12, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 }}>
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                      <View style={{ width: 96, height: 96, borderRadius: 12, overflow: 'hidden', backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
+                        {b.packageImage ? <Image source={{ uri: b.packageImage }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <Briefcase size={26} color="#FDBA8C" strokeWidth={1.6} />}
+                        <View style={{ position: 'absolute', top: 6, left: 6, backgroundColor: look.bg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                          <Text style={{ fontSize: 9.5, fontWeight: '700', color: look.color }}>{look.label}</Text>
+                        </View>
+                      </View>
+                      <View style={{ flex: 1, gap: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#EFF6FF', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
+                            <Briefcase size={11} color="#2563EB" strokeWidth={2} />
+                            <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#2563EB' }}>Tour Package</Text>
+                          </View>
+                          <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF4500' }}>{tourBookingCode(b._id)}</Text>
+                        </View>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#0B1E3D', lineHeight: 18 }} numberOfLines={2}>{b.packageTitle}</Text>
+                        <Text style={{ fontSize: 11.5, color: '#475569' }}>
+                          {formatDisplayDate(String(b.startDate).slice(0, 10))} – {formatDisplayDate(String(b.endDate || b.startDate).slice(0, 10))}
+                        </Text>
+                        <Text style={{ fontSize: 11.5, color: '#475569' }}>{t.text}{t.sharingLabel ? ` · ${t.sharingLabel}` : ''}</Text>
+                      </View>
+                    </View>
+                    <View style={{ flexDirection: 'row', backgroundColor: '#FFF8F3', borderRadius: 12, padding: 10, gap: 8 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 10.5, color: '#64748B' }}>Total cost</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#0B1E3D' }}>{inr(b.totalAmount)}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 10.5, color: '#64748B' }}>Amount paid</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#16A34A' }}>{inr(paid)}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 10.5, color: '#64748B' }}>Balance</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '800', color: balance > 0 ? '#EA580C' : '#0B1E3D' }}>{inr(balance)}</Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => { setViewedTourBooking(b); onNavigate('tour-booking-detail'); }}
+                      style={{ height: 42, borderRadius: 10, borderWidth: b.bookingStatus === 'PaymentPending' ? 0 : 1.5, borderColor: '#FF4500', backgroundColor: b.bookingStatus === 'PaymentPending' ? '#FF4500' : '#FFFFFF', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: b.bookingStatus === 'PaymentPending' ? '#FFFFFF' : '#FF4500' }}>
+                        {b.bookingStatus === 'PaymentPending' ? 'Complete payment' : 'View Trip Details'}
+                      </Text>
+                      <ChevronRight size={15} color={b.bookingStatus === 'PaymentPending' ? '#FFFFFF' : '#FF4500'} strokeWidth={2.2} />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+
               {/* Trip Cards List: real API trips only */}
-              {!isLoadingTrips && trips.map((trip, idx) => {
+              {!isLoadingTrips && tripFilter !== 'tours' && trips.map((trip, idx) => {
                 const statusDisplay = TRIP_STATUS_DISPLAY[trip.status] || DEFAULT_TRIP_STATUS_DISPLAY;
                 const StatusIcon = trip.status === 'COMPLETED' ? CheckCircle2 : trip.status === 'CANCELLED' ? XCircle : Clock;
                 const shortId = trip._id ? `MB-${String(trip._id).slice(-6).toUpperCase()}` : '';
