@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, useWindowDimensions, Keyboard } from 'react-native';
 import { WebView } from 'react-native-webview';
 import React, { useState, useEffect, useRef, createElement } from 'react';
 import * as Location from 'expo-location';
@@ -67,6 +67,16 @@ import {
 import { getRideQuote, searchLocations, reverseGeocode, LocationSuggestion } from '../../../api/ride.api';
 import { useRideStore } from '../../../store/useRideStore';
 
+// Space reserved at the bottom of the home screen for the floating bottom tab bar.
+const HOME_BOTTOM_NAV_SPACE = 76;
+// Smallest the home screen will be scaled to fit very short screens; below
+// this it scrolls instead so text never gets too small to read.
+const HOME_MIN_FIT_SCALE = 0.72;
+// Below this much usable height (px/dp) the greeting + illustration row is
+// hidden and the logo is smaller, so short phones don't have to shrink the
+// booking form as much.
+const HOME_COMPACT_BELOW_HEIGHT = 700;
+
 // ---- Search form styling (presentation only) ----
 const FORM_LABEL = { fontSize: 11, fontWeight: '500' as const, color: '#94A3B8', marginBottom: 3 };
 const FORM_VALUE = { fontSize: 14, fontWeight: '500' as const, color: '#0F172A' };
@@ -112,6 +122,39 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   const logoHeight = Math.round((logoWidth * 72) / 220);
   const bannerWidth = Math.min(175, Math.round(screenWidth * 0.42));
   const bannerHeight = Math.round((bannerWidth * 100) / 175);
+
+  // ---- Fit-to-screen (presentation only) ----
+  // The home screen should never need scrolling: measure the visible area and
+  // the content's natural height, and if the content is taller, scale the
+  // whole home section down uniformly so it fits exactly. The content is laid
+  // out wider by the same factor so it still spans the full width after
+  // scaling. Never scales up. While the keyboard is open the scale is frozen
+  // and scrolling is allowed, so the field being typed in stays reachable.
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  const [homeContentHeight, setHomeContentHeight] = useState(0);
+  const [fitScale, setFitScale] = useState(1);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardOpen(true));
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardOpen(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!viewportHeight || !homeContentHeight || isKeyboardOpen) return;
+    const available = viewportHeight - HOME_BOTTOM_NAV_SPACE;
+    const next = Math.max(HOME_MIN_FIT_SCALE, Math.min(1, available / homeContentHeight));
+    if (Math.abs(next - fitScale) > 0.004) setFitScale(next);
+  }, [viewportHeight, homeContentHeight, isKeyboardOpen]);
+
+  const isCompactHome = viewportHeight > 0 && viewportHeight - HOME_BOTTOM_NAV_SPACE < HOME_COMPACT_BELOW_HEIGHT;
+
+  const homeFitsScreen = !!homeContentHeight && homeContentHeight * fitScale <= viewportHeight - HOME_BOTTOM_NAV_SPACE + 1;
 
   // Form State for Screen 31
   // Pre-filled from the last search in the ride store (if any), so coming
@@ -398,13 +441,35 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
         
 
         {/* Scrollable Main Screen Content */}
-        <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 84 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: HOME_BOTTOM_NAV_SPACE }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          scrollEnabled={!homeFitsScreen || isKeyboardOpen}
+          onLayout={(e) => {
+            setViewportHeight(e.nativeEvent.layout.height);
+            setViewportWidth(e.nativeEvent.layout.width);
+          }}
+        >
 
           {/* ==========================================
               SCREEN 31: RIDER HOME & SEARCH (31.png)
              ========================================== */}
           {activeScreen === '31' && (
-            <View style={{ padding: 14, gap: 16 }}>
+            // Outer box takes the scaled height; inner box is laid out at
+            // width / scale and scaled from the top-left corner (see fitScale).
+            <View style={{ height: homeContentHeight ? homeContentHeight * fitScale : undefined, opacity: homeContentHeight ? 1 : 0 }}>
+            <View
+              onLayout={(e) => setHomeContentHeight(e.nativeEvent.layout.height)}
+              style={{
+                padding: 14,
+                gap: isCompactHome ? 10 : 14,
+                width: viewportWidth ? viewportWidth / fitScale : '100%',
+                transform: [{ scale: fitScale }],
+                transformOrigin: 'top left',
+              }}
+            >
               
               {/* Top Navigation & Brand Header Bar */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 4 }}>
@@ -414,7 +479,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Prominent 3x Large Brand Logo */}
                 <View style={{ alignItems: 'center' }}>
-                  <Image source={MBGO_LOGO} style={{ width: logoWidth, height: logoHeight }} resizeMode="contain" />
+                  <Image source={MBGO_LOGO} style={{ width: isCompactHome ? logoWidth * 0.8 : logoWidth, height: isCompactHome ? logoHeight * 0.8 : logoHeight }} resizeMode="contain" />
                 </View>
 
                 <TouchableOpacity onPress={() => onNavigate('38')} style={{ padding: 4, position: 'relative' }}>
@@ -423,7 +488,8 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 </TouchableOpacity>
               </View>
 
-              {/* Greeting & Hero Banner Row */}
+              {/* Greeting & Hero Banner Row -- hidden on short screens (see HOME_COMPACT_BELOW_HEIGHT) */}
+              {!isCompactHome && (
               <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 0, marginBottom: -14, zIndex: 5 }}>
                 {/* Left Side: Typography */}
                 <View style={{ flex: 1.4, zIndex: 2, paddingBottom: 10 }}>
@@ -442,9 +508,10 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                   />
                 </View>
               </View>
+              )}
 
               {/* Main Booking Search Card */}
-              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 20, padding: 16, gap: 14, position: 'relative', zIndex: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 3 }}>
+              <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 20, padding: isCompactHome ? 12 : 16, gap: isCompactHome ? 10 : 14, position: 'relative', zIndex: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 3 }}>
 
                 {/* Trip Type Selector Tab */}
                 {/* LOGIC PRESERVED - DO NOT CHANGE setTripType */}
@@ -783,7 +850,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
               </View>
 
               {/* Popular Services Section */}
-              <View style={{ gap: 10, paddingTop: 8 }}>
+              <View style={{ gap: 10, paddingTop: isCompactHome ? 2 : 8 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Popular Services</Text>
                   <TouchableOpacity onPress={() => setInAppBrowserUrl('https://musafirbaba.com/')} style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -795,40 +862,27 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Horizontal Scroll / Cards List matching design */}
                 <View style={{ position: 'relative' }}>
-                <View style={{ flexDirection: 'row', gap: 6 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   {[
-                    { icon: Palmtree, label: 'Tour', bg: '#FEF3C7', iconColor: '#D97706', action: () => setInAppBrowserUrl('https://musafirbaba.com/holidays') },
+                    { icon: Palmtree, label: 'Tour', bg: '#FEF3C7', iconColor: '#D97706', action: () => onNavigate('tours') },
                     { icon: FileCheck, label: 'Visa', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/visa') },
                     { icon: Bus, label: 'Bus', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.makemytrip.com/bus-tickets/') },
                     { icon: Hotel, label: 'Hotel', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://www.makemytrip.com/hotels/') },
                     { icon: Plane, label: 'Flight', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://www.makemytrip.com/flights/') },
+                    { icon: TrainFront, label: 'Train', bg: '#CCFBF1', iconColor: '#0D9488', action: () => setInAppBrowserUrl('https://www.makemytrip.com/railways/') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (
                       <TouchableOpacity 
                         key={idx}
                         onPress={srv.action}
-                        style={{
-                          backgroundColor: '#FFFFFF',
-                          borderWidth: 1,
-                          borderColor: '#F1F5F9',
-                          borderRadius: 14,
-                          padding: 10,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flex: 1,
-                          height: 96,
-                          shadowColor: '#0F172A',
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.02,
-                          shadowRadius: 4,
-                          elevation: 1,
-                        }}
+                        activeOpacity={0.7}
+                        style={{ flex: 1, alignItems: 'center', gap: 6, paddingVertical: 2 }}
                       >
-                        <View style={{ width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center", backgroundColor: srv.bg, marginBottom: 6 }}>
-                          <Icon size={22} color={srv.iconColor} />
+                        <View style={{ width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center", backgroundColor: srv.bg }}>
+                          <Icon size={21} color={srv.iconColor} strokeWidth={2} />
                         </View>
-                        <Text style={{ fontSize: 11, fontWeight: "600", color: "#111827", textAlign: "center", lineHeight: 13 }}>{srv.label}</Text>
+                        <Text style={{ fontSize: 11.5, fontWeight: "500", color: "#111827", textAlign: "center" }} numberOfLines={1}>{srv.label}</Text>
                       </TouchableOpacity>
                     );
                   })}
@@ -869,6 +923,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
               </View>
               )}
 
+            </View>
             </View>
           )}
 

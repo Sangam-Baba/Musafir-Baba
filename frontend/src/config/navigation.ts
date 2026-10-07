@@ -179,6 +179,12 @@ export const NAV_GROUPS = [
         permission: "holidays",
       },
       {
+        label: "App Holiday Bookings",
+        href: "/admin/tour-app-bookings",
+        icon: ScrollText,
+        permission: "tour-app-bookings", // must match backend tourAppBooking.routes.js
+      },
+      {
         label: "Holidays Page",
         href: "/admin/holidays-page",
         icon: LayoutTemplate,

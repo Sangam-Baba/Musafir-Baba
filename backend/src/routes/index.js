@@ -66,6 +66,7 @@ import rideRoutes from "./ride.routes.js";
 import adminRideRoutes from "./adminRide.routes.js";
 import adminRiderRoutes from "./adminRider.routes.js";
 import adminRidePricingRoutes from "./adminRidePricing.routes.js";
+import tourAppBookingRoutes, { adminTourAppBookingRoutes } from "./tourAppBooking.routes.js";
 
 const router = Router();
 
@@ -79,6 +80,7 @@ router.use("/admin/partner-wallets", adminPartnerWalletRoutes);
 router.use("/admin/rides", adminRideRoutes);
 router.use("/admin/riders", adminRiderRoutes);
 router.use("/admin/ride-pricing", adminRidePricingRoutes);
+router.use("/admin/tour-app-bookings", adminTourAppBookingRoutes);
 router.use("/admin/sitemap-source", sitemapDataRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);
@@ -138,5 +140,6 @@ router.use("/rider/profile", riderProfileRoutes);
 router.use("/rider/documents", riderDocumentRoutes);
 router.use("/rider/notifications", riderNotificationRoutes);
 router.use("/ride", rideRoutes);
+router.use("/tour-booking", tourAppBookingRoutes);
 router.use("/", locationMasterRoutes);
 export default router;

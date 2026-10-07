@@ -39,6 +39,13 @@ import ScreenPaymentGateway from './src/screens/rider/main/ScreenPaymentGateway'
 import ScreenLiveTracking from './src/screens/rider/main/ScreenLiveTracking';
 import ScreenMyTrips from './src/screens/rider/main/ScreenMyTrips';
 
+// Tours (native holiday packages)
+import ScreenToursExplore from './src/screens/rider/tours/ScreenToursExplore';
+import ScreenToursList from './src/screens/rider/tours/ScreenToursList';
+import ScreenTourDetail from './src/screens/rider/tours/ScreenTourDetail';
+import ScreenTourCheckout from './src/screens/rider/tours/ScreenTourCheckout';
+import ScreenTourBooking from './src/screens/rider/tours/ScreenTourBooking';
+
 // Profile Screens
 import ScreenRiderProfileAmit from './src/screens/rider/profile/ScreenRiderProfileAmit';
 import ScreenHelpSupport from './src/screens/rider/profile/ScreenHelpSupport';
@@ -50,7 +57,9 @@ import ScreenRiderDocuments from './src/screens/rider/profile/ScreenRiderDocumen
 // Bottom-tab screens (Home, My Trips, Profile): opening one doesn't stack on
 // top of the others -- see navigate() below.
 const HOME_SCREEN = '31';
-const ROOT_TAB_SCREENS = ['31', '35', '36'];
+// The holiday "Payment Successful" screen is treated the same way, so back
+// from it goes Home instead of to the already-paid checkout.
+const ROOT_TAB_SCREENS = ['31', '35', '36', 'tour-booking-success'];
 
 export default function App() {
   return (
@@ -251,6 +260,12 @@ function AppContent() {
       case '39': return <ScreenSavedItems onNavigate={navigate} />;
       case '40': return <ScreenRiderProfileAshutosh onNavigate={navigate} />;
       case '41': return <ScreenRiderDocuments onNavigate={navigate} onBack={goBack} />;
+      case 'tours': return <ScreenToursExplore onNavigate={navigate} onBack={goBack} />;
+      case 'tour-list': return <ScreenToursList onNavigate={navigate} onBack={goBack} />;
+      case 'tour-detail': return <ScreenTourDetail onNavigate={navigate} onBack={goBack} />;
+      case 'tour-checkout': return <ScreenTourCheckout onNavigate={navigate} onBack={goBack} />;
+      case 'tour-booking-success': return <ScreenTourBooking variant="success" onNavigate={navigate} onBack={goBack} />;
+      case 'tour-booking-detail': return <ScreenTourBooking variant="detail" onNavigate={navigate} onBack={goBack} />;
       default: return <ScreenRiderAuth activeScreen="login" onNavigate={navigate} />;
     }
   };

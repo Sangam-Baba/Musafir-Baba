@@ -5,7 +5,7 @@ import { Bus as BusIcon, Info as InfoIcon } from 'lucide-react-native';
 import { createRide, getRideById, isRateCardOffer, type RideOffer } from '../../../api/ride.api';
 import { initiateRidePayment, buildPayUAutoSubmitHtml } from '../../../api/payment.api';
 import { API_BASE_URL } from '../../../utils/config';
-import { inr, plural, formatDisplayDate, AddressLine, MetaChip, RATE_CARD_TINT } from './rideUi';
+import { inr, plural, formatDisplayDate, AddressLine, MetaChip, RATE_CARD_TINT, RideFlowHeader, TripSummaryCard } from './rideUi';
 import { useRideStore } from '../../../store/useRideStore';
 import {
   Menu,
@@ -77,28 +77,14 @@ function FareRow({ label, detail, amount, bold }: { label: string; detail?: stri
 // component (rows that are 0 are hidden); offers from the original pricing
 // show their real base fare + driver allowance. The total is always the
 // offer's totalAmount -- the same amount the backend charges.
-function ReviewFareBreakdown({ offer, distanceKm }: { offer: RideOffer; distanceKm?: number }) {
-  if (isRateCardOffer(offer)) {
-    const { fare } = offer;
-    const minApplied = fare.billableKm > fare.actualKm;
-    return (
-      <View style={{ gap: 12 }}>
-        <FareRow
-          label="Vehicle fare"
-          detail={`${fare.billableKm.toLocaleString('en-IN')} km × ₹${fare.ratePerKm}/km${minApplied ? ` (min for ${plural(fare.days, 'day')})` : ''}`}
-          amount={fare.vehicleFare}
-        />
-        {fare.driverAllowance > 0 && <FareRow label="Driver allowance" detail={plural(fare.days, 'day')} amount={fare.driverAllowance} />}
-        {fare.nightAllowance > 0 && <FareRow label="Night allowance" detail={plural(fare.nights, 'night')} amount={fare.nightAllowance} />}
-        {fare.platformCharges > 0 && <FareRow label="Platform charges" amount={fare.platformCharges} />}
-        {fare.taxes > 0 && <FareRow label="Taxes" amount={fare.taxes} />}
-      </View>
-    );
-  }
+function ReviewFareBreakdown({ offer }: { offer: RideOffer; distanceKm?: number }) {
+  // Kept simple, like most apps: fare + taxes. The price working (km × rate,
+  // allowances) is not shown to riders.
+  const taxes = isRateCardOffer(offer) ? offer.fare.taxes : 0;
   return (
     <View style={{ gap: 12 }}>
-      <FareRow label="Base fare" detail={distanceKm ? `${distanceKm} km` : undefined} amount={offer.baseFare} />
-      {offer.driverAllowance > 0 && <FareRow label="Driver allowance" amount={offer.driverAllowance} />}
+      <FareRow label="Fare" amount={offer.totalAmount - taxes} />
+      {taxes > 0 && <FareRow label="Taxes (GST)" amount={taxes} />}
     </View>
   );
 }
@@ -282,97 +268,64 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
           {activeScreen === '32' && (
             <View style={{ padding: 12, gap: 12 }}>
 
-              {/* Header Bar */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4, paddingBottom: 2 }}>
-                <TouchableOpacity
-                  onPress={() => (onBack ? onBack() : onNavigate('31'))}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <ArrowLeft size={18} color="#0F172A" strokeWidth={2} />
-                </TouchableOpacity>
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }}>Review & pay</Text>
-                <View style={{ width: 36 }} />
-              </View>
+              <RideFlowHeader title="Review & Pay" subtitle="Check your trip details and pay securely" onBack={() => (onBack ? onBack() : onNavigate('31'))} />
 
-              {/* Trip card */}
-              <View style={{ ...CARD, gap: 12 }}>
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <View style={{ alignItems: 'center', paddingTop: 5, width: 12 }}>
-                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#10B981', borderWidth: 2, borderColor: '#D1FAE5' }} />
-                    <View style={{ flex: 1, width: 1.5, backgroundColor: '#E2E8F0', marginVertical: 4, borderRadius: 1 }} />
-                    <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#FF5500', borderWidth: 2, borderColor: '#FFE4D5' }} />
-                  </View>
-                  <View style={{ flex: 1, gap: 14 }}>
-                    <AddressLine label="Pickup" address={pickup || '-'} lines={2} />
-                    <AddressLine label="Drop" address={drop || '-'} lines={2} />
-                  </View>
-                </View>
-
-                <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 12, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                  <View style={{ flex: 1, gap: 8 }}>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                      <MetaChip highlight label={tripType === 'ROUND_TRIP' ? 'Round trip' : 'One way'} />
-                      {!!quote?.distanceKm && (
-                        <MetaChip icon={<Navigation size={11} color="#64748B" strokeWidth={2} />} label={`${Math.round(quote.distanceKm).toLocaleString('en-IN')} km`} />
-                      )}
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Calendar size={13} color="#64748B" strokeWidth={2} />
-                      <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>{formatDisplayDate(date)}, {time}</Text>
-                    </View>
-                    {tripType === 'ROUND_TRIP' && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Calendar size={13} color="#64748B" strokeWidth={2} />
-                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>
-                          Return {returnDate ? formatDisplayDate(returnDate) : '-'}, {returnTime || '-'}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => onNavigate('31')}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FFF5EF' }}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF5500' }}>Edit</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <TripSummaryCard
+                pickup={pickup}
+                drop={drop}
+                isRoundTrip={tripType === 'ROUND_TRIP'}
+                distanceKm={quote?.distanceKm}
+                rideDate={date}
+                rideTime={time}
+                returnDate={returnDate}
+                returnTime={returnTime}
+                tripDays={selectedOffer && isRateCardOffer(selectedOffer) ? selectedOffer.fare.days : undefined}
+                onEdit={() => onNavigate('31')}
+              />
 
               {/* Vehicle card */}
               {selectedOffer && (
-                <View style={{ ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: tint.bg, alignItems: 'center', justifyContent: 'center' }}>
-                    <VehicleIcon size={22} color={tint.icon} strokeWidth={1.75} />
+                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 18, padding: 12, flexDirection: 'row', gap: 12, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 10 }}>
+                  <View style={{ width: 84, minHeight: 80, alignSelf: 'stretch', borderRadius: 14, backgroundColor: tint.bg, alignItems: 'center', justifyContent: 'center' }}>
+                    <VehicleIcon size={38} color={tint.icon} strokeWidth={1.5} />
                   </View>
-                  <View style={{ flex: 1, gap: 4 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }} numberOfLines={2}>{selectedOffer.category}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <View style={{ flex: 1, gap: 7 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                      <Text style={{ flex: 1, fontSize: 15.5, fontWeight: '700', color: '#0B1E3D', letterSpacing: -0.2, lineHeight: 20 }} numberOfLines={2}>{selectedOffer.category}</Text>
+                      <TouchableOpacity
+                        onPress={() => (onBack ? onBack() : onNavigate('vehicle-select'))}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: '#FED7C3', backgroundColor: '#FFF5EF' }}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF5500' }}>Change</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 12, rowGap: 4 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Users size={12} color="#64748B" strokeWidth={2} />
-                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>{selectedOffer.seatingCapacity} seats</Text>
+                        <Users size={13} color="#475569" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>{selectedOffer.seatingCapacity} Seats</Text>
                       </View>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                        <Snowflake size={12} color="#64748B" strokeWidth={2} />
-                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#64748B' }}>AC</Text>
+                        <Snowflake size={13} color="#475569" strokeWidth={2} />
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>AC</Text>
                       </View>
                     </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <View style={{ width: 15, height: 15, borderRadius: 8, backgroundColor: '#16A34A', alignItems: 'center', justifyContent: 'center' }}>
+                        <Check size={10} color="#FFFFFF" strokeWidth={3} />
+                      </View>
+                      <Text style={{ flex: 1, fontSize: 11, fontWeight: '500', color: '#475569', lineHeight: 15 }}>
+                        Fuel & Driver Included <Text style={{ color: '#CBD5E1' }}>•</Text> Tolls & Parking Extra
+                      </Text>
+                    </View>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => (onBack ? onBack() : onNavigate('vehicle-select'))}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#F1F5F9' }}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#334155' }}>Change</Text>
-                  </TouchableOpacity>
                 </View>
               )}
 
               {/* Fare breakdown */}
               {selectedOffer && (
                 <View style={{ ...CARD, gap: 14 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Fare breakdown</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>Fare summary</Text>
                   <ReviewFareBreakdown offer={selectedOffer} distanceKm={quote?.distanceKm} />
                   <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 12 }}>
                     <FareRow label="Total payable" amount={payableAmount} bold />
