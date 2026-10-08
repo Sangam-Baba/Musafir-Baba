@@ -67,6 +67,7 @@ import adminRideRoutes from "./adminRide.routes.js";
 import adminRiderRoutes from "./adminRider.routes.js";
 import adminRidePricingRoutes from "./adminRidePricing.routes.js";
 import tourAppBookingRoutes, { adminTourAppBookingRoutes } from "./tourAppBooking.routes.js";
+import visaAppRoutes from "./visaApp.routes.js";
 
 const router = Router();
 
@@ -141,5 +142,6 @@ router.use("/rider/documents", riderDocumentRoutes);
 router.use("/rider/notifications", riderNotificationRoutes);
 router.use("/ride", rideRoutes);
 router.use("/tour-booking", tourAppBookingRoutes);
+router.use("/visa-app", visaAppRoutes);
 router.use("/", locationMasterRoutes);
 export default router;

@@ -79,6 +79,28 @@ const visaApplicationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // ---- Optional fields used by applications made from the MBGo rider app
+    // (routes/visaApp.routes.js). Website applications never set them. ----
+    riderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RiderProfile",
+      index: true,
+    },
+    // Which validity option of the chosen visa type was picked.
+    selectedValidityIndex: {
+      type: Number,
+    },
+    // Answers to the app's eligibility questions (guidance only).
+    eligibility: {
+      purpose: String,
+      travelDate: String,
+      stayDuration: String,
+      travellerCount: Number,
+    },
+    // Set when a "Returned" application is fixed and resubmitted from the app.
+    resubmittedAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

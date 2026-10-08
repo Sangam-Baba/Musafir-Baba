@@ -865,7 +865,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   {[
                     { icon: Palmtree, label: 'Tour', bg: '#FEF3C7', iconColor: '#D97706', action: () => onNavigate('tours') },
-                    { icon: FileCheck, label: 'Visa', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => setInAppBrowserUrl('https://musafirbaba.com/visa') },
+                    { icon: FileCheck, label: 'Visa', bg: '#F3E8FF', iconColor: '#7C3AED', action: () => onNavigate('visa') },
                     { icon: Bus, label: 'Bus', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.makemytrip.com/bus-tickets/') },
                     { icon: Hotel, label: 'Hotel', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://www.makemytrip.com/hotels/') },
                     { icon: Plane, label: 'Flight', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://www.makemytrip.com/flights/') },

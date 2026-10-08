@@ -56,6 +56,9 @@ import { inr, formatDisplayDate, AddressLine, MetaChip } from './rideUi';
 import { getMyTourAppBookings, tourBookingCode, type TourAppBooking } from '../../../api/tour.api';
 import { useTourStore } from '../../../store/useTourStore';
 import { bookingStatusLook, travellerSummary } from '../tours/ScreenTourBooking';
+import { getMyVisaApps, getResumeScreen, isVisaPaid, visaStatusLook, type VisaApplication } from '../../../api/visa.api';
+import { useVisaStore } from '../../../store/useVisaStore';
+import { FlagBadge } from '../visa/visaUi';
 
 // Maps the real RideBooking status enum to trip-card display info -- copy
 // matches ScreenLiveTracking.tsx's statusMessages so the wording is
@@ -130,7 +133,12 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
 
   // Holiday package bookings (separate API from rides). Loaded alongside the
   // rides list and bucketed into the same Upcoming/Completed/Cancelled tabs.
-  const [tripFilter, setTripFilter] = useState<'all' | 'cabs' | 'tours'>('all');
+  // "Go to My Applications" (visa flow) opens straight on the Visa filter.
+  const [tripFilter, setTripFilter] = useState<'all' | 'cabs' | 'tours' | 'visa'>(() => {
+    const visaFirst = useVisaStore.getState().openTripsOnVisa;
+    if (visaFirst) useVisaStore.getState().setOpenTripsOnVisa(false);
+    return visaFirst ? 'visa' : 'all';
+  });
   const [tourBookings, setTourBookings] = useState<TourAppBooking[]>([]);
   const setViewedTourBooking = useTourStore((s) => s.setViewedBooking);
   useEffect(() => {
@@ -150,8 +158,41 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
     if (tripsTab === 'completed') return b.bookingStatus === 'Confirmed' && ended;
     return (b.bookingStatus === 'Confirmed' && !ended) || (b.bookingStatus === 'PaymentPending' && !ended);
   });
-  const visibleRideCount = tripFilter === 'tours' ? 0 : trips.length;
-  const visibleTourCount = tripFilter === 'cabs' ? 0 : visibleTourBookings.length;
+  // Visa applications (separate API). Open ones are "upcoming", approved ones
+  // "completed", rejected ones "cancelled".
+  const [visaApps, setVisaApps] = useState<VisaApplication[]>([]);
+  const loadVisaApplication = useVisaStore((s) => s.loadApplication);
+  const setViewedVisaApp = useVisaStore((s) => s.setViewedApp);
+  useEffect(() => {
+    let cancelled = false;
+    getMyVisaApps()
+      .then((res) => {
+        if (!cancelled) setVisaApps(res.data.data || []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [tripsTab]);
+  const visibleVisaApps = visaApps.filter((a) => {
+    if (tripsTab === 'cancelled') return a.applicationStatus === 'Rejected';
+    if (tripsTab === 'completed') return a.applicationStatus === 'Approved';
+    return a.applicationStatus !== 'Rejected' && a.applicationStatus !== 'Approved';
+  });
+  const openVisaApp = (a: VisaApplication) => {
+    const unpaid = !isVisaPaid(a) && a.applicationStatus === 'Pending';
+    if (unpaid || a.applicationStatus === 'Returned') {
+      loadVisaApplication(a);
+      onNavigate(getResumeScreen(a));
+    } else {
+      setViewedVisaApp(a);
+      onNavigate('visa-application');
+    }
+  };
+
+  const visibleRideCount = tripFilter === 'tours' || tripFilter === 'visa' ? 0 : trips.length;
+  const visibleTourCount = tripFilter === 'cabs' || tripFilter === 'visa' ? 0 : visibleTourBookings.length;
+  const visibleVisaCount = tripFilter === 'all' || tripFilter === 'visa' ? visibleVisaApps.length : 0;
 
   useEffect(() => {
     fetchNotificationsForBadge();
@@ -812,12 +853,13 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 })}
               </View>
 
-              {/* Service filter */}
-              <View style={{ flexDirection: 'row', gap: 8 }}>
+              {/* Service filter (scrolls on small phones) */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                 {([
                   { key: 'all', label: 'All' },
                   { key: 'cabs', label: `Cabs${trips.length ? ` (${trips.length})` : ''}` },
                   { key: 'tours', label: `Tour Packages${visibleTourBookings.length ? ` (${visibleTourBookings.length})` : ''}` },
+                  { key: 'visa', label: `Visa${visibleVisaApps.length ? ` (${visibleVisaApps.length})` : ''}` },
                 ] as const).map((f) => {
                   const active = tripFilter === f.key;
                   return (
@@ -826,7 +868,7 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                     </TouchableOpacity>
                   );
                 })}
-              </View>
+              </ScrollView>
 
               {isLoadingTrips && (
                 <View style={{ alignItems: 'center', paddingVertical: 40, gap: 10 }}>
@@ -835,7 +877,7 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 </View>
               )}
 
-              {!isLoadingTrips && visibleRideCount === 0 && visibleTourCount === 0 && (
+              {!isLoadingTrips && visibleRideCount === 0 && visibleTourCount === 0 && visibleVisaCount === 0 && (
                 <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 44, paddingHorizontal: 24, gap: 10, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#EEF2F6' }}>
                   <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
                     <Calendar size={24} color="#FF4500" strokeWidth={1.75} />
@@ -852,8 +894,59 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                 </View>
               )}
 
+              {/* Visa applications (from the Visa flow) */}
+              {!isLoadingTrips && (tripFilter === 'all' || tripFilter === 'visa') && visibleVisaApps.map((a) => {
+                const v = typeof a.visaId === 'object' ? a.visaId : null;
+                const look = visaStatusLook(a);
+                const paid = isVisaPaid(a);
+                const action =
+                  a.applicationStatus === 'Returned' ? 'Fix & Resubmit' : !paid && a.paymentInfo?.status === 'Failed' ? 'Retry Payment' : !paid ? 'Continue Application' : 'View Application';
+                const primary = action !== 'View Application';
+                return (
+                  <View key={a._id} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, padding: 12, gap: 10, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <View style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
+                        {v?.coverImage?.url ? <Image source={{ uri: v.coverImage.url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <FlagBadge country={v?.country} size={26} />}
+                      </View>
+                      <View style={{ flex: 1, gap: 3 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                          <View style={{ backgroundColor: '#F3E8FF', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#7C3AED' }}>Visa</Text>
+                          </View>
+                          <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF4500' }}>{a.applicationId || 'Draft'}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <FlagBadge country={v?.country} size={14} />
+                          <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: '#0B1E3D' }} numberOfLines={1}>{v?.country || 'Visa'} Visa</Text>
+                        </View>
+                        <Text style={{ fontSize: 11.5, color: '#475569' }}>
+                          {a.travellers?.length ? `${a.travellers.length} traveller${a.travellers.length > 1 ? 's' : ''}` : 'Details pending'}
+                          {a.eligibility?.travelDate ? ` · Travel ${formatDisplayDate(a.eligibility.travelDate)}` : ''}
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                        <View style={{ backgroundColor: look.bg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
+                          <Text style={{ fontSize: 10.5, fontWeight: '700', color: look.color }}>{look.label}</Text>
+                        </View>
+                        {!!a.totalCost && <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#0B1E3D' }}>{inr(a.totalCost)}</Text>}
+                      </View>
+                    </View>
+                    {a.applicationStatus === 'Returned' && !!a.returnReason && (
+                      <Text style={{ fontSize: 12, color: '#9A3412', backgroundColor: '#FFF7ED', borderRadius: 8, padding: 8 }} numberOfLines={3}>{a.returnReason}</Text>
+                    )}
+                    <TouchableOpacity
+                      onPress={() => openVisaApp(a)}
+                      style={{ height: 42, borderRadius: 10, borderWidth: primary ? 0 : 1.5, borderColor: '#FF4500', backgroundColor: primary ? '#FF4500' : '#FFFFFF', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: primary ? '#FFFFFF' : '#FF4500' }}>{action}</Text>
+                      <ChevronRight size={15} color={primary ? '#FFFFFF' : '#FF4500'} strokeWidth={2.2} />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+
               {/* Holiday package bookings (from the Tours flow) */}
-              {!isLoadingTrips && tripFilter !== 'cabs' && visibleTourBookings.map((b) => {
+              {!isLoadingTrips && (tripFilter === 'all' || tripFilter === 'tours') && visibleTourBookings.map((b) => {
                 const look = bookingStatusLook(b);
                 const t = travellerSummary(b);
                 const isPaid = b.paymentInfo?.status === 'Paid';
@@ -911,7 +1004,7 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
               })}
 
               {/* Trip Cards List: real API trips only */}
-              {!isLoadingTrips && tripFilter !== 'tours' && trips.map((trip, idx) => {
+              {!isLoadingTrips && (tripFilter === 'all' || tripFilter === 'cabs') && trips.map((trip, idx) => {
                 const statusDisplay = TRIP_STATUS_DISPLAY[trip.status] || DEFAULT_TRIP_STATUS_DISPLAY;
                 const StatusIcon = trip.status === 'COMPLETED' ? CheckCircle2 : trip.status === 'CANCELLED' ? XCircle : Clock;
                 const shortId = trip._id ? `MB-${String(trip._id).slice(-6).toUpperCase()}` : '';

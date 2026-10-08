@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, X, User, Mail, Phone, Calendar, CheckCircle, RotateCcw, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, X, User, Mail, Phone, Calendar, CheckCircle, RotateCcw, FileText, ChevronLeft, ChevronRight, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,15 @@ interface VisaApplication {
     _id: string;
     title: string;
     country: string;
+    visas?: Array<{
+      _id: string;
+      visaType?: string;
+      visaPurpose?: string;
+      visaValidity?: string;
+      visaDuration?: string;
+      entryType?: string;
+      validityEntries?: Array<{ visaValidity?: string; visaDuration?: string; entryType?: string }>;
+    }>;
   };
   userId: {
     _id: string;
@@ -52,7 +61,23 @@ interface VisaApplication {
     travellerId?: string;
   }>;
   createdAt: string;
+  // Set only on applications made from the MBGo rider app.
+  riderId?: { _id: string; fullName?: string; mobileNumber?: string } | null;
+  selectedVisaId?: string;
+  selectedValidityIndex?: number;
+  isExpress?: boolean;
+  totalCost?: number;
+  eligibility?: { purpose?: string; travelDate?: string; stayDuration?: string; travellerCount?: number };
+  resubmittedAt?: string;
 }
+
+// Chosen visa type + validity, e.g. "Tourist · 60 Days · Single Entry".
+const getChosenVisaLabel = (app: VisaApplication) => {
+  const card = app.visaId?.visas?.find((v) => v._id === app.selectedVisaId);
+  if (!card) return "";
+  const entry = card.validityEntries?.[app.selectedValidityIndex ?? 0] || card;
+  return [card.visaType || card.visaPurpose, entry.visaValidity || entry.visaDuration, entry.entryType].filter(Boolean).join(" · ");
+};
 
 interface VisaApplicationListProps {
   applications: VisaApplication[];
@@ -137,9 +162,14 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
                       <User size={14} />
                     </div>
                     <div className="flex flex-col overflow-hidden w-full">
-                      <span className="text-[13px] font-semibold text-slate-700 leading-tight truncate block max-w-[120px] sm:max-w-[160px]" title={app.userId?.name || "Guest User"}>
-                        {app.userId?.name || "Guest User"}
+                      <span className="text-[13px] font-semibold text-slate-700 leading-tight truncate block max-w-[120px] sm:max-w-[160px]" title={app.userId?.name || app.riderId?.fullName || "Guest User"}>
+                        {app.userId?.name || (app.riderId ? app.riderId.fullName || app.riderId.mobileNumber || "MBGo Rider" : "Guest User")}
                       </span>
+                      {app.riderId && !app.userId && (
+                        <span className="inline-flex w-fit items-center gap-1 mt-0.5 text-[9px] font-black uppercase tracking-wider text-[#FE5300]">
+                          <Smartphone size={10} /> MBGo App
+                        </span>
+                      )}
                       <span className="text-[10px] text-slate-400 font-mono lowercase font-medium mt-0.5 truncate block max-w-[120px] sm:max-w-[160px]" title={app.userId?.email || app.email}>
                         {app.userId?.email || app.email}
                       </span>
@@ -297,6 +327,59 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
                             <span className="text-[12px] font-semibold text-slate-700 font-mono">{selectedApp.userId.phone || "N/A"}</span>
                          </div>
                       </div>
+                  </div>
+                )}
+
+                {/* MBGo app applicant: rider, chosen visa option and eligibility answers */}
+                {selectedApp.riderId && (
+                  <div className="space-y-3 pt-2">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 flex items-center gap-2">
+                      <Smartphone size={12} className="text-[#FE5300]" />
+                      MBGo App Application
+                    </h4>
+                    <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 grid grid-cols-2 gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Rider</span>
+                        <span className="text-[12px] font-semibold text-slate-700">{selectedApp.riderId.fullName || "N/A"}</span>
+                        <span className="text-[11px] text-slate-500 font-mono">{selectedApp.riderId.mobileNumber || ""}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Contact Given</span>
+                        <span className="text-[12px] font-semibold text-slate-700 font-mono truncate">{selectedApp.email || "N/A"}</span>
+                        <span className="text-[11px] text-slate-500 font-mono">{selectedApp.phone || ""}</span>
+                      </div>
+                      <div className="flex flex-col col-span-2">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Visa Option</span>
+                        <span className="text-[12px] font-semibold text-slate-700">
+                          {getChosenVisaLabel(selectedApp) || "N/A"}
+                          {selectedApp.isExpress ? " · Express" : ""}
+                        </span>
+                        {typeof selectedApp.totalCost === "number" && (
+                          <span className="text-[11px] text-slate-500">Total ₹{selectedApp.totalCost.toLocaleString("en-IN")} · Payment {selectedApp.paymentInfo?.status || "Pending"}</span>
+                        )}
+                      </div>
+                      {selectedApp.eligibility && (selectedApp.eligibility.purpose || selectedApp.eligibility.travelDate || selectedApp.eligibility.stayDuration) && (
+                        <div className="flex flex-col col-span-2">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Eligibility Answers</span>
+                          <span className="text-[11px] font-medium text-slate-600">
+                            {[
+                              selectedApp.eligibility.purpose,
+                              selectedApp.eligibility.travelDate && `Travel ${selectedApp.eligibility.travelDate}`,
+                              selectedApp.eligibility.stayDuration && `Stay ${selectedApp.eligibility.stayDuration}`,
+                            ].filter(Boolean).join(" · ")}
+                          </span>
+                        </div>
+                      )}
+                      {selectedApp.resubmittedAt && (
+                        <div className="flex flex-col col-span-2">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Resubmitted After Return</span>
+                          <span className="text-[11px] font-medium text-slate-600">
+                            {new Date(selectedApp.resubmittedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            {selectedApp.returnReason ? ` · Earlier reason: ${selectedApp.returnReason}` : ""}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
