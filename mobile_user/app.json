@@ -2,7 +2,7 @@
   "expo": {
     "name": "MBGO",
     "slug": "mobile",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,9 +18,10 @@
     },
     "android": {
       "package": "com.musafirbaba.mbgo",
+      "icon": "./assets/icons/android/playstore-icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/android/ic_launcher-web.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icons/android/mipmap-xxxhdpi/ic_launcher_foreground.png",
+        "backgroundColor": "#FDEEE8"
       },
       "usesCleartextTraffic": true,
       "predictiveBackGestureEnabled": false,

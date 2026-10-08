@@ -7,7 +7,8 @@ import { buildPayUAutoSubmitHtml } from '../../../api/payment.api';
 import { useTourStore } from '../../../store/useTourStore';
 import { inr, PhotoPlaceholder } from './tourUi';
 
-const MBGO_LOGO = require('../../../desgin/mbgoLogo.png');
+// New MBGO wordmark (same as the Home header).
+const MBGO_LOGO = require('../../../../assets/mbgo-home-logo.png');
 const fmt = (d?: string) => (d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-');
 const fmtDateTime = (d?: string) => (d ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-');
 

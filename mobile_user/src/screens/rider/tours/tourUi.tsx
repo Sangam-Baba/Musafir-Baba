@@ -24,7 +24,8 @@ import {
 } from 'lucide-react-native';
 import { getTourDurationLabel, getTourImages, getTourStartingPrice, type TourPackage } from '../../../api/tour.api';
 
-const MBGO_LOGO = require('../../../desgin/mbgoLogo.png');
+// New MBGO wordmark (same as the Home header).
+const MBGO_LOGO = require('../../../../assets/mbgo-home-logo.png');
 
 export const inr = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 
