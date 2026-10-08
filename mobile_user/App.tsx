@@ -45,6 +45,16 @@ import ScreenToursList from './src/screens/rider/tours/ScreenToursList';
 import ScreenTourDetail from './src/screens/rider/tours/ScreenTourDetail';
 import ScreenTourCheckout from './src/screens/rider/tours/ScreenTourCheckout';
 import ScreenTourBooking from './src/screens/rider/tours/ScreenTourBooking';
+// Visa services (native visa application)
+import ScreenVisaList from './src/screens/rider/visa/ScreenVisaList';
+import ScreenVisaDetail from './src/screens/rider/visa/ScreenVisaDetail';
+import ScreenVisaType from './src/screens/rider/visa/ScreenVisaType';
+import ScreenVisaEligibility from './src/screens/rider/visa/ScreenVisaEligibility';
+import ScreenVisaDetails from './src/screens/rider/visa/ScreenVisaDetails';
+import ScreenVisaDocuments from './src/screens/rider/visa/ScreenVisaDocuments';
+import ScreenVisaReview from './src/screens/rider/visa/ScreenVisaReview';
+import ScreenVisaPayment from './src/screens/rider/visa/ScreenVisaPayment';
+import ScreenVisaApplication from './src/screens/rider/visa/ScreenVisaApplication';
 
 // Profile Screens
 import ScreenRiderProfileAmit from './src/screens/rider/profile/ScreenRiderProfileAmit';
@@ -57,9 +67,9 @@ import ScreenRiderDocuments from './src/screens/rider/profile/ScreenRiderDocumen
 // Bottom-tab screens (Home, My Trips, Profile): opening one doesn't stack on
 // top of the others -- see navigate() below.
 const HOME_SCREEN = '31';
-// The holiday "Payment Successful" screen is treated the same way, so back
-// from it goes Home instead of to the already-paid checkout.
-const ROOT_TAB_SCREENS = ['31', '35', '36', 'tour-booking-success'];
+// The holiday and visa "Payment Successful" screens are treated the same way,
+// so back from them goes Home instead of to the already-paid checkout.
+const ROOT_TAB_SCREENS = ['31', '35', '36', 'tour-booking-success', 'visa-success', 'visa-resubmitted'];
 
 export default function App() {
   return (
@@ -266,6 +276,17 @@ function AppContent() {
       case 'tour-checkout': return <ScreenTourCheckout onNavigate={navigate} onBack={goBack} />;
       case 'tour-booking-success': return <ScreenTourBooking variant="success" onNavigate={navigate} onBack={goBack} />;
       case 'tour-booking-detail': return <ScreenTourBooking variant="detail" onNavigate={navigate} onBack={goBack} />;
+      case 'visa': return <ScreenVisaList onNavigate={navigate} onBack={goBack} />;
+      case 'visa-detail': return <ScreenVisaDetail onNavigate={navigate} onBack={goBack} />;
+      case 'visa-type': return <ScreenVisaType onNavigate={navigate} onBack={goBack} />;
+      case 'visa-eligibility': return <ScreenVisaEligibility onNavigate={navigate} onBack={goBack} />;
+      case 'visa-details': return <ScreenVisaDetails onNavigate={navigate} onBack={goBack} />;
+      case 'visa-documents': return <ScreenVisaDocuments onNavigate={navigate} onBack={goBack} />;
+      case 'visa-review': return <ScreenVisaReview onNavigate={navigate} onBack={goBack} />;
+      case 'visa-payment': return <ScreenVisaPayment onNavigate={navigate} onBack={goBack} />;
+      case 'visa-success': return <ScreenVisaApplication variant="success" onNavigate={navigate} onBack={goBack} />;
+      case 'visa-application': return <ScreenVisaApplication variant="detail" onNavigate={navigate} onBack={goBack} />;
+      case 'visa-resubmitted': return <ScreenVisaApplication variant="detail" onNavigate={navigate} onBack={goBack} />;
       default: return <ScreenRiderAuth activeScreen="login" onNavigate={navigate} />;
     }
   };

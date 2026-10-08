@@ -2,6 +2,8 @@ import { VisaApplication } from "../models/VisaApplication.js";
 import { Visa } from "../models/Visa.js";
 import { Counter } from "../models/Counter.js";
 import { verifyAccess } from "../utils/tokens.js";
+// Registers RiderProfile so the admin list can populate MBGo app applicants.
+import "../models/rider/RiderProfile.js";
 
 // Helper: try to extract userId from Authorization header (non-blocking)
 async function extractUserIdFromHeader(req) {
@@ -164,6 +166,7 @@ export const getAllApplications = async (req, res) => {
     const applications = await VisaApplication.find()
       .populate("visaId")
       .populate("userId", "name email phone")
+      .populate("riderId", "fullName mobileNumber")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, data: applications });
