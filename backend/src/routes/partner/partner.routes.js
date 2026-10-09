@@ -12,6 +12,7 @@ import {
   getAvailableRides,
   acceptRide,
   updateBookingStatus,
+  markRoundTripEvent,
   getEarnings,
   requestPayout,
   getNotifications,
@@ -50,6 +51,7 @@ router.get("/driver", getDrivers);
 // Bookings
 router.get("/bookings", getBookings);
 router.patch("/bookings/:id/status", updateBookingStatus);
+router.patch("/bookings/:id/round-trip", markRoundTripEvent);
 
 // Ride pool (accept-first-wins)
 router.get("/rides/available", getAvailableRides);

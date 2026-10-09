@@ -43,6 +43,11 @@ type Booking = {
   driverName: string;
   tripType: string;
   distance: string;
+  // City round trips (additive API fields; absent on older backends).
+  isCityRoundTrip?: boolean;
+  returnTime?: string | null;
+  roundTripTimeline?: { reachedDestinationAt?: string; returnStartedAt?: string } | null;
+  extraTime?: { freeWaitingMin?: number; waitingChargePerMin?: number; extraMinutes?: number; totalAmount?: number; partnerPayout?: number; status?: string } | null;
 };
 
 type AvailableRide = {
@@ -318,6 +323,50 @@ export const BookingsScreen = () => {
       Alert.alert('Error', 'Could not get your location. Please try again.');
     } finally {
       setFetchingLocation(false);
+    }
+  };
+
+  // City round trips: "Reached destination" (needs location, within 5 km of
+  // drop) and "Start return trip". Extra time is worked out by the server.
+  const handleRoundTripEvent = async (event: 'REACHED_DESTINATION' | 'RETURN_STARTED') => {
+    if (!selectedBooking) return;
+    let location: { lat: number; lng: number } | undefined;
+    if (event === 'REACHED_DESTINATION') {
+      setFetchingLocation(true);
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Location required', 'Location permission is needed to confirm you\'ve reached the destination.');
+          return;
+        }
+        const position = await Location.getCurrentPositionAsync({});
+        location = { lat: position.coords.latitude, lng: position.coords.longitude };
+      } catch (e) {
+        Alert.alert('Error', 'Could not get your location. Please try again.');
+        return;
+      } finally {
+        setFetchingLocation(false);
+      }
+    }
+    setUpdatingStatus(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/bookings/${selectedBooking.id}/round-trip`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, ...location }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        const updated: Booking = { ...selectedBooking, roundTripTimeline: result.roundTripTimeline };
+        setSelectedBooking(updated);
+        setBookings((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+      } else {
+        Alert.alert('Could not update trip', result.message || 'Please try again.');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Could not update the trip. Please try again.');
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -739,7 +788,72 @@ export const BookingsScreen = () => {
               </View>
             )}
 
-            {selectedBooking.rawStatus === 'ONGOING' && (
+            {/* City round trip steps (before Complete Trip) */}
+            {selectedBooking.rawStatus === 'ONGOING' && selectedBooking.isCityRoundTrip && (() => {
+              const timeline = selectedBooking.roundTripTimeline || {};
+              const time = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '');
+              return (
+                <View style={{ marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                  <Text style={styles.infoLabel}>CITY ROUND TRIP</Text>
+                  <Text style={{ fontSize: 13, color: '#334155', marginTop: 4 }}>
+                    Booked return: {selectedBooking.returnTime || '—'}
+                    {selectedBooking.extraTime?.freeWaitingMin != null
+                      ? ` · ${selectedBooking.extraTime.freeWaitingMin} min free, then ₹${selectedBooking.extraTime.waitingChargePerMin}/min`
+                      : ''}
+                  </Text>
+                  {!!timeline.reachedDestinationAt && <Text style={{ fontSize: 12.5, color: '#16a34a', marginTop: 4 }}>✓ Reached destination at {time(timeline.reachedDestinationAt)}</Text>}
+                  {!!timeline.returnStartedAt && <Text style={{ fontSize: 12.5, color: '#16a34a', marginTop: 2 }}>✓ Return trip started at {time(timeline.returnStartedAt)}</Text>}
+                  {!timeline.reachedDestinationAt && (
+                    <TouchableOpacity
+                      style={[styles.actionButton, { marginTop: 10 }, (updatingStatus || fetchingLocation) && { opacity: 0.6 }]}
+                      onPress={() => handleRoundTripEvent('REACHED_DESTINATION')}
+                      disabled={updatingStatus || fetchingLocation}
+                      activeOpacity={0.85}
+                    >
+                      {updatingStatus || fetchingLocation ? (
+                        <ActivityIndicator size="small" color="#ffffff" />
+                      ) : (
+                        <>
+                          <Ionicons name="flag-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                          <Text style={styles.actionButtonText}>Mark Reached Destination</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  {!!timeline.reachedDestinationAt && !timeline.returnStartedAt && (
+                    <TouchableOpacity
+                      style={[styles.actionButton, { marginTop: 10 }, updatingStatus && { opacity: 0.6 }]}
+                      onPress={() => handleRoundTripEvent('RETURN_STARTED')}
+                      disabled={updatingStatus}
+                      activeOpacity={0.85}
+                    >
+                      {updatingStatus ? (
+                        <ActivityIndicator size="small" color="#ffffff" />
+                      ) : (
+                        <>
+                          <Ionicons name="return-down-back-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                          <Text style={styles.actionButtonText}>Start Return Trip</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })()}
+
+            {/* Completed city round trip: extra time result */}
+            {selectedBooking.rawStatus === 'COMPLETED' && (selectedBooking.extraTime?.status === 'DUE' || selectedBooking.extraTime?.status === 'PAID') && (
+              <View style={{ marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: '#fff7ed', borderWidth: 1, borderColor: '#fed7aa' }}>
+                <Text style={styles.infoLabel}>EXTRA TIME</Text>
+                <Text style={{ fontSize: 13, color: '#334155', marginTop: 4 }}>
+                  {selectedBooking.extraTime.extraMinutes} min · Your share ₹{Number(selectedBooking.extraTime.partnerPayout || 0).toLocaleString('en-IN')}
+                  {selectedBooking.extraTime.status === 'DUE' ? ' (credited once the rider pays)' : ' (rider has paid)'}
+                </Text>
+              </View>
+            )}
+
+            {/* City round trips complete only after the return trip has started. */}
+            {selectedBooking.rawStatus === 'ONGOING' && (!selectedBooking.isCityRoundTrip || !!selectedBooking.roundTripTimeline?.returnStartedAt) && (
               <TouchableOpacity
                 style={[styles.actionButton, updatingStatus && { opacity: 0.6 }]}
                 onPress={() => handleUpdateStatus('COMPLETED')}

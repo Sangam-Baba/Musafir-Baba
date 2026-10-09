@@ -870,7 +870,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                     { icon: Bus, label: 'Bus', bg: '#FEE2E2', iconColor: '#DC2626', action: () => setInAppBrowserUrl('https://www.makemytrip.com/bus-tickets/') },
                     { icon: Hotel, label: 'Hotel', bg: '#E0F2FE', iconColor: '#0284C7', action: () => setInAppBrowserUrl('https://www.makemytrip.com/hotels/') },
                     { icon: Plane, label: 'Flight', bg: '#DCFCE7', iconColor: '#16A34A', action: () => setInAppBrowserUrl('https://www.makemytrip.com/flights/') },
-                    { icon: TrainFront, label: 'Train', bg: '#CCFBF1', iconColor: '#0D9488', action: () => setInAppBrowserUrl('https://www.makemytrip.com/railways/') },
+                    { icon: TrainFront, label: 'Train', bg: '#CCFBF1', iconColor: '#0D9488', action: () => setInAppBrowserUrl('https://www.confirmtkt.com/') },
                   ].map((srv, idx) => {
                     const Icon = srv.icon;
                     return (

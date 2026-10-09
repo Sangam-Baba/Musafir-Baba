@@ -85,6 +85,13 @@ function ReviewFareBreakdown({ offer }: { offer: RideOffer; distanceKm?: number 
     <View style={{ gap: 12 }}>
       <FareRow label="Fare" amount={offer.totalAmount - taxes} />
       {taxes > 0 && <FareRow label="Taxes (GST)" amount={taxes} />}
+      {offer.pricingMode === 'CITY' && offer.fare?.tripType === 'ROUND_TRIP' && (
+        <View style={{ backgroundColor: '#FFF8F3', borderRadius: 10, padding: 10 }}>
+          <Text style={{ fontSize: 12, color: '#9A3412', lineHeight: 17 }}>
+            The driver waits until your booked return time. After that, {offer.freeWaitingMin ?? 0} min are free, then ₹{offer.waitingChargePerMin ?? 0}/min + GST, payable in the app after the trip.
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

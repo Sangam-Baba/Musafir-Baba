@@ -64,6 +64,39 @@ const rideBookingSchema = new mongoose.Schema(
     commissionAmount: { type: Number },
     partnerPayout: { type: Number },
     payableOnTripNote: { type: String },
+    // ---- Same-city rides (services/cityFare.service.js). Absent on every
+    // other ride. pricingMode "CITY" rides keep pricingVersion 2 so partner
+    // earnings use the payout fixed at booking. ----
+    pricingMode: { type: String, enum: ["CITY"] },
+    cityName: { type: String },
+    // City round trips: the driver marks these while the trip is ONGOING.
+    roundTripTimeline: {
+      reachedDestinationAt: { type: Date },
+      returnStartedAt: { type: Date },
+    },
+    // City round trips: time past the booked return (+ free minutes) is
+    // charged after the trip and paid separately by the rider. Rates are
+    // snapshotted at booking so later admin edits never change this trip.
+    extraTime: {
+      freeWaitingMin: { type: Number },
+      waitingChargePerMin: { type: Number },
+      taxPercent: { type: Number },
+      commissionPercent: { type: Number },
+      extraMinutes: { type: Number },
+      waitingCharge: { type: Number },
+      taxes: { type: Number },
+      totalAmount: { type: Number },
+      commission: { type: Number },
+      partnerPayout: { type: Number },
+      status: { type: String, enum: ["NONE", "DUE", "PAID"] },
+      computedAt: { type: Date },
+      paidAt: { type: Date },
+      paymentInfo: {
+        txnid: String,
+        mihpayid: String,
+        status: { type: String, enum: ["Pending", "Paid", "Failed"] },
+      },
+    },
     paymentMethod: {
       type: String,
       enum: ["PayU", "Cash"],

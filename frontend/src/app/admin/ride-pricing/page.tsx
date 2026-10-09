@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Calculator, Plus, Tags, Trash2 } from "lucide-react";
 import { FleetPage, FleetPageHeader, FleetPill, fleetTone } from "@/components/admin/fleet/FleetUI";
+import { CityRidesSection, CityPreviewTable, getCityIssues, type CityPricing, type CityPreviewFare } from "./CityRidesSection";
 
 // Must match PARTNER_VEHICLE_CATEGORIES in backend/src/models/RidePricingConfig.js
 // -- ride dispatch matches partners on these exact names.
@@ -54,6 +55,8 @@ interface RidePricingConfig {
   taxPercent: number;
   commissionPercent: number;
   payableOnTripNote: string;
+  // Same-city pricing (always returned by the API; defaults until saved).
+  cityPricing?: CityPricing;
 }
 
 interface ConfigApiResponse {
@@ -217,6 +220,7 @@ export default function RidePricingPage() {
     returnDate: todayPlus(3),
   });
   const [preview, setPreview] = useState<PreviewFare[] | null>(null);
+  const [cityPreview, setCityPreview] = useState<CityPreviewFare[] | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
   // Seed the editable draft from the server, but never clobber unsaved edits.
@@ -284,6 +288,18 @@ export default function RidePricingPage() {
     if (turningOff && !window.confirm("Turn OFF admin pricing? New rides go back to the previous partner-rate pricing.")) {
       return;
     }
+    const cityOn = !!draft.cityPricing?.enabled;
+    const cityWasOn = !!data?.data.cityPricing?.enabled;
+    if (cityOn && getCityIssues(draft.cityPricing).length > 0) {
+      toast.error("Fix the highlighted City rides problems before saving");
+      return;
+    }
+    if (cityOn && !cityWasOn && !window.confirm("Turn ON city pricing? Rides with pickup and drop in the same city will be priced from the City rides section.")) {
+      return;
+    }
+    if (!cityOn && cityWasOn && !window.confirm("Turn OFF city pricing? Same-city rides go back to the main rate card.")) {
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -326,8 +342,10 @@ export default function RidePricingPage() {
       const result = await res.json();
       if (res.ok && result.success) {
         setPreview(result.data);
+        setCityPreview(result.cityFares || []);
       } else {
         setPreview(null);
+        setCityPreview(null);
         toast.error(result.message || "Could not calculate preview");
       }
     } catch {
@@ -715,6 +733,11 @@ export default function RidePricingPage() {
         </CardContent>
       </Card>
 
+      {/* City rides */}
+      {draft.cityPricing && (
+        <CityRidesSection value={draft.cityPricing} masterOn={draft.enabled} onChange={(cityPricing) => update({ cityPricing })} />
+      )}
+
       {/* Preview calculator */}
       <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
         <CardHeader className="gap-0.5 border-b border-slate-100 px-4 py-3 [.border-b]:pb-3">
@@ -820,6 +843,7 @@ export default function RidePricingPage() {
                 {trip.tripType === "ROUND_TRIP" ? `${preview[0]?.days ?? 0} day(s). ` : ""}
                 &ldquo;Min applied&rdquo; means the minimum km/day was higher than the actual distance driven.
               </p>
+              {cityPreview && <CityPreviewTable fares={cityPreview} roundTrip={trip.tripType === "ROUND_TRIP"} />}
             </div>
           )}
         </CardContent>

@@ -59,6 +59,7 @@ import { bookingStatusLook, travellerSummary } from '../tours/ScreenTourBooking'
 import { getMyVisaApps, getResumeScreen, isVisaPaid, visaStatusLook, type VisaApplication } from '../../../api/visa.api';
 import { useVisaStore } from '../../../store/useVisaStore';
 import { FlagBadge } from '../visa/visaUi';
+import ExtraTimePay from './ExtraTimePay';
 
 // Maps the real RideBooking status enum to trip-card display info -- copy
 // matches ScreenLiveTracking.tsx's statusMessages so the wording is
@@ -1050,6 +1051,14 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                     <MetaChip icon={<Car size={11} color="#64748B" strokeWidth={2} />} label={trip.vehicleType || trip.vehicleCategory || 'Cab'} />
                     <MetaChip icon={<Users size={11} color="#64748B" strokeWidth={2} />} label={`${trip.passengerCount || 1}`} />
                   </View>
+
+                  {/* City round trips: extra time due / paid */}
+                  <ExtraTimePay
+                    rideId={trip._id}
+                    extraTime={trip.extraTime}
+                    onUpdated={(fresh) => setTrips((prev) => prev.map((t) => (t._id === fresh._id ? { ...t, ...fresh } : t)))}
+                    onMessage={showToast}
+                  />
 
                   {trip.driverName ? (
                     <Text style={{ fontSize: 12, fontWeight: '500', color: '#334155' }}>

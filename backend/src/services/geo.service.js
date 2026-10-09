@@ -157,3 +157,23 @@ export async function getRouteDistance(pickup, drop) {
     source: "haversine-fallback",
   };
 }
+
+/**
+ * City name for a coordinate (for same-city pricing). Never throws -- returns
+ * null when the lookup fails or no city-level name exists, in which case the
+ * ride simply keeps outstation pricing.
+ */
+export async function getCityForCoords(lat, lng) {
+  try {
+    if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return null;
+    const url = `${LOCATIONIQ_REVERSE_URL}?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+    const response = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+    if (!response.ok) return null;
+    const result = await response.json();
+    const a = result?.address || {};
+    return a.city || a.town || a.municipality || a.village || a.county || a.state_district || null;
+  } catch (error) {
+    console.error("getCityForCoords error:", error.message);
+    return null;
+  }
+}

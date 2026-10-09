@@ -28,6 +28,10 @@ export interface RideOffer {
   pricingVersion?: number;
   partnerCategory?: string;
   fare?: RideFareBreakdown;
+  // Same-city ("City ride") offers only.
+  pricingMode?: 'CITY';
+  freeWaitingMin?: number;
+  waitingChargePerMin?: number;
 }
 
 export interface RideFareBreakdown {
@@ -54,6 +58,9 @@ export interface RideQuote {
   tripType?: 'ONE_WAY' | 'ROUND_TRIP';
   days?: number;
   payableOnTripNote?: string;
+  // Present when pickup and drop are in the same city (City rides pricing).
+  pricingMode?: 'CITY';
+  cityName?: string;
 }
 
 // True when an offer carries the admin rate-card breakdown.
@@ -96,3 +103,7 @@ export const getMyRides = (status?: 'upcoming' | 'completed' | 'cancelled') =>
 
 export const cancelRide = (id: string, reason?: string) =>
   apiClient.patch(`/ride/${id}/cancel`, { reason });
+
+// City round trips: pay the extra-time charge (computed by the server at trip end).
+export const payRideExtraTime = (rideId: string) =>
+  apiClient.post<{ success: boolean; payuUrl: string; paymentData: Record<string, string | number> }>(`/ride/${rideId}/extra/pay`);
