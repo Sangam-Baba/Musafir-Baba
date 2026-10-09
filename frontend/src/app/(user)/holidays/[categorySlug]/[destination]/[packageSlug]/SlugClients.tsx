@@ -628,7 +628,18 @@ function SlugClients({
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
                     {(() => {
-                      const displayAuthor = pkg.author || {
+                      // Admin preview can pass an unpopulated author (plain id string or
+                      // object without a name), so only use it when it has a name.
+                      const rawAuthor = (pkg as { author?: unknown }).author as
+                        | { name?: string; role?: string; about?: string; avatar?: { url?: string } }
+                        | string
+                        | null
+                        | undefined;
+                      const namedAuthor =
+                        rawAuthor && typeof rawAuthor === "object" && typeof rawAuthor.name === "string" && rawAuthor.name.trim() !== ""
+                          ? (rawAuthor as { name: string; role?: string; about?: string; avatar?: { url?: string } })
+                          : null;
+                      const displayAuthor = namedAuthor || {
                         name: "MusafirBaba Travel Team",
                         role: "expert",
                         avatar: { url: "" },

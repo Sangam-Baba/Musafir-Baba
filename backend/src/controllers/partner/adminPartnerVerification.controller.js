@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import PartnerAuth from "../../models/partner/PartnerAuth.js";
 import PartnerProfile from "../../models/partner/PartnerProfile.js";
 import PartnerVehicle from "../../models/partner/PartnerVehicle.js";
@@ -9,12 +10,161 @@ import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
 import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
 import sendEmail from "../../services/email.service.js";
 import { notifyUser } from "../../services/notification/notificationService.js";
+import { RideBooking } from "../../models/RideBooking.js";
+import { Staff } from "../../models/Staff.js";
+
+// Inline (often base64) image/file fields. The list view never shows them, so
+// "lite" mode leaves them out at query level; the review panel loads them per
+// partner from GET /:partnerId/details.
+const LITE_PROFILE_EXCLUDE = "-profilePicture";
+const LITE_VEHICLE_EXCLUDE =
+  "-rcImageUrl -pucImageUrl -insuranceFileUrl -permitFileUrl -frontImageUrl -rearImageUrl -leftSideImageUrl -rightSideImageUrl -interiorImageUrl -otherImageUrl";
+const LITE_DRIVER_EXCLUDE = "-licenceImageUrl -photoUrl";
+const LITE_DOCUMENT_EXCLUDE = "-fileUrl";
+
+// Builds the per-partner verification records (profile, bank, fleet, docs,
+// stats) for the given PartnerAuth docs using batched queries.
+const buildPartnerRecords = async (partners, { lite = false } = {}) => {
+  // Batch-load every related collection once (instead of ~11 queries per
+  // partner) and stitch the results together in memory. The response shape
+  // and per-partner contents are the same as the old per-partner lookups.
+  const authIds = partners.map((partner) => partner._id);
+
+  const [profiles, settingsList] = await Promise.all([
+    PartnerProfile.find({ authId: { $in: authIds } }).select(lite ? LITE_PROFILE_EXCLUDE : ""),
+    PartnerSettings.find({ authId: { $in: authIds } }),
+  ]);
+  const profileIds = profiles.map((profile) => profile._id);
+
+  const [addresses, banks, vehicles, drivers, vehicleCounts, profileDocs] = await Promise.all([
+    PartnerAddress.find({ partnerId: { $in: profileIds } }),
+    PartnerBank.find({ partnerId: { $in: profileIds }, isPrimary: true }),
+    PartnerVehicle.find({ partnerId: { $in: profileIds }, isDeleted: false }).select(lite ? LITE_VEHICLE_EXCLUDE : ""),
+    PartnerDriver.find({ partnerId: { $in: profileIds }, isDeleted: false }).select(lite ? LITE_DRIVER_EXCLUDE : ""),
+    // Count includes soft-deleted vehicles, same as the previous countDocuments.
+    PartnerVehicle.aggregate([
+      { $match: { partnerId: { $in: profileIds } } },
+      { $group: { _id: "$partnerId", count: { $sum: 1 } } },
+    ]),
+    PartnerDocument.find({
+      ownerType: "PartnerProfile",
+      ownerId: { $in: profileIds },
+      status: { $ne: "Archived" },
+    }).select(lite ? LITE_DOCUMENT_EXCLUDE : ""),
+  ]);
+
+  const [vehicleDocs, driverDocs] = await Promise.all([
+    PartnerDocument.find({
+      ownerType: "PartnerVehicle",
+      ownerId: { $in: vehicles.map((vehicle) => vehicle._id) },
+      status: { $ne: "Archived" },
+    }).select(lite ? LITE_DOCUMENT_EXCLUDE : ""),
+    PartnerDocument.find({
+      ownerType: "PartnerDriver",
+      ownerId: { $in: drivers.map((driver) => driver._id) },
+      status: { $ne: "Archived" },
+    }).select(lite ? LITE_DOCUMENT_EXCLUDE : ""),
+  ]);
+
+  const key = (id) => String(id);
+  // findOne() semantics: keep the first match per key.
+  const firstBy = (docs, field) => {
+    const map = new Map();
+    for (const doc of docs) {
+      const k = key(doc[field]);
+      if (!map.has(k)) map.set(k, doc);
+    }
+    return map;
+  };
+  const groupBy = (docs, field) => {
+    const map = new Map();
+    for (const doc of docs) {
+      const k = key(doc[field]);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(doc);
+    }
+    return map;
+  };
+
+  const profileByAuth = firstBy(profiles, "authId");
+  const settingsByAuth = firstBy(settingsList, "authId");
+  const addressByProfile = firstBy(addresses, "partnerId");
+  const bankByProfile = firstBy(banks, "partnerId");
+  const vehiclesByProfile = groupBy(vehicles, "partnerId");
+  const driversByProfile = groupBy(drivers, "partnerId");
+  const profileDocsByOwner = groupBy(profileDocs, "ownerId");
+  const vehicleCountByProfile = new Map(vehicleCounts.map((row) => [key(row._id), row.count]));
+
+  return partners.map((partner) => {
+    const authId = key(partner._id);
+    const profile = profileByAuth.get(authId) || null;
+    const settings = settingsByAuth.get(authId) || null;
+
+    let vehicleCount = 0;
+    let driverCount = 0;
+    let profileDocuments = [];
+    let vehicleDocuments = [];
+    let driverDocuments = [];
+    let pendingDocsCount = 0;
+    let rejectedDocsCount = 0;
+
+    let address = null;
+    let bank = null;
+    let vehiclesList = [];
+    let driversList = [];
+
+    if (profile) {
+      const profileId = key(profile._id);
+      address = addressByProfile.get(profileId) || null;
+      bank = bankByProfile.get(profileId) || null;
+
+      vehiclesList = vehiclesByProfile.get(profileId) || [];
+      driversList = driversByProfile.get(profileId) || [];
+
+      vehicleCount = vehicleCountByProfile.get(profileId) || 0;
+      driverCount = driversList.length;
+
+      profileDocuments = profileDocsByOwner.get(profileId) || [];
+      // Filter (not regroup) to keep the same order the old $in query returned.
+      const vehicleIdSet = new Set(vehiclesList.map((vehicle) => key(vehicle._id)));
+      const driverIdSet = new Set(driversList.map((driver) => key(driver._id)));
+      vehicleDocuments = vehicleDocs.filter((doc) => vehicleIdSet.has(key(doc.ownerId)));
+      driverDocuments = driverDocs.filter((doc) => driverIdSet.has(key(doc.ownerId)));
+
+      pendingDocsCount = profileDocuments.filter((doc) => doc.status === "Pending").length;
+      rejectedDocsCount = profileDocuments.filter((doc) => doc.status === "Rejected").length;
+    }
+
+    return {
+      auth: partner,
+      profile: profile || null,
+      address: address,
+      bank: bank,
+      settings: settings,
+      vehicles: vehiclesList,
+      drivers: driversList,
+      stats: {
+        vehicles: vehicleCount,
+        drivers: driverCount,
+        pendingDocuments: pendingDocsCount,
+        rejectedDocuments: rejectedDocsCount,
+      },
+      documents: profileDocuments.concat(vehicleDocuments, driverDocuments),
+      documentSummary: {
+        profile: profileDocuments.length,
+        vehicle: vehicleDocuments.length,
+        driver: driverDocuments.length,
+      },
+    };
+  });
+};
 
 // @route   GET /api/admin/partner-verification/pending
 // @desc    Get all partners with their aggregated stats (vehicles, documents)
+//          ?lite=true omits inline image/file fields (fast list view)
 export const getPendingPartners = async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, lite } = req.query;
     
     // Fetch partners based on status, default to all if not specified
     let filter = {};
@@ -24,89 +174,7 @@ export const getPendingPartners = async (req, res) => {
 
     const partners = await PartnerAuth.find(filter).select("-password -refreshToken -resetPasswordToken").sort({ createdAt: -1 });
 
-    // Aggregate data for each partner
-    const aggregatedPartners = await Promise.all(
-      partners.map(async (partner) => {
-        const authId = partner._id;
-
-        const profile = await PartnerProfile.findOne({ authId });
-        const settings = await PartnerSettings.findOne({ authId });
-        
-        let vehicleCount = 0;
-        let driverCount = 0;
-        let documents = [];
-        let profileDocuments = [];
-        let vehicleDocuments = [];
-        let driverDocuments = [];
-        let pendingDocsCount = 0;
-        let rejectedDocsCount = 0;
-        
-        let address = null;
-        let bank = null;
-        let vehiclesList = [];
-        let driversList = [];
-
-        if (profile) {
-          address = await PartnerAddress.findOne({ partnerId: profile._id });
-          bank = await PartnerBank.findOne({ partnerId: profile._id, isPrimary: true });
-          
-          vehiclesList = await PartnerVehicle.find({ partnerId: profile._id, isDeleted: false });
-          const PartnerDriver = (await import("../../models/partner/PartnerDriver.js")).default;
-          driversList = await PartnerDriver.find({ partnerId: profile._id, isDeleted: false });
-          
-          vehicleCount = await PartnerVehicle.countDocuments({ partnerId: profile._id });
-          driverCount = driversList.length;
-          profileDocuments = await PartnerDocument.find({
-            ownerType: "PartnerProfile",
-            ownerId: profile._id,
-            status: { $ne: "Archived" },
-          });
-          vehicleDocuments = await PartnerDocument.find({
-            ownerType: "PartnerVehicle",
-            ownerId: { $in: vehiclesList.map((vehicle) => vehicle._id) },
-            status: { $ne: "Archived" },
-          });
-          driverDocuments = await PartnerDocument.find({
-            ownerType: "PartnerDriver",
-            ownerId: { $in: driversList.map((driver) => driver._id) },
-            status: { $ne: "Archived" },
-          });
-          
-          pendingDocsCount = await PartnerDocument.countDocuments({
-            ownerType: "PartnerProfile",
-            ownerId: profile._id,
-            status: "Pending",
-          });
-          rejectedDocsCount = await PartnerDocument.countDocuments({
-            ownerType: "PartnerProfile",
-            ownerId: profile._id,
-            status: "Rejected",
-          });
-        }
-
-        return {
-          auth: partner,
-          profile: profile || null,
-          address: address,
-          bank: bank,
-          settings: settings,
-          vehicles: vehiclesList,
-          drivers: driversList,
-          stats: {
-            vehicles: vehicleCount,
-            drivers: driverCount,
-            pendingDocuments: pendingDocsCount,
-            rejectedDocuments: rejectedDocsCount,
-          },
-          documents: profileDocuments.concat(vehicleDocuments, driverDocuments),
-          documentSummary: {
-            profile: profileDocuments.length,
-            vehicle: vehicleDocuments.length,
-            driver: driverDocuments.length,
-          },
-        };
-      })
-    );
+    const aggregatedPartners = await buildPartnerRecords(partners, { lite: lite === "true" });
 
     return res.status(200).json({
       success: true,
@@ -114,6 +182,25 @@ export const getPendingPartners = async (req, res) => {
     });
   } catch (error) {
     console.error("Get Pending Partners Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   GET /api/admin/partner-verification/:partnerId/details
+// @desc    Full verification record (including images/files) for one partner
+export const getPartnerDetails = async (req, res) => {
+  try {
+    const { partnerId } = req.params;
+    const partner = await PartnerAuth.findById(partnerId).select("-password -refreshToken -resetPasswordToken");
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+    const [record] = await buildPartnerRecords([partner]);
+
+    return res.status(200).json({ success: true, data: record });
+  } catch (error) {
+    console.error("Get Partner Details Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -134,6 +221,10 @@ export const updatePartnerStatus = async (req, res) => {
     const partner = await PartnerAuth.findById(partnerId);
     if (!partner) {
       return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+
+    if (partner.status === "Deleted") {
+      return res.status(400).json({ success: false, message: "This partner is deleted. Restore the account before changing its status." });
     }
 
     const oldStatus = partner.status;
@@ -424,6 +515,274 @@ export const verifyDriver = async (req, res) => {
     return res.status(200).json({ success: true, message: `Driver marked as ${status}` });
   } catch (error) {
     console.error("verifyDriver Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Soft delete / restore
+// ---------------------------------------------------------------------------
+
+const ACTIVE_RIDE_STATUSES = ["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING"];
+
+// Role is re-read from Staff (not the token) so permission-based staff and
+// stale tokens can never pass. Module permissions are deliberately ignored.
+const hasStaffRole = async (req, roles) => {
+  const staffId = req.user?.sub || req.user?.id;
+  if (!staffId) return false;
+  const staff = await Staff.findById(staffId).select("role").lean();
+  return !!staff && roles.includes(staff.role);
+};
+
+const getDeleteImpact = async (authId) => {
+  const profile = await PartnerProfile.findOne({ authId }).select("walletBalance pendingWalletBalance");
+  if (!profile) {
+    return { hasProfile: false, activeRides: 0, totalRides: 0, walletBalance: 0, pendingWalletBalance: 0 };
+  }
+  const [activeRides, totalRides] = await Promise.all([
+    RideBooking.countDocuments({ assignedPartnerId: profile._id, status: { $in: ACTIVE_RIDE_STATUSES } }),
+    RideBooking.countDocuments({ assignedPartnerId: profile._id }),
+  ]);
+  return {
+    hasProfile: true,
+    activeRides,
+    totalRides,
+    walletBalance: profile.walletBalance || 0,
+    pendingWalletBalance: profile.pendingWalletBalance || 0,
+  };
+};
+
+// @route   GET /api/admin/partner-verification/:partnerId/delete-impact
+// @desc    What is still open for this partner (shown as warnings before delete)
+export const getPartnerDeleteImpact = async (req, res) => {
+  try {
+    if (!(await hasStaffRole(req, ["admin", "superadmin"]))) {
+      return res.status(403).json({ success: false, message: "Only admins can delete partners." });
+    }
+    const partner = await PartnerAuth.findById(req.params.partnerId).select("email status");
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+    const impact = await getDeleteImpact(partner._id);
+    return res.status(200).json({ success: true, data: { email: partner.email, status: partner.status, ...impact } });
+  } catch (error) {
+    console.error("Partner Delete Impact Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// The one soft-delete routine, shared by single and bulk delete so both always
+// behave identically. Admin chose "warn but allow": open rides / balances don't
+// block the delete, they are recorded in the log for follow-up.
+const softDeletePartner = async (partner, { reason, adminId }) => {
+  const impact = await getDeleteImpact(partner._id);
+  const oldStatus = partner.status;
+
+  partner.statusBeforeDelete = oldStatus;
+  partner.status = "Deleted";
+  partner.deletedAt = new Date();
+  partner.deletedBy = adminId;
+  partner.deleteReason = reason;
+  partner.refreshToken = undefined; // ends refresh-based sessions
+  await partner.save();
+
+  await PartnerProfile.findOneAndUpdate({ authId: partner._id }, { $set: { isDeleted: true, isOnline: false } });
+
+  const openItems = [];
+  if (impact.activeRides) openItems.push(`${impact.activeRides} active ride(s)`);
+  if (impact.walletBalance) openItems.push(`₹${impact.walletBalance} available balance`);
+  if (impact.pendingWalletBalance) openItems.push(`₹${impact.pendingWalletBalance} pending balance`);
+
+  await PartnerActionLog.create({
+    partnerId: partner._id,
+    adminId,
+    actionType: "StatusChange",
+    oldStatus,
+    newStatus: "Deleted",
+    reasons: [reason],
+    comment: openItems.length ? `Deleted with open items: ${openItems.join(", ")}` : "",
+  });
+
+  return impact;
+};
+
+// @route   DELETE /api/admin/partner-verification/:partnerId
+// @desc    Soft-delete a partner: blocks login and dispatch, keeps all records
+export const deletePartner = async (req, res) => {
+  try {
+    if (!(await hasStaffRole(req, ["admin", "superadmin"]))) {
+      return res.status(403).json({ success: false, message: "Only admins can delete partners." });
+    }
+
+    const { partnerId } = req.params;
+    const reason = String(req.body?.reason || "").trim();
+    const confirmEmail = String(req.body?.confirmEmail || "").trim().toLowerCase();
+
+    if (!reason) {
+      return res.status(400).json({ success: false, message: "A reason is required to delete a partner." });
+    }
+
+    const partner = await PartnerAuth.findById(partnerId);
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+    if (partner.status === "Deleted") {
+      return res.status(400).json({ success: false, message: "Partner is already deleted." });
+    }
+    if (confirmEmail !== String(partner.email).toLowerCase()) {
+      return res.status(400).json({ success: false, message: "Confirmation email does not match this partner." });
+    }
+
+    const impact = await softDeletePartner(partner, { reason, adminId: req.user?.sub || req.user?.id });
+
+    return res.status(200).json({ success: true, message: "Partner deleted", data: { status: "Deleted", impact } });
+  } catch (error) {
+    console.error("Delete Partner Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   POST /api/admin/partner-verification/:partnerId/restore
+// @desc    Superadmin only: undo a soft delete, back to the previous status
+export const restorePartner = async (req, res) => {
+  try {
+    if (!(await hasStaffRole(req, ["superadmin"]))) {
+      return res.status(403).json({ success: false, message: "Only a superadmin can restore partners." });
+    }
+
+    const partner = await PartnerAuth.findById(req.params.partnerId);
+    if (!partner) {
+      return res.status(404).json({ success: false, message: "Partner not found" });
+    }
+    if (partner.status !== "Deleted") {
+      return res.status(400).json({ success: false, message: "Partner is not deleted." });
+    }
+
+    const restoredStatus = partner.statusBeforeDelete || "In-Active";
+    partner.status = restoredStatus;
+    partner.deletedAt = undefined;
+    partner.deletedBy = undefined;
+    partner.deleteReason = undefined;
+    partner.statusBeforeDelete = undefined;
+    await partner.save();
+
+    await PartnerProfile.findOneAndUpdate({ authId: partner._id }, { $set: { isDeleted: false } });
+
+    await PartnerActionLog.create({
+      partnerId: partner._id,
+      adminId: req.user?.sub || req.user?.id,
+      actionType: "StatusChange",
+      oldStatus: "Deleted",
+      newStatus: restoredStatus,
+      reasons: [],
+      comment: "Account restored",
+    });
+
+    return res.status(200).json({ success: true, message: "Partner restored", data: { status: restoredStatus } });
+  } catch (error) {
+    console.error("Restore Partner Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Bulk soft delete (admin / superadmin)
+// ---------------------------------------------------------------------------
+
+const BULK_DELETE_LIMIT = 100;
+
+// Validates and de-duplicates the ids sent by the admin UI.
+const parseBulkPartnerIds = (raw) => {
+  if (!Array.isArray(raw)) return { error: "partnerIds must be a list." };
+  const ids = [...new Set(raw.map((id) => String(id || "").trim()).filter(Boolean))];
+  if (ids.length === 0) return { error: "Select at least one partner." };
+  if (ids.length > BULK_DELETE_LIMIT) return { error: `You can delete at most ${BULK_DELETE_LIMIT} partners at once.` };
+  if (ids.some((id) => !mongoose.Types.ObjectId.isValid(id))) return { error: "One or more partner ids are invalid." };
+  return { ids };
+};
+
+// @route   POST /api/admin/partner-verification/bulk-delete-impact
+// @desc    Per-partner open items (active rides / balances) shown before a bulk delete
+export const getBulkDeleteImpact = async (req, res) => {
+  try {
+    if (!(await hasStaffRole(req, ["admin", "superadmin"]))) {
+      return res.status(403).json({ success: false, message: "Only admins can delete partners." });
+    }
+    const { ids, error } = parseBulkPartnerIds(req.body?.partnerIds);
+    if (error) return res.status(400).json({ success: false, message: error });
+
+    const partners = await PartnerAuth.find({ _id: { $in: ids } }).select("email status");
+    const data = await Promise.all(
+      partners.map(async (partner) => ({
+        partnerId: partner._id,
+        email: partner.email,
+        status: partner.status,
+        ...(await getDeleteImpact(partner._id)),
+      }))
+    );
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error("Bulk Delete Impact Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   POST /api/admin/partner-verification/bulk-delete
+// @desc    Soft-delete several partners. Each one goes through the same
+//          softDeletePartner routine as a single delete; one failure never
+//          stops or undoes the others, and every outcome is reported back.
+export const bulkDeletePartners = async (req, res) => {
+  try {
+    if (!(await hasStaffRole(req, ["admin", "superadmin"]))) {
+      return res.status(403).json({ success: false, message: "Only admins can delete partners." });
+    }
+
+    const { ids, error } = parseBulkPartnerIds(req.body?.partnerIds);
+    if (error) return res.status(400).json({ success: false, message: error });
+
+    const reason = String(req.body?.reason || "").trim();
+    if (!reason) {
+      return res.status(400).json({ success: false, message: "A reason is required to delete partners." });
+    }
+    // Typed confirmation must name the exact count, e.g. "DELETE 5".
+    if (String(req.body?.confirmText || "").trim() !== `DELETE ${ids.length}`) {
+      return res.status(400).json({ success: false, message: `Type "DELETE ${ids.length}" to confirm.` });
+    }
+
+    const adminId = req.user?.sub || req.user?.id;
+    const deleted = [];
+    const skipped = [];
+    const failed = [];
+
+    // Sequential on purpose: predictable, easy to audit, no write bursts.
+    for (const id of ids) {
+      try {
+        const partner = await PartnerAuth.findById(id);
+        if (!partner) {
+          skipped.push({ partnerId: id, reason: "Not found" });
+          continue;
+        }
+        if (partner.status === "Deleted") {
+          skipped.push({ partnerId: id, reason: "Already deleted" });
+          continue;
+        }
+        await softDeletePartner(partner, { reason, adminId });
+        deleted.push(id);
+      } catch (err) {
+        console.error(`Bulk Delete Partner Error (${id}):`, err);
+        failed.push({ partnerId: id, reason: "Server error" });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Deleted ${deleted.length} partner(s)` +
+        (skipped.length ? `, skipped ${skipped.length}` : "") +
+        (failed.length ? `, failed ${failed.length}` : ""),
+      data: { deleted, skipped, failed },
+    });
+  } catch (error) {
+    console.error("Bulk Delete Partners Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

@@ -224,6 +224,10 @@ export const loginRider = async (req, res) => {
       return res.status(403).json({ success: false, message: "Your account is suspended. Contact support." });
     }
 
+    if (rider.status === "Deleted") {
+      return res.status(403).json({ success: false, message: "This account has been deleted. Contact support." });
+    }
+
     const isMatch = await bcrypt.compare(password, rider.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -340,6 +344,10 @@ export const refreshAccessToken = async (req, res) => {
 
         if (rider.status === "Suspended") {
           return res.status(403).json({ success: false, message: "Account suspended" });
+        }
+
+        if (rider.status === "Deleted") {
+          return res.status(403).json({ success: false, message: "Account deleted" });
         }
 
         const payload = {

@@ -34,12 +34,19 @@ const partnerAuthSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Draft", "PendingVerification", "Approved", "Hold", "Rejected", "In-Active", "Active", "Suspended", "Blacklisted"],
+      enum: ["Draft", "PendingVerification", "Approved", "Hold", "Rejected", "In-Active", "Active", "Suspended", "Blacklisted", "Deleted"],
       default: "Draft",
     },
     lastLogin: {
       type: Date,
     },
+    // Soft delete (admin "Delete partner"). The account and everything linked
+    // to it (rides, wallet history, documents, logs) is kept; status "Deleted"
+    // blocks login and removes the partner from dispatch. Email stays reserved.
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Staff" },
+    deleteReason: { type: String },
+    statusBeforeDelete: { type: String },
   },
   { timestamps: true }
 );

@@ -14,11 +14,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Calculator, Plus, Tags, Trash2 } from "lucide-react";
+import { FleetPage, FleetPageHeader, FleetPill, fleetTone } from "@/components/admin/fleet/FleetUI";
 
 // Must match PARTNER_VEHICLE_CATEGORIES in backend/src/models/RidePricingConfig.js
 // -- ride dispatch matches partners on these exact names.
@@ -357,31 +358,40 @@ export default function RidePricingPage() {
   const platformValue = draft.platformCharge.type === "PERCENT" ? `${draft.platformCharge.value}%` : rupees(draft.platformCharge.value);
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
+    <FleetPage className="gap-4">
       {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Ride Pricing</h1>
-          <Badge className={draft.enabled ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-700"}>
-            {draft.enabled ? "Live" : "Off"}
-          </Badge>
-          {isDirty && <Badge className="bg-amber-100 text-amber-800">Unsaved</Badge>}
-        </div>
-        <div className="flex items-center gap-2">
-          {isDirty && (
-            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={isSaving}>
-              Discard
+      <FleetPageHeader
+        icon={Tags}
+        title="Ride Pricing"
+        description="Rate card, allowances and charges used to price MBGO rides."
+        badges={
+          <>
+            <FleetPill className={draft.enabled ? fleetTone.emerald : fleetTone.slate}>{draft.enabled ? "Live" : "Off"}</FleetPill>
+            {isDirty && <FleetPill className={fleetTone.amber}>Unsaved changes</FleetPill>}
+          </>
+        }
+        actions={
+          <>
+            {isDirty && (
+              <Button variant="outline" size="sm" className="h-8 text-[12px]" onClick={handleDiscard} disabled={isSaving}>
+                Discard
+              </Button>
+            )}
+            <Button
+              size="sm"
+              className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"
+              onClick={handleSave}
+              disabled={isSaving || (!isDirty && data?.isSaved)}
+            >
+              {isSaving ? "Saving..." : data?.isSaved ? "Save changes" : "Save rate card"}
             </Button>
-          )}
-          <Button size="sm" onClick={handleSave} disabled={isSaving || (!isDirty && data?.isSaved)}>
-            {isSaving ? "Saving..." : data?.isSaved ? "Save changes" : "Save rate card"}
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Master switch */}
-      <div className={`flex items-center justify-between gap-4 rounded-lg border p-3 ${draft.enabled ? "border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30" : "border-slate-200 dark:border-slate-800"}`}>
-        <p className="text-sm text-slate-700 dark:text-slate-300">
+      <div className={`flex items-center justify-between gap-4 rounded-lg border px-4 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${draft.enabled ? "border-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/30" : "border-slate-200 bg-white dark:border-slate-800"}`}>
+        <p className="text-[13px] text-slate-700 dark:text-slate-300">
           <span className="font-semibold">Use this rate card for new rides.</span>{" "}
           {draft.enabled
             ? "ON — new quotes and bookings are priced from this page."
@@ -392,26 +402,26 @@ export default function RidePricingPage() {
       </div>
 
       {/* How the fare is calculated, with the values currently filled in */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">How the fare is calculated</CardTitle>
+      <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <CardHeader className="border-b border-slate-100 px-4 py-3 [.border-b]:pb-3">
+          <CardTitle className="text-[13px] font-semibold">How the fare is calculated</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm">
+        <CardContent className="space-y-3 p-4 text-[13px]">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="w-28 shrink-0 font-medium text-slate-600">Vehicle fare</span>
+              <span className="w-full shrink-0 font-medium text-slate-600 sm:w-28">Vehicle fare</span>
               <span className="text-xs text-slate-500">One way:</span>
               <Term label="route km ×" value="One-way ₹/km" />
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="w-28 shrink-0" />
+              <span className="hidden w-28 shrink-0 sm:inline-block" />
               <span className="text-xs text-slate-500">Round trip:</span>
               <Term label="MAX(route km × 2," value="Min km/day × days)" />
               <span>×</span>
               <Term label="" value="Round-trip ₹/km" />
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="w-28 shrink-0 font-medium text-slate-600">Rider pays</span>
+              <span className="w-full shrink-0 font-medium text-slate-600 sm:w-28">Rider pays</span>
               <Term label="Vehicle fare" value="" />
               <span>+</span>
               <Term label="Driver allowance" value={`${rupees(draft.driverAllowancePerDay)}/day`} muted={draft.driverAllowancePerDay <= 0} />
@@ -423,7 +433,7 @@ export default function RidePricingPage() {
               <Term label="Tax" value={`${draft.taxPercent}%`} muted={draft.taxPercent <= 0} />
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="w-28 shrink-0 font-medium text-slate-600">Partner gets</span>
+              <span className="w-full shrink-0 font-medium text-slate-600 sm:w-28">Partner gets</span>
               <Term label="Vehicle fare −" value={`${draft.commissionPercent}% commission`} />
               <span>+</span>
               <Term label="Allowances" value="" />
@@ -443,26 +453,109 @@ export default function RidePricingPage() {
       </Card>
 
       {/* Rate card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base">Rate card</CardTitle>
-          <Button variant="outline" size="sm" onClick={addVehicle}>
-            + Add vehicle
+      <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 px-4 py-3 [.border-b]:pb-3">
+          <CardTitle className="text-[13px] font-semibold">Rate card</CardTitle>
+          <Button variant="outline" size="sm" className="h-7 px-2.5 text-[12px]" onClick={addVehicle}>
+            <Plus className="h-4 w-4" /> Add vehicle
           </Button>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
+        <CardContent className="p-4">
+          {/* Below xl: one editable card per vehicle (same handlers as the table) */}
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:hidden">
+            {draft.vehicleTypes.map((vehicle, index) => {
+              const checkRequired = vehicle.isActive;
+              return (
+                <div
+                  key={vehicle._id || `new-${index}`}
+                  className={`space-y-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 ${vehicle.isActive ? "" : "opacity-50"}`}
+                >
+                  <div className="flex items-start gap-2">
+                    <label className="flex flex-1 flex-col gap-1 text-xs text-slate-500">
+                      Vehicle (shown to rider)
+                      <Input
+                        value={vehicle.name}
+                        placeholder="e.g. Sedan"
+                        onChange={(e) => updateVehicle(index, { name: e.target.value })}
+                        className={`h-8 bg-white text-sm ${!vehicle.name.trim() ? errorRing : ""}`}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${vehicle.name}`}
+                      className="mt-5 rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                      onClick={() => removeVehicle(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex flex-col gap-1 text-xs text-slate-500">
+                      Seats
+                      <Input
+                        type="number"
+                        min={1}
+                        value={vehicle.seatingCapacity}
+                        onChange={(e) => updateVehicle(index, { seatingCapacity: toNumber(e.target.value) })}
+                        className="h-8 bg-white px-2 text-sm"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1 text-xs text-slate-500" title="Partners with this vehicle category receive the ride">
+                      Sent to partners with
+                      <select
+                        className={`${selectClass} bg-white`}
+                        value={vehicle.partnerCategory}
+                        onChange={(e) => updateVehicle(index, { partnerCategory: e.target.value })}
+                      >
+                        {PARTNER_CATEGORIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {([
+                      ["oneWayRate", "One way ₹/km"],
+                      ["roundTripRate", "Round trip ₹/km"],
+                      ["minKmPerDay", "Min km/day"],
+                    ] as const).map(([field, label]) => (
+                      <label key={field} className="flex flex-col gap-1 text-xs text-slate-500">
+                        {label}
+                        <Input
+                          type="number"
+                          min={0}
+                          step={field === "minKmPerDay" ? 10 : 0.5}
+                          value={vehicle[field]}
+                          onChange={(e) => updateVehicle(index, { [field]: toNumber(e.target.value) })}
+                          className={`h-8 bg-white px-2 text-sm ${checkRequired && vehicle[field] <= 0 ? errorRing : ""}`}
+                        />
+                      </label>
+                    ))}
+                    <label className="flex items-center gap-2 self-end pb-1.5 text-xs font-medium text-slate-600">
+                      <Checkbox
+                        checked={vehicle.isActive}
+                        onCheckedChange={(checked) => updateVehicle(index, { isActive: checked === true })}
+                      />
+                      Active
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hidden overflow-x-auto xl:block">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-slate-50/60">
                 <TableRow>
-                  <TableHead className="min-w-[180px]">Vehicle (shown to rider)</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead title="Partners with this vehicle category receive the ride">Sent to partners with</TableHead>
-                  <TableHead>One way ₹/km</TableHead>
-                  <TableHead>Round trip ₹/km</TableHead>
-                  <TableHead>Min km/day</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead />
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500 min-w-[180px]">Vehicle (shown to rider)</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500">Seats</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500" title="Partners with this vehicle category receive the ride">Sent to partners with</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500">One way ₹/km</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500">Round trip ₹/km</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500">Min km/day</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500">Active</TableHead>
+                  <TableHead className="h-9 text-[11px] font-medium text-slate-500" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -522,10 +615,10 @@ export default function RidePricingPage() {
                         <button
                           type="button"
                           aria-label={`Remove ${vehicle.name}`}
-                          className="px-2 text-lg leading-none text-slate-400 hover:text-red-600"
+                          className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
                           onClick={() => removeVehicle(index)}
                         >
-                          ×
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </TableCell>
                     </TableRow>
@@ -538,11 +631,11 @@ export default function RidePricingPage() {
       </Card>
 
       {/* Charges */}
-      <Card>
-        <CardHeader className="pb-0">
-          <CardTitle className="text-base">Charges</CardTitle>
+      <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <CardHeader className="border-b border-slate-100 px-4 py-3 [.border-b]:pb-3">
+          <CardTitle className="text-[13px] font-semibold">Charges</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 py-1">
           <ChargeRow
             label="Driver allowance"
             help="Per day. One way = 1 day, round trip = number of days."
@@ -623,12 +716,12 @@ export default function RidePricingPage() {
       </Card>
 
       {/* Preview calculator */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Try a sample trip</CardTitle>
+      <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <CardHeader className="gap-0.5 border-b border-slate-100 px-4 py-3 [.border-b]:pb-3">
+          <CardTitle className="flex items-center gap-2 text-[13px] font-semibold"><Calculator className="h-3.5 w-3.5 text-[#FE5300]" />Try a sample trip</CardTitle>
           <p className="text-xs text-slate-500">Uses the values on this page, including unsaved changes. Nothing is saved or booked.</p>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 p-4">
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-1 text-xs text-slate-600">
               Trip
@@ -647,7 +740,7 @@ export default function RidePricingPage() {
             </label>
             <label className="flex flex-col gap-1 text-xs text-slate-600">
               Pickup
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 <Input type="date" value={trip.rideDate} onChange={(e) => setTrip({ ...trip, rideDate: e.target.value })} className="h-8 w-36 text-sm" />
                 <Input type="time" value={trip.rideTime} onChange={(e) => setTrip({ ...trip, rideTime: e.target.value })} className="h-8 w-28 text-sm" />
               </div>
@@ -658,23 +751,49 @@ export default function RidePricingPage() {
                 <Input type="date" value={trip.returnDate} onChange={(e) => setTrip({ ...trip, returnDate: e.target.value })} className="h-8 w-36 text-sm" />
               </label>
             )}
-            <Button size="sm" variant="outline" onClick={handlePreview} disabled={isPreviewing}>
+            <Button size="sm" variant="outline" className="h-8 text-[12px]" onClick={handlePreview} disabled={isPreviewing}>
               {isPreviewing ? "Calculating..." : "Calculate"}
             </Button>
           </div>
 
           {preview && (
-            <div className="overflow-x-auto">
+            <div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:hidden">
+                {preview.map((fare) => (
+                  <div key={fare.name} className={`rounded-lg border border-slate-200 p-3 text-xs ${fare.isActive ? "" : "opacity-40"}`}>
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-slate-900">{fare.name}</span>
+                      <span className="text-sm font-bold text-slate-900">{rupees(fare.totalAmount)}</span>
+                    </div>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-slate-500">
+                      <dt>Billable km</dt>
+                      <dd className="text-right text-slate-800">
+                        {fare.billableKm}
+                        {fare.billableKm !== fare.actualKm && <span className="ml-1 text-amber-700">(min)</span>}
+                      </dd>
+                      <dt>Vehicle fare</dt>
+                      <dd className="text-right text-slate-800">{rupees(fare.vehicleFare)} @ ₹{fare.ratePerKm}</dd>
+                      <dt>Allowances</dt>
+                      <dd className="text-right text-slate-800">{rupees(fare.driverAllowance + fare.nightAllowance)}</dd>
+                      <dt>Platform + tax</dt>
+                      <dd className="text-right text-slate-800">{rupees(fare.platformCharges + fare.taxes)}</dd>
+                      <dt>Partner gets</dt>
+                      <dd className="text-right font-medium text-emerald-700">{rupees(fare.partnerPayout)}</dd>
+                    </dl>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden md:block">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-slate-50/60">
                   <TableRow>
-                    <TableHead>Vehicle</TableHead>
-                    <TableHead>Billable km</TableHead>
-                    <TableHead>Vehicle fare</TableHead>
-                    <TableHead>Allowances</TableHead>
-                    <TableHead>Platform + tax</TableHead>
-                    <TableHead>Rider pays</TableHead>
-                    <TableHead>Partner gets</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Vehicle</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Billable km</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Vehicle fare</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Allowances</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Platform + tax</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Rider pays</TableHead>
+                    <TableHead className="h-9 text-[11px] font-medium text-slate-500">Partner gets</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -696,6 +815,7 @@ export default function RidePricingPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
               <p className="mt-2 text-xs text-slate-500">
                 {trip.tripType === "ROUND_TRIP" ? `${preview[0]?.days ?? 0} day(s). ` : ""}
                 &ldquo;Min applied&rdquo; means the minimum km/day was higher than the actual distance driven.
@@ -704,6 +824,6 @@ export default function RidePricingPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </FleetPage>
   );
 }

@@ -1,6 +1,12 @@
 import express from "express";
 import {
   getPendingPartners,
+  getPartnerDetails,
+  getPartnerDeleteImpact,
+  deletePartner,
+  restorePartner,
+  getBulkDeleteImpact,
+  bulkDeletePartners,
   updatePartnerStatus,
   verifyDocument,
   updatePartnerProfile,
@@ -20,6 +26,12 @@ router.use(protect);
 router.use(authorizedRoles(["admin", "superadmin"]));
 
 router.get("/pending", getPendingPartners);
+router.post("/bulk-delete-impact", getBulkDeleteImpact);
+router.post("/bulk-delete", bulkDeletePartners);
+router.get("/:partnerId/details", getPartnerDetails);
+router.get("/:partnerId/delete-impact", getPartnerDeleteImpact);
+router.delete("/:partnerId", deletePartner);
+router.post("/:partnerId/restore", restorePartner);
 router.put("/:partnerId/status", updatePartnerStatus);
 router.put("/:partnerId/profile", updatePartnerProfile);
 router.put("/document/:documentId", verifyDocument);

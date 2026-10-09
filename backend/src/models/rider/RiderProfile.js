@@ -39,6 +39,11 @@ const riderProfileSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Mirrors RiderAuth.status === "Deleted" (soft delete by admin).
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

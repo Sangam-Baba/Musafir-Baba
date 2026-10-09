@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,9 +23,27 @@ import {
 } from "@/components/ui/collapsible";
 import Link from "next/link";
 import { NAV_GROUPS } from "@/config/navigation";
-import { FaChevronCircleDown } from "react-icons/fa";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
+
+// Each nav section gets its own accent (header + guide line only — items
+// stay neutral). Full class strings so Tailwind keeps them.
+type SectionTone = { band: string; tile: string; label: string; chevron: string; line: string };
+const SECTION_TONES: Record<string, SectionTone> = {
+  "Main": { band: "bg-orange-50/80 hover:bg-orange-50", tile: "bg-orange-500", label: "text-orange-700", chevron: "text-orange-400", line: "border-orange-200" },
+  "Content Management": { band: "bg-sky-50/80 hover:bg-sky-50", tile: "bg-sky-500", label: "text-sky-700", chevron: "text-sky-400", line: "border-sky-200" },
+  "Fleet Management": { band: "bg-emerald-50/80 hover:bg-emerald-50", tile: "bg-emerald-500", label: "text-emerald-700", chevron: "text-emerald-400", line: "border-emerald-200" },
+  "Packages": { band: "bg-violet-50/80 hover:bg-violet-50", tile: "bg-violet-500", label: "text-violet-700", chevron: "text-violet-400", line: "border-violet-200" },
+  "Bills & Invoice": { band: "bg-amber-50/80 hover:bg-amber-50", tile: "bg-amber-500", label: "text-amber-700", chevron: "text-amber-400", line: "border-amber-200" },
+  "Master Data": { band: "bg-rose-50/80 hover:bg-rose-50", tile: "bg-rose-500", label: "text-rose-700", chevron: "text-rose-400", line: "border-rose-200" },
+  "Settings": { band: "bg-slate-100/80 hover:bg-slate-100", tile: "bg-slate-600", label: "text-slate-700", chevron: "text-slate-400", line: "border-slate-200" },
+};
+const FALLBACK_TONES: SectionTone[] = [
+  { band: "bg-teal-50/80 hover:bg-teal-50", tile: "bg-teal-500", label: "text-teal-700", chevron: "text-teal-400", line: "border-teal-200" },
+  { band: "bg-indigo-50/80 hover:bg-indigo-50", tile: "bg-indigo-500", label: "text-indigo-700", chevron: "text-indigo-400", line: "border-indigo-200" },
+  { band: "bg-fuchsia-50/80 hover:bg-fuchsia-50", tile: "bg-fuchsia-500", label: "text-fuchsia-700", chevron: "text-fuchsia-400", line: "border-fuchsia-200" },
+];
+const sectionTone = (label: string, index: number) => SECTION_TONES[label] || FALLBACK_TONES[index % FALLBACK_TONES.length];
 
 export function AdminSidebar() {
   const role = useAdminAuthStore((s) => s.role);
@@ -55,50 +73,47 @@ export function AdminSidebar() {
   })).filter((group) => group.items.length > 0);
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-r-0 bg-transparent">
-      <SidebarHeader className="h-20 flex items-center px-6 border-b border-slate-200/40 dark:border-slate-800/40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-t-2xl">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl overflow-hidden shadow-lg shadow-orange-500/10 ring-1 ring-slate-200/50 dark:ring-white/10 flex items-center justify-center bg-white dark:bg-slate-800">
-            <img src="/favicon.ico" alt="MusafirBaba" className="h-6 w-6 object-contain" />
-          </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <h1 className="text-md font-bold tracking-tight text-slate-900 dark:text-white leading-none">
-              MusafirBaba
-            </h1>
-            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 tracking-widest uppercase mt-1">
-              Admin Portal
-            </span>
-          </div>
+      <SidebarHeader className="flex h-14 flex-row items-center gap-2.5 rounded-t-xl border-b border-slate-200/70 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 group-data-[collapsible=icon]:px-2">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-white/10">
+          <img src="/favicon.ico" alt="MusafirBaba" className="h-5 w-5 object-contain" />
+        </div>
+        <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+          <span className="truncate text-[14px] font-semibold leading-tight tracking-tight text-slate-900 dark:text-white">
+            MusafirBaba
+          </span>
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+            Admin Portal
+          </span>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-6 gap-6 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm">
-        {filteredNavGroups.map((group) => (
+      <SidebarContent className="gap-3 bg-white px-2 py-3 dark:bg-slate-900">
+        {filteredNavGroups.map((group, groupIndex) => {
+          const tone = sectionTone(group.label, groupIndex);
+          return (
           <SidebarGroup
             key={group.label}
-            className="p-0 border-none"
+            className="border-none p-0"
           >
             <SidebarGroupContent>
               <SidebarMenu>
                 <Collapsible defaultOpen className="group/collapsible">
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full hover:bg-slate-50 dark:hover:bg-slate-800/40 flex items-center justify-between px-4 py-2.5 transition-all duration-300 rounded-full group-data-[state=open]/collapsible:bg-[#f4fcf4] group-data-[state=open]/collapsible:shadow-sm">
-                      <div className="flex gap-3.5 items-center">
-                        <div className={`p-1.5 rounded-lg transition-colors duration-300 ${
-                          "group-data-[state=open]/collapsible:bg-[#87E87F]/20 group-data-[state=open]/collapsible:text-[#2d5a27]"
-                        }`}>
-                          <group.icon className="h-4.5 w-4.5 shrink-0 transition-transform duration-300 group-hover/collapsible:scale-110" />
-                        </div>
-                        <span className="text-slate-600 dark:text-slate-400 text-[11px] font-bold tracking-[0.1em] uppercase group-data-[collapsible=icon]:hidden group-data-[state=open]/collapsible:text-slate-900 dark:group-data-[state=open]/collapsible:text-white transition-colors">
+                    <SidebarMenuButton className={`h-10 w-full justify-between rounded-lg px-2 transition-colors dark:bg-slate-800/40 dark:hover:bg-slate-800/70 ${tone.band}`}>
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-white shadow-sm ${tone.tile}`}>
+                          <group.icon className="h-4 w-4" />
+                        </span>
+                        <span className={`truncate text-[12px] font-bold uppercase tracking-[0.06em] group-data-[collapsible=icon]:hidden ${tone.label}`}>
                           {group.label}
                         </span>
                       </div>
-
-                      <FaChevronCircleDown className="ml-2 h-4 w-4 text-slate-400 bg-white rounded-full transition-all duration-500 group-data-[state=open]/collapsible:rotate-180 group-data-[state=open]/collapsible:text-[#87E87F] group-data-[collapsible=icon]:hidden" />
+                      <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=closed]/collapsible:-rotate-90 group-data-[collapsible=icon]:hidden ${tone.chevron}`} />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
 
-                  <CollapsibleContent className="transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden">
-                    <SidebarMenuSub className="ml-6 pl-4 border-l-2 border-slate-100 dark:border-slate-800 group-data-[state=open]/collapsible:border-[#87E87F]/30 space-y-1.5 my-2 transition-colors duration-500">
+                  <CollapsibleContent className="overflow-hidden">
+                    <SidebarMenuSub className={`mb-1 ml-[21px] mr-0 mt-1.5 gap-0.5 border-l-2 py-0 pl-2.5 pr-0 ${tone.line}`}>
                       {group.items.map((item) => {
                         const Icon = item.icon;
                         const active = pathname === item.href;
@@ -110,27 +125,28 @@ export function AdminSidebar() {
                               onClick={() => {
                                 if (!active) setPendingHref(item.href);
                               }}
-                              className={`flex items-center gap-3 rounded-full px-3.5 py-2 transition-all duration-150 text-[13px] font-semibold group/item relative ${
+                              title={item.label}
+                              className={`group/item relative flex h-8 items-center gap-2 rounded-md px-2 text-[12.5px] transition-colors duration-150 ${
                                 active
-                                  ? "bg-gradient-to-r from-[#FE5300] to-[#ff7a3d] text-white shadow-lg shadow-orange-500/30 scale-[1.02]"
+                                  ? "bg-slate-900/[0.04] font-semibold text-slate-900 dark:bg-white/10 dark:text-white"
                                   : isPendingItem
-                                  ? "bg-[#87E87F]/20 text-slate-900 dark:text-white scale-[0.98]"
-                                  : "text-slate-600 dark:text-slate-400 hover:bg-[#87E87F]/10 hover:text-slate-900 dark:hover:text-white active:scale-[0.98] active:duration-75"
+                                  ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white"
+                                  : "text-slate-500 hover:bg-slate-100/70 hover:text-slate-900 active:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-white"
                               }`}
                             >
+                              {active && (
+                                <span className="absolute -left-[12px] top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-[#FE5300]" />
+                              )}
                               {isPendingItem ? (
-                                <Loader2 className="h-4.5 w-4.5 shrink-0 animate-spin text-[#2d5a27] dark:text-[#87E87F]" />
+                                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-[#FE5300]" />
                               ) : (
-                                <Icon className={`h-4.5 w-4.5 shrink-0 transition-all duration-300 ${
-                                  active ? "text-white scale-110" : "text-slate-400 group-hover/item:text-[#87E87F] group-hover/item:scale-110"
+                                <Icon className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                                  active ? "text-[#FE5300]" : "text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-200"
                                 }`} />
                               )}
-                              <span className="group-data-[collapsible=icon]:hidden">
+                              <span className="truncate group-data-[collapsible=icon]:hidden">
                                 {item.label}
                               </span>
-                              {active && (
-                                <div className="absolute left-[-17px] w-[3px] h-6 bg-[#FE5300] rounded-r-full shadow-[2px_0_8px_rgba(254,83,0,0.5)]" />
-                              )}
                             </Link>
                           </SidebarMenuSubItem>
                         );
@@ -141,19 +157,21 @@ export function AdminSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-        ))}
+          );
+        })}
       </SidebarContent>
 
-      <SidebarFooter className="p-8 border-t border-slate-200/40 dark:border-slate-800/40 bg-white/60 dark:bg-slate-950/60 backdrop-blur-md rounded-b-2xl">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#87E87F] animate-pulse" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-              System Active
-            </p>
+      <SidebarFooter className="rounded-b-xl border-t border-slate-200/70 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 group-data-[collapsible=icon]:hidden">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
+            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">System active</p>
           </div>
-          <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 opacity-80">
-            © {new Date().getFullYear()} MusafirBaba Pvt. Ltd
+          <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            © {new Date().getFullYear()} MusafirBaba
           </p>
         </div>
       </SidebarFooter>

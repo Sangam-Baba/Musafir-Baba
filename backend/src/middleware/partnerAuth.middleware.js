@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import PartnerAuth from "../models/partner/PartnerAuth.js";
 
 export const isPartnerAuthenticated = async (req, res, next) => {
   try {
@@ -21,6 +22,12 @@ export const isPartnerAuthenticated = async (req, res, next) => {
     
     if (decoded.role !== "Partner") {
       return res.status(403).json({ success: false, message: "Forbidden: Not a Partner" });
+    }
+
+    // A deleted account's still-valid token must not keep working.
+    const account = await PartnerAuth.findById(decoded.partnerId).select("status").lean();
+    if (account && account.status === "Deleted") {
+      return res.status(401).json({ success: false, message: "This account has been deleted. Contact admin." });
     }
 
     // Attach partnerId to request

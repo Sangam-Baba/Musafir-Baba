@@ -14,14 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +23,8 @@ import {
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CarFront, CheckCircle2, Hourglass, ListChecks, Navigation } from "lucide-react";
+import { FleetEmptyState, FleetKpiStrip, FleetPage, FleetPageHeader, FleetPanel, FleetPill, fleetBtnSm, fleetSelectClass, fleetTh, fleetTone } from "@/components/admin/fleet/FleetUI";
 
 interface RideBooking {
   _id: string;
@@ -86,11 +80,17 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const getRideStatusColor = (status: string) => {
-  if (status === "COMPLETED") return "bg-emerald-100 text-emerald-800";
-  if (status === "CANCELLED") return "bg-red-100 text-red-800";
-  if (status === "AWAITING_ASSIGNMENT" || status === "PAID") return "bg-amber-100 text-amber-800";
-  if (["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING"].includes(status)) return "bg-sky-100 text-sky-800";
-  return "bg-slate-100 text-slate-800";
+  if (status === "COMPLETED") return fleetTone.emerald;
+  if (status === "CANCELLED") return fleetTone.red;
+  if (status === "AWAITING_ASSIGNMENT" || status === "PAID") return fleetTone.amber;
+  if (["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING"].includes(status)) return fleetTone.sky;
+  return fleetTone.slate;
+};
+
+// "DRIVER_EN_ROUTE" -> "Driver en route"
+const formatRideStatus = (status: string) => {
+  const text = status.replace(/_/g, " ").toLowerCase();
+  return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
 const formatDate = (dateString?: string) => {
@@ -295,63 +295,81 @@ function RideBookingsPage() {
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   }
 
-  return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Ride Bookings</h1>
-          <p className="text-slate-500 dark:text-slate-400">
-            Manage MBGO ride bookings — release paid rides to partners, reassign, or cancel.
-          </p>
-        </div>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border px-3 py-2 bg-white"
+  const renderActions = (ride: RideBooking) => (
+    <>
+      {(ride.status === "PAID" || ride.status === "AWAITING_ASSIGNMENT") && (
+        <Button
+          size="sm"
+          className={`${fleetBtnSm} bg-[#FE5300] hover:bg-[#e54b00]`}
+          disabled={actingOnId === ride._id}
+          onClick={() => handleRelease(ride._id)}
         >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === "All" ? "All Statuses" : s.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
-      </div>
+          Release
+        </Button>
+      )}
+      {["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING"].includes(ride.status) && (
+        <Button
+          size="sm"
+          variant="outline"
+          className={fleetBtnSm}
+          disabled={actingOnId === ride._id}
+          onClick={() => handleReassign(ride._id)}
+        >
+          Reassign
+        </Button>
+      )}
+      {!["COMPLETED", "CANCELLED"].includes(ride.status) && (
+        <Button
+          size="sm"
+          variant="outline"
+          className={`${fleetBtnSm} text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600`}
+          disabled={actingOnId === ride._id}
+          onClick={() => handleCancel(ride._id)}
+        >
+          Cancel
+        </Button>
+      )}
+    </>
+  );
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Shown</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">{rides.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Awaiting Assignment</p>
-            <p className="text-3xl font-bold text-amber-600">{stats.awaitingAssignment}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
-            <p className="text-3xl font-bold text-sky-600">{stats.inProgress}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Completed</p>
-            <p className="text-3xl font-bold text-emerald-600">{stats.completed}</p>
-          </CardContent>
-        </Card>
-      </div>
+  const renderStatus = (ride: RideBooking) => (
+    <div className="flex flex-col gap-1 items-start">
+      <FleetPill className={getRideStatusColor(ride.status)}>{formatRideStatus(ride.status)}</FleetPill>
+      {ride.needsManualAssignment && <FleetPill className={fleetTone.red}>Needs attention</FleetPill>}
+    </div>
+  );
 
-      <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-        <CardHeader>
-          <CardTitle>Ride Bookings List</CardTitle>
-          <CardDescription>View and manage ride bookings across their lifecycle</CardDescription>
-        </CardHeader>
+  return (
+    <FleetPage>
+      <FleetPageHeader
+        icon={CarFront}
+        title="Ride Bookings"
+        description="Manage MBGO ride bookings — release paid rides to partners, reassign, or cancel."
+        actions={
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className={`${fleetSelectClass} w-full sm:w-auto`}
+          >
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s === "All" ? "All Statuses" : s.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        }
+      />
 
-        <CardContent>
+      <FleetKpiStrip
+        items={[
+          { label: "Shown", value: rides.length, icon: ListChecks, tone: "slate" },
+          { label: "Awaiting assignment", value: stats.awaitingAssignment, icon: Hourglass, tone: "amber" },
+          { label: "In progress", value: stats.inProgress, icon: Navigation, tone: "sky" },
+          { label: "Completed", value: stats.completed, icon: CheckCircle2, tone: "emerald" },
+        ]}
+      />
+
+      <FleetPanel title="Ride bookings" description="View and manage ride bookings across their lifecycle">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader size="lg" message="Loading ride bookings..." />
@@ -361,138 +379,133 @@ function RideBookingsPage() {
               <p className="text-red-600 dark:text-red-400">Error: {String((error as Error)?.message)}</p>
             </div>
           ) : rides.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-slate-500 dark:text-slate-400">No ride bookings found for this filter</p>
-            </div>
+            <FleetEmptyState icon={CarFront} title="No ride bookings found for this filter" />
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                    <TableHead className="font-semibold">Booking</TableHead>
-                    <TableHead className="font-semibold">Rider</TableHead>
-                    <TableHead className="font-semibold">Route</TableHead>
-                    <TableHead className="font-semibold">Vehicle</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
-                    <TableHead className="font-semibold">Partner</TableHead>
-                    <TableHead className="font-semibold">Date</TableHead>
-                    <TableHead className="text-right font-semibold">Fare</TableHead>
-                    <TableHead className="text-right font-semibold">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
+            <>
+              {/* Mobile: one card per ride */}
+              <div className="divide-y divide-slate-100 md:hidden">
+                {rides.map((ride) => (
+                  <div key={ride._id} className="space-y-2.5 px-4 py-3 text-[13px]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-[12px] font-medium text-slate-900">MB-{ride._id.slice(-6).toUpperCase()}</p>
+                        <p className="text-[11px] text-slate-500">{formatDate(ride.createdAt)}</p>
+                      </div>
+                      <p className="shrink-0 font-semibold tabular-nums text-slate-900">₹{Number(ride.totalAmount ?? 0).toLocaleString("en-IN")}</p>
+                    </div>
+                    {renderStatus(ride)}
+                    <div className="space-y-1 text-[12px]">
+                      <p className="break-words text-slate-700"><span className="text-slate-400">From </span>{ride.pickup?.address}</p>
+                      <p className="break-words text-slate-700"><span className="text-slate-400">To </span>{ride.drop?.address}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <p className="text-slate-400">Rider</p>
+                        <p className="font-medium text-slate-800 break-words">{ride.rider?.fullName || "-"}</p>
+                        <p className="text-slate-500">{ride.rider?.mobileNumber || ""}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Partner</p>
+                        <p className="font-medium text-slate-800 break-words">{ride.assignedPartnerId?.fullName || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Vehicle</p>
+                        <p className="font-medium text-slate-800">{ride.vehicleCategory} · {ride.distanceKm} km</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Ride</p>
+                        <p className="font-medium text-slate-800">{ride.rideDate} • {ride.rideTime}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">{renderActions(ride)}</div>
+                  </div>
+                ))}
+              </div>
 
-                <TableBody>
-                  {rides.map((ride) => (
-                    <TableRow
-                      key={ride._id}
-                      className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <TableCell className="font-medium text-slate-900 dark:text-white">
-                        MB-{ride._id.slice(-6).toUpperCase()}
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <p className="font-medium text-slate-900 dark:text-white">{ride.rider?.fullName || "-"}</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">{ride.rider?.mobileNumber || ""}</p>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-slate-700 dark:text-slate-300 max-w-[220px]">
-                        <p className="truncate">{ride.pickup?.address}</p>
-                        <p className="truncate text-xs text-slate-400">→ {ride.drop?.address}</p>
-                      </TableCell>
-
-                      <TableCell className="text-slate-700 dark:text-slate-300">
-                        {ride.vehicleCategory}
-                        <div className="text-xs text-slate-400">{ride.distanceKm} km</div>
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="flex flex-col gap-1 items-start">
-                          <Badge className={`${getRideStatusColor(ride.status)} border-0`}>
-                            {ride.status.replace(/_/g, " ")}
-                          </Badge>
-                          {ride.needsManualAssignment && (
-                            <Badge className="bg-red-100 text-red-800 border-0">Needs Attention</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-slate-700 dark:text-slate-300">
-                        {ride.assignedPartnerId?.fullName || "-"}
-                      </TableCell>
-
-                      <TableCell className="text-slate-700 dark:text-slate-300">
-                        {formatDate(ride.createdAt)}
-                        <div className="text-xs text-slate-400">{ride.rideDate} • {ride.rideTime}</div>
-                      </TableCell>
-
-                      <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
-                        ₹{Number(ride.totalAmount ?? 0).toLocaleString("en-IN")}
-                      </TableCell>
-
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2 flex-wrap">
-                          {(ride.status === "PAID" || ride.status === "AWAITING_ASSIGNMENT") && (
-                            <Button
-                              size="sm"
-                              className="bg-[#FE5300] hover:bg-[#FE5300]"
-                              disabled={actingOnId === ride._id}
-                              onClick={() => handleRelease(ride._id)}
-                            >
-                              Release
-                            </Button>
-                          )}
-                          {["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING"].includes(ride.status) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={actingOnId === ride._id}
-                              onClick={() => handleReassign(ride._id)}
-                            >
-                              Reassign
-                            </Button>
-                          )}
-                          {!["COMPLETED", "CANCELLED"].includes(ride.status) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-red-600 border-red-200 hover:bg-red-50"
-                              disabled={actingOnId === ride._id}
-                              onClick={() => handleCancel(ride._id)}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
+              {/* Tablet / desktop: compact table that fits the content width */}
+              <div className="hidden md:block">
+                <Table className="table-fixed text-[13px]">
+                  <TableHeader className="bg-slate-50/60">
+                    <TableRow className="border-slate-200 hover:bg-transparent">
+                      <TableHead className={`w-[130px] pl-4 ${fleetTh}`}>Booking</TableHead>
+                      <TableHead className={`w-[160px] ${fleetTh}`}>Rider</TableHead>
+                      <TableHead className={`${fleetTh}`}>Trip</TableHead>
+                      <TableHead className={`hidden w-[140px] ${fleetTh} xl:table-cell`}>Partner</TableHead>
+                      <TableHead className={`w-[150px] ${fleetTh}`}>Status</TableHead>
+                      <TableHead className={`w-[100px] text-right ${fleetTh}`}>Fare</TableHead>
+                      <TableHead className={`w-[120px] pr-4 text-right ${fleetTh} 2xl:w-[230px]`}>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+
+                  <TableBody>
+                    {rides.map((ride) => (
+                      <TableRow
+                        key={ride._id}
+                        className="border-slate-100 hover:bg-slate-50/70 transition-colors"
+                      >
+                        <TableCell className="pl-4 align-top py-2.5 whitespace-normal">
+                          <p className="font-mono text-[12px] font-medium text-slate-900">MB-{ride._id.slice(-6).toUpperCase()}</p>
+                          <p className="text-[11px] text-slate-500">{formatDate(ride.createdAt)}</p>
+                        </TableCell>
+
+                        <TableCell className="align-top py-2.5 whitespace-normal">
+                          <p className="font-medium text-slate-900 truncate">{ride.rider?.fullName || "-"}</p>
+                          <p className="text-[11px] tabular-nums text-slate-500 truncate">{ride.rider?.mobileNumber || ""}</p>
+                          <p className="text-[11px] text-slate-500 truncate xl:hidden">
+                            <span className="text-slate-400">Partner: </span>
+                            {ride.assignedPartnerId?.fullName || "-"}
+                          </p>
+                        </TableCell>
+
+                        <TableCell className="align-top py-2.5 whitespace-normal">
+                          <p className="truncate text-slate-800" title={ride.pickup?.address}>{ride.pickup?.address}</p>
+                          <p className="truncate text-[12px] text-slate-500" title={ride.drop?.address}>→ {ride.drop?.address}</p>
+                          <p className="mt-0.5 text-[11px] text-slate-400">
+                            {ride.vehicleCategory} · {ride.distanceKm} km · {ride.rideDate} • {ride.rideTime}
+                          </p>
+                        </TableCell>
+
+                        <TableCell className="hidden align-top py-2.5 whitespace-normal text-slate-700 xl:table-cell">
+                          <p className="truncate">{ride.assignedPartnerId?.fullName || "-"}</p>
+                        </TableCell>
+
+                        <TableCell className="align-top py-2.5 whitespace-normal">{renderStatus(ride)}</TableCell>
+
+                        <TableCell className="align-top py-2.5 text-right font-semibold tabular-nums text-slate-900">
+                          ₹{Number(ride.totalAmount ?? 0).toLocaleString("en-IN")}
+                        </TableCell>
+
+                        <TableCell className="pr-4 align-top py-2.5 whitespace-normal">
+                          <div className="flex flex-col items-end gap-1 2xl:flex-row 2xl:justify-end 2xl:flex-wrap">
+                            {renderActions(ride)}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
-        </CardContent>
-      </Card>
+      </FleetPanel>
 
       <Sheet open={!!pickerRideId} onOpenChange={(open) => !open && setPickerRideId(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Assign Partner</SheetTitle>
-            <SheetDescription>
+        <SheetContent side="right" className="w-full gap-0 overflow-y-auto bg-slate-50 p-0 sm:max-w-xl">
+          <SheetHeader className="border-b border-slate-200 bg-white px-5 py-4">
+            <SheetTitle className="text-[15px] font-semibold">Assign partner</SheetTitle>
+            <SheetDescription className="text-[12px]">
               {pickerRide
                 ? `${pickerRide.pickup?.address} → ${pickerRide.drop?.address} • ${pickerRide.vehicleCategory} • ₹${Number(pickerRide.totalAmount ?? 0).toLocaleString("en-IN")}`
                 : "Select partners to notify, or assign one directly."}
             </SheetDescription>
           </SheetHeader>
 
-          <div className="px-4 pb-6 space-y-4">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-3 p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <select
                 value={pickerFilters.category}
                 onChange={(e) => setPickerFilters((f) => ({ ...f, category: e.target.value }))}
-                className="rounded-md border px-3 py-2 bg-white text-sm"
+                className={`${fleetSelectClass} w-full`}
               >
                 <option value="">Any Category</option>
                 <option value="Hatchback">Hatchback</option>
@@ -504,10 +517,10 @@ function RideBookingsPage() {
                 placeholder="Filter by city..."
                 value={pickerFilters.city}
                 onChange={(e) => setPickerFilters((f) => ({ ...f, city: e.target.value }))}
-                className="text-sm"
+                className="h-8 bg-white text-[13px]"
               />
             </div>
-            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <label className="flex items-center gap-2 text-[12px] text-slate-600 dark:text-slate-300">
               <Checkbox
                 checked={pickerFilters.onlineOnly}
                 onCheckedChange={(checked) => setPickerFilters((f) => ({ ...f, onlineOnly: checked === true }))}
@@ -515,18 +528,18 @@ function RideBookingsPage() {
               Online partners only
             </label>
 
-            <div className="border rounded-lg divide-y max-h-[50vh] overflow-y-auto">
+            <div className="max-h-[55vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
               {isLoadingEligible ? (
                 <div className="flex justify-center py-8">
                   <Loader size="sm" message="Loading partners..." />
                 </div>
               ) : eligiblePartners.length === 0 ? (
-                <p className="text-sm text-slate-500 p-4">No partners match these filters.</p>
+                <p className="p-6 text-center text-[12px] text-slate-500">No partners match these filters.</p>
               ) : (
                 eligiblePartners.map((partner) => {
                   const matchingVehicles = partner.vehicles.filter((v) => v.category === pickerRide?.vehicleCategory);
                   return (
-                    <div key={partner.partnerId} className="p-3 flex flex-col gap-2">
+                    <div key={partner.partnerId} className={`flex flex-col gap-2 px-3 py-2.5 transition-colors ${selectedPartnerIds.has(partner.partnerId) ? "bg-orange-50/40" : ""}`}>
                       <div className="flex items-start gap-3">
                         <Checkbox
                           checked={selectedPartnerIds.has(partner.partnerId)}
@@ -535,15 +548,15 @@ function RideBookingsPage() {
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium text-slate-900 dark:text-white">{partner.fullName}</p>
-                            <Badge className={`${partner.isOnline ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500"} border-0`}>
+                            <p className="text-[13px] font-medium text-slate-900 dark:text-white">{partner.fullName}</p>
+                            <FleetPill className={partner.isOnline ? fleetTone.emerald : fleetTone.slate}>
                               {partner.isOnline ? "Online" : "Offline"}
-                            </Badge>
-                            {partner.matchesCategory && <Badge className="bg-sky-100 text-sky-800 border-0">Category ✓</Badge>}
-                            {partner.matchesLocation && <Badge className="bg-violet-100 text-violet-800 border-0">Location ✓</Badge>}
+                            </FleetPill>
+                            {partner.matchesCategory && <FleetPill dot={false} className={fleetTone.sky}>Category ✓</FleetPill>}
+                            {partner.matchesLocation && <FleetPill dot={false} className={fleetTone.violet}>Location ✓</FleetPill>}
                           </div>
-                          <p className="text-xs text-slate-500">{partner.mobileNumber}</p>
-                          <p className="text-xs text-slate-400 truncate">
+                          <p className="text-[11px] tabular-nums text-slate-500">{partner.mobileNumber}</p>
+                          <p className="text-[11px] text-slate-400 truncate">
                             {partner.vehicles.map((v) => `${v.category} (${v.registrationNumber})`).join(", ")}
                           </p>
                         </div>
@@ -557,7 +570,7 @@ function RideBookingsPage() {
                               variant="outline"
                               disabled={isPickerActing}
                               onClick={() => handleAssignDirect(partner.partnerId, v.vehicleId)}
-                              className="text-xs h-7"
+                              className="h-7 px-2.5 text-[11px]"
                             >
                               Assign {v.vehicleName} ({v.registrationNumber})
                             </Button>
@@ -571,7 +584,7 @@ function RideBookingsPage() {
             </div>
 
             <Button
-              className="w-full bg-[#FE5300] hover:bg-[#FE5300]"
+              className="h-9 w-full bg-[#FE5300] text-[13px] hover:bg-[#e54b00]"
               disabled={selectedPartnerIds.size === 0 || isPickerActing}
               onClick={handleBroadcastSelected}
             >
@@ -580,7 +593,7 @@ function RideBookingsPage() {
           </div>
         </SheetContent>
       </Sheet>
-    </main>
+    </FleetPage>
   );
 }
 

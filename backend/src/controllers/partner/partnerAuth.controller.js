@@ -208,6 +208,10 @@ export const loginPartner = async (req, res) => {
       return res.status(403).json({ success: false, message: "Your account is suspended. Contact admin." });
     }
 
+    if (partner.status === "Deleted") {
+      return res.status(403).json({ success: false, message: "This account has been deleted. Contact admin." });
+    }
+
     const isMatch = await bcrypt.compare(password, partner.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -320,6 +324,10 @@ export const refreshAccessToken = async (req, res) => {
 
         if (partner.status === "Suspended") {
           return res.status(403).json({ success: false, message: "Account suspended" });
+        }
+
+        if (partner.status === "Deleted") {
+          return res.status(403).json({ success: false, message: "Account deleted" });
         }
 
         // Issue new access token
