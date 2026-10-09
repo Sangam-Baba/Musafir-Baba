@@ -34,6 +34,37 @@ const rateCardVehicleSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// ---- Same-city ("City rides") pricing -- see services/cityFare.service.js.
+// Applies only while both `enabled` (master switch) and `cityPricing.enabled`
+// are true AND pickup/drop resolve to the same city group. Otherwise rides
+// are priced by the outstation rate card above, unchanged.
+const cityVehicleSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true }, // e.g. "Comfort Sedan"
+    capacityLabel: { type: String, trim: true }, // e.g. "4+1"
+    seatingCapacity: { type: Number, required: true, min: 1 },
+    partnerCategory: { type: String, required: true, enum: PARTNER_VEHICLE_CATEGORIES },
+    basePrice: { type: Number, required: true, min: 0 }, // ₹ per trip
+    perKmRate: { type: Number, required: true, min: 0 }, // ₹/km
+    minBillableKm: { type: Number, required: true, min: 0 },
+    freeWaitingMin: { type: Number, default: 15, min: 0 }, // round trips: minutes after booked return time
+    waitingChargePerMin: { type: Number, default: 0, min: 0 }, // ₹/min after the free minutes
+    isActive: { type: Boolean, default: true },
+    sortOrder: { type: Number, default: 0 },
+  },
+  { _id: true }
+);
+
+// Place names (as returned by the map lookup) that count as one city,
+// e.g. { name: "Delhi", aliases: ["Delhi", "New Delhi"] }.
+const cityGroupSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    aliases: { type: [String], default: [] },
+  },
+  { _id: true }
+);
+
 const ridePricingConfigSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, default: RIDE_PRICING_CONFIG_KEY },
@@ -63,6 +94,18 @@ const ridePricingConfigSchema = new mongoose.Schema(
     taxPercent: { type: Number, default: 0, min: 0, max: 100 },
     // Taken on the vehicle fare only (not allowances/charges/taxes).
     commissionPercent: { type: Number, default: 15, min: 0, max: 100 },
+    cityPricing: {
+      enabled: { type: Boolean, default: false },
+      vehicleTypes: {
+        type: [cityVehicleSchema],
+        default: [],
+        validate: {
+          validator: (types) => new Set(types.map((t) => t.name.toLowerCase())).size === types.length,
+          message: "City vehicle type names must be unique",
+        },
+      },
+      cityGroups: { type: [cityGroupSchema], default: [] },
+    },
     payableOnTripNote: {
       type: String,
       trim: true,

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { initiateExtraTimePayment, verifyExtraTimePaymentSuccess, verifyExtraTimePaymentFailure } from "../controllers/rideExtra.controller.js";
 import { isRiderAuthenticated } from "../middleware/riderAuth.middleware.js";
 import {
   getRideQuote,
@@ -20,6 +21,10 @@ const router = Router();
 router.get("/geocode/search", searchLocations);
 router.get("/geocode/reverse", reverseGeocodeLocation);
 router.post("/quote", getRideQuote);
+// City round trips: extra-time payment (PayU posts back without auth -- verified by hash).
+router.post("/extra-payment/success", verifyExtraTimePaymentSuccess);
+router.post("/extra-payment/failure", verifyExtraTimePaymentFailure);
+router.post("/:id/extra/pay", isRiderAuthenticated, initiateExtraTimePayment);
 router.post("/", isRiderAuthenticated, createRide);
 router.get("/my", isRiderAuthenticated, getMyRides);
 router.get("/:id", isRiderAuthenticated, getRideById);

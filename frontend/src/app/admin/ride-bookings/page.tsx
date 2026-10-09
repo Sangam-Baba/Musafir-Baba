@@ -40,6 +40,35 @@ interface RideBooking {
   status: string;
   createdAt: string;
   needsManualAssignment?: boolean;
+  // City rides (same-city pricing) -- absent on other rides.
+  tripType?: string;
+  returnTime?: string;
+  pricingMode?: string;
+  cityName?: string;
+  roundTripTimeline?: { reachedDestinationAt?: string; returnStartedAt?: string };
+  extraTime?: { extraMinutes?: number; totalAmount?: number; status?: "NONE" | "DUE" | "PAID" };
+}
+
+const shortTime = (iso?: string) =>
+  iso ? new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—";
+
+// City ride badge + round-trip times + extra time status (city rides only).
+function CityRideInfo({ ride }: { ride: RideBooking }) {
+  if (ride.pricingMode !== "CITY") return null;
+  const t = ride.roundTripTimeline;
+  const x = ride.extraTime;
+  return (
+    <div className="mt-1 space-y-0.5 text-[11px]">
+      <span className="inline-flex rounded bg-sky-50 px-1.5 py-0.5 font-medium text-sky-700">City ride{ride.cityName ? ` · ${ride.cityName}` : ""}</span>
+      {ride.tripType === "ROUND_TRIP" && (
+        <p className="text-slate-500">
+          Return booked {ride.returnTime || "—"} · Reached {shortTime(t?.reachedDestinationAt)} · Return started {shortTime(t?.returnStartedAt)}
+        </p>
+      )}
+      {x?.status === "DUE" && <p className="font-medium text-amber-700">Extra time {x.extraMinutes} min · ₹{Number(x.totalAmount || 0).toLocaleString("en-IN")} due</p>}
+      {x?.status === "PAID" && <p className="font-medium text-emerald-700">Extra time {x.extraMinutes} min · ₹{Number(x.totalAmount || 0).toLocaleString("en-IN")} paid</p>}
+    </div>
+  );
 }
 
 interface EligibleVehicle {
@@ -411,6 +440,7 @@ function RideBookingsPage() {
                       <div>
                         <p className="text-slate-400">Vehicle</p>
                         <p className="font-medium text-slate-800">{ride.vehicleCategory} · {ride.distanceKm} km</p>
+                        <CityRideInfo ride={ride} />
                       </div>
                       <div>
                         <p className="text-slate-400">Ride</p>
@@ -463,6 +493,7 @@ function RideBookingsPage() {
                           <p className="mt-0.5 text-[11px] text-slate-400">
                             {ride.vehicleCategory} · {ride.distanceKm} km · {ride.rideDate} • {ride.rideTime}
                           </p>
+                          <CityRideInfo ride={ride} />
                         </TableCell>
 
                         <TableCell className="hidden align-top py-2.5 whitespace-normal text-slate-700 xl:table-cell">

@@ -30,6 +30,7 @@ if (Platform.OS === 'web') {
 // Import Screens (to be created)
 import ScreenRiderAuth from './src/screens/rider/auth/ScreenRiderAuth';
 import ScreenSplash from './src/screens/rider/common/ScreenSplash';
+import ScreenWelcome from './src/screens/rider/common/ScreenWelcome';
 
 // Journey Screens
 import ScreenRiderHome from './src/screens/rider/main/ScreenRiderHome';
@@ -240,6 +241,10 @@ function AppContent() {
   }, [isInitializing, isAuthenticated]);
 
   const [showSplash, setShowSplash] = useState(true);
+  // Welcome screen: once per app launch, only for logged-out riders, between
+  // the splash and login. Its button just reveals the existing auth screen;
+  // navigation/history are not involved.
+  const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
     if (!isInitializing) {
@@ -250,6 +255,14 @@ function AppContent() {
 
   if (isInitializing || showSplash) {
     return <ScreenSplash />;
+  }
+
+  if (showWelcome && !isAuthenticated && ['login', 'register', 'forgot'].includes(activeScreen)) {
+    return (
+      <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: '#FFFFFF' }}>
+        <ScreenWelcome onContinue={() => setShowWelcome(false)} />
+      </View>
+    );
   }
 
   const renderScreen = () => {

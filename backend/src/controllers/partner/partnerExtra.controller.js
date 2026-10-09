@@ -12,6 +12,7 @@ import PartnerWalletTransaction from "../../models/partner/PartnerWalletTransact
 import { cityMatches, isWithin24h, isDetailsRevealed, getRideDateTime, REVEAL_WINDOW_HOURS } from "../../controllers/ride.controller.js";
 import mongoose from "mongoose";
 import { getRidePartnerEarning } from "../../services/rideFare.service.js";
+import { computeExtraTimeCharge, istDateTime, CITY_PRICING_MODE } from "../../services/cityFare.service.js";
 
 // @desc    Toggle partner's active duty status (online/offline)
 // @route   PATCH /api/partner/status
@@ -118,8 +119,25 @@ export const getBookings = async (req, res) => {
           : "",
         vehicleReg: ride.assignedVehicleId?.registrationNumber || "",
         driverName: ride.assignedDriverId?.name || "",
-        tripType: "Outstation",
+        tripType: ride.pricingMode === CITY_PRICING_MODE ? "City" : "Outstation",
         distance: `${ride.distanceKm} km`,
+        // Additive: round-trip details for the city round-trip steps.
+        rideTripType: ride.tripType,
+        returnDate: ride.returnDate || null,
+        returnTime: ride.returnTime || null,
+        pricingMode: ride.pricingMode || null,
+        isCityRoundTrip: ride.pricingMode === CITY_PRICING_MODE && ride.tripType === "ROUND_TRIP",
+        roundTripTimeline: ride.roundTripTimeline || null,
+        extraTime: ride.extraTime?.status
+          ? {
+              freeWaitingMin: ride.extraTime.freeWaitingMin,
+              waitingChargePerMin: ride.extraTime.waitingChargePerMin,
+              extraMinutes: ride.extraTime.extraMinutes || 0,
+              totalAmount: ride.extraTime.totalAmount || 0,
+              partnerPayout: ride.extraTime.partnerPayout || 0,
+              status: ride.extraTime.status,
+            }
+          : null,
       };
     });
 
@@ -362,8 +380,36 @@ export const updateBookingStatus = async (req, res) => {
       }
     }
 
+    // City round trips: once "Reached destination" is marked, the return
+    // start must be marked before completing (it's what extra time is
+    // measured from). Rides that never used these steps complete as before.
+    const isCityRoundTrip = ride.pricingMode === CITY_PRICING_MODE && ride.tripType === "ROUND_TRIP";
+    if (status === "COMPLETED" && isCityRoundTrip && ride.roundTripTimeline?.reachedDestinationAt && !ride.roundTripTimeline?.returnStartedAt) {
+      return res.status(409).json({ success: false, message: "Please mark 'Start return trip' before completing this trip." });
+    }
+
     ride.status = status;
     ride.statusHistory.push({ status });
+
+    // City round trips: charge time past the booked return (+ free minutes).
+    let extraDue = null;
+    if (status === "COMPLETED" && isCityRoundTrip && ride.roundTripTimeline?.returnStartedAt && ride.extraTime) {
+      const charge = computeExtraTimeCharge({
+        bookedReturnAt: istDateTime(ride.returnDate, ride.returnTime),
+        returnStartedAt: ride.roundTripTimeline.returnStartedAt,
+        freeWaitingMin: ride.extraTime.freeWaitingMin,
+        waitingChargePerMin: ride.extraTime.waitingChargePerMin,
+        taxPercent: ride.extraTime.taxPercent,
+        commissionPercent: ride.extraTime.commissionPercent,
+      });
+      ride.extraTime = {
+        ...(ride.extraTime.toObject ? ride.extraTime.toObject() : ride.extraTime),
+        ...charge,
+        status: charge.totalAmount > 0 ? "DUE" : "NONE",
+        computedAt: new Date(),
+      };
+      if (charge.totalAmount > 0) extraDue = charge;
+    }
 
     const riderProfile = await RiderProfile.findById(ride.rider);
 
@@ -421,6 +467,18 @@ export const updateBookingStatus = async (req, res) => {
           pushToken: riderProfile.pushToken,
         });
       }
+
+      if (extraDue && riderProfile) {
+        await notifyUser({
+          recipientType: "Rider",
+          recipientId: riderProfile._id,
+          title: "Extra time charges due",
+          message: `Your return started ${extraDue.extraMinutes} min after the free waiting time. Please pay ₹${extraDue.totalAmount.toLocaleString("en-IN")} (incl. GST) in My Trips.`,
+          type: "Trip",
+          data: { rideId: ride._id },
+          pushToken: riderProfile.pushToken,
+        });
+      }
     }
 
     await ride.save();
@@ -433,6 +491,76 @@ export const updateBookingStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Booking Status Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @desc    City round trips: mark "Reached destination" / "Start return trip"
+// @route   PATCH /api/partner/bookings/:id/round-trip
+// @body    { event: "REACHED_DESTINATION" | "RETURN_STARTED", lat?, lng? }
+export const markRoundTripEvent = async (req, res) => {
+  try {
+    const { event, lat, lng } = req.body || {};
+    if (!["REACHED_DESTINATION", "RETURN_STARTED"].includes(event)) {
+      return res.status(400).json({ success: false, message: "Invalid event." });
+    }
+    const profile = await PartnerProfile.findOne({ authId: req.partnerId });
+    if (!profile) return res.status(404).json({ success: false, message: "Profile not found." });
+
+    const ride = await RideBooking.findOne({ _id: req.params.id, assignedPartnerId: profile._id });
+    if (!ride) return res.status(404).json({ success: false, message: "Booking not found." });
+
+    if (ride.pricingMode !== CITY_PRICING_MODE || ride.tripType !== "ROUND_TRIP") {
+      return res.status(400).json({ success: false, message: "This step is only for city round trips." });
+    }
+    if (ride.status !== "ONGOING") {
+      return res.status(409).json({ success: false, message: "Start the trip first." });
+    }
+
+    const timeline = ride.roundTripTimeline || {};
+    if (event === "REACHED_DESTINATION") {
+      if (timeline.reachedDestinationAt) {
+        return res.status(409).json({ success: false, message: "Already marked as reached." });
+      }
+      if (typeof lat !== "number" || typeof lng !== "number") {
+        return res.status(400).json({ success: false, message: "Location is required to mark reached." });
+      }
+      if (Number.isFinite(ride.drop?.lat) && Number.isFinite(ride.drop?.lng) && distanceKm(lat, lng, ride.drop.lat, ride.drop.lng) > 5) {
+        return res.status(403).json({ success: false, message: "You need to be within 5 km of the destination to mark reached." });
+      }
+      ride.roundTripTimeline = { ...timeline, reachedDestinationAt: new Date() };
+      ride.statusHistory.push({ status: "ONGOING", note: "Reached destination" });
+    } else {
+      if (!timeline.reachedDestinationAt) {
+        return res.status(409).json({ success: false, message: "Mark 'Reached destination' first." });
+      }
+      if (timeline.returnStartedAt) {
+        return res.status(409).json({ success: false, message: "Return trip already started." });
+      }
+      ride.roundTripTimeline = { ...timeline, returnStartedAt: new Date() };
+      ride.statusHistory.push({ status: "ONGOING", note: "Return trip started" });
+    }
+    await ride.save();
+
+    const riderProfile = await RiderProfile.findById(ride.rider);
+    if (riderProfile) {
+      await notifyUser({
+        recipientType: "Rider",
+        recipientId: riderProfile._id,
+        title: event === "REACHED_DESTINATION" ? "Reached your destination" : "Return trip started",
+        message:
+          event === "REACHED_DESTINATION"
+            ? `Your driver will wait for your return at ${ride.returnTime}. ${ride.extraTime?.freeWaitingMin || 0} min free after that.`
+            : "You're on the way back. Have a safe ride!",
+        type: "Trip",
+        data: { rideId: ride._id },
+        pushToken: riderProfile.pushToken,
+      });
+    }
+
+    return res.status(200).json({ success: true, bookingId: ride._id, roundTripTimeline: ride.roundTripTimeline });
+  } catch (error) {
+    console.error("Round Trip Event Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

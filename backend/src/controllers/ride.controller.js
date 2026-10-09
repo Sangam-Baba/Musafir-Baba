@@ -4,10 +4,11 @@ import RiderProfile from "../models/rider/RiderProfile.js";
 import PartnerVehicle from "../models/partner/PartnerVehicle.js";
 import PartnerProfile from "../models/partner/PartnerProfile.js";
 import { PartnerSettings } from "../models/partner/PartnerSettings.js";
-import { getRouteDistance, searchAddressSuggestions, reverseGeocode } from "../services/geo.service.js";
+import { getRouteDistance, searchAddressSuggestions, reverseGeocode, getCityForCoords } from "../services/geo.service.js";
 import { notifyUser } from "../services/notification/notificationService.js";
 import { RidePricingConfig, RIDE_PRICING_CONFIG_KEY } from "../models/RidePricingConfig.js";
 import { calculateRideFare, PRICING_VERSION } from "../services/rideFare.service.js";
+import { calculateCityRideFare, isSameCity, isCityPricingTrip, resolveCityLabel, CITY_PRICING_MODE } from "../services/cityFare.service.js";
 
 const FLAT_DRIVER_ALLOWANCE = 100;
 const DEFAULT_COMMISSION_PERCENT = 15;
@@ -238,6 +239,76 @@ async function computeRateCardOffers(config, pickupAddress, trip) {
     });
 }
 
+// ---- Same-city ("City rides") pricing ----
+// Only used while admin pricing is on AND config.cityPricing.enabled. Any
+// failure (unknown city, lookup error, ineligible trip) returns null so the
+// ride is priced by the outstation rate card exactly as before.
+
+// City lookups are cached so a quote and the booking right after it resolve
+// the same way (and the map provider isn't hit twice).
+const CITY_CACHE_MS = 24 * 60 * 60 * 1000;
+const cityCache = new Map();
+async function getCachedCity(coords) {
+  if (!coords) return null;
+  const key = `${Number(coords.lat).toFixed(4)},${Number(coords.lng).toFixed(4)}`;
+  const hit = cityCache.get(key);
+  if (hit && hit.expires > Date.now()) return hit.city;
+  const city = await getCityForCoords(coords.lat, coords.lng);
+  if (city) {
+    if (cityCache.size > 5000) cityCache.clear();
+    cityCache.set(key, { city, expires: Date.now() + CITY_CACHE_MS });
+  }
+  return city;
+}
+
+// { cityName } when this trip should use city pricing, else null.
+async function detectCityRide(config, route, trip) {
+  try {
+    const city = config?.cityPricing;
+    if (!city?.enabled || !(city.vehicleTypes || []).some((v) => v.isActive)) return null;
+    if (!isCityPricingTrip(trip)) return null;
+    const [pickupCity, dropCity] = await Promise.all([getCachedCity(route.pickupCoords), getCachedCity(route.dropCoords)]);
+    if (!isSameCity(pickupCity, dropCity, city.cityGroups)) return null;
+    return { cityName: resolveCityLabel(pickupCity, city.cityGroups) };
+  } catch (error) {
+    console.error("detectCityRide error:", error.message);
+    return null;
+  }
+}
+
+// Same offer shape as computeRateCardOffers, from the City rides rate card.
+async function computeCityOffers(config, pickupAddress, trip) {
+  const eligibleCounts = await countEligibleVehiclesByCategory(pickupAddress);
+  return (config.cityPricing.vehicleTypes || [])
+    .filter((vehicle) => vehicle.isActive)
+    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    .map((vehicle) => {
+      const fare = calculateCityRideFare({ rate: vehicle, settings: config, trip });
+      return {
+        category: vehicle.name,
+        vehicleName: `${vehicle.capacityLabel || vehicle.seatingCapacity} seater • AC`,
+        seatingCapacity: vehicle.seatingCapacity,
+        baseFare: fare.vehicleFare,
+        driverAllowance: 0,
+        totalAmount: fare.totalAmount,
+        eligibleCount: eligibleCounts.get(vehicle.partnerCategory) || 0,
+        partnerCategory: vehicle.partnerCategory,
+        pricingVersion: PRICING_VERSION,
+        pricingMode: CITY_PRICING_MODE,
+        // Shown on round trips so the rider knows the waiting rule up front.
+        freeWaitingMin: vehicle.freeWaitingMin,
+        waitingChargePerMin: vehicle.waitingChargePerMin,
+        fare,
+        _rate: vehicle,
+      };
+    });
+}
+
+const stripInternal = (offer) => {
+  const { _rate, ...rest } = offer;
+  return rest;
+};
+
 function getTripFromRequest(body, routeKm) {
   return {
     tripType: body.tripType === "ROUND_TRIP" ? "ROUND_TRIP" : "ONE_WAY",
@@ -297,7 +368,10 @@ export const getRideQuote = async (req, res) => {
     const pricingConfig = await getActivePricingConfig();
     if (pricingConfig) {
       const trip = getTripFromRequest(req.body, route.distanceKm);
-      const rateCardOffers = await computeRateCardOffers(pricingConfig, pickup.address, trip);
+      const cityRide = await detectCityRide(pricingConfig, route, trip);
+      const rateCardOffers = cityRide
+        ? (await computeCityOffers(pricingConfig, pickup.address, trip)).map(stripInternal)
+        : await computeRateCardOffers(pricingConfig, pickup.address, trip);
       return res.status(200).json({
         success: true,
         data: {
@@ -308,6 +382,7 @@ export const getRideQuote = async (req, res) => {
           tripType: trip.tripType,
           days: rateCardOffers[0]?.fare.days ?? 1,
           payableOnTripNote: pricingConfig.payableOnTripNote,
+          ...(cityRide ? { pricingMode: CITY_PRICING_MODE, cityName: cityRide.cityName } : {}),
         },
       });
     }
@@ -356,7 +431,10 @@ export const createRide = async (req, res) => {
     if (pricingConfig) {
       // Re-priced server-side from the rate card -- never trusts a client amount.
       const trip = getTripFromRequest(req.body, route.distanceKm);
-      const rateCardOffers = await computeRateCardOffers(pricingConfig, pickup.address, trip);
+      const cityRide = await detectCityRide(pricingConfig, route, trip);
+      const rateCardOffers = cityRide
+        ? await computeCityOffers(pricingConfig, pickup.address, trip)
+        : await computeRateCardOffers(pricingConfig, pickup.address, trip);
       const rateCardOffer = rateCardOffers.find((o) => o.category === vehicleCategory);
       if (!rateCardOffer) {
         return res.status(400).json({ success: false, message: "This vehicle type is not available right now. Please search again." });
@@ -394,6 +472,24 @@ export const createRide = async (req, res) => {
         commissionAmount: fare.commission,
         partnerPayout: fare.partnerPayout,
         payableOnTripNote: pricingConfig.payableOnTripNote,
+        ...(cityRide
+          ? {
+              pricingMode: CITY_PRICING_MODE,
+              cityName: cityRide.cityName,
+              // Round trips: waiting rule fixed at booking time.
+              ...(isRoundTrip
+                ? {
+                    extraTime: {
+                      freeWaitingMin: Number(rateCardOffer._rate.freeWaitingMin) || 0,
+                      waitingChargePerMin: Number(rateCardOffer._rate.waitingChargePerMin) || 0,
+                      taxPercent: Number(pricingConfig.taxPercent) || 0,
+                      commissionPercent: Number(pricingConfig.commissionPercent) || 0,
+                      status: "NONE",
+                    },
+                  }
+                : {}),
+            }
+          : {}),
         tripStartOtp: String(Math.floor(1000 + Math.random() * 9000)),
         statusHistory: [{ status: "PAYMENT_PENDING" }],
       });

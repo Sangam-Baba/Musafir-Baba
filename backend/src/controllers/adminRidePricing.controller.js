@@ -1,6 +1,8 @@
 import { RidePricingConfig, RIDE_PRICING_CONFIG_KEY } from "../models/RidePricingConfig.js";
 import { DEFAULT_RIDE_RATE_CARD } from "../config/defaultRideRateCard.js";
 import { calculateRideFare } from "../services/rideFare.service.js";
+import { calculateCityRideFare, isCityPricingTrip } from "../services/cityFare.service.js";
+import { defaultCityPricing } from "../config/defaultCityRateCard.js";
 
 // Admin read/write for the MBGo rate card. Nothing in the rider-facing ride
 // flow reads this config yet; even once it does, it only takes effect while
@@ -15,6 +17,20 @@ const VEHICLE_FIELDS = [
   "roundTripRate",
   "minKmPerDay",
   "extraKmRate",
+  "isActive",
+  "sortOrder",
+];
+
+const CITY_VEHICLE_FIELDS = [
+  "name",
+  "capacityLabel",
+  "seatingCapacity",
+  "partnerCategory",
+  "basePrice",
+  "perKmRate",
+  "minBillableKm",
+  "freeWaitingMin",
+  "waitingChargePerMin",
   "isActive",
   "sortOrder",
 ];
@@ -60,6 +76,32 @@ export function buildConfigUpdate(body = {}) {
     update.platformCharge = pick(body.platformCharge, ["type", "value"]);
   }
 
+  if (body.cityPricing !== undefined) {
+    const city = body.cityPricing || {};
+    const out = {};
+    if (city.enabled !== undefined) out.enabled = city.enabled === true;
+    if (city.vehicleTypes !== undefined) {
+      if (!Array.isArray(city.vehicleTypes)) throw new Error("City vehicle types must be a list");
+      out.vehicleTypes = city.vehicleTypes.map((vehicle) => ({
+        ...(vehicle?._id ? { _id: vehicle._id } : {}),
+        ...pick(vehicle, CITY_VEHICLE_FIELDS),
+      }));
+    }
+    if (city.cityGroups !== undefined) {
+      if (!Array.isArray(city.cityGroups)) throw new Error("City groups must be a list");
+      out.cityGroups = city.cityGroups
+        .map((group) => ({
+          ...(group?._id ? { _id: group._id } : {}),
+          name: String(group?.name || "").trim(),
+          aliases: (Array.isArray(group?.aliases) ? group.aliases : String(group?.aliases || "").split(","))
+            .map((a) => String(a).trim())
+            .filter(Boolean),
+        }))
+        .filter((group) => group.name);
+    }
+    for (const [k, v] of Object.entries(out)) update[`cityPricing.${k}`] = v;
+  }
+
   return update;
 }
 
@@ -68,7 +110,23 @@ export function buildConfigUpdate(body = {}) {
 export function getEnableError(config) {
   if (!config.enabled) return null;
   const hasActive = (config.vehicleTypes || []).some((v) => v.isActive);
-  return hasActive ? null : "Add at least one active vehicle type before enabling admin pricing";
+  if (!hasActive) return "Add at least one active vehicle type before enabling admin pricing";
+  return null;
+}
+
+// City pricing needs at least one active city vehicle type.
+export function getCityEnableError(config) {
+  const city = config.cityPricing || {};
+  if (!city.enabled) return null;
+  return (city.vehicleTypes || []).some((v) => v.isActive) ? null : "Add at least one active city vehicle type before enabling city pricing";
+}
+
+// Saved configs from before City rides existed get the default city card
+// (switch OFF) so the admin page always has values to show.
+function withCityDefaults(config) {
+  const city = config.cityPricing;
+  if (city && (city.vehicleTypes || []).length) return { ...config, cityPricingIsSaved: true };
+  return { ...config, cityPricing: defaultCityPricing(), cityPricingIsSaved: false };
 }
 
 function newDefaultConfig() {
@@ -94,9 +152,9 @@ export const getRidePricingConfig = async (req, res) => {
   try {
     const config = await RidePricingConfig.findOne({ key: RIDE_PRICING_CONFIG_KEY }).lean();
     if (config) {
-      return res.status(200).json({ success: true, isSaved: true, data: config });
+      return res.status(200).json({ success: true, isSaved: true, data: withCityDefaults(config) });
     }
-    return res.status(200).json({ success: true, isSaved: false, data: newDefaultConfig().toObject() });
+    return res.status(200).json({ success: true, isSaved: false, data: withCityDefaults(newDefaultConfig().toObject()) });
   } catch (error) {
     console.error("Get Ride Pricing Config Error:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
@@ -118,13 +176,13 @@ export const updateRidePricingConfig = async (req, res) => {
       (await RidePricingConfig.findOne({ key: RIDE_PRICING_CONFIG_KEY })) || newDefaultConfig();
     config.set(update);
 
-    const enableError = getEnableError(config);
+    const enableError = getEnableError(config) || getCityEnableError(config);
     if (enableError) {
       return res.status(400).json({ success: false, message: enableError });
     }
 
     await config.save();
-    return res.status(200).json({ success: true, isSaved: true, data: config.toObject() });
+    return res.status(200).json({ success: true, isSaved: true, data: withCityDefaults(config.toObject()) });
   } catch (error) {
     const validationMessage = firstValidationMessage(error);
     if (validationMessage) {
@@ -172,7 +230,20 @@ export const previewRideFare = async (req, res) => {
       ...calculateRideFare({ rate: vehicle, settings: config, trip }),
     }));
 
-    return res.status(200).json({ success: true, data: fares });
+    // Same sample trip priced as a City ride (if it would qualify).
+    const cityConfig = withCityDefaults(config).cityPricing;
+    const cityFares = isCityPricingTrip(trip)
+      ? (cityConfig.vehicleTypes || []).map((vehicle) => ({
+          name: vehicle.name,
+          partnerCategory: vehicle.partnerCategory,
+          isActive: vehicle.isActive,
+          freeWaitingMin: vehicle.freeWaitingMin,
+          waitingChargePerMin: vehicle.waitingChargePerMin,
+          ...calculateCityRideFare({ rate: vehicle, settings: config, trip }),
+        }))
+      : [];
+
+    return res.status(200).json({ success: true, data: fares, cityFares });
   } catch (error) {
     // calculateRideFare throws for bad trip input (e.g. return before ride date)
     return res.status(400).json({ success: false, message: error.message || "Could not preview fare" });

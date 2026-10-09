@@ -25,7 +25,8 @@ import { loginRider, registerRider, verifyRiderOtp, resendRiderOtp, forgotRiderP
 import { useAuthStore } from '../../../store/useAuthStore';
 
 // Hero background image for the auth screens (WebP format for native Android/iOS decoding)
-const AUTH_BG = require('../../../desgin/mbgo_auth_background.webp');
+// Same artwork as before, with the new MBGO logo in place of the old one.
+const AUTH_BG = require('../../../desgin/mbgo_auth_background_v2.webp');
 
 // =============================================================================
 // Shared Presentational Components
