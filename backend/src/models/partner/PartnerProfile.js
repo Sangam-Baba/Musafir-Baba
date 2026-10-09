@@ -65,6 +65,12 @@ const partnerProfileSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Mirrors PartnerAuth.status === "Deleted" so dispatch queries can skip
+    // deleted partners without an extra lookup.
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     pricingConfig: {
       type: mongoose.Schema.Types.Mixed,
       default: {},

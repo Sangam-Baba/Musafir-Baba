@@ -6,7 +6,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 
 const LOGO_TRANSPARENT = require('../../../assets/mbgoLogo_transparent.png');
-const MBGO_LOGO = require('../../../desgin/mbgoLogo.png');
+// New MBGO wordmark (assets/icon.png, transparent margins trimmed) for the Home header.
+const HOME_HEADER_LOGO = require('../../../../assets/mbgo-home-logo.png');
 const HOME_BANNER_IMAGE = require('../../../desgin/homebannerimage.png');
 const SECOND_BANNER_IMAGE = require('../../../desgin/secondbannerImage.png');
 import {
@@ -479,7 +480,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
                 {/* Prominent 3x Large Brand Logo */}
                 <View style={{ alignItems: 'center' }}>
-                  <Image source={MBGO_LOGO} style={{ width: isCompactHome ? logoWidth * 0.8 : logoWidth, height: isCompactHome ? logoHeight * 0.8 : logoHeight }} resizeMode="contain" />
+                  <Image source={HOME_HEADER_LOGO} style={{ width: isCompactHome ? logoWidth * 0.8 : logoWidth, height: isCompactHome ? logoHeight * 0.8 : logoHeight }} resizeMode="contain" />
                 </View>
 
                 <TouchableOpacity onPress={() => onNavigate('38')} style={{ padding: 4, position: 'relative' }}>

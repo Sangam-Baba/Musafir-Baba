@@ -4,6 +4,11 @@ import {
   getRiderDetail,
   verifyRiderDocument,
   setRiderVerified,
+  getRiderDeleteImpactHandler,
+  deleteRider,
+  restoreRider,
+  getBulkRiderDeleteImpact,
+  bulkDeleteRiders,
 } from "../controllers/adminRider.controller.js";
 import protect from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -14,8 +19,13 @@ router.use(protect);
 router.use(authorizedRoles(["admin", "superadmin"]));
 
 router.get("/", getAllRiders);
+router.post("/bulk-delete-impact", getBulkRiderDeleteImpact);
+router.post("/bulk-delete", bulkDeleteRiders);
 router.get("/:id", getRiderDetail);
 router.put("/:id/document", verifyRiderDocument);
 router.put("/:id/verify", setRiderVerified);
+router.get("/:id/delete-impact", getRiderDeleteImpactHandler);
+router.delete("/:id", deleteRider);
+router.post("/:id/restore", restoreRider);
 
 export default router;

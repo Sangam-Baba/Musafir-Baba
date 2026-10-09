@@ -11,25 +11,29 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { DownloadCloud, UploadCloud, Search, Plus, Loader2, Edit, Trash2, ChevronLeft, ChevronRight, Power } from "lucide-react";
 import { secureAdminFetch } from "@/lib/secureAdminFetch";
+import { Building2, FileSpreadsheet, Globe2, Hash, Map as MapIcon, MapPin } from "lucide-react";
+import { FleetPage, FleetPageHeader } from "@/components/admin/fleet/FleetUI";
 
 export default function WorkLocationsPage() {
   return (
-    <div className="p-6 max-w-[1200px] mx-auto flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Location Master</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage geographical hierarchy and upload multiple locations via Excel.
-        </p>
-      </div>
+    <FleetPage>
+      <FleetPageHeader
+        icon={MapPin}
+        title="Location Master"
+        description="Manage geographical hierarchy and upload multiple locations via Excel."
+      />
 
-      <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto">
-          <TabsTrigger value="countries" className="py-2">Countries</TabsTrigger>
-          <TabsTrigger value="states" className="py-2">States</TabsTrigger>
-          <TabsTrigger value="cities" className="py-2">Cities</TabsTrigger>
-          <TabsTrigger value="pincodes" className="py-2">PIN Codes</TabsTrigger>
-          <TabsTrigger value="upload" className="py-2">Excel Upload</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="upload" className="w-full min-w-0 gap-4">
+        {/* Scrolls sideways on narrow screens instead of squashing the labels */}
+        <div className="-mx-1 overflow-x-auto px-1 pb-1">
+          <TabsList className="inline-flex h-auto w-max min-w-full justify-start gap-0.5 rounded-md bg-slate-100/80 p-0.5 sm:grid sm:w-full sm:grid-cols-5">
+            <TabsTrigger value="countries" className="h-8 gap-1.5 px-3 text-[12px] font-medium"><Globe2 className="h-3.5 w-3.5" />Countries</TabsTrigger>
+            <TabsTrigger value="states" className="h-8 gap-1.5 px-3 text-[12px] font-medium"><MapIcon className="h-3.5 w-3.5" />States</TabsTrigger>
+            <TabsTrigger value="cities" className="h-8 gap-1.5 px-3 text-[12px] font-medium"><Building2 className="h-3.5 w-3.5" />Cities</TabsTrigger>
+            <TabsTrigger value="pincodes" className="h-8 gap-1.5 px-3 text-[12px] font-medium"><Hash className="h-3.5 w-3.5" />PIN Codes</TabsTrigger>
+            <TabsTrigger value="upload" className="h-8 gap-1.5 px-3 text-[12px] font-medium"><FileSpreadsheet className="h-3.5 w-3.5" />Excel Upload</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="countries"><CountryTab /></TabsContent>
         <TabsContent value="states"><StateTab /></TabsContent>
@@ -37,7 +41,7 @@ export default function WorkLocationsPage() {
         <TabsContent value="pincodes"><PincodeTab /></TabsContent>
         <TabsContent value="upload"><ExcelUploadTab /></TabsContent>
       </Tabs>
-    </div>
+    </FleetPage>
   );
 }
 
@@ -97,33 +101,34 @@ function ExcelUploadTab() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bulk Upload Locations</CardTitle>
-        <CardDescription>Upload an Excel file containing your locations data hierarchy.</CardDescription>
+    <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <CardHeader className="gap-0.5 border-b border-slate-100 px-4 py-3 [.border-b]:pb-3">
+        <CardTitle className="text-[13px] font-semibold">Bulk upload locations</CardTitle>
+        <CardDescription className="text-[12px]">Upload an Excel file containing your locations data hierarchy.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex gap-4 items-center">
+      <CardContent className="space-y-4 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Input 
             type="file" 
             accept=".xlsx, .xls" 
+            className="h-9 cursor-pointer text-[13px] sm:flex-1"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
-          <Button onClick={handleUpload} disabled={!file || loading}>
+          <Button onClick={handleUpload} disabled={!file || loading} className="h-9 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]">
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
             Upload
           </Button>
-          <Button variant="outline" onClick={handleDownloadSample}>
+          <Button variant="outline" onClick={handleDownloadSample} className="h-9 text-[12px]">
             <DownloadCloud className="mr-2 h-4 w-4" />
             Download Sample
           </Button>
         </div>
 
         {errors.length > 0 && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-md border border-red-200 h-64 overflow-y-auto">
-            <h4 className="font-semibold mb-2">Upload Errors ({errors.length})</h4>
+          <div className="bg-red-50 text-red-700 p-3 rounded-md border border-red-200 h-64 overflow-y-auto">
+            <h4 className="text-[13px] font-semibold mb-2">Upload Errors ({errors.length})</h4>
             <ul className="list-disc pl-5 space-y-1">
-              {errors.map((err, i) => <li key={i} className="text-sm">{err}</li>)}
+              {errors.map((err, i) => <li key={i} className="text-[12px]">{err}</li>)}
             </ul>
           </div>
         )}
@@ -260,15 +265,15 @@ function CountryTab() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <CardHeader className="flex flex-col gap-2 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between [.border-b]:pb-3">
         <div>
-          <CardTitle>Countries</CardTitle>
-          <CardDescription>Manage countries</CardDescription>
+          <CardTitle className="text-[13px] font-semibold">Countries</CardTitle>
+          <CardDescription className="mt-0.5 text-[12px]">Manage countries</CardDescription>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button size="sm"><Plus className="w-4 h-4 mr-2" />Add Country</Button>
+            <Button size="sm" className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"><Plus className="w-3.5 h-3.5 mr-1" />Add Country</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -319,59 +324,63 @@ function CountryTab() {
           </DialogContent>
         </Dialog>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Input 
             placeholder="Search countries..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="max-w-sm"
+            className="h-8 w-full text-[13px] sm:max-w-xs"
           />
         </div>
-        <Table>
-          <TableHeader>
+        <div className="overflow-hidden rounded-md border border-slate-200/80">
+        <Table className="text-[13px]">
+          <TableHeader className="bg-slate-50/60">
             <TableRow>
-              <TableHead className="w-[80px]">S.No.</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 hidden w-[70px] sm:table-cell">S.No.</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Name</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Code</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Status</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-10">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-[12px] text-slate-500">Loading...</TableCell></TableRow>
             ) : data.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-10">No records found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-[12px] text-slate-500">No records found</TableCell></TableRow>
             ) : (
               data.map((item, index) => (
                 <TableRow key={item._id}>
-                  <TableCell>{(page - 1) * 10 + index + 1}</TableCell>
+                  <TableCell className="hidden text-slate-500 sm:table-cell">{(page - 1) * 10 + index + 1}</TableCell>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>{item.code}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${item.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${item.isActive ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20" : "bg-slate-50 text-slate-600 ring-slate-500/20"}`}><span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                       {item.isActive ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
-                    <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
-                    <Button variant="ghost" size="icon" title="Delete" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    <div className="inline-flex items-center justify-end">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Edit" onClick={() => openEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Delete" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        </div>
         
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-4 mt-4">
-            <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4 sm:justify-end">
+            <span className="text-[12px] text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex gap-1">
-              <Button variant="outline" size="icon" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
-              <Button variant="outline" size="icon" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
             </div>
           </div>
         )}
@@ -450,69 +459,73 @@ function StateTab() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <CardHeader className="flex flex-col gap-2 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between [.border-b]:pb-3">
         <div>
-          <CardTitle>States</CardTitle>
-          <CardDescription>Manage states under countries</CardDescription>
+          <CardTitle className="text-[13px] font-semibold">States</CardTitle>
+          <CardDescription className="mt-0.5 text-[12px]">Manage states under countries</CardDescription>
         </div>
-        <Button size="sm"><Plus className="w-4 h-4 mr-2" />Add State</Button>
+        <Button size="sm" className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"><Plus className="w-3.5 h-3.5 mr-1" />Add State</Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Input 
             placeholder="Search states..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="max-w-sm"
+            className="h-8 w-full text-[13px] sm:max-w-xs"
           />
         </div>
-        <Table>
-          <TableHeader>
+        <div className="overflow-hidden rounded-md border border-slate-200/80">
+        <Table className="text-[13px]">
+          <TableHeader className="bg-slate-50/60">
             <TableRow>
-              <TableHead className="w-[80px]">S.No.</TableHead>
-              <TableHead>Country</TableHead>
-              <TableHead>State Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 hidden w-[70px] sm:table-cell">S.No.</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Country</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">State Name</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Code</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Status</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-10">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-10 text-[12px] text-slate-500">Loading...</TableCell></TableRow>
             ) : data.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-10">No records found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-10 text-[12px] text-slate-500">No records found</TableCell></TableRow>
             ) : (
               data.map((item, index) => (
                 <TableRow key={item._id}>
-                  <TableCell>{(page - 1) * 10 + index + 1}</TableCell>
+                  <TableCell className="hidden text-slate-500 sm:table-cell">{(page - 1) * 10 + index + 1}</TableCell>
                   <TableCell>{item.countryId?.name || "N/A"}</TableCell>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>{item.code}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${item.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${item.isActive ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20" : "bg-slate-50 text-slate-600 ring-slate-500/20"}`}><span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                       {item.isActive ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    <div className="inline-flex items-center justify-end">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-4 mt-4">
-            <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4 sm:justify-end">
+            <span className="text-[12px] text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex gap-1">
-              <Button variant="outline" size="icon" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
-              <Button variant="outline" size="icon" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
             </div>
           </div>
         )}
@@ -590,67 +603,71 @@ function CityTab() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <CardHeader className="flex flex-col gap-2 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between [.border-b]:pb-3">
         <div>
-          <CardTitle>Cities</CardTitle>
-          <CardDescription>Manage cities under states</CardDescription>
+          <CardTitle className="text-[13px] font-semibold">Cities</CardTitle>
+          <CardDescription className="mt-0.5 text-[12px]">Manage cities under states</CardDescription>
         </div>
-        <Button size="sm"><Plus className="w-4 h-4 mr-2" />Add City</Button>
+        <Button size="sm" className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"><Plus className="w-3.5 h-3.5 mr-1" />Add City</Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Input 
             placeholder="Search cities..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="max-w-sm"
+            className="h-8 w-full text-[13px] sm:max-w-xs"
           />
         </div>
-        <Table>
-          <TableHeader>
+        <div className="overflow-hidden rounded-md border border-slate-200/80">
+        <Table className="text-[13px]">
+          <TableHeader className="bg-slate-50/60">
             <TableRow>
-              <TableHead className="w-[80px]">S.No.</TableHead>
-              <TableHead>State</TableHead>
-              <TableHead>City Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 hidden w-[70px] sm:table-cell">S.No.</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">State</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">City Name</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Status</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-10">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-[12px] text-slate-500">Loading...</TableCell></TableRow>
             ) : data.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-10">No records found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-10 text-[12px] text-slate-500">No records found</TableCell></TableRow>
             ) : (
               data.map((item, index) => (
                 <TableRow key={item._id}>
-                  <TableCell>{(page - 1) * 10 + index + 1}</TableCell>
+                  <TableCell className="hidden text-slate-500 sm:table-cell">{(page - 1) * 10 + index + 1}</TableCell>
                   <TableCell>{item.stateId?.name || "N/A"}</TableCell>
                   <TableCell className="font-medium">{item.name}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${item.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${item.isActive ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20" : "bg-slate-50 text-slate-600 ring-slate-500/20"}`}><span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                       {item.isActive ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    <div className="inline-flex items-center justify-end">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-4 mt-4">
-            <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4 sm:justify-end">
+            <span className="text-[12px] text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex gap-1">
-              <Button variant="outline" size="icon" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
-              <Button variant="outline" size="icon" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
             </div>
           </div>
         )}
@@ -751,50 +768,51 @@ function PincodeTab() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="gap-0 overflow-hidden rounded-lg border-slate-200/80 py-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <CardHeader className="flex flex-col gap-2 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between [.border-b]:pb-3">
         <div>
-          <CardTitle>PIN Codes & Locations</CardTitle>
-          <CardDescription>Manage PIN Codes and embedded Locations</CardDescription>
+          <CardTitle className="text-[13px] font-semibold">PIN Codes & Locations</CardTitle>
+          <CardDescription className="mt-0.5 text-[12px]">Manage PIN Codes and embedded Locations</CardDescription>
         </div>
-        <Button size="sm"><Plus className="w-4 h-4 mr-2" />Add PIN Code</Button>
+        <Button size="sm" className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"><Plus className="w-3.5 h-3.5 mr-1" />Add PIN Code</Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Input 
             placeholder="Search PIN codes..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="max-w-sm"
+            className="h-8 w-full text-[13px] sm:max-w-xs"
           />
         </div>
-        <Table>
-          <TableHeader>
+        <div className="overflow-hidden rounded-md border border-slate-200/80">
+        <Table className="text-[13px]">
+          <TableHeader className="bg-slate-50/60">
             <TableRow>
-              <TableHead className="w-[80px]">S.No.</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead>PIN Code</TableHead>
-              <TableHead>Locations</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 hidden w-[70px] sm:table-cell">S.No.</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">City</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">PIN Code</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Locations</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500">Status</TableHead>
+              <TableHead className="h-9 text-[11px] font-medium text-slate-500 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-10">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-10 text-[12px] text-slate-500">Loading...</TableCell></TableRow>
             ) : data.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-10">No records found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-10 text-[12px] text-slate-500">No records found</TableCell></TableRow>
             ) : (
               data.map((item, index) => (
                 <TableRow key={item._id}>
-                  <TableCell>{(page - 1) * 10 + index + 1}</TableCell>
+                  <TableCell className="hidden text-slate-500 sm:table-cell">{(page - 1) * 10 + index + 1}</TableCell>
                   <TableCell>{item.cityId?.name || "N/A"}</TableCell>
                   <TableCell className="font-medium">{item.pincode}</TableCell>
-                  <TableCell>
+                  <TableCell className="min-w-[220px] whitespace-normal">
                     {item.locations && item.locations.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {item.locations.map((loc: any) => (
-                          <div key={loc._id} className={`flex items-center gap-1 text-xs px-2 py-1 rounded border ${loc.isActive ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                          <div key={loc._id} className={`flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] ${loc.isActive ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
                             <span>{loc.name}</span>
                             <button onClick={() => handleToggleLocationStatus(item._id, loc)} title={loc.isActive ? "Deactivate" : "Activate"} className={`ml-1 ${loc.isActive ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}>
                               <Power size={12} />
@@ -810,28 +828,31 @@ function PincodeTab() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${item.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset ${item.isActive ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20" : "bg-slate-50 text-slate-600 ring-slate-500/20"}`}><span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
                       {item.isActive ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    <div className="inline-flex items-center justify-end">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title={item.isActive ? "Deactivate" : "Activate"} onClick={() => handleToggleStatus(item)}><Power className={`w-4 h-4 ${item.isActive ? "text-green-600" : "text-gray-400"}`} /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}><Edit className="w-4 h-4 text-blue-600" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(item._id)}><Trash2 className="w-4 h-4 text-red-600" /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-4 mt-4">
-            <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3 mt-4 sm:justify-end">
+            <span className="text-[12px] text-slate-500">Page {page} of {totalPages}</span>
             <div className="flex gap-1">
-              <Button variant="outline" size="icon" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
-              <Button variant="outline" size="icon" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === 1} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4" /></Button>
+              <Button variant="outline" size="icon" className="h-7 w-7" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight className="w-4 h-4" /></Button>
             </div>
           </div>
         )}

@@ -14,25 +14,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { ChevronRight, Hourglass, IndianRupee, Search, Wallet } from "lucide-react";
+import { FleetEmptyState, FleetKpiStrip, FleetPage, FleetPageHeader, FleetPanel, FleetPill, fleetTh, fleetTone } from "@/components/admin/fleet/FleetUI";
 
 interface WalletListItem {
   partnerId: string;
@@ -78,6 +71,19 @@ const getWalletDetail = async (accessToken: string, partnerId: string) => {
   if (!res.ok) throw new Error("Failed to load wallet detail");
   const json = await res.json();
   return json.data as WalletDetail;
+};
+
+const PARTNER_STATUS_META: Record<string, { label: string; tone: string }> = {
+  Active: { label: "Active", tone: fleetTone.emerald },
+  Approved: { label: "Approved", tone: fleetTone.emerald },
+  PendingVerification: { label: "Pending review", tone: fleetTone.amber },
+  Hold: { label: "On hold", tone: fleetTone.orange },
+  Rejected: { label: "Rejected", tone: fleetTone.red },
+  Blacklisted: { label: "Blacklisted", tone: fleetTone.red },
+  Suspended: { label: "Suspended", tone: fleetTone.red },
+  "In-Active": { label: "Inactive", tone: fleetTone.slate },
+  Draft: { label: "Draft", tone: fleetTone.slate },
+  Deleted: { label: "Deleted", tone: fleetTone.slate },
 };
 
 const TRANSACTION_LABEL: Record<string, string> = {
@@ -206,233 +212,292 @@ function WalletsPage() {
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   }
 
+  const partnerStatusPill = (status: string) => {
+    const meta = PARTNER_STATUS_META[status] || { label: status, tone: fleetTone.slate };
+    return <FleetPill className={meta.tone}>{meta.label}</FleetPill>;
+  };
+
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Partner Wallets</h1>
-        <p className="text-slate-500 dark:text-slate-400">
-          Trip earnings land in a partner&apos;s pending balance first. Release pending funds to their
-          available balance, or make a manual adjustment, from here.
-        </p>
-      </div>
+    <FleetPage>
+      <FleetPageHeader
+        icon={Wallet}
+        title="Partner Wallets"
+        description={
+          <>
+            Trip earnings land in a partner&apos;s pending balance first. Release pending funds to their available
+            balance, or make a manual adjustment, from here.
+          </>
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total Available Balance</p>
-            <p className="text-3xl font-bold text-emerald-600">₹{totals.available.toLocaleString("en-IN")}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total Pending Balance</p>
-            <p className="text-3xl font-bold text-amber-600">₹{totals.pending.toLocaleString("en-IN")}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <FleetKpiStrip
+        items={[
+          { label: "Total available balance", value: `₹${totals.available.toLocaleString("en-IN")}`, icon: IndianRupee, tone: "emerald" },
+          { label: "Total pending balance", value: `₹${totals.pending.toLocaleString("en-IN")}`, icon: Hourglass, tone: "amber" },
+        ]}
+      />
 
-      <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-        <CardHeader>
-          <CardTitle>Partners</CardTitle>
-          <CardDescription>Click a partner to view transaction history and manage their wallet</CardDescription>
-          <Input
-            placeholder="Search by name or mobile number"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="mt-3 max-w-sm"
-          />
-        </CardHeader>
-
-        <CardContent>
+      <FleetPanel
+        title="Partners"
+        description="Open a partner to view transaction history and manage their wallet"
+        actions={
+          <div className="relative w-full md:w-64">
+            <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Search name or mobile"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 pl-8 text-[13px]"
+            />
+          </div>
+        }
+      >
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader size="lg" message="Loading wallets..." />
             </div>
           ) : isError ? (
             <div className="text-center py-12">
-              <p className="text-red-600 dark:text-red-400">Error: {String((error as Error)?.message)}</p>
+              <p className="text-[13px] text-red-600 dark:text-red-400">Error: {String((error as Error)?.message)}</p>
             </div>
           ) : wallets.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-slate-500 dark:text-slate-400">No partners found</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                    <TableHead className="font-semibold">Partner</TableHead>
-                    <TableHead className="font-semibold">Mobile</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
-                    <TableHead className="font-semibold text-right">Available Balance</TableHead>
-                    <TableHead className="font-semibold text-right">Pending Balance</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {wallets.map((w) => (
-                    <TableRow
-                      key={w.partnerId}
-                      className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                      onClick={() => setSelectedPartnerId(w.partnerId)}
-                    >
-                      <TableCell className="font-medium text-slate-900 dark:text-white">{w.fullName}</TableCell>
-                      <TableCell>{w.mobileNumber}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{w.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold text-emerald-600">
-                        ₹{w.walletBalance.toLocaleString("en-IN")}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold text-amber-600">
-                        ₹{w.pendingWalletBalance.toLocaleString("en-IN")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Dialog open={!!selectedPartnerId} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          {isDetailLoading || !detail ? (
-            <div className="flex justify-center py-12">
-              <Loader size="lg" message="Loading wallet..." />
-            </div>
+            <FleetEmptyState icon={Wallet} title="No partners found" />
           ) : (
             <>
-              <DialogHeader>
-                <DialogTitle>{detail.fullName}</DialogTitle>
-                <DialogDescription>{detail.mobileNumber} — {detail.email}</DialogDescription>
-              </DialogHeader>
-
-              <div className="grid grid-cols-2 gap-4 my-4">
-                <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
-                  <p className="text-xs text-slate-500 uppercase tracking-wide">Available Balance</p>
-                  <p className="text-2xl font-bold text-emerald-600">₹{detail.walletBalance.toLocaleString("en-IN")}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4">
-                  <p className="text-xs text-slate-500 uppercase tracking-wide">Pending Balance</p>
-                  <p className="text-2xl font-bold text-amber-600">₹{detail.pendingWalletBalance.toLocaleString("en-IN")}</p>
-                </div>
-              </div>
-
-              <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Release Pending Funds</p>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="Amount to release"
-                    value={releaseAmount}
-                    onChange={(e) => setReleaseAmount(e.target.value)}
-                    disabled={isActing || detail.pendingWalletBalance <= 0}
-                  />
-                  <Button
-                    variant="outline"
-                    disabled={isActing || detail.pendingWalletBalance <= 0}
-                    onClick={() => handleRelease(false)}
-                  >
-                    Release
-                  </Button>
-                  <Button
-                    disabled={isActing || detail.pendingWalletBalance <= 0}
-                    onClick={() => handleRelease(true)}
-                  >
-                    Release All
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Manual Adjustment</p>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={adjustDirection === "credit" ? "default" : "outline"}
-                    onClick={() => setAdjustDirection("credit")}
-                    disabled={isActing}
-                  >
-                    Credit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={adjustDirection === "debit" ? "default" : "outline"}
-                    onClick={() => setAdjustDirection("debit")}
-                    disabled={isActing}
-                  >
-                    Debit
-                  </Button>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="Amount"
-                    value={adjustAmount}
-                    onChange={(e) => setAdjustAmount(e.target.value)}
-                    disabled={isActing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="adjust-reason" className="sr-only">Reason</Label>
-                  <Textarea
-                    id="adjust-reason"
-                    placeholder="Reason for this adjustment (required)"
-                    value={adjustReason}
-                    onChange={(e) => setAdjustReason(e.target.value)}
-                    disabled={isActing}
-                  />
-                </div>
-                <Button disabled={isActing} onClick={handleAdjust} className="w-full">
-                  Apply Adjustment
-                </Button>
-              </div>
-
-              <div className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Transaction History</p>
-                {detail.transactions.length === 0 ? (
-                  <p className="text-sm text-slate-500">No transactions yet</p>
-                ) : (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {detail.transactions.map((tx) => (
-                      <div
-                        key={tx._id}
-                        className="flex items-center justify-between text-sm border border-slate-100 dark:border-slate-800 rounded-md px-3 py-2"
-                      >
-                        <div>
-                          <p className="font-medium text-slate-800 dark:text-slate-200">
-                            {TRANSACTION_LABEL[tx.type] || tx.type}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {new Date(tx.createdAt).toLocaleString("en-IN")}
-                            {tx.adminName ? ` — by ${tx.adminName}` : ""}
-                            {tx.note ? ` — ${tx.note}` : ""}
-                          </p>
+              {/* Mobile list */}
+              <ul className="divide-y divide-slate-100 md:hidden">
+                {wallets.map((w) => (
+                  <li key={w.partnerId}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPartnerId(w.partnerId)}
+                      className="w-full px-4 py-3 text-left transition-colors hover:bg-slate-50"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-medium text-slate-900">{w.fullName}</p>
+                          <p className="text-[11px] tabular-nums text-slate-500">{w.mobileNumber}</p>
                         </div>
-                        <p
-                          className={
-                            tx.type === "admin_debit"
-                              ? "font-semibold text-red-600"
-                              : "font-semibold text-emerald-600"
-                          }
-                        >
-                          {tx.type === "admin_debit" ? "-" : "+"}₹{tx.amount.toLocaleString("en-IN")}
-                        </p>
+                        {partnerStatusPill(w.status)}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      <div className="mt-2 flex items-center gap-4 text-[12px]">
+                        <span className="text-slate-500">Available <span className="font-semibold tabular-nums text-emerald-700">₹{w.walletBalance.toLocaleString("en-IN")}</span></span>
+                        <span className="text-slate-500">Pending <span className="font-semibold tabular-nums text-amber-700">₹{w.pendingWalletBalance.toLocaleString("en-IN")}</span></span>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
 
-              <DialogFooter className="mt-4">
-                <Button variant="outline" onClick={closeModal}>Close</Button>
-              </DialogFooter>
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table className="table-fixed text-[13px]">
+                  <TableHeader className="bg-slate-50/60">
+                    <TableRow className="border-slate-100 hover:bg-transparent">
+                      <TableHead className={`pl-4 ${fleetTh}`}>Partner</TableHead>
+                      <TableHead className={`hidden w-[150px] lg:table-cell ${fleetTh}`}>Mobile</TableHead>
+                      <TableHead className={`w-[150px] ${fleetTh}`}>Status</TableHead>
+                      <TableHead className={`w-[140px] text-right ${fleetTh}`}>Available</TableHead>
+                      <TableHead className={`w-[140px] text-right ${fleetTh}`}>Pending</TableHead>
+                      <TableHead className={`w-[56px] pr-4 ${fleetTh}`} />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {wallets.map((w) => (
+                      <TableRow
+                        key={w.partnerId}
+                        className="group cursor-pointer border-slate-100 transition-colors hover:bg-slate-50/70"
+                        onClick={() => setSelectedPartnerId(w.partnerId)}
+                      >
+                        <TableCell className="pl-4 py-2.5 whitespace-normal">
+                          <p className="truncate font-medium text-slate-900">{w.fullName}</p>
+                          <p className="text-[11px] tabular-nums text-slate-500 lg:hidden">{w.mobileNumber}</p>
+                        </TableCell>
+                        <TableCell className="hidden py-2.5 tabular-nums text-slate-700 lg:table-cell">{w.mobileNumber}</TableCell>
+                        <TableCell className="py-2.5 whitespace-normal">{partnerStatusPill(w.status)}</TableCell>
+                        <TableCell className="py-2.5 text-right font-semibold tabular-nums text-emerald-700">
+                          ₹{w.walletBalance.toLocaleString("en-IN")}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-right font-semibold tabular-nums text-amber-700">
+                          ₹{w.pendingWalletBalance.toLocaleString("en-IN")}
+                        </TableCell>
+                        <TableCell className="pr-4 py-2.5 text-right">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition-colors group-hover:bg-white group-hover:text-slate-700 group-hover:shadow-sm group-hover:ring-1 group-hover:ring-slate-200">
+                            <ChevronRight size={15} />
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </>
           )}
-        </DialogContent>
-      </Dialog>
-    </main>
+      </FleetPanel>
+
+      <Sheet open={!!selectedPartnerId} onOpenChange={(open) => !open && closeModal()}>
+        <SheetContent side="right" className="w-full gap-0 overflow-y-auto bg-slate-50 p-0 sm:max-w-xl">
+          {isDetailLoading || !detail ? (
+            <>
+              <SheetHeader className="sr-only">
+                <SheetTitle>Partner wallet</SheetTitle>
+                <SheetDescription>Loading wallet</SheetDescription>
+              </SheetHeader>
+              <div className="flex justify-center py-12">
+                <Loader size="lg" message="Loading wallet..." />
+              </div>
+            </>
+          ) : (
+            <>
+              <SheetHeader className="border-b border-slate-200 bg-white px-5 py-4">
+                <SheetTitle className="text-[15px] font-semibold">{detail.fullName}</SheetTitle>
+                <SheetDescription className="text-[12px]">{detail.mobileNumber} · {detail.email}</SheetDescription>
+              </SheetHeader>
+
+              <div className="space-y-4 p-5">
+                {/* Balances */}
+                <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                  <div className="px-4 py-3">
+                    <p className="text-[11px] font-medium text-slate-500">Available balance</p>
+                    <p className="text-xl font-semibold tabular-nums text-emerald-700">₹{detail.walletBalance.toLocaleString("en-IN")}</p>
+                  </div>
+                  <div className="border-l border-slate-100 px-4 py-3">
+                    <p className="text-[11px] font-medium text-slate-500">Pending balance</p>
+                    <p className="text-xl font-semibold tabular-nums text-amber-700">₹{detail.pendingWalletBalance.toLocaleString("en-IN")}</p>
+                  </div>
+                </div>
+
+                {/* Release */}
+                <section className="rounded-lg border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                  <header className="border-b border-slate-100 px-4 py-2.5">
+                    <h3 className="text-[12px] font-semibold text-slate-700">Release pending funds</h3>
+                  </header>
+                  <div className="flex flex-col gap-2 p-4 sm:flex-row">
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="Amount to release"
+                      value={releaseAmount}
+                      onChange={(e) => setReleaseAmount(e.target.value)}
+                      disabled={isActing || detail.pendingWalletBalance <= 0}
+                      className="h-8 text-[13px]"
+                    />
+                    <Button
+                      variant="outline"
+                      className="h-8 text-[12px]"
+                      disabled={isActing || detail.pendingWalletBalance <= 0}
+                      onClick={() => handleRelease(false)}
+                    >
+                      Release
+                    </Button>
+                    <Button
+                      className="h-8 bg-slate-900 text-[12px] hover:bg-black"
+                      disabled={isActing || detail.pendingWalletBalance <= 0}
+                      onClick={() => handleRelease(true)}
+                    >
+                      Release all
+                    </Button>
+                  </div>
+                </section>
+
+                {/* Manual adjustment */}
+                <section className="rounded-lg border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                  <header className="border-b border-slate-100 px-4 py-2.5">
+                    <h3 className="text-[12px] font-semibold text-slate-700">Manual adjustment</h3>
+                  </header>
+                  <div className="space-y-2.5 p-4">
+                    <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                      <div className="inline-flex shrink-0 rounded-md bg-slate-100 p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setAdjustDirection("credit")}
+                          disabled={isActing}
+                          className={`h-7 rounded px-3 text-[12px] font-medium transition-colors ${adjustDirection === "credit" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                        >
+                          Credit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAdjustDirection("debit")}
+                          disabled={isActing}
+                          className={`h-7 rounded px-3 text-[12px] font-medium transition-colors ${adjustDirection === "debit" ? "bg-white text-red-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                        >
+                          Debit
+                        </button>
+                      </div>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="Amount"
+                        className="h-8 min-w-[140px] flex-1 text-[13px]"
+                        value={adjustAmount}
+                        onChange={(e) => setAdjustAmount(e.target.value)}
+                        disabled={isActing}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="adjust-reason" className="sr-only">Reason</Label>
+                      <Textarea
+                        id="adjust-reason"
+                        placeholder="Reason for this adjustment (required)"
+                        value={adjustReason}
+                        onChange={(e) => setAdjustReason(e.target.value)}
+                        disabled={isActing}
+                        className="min-h-16 text-[13px]"
+                      />
+                    </div>
+                    <Button disabled={isActing} onClick={handleAdjust} className="h-8 w-full bg-[#FE5300] text-[12px] hover:bg-[#e54b00]">
+                      Apply adjustment
+                    </Button>
+                  </div>
+                </section>
+
+                {/* Transactions */}
+                <section className="rounded-lg border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                  <header className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
+                    <h3 className="text-[12px] font-semibold text-slate-700">Transaction history</h3>
+                    <span className="rounded bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600">{detail.transactions.length}</span>
+                  </header>
+                  {detail.transactions.length === 0 ? (
+                    <p className="py-6 text-center text-[12px] text-slate-400">No transactions yet</p>
+                  ) : (
+                    <ul className="max-h-72 divide-y divide-slate-100 overflow-y-auto">
+                      {detail.transactions.map((tx) => (
+                        <li key={tx._id} className="flex items-start justify-between gap-3 px-4 py-2.5">
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-medium text-slate-800 dark:text-slate-200">
+                              {TRANSACTION_LABEL[tx.type] || tx.type}
+                            </p>
+                            <p className="break-words text-[11px] text-slate-500">
+                              {new Date(tx.createdAt).toLocaleString("en-IN")}
+                              {tx.adminName ? ` · by ${tx.adminName}` : ""}
+                              {tx.note ? ` · ${tx.note}` : ""}
+                            </p>
+                          </div>
+                          <p
+                            className={
+                              tx.type === "admin_debit"
+                                ? "shrink-0 text-[13px] font-semibold tabular-nums text-red-600"
+                                : "shrink-0 text-[13px] font-semibold tabular-nums text-emerald-600"
+                            }
+                          >
+                            {tx.type === "admin_debit" ? "-" : "+"}₹{tx.amount.toLocaleString("en-IN")}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                <div className="flex justify-end">
+                  <Button variant="outline" className="h-8 text-[12px]" onClick={closeModal}>Close</Button>
+                </div>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </FleetPage>
   );
 }
 

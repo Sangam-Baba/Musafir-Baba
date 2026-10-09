@@ -78,7 +78,8 @@ export function FlagIcon({ country, size = 20 }: { country?: string; size?: numb
   return flag ? <Text style={{ fontSize: size, lineHeight: size * 1.2 }}>{flag}</Text> : <Globe size={size * 0.9} color={BLUE} strokeWidth={1.8} />;
 }
 
-const MBGO_LOGO = require('../../../desgin/mbgoLogo.png');
+// New MBGO wordmark (same as the Home header).
+const MBGO_LOGO = require('../../../../assets/mbgo-home-logo.png');
 // Header used on the visa screens: plain back arrow, logo, bell.
 export function VisaHeader({ onBack, onBell }: { onBack?: () => void; onBell: () => void }) {
   return (

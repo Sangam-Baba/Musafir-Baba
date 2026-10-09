@@ -96,7 +96,7 @@ async function computeCategoryOffers(pickupAddress, dropAddress, distanceKm) {
   const vehicles = await PartnerVehicle.find({ status: "Active", isDeleted: false }).lean();
 
   const partnerIds = vehicles.length ? [...new Set(vehicles.map((v) => String(v.partnerId)))] : [];
-  const profiles = partnerIds.length ? await PartnerProfile.find({ _id: { $in: partnerIds } }).lean() : [];
+  const profiles = partnerIds.length ? await PartnerProfile.find({ _id: { $in: partnerIds }, isDeleted: { $ne: true } }).lean() : [];
   const profileById = new Map(profiles.map((p) => [String(p._id), p]));
 
   const authIds = profiles.map((p) => String(p.authId));
@@ -189,7 +189,7 @@ async function countEligibleVehiclesByCategory(pickupAddress) {
   if (!vehicles.length) return new Map();
 
   const partnerIds = [...new Set(vehicles.map((v) => String(v.partnerId)))];
-  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds } }).lean();
+  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds }, isDeleted: { $ne: true } }).lean();
   const profileById = new Map(profiles.map((p) => [String(p._id), p]));
 
   const authIds = profiles.map((p) => String(p.authId));
@@ -552,7 +552,7 @@ export async function releaseRideToPartnerPool(ride) {
   // Only online partners get pinged -- an offline partner can't act on the
   // notification anyway, and this is the same isOnline field the app's own
   // "Go Online/Offline" toggle already maintains.
-  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds }, isOnline: true }).lean();
+  const profiles = await PartnerProfile.find({ _id: { $in: partnerIds }, isOnline: true, isDeleted: { $ne: true } }).lean();
 
   const authIds = profiles.map((p) => String(p.authId));
   const settingsList = authIds.length

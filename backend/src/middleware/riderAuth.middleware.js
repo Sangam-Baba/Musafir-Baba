@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import RiderAuth from "../models/rider/RiderAuth.js";
 
 export const isRiderAuthenticated = async (req, res, next) => {
   try {
@@ -21,6 +22,12 @@ export const isRiderAuthenticated = async (req, res, next) => {
 
     if (decoded.role !== "Rider") {
       return res.status(403).json({ success: false, message: "Forbidden: Not a Rider" });
+    }
+
+    // A deleted account's still-valid token must not keep working.
+    const account = await RiderAuth.findById(decoded.riderId).select("status").lean();
+    if (account && account.status === "Deleted") {
+      return res.status(401).json({ success: false, message: "This account has been deleted. Contact support." });
     }
 
     // Attach riderId to request

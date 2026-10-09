@@ -70,7 +70,7 @@ export const getEligiblePartners = async (req, res) => {
       return res.status(200).json({ success: true, total: 0, data: [] });
     }
 
-    const profileFilter = { _id: { $in: partnerIds } };
+    const profileFilter = { _id: { $in: partnerIds }, isDeleted: { $ne: true } };
     if (onlineOnly === "true") profileFilter.isOnline = true;
     const profiles = await PartnerProfile.find(profileFilter).lean();
 
