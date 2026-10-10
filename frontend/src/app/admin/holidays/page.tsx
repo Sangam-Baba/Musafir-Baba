@@ -231,7 +231,11 @@ function PackagePage() {
           body: JSON.stringify({ publish }),
         }
       );
-      if (!res.ok) throw new Error("Failed to approve package");
+      if (!res.ok) {
+        // Surface the server's reason (session expired, permission, validation…)
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error || body?.message || `Failed to approve package (HTTP ${res.status})`);
+      }
       toast.success(publish ? "Package approved and published" : "Package changes approved");
       
       // Trigger frontend cache revalidation using Server Action
@@ -244,7 +248,7 @@ function PackagePage() {
       refetch();
     } catch (error) {
       console.log("error in approving", error);
-      toast.error("Something went wrong while approving package");
+      toast.error(error instanceof Error && error.message ? `Approval failed: ${error.message}` : "Something went wrong while approving package");
     }
   };
 
@@ -261,12 +265,15 @@ function PackagePage() {
           },
         }
       );
-      if (!res.ok) throw new Error("Failed to reject package updates");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message || `Failed to reject package updates (HTTP ${res.status})`);
+      }
       toast.success("Package updates rejected successfully");
       refetch();
     } catch (error) {
       console.log("error in rejecting", error);
-      toast.error("Something went wrong while rejecting package updates");
+      toast.error(error instanceof Error && error.message ? `Reject failed: ${error.message}` : "Something went wrong while rejecting package updates");
     }
   };
 

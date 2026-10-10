@@ -297,7 +297,8 @@ export default function PackageTabsEditor({
         Drag to reorder how tabs appear on the package page. Built-in tabs can be hidden (if content is empty
         they're hidden automatically regardless of this toggle); their names are fixed. Custom tabs have a Tab name (shown on the
         tab pill) and a Section title (the H2 heading above its content; uses the Tab name if left empty). Overview, Itinerary and Inclusions
-        are always shown since they hold required content. Every built-in tab's content can be edited right here —
+        can't be hidden since they hold required content. Any tab with no content is not shown on the page at all
+        (no heading, no tab). Every built-in tab's content can be edited right here —
         it's the exact same data as the Content/FAQs & Review tabs, just a second way in. Add fully custom tabs
         with their own rich-text content.
       </p>

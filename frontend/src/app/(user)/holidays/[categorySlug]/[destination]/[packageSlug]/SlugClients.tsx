@@ -63,6 +63,21 @@ export interface Itinerary {
   description: string;
 }
 
+// True when rich-text HTML has something a reader would see — visible text,
+// or media/table markup. Editor leftovers like "<p></p>" or "<p><br></p>"
+// count as empty, so their section (and its heading/tab pill) is not shown.
+function hasHtmlContent(html?: string | null): boolean {
+  if (!html) return false;
+  if (/<(img|iframe|video|audio|table|svg|embed|object)\b/i.test(html)) return true;
+  const text = html.replace(/<[^>]*>/g, "").replace(/&nbsp;|&#160;/gi, " ").replace(/\s+/g, "");
+  return text.length > 0;
+}
+
+// True when a list has at least one non-blank entry.
+function hasListContent(items?: Array<string | null | undefined> | null): boolean {
+  return !!items && items.some((item) => typeof item === "string" && item.trim().length > 0);
+}
+
 function SlugClients({
   pkg,
   relatedGroupPackages,
@@ -113,15 +128,19 @@ function SlugClients({
   // when its content is non-empty (e.g. temporarily pulling "Hotels" without
   // deleting the content) — see the `entry.hidden` check in
   // `visibleTabsConfig` below.
+  // A section with no real content is not shown at all — no heading, no
+  // tab pill. ("Why Us" is a fixed site-wide block, so it always has content.)
+  const hasInclusions = hasListContent(pkg.inclusions);
+  const hasExclusions = hasListContent(pkg.exclusions);
   const builtinAvailability: Record<BuiltinTabKey, boolean> = {
-    whychoose: !!pkg.whyChooseThisPackage,
-    description: true,
-    itineraries: true,
-    hotels: !!pkg.hotelsAndAccommodation,
-    includeexclude: true,
+    whychoose: hasHtmlContent(pkg.whyChooseThisPackage),
+    description: hasHtmlContent(pkg.description),
+    itineraries: !!(pkg.itinerary && pkg.itinerary.length > 0),
+    hotels: hasHtmlContent(pkg.hotelsAndAccommodation),
+    includeexclude: hasInclusions || hasExclusions,
     whychoosemusafirbaba: true,
-    faqs: !!(pkg.faqs && pkg.faqs.length > 0),
-    helpfulresources: !!(pkg.helpfulResources && pkg.helpfulResources.length > 0),
+    faqs: !!(pkg.faqs && pkg.faqs.some((f) => (f?.question || "").trim() || hasHtmlContent(f?.answer))),
+    helpfulresources: !!(pkg.helpfulResources && pkg.helpfulResources.some((res: { title?: string; url?: string }) => (res?.title || "").trim() || (res?.url || "").trim())),
   };
 
   // A package only has `tabsConfig` once an admin has explicitly edited tab
@@ -135,7 +154,7 @@ function SlugClients({
   const visibleTabsConfig = resolvedTabsConfig.filter((entry) => {
     const isAlwaysVisible = entry.type === "builtin" && ALWAYS_VISIBLE_BUILTIN_KEYS.has(entry.builtinKey as BuiltinTabKey);
     if (entry.hidden && !isAlwaysVisible) return false;
-    if (entry.type === "custom") return !!(entry.content && entry.content.trim());
+    if (entry.type === "custom") return hasHtmlContent(entry.content);
     return builtinAvailability[entry.builtinKey as BuiltinTabKey] ?? false;
   });
 
@@ -504,6 +523,7 @@ function SlugClients({
                 </div>
               )}
 
+              {tabOrderIndex["description"] !== undefined && (
               <div id="description" style={{ order: tabOrderIndex["description"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
                   <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Package Overview</h2>
@@ -516,7 +536,9 @@ function SlugClients({
                   <BlogContent html={pkg.description} />
                 </section>
               </div>
+              )}
 
+              {tabOrderIndex["itineraries"] !== undefined && (
               <div id="itineraries" style={{ order: tabOrderIndex["itineraries"] }} className="scroll-mt-40 mb-8 pb-6 border-b border-gray-200 last:border-0 overflow-hidden">
                   <div className="flex flex-col gap-2 mb-6">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Journey Route</h2>
@@ -616,6 +638,7 @@ function SlugClients({
                     </Accordion>
                   </div>
               </div>
+              )}
 
               {pkg.hotelsAndAccommodation && tabOrderIndex["hotels"] !== undefined && (
                 <div id="hotels" style={{ order: tabOrderIndex["hotels"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
@@ -629,8 +652,10 @@ function SlugClients({
                 </div>
               )}
 
+              {tabOrderIndex["includeexclude"] !== undefined && (
               <div id="includeexclude" style={{ order: tabOrderIndex["includeexclude"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className={`grid grid-cols-1 gap-8 ${hasInclusions && hasExclusions ? "md:grid-cols-2" : ""}`}>
+                  {hasInclusions && (
                   <div>
                     <div className="flex flex-col gap-2 mb-5">
                       <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{`Inclusions`}</h2>
@@ -645,6 +670,8 @@ function SlugClients({
                       ))}
                     </ul>
                   </div>
+                  )}
+                  {hasExclusions && (
                   <div>
                     <div className="flex flex-col gap-2 mb-5">
                       <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{`Exclusions`}</h2>
@@ -661,8 +688,10 @@ function SlugClients({
                       ))}
                     </ul>
                   </div>
+                  )}
                 </div>
               </div>
+              )}
 
               {pkg.faqs && pkg.faqs.length > 0 && tabOrderIndex["faqs"] !== undefined && (
                 <div id="faqs" style={{ order: tabOrderIndex["faqs"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
