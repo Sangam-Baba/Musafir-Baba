@@ -30,11 +30,13 @@ import {
   ALWAYS_VISIBLE_BUILTIN_KEYS,
   BUILTIN_RICH_TEXT_FIELD,
   makeCustomTabKey,
+  getTabDisplayLabel,
 } from "@/lib/packageTabs";
 
 interface SortableRowProps {
   entry: TabConfigItem;
   onLabelChange: (label: string) => void;
+  onSectionTitleChange?: (sectionTitle: string) => void;
   onToggleHidden: () => void;
   onRemove?: () => void;
   // Either a simple rich-text field (BlogEditor) or a fully custom body
@@ -44,7 +46,7 @@ interface SortableRowProps {
   staticNote?: string;
 }
 
-function SortableTabRow({ entry, onLabelChange, onToggleHidden, onRemove, onContentChange, customBody, staticNote }: SortableRowProps) {
+function SortableTabRow({ entry, onLabelChange, onSectionTitleChange, onToggleHidden, onRemove, onContentChange, customBody, staticNote }: SortableRowProps) {
   const [expanded, setExpanded] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: entry.key });
 
@@ -70,12 +72,38 @@ function SortableTabRow({ entry, onLabelChange, onToggleHidden, onRemove, onCont
           <GripVertical className="w-4 h-4" />
         </button>
 
-        <Input
-          className="h-7 text-xs px-2 rounded-sm flex-1"
-          value={entry.label}
-          onChange={(e) => onLabelChange(e.target.value)}
-          placeholder="Tab label"
-        />
+        {/* Only custom tabs have an editable title. Built-in tabs show their
+            saved name (including any earlier rename) as fixed text, so it is
+            kept as-is on the live page and saved back unchanged. */}
+        {entry.type === "custom" ? (
+          <div className="flex-1 min-w-0 grid grid-cols-1 gap-1.5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <label className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Tab name</span>
+              <Input
+                className="h-7 text-xs px-2 rounded-sm"
+                value={entry.label}
+                onChange={(e) => onLabelChange(e.target.value)}
+                placeholder="Short name on the tab pill"
+              />
+            </label>
+            <label className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Section title (H2 on page)</span>
+              <Input
+                className="h-7 text-xs px-2 rounded-sm"
+                value={entry.sectionTitle ?? ""}
+                onChange={(e) => onSectionTitleChange?.(e.target.value)}
+                placeholder={entry.label ? `Defaults to "${entry.label}"` : "Heading shown above the content"}
+              />
+            </label>
+          </div>
+        ) : (
+          <div
+            className="h-7 flex-1 min-w-0 flex items-center px-2 text-xs font-medium text-gray-700 truncate"
+            title="Built-in tab name (not editable)"
+          >
+            <span className="truncate">{getTabDisplayLabel(entry)}</span>
+          </div>
+        )}
 
         <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 shrink-0 px-1.5">
           {entry.type === "custom" ? "Custom" : "Built-in"}
@@ -267,7 +295,8 @@ export default function PackageTabsEditor({
     <div className="space-y-3">
       <p className="text-[11px] text-gray-500 leading-relaxed">
         Drag to reorder how tabs appear on the package page. Built-in tabs can be hidden (if content is empty
-        they're hidden automatically regardless of this toggle) or renamed; Overview, Itinerary and Inclusions
+        they're hidden automatically regardless of this toggle); their names are fixed. Custom tabs have a Tab name (shown on the
+        tab pill) and a Section title (the H2 heading above its content; uses the Tab name if left empty). Overview, Itinerary and Inclusions
         are always shown since they hold required content. Every built-in tab's content can be edited right here —
         it's the exact same data as the Content/FAQs & Review tabs, just a second way in. Add fully custom tabs
         with their own rich-text content.
@@ -317,6 +346,7 @@ export default function PackageTabsEditor({
                   key={entry.key}
                   entry={rowEntry}
                   onLabelChange={(label) => update(entry.key, { label })}
+                  onSectionTitleChange={entry.type === "custom" ? (sectionTitle) => update(entry.key, { sectionTitle }) : undefined}
                   onToggleHidden={() => update(entry.key, { hidden: !entry.hidden })}
                   onRemove={entry.type === "custom" ? () => removeCustomTab(entry.key) : undefined}
                   onContentChange={onContentChange}
