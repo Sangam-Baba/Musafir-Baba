@@ -65,18 +65,18 @@ export const BUILTIN_RICH_TEXT_FIELD: Partial<Record<BuiltinTabKey, string>> = {
   hotels: "hotelsAndAccommodation",
 };
 
-// The Inclusions tab's section shows both Inclusions and Exclusions, but its
-// original default name was just "Inclusions" — and packages saved from the
-// admin Tabs editor stored that name. Display-only: show the combined name
-// when the stored label is still that old default; any other name an admin
-// gave it is kept as-is. Saved data is never changed.
+// Built-in tab names are fixed (not editable in the admin Tabs editor), so a
+// built-in tab always shows its default name — any name stored from before
+// renaming was disabled (e.g. "Best Time to Visit Chardham") is ignored for
+// display. Display-only: saved data is never changed. Custom tabs keep their
+// own label.
+const BUILTIN_DEFAULT_LABEL: Record<string, string> = Object.fromEntries(
+  DEFAULT_TABS_CONFIG.map((entry) => [entry.builtinKey as string, entry.label])
+);
+
 export function getTabDisplayLabel(entry: Pick<TabConfigItem, "type" | "builtinKey" | "label">): string {
-  if (
-    entry.type === "builtin" &&
-    entry.builtinKey === "includeexclude" &&
-    (entry.label || "").trim().toLowerCase() === "inclusions"
-  ) {
-    return "Inclusions/Exclusions";
+  if (entry.type === "builtin" && entry.builtinKey && BUILTIN_DEFAULT_LABEL[entry.builtinKey]) {
+    return BUILTIN_DEFAULT_LABEL[entry.builtinKey];
   }
   return entry.label;
 }
