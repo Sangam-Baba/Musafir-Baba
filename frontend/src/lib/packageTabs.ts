@@ -20,6 +20,10 @@ export interface TabConfigItem {
   builtinKey?: BuiltinTabKey;
   content?: string;
   hidden?: boolean;
+  // Custom tabs only: the h2 heading shown above the tab's content on the
+  // page. `label` is the short name on the tab pill. Falls back to `label`
+  // when empty (custom tabs saved before this field existed).
+  sectionTitle?: string;
 }
 
 // The tab order/set every package used before per-package customization
@@ -31,7 +35,7 @@ export const DEFAULT_TABS_CONFIG: TabConfigItem[] = [
   { key: "description", label: "Overview", type: "builtin", builtinKey: "description" },
   { key: "itineraries", label: "Itinerary", type: "builtin", builtinKey: "itineraries" },
   { key: "hotels", label: "Hotels", type: "builtin", builtinKey: "hotels" },
-  { key: "includeexclude", label: "Inclusions", type: "builtin", builtinKey: "includeexclude" },
+  { key: "includeexclude", label: "Inclusions/Exclusions", type: "builtin", builtinKey: "includeexclude" },
   { key: "whychoosemusafirbaba", label: "Why Us", type: "builtin", builtinKey: "whychoosemusafirbaba" },
   { key: "faqs", label: "FAQs", type: "builtin", builtinKey: "faqs" },
   { key: "helpfulresources", label: "Resources", type: "builtin", builtinKey: "helpfulresources" },
@@ -60,3 +64,19 @@ export const BUILTIN_RICH_TEXT_FIELD: Partial<Record<BuiltinTabKey, string>> = {
   description: "description",
   hotels: "hotelsAndAccommodation",
 };
+
+// The Inclusions tab's section shows both Inclusions and Exclusions, but its
+// original default name was just "Inclusions" — and packages saved from the
+// admin Tabs editor stored that name. Display-only: show the combined name
+// when the stored label is still that old default; any other name an admin
+// gave it is kept as-is. Saved data is never changed.
+export function getTabDisplayLabel(entry: Pick<TabConfigItem, "type" | "builtinKey" | "label">): string {
+  if (
+    entry.type === "builtin" &&
+    entry.builtinKey === "includeexclude" &&
+    (entry.label || "").trim().toLowerCase() === "inclusions"
+  ) {
+    return "Inclusions/Exclusions";
+  }
+  return entry.label;
+}

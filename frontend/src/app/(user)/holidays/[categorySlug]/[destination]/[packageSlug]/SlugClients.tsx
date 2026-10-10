@@ -35,7 +35,7 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
 import PackageCard from "@/components/custom/PackageCard";
 import { GroupPackageInterface } from "./page";
-import { TabConfigItem, BuiltinTabKey, DEFAULT_TABS_CONFIG, ALWAYS_VISIBLE_BUILTIN_KEYS } from "@/lib/packageTabs";
+import { TabConfigItem, BuiltinTabKey, DEFAULT_TABS_CONFIG, ALWAYS_VISIBLE_BUILTIN_KEYS, getTabDisplayLabel } from "@/lib/packageTabs";
 import ReadMore from "@/components/common/ReadMore";
 import EffectCardRelatedPackages from "@/components/custom/EffectCardRelatedPackages";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
@@ -79,6 +79,12 @@ function SlugClients({
 
   const isClickScrollingRef = useRef(false);
   const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  // Sticky tabs bar (its live height is the scroll offset) and the tab a click
+  // is currently scrolling to, so scroll-spy doesn't steal the highlight
+  // mid-scroll.
+  const tabBarRef = useRef<HTMLDivElement | null>(null);
+  const clickTargetRef = useRef<{ key: string; y: number } | null>(null);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isFirstRender = useRef(true);
 
@@ -88,8 +94,15 @@ function SlugClients({
       return;
     }
     const btn = tabButtonRefs.current[active];
-    if (btn) {
-      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    const row = btn?.parentElement;
+    if (btn && row) {
+      // Centre the active pill by scrolling only the tabs row sideways.
+      // (btn.scrollIntoView also scrolls the page, which cancels an
+      // in-progress smooth scroll to the clicked section on mobile.)
+      const rowRect = row.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const left = row.scrollLeft + (btnRect.left - rowRect.left) - (rowRect.width - btnRect.width) / 2;
+      row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
     }
   }, [active]);
 
@@ -128,7 +141,7 @@ function SlugClients({
 
   const tabs: { key: TabKey; label: string }[] = visibleTabsConfig.map((entry) => ({
     key: entry.key,
-    label: entry.label,
+    label: getTabDisplayLabel(entry),
   }));
 
   // Position of each visible tab within the resolved order, used to drive
@@ -140,28 +153,91 @@ function SlugClients({
   const customTabEntries = visibleTabsConfig.filter((entry) => entry.type === "custom");
 
   const tabKeys = tabs.map((t) => t.key);
+
+  // Scroll-spy. The highlighted tab is the section whose top has most
+  // recently passed the bottom of the sticky tabs bar. Sections are compared
+  // by their real on-screen position (not tab order — e.g. "Why Us" always
+  // renders at the bottom of the page), and the bar's height is measured live
+  // because it wraps onto more rows when there are many tabs.
   useEffect(() => {
     if (tabKeys.length === 0) return;
-    const observers: IntersectionObserver[] = [];
-    tabKeys.forEach((key) => {
-      const el = document.getElementById(key);
-      if (!el) return;
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && !isClickScrollingRef.current) {
-              setActive(key as TabKey);
-            }
-          });
-        },
-        { rootMargin: "-180px 0px -40% 0px", threshold: 0 }
-      );
-      observer.observe(el);
-      observers.push(observer);
-    });
-    return () => observers.forEach((o) => o.disconnect());
+    let frame = 0;
+
+    const isAtPageBottom = () =>
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+
+    const releaseClickLock = () => {
+      clickTargetRef.current = null;
+      isClickScrollingRef.current = false;
+    };
+
+    const compute = () => {
+      frame = 0;
+
+      // While a tab click is scrolling, keep the clicked tab highlighted
+      // until the scroll arrives (or the page can't scroll any further).
+      const target = clickTargetRef.current;
+      if (target) {
+        if (Math.abs(window.scrollY - target.y) > 4 && !isAtPageBottom()) return;
+        releaseClickLock();
+        setActive(target.key);
+        return;
+      }
+
+      const line = (tabBarRef.current?.getBoundingClientRect().height ?? 0) + 24;
+      const sections = tabKeys
+        .map((key) => {
+          const el = document.getElementById(key);
+          return el ? { key, top: el.getBoundingClientRect().top } : null;
+        })
+        .filter((s): s is { key: string; top: number } => s !== null)
+        .sort((a, b) => a.top - b.top);
+      if (sections.length === 0) return;
+
+      const passed = sections.filter((s) => s.top - line <= 0);
+      // Above the first section: leave the current highlight as it is.
+      if (passed.length === 0) return;
+      let current = passed[passed.length - 1].key;
+
+      // At the very bottom the last short sections can never reach the bar;
+      // highlight the last section that is actually on screen.
+      if (isAtPageBottom()) {
+        const onScreen = sections.filter((s) => s.top < window.innerHeight);
+        if (onScreen.length > 0) current = onScreen[onScreen.length - 1].key;
+      }
+
+      setActive((prev) => (prev === current ? prev : current));
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(compute);
+    };
+    // Any manual scroll input cancels a click-in-progress lock.
+    const onUserScrollIntent = () => {
+      if (clickTargetRef.current) releaseClickLock();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    window.addEventListener("wheel", onUserScrollIntent, { passive: true });
+    window.addEventListener("touchstart", onUserScrollIntent, { passive: true });
+    window.addEventListener("keydown", onUserScrollIntent);
+    compute();
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("wheel", onUserScrollIntent);
+      window.removeEventListener("touchstart", onUserScrollIntent);
+      window.removeEventListener("keydown", onUserScrollIntent);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabKeys.join(',')]);
+
+  useEffect(() => () => {
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+  }, []);
 
   const price = (pkg.batch?.length && pkg.batch[0]?.quad) ? Number(pkg.batch[0].quad) : 3999;
   const dicountedPrice = (pkg.batch?.length && pkg.batch[0]?.quadDiscount) ? Number(pkg.batch[0].quadDiscount) : 5999;
@@ -349,7 +425,7 @@ function SlugClients({
       )}
 
       {/* 100% width Sticky Tab Bar Background */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] w-full mb-6 mt-4">
+      <div ref={tabBarRef} className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] w-full mb-6 mt-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
           <div className="flex flex-nowrap md:flex-wrap w-full gap-3 pb-1 overflow-x-auto no-scrollbar md:overflow-visible snap-x snap-mandatory md:snap-none">
             {tabs.map((tab) => (
@@ -361,9 +437,22 @@ function SlugClients({
                   setActive(tab.key);
                   const el = document.getElementById(tab.key);
                   if (el) {
+                    // Land the section's top just below the sticky bar
+                    // (measured live — it can wrap onto several rows).
+                    const barHeight = tabBarRef.current?.getBoundingClientRect().height ?? 0;
+                    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+                    const y = Math.max(0, Math.min(maxY, el.getBoundingClientRect().top + window.scrollY - barHeight - 12));
                     isClickScrollingRef.current = true;
-                    el.scrollIntoView({ behavior: 'smooth' });
-                    setTimeout(() => { isClickScrollingRef.current = false; }, 800);
+                    clickTargetRef.current = { key: tab.key, y };
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                    // Safety net in case the scroll is interrupted.
+                    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+                    clickTimerRef.current = setTimeout(() => {
+                      if (clickTargetRef.current?.key === tab.key) {
+                        clickTargetRef.current = null;
+                        isClickScrollingRef.current = false;
+                      }
+                    }, 1500);
                   }
                 }}
                 className={`shrink-0 snap-start text-xs md:text-sm h-10 px-4 md:px-5 rounded-full transition-all duration-200 ${
@@ -610,20 +699,12 @@ function SlugClients({
                 </div>
               )}
 
-              {/* Not a tab itself (no pill/scroll-spy entry), so it has no
-                  order of its own in tabsConfig. It always rendered directly
-                  after FAQs before this feature existed, so it keeps doing
-                  that — pinned at (FAQs' order + 0.5) wherever FAQs ends up,
-                  or at the very end if a package has no FAQs tab at all. */}
-              {/* CSS `order` only accepts integers — a fractional offset
-                  (previously +0.5) is invalid and silently discarded by the
-                  browser, falling back to order:0 and tying with whichever
-                  tab is first. +1 is a valid integer; it still lands Author
-                  right after FAQs because, among tied order values, flexbox
-                  breaks ties by source order, and this block's source
-                  position is fixed right after the FAQs block and before
-                  Resources/custom tabs, whatever the admin's chosen order. */}
-              <div id="author" style={{ order: tabOrderIndex["faqs"] !== undefined ? tabOrderIndex["faqs"] + 1 : Number.MAX_SAFE_INTEGER }} className="scroll-mt-40 mb-8">
+              {/* Not a tab itself (no pill/scroll-spy entry). Always placed
+                  after every tab section in this column: tab sections use
+                  order 0..n-1 (their position in tabsConfig), so order n puts
+                  Author Information below all of them, whatever the admin's
+                  chosen order. ("Why Us" is outside this column, below it.) */}
+              <div id="author" style={{ order: visibleTabsConfig.length }} className="scroll-mt-40 mb-8">
                 <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-4 shadow-sm">
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
@@ -678,8 +759,10 @@ function SlugClients({
                   than a dedicated pkg field. */}
               {customTabEntries.map((entry) => (
                 <div key={entry.key} id={entry.key} style={{ order: tabOrderIndex[entry.key] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+                  {/* Tab pill shows `label`; the page heading is the separate
+                      `sectionTitle`, falling back to `label` when empty. */}
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{entry.label}</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{entry.sectionTitle?.trim() || entry.label}</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">

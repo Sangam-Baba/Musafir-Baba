@@ -152,6 +152,8 @@ const packageSchema = new mongoose.Schema(
         builtinKey: { type: String },
         content: { type: String },
         hidden: { type: Boolean, default: false },
+        // Custom tabs: h2 heading shown on the page (label = tab pill name).
+        sectionTitle: { type: String },
       },
     ],
     isBestSeller: { type: Boolean, default: false },
