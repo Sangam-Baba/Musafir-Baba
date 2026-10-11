@@ -40,6 +40,10 @@ const riderAuthSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    // ---- Optional: "Continue with Google" (controllers/rider/riderGoogleAuth.controller.js).
+    // Absent on accounts that never used Google sign-in. ----
+    googleId: { type: String, unique: true, sparse: true },
+    authProviders: { type: [String], default: undefined }, // e.g. ["password", "google"]
     // Soft delete (admin "Delete rider"). The account and everything linked
     // to it (bookings, documents, wallet) is kept; status "Deleted" blocks
     // login. Email stays reserved.

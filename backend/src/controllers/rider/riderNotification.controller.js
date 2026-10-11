@@ -36,6 +36,9 @@ export const getNotifications = async (req, res) => {
       time: toRelativeTime(n.createdAt),
       type: n.type,
       read: n.read,
+      // Additive: lets the app open the related screen on tap.
+      data: n.data || {},
+      createdAt: n.createdAt,
     }));
 
     return res.status(200).json({
@@ -66,6 +69,25 @@ export const markNotificationsRead = async (req, res) => {
     return res.status(200).json({ success: true, message: "Notifications marked as read" });
   } catch (error) {
     console.error("Mark Rider Notifications Read Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// @route   PATCH /api/rider/notifications/:id/read
+// @desc    Mark one of the logged-in rider's notifications as read
+export const markOneNotificationRead = async (req, res) => {
+  try {
+    const riderProfile = await RiderProfile.findOne({ authId: req.riderId }).select("_id");
+    if (!riderProfile) {
+      return res.status(404).json({ success: false, message: "Rider profile not found" });
+    }
+    await Notification.updateOne(
+      { _id: req.params.id, recipientType: "Rider", recipientId: riderProfile._id },
+      { $set: { read: true } }
+    );
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Mark Rider Notification Read Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };

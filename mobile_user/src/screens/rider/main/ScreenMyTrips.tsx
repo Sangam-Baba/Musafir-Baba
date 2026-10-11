@@ -60,6 +60,26 @@ import { getMyVisaApps, getResumeScreen, isVisaPaid, visaStatusLook, type VisaAp
 import { useVisaStore } from '../../../store/useVisaStore';
 import { FlagBadge } from '../visa/visaUi';
 import ExtraTimePay from './ExtraTimePay';
+import { canCancelRide, canCancelTour, canCancelVisa, type CancelService } from '../../../api/cancellation.api';
+import { useCancelStore } from '../../../store/useCancelStore';
+
+// Small "Cancel" link + cancellation status notes on trip cards.
+function CancelLink({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity onPress={onPress} style={{ alignSelf: 'center', paddingVertical: 4, paddingHorizontal: 10 }}>
+      <Text style={{ fontSize: 12.5, fontWeight: '600', color: '#DC2626' }}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+function CancellationNote({ c }: { c?: { status?: string; adminNote?: string } }) {
+  if (c?.status === 'REQUESTED') {
+    return <Text style={{ fontSize: 12, color: '#9A3412', backgroundColor: '#FFF7ED', borderRadius: 8, padding: 8 }}>Cancellation requested — our team is reviewing it.</Text>;
+  }
+  if (c?.status === 'REJECTED') {
+    return <Text style={{ fontSize: 12, color: '#475569', backgroundColor: '#F1F5F9', borderRadius: 8, padding: 8 }}>Cancellation request declined.{c.adminNote ? ` ${c.adminNote}` : ''}</Text>;
+  }
+  return null;
+}
 
 // Maps the real RideBooking status enum to trip-card display info -- copy
 // matches ScreenLiveTracking.tsx's statusMessages so the wording is
@@ -176,10 +196,15 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
     };
   }, [tripsTab]);
   const visibleVisaApps = visaApps.filter((a) => {
-    if (tripsTab === 'cancelled') return a.applicationStatus === 'Rejected';
+    if (tripsTab === 'cancelled') return a.applicationStatus === 'Rejected' || (a.applicationStatus as string) === 'Cancelled';
     if (tripsTab === 'completed') return a.applicationStatus === 'Approved';
-    return a.applicationStatus !== 'Rejected' && a.applicationStatus !== 'Approved';
+    return a.applicationStatus !== 'Rejected' && a.applicationStatus !== 'Approved' && (a.applicationStatus as string) !== 'Cancelled';
   });
+  const openCancelFlow = useCancelStore((s) => s.open);
+  const startCancel = (service: CancelService, id: string) => {
+    openCancelFlow(service, id);
+    onNavigate('cancel-booking');
+  };
   const openVisaApp = (a: VisaApplication) => {
     const unpaid = !isVisaPaid(a) && a.applicationStatus === 'Pending';
     if (unpaid || a.applicationStatus === 'Returned') {
@@ -942,6 +967,8 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                       <Text style={{ fontSize: 13, fontWeight: '700', color: primary ? '#FFFFFF' : '#FF4500' }}>{action}</Text>
                       <ChevronRight size={15} color={primary ? '#FFFFFF' : '#FF4500'} strokeWidth={2.2} />
                     </TouchableOpacity>
+                    <CancellationNote c={(a as any).cancellation} />
+                    {canCancelVisa(a) && <CancelLink label="Cancel application" onPress={() => startCancel('VISA', a._id)} />}
                   </View>
                 );
               })}
@@ -1000,6 +1027,8 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                       </Text>
                       <ChevronRight size={15} color={b.bookingStatus === 'PaymentPending' ? '#FFFFFF' : '#FF4500'} strokeWidth={2.2} />
                     </TouchableOpacity>
+                    <CancellationNote c={(b as any).cancellation} />
+                    {canCancelTour(b) && <CancelLink label="Cancel booking" onPress={() => startCancel('TOUR', b._id)} />}
                   </View>
                 );
               })}
@@ -1079,10 +1108,17 @@ export default function ScreenMyTrips({ onNavigate }: { onNavigate: (screen: str
                         <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF4500' }}>Book again</Text>
                       </TouchableOpacity>
                     ) : (
-                      <TouchableOpacity onPress={() => onNavigate('37')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: '#F1F5F9' }}>
-                        <Headphones size={13} color="#334155" strokeWidth={2} />
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#334155' }}>Get help</Text>
-                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        {canCancelRide(trip) && (
+                          <TouchableOpacity onPress={() => startCancel('CAB', trip._id)} style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: '#FEF2F2' }}>
+                            <Text style={{ fontSize: 12, fontWeight: '600', color: '#DC2626' }}>Cancel</Text>
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={() => onNavigate('37')} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: '#F1F5F9' }}>
+                          <Headphones size={13} color="#334155" strokeWidth={2} />
+                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#334155' }}>Get help</Text>
+                        </TouchableOpacity>
+                      </View>
                     )}
                   </View>
 

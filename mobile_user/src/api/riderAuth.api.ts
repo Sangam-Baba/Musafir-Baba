@@ -28,6 +28,17 @@ export const loginRider = (payload: { email: string; password: string }) =>
     message?: string;
   }>('/rider/auth/login', payload);
 
+// "Continue with Google": exchanges a Google ID token for the same tokens as loginRider.
+export const googleLoginRider = (payload: { idToken: string }) =>
+  apiClient.post<{
+    success: boolean;
+    accessToken: string;
+    refreshToken: string;
+    isNewAccount?: boolean;
+    profile: RiderProfileDto | null;
+    message?: string;
+  }>('/rider/auth/google', payload);
+
 export const logoutRider = (refreshToken?: string | null) =>
   apiClient.post('/rider/auth/logout', refreshToken ? { refreshToken } : {});
 

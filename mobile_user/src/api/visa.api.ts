@@ -251,6 +251,7 @@ export const visaStatusLook = (app: VisaApplication): { label: string; bg: strin
   const s = app.applicationStatus;
   if (s === 'Pending') return app.paymentInfo?.status === 'Failed' ? { label: 'Payment failed', bg: '#FEE2E2', color: '#B91C1C' } : { label: 'Draft', bg: '#F1F5F9', color: '#475569' };
   if (s === 'Approved') return { label: 'Approved', bg: '#DCFCE7', color: '#15803D' };
+  if ((s as string) === 'Cancelled') return { label: 'Cancelled', bg: '#F1F5F9', color: '#475569' };
   if (s === 'Rejected') return { label: 'Rejected', bg: '#FEE2E2', color: '#B91C1C' };
   if (s === 'Returned') return { label: 'Action needed', bg: '#FFEDD5', color: '#C2410C' };
   if (s === 'Processing' || s === 'Applied') return { label: 'With embassy', bg: '#E0E7FF', color: '#4338CA' };

@@ -56,6 +56,16 @@ import ScreenVisaDocuments from './src/screens/rider/visa/ScreenVisaDocuments';
 import ScreenVisaReview from './src/screens/rider/visa/ScreenVisaReview';
 import ScreenVisaPayment from './src/screens/rider/visa/ScreenVisaPayment';
 import ScreenVisaApplication from './src/screens/rider/visa/ScreenVisaApplication';
+// Help & Support (tickets)
+import ScreenSupportHome from './src/screens/rider/support/ScreenSupportHome';
+import ScreenSupportService from './src/screens/rider/support/ScreenSupportService';
+import ScreenSupportDetails from './src/screens/rider/support/ScreenSupportDetails';
+import ScreenSupportReview from './src/screens/rider/support/ScreenSupportReview';
+import ScreenSupportTicket from './src/screens/rider/support/ScreenSupportTicket';
+import ScreenSupportTickets from './src/screens/rider/support/ScreenSupportTickets';
+import ScreenCancelBooking from './src/screens/rider/cancel/ScreenCancelBooking';
+import { useNotificationStore } from './src/store/useNotificationStore';
+import { openNotificationTarget } from './src/utils/notificationRoute';
 
 // Profile Screens
 import ScreenRiderProfileAmit from './src/screens/rider/profile/ScreenRiderProfileAmit';
@@ -70,7 +80,7 @@ import ScreenRiderDocuments from './src/screens/rider/profile/ScreenRiderDocumen
 const HOME_SCREEN = '31';
 // The holiday and visa "Payment Successful" screens are treated the same way,
 // so back from them goes Home instead of to the already-paid checkout.
-const ROOT_TAB_SCREENS = ['31', '35', '36', 'tour-booking-success', 'visa-success', 'visa-resubmitted'];
+const ROOT_TAB_SCREENS = ['31', '35', '36', '37', 'tour-booking-success', 'visa-success', 'visa-resubmitted', 'support-submitted'];
 
 export default function App() {
   return (
@@ -241,6 +251,18 @@ function AppContent() {
   }, [isInitializing, isAuthenticated]);
 
   const [showSplash, setShowSplash] = useState(true);
+
+  // Phone push notification tapped: open its screen once the app is ready
+  // and the rider is signed in.
+  const pendingOpen = useNotificationStore((st) => st.pendingOpen);
+  useEffect(() => {
+    if (!pendingOpen || isInitializing || showSplash || !isAuthenticated) return;
+    useNotificationStore.getState().setPendingOpen(null);
+    useNotificationStore.getState().fetchNotifications();
+    openNotificationTarget({ data: pendingOpen }, navigate).then((opened) => {
+      if (!opened) navigate('38');
+    });
+  }, [pendingOpen, isInitializing, showSplash, isAuthenticated, navigate]);
   // Welcome screen: once per app launch, only for logged-out riders, between
   // the splash and login. Its button just reveals the existing auth screen;
   // navigation/history are not involved.
@@ -278,7 +300,14 @@ function AppContent() {
       case '34': return <ScreenLiveTracking onNavigate={navigate} onBack={goBack} />;
       case '35': return <ScreenMyTrips onNavigate={navigate} />;
       case '36': return <ScreenRiderProfileAmit onNavigate={navigate} />;
-      case '37': return <ScreenHelpSupport onNavigate={navigate} onBack={goBack} />;
+      case '37': return <ScreenSupportHome onNavigate={navigate} onBack={goBack} />;
+      case 'support-service': return <ScreenSupportService onNavigate={navigate} onBack={goBack} />;
+      case 'support-details': return <ScreenSupportDetails onNavigate={navigate} onBack={goBack} />;
+      case 'support-review': return <ScreenSupportReview onNavigate={navigate} onBack={goBack} />;
+      case 'support-submitted': return <ScreenSupportTicket variant="submitted" onNavigate={navigate} onBack={goBack} />;
+      case 'support-ticket': return <ScreenSupportTicket variant="detail" onNavigate={navigate} onBack={goBack} />;
+      case 'support-tickets': return <ScreenSupportTickets onNavigate={navigate} onBack={goBack} />;
+      case 'cancel-booking': return <ScreenCancelBooking onNavigate={navigate} onBack={goBack} />;
       case '38': return <ScreenNotifications onNavigate={navigate} onBack={goBack} />;
       case '39': return <ScreenSavedItems onNavigate={navigate} />;
       case '40': return <ScreenRiderProfileAshutosh onNavigate={navigate} />;

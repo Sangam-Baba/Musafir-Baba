@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import { useNotificationStore } from '../store/useNotificationStore';
 
 // Expo Go (SDK 53+) no longer supports expo-notifications' Android push path at
 // all, and it surfaces that as a hard console.error (which shows as a
@@ -15,7 +16,11 @@ const isExpoGo = Constants.executionEnvironment === 'storeClient';
 if (!isExpoGo) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
+      // expo-notifications 0.32 shows foreground notifications only with
+      // shouldShowBanner / shouldShowList (shouldShowAlert is deprecated).
       shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
       shouldPlaySound: true,
       shouldSetBadge: false,
     }),
@@ -25,8 +30,8 @@ if (!isExpoGo) {
 export const usePushNotifications = () => {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>();
   const [notification, setNotification] = useState<Notifications.Notification | false>(false);
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
+  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   useEffect(() => {
     if (isExpoGo) {
@@ -40,17 +45,20 @@ export const usePushNotifications = () => {
       setNotification(notification);
     });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification Response:', response);
-    });
+    // Tapping a push notification: hand its data to App.tsx, which opens the
+    // related screen (see openNotificationTarget). Also covers the tap that
+    // launched the app from a closed state.
+    const handleResponse = (response: Notifications.NotificationResponse | null) => {
+      const data = response?.notification?.request?.content?.data as Record<string, any> | undefined;
+      if (data && Object.keys(data).length) useNotificationStore.getState().setPendingOpen(data);
+    };
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(handleResponse);
+    Notifications.getLastNotificationResponseAsync().then(handleResponse).catch(() => {});
 
     return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
+      // removeNotificationSubscription no longer exists in this SDK.
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
     };
   }, []);
 

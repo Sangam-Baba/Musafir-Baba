@@ -7,6 +7,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@hookform/resolvers": "^5.5.7",
     "@react-native-community/datetimepicker": "8.4.4",
+    "@react-native-google-signin/google-signin": "^16.1.5",
     "@react-native-picker/picker": "2.11.1",
     "@react-navigation/bottom-tabs": "^7.18.14",
     "@react-navigation/native": "^7.3.14",

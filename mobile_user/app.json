@@ -41,7 +41,8 @@
           "locationAlwaysAndWhenInUsePermission": "MBGO uses your location to auto-fill your pick-up point."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "eas": {
