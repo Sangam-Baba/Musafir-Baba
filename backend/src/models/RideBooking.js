@@ -149,6 +149,13 @@ const rideBookingSchema = new mongoose.Schema(
     tripStartOtp: { type: String },
     platformCommissionPercent: { type: Number, default: 15 },
     cancelReason: { type: String },
+    // App cancellations (models/CancellationRequest.js). Absent otherwise.
+    cancellation: {
+      requestId: { type: mongoose.Schema.Types.ObjectId },
+      status: { type: String },
+      reasonLabel: { type: String },
+      at: { type: Date },
+    },
     // Tracks whether the one-time "driver & vehicle / rider contact details
     // are now available" notification has fired for this ride, so the
     // reveal cron never sends it twice. Not used to decide *whether* details

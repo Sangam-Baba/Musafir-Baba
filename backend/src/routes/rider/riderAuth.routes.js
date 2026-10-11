@@ -12,6 +12,7 @@ import {
   changePassword,
 } from "../../controllers/rider/riderAuth.controller.js";
 import { isRiderAuthenticated } from "../../middleware/riderAuth.middleware.js";
+import { googleLoginRider } from "../../controllers/rider/riderGoogleAuth.controller.js";
 
 const router = express.Router();
 
@@ -21,6 +22,7 @@ router.post("/verify-otp", verifyOTP);
 router.post("/resend-otp", resendOTP);
 router.post("/check-email", checkEmail);
 router.post("/login", loginRider);
+router.post("/google", googleLoginRider);
 router.post("/logout", logoutRider);
 router.post("/refresh", refreshAccessToken);
 router.post("/forgot-password", forgotPassword);

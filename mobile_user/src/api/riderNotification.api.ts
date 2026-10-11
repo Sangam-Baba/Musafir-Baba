@@ -7,6 +7,9 @@ export interface RiderNotificationData {
   time: string;
   type: 'Ride' | 'Trip' | 'Payment' | 'Payout' | 'Document' | 'General' | 'System';
   read: boolean;
+  // Related record ids (rideId, tourBookingId, visaApplicationId, supportTicketId, cancellationId…)
+  data?: Record<string, any>;
+  createdAt?: string;
 }
 
 export interface RealtimeTokenResponse {
@@ -22,3 +25,6 @@ export const markAllNotificationsRead = () =>
 
 export const getNotificationsRealtimeToken = () =>
   apiClient.get<{ success: boolean; data: RealtimeTokenResponse }>('/rider/notifications/realtime-token');
+
+export const markNotificationRead = (id: string) =>
+  apiClient.patch<{ success: boolean }>(`/rider/notifications/${id}/read`);

@@ -47,6 +47,25 @@ interface RideBooking {
   cityName?: string;
   roundTripTimeline?: { reachedDestinationAt?: string; returnStartedAt?: string };
   extraTime?: { extraMinutes?: number; totalAmount?: number; status?: "NONE" | "DUE" | "PAID" };
+  // Cancellation details (display only).
+  cancelReason?: string;
+  cancellation?: { status?: string; reasonLabel?: string; at?: string };
+  statusHistory?: { status: string; at?: string; note?: string }[];
+}
+
+// Why / by whom a ride was cancelled (cancelled rides only).
+function CancelInfo({ ride }: { ride: RideBooking }) {
+  if (ride.status !== "CANCELLED") return null;
+  const byRider = !!ride.cancellation?.status;
+  const reason = ride.cancelReason || ride.cancellation?.reasonLabel || "No reason recorded";
+  const when = ride.cancellation?.at || [...(ride.statusHistory || [])].reverse().find((h) => h.status === "CANCELLED")?.at;
+  return (
+    <div className="mt-1 max-w-[320px] rounded-md bg-red-50 px-2 py-1 text-[11px] leading-snug text-red-800">
+      <span className="font-semibold">{byRider ? "Cancelled by rider" : "Cancelled"}</span>
+      {when ? <span className="text-red-700/80"> · {new Date(when).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span> : null}
+      <p className="whitespace-normal break-words">Reason: {reason}</p>
+    </div>
+  );
 }
 
 const shortTime = (iso?: string) =>
@@ -441,6 +460,7 @@ function RideBookingsPage() {
                         <p className="text-slate-400">Vehicle</p>
                         <p className="font-medium text-slate-800">{ride.vehicleCategory} · {ride.distanceKm} km</p>
                         <CityRideInfo ride={ride} />
+                        <CancelInfo ride={ride} />
                       </div>
                       <div>
                         <p className="text-slate-400">Ride</p>
@@ -494,6 +514,7 @@ function RideBookingsPage() {
                             {ride.vehicleCategory} · {ride.distanceKm} km · {ride.rideDate} • {ride.rideTime}
                           </p>
                           <CityRideInfo ride={ride} />
+                          <CancelInfo ride={ride} />
                         </TableCell>
 
                         <TableCell className="hidden align-top py-2.5 whitespace-normal text-slate-700 xl:table-cell">

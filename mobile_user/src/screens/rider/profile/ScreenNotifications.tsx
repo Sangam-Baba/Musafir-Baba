@@ -1,4 +1,5 @@
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
+import NotificationsList from './NotificationsList';
 import { Text, View, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNotificationStore } from '../../../store/useNotificationStore';
@@ -406,110 +407,7 @@ export default function ScreenNotifications({ onNavigate, onBack }: { onNavigate
           {/* ==========================================
               SCREEN 38: NOTIFICATIONS - (38.png)
               ========================================== */}
-          {activeScreen === '38' && (
-            <View style={{ padding: 12, gap: 12 }}>
-
-              {/* Header Bar */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 4 }}>
-                <TouchableOpacity
-                  onPress={() => (onBack ? onBack() : onNavigate('36'))}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <ChevronRight size={18} color="#0F172A" strokeWidth={2} style={{ transform: [{ rotate: '180deg' }] }} />
-                </TouchableOpacity>
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#0F172A', letterSpacing: -0.2 }}>Notifications</Text>
-                <TouchableOpacity onPress={handleMarkAllRead} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FFF5EF' }}>
-                  <Check size={13} color="#FF4500" strokeWidth={2.25} />
-                  <Text style={{ fontSize: 12, fontWeight: '600', color: '#FF4500' }}>Read all</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Category Filter */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 4 }}>
-                {['All', 'Bookings', 'Payments', 'Offers', 'System'].map((tab) => {
-                  const isActive = notificationTab === tab;
-                  return (
-                    <TouchableOpacity
-                      key={tab}
-                      onPress={() => setNotificationTab(tab)}
-                      style={{ height: 34, paddingHorizontal: 16, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? '#0F172A' : '#FFFFFF', borderWidth: 1, borderColor: isActive ? '#0F172A' : '#E2E8F0' }}
-                    >
-                      <Text style={{ fontSize: 13, fontWeight: isActive ? '600' : '500', color: isActive ? '#FFFFFF' : '#475569' }}>{tab}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Notification List */}
-              {isLoadingNotifications ? (
-                <View style={{ paddingVertical: 40, alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <ActivityIndicator color="#FF4500" />
-                  <Text style={{ fontSize: 12, fontWeight: '500', color: '#94A3B8' }}>Loading notifications...</Text>
-                </View>
-              ) : filteredNotifications.length === 0 ? (
-                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, paddingVertical: 40, paddingHorizontal: 24, alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
-                    <Bell size={24} color="#FF4500" strokeWidth={1.75} />
-                  </View>
-                  <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F172A' }}>You're all caught up</Text>
-                  <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', textAlign: 'center' }}>
-                    {notificationTab === 'All' ? 'New updates about your rides will appear here.' : `No ${notificationTab.toLowerCase()} notifications yet.`}
-                  </Text>
-                </View>
-              ) : (
-                <View style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EEF2F6', borderRadius: 16, overflow: 'hidden', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 }}>
-                  {filteredNotifications.map((item, idx) => {
-                    const style = NOTIFICATION_TYPE_STYLE[item.type] || NOTIFICATION_TYPE_STYLE.General;
-                    const isLast = idx === filteredNotifications.length - 1;
-                    return (
-                      <TouchableOpacity
-                        key={item.id}
-                        onPress={() => showToast(item.title)}
-                        activeOpacity={0.7}
-                        style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: item.read ? '#FFFFFF' : '#FFFAF6', borderBottomWidth: isLast ? 0 : 1, borderBottomColor: '#F1F5F9' }}
-                      >
-                        <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: style.bg }}>
-                          {style.icon}
-                        </View>
-                        <View style={{ flex: 1, gap: 3 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-                            <Text style={{ flex: 1, fontSize: 14, fontWeight: item.read ? '500' : '600', color: '#0F172A' }}>{item.title}</Text>
-                            <Text style={{ fontSize: 11, fontWeight: '500', color: '#94A3B8', marginTop: 2 }}>{item.time}</Text>
-                          </View>
-                          <Text style={{ fontSize: 12.5, fontWeight: '400', color: '#64748B', lineHeight: 18 }}>{item.message}</Text>
-                        </View>
-                        {!item.read && (
-                          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4500', marginTop: 6 }} />
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* Enable Push Notifications */}
-              <View style={{ backgroundColor: '#EFF6FF', borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
-                  <Bell size={18} color="#2563EB" strokeWidth={2} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#0F172A' }}>Push notifications</Text>
-                  <Text style={{ fontSize: 12, fontWeight: '400', color: '#64748B', marginTop: 1, lineHeight: 16 }}>Get ride updates and alerts instantly.</Text>
-                </View>
-                <TouchableOpacity onPress={() => showToast("Push Notifications Enabled!")} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, backgroundColor: '#2563EB' }}>
-                  <Text style={{ fontSize: 12.5, fontWeight: '600', color: '#FFFFFF' }}>Enable</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Privacy note */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
-                <Shield size={14} color="#059669" strokeWidth={2} />
-                <Text style={{ flex: 1, fontSize: 11.5, fontWeight: '400', color: '#64748B' }}>Your privacy matters. We never share your personal information.</Text>
-              </View>
-
-            </View>
-          )}
+          {activeScreen === '38' && <NotificationsList onNavigate={onNavigate} onBack={onBack} />}
 
           {/* ==========================================
               SCREEN 39: SAVED ITEMS - (39.png)

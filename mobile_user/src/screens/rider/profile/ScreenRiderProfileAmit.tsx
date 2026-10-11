@@ -1,7 +1,7 @@
 import { Text, View, TouchableOpacity, Image, ScrollView, Modal, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { WebView } from 'react-native-webview';
-import { ArrowLeft as ArrowLeftIcon } from 'lucide-react-native';
+import { ArrowLeft as ArrowLeftIcon, Image as ImageIcon } from 'lucide-react-native';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useNotificationStore } from '../../../store/useNotificationStore';
@@ -111,13 +111,30 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
     }
   };
 
-  const handlePickAvatar = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  // Avatar: ask "Take photo" or "Choose from gallery".
+  const [showAvatarSheet, setShowAvatarSheet] = useState(false);
+  const handleAvatarPress = () => setShowAvatarSheet(true);
+
+  const handlePickAvatar = async (source: 'gallery' | 'camera' = 'gallery') => {
+    setShowAvatarSheet(false);
+    const options: ImagePicker.ImagePickerOptions = {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
-    });
+    };
+    let result: ImagePicker.ImagePickerResult;
+    if (source === 'camera') {
+      // Web: the browser asks for camera access itself (file input with capture).
+      const permission = Platform.OS === 'web' ? { granted: true } : await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        showToast('Camera permission is needed to take a photo');
+        return;
+      }
+      result = await ImagePicker.launchCameraAsync(options);
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync(options);
+    }
     if (result.canceled || !result.assets[0]) return;
 
     setIsUploadingAvatar(true);
@@ -220,7 +237,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
 
               {/* User Identity Card */}
               <View style={{ ...PROFILE_CARD, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                <TouchableOpacity onPress={handlePickAvatar} disabled={isUploadingAvatar} style={{ position: 'relative' }}>
+                <TouchableOpacity onPress={handleAvatarPress} disabled={isUploadingAvatar} style={{ position: 'relative' }}>
                   <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#F1F5F9', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                     {profile?.profilePicture ? (
                       <Image source={{ uri: profile.profilePicture }}
@@ -356,6 +373,33 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                 {isLoggingOut ? <ActivityIndicator size="small" color="#DC2626" /> : <LogOut size={16} color="#DC2626" strokeWidth={2} />}
                 <Text style={{ fontSize: 14, fontWeight: '600', color: '#DC2626' }}>{isLoggingOut ? 'Logging out...' : 'Log out'}</Text>
               </TouchableOpacity>
+
+              {/* Profile photo source: camera or gallery */}
+              <Modal visible={showAvatarSheet} transparent animationType="fade" onRequestClose={() => setShowAvatarSheet(false)}>
+                <TouchableOpacity activeOpacity={1} onPress={() => setShowAvatarSheet(false)} style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'flex-end' }}>
+                  <TouchableOpacity activeOpacity={1} style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 32, gap: 10 }}>
+                    <View style={{ alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#E2E8F0', marginBottom: 6 }} />
+                    <Text style={{ fontSize: 17, fontWeight: '700', color: '#0F172A', marginBottom: 4 }}>Profile photo</Text>
+                    {[
+                      { key: 'camera' as const, label: 'Take photo', sub: 'Use your camera', icon: Camera },
+                      { key: 'gallery' as const, label: 'Choose from gallery', sub: 'Pick an existing photo', icon: ImageIcon },
+                    ].map((o) => (
+                      <TouchableOpacity key={o.key} onPress={() => handlePickAvatar(o.key)} activeOpacity={0.85} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, borderRadius: 16, backgroundColor: '#F5F7FB' }}>
+                        <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: '#FFF1EA', alignItems: 'center', justifyContent: 'center' }}>
+                          <o.icon size={20} color="#FF4500" strokeWidth={2} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 15, fontWeight: '600', color: '#0F172A' }}>{o.label}</Text>
+                          <Text style={{ fontSize: 12.5, color: '#64748B', marginTop: 1 }}>{o.sub}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity onPress={() => setShowAvatarSheet(false)} style={{ alignItems: 'center', paddingVertical: 10 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748B' }}>Cancel</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </Modal>
 
               {/* In-app browser for Terms & Conditions / Privacy Policy */}
               <Modal visible={!!inAppBrowserUrl} animationType="slide" onRequestClose={() => setInAppBrowserUrl(null)}>

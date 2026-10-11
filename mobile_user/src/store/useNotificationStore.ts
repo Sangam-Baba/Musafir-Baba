@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getMyNotifications, markAllNotificationsRead, RiderNotificationData } from '../api/riderNotification.api';
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead, RiderNotificationData } from '../api/riderNotification.api';
 
 interface RealtimeNotificationEvent {
   id: string;
@@ -17,6 +17,11 @@ interface NotificationState {
   fetchNotifications: () => Promise<void>;
   markAllRead: () => Promise<void>;
   handleRealtimeEvent: (event: RealtimeNotificationEvent) => void;
+  markRead: (id: string) => void;
+  // Set when the rider taps a phone (push) notification; App.tsx opens the
+  // related screen and clears it.
+  pendingOpen: Record<string, any> | null;
+  setPendingOpen: (data: Record<string, any> | null) => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
@@ -56,10 +61,23 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       time: 'Just now',
       type: event.type,
       read: false,
+      data: event.data || {},
+      createdAt: event.createdAt || new Date().toISOString(),
     };
     set((state) => ({
       notifications: [incoming, ...state.notifications],
       unreadCount: state.unreadCount + 1,
     }));
   },
+  markRead: (id) => {
+    const target = get().notifications.find((n) => n.id === id);
+    if (!target || target.read) return;
+    set((state) => ({
+      notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      unreadCount: Math.max(0, state.unreadCount - 1),
+    }));
+    markNotificationRead(id).catch((e) => console.error('Error marking notification read:', e));
+  },
+  pendingOpen: null,
+  setPendingOpen: (data) => set({ pendingOpen: data }),
 }));

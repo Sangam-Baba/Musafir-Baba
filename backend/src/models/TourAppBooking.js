@@ -62,6 +62,14 @@ const tourAppBookingSchema = new mongoose.Schema(
       status: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" },
       paidAt: Date,
     },
+    // App cancellation request (models/CancellationRequest.js). Absent otherwise.
+    cancellation: {
+      requestId: { type: mongoose.Schema.Types.ObjectId },
+      status: { type: String }, // REQUESTED | APPROVED | REJECTED
+      reasonLabel: { type: String },
+      at: { type: Date },
+      adminNote: { type: String },
+    },
     bookingStatus: {
       type: String,
       enum: ["PaymentPending", "Confirmed", "Cancelled"],

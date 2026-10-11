@@ -68,6 +68,8 @@ import adminRiderRoutes from "./adminRider.routes.js";
 import adminRidePricingRoutes from "./adminRidePricing.routes.js";
 import tourAppBookingRoutes, { adminTourAppBookingRoutes } from "./tourAppBooking.routes.js";
 import visaAppRoutes from "./visaApp.routes.js";
+import supportRoutes, { adminSupportRoutes } from "./support.routes.js";
+import cancellationRoutes, { adminCancellationRoutes } from "./cancellation.routes.js";
 
 const router = Router();
 
@@ -82,6 +84,8 @@ router.use("/admin/rides", adminRideRoutes);
 router.use("/admin/riders", adminRiderRoutes);
 router.use("/admin/ride-pricing", adminRidePricingRoutes);
 router.use("/admin/tour-app-bookings", adminTourAppBookingRoutes);
+router.use("/admin/support-tickets", adminSupportRoutes);
+router.use("/admin/cancellations", adminCancellationRoutes);
 router.use("/admin/sitemap-source", sitemapDataRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);
@@ -143,5 +147,7 @@ router.use("/rider/notifications", riderNotificationRoutes);
 router.use("/ride", rideRoutes);
 router.use("/tour-booking", tourAppBookingRoutes);
 router.use("/visa-app", visaAppRoutes);
+router.use("/support", supportRoutes);
+router.use("/cancellations", cancellationRoutes);
 router.use("/", locationMasterRoutes);
 export default router;

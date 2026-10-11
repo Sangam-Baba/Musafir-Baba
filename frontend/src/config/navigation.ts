@@ -6,6 +6,8 @@ import {
   ScrollText,
   MapPin,
   Tags,
+  LifeBuoy,
+  Ban,
   LayoutTemplate,
   Newspaper,
   UserRoundCheck,
@@ -159,6 +161,18 @@ export const NAV_GROUPS = [
         href: "/admin/rider-verification",
         icon: UserRoundCheck,
         permission: "partner-verification", // reuse permission or use a generic one
+      },
+      {
+        label: "Cancellations",
+        href: "/admin/cancellations",
+        icon: Ban,
+        permission: "cancellations", // must match backend cancellation.routes.js
+      },
+      {
+        label: "Support Tickets",
+        href: "/admin/support-tickets",
+        icon: LifeBuoy,
+        permission: "support-tickets", // must match backend support.routes.js
       },
       {
         label: "Partner Wallets",

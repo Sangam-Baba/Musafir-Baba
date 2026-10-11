@@ -66,7 +66,7 @@ const visaApplicationSchema = new mongoose.Schema(
     },
     applicationStatus: {
       type: String,
-      enum: ["Pending", "Submitted", "Processing", "Approved", "Rejected", "Returned", "Applied", "Under Review", "Reviewed"],
+      enum: ["Pending", "Submitted", "Processing", "Approved", "Rejected", "Returned", "Applied", "Under Review", "Reviewed", "Cancelled"],
       default: "Pending",
     },
     returnReason: {
@@ -100,6 +100,14 @@ const visaApplicationSchema = new mongoose.Schema(
     // Set when a "Returned" application is fixed and resubmitted from the app.
     resubmittedAt: {
       type: Date,
+    },
+    // App cancellation request (models/CancellationRequest.js). Absent otherwise.
+    cancellation: {
+      requestId: { type: mongoose.Schema.Types.ObjectId },
+      status: { type: String }, // REQUESTED | APPROVED | REJECTED
+      reasonLabel: { type: String },
+      at: { type: Date },
+      adminNote: { type: String },
     },
   },
   { timestamps: true }

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import {
@@ -21,7 +21,8 @@ import {
   Award,
   Check,
 } from 'lucide-react-native';
-import { loginRider, registerRider, verifyRiderOtp, resendRiderOtp, forgotRiderPassword, resetRiderPassword } from '../../../api/riderAuth.api';
+import { loginRider, googleLoginRider, registerRider, verifyRiderOtp, resendRiderOtp, forgotRiderPassword, resetRiderPassword } from '../../../api/riderAuth.api';
+import { getGoogleIdToken, isGoogleSignInAvailable, isGoogleWebSignInAvailable, renderGoogleWebButton } from '../../../utils/googleSignIn';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 // Hero background image for the auth screens (WebP format for native Android/iOS decoding)
@@ -170,9 +171,75 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
   // Toast System
   const [toastMsg, setToastMsg] = useState('');
+
+  // Keyboard handling (display only). With Android edge-to-edge the window no
+  // longer shrinks for the keyboard, so: lift the form (KeyboardAvoidingView),
+  // collapse the decorative top spacing while typing, and scroll the focused
+  // field into view if it's still hidden.
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const authScrollRef = useRef<ScrollView>(null);
+  const authScrollY = useRef(0);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const onShow = (e: any) => {
+      setKeyboardOpen(true);
+      const keyboardTop = e?.endCoordinates?.screenY;
+      // After the layout settles, make sure the focused input is above the keyboard.
+      setTimeout(() => {
+        const input: any = (TextInput as any).State?.currentlyFocusedInput?.();
+        if (!input?.measureInWindow || !keyboardTop) return;
+        input.measureInWindow((_x: number, y: number, _w: number, h: number) => {
+          const overlap = y + h + 24 - keyboardTop;
+          if (overlap > 0) authScrollRef.current?.scrollTo({ y: authScrollY.current + overlap, animated: true });
+        });
+      }, 250);
+    };
+    const subShow = Keyboard.addListener(showEvt, onShow);
+    const subHide = Keyboard.addListener(hideEvt, () => setKeyboardOpen(false));
+    return () => {
+      subShow.remove();
+      subHide.remove();
+    };
+  }, []);
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 3000);
+  };
+
+  // "Continue with Google": same token storage + navigation as handleLogin.
+  const [isGoogleBusy, setIsGoogleBusy] = useState(false);
+  const completeGoogleLogin = async (idToken: string) => {
+    setIsGoogleBusy(true);
+    try {
+      const res = await googleLoginRider({ idToken });
+      await setToken(res.data.accessToken, res.data.refreshToken);
+      setProfile({ ...(res.data.profile || {}) });
+      showToast(res.data.isNewAccount ? 'Welcome to MBGO!' : 'Signed in successfully');
+      onNavigate('31');
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setIsGoogleBusy(false);
+    }
+  };
+  const handleGoogle = async () => {
+    if (isGoogleBusy || isSubmitting) return;
+    setIsGoogleBusy(true);
+    try {
+      const idToken = await getGoogleIdToken();
+      if (!idToken) return; // closed the account picker
+      const res = await googleLoginRider({ idToken });
+      await setToken(res.data.accessToken, res.data.refreshToken);
+      setProfile({ ...(res.data.profile || {}) });
+      showToast(res.data.isNewAccount ? 'Welcome to MBGO!' : 'Signed in successfully');
+      onNavigate('31');
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'Google sign-in failed. Please try again.');
+    } finally {
+      setIsGoogleBusy(false);
+    }
   };
 
   const handleLogin = async () => {
@@ -392,12 +459,18 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
       )}
 
       {/* 4. Content Scroll Container */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled={Platform.OS !== 'web'}>
       <ScrollView
+        ref={authScrollRef}
+        onScroll={(e) => {
+          authScrollY.current = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={32}
         style={{ flex: 1 }}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: 'flex-end',
-          paddingTop: 280,
+          paddingTop: keyboardOpen ? 16 : 280,
           paddingBottom: 16,
           paddingHorizontal: 14,
         }}
@@ -545,10 +618,11 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 <ArrowRight size={16} color="#FFFFFF" strokeWidth={2.5} />
               </TouchableOpacity>
 
-              {/* Divider + Google Sign In -- temporarily hidden (Google
-                  sign-in is just a "coming soon" stub, not wired up yet).
-                  Flip to `true` to restore; nothing else changed. */}
-              {false && (
+              {/* Web: Google's own button (same backend sign-in) */}
+              {isGoogleWebSignInAvailable && <GoogleWebButton text="continue_with" onIdToken={completeGoogleLogin} />}
+
+              {/* Divider + Google Sign In (Android/iOS app only) */}
+              {isGoogleSignInAvailable && (
               <>
               {/* Divider: OR */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 2 }}>
@@ -559,7 +633,8 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
 
               {/* Google Sign In Button */}
               <TouchableOpacity
-                onPress={() => showToast('Google Sign In coming soon')}
+                onPress={handleGoogle}
+                disabled={isGoogleBusy}
                 style={{
                   width: '100%',
                   height: 44,
@@ -573,7 +648,7 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 }}
               >
                 <GoogleIcon size={16} />
-                <Text style={{ color: '#0F172A', fontWeight: '700', fontSize: 13, marginLeft: 8 }}>Continue with Google</Text>
+                <Text style={{ color: '#0F172A', fontWeight: '700', fontSize: 13, marginLeft: 8 }}>{isGoogleBusy ? 'Connecting…' : 'Continue with Google'}</Text>
               </TouchableOpacity>
               </>
               )}
@@ -711,6 +786,25 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                 </Text>
                 <ArrowRight size={16} color="#FFFFFF" strokeWidth={2.5} />
               </TouchableOpacity>
+
+              {isGoogleWebSignInAvailable && <GoogleWebButton text="signup_with" onIdToken={completeGoogleLogin} />}
+              {isGoogleSignInAvailable && (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 2 }}>
+                    <View style={{ flex: 1, height: 1, backgroundColor: '#F1F5F9' }} />
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#94A3B8', paddingHorizontal: 8 }}>OR</Text>
+                    <View style={{ flex: 1, height: 1, backgroundColor: '#F1F5F9' }} />
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleGoogle}
+                    disabled={isGoogleBusy}
+                    style={{ width: '100%', height: 44, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <GoogleIcon size={16} />
+                    <Text style={{ color: '#0F172A', fontWeight: '700', fontSize: 13, marginLeft: 8 }}>{isGoogleBusy ? 'Connecting…' : 'Sign up with Google'}</Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 2 }}>
                 <Text style={{ fontSize: 12, fontWeight: '500', color: '#0F172A' }}>Already have an account?</Text>
@@ -1027,6 +1121,8 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
             paddingHorizontal: 6,
             paddingTop: 16,
             paddingBottom: 8,
+            // Hidden while typing so the form has the room.
+            display: keyboardOpen ? 'none' : 'flex',
           }}
         >
           {/* Feature 1: Safe & Reliable */}
@@ -1064,6 +1160,7 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
         </View>
 
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Global Toast Notification */}
       {toastMsg ? (
@@ -1075,5 +1172,29 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
         </View>
       ) : null}
     </View>
+  );
+}
+
+// Web only: "OR" divider + Google's rendered sign-in button.
+function GoogleWebButton({ onIdToken, text }: { onIdToken: (idToken: string) => void; text: 'continue_with' | 'signup_with' }) {
+  const ref = useRef<any>(null);
+  const cb = useRef(onIdToken);
+  cb.current = onIdToken;
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const el = ref.current as HTMLElement | null;
+    if (!el) return;
+    renderGoogleWebButton(el, (t) => cb.current(t), text).catch(() => setFailed(true));
+  }, [text]);
+  if (failed) return null;
+  return (
+    <>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 2 }}>
+        <View style={{ flex: 1, height: 1, backgroundColor: '#F1F5F9' }} />
+        <Text style={{ fontSize: 10, fontWeight: '700', color: '#94A3B8', paddingHorizontal: 8 }}>OR</Text>
+        <View style={{ flex: 1, height: 1, backgroundColor: '#F1F5F9' }} />
+      </View>
+      <View ref={ref} style={{ width: '100%', minHeight: 44, alignItems: 'center' }} />
+    </>
   );
 }
