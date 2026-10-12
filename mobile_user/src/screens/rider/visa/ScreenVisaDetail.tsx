@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { sizedImage } from '../../../utils/imageUrl';
 import { View, Text, TouchableOpacity, ScrollView, Image, Modal, useWindowDimensions } from 'react-native';
 import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import {
@@ -182,7 +183,7 @@ export default function ScreenVisaDetail({ onNavigate, onBack }: { onNavigate: (
       <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false} stickyHeaderIndices={[1]}>
         {/* Hero (edge to edge) */}
         <View style={{ height: narrow ? 300 : 330, backgroundColor: VC.ink }}>
-          {!!image && <Image source={{ uri: image }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />}
+          {!!image && <Image source={{ uri: sizedImage(image, 480) }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />}
           <HeroShade />
           <View style={{ position: 'absolute', top: 12, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
             {onBack ? (

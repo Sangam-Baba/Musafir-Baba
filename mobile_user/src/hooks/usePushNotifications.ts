@@ -50,7 +50,13 @@ export const usePushNotifications = () => {
     // launched the app from a closed state.
     const handleResponse = (response: Notifications.NotificationResponse | null) => {
       const data = response?.notification?.request?.content?.data as Record<string, any> | undefined;
+      if (!response) return;
       if (data && Object.keys(data).length) useNotificationStore.getState().setPendingOpen(data);
+      // The OS keeps returning the last tapped notification on every launch
+      // until it's cleared -- clear it so an old tap isn't re-opened later.
+      try {
+        Notifications.clearLastNotificationResponse();
+      } catch {}
     };
     responseListener.current = Notifications.addNotificationResponseReceivedListener(handleResponse);
     Notifications.getLastNotificationResponseAsync().then(handleResponse).catch(() => {});

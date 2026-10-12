@@ -43,6 +43,7 @@ import ScreenMyTrips from './src/screens/rider/main/ScreenMyTrips';
 // Tours (native holiday packages)
 import ScreenToursExplore from './src/screens/rider/tours/ScreenToursExplore';
 import ScreenToursList from './src/screens/rider/tours/ScreenToursList';
+import ScreenTourDestinations from './src/screens/rider/tours/ScreenTourDestinations';
 import ScreenTourDetail from './src/screens/rider/tours/ScreenTourDetail';
 import ScreenTourCheckout from './src/screens/rider/tours/ScreenTourCheckout';
 import ScreenTourBooking from './src/screens/rider/tours/ScreenTourBooking';
@@ -63,9 +64,11 @@ import ScreenSupportDetails from './src/screens/rider/support/ScreenSupportDetai
 import ScreenSupportReview from './src/screens/rider/support/ScreenSupportReview';
 import ScreenSupportTicket from './src/screens/rider/support/ScreenSupportTicket';
 import ScreenSupportTickets from './src/screens/rider/support/ScreenSupportTickets';
+import ScreenAbout from './src/screens/rider/profile/ScreenAbout';
 import ScreenCancelBooking from './src/screens/rider/cancel/ScreenCancelBooking';
 import { useNotificationStore } from './src/store/useNotificationStore';
 import { openNotificationTarget } from './src/utils/notificationRoute';
+import { useAppHomeStore } from './src/store/useAppHomeStore';
 
 // Profile Screens
 import ScreenRiderProfileAmit from './src/screens/rider/profile/ScreenRiderProfileAmit';
@@ -256,9 +259,16 @@ function AppContent() {
   // and the rider is signed in.
   const pendingOpen = useNotificationStore((st) => st.pendingOpen);
   useEffect(() => {
-    if (!pendingOpen || isInitializing || showSplash || !isAuthenticated) return;
+    if (!pendingOpen || isInitializing || showSplash) return;
+    // Tapped while signed out: drop it, so logging in always lands on Home.
+    if (!isAuthenticated) {
+      useNotificationStore.getState().setPendingOpen(null);
+      return;
+    }
     useNotificationStore.getState().setPendingOpen(null);
     useNotificationStore.getState().fetchNotifications();
+    // Admin "Important Update": open it expanded in Notifications.
+    if (pendingOpen.announcementId) useAppHomeStore.getState().setFocusAnnouncement({ id: String(pendingOpen.announcementId) });
     openNotificationTarget({ data: pendingOpen }, navigate).then((opened) => {
       if (!opened) navigate('38');
     });
@@ -307,6 +317,7 @@ function AppContent() {
       case 'support-submitted': return <ScreenSupportTicket variant="submitted" onNavigate={navigate} onBack={goBack} />;
       case 'support-ticket': return <ScreenSupportTicket variant="detail" onNavigate={navigate} onBack={goBack} />;
       case 'support-tickets': return <ScreenSupportTickets onNavigate={navigate} onBack={goBack} />;
+      case 'about': return <ScreenAbout onNavigate={navigate} onBack={goBack} />;
       case 'cancel-booking': return <ScreenCancelBooking onNavigate={navigate} onBack={goBack} />;
       case '38': return <ScreenNotifications onNavigate={navigate} onBack={goBack} />;
       case '39': return <ScreenSavedItems onNavigate={navigate} />;
@@ -314,6 +325,7 @@ function AppContent() {
       case '41': return <ScreenRiderDocuments onNavigate={navigate} onBack={goBack} />;
       case 'tours': return <ScreenToursExplore onNavigate={navigate} onBack={goBack} />;
       case 'tour-list': return <ScreenToursList onNavigate={navigate} onBack={goBack} />;
+      case 'tour-destinations': return <ScreenTourDestinations onNavigate={navigate} onBack={goBack} />;
       case 'tour-detail': return <ScreenTourDetail onNavigate={navigate} onBack={goBack} />;
       case 'tour-checkout': return <ScreenTourCheckout onNavigate={navigate} onBack={goBack} />;
       case 'tour-booking-success': return <ScreenTourBooking variant="success" onNavigate={navigate} onBack={goBack} />;

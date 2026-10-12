@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { ArrowLeft, Check, Bell, Car, Mountain, Globe, Headphones, Ban, CreditCard, FileText, Megaphone, ChevronRight, BellRing } from 'lucide-react-native';
 import { useNotificationStore } from '../../../store/useNotificationStore';
+import { useAppHomeStore } from '../../../store/useAppHomeStore';
 import { getNotificationCategory, openNotificationTarget, type NotificationCategory } from '../../../utils/notificationRoute';
 import type { RiderNotificationData } from '../../../api/riderNotification.api';
 
@@ -52,6 +53,18 @@ export default function NotificationsList({ onNavigate, onBack }: { onNavigate: 
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('ALL');
   const [opening, setOpening] = useState<string | null>(null);
+  // General updates (e.g. admin "Important Update") expand in place on tap.
+  const [expanded, setExpanded] = useState<string | null>(null);
+  // Opened from the Home "Important Update" bar or its push notification.
+  const [focus] = useState(() => useAppHomeStore.getState().focusAnnouncement);
+  useEffect(() => () => useAppHomeStore.getState().setFocusAnnouncement(null), []);
+  const focusedNotification = focus ? notifications.find((n) => n.data?.announcementId === focus.id) : undefined;
+  useEffect(() => {
+    // Wait for the screen's own load so it can't overwrite the read mark.
+    if (!focusedNotification || loading) return;
+    setExpanded(focusedNotification.id);
+    markRead(focusedNotification.id);
+  }, [focusedNotification?.id, loading]);
   const [pushStatus, setPushStatus] = useState<'granted' | 'denied' | 'undetermined' | 'unsupported'>('unsupported');
 
   useEffect(() => {
@@ -91,6 +104,10 @@ export default function NotificationsList({ onNavigate, onBack }: { onNavigate: 
   const open = async (n: RiderNotificationData) => {
     if (opening) return;
     markRead(n.id);
+    if (getNotificationCategory(n) === 'UPDATE') {
+      setExpanded((e) => (e === n.id ? null : n.id));
+      return;
+    }
     setOpening(n.id);
     try {
       await openNotificationTarget(n, onNavigate);
@@ -152,6 +169,19 @@ export default function NotificationsList({ onNavigate, onBack }: { onNavigate: 
         </View>
       )}
 
+      {focus && focus.headline && focus.message && !focusedNotification && !loading && (
+        <View style={{ backgroundColor: '#FFF4EE', borderRadius: 20, borderWidth: 1, borderColor: '#FFE1D2', padding: 14, gap: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#FFE4D6', alignItems: 'center', justifyContent: 'center' }}>
+              <Megaphone size={15} color={ORANGE} />
+            </View>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: '#E8430B', letterSpacing: 0.3 }}>IMPORTANT UPDATE</Text>
+          </View>
+          <Text style={{ fontSize: 15, fontWeight: '800', color: INK }}>{focus.headline}</Text>
+          <Text style={{ fontSize: 13, color: BODY, lineHeight: 19 }}>{focus.message}</Text>
+        </View>
+      )}
+
       {loading && !notifications.length ? (
         <View style={{ paddingVertical: 40, alignItems: 'center', gap: 10 }}>
           <ActivityIndicator color={ORANGE} />
@@ -186,10 +216,10 @@ export default function NotificationsList({ onNavigate, onBack }: { onNavigate: 
                     </View>
                     <View style={{ flex: 1, gap: 3 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Text numberOfLines={1} style={{ flex: 1, fontSize: 14.5, fontWeight: n.read ? '600' : '800', color: INK }}>{n.title}</Text>
+                        <Text numberOfLines={expanded === n.id ? undefined : 1} style={{ flex: 1, fontSize: 14.5, fontWeight: n.read ? '600' : '800', color: INK }}>{n.title}</Text>
                         {!n.read && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: ORANGE }} />}
                       </View>
-                      <Text numberOfLines={3} style={{ fontSize: 13, color: BODY, lineHeight: 18 }}>{n.message}</Text>
+                      <Text numberOfLines={expanded === n.id ? undefined : 3} style={{ fontSize: 13, color: BODY, lineHeight: 18 }}>{n.message}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
                         <View style={{ backgroundColor: look.bg, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1 }}>
                           <Text style={{ fontSize: 10.5, fontWeight: '700', color: look.color }}>{look.label}</Text>

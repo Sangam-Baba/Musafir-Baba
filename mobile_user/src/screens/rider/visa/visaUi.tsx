@@ -1,5 +1,6 @@
 // Shared presentation pieces for the Visa screens.
 import React, { createElement, useEffect, useRef, useState } from 'react';
+import { sizedImage } from '../../../utils/imageUrl';
 import { View, Text, TouchableOpacity, Image, Platform, Linking, ActivityIndicator, useWindowDimensions } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Svg, { Circle, Defs, LinearGradient, Stop, Rect, Path } from 'react-native-svg';
@@ -205,7 +206,7 @@ export function CountryBanner({ visa, subtitle, chips }: { visa: Visa; subtitle?
   const image = getVisaImage(visa);
   return (
     <View style={{ marginHorizontal: 16, height: 132, borderRadius: 20, overflow: 'hidden', backgroundColor: '#F4F8FF', ...SHADOW }}>
-      {!!image && <Image source={{ uri: image }} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '60%' }} resizeMode="cover" />}
+      {!!image && <Image source={{ uri: sizedImage(image, 300) }} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '60%' }} resizeMode="cover" />}
       {/* fade from the text side into the photo */}
       <FadeOverlay color="#F4F8FF" solidUntil={0.44} fadeUntil={0.7} />
       <View style={{ flex: 1, paddingHorizontal: 18, justifyContent: 'center', gap: 3 }}>

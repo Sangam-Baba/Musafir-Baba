@@ -133,7 +133,10 @@ export default function ScreenTourDetail({ onNavigate, onBack }: { onNavigate: (
   const savedSelection = useTourStore((s) => s.selection);
   const setSelection = useTourStore((s) => s.setSelection);
   const [pkg, setPkg] = useState<TourPackage | null>(initial);
-  const [isLoading, setIsLoading] = useState(!initial);
+  const [isLoading, setIsLoading] = useState(!initial || initial.itinerary === undefined);
+  // Opened from a list card (light data): detail tabs wait for the full package.
+  const contentPending = isLoading && pkg?.itinerary === undefined;
+  const setFullPackage = useTourStore((s) => s.setFullPackage);
   const [tab, setTab] = useState<Tab>('Overview');
   const [imageIndex, setImageIndex] = useState(0);
   const [showFullAbout, setShowFullAbout] = useState(false);
@@ -167,7 +170,10 @@ export default function ScreenTourDetail({ onNavigate, onBack }: { onNavigate: (
     let cancelled = false;
     getTourPackageById(initial._id)
       .then((res) => {
-        if (!cancelled && res.data?.data) setPkg(res.data.data);
+        if (!cancelled && res.data?.data) {
+          setPkg(res.data.data);
+          setFullPackage(res.data.data);
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -370,7 +376,8 @@ export default function ScreenTourDetail({ onNavigate, onBack }: { onNavigate: (
         </View>
 
         <View style={{ padding: 14, gap: 12 }}>
-          {tab === 'Overview' && (
+          {contentPending && tab !== 'Dates & Pricing' && <LoadingBlock label="Loading details..." />}
+          {tab === 'Overview' && !contentPending && (
             <>
               {(pkg.highlights || []).length > 0 && (
                 <Card title="Trip Highlights" icon={<Sparkles size={20} color="#FF4500" strokeWidth={2} />}>
@@ -413,7 +420,7 @@ export default function ScreenTourDetail({ onNavigate, onBack }: { onNavigate: (
             </>
           )}
 
-          {tab === 'Itinerary' && (
+          {tab === 'Itinerary' && !contentPending && (
             (pkg.itinerary || []).length === 0 ? (
               <Card><Text style={{ fontSize: 13.5, color: '#64748B' }}>Itinerary details will be shared on enquiry.</Text></Card>
             ) : (
@@ -459,13 +466,13 @@ export default function ScreenTourDetail({ onNavigate, onBack }: { onNavigate: (
             )
           )}
 
-          {tab === 'Inclusions' && (
+          {tab === 'Inclusions' && !contentPending && (
             <Card title="Inclusions" subtitle="What's included in this package" icon={<CheckCircle2 size={26} color="#16A34A" strokeWidth={2} />} tint={{ bg: '#F0FDF4', border: '#DCFCE7' }}>
               {(pkg.inclusions || []).length ? pkg.inclusions!.map((t, i) => <ListRow key={i} text={t} kind="check" />) : <Text style={{ color: '#64748B' }}>Details will be shared on enquiry.</Text>}
             </Card>
           )}
 
-          {tab === 'Exclusions' && (
+          {tab === 'Exclusions' && !contentPending && (
             <>
               <Card title="Exclusions" subtitle="What's not included in this package" icon={<Info size={24} color="#2563EB" strokeWidth={2} />} tint={{ bg: '#EFF6FF', border: '#DBEAFE' }}>
                 {(pkg.exclusions || []).length ? pkg.exclusions!.map((t, i) => <ListRow key={i} text={t} kind="cross" />) : <Text style={{ color: '#64748B' }}>Details will be shared on enquiry.</Text>}

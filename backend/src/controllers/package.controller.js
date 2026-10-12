@@ -364,25 +364,44 @@ const getPackages = async (req, res) => {
       sortOption = { updatedAt: -1 };
     }
 
+    // Optional ?view=card (MBGO app lists): only what a package card needs,
+    // instead of every field (itinerary, FAQs, content...). Without it the
+    // response is unchanged for every other caller.
+    const isCardView = req.query.view === "card";
+
     // ✅ Query execution
-    const packages = await Package.find(query)
-      .populate(
-        "destination",
-        "name country state city slug coverImage gallery metaTitle metaDescription keywords",
-      )
-      .populate("batch")
-      .populate("mainCategory", "_id name slug")
-      .populate("author", "name role about avatar")
-      .populate("reviews")
-      .sort(sortOption)
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
-      .lean();
+    const packages = isCardView
+      ? await Package.find(query)
+          .select(
+            "title slug canonicalUrl coverImage coverImages gallery destination duration batch isBestSeller isFeatured mainCategory otherCategory addOns status maxPeople packagePercent createdAt",
+          )
+          .populate("destination", "name country state city slug coverImage")
+          .populate("batch")
+          .populate("mainCategory", "_id name slug")
+          .sort(sortOption)
+          .skip((page - 1) * limit)
+          .limit(Number(limit))
+          .lean()
+      : await Package.find(query)
+          .populate(
+            "destination",
+            "name country state city slug coverImage gallery metaTitle metaDescription keywords",
+          )
+          .populate("batch")
+          .populate("mainCategory", "_id name slug")
+          .populate("author", "name role about avatar")
+          .populate("reviews")
+          .sort(sortOption)
+          .skip((page - 1) * limit)
+          .limit(Number(limit))
+          .lean();
 
     const { Author } = await import("../models/Authors.js");
-    const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
-      .select("name role about avatar")
-      .lean();
+    const defaultAuthor = isCardView
+      ? null
+      : await Author.findOne({ name: /Abhishek Rai/i })
+          .select("name role about avatar")
+          .lean();
 
     if (defaultAuthor) {
       packages.forEach(pkg => {

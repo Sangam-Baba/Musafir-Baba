@@ -1,6 +1,9 @@
 import { View, Text, TouchableOpacity, TextInput, ScrollView, Switch, ActivityIndicator, Modal, Platform, Image, useWindowDimensions, Keyboard } from 'react-native';
 import { WebView } from 'react-native-webview';
 import React, { useState, useEffect, useRef, createElement } from 'react';
+import HomePromo from './HomePromo';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
+import { useAppHomeStore } from '../../../store/useAppHomeStore';
 import * as Location from 'expo-location';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
@@ -8,7 +11,8 @@ import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 const LOGO_TRANSPARENT = require('../../../assets/mbgoLogo_transparent.png');
 // New MBGO wordmark (assets/icon.png, transparent margins trimmed) for the Home header.
 const HOME_HEADER_LOGO = require('../../../../assets/mbgo-home-logo.png');
-const HOME_BANNER_IMAGE = require('../../../desgin/homebannerimage.png');
+const HOME_HERO_SCENE = require('../../../../assets/home-hero-scene.webp');
+const HOME_TAGLINE = require('../../../../assets/home-tagline.png');
 const SECOND_BANNER_IMAGE = require('../../../desgin/secondbannerImage.png');
 import {
   Menu,
@@ -73,8 +77,11 @@ const HOME_BOTTOM_NAV_SPACE = 76;
 // Smallest the home screen will be scaled to fit very short screens; below
 // this it scrolls instead so text never gets too small to read.
 const HOME_MIN_FIT_SCALE = 0.72;
-// Below this much usable height (px/dp) the greeting + illustration row is
-// hidden and the logo is smaller, so short phones don't have to shrink the
+// With admin banners / Important Update shown, shrink at most this much
+// (text stays near full size); taller content scrolls instead.
+const HOME_PROMO_MIN_FIT_SCALE = 0.9;
+// Below this much usable height (px/dp) the greeting + illustration row and
+// the logo are drawn smaller, so short phones don't have to shrink the
 // booking form as much.
 const HOME_COMPACT_BELOW_HEIGHT = 700;
 
@@ -121,8 +128,6 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
   const { width: screenWidth } = useWindowDimensions();
   const logoWidth = Math.min(220, Math.round(screenWidth * 0.5));
   const logoHeight = Math.round((logoWidth * 72) / 220);
-  const bannerWidth = Math.min(175, Math.round(screenWidth * 0.42));
-  const bannerHeight = Math.round((bannerWidth * 100) / 175);
 
   // ---- Fit-to-screen (presentation only) ----
   // The home screen should never need scrolling: measure the visible area and
@@ -146,14 +151,32 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
     };
   }, []);
 
+  // Admin banners / Important Update on Home: when shown, Home shrinks only a
+  // little to fit (see HOME_PROMO_MIN_FIT_SCALE) and scrolls beyond that.
+  const hasPromo = useAppHomeStore((s) => s.banners.length > 0 || !!s.announcement);
+  const homeScrollRef = useRef<ScrollView>(null);
+  const [promoBottom, setPromoBottom] = useState(0);
+  useEffect(() => {
+    useAppHomeStore.getState().load();
+  }, []);
+
   useEffect(() => {
     if (!viewportHeight || !homeContentHeight || isKeyboardOpen) return;
     const available = viewportHeight - HOME_BOTTOM_NAV_SPACE;
-    const next = Math.max(HOME_MIN_FIT_SCALE, Math.min(1, available / homeContentHeight));
+    const next = Math.max(hasPromo ? HOME_PROMO_MIN_FIT_SCALE : HOME_MIN_FIT_SCALE, Math.min(1, available / homeContentHeight));
     if (Math.abs(next - fitScale) > 0.004) setFitScale(next);
-  }, [viewportHeight, homeContentHeight, isKeyboardOpen]);
+  }, [viewportHeight, homeContentHeight, isKeyboardOpen, hasPromo]);
 
   const isCompactHome = viewportHeight > 0 && viewportHeight - HOME_BOTTOM_NAV_SPACE < HOME_COMPACT_BELOW_HEIGHT;
+
+  // Scenic hero spans the full content width (laid out at width / fitScale).
+  // Height: ~18% of the usable screen height, kept between a floor that fits
+  // the greeting and a cap from the width, so it's compact on every phone.
+  const heroWidth = (viewportWidth || screenWidth) / fitScale;
+  const heroUsableHeight = viewportHeight ? viewportHeight - HOME_BOTTOM_NAV_SPACE : 700;
+  const heroHeight = Math.round(
+    Math.min((viewportWidth || screenWidth) * 0.42, Math.max(isCompactHome ? 122 : 136, heroUsableHeight * (isCompactHome ? 0.19 : 0.18)))
+  );
 
   const homeFitsScreen = !!homeContentHeight && homeContentHeight * fitScale <= viewportHeight - HOME_BOTTOM_NAV_SPACE + 1;
 
@@ -443,6 +466,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
 
         {/* Scrollable Main Screen Content */}
         <ScrollView
+          ref={homeScrollRef}
           className="flex-1"
           contentContainerStyle={{ paddingBottom: HOME_BOTTOM_NAV_SPACE }}
           showsVerticalScrollIndicator={false}
@@ -473,7 +497,7 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
             >
               
               {/* Top Navigation & Brand Header Bar */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 4, zIndex: 6 }}>
                 <TouchableOpacity onPress={() => onNavigate('36')} style={{ padding: 4 }}>
                   <Menu size={22} color="#111827" />
                 </TouchableOpacity>
@@ -489,26 +513,57 @@ export default function ScreenRiderHome({ onNavigate }: { onNavigate: (screen: s
                 </TouchableOpacity>
               </View>
 
-              {/* Greeting & Hero Banner Row -- hidden on short screens (see HOME_COMPACT_BELOW_HEIGHT) */}
-              {!isCompactHome && (
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingTop: 2, paddingBottom: 0, marginBottom: -14, zIndex: 5 }}>
-                {/* Left Side: Typography */}
-                <View style={{ flex: 1.4, zIndex: 2, paddingBottom: 10 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '500', color: '#FF4500', marginBottom: 2 }}>Hello,</Text>
-                  <Text style={{ fontSize: 18, fontWeight: '500', color: '#0F172A', lineHeight: 25, letterSpacing: -0.2 }}>
+              {/* Greeting over the scenic hero (full width; fades to white on the left
+                  and bottom so the text and the carousel/booking card sit on it). Shorter on short screens. */}
+              <View style={{ marginHorizontal: -14, marginTop: isCompactHome ? -8 : -12, height: heroHeight, marginBottom: isCompactHome ? -14 : -20, zIndex: 5, justifyContent: 'center' }}>
+                <Image source={HOME_HERO_SCENE} style={{ position: 'absolute', top: 0, left: 0, width: heroWidth, height: heroHeight }} resizeMode="cover" />
+                {/* Top/bottom fades drawn here (not in the image) so the scene always
+                    blends into white, however much "cover" crops on this phone. */}
+                <Svg pointerEvents="none" width={heroWidth + 2} height={heroHeight + 2} style={{ position: 'absolute', top: -1, left: -1 }}>
+                  <Defs>
+                    <LinearGradient id="heroFadeV" x1="0" y1="0" x2="0" y2="1">
+                      <Stop offset="0" stopColor="#FFFFFF" stopOpacity="1" />
+                      <Stop offset="0.08" stopColor="#FFFFFF" stopOpacity="0.85" />
+                      <Stop offset="0.18" stopColor="#FFFFFF" stopOpacity="0.4" />
+                      <Stop offset="0.3" stopColor="#FFFFFF" stopOpacity="0" />
+                      <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0" />
+                      <Stop offset="0.68" stopColor="#FFFFFF" stopOpacity="0.45" />
+                      <Stop offset="0.8" stopColor="#FFFFFF" stopOpacity="0.85" />
+                      <Stop offset="0.88" stopColor="#FFFFFF" stopOpacity="1" />
+                    </LinearGradient>
+                    <LinearGradient id="heroFadeR" x1="0" y1="0" x2="1" y2="0">
+                      <Stop offset="0.9" stopColor="#FFFFFF" stopOpacity="0" />
+                      <Stop offset="0.985" stopColor="#FFFFFF" stopOpacity="0.6" />
+                      <Stop offset="1" stopColor="#FFFFFF" stopOpacity="1" />
+                    </LinearGradient>
+                  </Defs>
+                  <Rect x="0" y="0" width={heroWidth + 2} height={heroHeight + 2} fill="url(#heroFadeV)" />
+                  <Rect x="0" y="0" width={heroWidth + 2} height={heroHeight + 2} fill="url(#heroFadeR)" />
+                </Svg>
+                <View style={{ paddingLeft: 18, width: '62%', paddingBottom: isCompactHome ? 8 : 12 }}>
+                  <Text style={{ fontSize: isCompactHome ? 12 : 13, fontWeight: '600', color: '#FF4500', marginBottom: 2 }}>Hello,</Text>
+                  <Text style={{ fontSize: isCompactHome ? 17 : 20, fontWeight: '800', color: '#0B1B3F', lineHeight: isCompactHome ? 21 : 25, letterSpacing: -0.4 }}>
                     Where would you{'\n'}like to go today?
                   </Text>
-                </View>
-
-                {/* Right Side: Exact Target Banner Image */}
-                <View style={{ flex: 1.2, alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-                  <Image 
-                    source={HOME_BANNER_IMAGE} 
-                    style={{ width: bannerWidth, height: bannerHeight, marginBottom: -4 }} 
-                    resizeMode="contain" 
+                  <Image
+                    source={HOME_TAGLINE}
+                    accessibilityLabel="Sark se Shikhar Tak"
+                    style={{ width: isCompactHome ? 88 : 106, height: Math.round((isCompactHome ? 88 : 106) * 215 / 545), marginTop: isCompactHome ? 5 : 8, marginLeft: 2 }}
+                    resizeMode="contain"
                   />
                 </View>
               </View>
+
+              {/* Admin-managed carousel + Important Update (renders nothing when empty) */}
+              {hasPromo && (
+                <View onLayout={(e) => setPromoBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)} style={{ zIndex: 10 }}>
+                  <HomePromo
+                    compact={isCompactHome}
+                    onNavigate={onNavigate}
+                    onOpenUrl={(url) => setInAppBrowserUrl(url)}
+                    onCab={() => homeScrollRef.current?.scrollTo({ y: Math.max(0, promoBottom), animated: true })}
+                  />
+                </View>
               )}
 
               {/* Main Booking Search Card */}

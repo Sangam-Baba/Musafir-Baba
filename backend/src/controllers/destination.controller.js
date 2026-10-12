@@ -51,10 +51,20 @@ const getAllDestination = async (req, res) => {
     if (country) filter.country = country;
     if (status) filter.status = status;
 
-    const destination = await Destination.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+    // Optional ?view=card (MBGO app lists): skip the page content fields.
+    // Without it the response is unchanged for every other caller.
+    const destination =
+      req.query.view === "card"
+        ? await Destination.find(filter)
+            .select("name country state city slug coverImage status")
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .lean()
+        : await Destination.find(filter)
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
 
     const total = await Destination.countDocuments(filter);
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { sizedImage } from '../../../utils/imageUrl';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Headphones, ClipboardList, Pencil, Clock, Coins, Zap, ArrowRight } from 'lucide-react-native';
 import {
@@ -73,7 +74,7 @@ export default function ScreenVisaType({ onNavigate, onBack }: { onNavigate: (sc
         <View style={{ paddingHorizontal: 14, gap: 12 }}>
           {/* Journey banner */}
           <View style={{ height: 132, borderRadius: 16, overflow: 'hidden', backgroundColor: '#1E3A8A' }}>
-            {!!image && <Image source={{ uri: image }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />}
+            {!!image && <Image source={{ uri: sizedImage(image, 480) }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />}
             <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(11,30,61,0.5)' }} />
             <View style={{ flex: 1, justifyContent: 'center', padding: 16, gap: 3 }}>
               <Text style={{ fontSize: 21, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.4 }}>Your {visa.country} Journey{'\n'}Starts Here</Text>
