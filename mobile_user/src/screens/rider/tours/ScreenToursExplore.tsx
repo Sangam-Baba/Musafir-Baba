@@ -14,6 +14,7 @@ import {
   type TourDestination,
 } from '../../../api/tour.api';
 import { useTourStore } from '../../../store/useTourStore';
+import { sizedImage } from '../../../utils/imageUrl';
 import { TourHeader, SectionHeader, CategoryIcon, TourPackageCard, InAppBrowser, LoadingBlock } from './tourUi';
 
 // Categories shown first (matches the website's most-used ones); any others follow.
@@ -107,7 +108,7 @@ export default function ScreenToursExplore({ onNavigate, onBack }: { onNavigate:
             <Text style={{ fontSize: 14, fontWeight: '500', color: '#475569' }}>Find your perfect getaway</Text>
           </View>
           <View style={{ flex: 1, height: 140, borderTopLeftRadius: 70, borderBottomLeftRadius: 24, overflow: 'hidden', backgroundColor: '#E2E8F0' }}>
-            {heroImage ? <Image source={{ uri: heroImage }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : null}
+            {heroImage ? <Image source={{ uri: sizedImage(heroImage, width / 2) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : null}
           </View>
         </View>
 
@@ -144,11 +145,11 @@ export default function ScreenToursExplore({ onNavigate, onBack }: { onNavigate:
             {/* Popular destinations */}
             {popularDestinations.length > 0 && (
               <View style={{ gap: 12 }}>
-                <SectionHeader title="Popular Destinations" actionLabel="View All" onAction={() => goToList({}, 'Holiday Packages')} />
+                <SectionHeader title="Popular Destinations" actionLabel="View All" onAction={() => onNavigate('tour-destinations')} />
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 14, gap: 10 }}>
                   {popularDestinations.map((d) => (
                     <TouchableOpacity key={d._id} onPress={() => goToList({ search: d.name.trim() }, d.name.trim())} activeOpacity={0.85} style={{ width: 96, height: 124, borderRadius: 12, overflow: 'hidden', backgroundColor: '#E2E8F0' }}>
-                      <Image source={{ uri: d.coverImage!.url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                      <Image source={{ uri: sizedImage(d.coverImage!.url, 96) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 6, paddingVertical: 6, backgroundColor: 'rgba(15,23,42,0.45)' }}>
                         <Text numberOfLines={1} style={{ fontSize: 11.5, fontWeight: '700', color: '#FFFFFF' }}>{d.name.trim()}</Text>
                       </View>

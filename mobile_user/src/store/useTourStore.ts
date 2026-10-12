@@ -26,6 +26,8 @@ interface TourState {
   viewedBooking: TourAppBooking | null;
   openList: (params: TourListParams, title?: string) => void;
   openPackage: (pkg: TourPackage) => void;
+  // Swap in the full package once the detail screen loads it (keeps the selection).
+  setFullPackage: (pkg: TourPackage) => void;
   setSelection: (selection: TourSelection | null) => void;
   setPendingBooking: (booking: TourAppBooking | null, key: string | null) => void;
   setViewedBooking: (booking: TourAppBooking | null) => void;
@@ -41,6 +43,7 @@ export const useTourStore = create<TourState>((set) => ({
   viewedBooking: null,
   openList: (params, title = 'Holiday Packages') => set({ listParams: params, listTitle: title }),
   openPackage: (pkg) => set({ selectedPackage: pkg, selection: null }),
+  setFullPackage: (pkg) => set((s) => (s.selectedPackage?._id === pkg._id ? { selectedPackage: pkg } : {})),
   setSelection: (selection) => set({ selection }),
   setPendingBooking: (booking, key) => set({ pendingBooking: booking, bookingKey: key }),
   setViewedBooking: (booking) => set({ viewedBooking: booking }),

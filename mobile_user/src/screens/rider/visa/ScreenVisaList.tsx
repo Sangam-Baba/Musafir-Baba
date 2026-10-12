@@ -4,6 +4,9 @@ import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { Search, ShieldCheck, FileText, Headphones, Clock, ChevronRight, Globe, Sparkles, X } from 'lucide-react-native';
 import RiderBottomNavbar from '../../../components/RiderBottomNavbar';
 import { getVisaList, getVisaStartingPrice, getVisaServiceFeeFrom, visaTypeLabel, type Visa } from '../../../api/visa.api';
+import { sizedImage } from '../../../utils/imageUrl';
+
+const VISA_HERO = require('../../../../assets/visa-hero.webp');
 import { useVisaStore } from '../../../store/useVisaStore';
 import { LoadingBlock, inr } from '../tours/tourUi';
 import { FlagIcon, VisaHeader, VC, SHADOW } from './visaUi';
@@ -73,7 +76,8 @@ export default function ScreenVisaList({ onNavigate, onBack }: { onNavigate: (sc
     });
   }, [visas, search, filter]);
 
-  const heroImage = visas.find((v) => v.bannerImage?.url)?.bannerImage?.url || visas[0]?.coverImage?.url;
+  // Bundled, compressed copy of the banner photo (the original is a ~5 MB PNG).
+  const heroImage = VISA_HERO;
   const bannerTags = [...Array.from(new Set(visas.flatMap(purposesOf))), ...Array.from(new Set(visas.flatMap(kindsOf))).map(visaTypeLabel)].slice(0, 3);
 
   const open = (v: Visa) => {
@@ -96,7 +100,7 @@ export default function ScreenVisaList({ onNavigate, onBack }: { onNavigate: (sc
 
         {/* Hero banner */}
         <View style={{ marginHorizontal: 16, height: narrow ? 150 : 164, borderRadius: 22, overflow: 'hidden', backgroundColor: VC.ink, ...SHADOW }}>
-          {!!heroImage && <Image source={{ uri: heroImage }} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />}
+          <Image source={heroImage} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />
           <BannerShade />
           <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 20, gap: 4 }}>
             <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 4 }}>
@@ -105,7 +109,7 @@ export default function ScreenVisaList({ onNavigate, onBack }: { onNavigate: (sc
             </View>
             <Text style={{ fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.88)' }}>Apply visa for</Text>
             <Text style={{ fontSize: narrow ? 28 : 31, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.8 }}>
-              <Text style={{ color: '#FF8A57' }}>{visas.length ? `${visas.length}+` : 'Top'}</Text> Countries
+              <Text style={{ color: '#FF8A57' }}>100+</Text> Countries
             </Text>
             {bannerTags.length > 0 && <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: '500', color: 'rgba(255,255,255,0.75)', marginTop: 2 }}>{bannerTags.join('  ·  ')}</Text>}
           </View>
@@ -183,7 +187,7 @@ export default function ScreenVisaList({ onNavigate, onBack }: { onNavigate: (sc
               return (
                 <TouchableOpacity key={v._id} onPress={() => open(v)} activeOpacity={0.9} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: VC.hair, padding: 10, gap: 12, ...SHADOW }}>
                   <View style={{ width: imageSize, height: imageSize, borderRadius: 14, overflow: 'hidden', backgroundColor: VC.surface, alignItems: 'center', justifyContent: 'center' }}>
-                    {image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <Globe size={26} color={VC.muted} />}
+                    {image ? <Image source={{ uri: sizedImage(image, imageSize) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <Globe size={26} color={VC.muted} />}
                   </View>
 
                   <View style={{ flex: 1, gap: 4 }}>

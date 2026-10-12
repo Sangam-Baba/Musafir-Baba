@@ -7,6 +7,7 @@ import {
   MapPin,
   Tags,
   LifeBuoy,
+  Smartphone,
   Ban,
   LayoutTemplate,
   Newspaper,
@@ -26,6 +27,7 @@ import {
   Database,
   KeyRound,
   Activity,
+  LayoutDashboard,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import { FaHome, FaCog, FaBox } from "react-icons/fa";
@@ -139,6 +141,15 @@ export const NAV_GROUPS = [
         permission: "partner-verification",
       },
       {
+        // Placed after Partner Verification on purpose: the staff permission
+        // form labels each permission checkbox with the first item using it,
+        // so putting this first would rename that checkbox to "Dashboard".
+        label: "Dashboard",
+        href: "/admin/fleet/dashboard",
+        icon: LayoutDashboard,
+        permission: "partner-verification",
+      },
+      {
         label: "Work Locations",
         href: "/admin/fleet/work-locations",
         icon: MapPin,
@@ -173,6 +184,12 @@ export const NAV_GROUPS = [
         href: "/admin/support-tickets",
         icon: LifeBuoy,
         permission: "support-tickets", // must match backend support.routes.js
+      },
+      {
+        label: "App Home",
+        href: "/admin/app-home",
+        icon: Smartphone,
+        permission: "app-home", // must match backend appHome.routes.js
       },
       {
         label: "Partner Wallets",

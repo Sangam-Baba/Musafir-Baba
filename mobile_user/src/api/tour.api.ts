@@ -1,4 +1,5 @@
 import { apiClient } from './axios';
+import { cachedRequest } from './cache';
 
 // Holiday packages -- the same public endpoints the musafirbaba.com
 // /holidays pages use. Read-only; booking still happens on the website.
@@ -84,20 +85,24 @@ export interface TourListParams {
   maxDays?: number;
 }
 
+// Lists use the light "card" view (no itinerary/FAQs/content); the detail
+// screen loads the full package by id. Cached briefly across screens.
 export const getTourPackages = (params: TourListParams = {}) =>
-  apiClient.get<{ success: boolean; total: number; data: TourPackage[] }>('/packages', { params });
+  cachedRequest(`packages:${JSON.stringify(params)}`, () =>
+    apiClient.get<{ success: boolean; total: number; data: TourPackage[] }>('/packages', { params: { ...params, view: 'card' } }),
+  );
 
 export const getTourPackageById = (id: string) =>
   apiClient.get<{ success: boolean; data: TourPackage }>(`/packages/id/${id}`);
 
 export const getBestSellerTours = () =>
-  apiClient.get<{ success: boolean; data: TourPackage[] }>('/packages/best-seller');
+  cachedRequest('packages:best-seller', () => apiClient.get<{ success: boolean; data: TourPackage[] }>('/packages/best-seller'));
 
 export const getTourCategories = () =>
-  apiClient.get<{ success: boolean; data: TourCategory[] }>('/category');
+  cachedRequest('categories', () => apiClient.get<{ success: boolean; data: TourCategory[] }>('/category'));
 
 export const getTourDestinations = () =>
-  apiClient.get<{ success: boolean; data: TourDestination[] }>('/destination');
+  cachedRequest('destinations', () => apiClient.get<{ success: boolean; data: TourDestination[] }>('/destination', { params: { view: 'card' } }));
 
 // ---- Helpers (display only) ----
 

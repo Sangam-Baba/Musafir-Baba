@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { apiClient } from './axios';
+import { cachedRequest } from './cache';
 
 // Visa services. Country data comes from the same public endpoints the
 // musafirbaba.com /visa pages use; applications go to the rider-only
@@ -56,7 +57,8 @@ export interface Visa {
   isActive?: boolean;
 }
 
-export const getVisaList = () => apiClient.get<{ success: boolean; data: Visa[] }>('/visa', { params: { isActive: true } });
+export const getVisaList = () =>
+  cachedRequest('visas:active', () => apiClient.get<{ success: boolean; data: Visa[] }>('/visa', { params: { isActive: true } }));
 
 export const getVisaBySlug = (slug: string) => apiClient.get<{ success: boolean; data: Visa }>(`/visa/slug/${slug}`);
 

@@ -318,7 +318,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                   { icon: Headphones, label: 'Help & Support', tint: '#059669', bg: '#ECFDF5', action: () => onNavigate('37') },
                   { icon: Shield, label: 'Terms & Conditions', tint: '#475569', bg: '#F1F5F9', action: () => setInAppBrowserUrl('https://musafirbaba.com/mbgo/terms-and-conditions') },
                   { icon: Lock, label: 'Privacy Policy', tint: '#475569', bg: '#F1F5F9', action: () => setInAppBrowserUrl('https://musafirbaba.com/mbgo/privacy-policies') },
-                  { icon: HelpCircle, label: 'About MBGO', tint: '#7C3AED', bg: '#F5F3FF' },
+                  { icon: HelpCircle, label: 'About MBGO', tint: '#7C3AED', bg: '#F5F3FF', action: () => onNavigate('about') },
                 ].map((item, idx, arr) => {
                   const Icon = item.icon;
                   return (

@@ -1,5 +1,6 @@
 // Shared presentation pieces for the Tours screens. Display only.
 import React from 'react';
+import { sizedImage } from '../../../utils/imageUrl';
 import { View, Text, TouchableOpacity, Image, Modal, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import {
@@ -100,7 +101,7 @@ export function TourPackageCard({ pkg, width, onPress }: { pkg: TourPackage; wid
     <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={{ width, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#EEF2F6', overflow: 'hidden', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 }}>
       <View style={{ width: '100%', height: width * 0.68, backgroundColor: '#E2E8F0' }}>
         {image ? (
-          <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+          <Image source={{ uri: sizedImage(image, width) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         ) : (
           <PhotoPlaceholder />
         )}
