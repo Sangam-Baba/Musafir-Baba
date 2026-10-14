@@ -42,7 +42,7 @@ export const VehiclesListScreen = () => {
       if (res.ok && result.success) {
         const profile = result.data?.profile;
         const auth = result.data?.auth;
-        setIsLocked(profile?.isSubmittedForApproval || auth?.status === 'Approved');
+        setIsLocked((!!profile?.isSubmittedForApproval && !['Hold', 'Rejected'].includes(auth?.status || '')) || auth?.status === 'Approved');
         setPartnerType((profile?.partnerType || 'Individual').toLowerCase());
 
         const mapped = (result.data?.vehicles || []).map((v: any) => ({

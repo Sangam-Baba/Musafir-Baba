@@ -21,6 +21,10 @@ const partnerDocumentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Second side for two-sided documents (e.g. Aadhaar back).
+    fileUrlBack: {
+      type: String,
+    },
     expiryDate: {
       type: Date,
     },

@@ -15,6 +15,7 @@ import {
   Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { Button } from '../components/Button';
 import { SafeModal } from '../components/SafeModal';
@@ -152,6 +153,17 @@ const MOCK_BOOKINGS: Booking[] = [
 export const BookingsScreen = () => {
   const token = useAuthStore((state) => state.token);
   const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Available'>('All');
+
+  // Opened from a notification with a filter (e.g. "New ride available" -> Available).
+  const route = useRoute<any>();
+  const nav = useNavigation<any>();
+  const requestedFilter = route.params?.filter;
+  useEffect(() => {
+    if (requestedFilter && ['All', 'Ongoing', 'Scheduled', 'Completed', 'Cancelled', 'Available'].includes(requestedFilter)) {
+      setActiveFilter(requestedFilter);
+      nav.setParams({ filter: undefined });
+    }
+  }, [requestedFilter]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [availableRides, setAvailableRides] = useState<AvailableRide[]>([]);

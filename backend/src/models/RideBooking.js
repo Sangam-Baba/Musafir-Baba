@@ -134,6 +134,9 @@ const rideBookingSchema = new mongoose.Schema(
     // changes ride status or blocks partners from still self-accepting.
     broadcastExpiresAt: { type: Date },
     needsManualAssignment: { type: Boolean, default: false },
+    // Admin "broadcast to selected partners": while set, only these partners
+    // see/accept the ride. Empty/absent = every eligible partner (normal pool).
+    broadcastPartnerIds: { type: [mongoose.Schema.Types.ObjectId], default: undefined },
     assignedPartnerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PartnerProfile",

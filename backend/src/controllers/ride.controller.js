@@ -9,6 +9,8 @@ import { notifyUser } from "../services/notification/notificationService.js";
 import { RidePricingConfig, RIDE_PRICING_CONFIG_KEY } from "../models/RidePricingConfig.js";
 import { calculateRideFare, PRICING_VERSION } from "../services/rideFare.service.js";
 import { calculateCityRideFare, isSameCity, isCityPricingTrip, resolveCityLabel, CITY_PRICING_MODE } from "../services/cityFare.service.js";
+import { getLocationMatcher, vehicleServesAddress } from "../services/rideDispatch.service.js";
+import { getApprovedAuthIdSet } from "../services/partnerAccount.service.js";
 
 const FLAT_DRIVER_ALLOWANCE = 100;
 const DEFAULT_COMMISSION_PERCENT = 15;
@@ -197,15 +199,15 @@ async function countEligibleVehiclesByCategory(pickupAddress) {
   const settingsList = authIds.length ? await PartnerSettings.find({ authId: { $in: authIds } }).lean() : [];
   const settingsByAuthId = new Map(settingsList.map((s) => [String(s.authId), s]));
 
+  // Same location + approval rules as dispatch (see services/rideDispatch.service.js).
+  const match = await getLocationMatcher();
+  const approvedAuthIds = await getApprovedAuthIdSet(profiles.map((p) => p.authId));
   const counts = new Map();
   for (const vehicle of vehicles) {
     const profile = profileById.get(String(vehicle.partnerId));
-    const settings = profile && settingsByAuthId.get(String(profile.authId));
-    const vehicleConfig = settings && (settings.vehicleConfigs || []).find(
-      (c) => String(c.vehicleId) === String(vehicle._id)
-    );
-    if (!vehicleConfig) continue;
-    if (!(vehicleConfig.locations || []).some((loc) => cityMatches(pickupAddress, loc.city))) continue;
+    if (!profile || !approvedAuthIds.has(String(profile.authId))) continue;
+    const settings = settingsByAuthId.get(String(profile.authId));
+    if (!vehicleServesAddress({ vehicle, settings, profile, address: pickupAddress, match })) continue;
     counts.set(vehicle.category, (counts.get(vehicle.category) || 0) + 1);
   }
   return counts;
@@ -666,17 +668,16 @@ export async function releaseRideToPartnerPool(ride) {
   // Also require the partner to have a category-matching vehicle whose
   // configured working location covers this ride's pickup city -- the same
   // servicability check computeCategoryOffers already uses for fare quotes.
+  // Location rule shared with the Available tab / admin list (services/rideDispatch.service.js):
+  // website duty locations + the MBConnect Service Area, with City-group aliases.
+  const match = await getLocationMatcher();
+  // Only approved accounts get rides.
+  const approvedAuthIds = await getApprovedAuthIdSet(profiles.map((p) => p.authId));
   const eligibleProfiles = profiles.filter((profile) => {
+    if (!approvedAuthIds.has(String(profile.authId))) return false;
     const settings = settingsByAuthId.get(String(profile.authId));
-    if (!settings) return false;
     const partnerVehicles = vehiclesByPartnerId.get(String(profile._id)) || [];
-    return partnerVehicles.some((vehicle) => {
-      const vehicleConfig = (settings.vehicleConfigs || []).find(
-        (c) => String(c.vehicleId) === String(vehicle._id)
-      );
-      if (!vehicleConfig) return false;
-      return (vehicleConfig.locations || []).some((loc) => cityMatches(ride.pickup.address, loc.city));
-    });
+    return partnerVehicles.some((vehicle) => vehicleServesAddress({ vehicle, settings, profile, address: ride.pickup.address, match }));
   });
 
   await notifyPartnersAboutRide(ride, eligibleProfiles);

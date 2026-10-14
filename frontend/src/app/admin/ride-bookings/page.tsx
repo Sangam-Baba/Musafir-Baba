@@ -106,6 +106,7 @@ interface EligiblePartner {
   workingCities: string[];
   matchesCategory: boolean;
   matchesLocation: boolean;
+  isApproved?: boolean;
 }
 
 interface RidesApiResponse {
@@ -606,6 +607,7 @@ function RideBookingsPage() {
                             </FleetPill>
                             {partner.matchesCategory && <FleetPill dot={false} className={fleetTone.sky}>Category ✓</FleetPill>}
                             {partner.matchesLocation && <FleetPill dot={false} className={fleetTone.violet}>Location ✓</FleetPill>}
+                            {partner.isApproved === false && <FleetPill dot={false} className={fleetTone.red}>Not approved</FleetPill>}
                           </div>
                           <p className="text-[11px] tabular-nums text-slate-500">{partner.mobileNumber}</p>
                           <p className="text-[11px] text-slate-400 truncate">

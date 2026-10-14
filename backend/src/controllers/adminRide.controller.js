@@ -3,7 +3,10 @@ import RiderProfile from "../models/rider/RiderProfile.js";
 import PartnerProfile from "../models/partner/PartnerProfile.js";
 import PartnerVehicle from "../models/partner/PartnerVehicle.js";
 import { PartnerSettings } from "../models/partner/PartnerSettings.js";
-import { releaseRideToPartnerPool, notifyPartnersAboutRide, getBroadcastExpiry, cityMatches } from "./ride.controller.js";
+import { releaseRideToPartnerPool, notifyPartnersAboutRide, getBroadcastExpiry, isWithin24h, REVEAL_WINDOW_HOURS } from "./ride.controller.js";
+import PartnerDriver from "../models/partner/PartnerDriver.js";
+import { getLocationMatcher, vehicleServiceCities, vehicleServesAddress } from "../services/rideDispatch.service.js";
+import { getApprovedAuthIdSet } from "../services/partnerAccount.service.js";
 import { notifyUser } from "../services/notification/notificationService.js";
 
 // @route   GET /api/admin/rides
@@ -88,22 +91,23 @@ export const getEligiblePartners = async (req, res) => {
     }
 
     const cityFilter = city || ride.pickup?.address;
+    const match = await getLocationMatcher();
+    const approvedAuthIds = await getApprovedAuthIdSet(profiles.map((p) => p.authId));
 
     let data = profiles.map((profile) => {
       const partnerVehicles = vehiclesByPartnerId.get(String(profile._id)) || [];
       const settings = settingsByAuthId.get(String(profile.authId));
       const workingCities = new Set();
-      let matchesLocation = false;
-
       for (const vehicle of partnerVehicles) {
-        const vehicleConfig = (settings?.vehicleConfigs || []).find(
-          (c) => String(c.vehicleId) === String(vehicle._id)
-        );
-        for (const loc of vehicleConfig?.locations || []) {
-          if (loc.city) workingCities.add(loc.city);
-          if (cityFilter && cityMatches(cityFilter, loc.city)) matchesLocation = true;
-        }
+        for (const c of vehicleServiceCities(vehicle, settings, profile)) workingCities.add(c);
       }
+      // Same rule as the automatic broadcast: a vehicle of the ride's category
+      // must serve the pickup (website duty locations + app Service Area).
+      const matchesLocation =
+        !!cityFilter &&
+        partnerVehicles.some(
+          (vehicle) => vehicle.category === ride.vehicleCategory && vehicleServesAddress({ vehicle, settings, profile, address: cityFilter, match })
+        );
 
       return {
         partnerId: profile._id,
@@ -117,6 +121,8 @@ export const getEligiblePartners = async (req, res) => {
           registrationNumber: v.registrationNumber,
         })),
         workingCities: [...workingCities],
+        // Additive: only approved accounts can be assigned or broadcast to.
+        isApproved: approvedAuthIds.has(String(profile.authId)),
         matchesCategory: partnerVehicles.some((v) => v.category === ride.vehicleCategory),
         matchesLocation,
       };
@@ -153,11 +159,18 @@ export const broadcastToPartners = async (req, res) => {
       return res.status(400).json({ success: false, message: "Only paid, unassigned rides can be broadcast" });
     }
 
-    const profiles = await PartnerProfile.find({ _id: { $in: partnerIds } }).lean();
+    const selected = await PartnerProfile.find({ _id: { $in: partnerIds }, isDeleted: { $ne: true } }).lean();
+    const approvedAuthIds = await getApprovedAuthIdSet(selected.map((p) => p.authId));
+    const profiles = selected.filter((p) => approvedAuthIds.has(String(p.authId)));
+    if (!profiles.length) {
+      return res.status(400).json({ success: false, message: "None of the selected partners have an approved account" });
+    }
 
     ride.status = "AWAITING_ASSIGNMENT";
     ride.broadcastExpiresAt = getBroadcastExpiry();
     ride.needsManualAssignment = false;
+    // Only these partners see/accept it until it's released to everyone again.
+    ride.broadcastPartnerIds = profiles.map((p) => p._id);
     ride.statusHistory.push({ status: "AWAITING_ASSIGNMENT", note: `Broadcast by admin to ${profiles.length} selected partner(s)` });
     await ride.save();
 
@@ -201,11 +214,17 @@ export const assignRideToPartner = async (req, res) => {
     }
 
     const profile = await PartnerProfile.findById(partnerId);
-    if (!profile) {
+    if (!profile || profile.isDeleted) {
       return res.status(404).json({ success: false, message: "Partner not found" });
     }
+    if (!(await getApprovedAuthIdSet([profile.authId])).has(String(profile.authId))) {
+      return res.status(400).json({ success: false, message: "This partner's account isn't approved yet" });
+    }
 
+    const willRevealImmediately = isWithin24h(ride);
     ride.status = "ACCEPTED";
+    ride.broadcastPartnerIds = undefined;
+    ride.detailsRevealNotified = willRevealImmediately;
     ride.assignedPartnerId = profile._id;
     ride.assignedVehicleId = vehicle._id;
     ride.assignedDriverId = vehicle.assignedDriverId;
@@ -223,6 +242,27 @@ export const assignRideToPartner = async (req, res) => {
       data: { rideId: ride._id },
       pushToken: profile.pushToken,
     });
+
+    // Rider gets the same "Partner assigned" message as when a partner accepts.
+    const riderProfile = await RiderProfile.findById(ride.rider);
+    if (riderProfile) {
+      const driver = vehicle.assignedDriverId ? await PartnerDriver.findById(vehicle.assignedDriverId) : null;
+      const vehicleLabel = `${vehicle.color ? vehicle.color + " " : ""}${vehicle.vehicleName} (${vehicle.registrationNumber})`;
+      const message = willRevealImmediately
+        ? driver
+          ? `${driver.name} is on the way in a ${vehicleLabel}.`
+          : `Your ride partner is getting ready in a ${vehicleLabel}.`
+        : `A partner has been assigned to your ${ride.vehicleCategory} booking. Driver & vehicle details will be shared ${REVEAL_WINDOW_HOURS} hours before your trip.`;
+      await notifyUser({
+        recipientType: "Rider",
+        recipientId: riderProfile._id,
+        title: "Partner Assigned!",
+        message,
+        type: "Trip",
+        data: { rideId: ride._id },
+        pushToken: riderProfile.pushToken,
+      }).catch((e) => console.error("Admin assign rider notify error:", e.message));
+    }
 
     return res.status(200).json({ success: true, message: "Ride assigned" });
   } catch (error) {
@@ -247,6 +287,7 @@ export const releaseRide = async (req, res) => {
     ride.status = "AWAITING_ASSIGNMENT";
     ride.broadcastExpiresAt = getBroadcastExpiry();
     ride.needsManualAssignment = false;
+    ride.broadcastPartnerIds = undefined;
     ride.statusHistory.push({ status: "AWAITING_ASSIGNMENT", note: "Released by admin" });
     await ride.save();
 
@@ -271,14 +312,22 @@ export const reassignRide = async (req, res) => {
       return res.status(404).json({ success: false, message: "Ride not found" });
     }
 
+    // Only an assigned, unfinished ride can be reassigned (the statuses the
+    // admin page offers Reassign for) -- never a completed/cancelled/unpaid one.
+    if (!["ACCEPTED", "DRIVER_EN_ROUTE", "ARRIVED", "ONGOING"].includes(ride.status)) {
+      return res.status(400).json({ success: false, message: "Only an assigned ride that isn't finished can be reassigned" });
+    }
+
     const previousPartnerId = ride.assignedPartnerId;
 
     ride.assignedPartnerId = undefined;
     ride.assignedVehicleId = undefined;
     ride.assignedDriverId = undefined;
     ride.status = "AWAITING_ASSIGNMENT";
-    ride.broadcastExpiresAt = undefined;
+    // Restart the 10-minute window so it's flagged again if nobody takes it.
+    ride.broadcastExpiresAt = getBroadcastExpiry();
     ride.needsManualAssignment = false;
+    ride.broadcastPartnerIds = undefined;
     // Whichever partner accepts next needs their own reveal notification
     // cycle -- don't leave this stuck "already notified" from the previous
     // assignment.
@@ -299,6 +348,19 @@ export const reassignRide = async (req, res) => {
           pushToken: previousPartner.pushToken,
         });
       }
+    }
+
+    const riderProfile = await RiderProfile.findById(ride.rider);
+    if (riderProfile) {
+      await notifyUser({
+        recipientType: "Rider",
+        recipientId: riderProfile._id,
+        title: "Assigning a new partner",
+        message: "We're assigning a new ride partner for your booking. You'll be notified once they're confirmed.",
+        type: "Trip",
+        data: { rideId: ride._id },
+        pushToken: riderProfile.pushToken,
+      }).catch((e) => console.error("Reassign rider notify error:", e.message));
     }
 
     return res.status(200).json({ success: true, message: "Assignment cleared, ride is back in the pool" });

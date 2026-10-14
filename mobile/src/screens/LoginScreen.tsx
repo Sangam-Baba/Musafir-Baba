@@ -55,6 +55,13 @@ export const LoginScreen = () => {
 
       if (res.ok && (data.success || data.accessToken)) {
         setToken(data.accessToken, data.refreshToken);
+      } else if (res.status === 403 && /verify your email/i.test(data.message || '')) {
+        // Account created but email never verified: offer to finish it now.
+        setErrorMessage(data.message);
+        Alert.alert('Verify your email', "We'll send a new code to your email so you can finish setting up your account.", [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Verify now', onPress: () => navigation.navigate('Register', { email: email.trim().toLowerCase(), verifyEmail: true }) },
+        ]);
       } else {
         setErrorMessage(data.message || 'Invalid credentials. Please try again.');
       }

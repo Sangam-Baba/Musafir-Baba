@@ -3,6 +3,9 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import PartnerAuth from "../../models/partner/PartnerAuth.js";
 import sendEmail from "../../services/email.service.js";
+import { normalizeEmail, isValidEmail, MIN_PASSWORD_LENGTH, MAX_CODE_ATTEMPTS } from "../../services/partnerAccount.service.js";
+
+const TOO_MANY_TRIES = "Too many wrong codes. Please request a new code.";
 
 // Helper: Generate a 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -11,10 +14,17 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 // @desc    Register a new partner and send Email OTP
 export const registerPartner = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body?.email);
+    const { password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required" });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid email address" });
+    }
+    if (String(password).length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ success: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long` });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -33,6 +43,7 @@ export const registerPartner = async (req, res) => {
       existingPartner.password = hashedPassword;
       existingPartner.otpToken = otp;
       existingPartner.otpExpiry = otpExpiry;
+      existingPartner.otpAttempts = 0;
       await existingPartner.save();
     } else {
       // Create new partner
@@ -71,7 +82,8 @@ export const registerPartner = async (req, res) => {
 // @desc    Verify the email OTP
 export const verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const email = normalizeEmail(req.body?.email);
+    const otp = String(req.body?.otp || "").trim();
 
     if (!email || !otp) {
       return res.status(400).json({ success: false, message: "Email and OTP are required" });
@@ -87,13 +99,20 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email is already verified" });
     }
 
+    if ((partner.otpAttempts || 0) >= MAX_CODE_ATTEMPTS) {
+      return res.status(429).json({ success: false, message: TOO_MANY_TRIES });
+    }
+
     if (partner.otpToken !== otp || partner.otpExpiry < Date.now()) {
+      partner.otpAttempts = (partner.otpAttempts || 0) + 1;
+      await partner.save();
       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
     }
 
     partner.isEmailVerified = true;
     partner.otpToken = undefined;
     partner.otpExpiry = undefined;
+    partner.otpAttempts = 0;
     partner.status = "Active"; // Set status to Active upon email verification
     await partner.save();
 
@@ -111,7 +130,7 @@ export const verifyOTP = async (req, res) => {
 // @desc    Resend the verification OTP to an unverified email
 export const resendOTP = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = normalizeEmail(req.body?.email);
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" });
@@ -133,6 +152,7 @@ export const resendOTP = async (req, res) => {
 
     partner.otpToken = otp;
     partner.otpExpiry = otpExpiry;
+    partner.otpAttempts = 0;
     await partner.save();
 
     // Send Reset Email
@@ -161,7 +181,7 @@ export const resendOTP = async (req, res) => {
 // @desc    Check if an email is already registered (smart check before signup)
 export const checkEmail = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = normalizeEmail(req.body?.email);
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" });
@@ -188,7 +208,8 @@ export const checkEmail = async (req, res) => {
 // @desc    Login partner and return JWT (Access + Refresh tokens)
 export const loginPartner = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body?.email);
+    const { password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required" });
@@ -211,6 +232,9 @@ export const loginPartner = async (req, res) => {
     if (partner.status === "Deleted") {
       return res.status(403).json({ success: false, message: "This account has been deleted. Contact admin." });
     }
+    if (partner.status === "Blacklisted") {
+      return res.status(403).json({ success: false, message: "This account has been blocked. Contact admin." });
+    }
 
     const isMatch = await bcrypt.compare(password, partner.password);
     if (!isMatch) {
@@ -224,10 +248,13 @@ export const loginPartner = async (req, res) => {
     };
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY || "fallback_secret", { expiresIn: "1d" });
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET_KEY || "fallback_refresh_secret", { expiresIn: "7d" });
+    // jti makes every device session unique, even two logins in the same second.
+    const refreshToken = jwt.sign({ ...payload, jti: crypto.randomUUID() }, process.env.JWT_REFRESH_SECRET_KEY || "fallback_refresh_secret", { expiresIn: "7d" });
 
     partner.lastLogin = new Date();
     partner.refreshToken = refreshToken;
+    // Keep this device's session alongside other signed-in devices (max 5).
+    partner.refreshTokens = [...(partner.refreshTokens || []), refreshToken].slice(-5);
     await partner.save();
 
     // Send refresh token in HTTP-only cookie
@@ -260,6 +287,13 @@ export const logoutPartner = async (req, res) => {
   try {
     const { partner_refresh_token } = req.cookies || {};
     const authHeader = req.headers.authorization;
+    const bodyRefreshToken = req.body?.refreshToken;
+
+    // Sign out just this device (its token is removed from the device list).
+    const deviceToken = partner_refresh_token || bodyRefreshToken;
+    if (deviceToken) {
+      await PartnerAuth.updateOne({ refreshTokens: deviceToken }, { $pull: { refreshTokens: deviceToken } });
+    }
 
     if (partner_refresh_token) {
       await PartnerAuth.findOneAndUpdate(
@@ -315,7 +349,7 @@ export const refreshAccessToken = async (req, res) => {
         // Check if token matches the one in DB
         const partner = await PartnerAuth.findOne({
           _id: decoded.partnerId,
-          refreshToken: partner_refresh_token,
+          $or: [{ refreshToken: partner_refresh_token }, { refreshTokens: partner_refresh_token }],
         });
 
         if (!partner) {
@@ -328,6 +362,9 @@ export const refreshAccessToken = async (req, res) => {
 
         if (partner.status === "Deleted") {
           return res.status(403).json({ success: false, message: "Account deleted" });
+        }
+        if (partner.status === "Blacklisted") {
+          return res.status(403).json({ success: false, message: "Account blocked" });
         }
 
         // Issue new access token
@@ -353,7 +390,7 @@ export const refreshAccessToken = async (req, res) => {
 // @desc    Send password reset OTP
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = normalizeEmail(req.body?.email);
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" });
@@ -370,6 +407,7 @@ export const forgotPassword = async (req, res) => {
 
     partner.resetPasswordToken = resetToken;
     partner.resetPasswordExpiry = resetExpiry;
+    partner.resetPasswordAttempts = 0;
     await partner.save();
 
     // Send Reset Email
@@ -399,10 +437,15 @@ export const forgotPassword = async (req, res) => {
 // @desc    Reset password using OTP
 export const resetPassword = async (req, res) => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const email = normalizeEmail(req.body?.email);
+    const otp = String(req.body?.otp || "").trim();
+    const { newPassword } = req.body;
 
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ success: false, message: "Email, OTP, and new password are required" });
+    }
+    if (String(newPassword).length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ success: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long` });
     }
 
     const partner = await PartnerAuth.findOne({ email });
@@ -411,7 +454,13 @@ export const resetPassword = async (req, res) => {
       return res.status(404).json({ success: false, message: "Partner not found" });
     }
 
+    if ((partner.resetPasswordAttempts || 0) >= MAX_CODE_ATTEMPTS) {
+      return res.status(429).json({ success: false, message: TOO_MANY_TRIES });
+    }
+
     if (partner.resetPasswordToken !== otp || partner.resetPasswordExpiry < Date.now()) {
+      partner.resetPasswordAttempts = (partner.resetPasswordAttempts || 0) + 1;
+      await partner.save();
       return res.status(400).json({ success: false, message: "Invalid or expired reset OTP" });
     }
 
@@ -420,8 +469,10 @@ export const resetPassword = async (req, res) => {
     partner.resetPasswordToken = undefined;
     partner.resetPasswordExpiry = undefined;
 
-    // Optional: Log them out of all devices by clearing refresh token
+    // Log them out of all devices by clearing refresh tokens
     partner.refreshToken = undefined;
+    partner.refreshTokens = [];
+    partner.resetPasswordAttempts = 0;
     await partner.save();
 
     return res.status(200).json({
@@ -445,6 +496,9 @@ export const changePassword = async (req, res) => {
 
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ success: false, message: "Current and new passwords are required" });
+    }
+    if (String(newPassword).length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ success: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long` });
     }
 
     const partner = await PartnerAuth.findById(partnerId);

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useNotificationStore } from '../store/useNotificationStore';
+import { getNotificationTarget, openNotificationTarget } from '../utils/notificationRoute';
 
 type NotificationItem = {
   id: string;
@@ -11,6 +12,7 @@ type NotificationItem = {
   time: string;
   type: 'Trip' | 'System' | 'Document' | 'Payout';
   read: boolean;
+  data?: Record<string, any>;
 };
 
 export const InboxScreen = () => {
@@ -18,13 +20,28 @@ export const InboxScreen = () => {
   const notifications = useNotificationStore((state) => state.notifications);
   const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
   const storeMarkAllRead = useNotificationStore((state) => state.markAllRead);
+  const storeMarkRead = useNotificationStore((state) => state.markRead);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    storeFetchNotifications().finally(() => setLoading(false));
-  }, []);
+  // Load on open and whenever the inbox comes back into view.
+  const loadedOnce = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!loadedOnce.current) setLoading(true);
+      storeFetchNotifications().finally(() => {
+        loadedOnce.current = true;
+        setLoading(false);
+      });
+    }, [])
+  );
+
+  // Tap: mark it read and open the screen it's about.
+  const openNotification = (item: NotificationItem) => {
+    storeMarkRead(item.id);
+    openNotificationTarget(navigation, getNotificationTarget(item));
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -61,8 +78,10 @@ export const InboxScreen = () => {
           <Text style={styles.title}>Inbox & Notifications</Text>
           <Text style={styles.subtitle}>System alerts, trip dispatch & document updates.</Text>
         </View>
-        <TouchableOpacity onPress={markAllRead} style={styles.readAllBtn}>
-          <Text style={styles.readAllText}>Mark all read</Text>
+        <TouchableOpacity onPress={markAllRead} disabled={unreadCount === 0} style={[styles.readAllBtn, unreadCount === 0 && { opacity: 0.5 }]}>
+          <Text style={[styles.readAllText, unreadCount === 0 && { color: '#94a3b8' }]}>
+            {unreadCount > 0 ? `Mark all read (${unreadCount})` : 'All read'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -92,20 +111,42 @@ export const InboxScreen = () => {
         renderItem={({ item }) => {
           const config = getIcon(item.type);
           return (
-            <View style={[styles.card, !item.read && styles.unreadCard]}>
+            <TouchableOpacity
+              style={[styles.card, !item.read && styles.unreadCard]}
+              onPress={() => openNotification(item)}
+              activeOpacity={0.75}
+            >
               <View style={[styles.iconCircle, { backgroundColor: config.bg }]}>
                 <Ionicons name={config.icon as any} size={20} color={config.color} />
               </View>
 
               <View style={{ flex: 1 }}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={[styles.cardTitle, { flex: 1, marginRight: 8 }, !item.read && { fontWeight: '800' }]}>{item.title}</Text>
                   {!item.read && <View style={styles.unreadDot} />}
                 </View>
                 <Text style={styles.cardMsg}>{item.message}</Text>
-                <Text style={styles.cardTime}>{item.time}</Text>
+                <View style={styles.cardFooter}>
+                  <Text style={styles.cardTime}>{item.time}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {!item.read && (
+                      <TouchableOpacity
+                        onPress={() => storeMarkRead(item.id)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={styles.markReadBtn}
+                      >
+                        <Ionicons name="checkmark-done" size={13} color="#64748b" />
+                        <Text style={styles.markReadText}>Mark as read</Text>
+                      </TouchableOpacity>
+                    )}
+                    <View style={styles.openHint}>
+                      <Text style={styles.openHintText}>Open</Text>
+                      <Ionicons name="chevron-forward" size={13} color="#FE5300" />
+                    </View>
+                  </View>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         }}
       />
@@ -129,6 +170,11 @@ const styles = StyleSheet.create({
   unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FE5300' },
   cardMsg: { fontSize: 12, color: '#64748b', lineHeight: 18, marginBottom: 6 },
   cardTime: { fontSize: 10, fontWeight: '700', color: '#94a3b8' },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  markReadBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, marginRight: 8 },
+  markReadText: { fontSize: 10.5, fontWeight: '700', color: '#64748b', marginLeft: 3 },
+  openHint: { flexDirection: 'row', alignItems: 'center' },
+  openHintText: { fontSize: 11, fontWeight: '800', color: '#FE5300' },
   emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 80, paddingHorizontal: 40 },
   emptyIconBox: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   emptyTitle: { fontSize: 18, fontWeight: '800', color: '#334155', marginBottom: 8, textAlign: 'center' },

@@ -7,6 +7,7 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
 import { resolveSocialMetadata } from "@/lib/seo/social/resolveSocialMetadata";
+import PageFaqs from "@/components/common/PageFaqs";
 
 export interface Duration {
   days: number;
@@ -162,6 +163,7 @@ async function DestinationPage({
 
       {/* Show packages under this category */}
       <GroupPkgClient packagesData={packages} />
+      <PageFaqs faqs={meta?.faqSchema} />
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"

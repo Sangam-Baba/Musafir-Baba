@@ -22,7 +22,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import Link from "next/link";
-import { NAV_GROUPS } from "@/config/navigation";
+import { NAV_GROUPS, SIDEBAR_HINTS } from "@/config/navigation";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 
@@ -67,8 +67,13 @@ export function AdminSidebar() {
       if (item.label === "Change Password") {
         return role === "admin" || role === "superadmin";
       }
-      const hasPermission = role === "superadmin" || role === "admin" || permissions.includes(item.permission);
-      return hasPermission && !(item as any).hideInSidebar;
+      const canSee = (permission: string) =>
+        role === "superadmin" || role === "admin" || permissions.includes(permission);
+      // Sidebar-only merge: skip an entry whose page is already reachable from
+      // a combined entry the user can see (e.g. Destinations Meta -> Destinations).
+      const mergedInto = SIDEBAR_HINTS[item.href]?.mergedInto;
+      if (mergedInto && canSee(mergedInto)) return false;
+      return canSee(item.permission) && !(item as any).hideInSidebar;
     }),
   })).filter((group) => group.items.length > 0);
   return (
@@ -99,12 +104,12 @@ export function AdminSidebar() {
               <SidebarMenu>
                 <Collapsible defaultOpen className="group/collapsible">
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className={`h-10 w-full justify-between rounded-lg px-2 transition-colors dark:bg-slate-800/40 dark:hover:bg-slate-800/70 ${tone.band}`}>
+                    <SidebarMenuButton className={`h-auto min-h-10 w-full justify-between rounded-lg px-2 py-1.5 transition-colors dark:bg-slate-800/40 dark:hover:bg-slate-800/70 ${tone.band}`}>
                       <div className="flex min-w-0 items-center gap-2.5">
                         <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-white shadow-sm ${tone.tile}`}>
                           <group.icon className="h-4 w-4" />
                         </span>
-                        <span className={`truncate text-[12px] font-bold uppercase tracking-[0.06em] group-data-[collapsible=icon]:hidden ${tone.label}`}>
+                        <span className={`min-w-0 break-words text-[12px] font-bold uppercase leading-tight tracking-[0.06em] group-data-[collapsible=icon]:hidden ${tone.label}`}>
                           {group.label}
                         </span>
                       </div>
@@ -116,7 +121,10 @@ export function AdminSidebar() {
                     <SidebarMenuSub className={`mb-1 ml-[21px] mr-0 mt-1.5 gap-0.5 border-l-2 py-0 pl-2.5 pr-0 ${tone.line}`}>
                       {group.items.map((item) => {
                         const Icon = item.icon;
-                        const active = pathname === item.href;
+                        const hint = SIDEBAR_HINTS[item.href];
+                        const active =
+                          pathname === item.href || (!!hint?.activePrefix && pathname.startsWith(hint.activePrefix));
+                        const displayLabel = hint?.label ?? item.label;
                         const isPendingItem = !active && pendingHref === item.href;
                         return (
                           <SidebarMenuSubItem key={item.href}>
@@ -125,8 +133,8 @@ export function AdminSidebar() {
                               onClick={() => {
                                 if (!active) setPendingHref(item.href);
                               }}
-                              title={item.label}
-                              className={`group/item relative flex h-8 items-center gap-2 rounded-md px-2 text-[12.5px] transition-colors duration-150 ${
+                              title={displayLabel}
+                              className={`group/item relative flex min-h-8 items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors duration-150 ${
                                 active
                                   ? "bg-slate-900/[0.04] font-semibold text-slate-900 dark:bg-white/10 dark:text-white"
                                   : isPendingItem
@@ -144,8 +152,8 @@ export function AdminSidebar() {
                                   active ? "text-[#FE5300]" : "text-slate-400 group-hover/item:text-slate-600 dark:group-hover/item:text-slate-200"
                                 }`} />
                               )}
-                              <span className="truncate group-data-[collapsible=icon]:hidden">
-                                {item.label}
+                              <span className="min-w-0 break-words leading-snug group-data-[collapsible=icon]:hidden">
+                                {displayLabel}
                               </span>
                             </Link>
                           </SidebarMenuSubItem>

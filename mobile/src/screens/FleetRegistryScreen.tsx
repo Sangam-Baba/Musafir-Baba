@@ -98,6 +98,11 @@ export const FleetRegistryScreen = () => {
       Alert.alert("Error", "Please fill required fields.");
       return;
     }
+    // 10-digit Indian mobile (a stored "+91 ..." / "0..." prefix is fine).
+    if (!/^[6-9]\d{9}$/.test(String(driverMobile).replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, ''))) {
+      Alert.alert("Invalid Mobile Number", "Please enter the driver's 10-digit mobile number.");
+      return;
+    }
     
     setUploadingDoc("Uploading Licence...");
     try {
@@ -340,7 +345,7 @@ export const FleetRegistryScreen = () => {
         <ScrollView contentContainerStyle={styles.modalBody} showsVerticalScrollIndicator={false}>
           <Text style={styles.sectionTitle}>DRIVER INFORMATION</Text>
           <InputField label="Full Name" value={driverName} onChangeText={setDriverName} placeholder="Driver's full name" />
-          <InputField label="Mobile Number" value={driverMobile} onChangeText={setDriverMobile} keyboardType="phone-pad" placeholder="10-digit mobile number" />
+          <InputField label="Mobile Number" value={driverMobile} onChangeText={(text: string) => setDriverMobile(text.replace(/\D/g, '').slice(0, 10))} keyboardType="number-pad" maxLength={10} placeholder="10-digit mobile number" />
           <InputField label="Licence Number" value={driverLicence} onChangeText={setDriverLicence} autoCapitalize="characters" placeholder="DL-XXXXXXXX" />
           
           <Text style={{ marginBottom: 6, fontWeight: '700', fontSize: 13, color: '#334155' }}>Licence Document</Text>

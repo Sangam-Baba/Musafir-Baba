@@ -4,9 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import DestinationSeoList from "@/components/admin/DestinationSeoList";
 import { DestinationSeo } from "@/components/admin/DestinationSeoList";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import DestinationSeoNew from "@/components/admin/DestinationSeoNew";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { FleetPage } from "@/components/admin/fleet/FleetUI";
+import { DestinationHubHeader } from "@/components/admin/destination/DestinationHub";
 
 const getAllDestinationSeo = async (accessToken: string) => {
   const res = await fetch(
@@ -74,20 +77,23 @@ function DestinationSeoMain() {
   if (!permissions.includes("destination-seo"))
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">All Destination SEO</h1>
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
-        >
-          + Create
-        </button>
-      </div>
+    <FleetPage>
+      <DestinationHubHeader
+        active="seo"
+        actions={
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            Create SEO Page
+          </Button>
+        }
+      />
 
       {/* Modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px]">
           <DestinationSeoNew
             id={editId}
             onClose={() => {
@@ -123,7 +129,7 @@ function DestinationSeoMain() {
           onDelete={handleDelete}
         />
       )}
-    </div>
+    </FleetPage>
   );
 }
 

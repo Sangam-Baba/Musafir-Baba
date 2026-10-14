@@ -268,7 +268,9 @@ export const updatePartnerStatus = async (req, res) => {
     partner.status = status;
     await partner.save();
 
-    if (status === "Rejected") {
+    // Rejected and Hold both hand the profile back to the partner (unlocked) so
+    // they can fix the issues and submit again.
+    if (status === "Rejected" || status === "Hold") {
       await PartnerProfile.findOneAndUpdate(
         { authId: partnerId },
         { $set: { isSubmittedForApproval: false } }

@@ -29,6 +29,10 @@ export const isPartnerAuthenticated = async (req, res, next) => {
     if (account && account.status === "Deleted") {
       return res.status(401).json({ success: false, message: "This account has been deleted. Contact admin." });
     }
+    // Suspended / blacklisted accounts stop working right away (not only at next login).
+    if (account && (account.status === "Suspended" || account.status === "Blacklisted")) {
+      return res.status(401).json({ success: false, message: "Your account has been suspended. Contact admin." });
+    }
 
     // Attach partnerId to request
     req.partnerId = decoded.partnerId;

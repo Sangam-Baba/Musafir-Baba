@@ -8,13 +8,29 @@ import PartnerActionLog from "../../models/partner/PartnerActionLog.js";
 import sendEmail from "../../services/email.service.js";
 import { notifyUser } from "../../services/notification/notificationService.js";
 import { FINANCIAL_FEATURES_ENABLED } from "../../config/features.js";
+import PartnerDriver from "../../models/partner/PartnerDriver.js";
+import { PartnerSettings } from "../../models/partner/PartnerSettings.js";
+import { isValidMobile, getSubmissionChecklist, isPartnerApproved, storeImageIfDataUrl } from "../../services/partnerAccount.service.js";
+
+// Everything the submit checklist needs, for one partner.
+async function loadChecklistData(authId, profile) {
+  const [address, bank, vehicles, drivers, documents, settings] = await Promise.all([
+    PartnerAddress.findOne({ partnerId: profile._id }).lean(),
+    PartnerBank.findOne({ partnerId: profile._id, isPrimary: true }).lean(),
+    PartnerVehicle.find({ partnerId: profile._id, isDeleted: false }).select("_id").lean(),
+    PartnerDriver.find({ partnerId: profile._id, isDeleted: false }).select("_id").lean(),
+    PartnerDocument.find({ ownerType: "PartnerProfile", ownerId: profile._id, status: { $ne: "Archived" } }).select("documentType status").lean(),
+    PartnerSettings.findOne({ authId }).select("vehicleConfigs.locations.city").lean(),
+  ]);
+  return { profile, address, bank, vehicles, drivers, documents, settings, financialEnabled: FINANCIAL_FEATURES_ENABLED };
+}
 
 // Helper function to calculate completion percentage
 const calculateCompletion = async (partnerId) => {
   let score = 10; // Base score for registration
 
   const profile = await PartnerProfile.findOne({ authId: partnerId });
-  if (profile && profile.fullName && profile.mobileNumber) score += 20;
+  if (profile && profile.fullName && isValidMobile(profile.mobileNumber)) score += 20;
 
   const address = await PartnerAddress.findOne({ partnerId: profile?._id });
   if (address && address.city && address.state) score += 20;
@@ -116,6 +132,9 @@ const buildPartnerDashboard = async (authId) => {
     auth,
     logs,
     completionPercentage: profile.profileCompletionPercentage,
+    // Additive: what's still needed to submit, and whether the account is approved.
+    submissionChecklist: getSubmissionChecklist(await loadChecklistData(authId, profile)),
+    isApproved: await isPartnerApproved(authId),
   };
 };
 
@@ -150,6 +169,10 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ success: false, message: "Agency Name is required for Travel Agencies." });
     }
 
+    if (profileData.profilePicture) {
+      profileData.profilePicture = await storeImageIfDataUrl(profileData.profilePicture, "partner-photos");
+    }
+
     const normalizedProfileData = {
       ...profileData,
       agencyName: profileData.agencyName || "",
@@ -158,6 +181,19 @@ export const updateProfile = async (req, res) => {
 
     // Upsert Profile
     let profile = await PartnerProfile.findOne({ authId });
+
+    // Phone numbers must be real 10-digit numbers when they're entered or
+    // changed (other saves, e.g. the photo upload, resend the stored value as-is).
+    if (profileData.mobileNumber !== profile?.mobileNumber && !isValidMobile(profileData.mobileNumber)) {
+      return res.status(400).json({ success: false, message: "Please enter a valid 10-digit mobile number." });
+    }
+    if (
+      profileData.emergencyContactNumber &&
+      profileData.emergencyContactNumber !== profile?.emergencyContactNumber &&
+      !isValidMobile(profileData.emergencyContactNumber)
+    ) {
+      return res.status(400).json({ success: false, message: "Please enter a valid 10-digit emergency contact number." });
+    }
     if (profile) {
       profile = await PartnerProfile.findOneAndUpdate(
         { authId },
@@ -218,8 +254,14 @@ export const submitProfileForApproval = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found" });
     }
 
-    if (profile.profileCompletionPercentage < 100) {
-      return res.status(400).json({ success: false, message: "Please complete your profile to 100% before submitting." });
+    // Same checklist the app shows -- everything must be done before submitting.
+    const missing = getSubmissionChecklist(await loadChecklistData(authId, profile)).filter((item) => !item.done);
+    if (missing.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Please complete before submitting: ${missing.map((item) => item.label).join(", ")}.`,
+        missing: missing.map((item) => item.key),
+      });
     }
 
     const auth = await PartnerAuth.findById(authId);
@@ -254,6 +296,17 @@ export const submitProfileForApproval = async (req, res) => {
       </div>
     `;
     await sendEmail(auth.email, "MusafirBaba - Profile Submitted for Verification", emailHtml);
+
+    // In-app + push: tell the partner it's under review (approval/hold/reject
+    // notifications are sent when the admin decides).
+    await notifyUser({
+      recipientType: "Partner",
+      recipientId: profile._id,
+      title: "Profile submitted for approval",
+      message: "Your account is under review. We'll notify you once it's approved -- then you can go online and start taking rides.",
+      type: "Document",
+      pushToken: profile.pushToken,
+    }).catch((e) => console.error("Submit notify error:", e.message));
 
     return res.status(200).json({ success: true, message: "Profile submitted for approval" });
   } catch (error) {
