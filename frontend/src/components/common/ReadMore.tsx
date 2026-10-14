@@ -18,7 +18,9 @@ function ReadMore({ content }: { content: string }) {
     <div className="flex flex-col">
       <div 
         ref={contentRef}
-        className={`relative overflow-hidden transition-all duration-300 ${showReadMore ? "max-h-[5000px]" : "max-h-[160px]"}`}
+        // Expanded: no height cap, so long content (e.g. destination pages
+        // with tables) is never clipped. A fixed cap like 5000px cut it off.
+        className={`relative overflow-hidden transition-all duration-300 ${showReadMore ? "max-h-none" : "max-h-[160px]"}`}
       >
         <BlogContent html={content} />
         
