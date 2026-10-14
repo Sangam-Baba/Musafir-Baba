@@ -59,6 +59,13 @@ const destinationSeoSchema = new mongoose.Schema(
       },
     ],
     keywords: [String],
+    // FAQs shown on /holidays/{category}/{destination} and emitted as FAQPage structured data
+    faqSchema: [
+      {
+        question: { type: String },
+        answer: { type: String },
+      },
+    ],
   },
   { timestamps: true }
 );

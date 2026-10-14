@@ -13,6 +13,8 @@ import { cityMatches, isWithin24h, isDetailsRevealed, getRideDateTime, REVEAL_WI
 import mongoose from "mongoose";
 import { getRidePartnerEarning } from "../../services/rideFare.service.js";
 import { computeExtraTimeCharge, istDateTime, CITY_PRICING_MODE } from "../../services/cityFare.service.js";
+import { getLocationMatcher, vehicleServesAddress, isOfferedToPartner } from "../../services/rideDispatch.service.js";
+import { isPartnerApproved, NOT_APPROVED_MESSAGE } from "../../services/partnerAccount.service.js";
 
 // @desc    Toggle partner's active duty status (online/offline)
 // @route   PATCH /api/partner/status
@@ -23,6 +25,11 @@ export const updateStatus = async (req, res) => {
 
     if (isOnline === undefined) {
       return res.status(400).json({ success: false, message: "isOnline status is required." });
+    }
+
+    // Only approved partners can go online (going offline is always allowed).
+    if (isOnline && !(await isPartnerApproved(authId))) {
+      return res.status(403).json({ success: false, message: NOT_APPROVED_MESSAGE });
     }
 
     const profile = await PartnerProfile.findOneAndUpdate(
@@ -164,7 +171,8 @@ export const getAvailableRides = async (req, res) => {
 
     // Offline partners shouldn't see the pool at all -- matches the "Go
     // online to start receiving bookings" messaging already on Home.
-    if (!profile.isOnline) {
+    // Same for accounts that aren't approved yet.
+    if (!profile.isOnline || !(await isPartnerApproved(authId))) {
       return res.status(200).json({ success: true, total: 0, data: [] });
     }
 
@@ -176,9 +184,7 @@ export const getAvailableRides = async (req, res) => {
     const categories = [...new Set(vehicles.map((v) => v.category))];
 
     const settings = await PartnerSettings.findOne({ authId: profile.authId }).lean();
-    const vehicleConfigByVehicleId = new Map(
-      (settings?.vehicleConfigs || []).map((c) => [String(c.vehicleId), c])
-    );
+    const match = await getLocationMatcher();
 
     const candidateRides = await RideBooking.find({
       status: "AWAITING_ASSIGNMENT",
@@ -189,13 +195,15 @@ export const getAvailableRides = async (req, res) => {
     // of the matching category has a configured working location covering
     // the ride's pickup city -- same servicability rule computeCategoryOffers
     // already uses for fare quotes.
+    // Shared location rule (services/rideDispatch.service.js). A ride the admin
+    // broadcast to selected partners is shown only to them (no location check --
+    // the admin chose them), and hidden from everyone else.
     const rides = candidateRides.filter((ride) => {
       const matchingVehicles = vehicles.filter((v) => v.category === ride.vehicleCategory);
-      return matchingVehicles.some((vehicle) => {
-        const vehicleConfig = vehicleConfigByVehicleId.get(String(vehicle._id));
-        if (!vehicleConfig) return false;
-        return (vehicleConfig.locations || []).some((loc) => cityMatches(ride.pickup.address, loc.city));
-      });
+      if (ride.broadcastPartnerIds?.length) {
+        return isOfferedToPartner(ride, profile._id) && matchingVehicles.length > 0;
+      }
+      return matchingVehicles.some((vehicle) => vehicleServesAddress({ vehicle, settings, profile, address: ride.pickup.address, match }));
     });
 
     const data = rides.map((ride) => ({
@@ -226,11 +234,26 @@ export const acceptRide = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found." });
     }
 
-    const vehicle = await PartnerVehicle.findOne({
-      partnerId: profile._id,
-      status: "Active",
-      isDeleted: false,
-    });
+    if (!(await isPartnerApproved(authId))) {
+      return res.status(403).json({ success: false, message: NOT_APPROVED_MESSAGE });
+    }
+
+    const rideBeforeAccept = await RideBooking.findById(req.params.id).select("rideDate rideTime vehicleCategory broadcastPartnerIds");
+
+    // Rides the admin broadcast to selected partners can only be taken by them.
+    if (rideBeforeAccept && !isOfferedToPartner(rideBeforeAccept, profile._id)) {
+      return res.status(403).json({ success: false, message: "This ride has been offered to other partners." });
+    }
+
+    // Prefer a vehicle of the ride's category; otherwise the partner's active vehicle as before.
+    const vehicle =
+      (rideBeforeAccept?.vehicleCategory &&
+        (await PartnerVehicle.findOne({ partnerId: profile._id, status: "Active", isDeleted: false, category: rideBeforeAccept.vehicleCategory }))) ||
+      (await PartnerVehicle.findOne({
+        partnerId: profile._id,
+        status: "Active",
+        isDeleted: false,
+      }));
     if (!vehicle) {
       return res.status(400).json({ success: false, message: "You need an active, approved vehicle to accept rides." });
     }
@@ -239,13 +262,17 @@ export const acceptRide = async (req, res) => {
     // feature exists), so reading them ahead of the atomic accept below is
     // race-safe -- only the AWAITING_ASSIGNMENT -> ACCEPTED transition
     // itself needs the atomic guard.
-    const rideBeforeAccept = await RideBooking.findById(req.params.id).select("rideDate rideTime");
     const willRevealImmediately = rideBeforeAccept ? isWithin24h(rideBeforeAccept) : false;
 
     // Atomic guard: only succeeds if the ride is still awaiting assignment.
     // Whichever partner's request lands first wins; everyone else gets the message below.
     const ride = await RideBooking.findOneAndUpdate(
-      { _id: req.params.id, status: "AWAITING_ASSIGNMENT" },
+      {
+        _id: req.params.id,
+        status: "AWAITING_ASSIGNMENT",
+        // Re-checked atomically: still open to everyone, or offered to this partner.
+        $or: [{ broadcastPartnerIds: { $exists: false } }, { broadcastPartnerIds: { $size: 0 } }, { broadcastPartnerIds: profile._id }],
+      },
       {
         $set: {
           status: "ACCEPTED",
@@ -704,6 +731,9 @@ export const getNotifications = async (req, res) => {
       time: toRelativeTime(n.createdAt),
       type: n.type,
       read: n.read,
+      // Additive: lets the app open the related screen on tap.
+      data: n.data || {},
+      createdAt: n.createdAt,
     }));
 
     return res.status(200).json({
@@ -719,6 +749,28 @@ export const getNotifications = async (req, res) => {
 
 // @desc    Mark notifications as read
 // @route   PATCH /api/partner/notifications/mark-read
+// @desc    Mark one notification as read (only the partner's own)
+// @route   PATCH /api/partner/notifications/:id/read
+export const markOneNotificationRead = async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ success: false, message: "Notification not found." });
+    }
+    const profile = await PartnerProfile.findOne({ authId: req.partnerId }).select("_id");
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Profile not found." });
+    }
+    await Notification.updateOne(
+      { _id: req.params.id, recipientType: "Partner", recipientId: profile._id },
+      { $set: { read: true } }
+    );
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Mark One Notification Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 export const markNotificationsRead = async (req, res) => {
   try {
     const authId = req.partnerId;

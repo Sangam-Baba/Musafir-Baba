@@ -58,7 +58,7 @@ export const IdentityProofScreen = () => {
 
   const partnerProfile = dashboardData?.profile;
   const partnerAuth = dashboardData?.auth;
-  const isLocked = partnerProfile?.isSubmittedForApproval || partnerAuth?.status === 'Approved';
+  const isLocked = (!!partnerProfile?.isSubmittedForApproval && !['Hold', 'Rejected'].includes(partnerAuth?.status || '')) || partnerAuth?.status === 'Approved';
   const documents = dashboardData?.documents || [];
 
   const aadhaarDoc = documents.find((d: any) => d.documentType === 'Aadhaar');
@@ -136,6 +136,11 @@ export const IdentityProofScreen = () => {
       Alert.alert("No Images Selected", "Please pick at least one document image to upload.");
       return;
     }
+    // Aadhaar needs both sides: the other side must be picked now or already on file.
+    if ((aadhaarFrontUri || aadhaarBackUri) && !(effectiveAadhaarFront && effectiveAadhaarBack)) {
+      Alert.alert("Both Sides Needed", "Please add both the front and back of your Aadhaar card.");
+      return;
+    }
     setSubmitting(true);
     try {
       const promises: Promise<any>[] = [];
@@ -150,8 +155,8 @@ export const IdentityProofScreen = () => {
               ownerType: 'PartnerProfile',
               ownerId: partnerProfile._id,
               documentType: 'Aadhaar',
-              fileUrl: aadhaarFrontUri || aadhaarBackUri,
-              fileUrlBack: aadhaarBackUri || aadhaarFrontUri,
+              fileUrl: effectiveAadhaarFront,
+              fileUrlBack: effectiveAadhaarBack,
               status: 'Approved',
             })
           })

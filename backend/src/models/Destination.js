@@ -35,6 +35,13 @@ const destinationSchema = new mongoose.Schema(
     metaTitle: String,
     metaDescription: String,
     keywords: [String],
+    // FAQs shown on /destinations/{slug} and emitted as FAQPage structured data
+    faqSchema: [
+      {
+        question: { type: String },
+        answer: { type: String },
+      },
+    ],
     canonicalUrl: String,
     schemaType: [
       {

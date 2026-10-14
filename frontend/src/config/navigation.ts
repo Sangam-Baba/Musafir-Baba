@@ -405,3 +405,15 @@ export const NAV_GROUPS = [
     ],
   },
 ];
+
+// Sidebar-only display hints, keyed by NAV_GROUPS item href. Kept separate so
+// NAV_GROUPS (read by the route guard and the staff permission form) is not
+// changed. Only app-sidebar.tsx reads this.
+//  - label:        text shown in the sidebar instead of the item's label
+//  - activePrefix: also highlight the entry on any path starting with this
+//  - mergedInto:   hide the entry when the user can already see the entry
+//                  that has this permission (the pages stay reachable via tabs)
+export const SIDEBAR_HINTS: Record<string, { label?: string; activePrefix?: string; mergedInto?: string }> = {
+  "/admin/destination": { label: "Destinations & SEO", activePrefix: "/admin/destination" },
+  "/admin/destination-seo": { label: "Destinations & SEO", mergedInto: "destination" },
+};

@@ -9,6 +9,9 @@ import { API_BASE_URL } from '../utils/config';
 import { SafeModal } from '../components/SafeModal';
 import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
+// Keeps digits only, up to `max` characters (phone numbers, pincode).
+const onlyDigits = (value: string, max: number) => String(value || '').replace(/\D/g, '').slice(0, max);
+
 export const PersonalDetailsScreen = () => {
   const navigation = useNavigation<any>();
   const token = useAuthStore((state) => state.token);
@@ -140,9 +143,10 @@ export const PersonalDetailsScreen = () => {
         const a = result.data.address;
         if (p) {
           setEditName(p.fullName || '');
-          setEditMobile(p.mobileNumber || '');
+          // Only digits are kept ("Not Provided" -> empty, "+91 98765 43210" -> 9876543210).
+          setEditMobile(onlyDigits(p.mobileNumber || '', 12).slice(-10));
           setEditHub(p.agencyName || '');
-          setEditEmergency(p.emergencyContactNumber || '');
+          setEditEmergency(onlyDigits(p.emergencyContactNumber || '', 12).slice(-10));
         }
         if (a) {
           setEditAddressLine(a.addressLine || '');
@@ -188,8 +192,10 @@ export const PersonalDetailsScreen = () => {
     : 'Aug 2026';
 
   const partnerId = partnerProfile?._id ? `MB-PTR-${partnerProfile._id.slice(-5).toUpperCase()}` : (partnerAuth?._id ? `MB-PTR-${partnerAuth._id.slice(-5).toUpperCase()}` : 'MB-PTR-NEW');
-  const isVerified = partnerAuth?.status === 'Approved';
-  const isLocked = partnerProfile?.isSubmittedForApproval || partnerAuth?.status === 'Approved';
+  const isVerified = partnerAuth?.status === 'Approved' || !!dashboardData?.isApproved;
+  // Under review = submitted and not handed back by admin (Hold / Rejected unlock it).
+  const isUnderReview = !!partnerProfile?.isSubmittedForApproval && !['Hold', 'Rejected'].includes(partnerAuth?.status || '');
+  const isLocked = isUnderReview || partnerAuth?.status === 'Approved';
 
   const aadhaarDoc = dashboardData?.documents?.find((d: any) => d.documentType === 'Aadhaar');
   const panDoc = dashboardData?.documents?.find((d: any) => d.documentType === 'PAN');
@@ -197,14 +203,20 @@ export const PersonalDetailsScreen = () => {
   const vehicles = dashboardData?.vehicles || [];
   const drivers = dashboardData?.drivers || [];
 
-  const isEverythingUploaded = !!(
-    aadhaarDoc &&
-    panDoc &&
-    partnerProfile?.profilePicture &&
-    (!FINANCIAL_FEATURES_ENABLED || bank?.accountNumber) &&
-    vehicles.length > 0 &&
-    drivers.length > 0
-  );
+  // The server's checklist (same one it enforces on submit); older servers
+  // without it fall back to the app's own list.
+  const submissionChecklist: { key: string; label: string; done: boolean }[] | undefined = dashboardData?.submissionChecklist;
+  const missingItems = (submissionChecklist || []).filter((item) => !item.done).map((item) => item.label);
+  const isEverythingUploaded = submissionChecklist
+    ? missingItems.length === 0
+    : !!(
+        aadhaarDoc &&
+        panDoc &&
+        partnerProfile?.profilePicture &&
+        (!FINANCIAL_FEATURES_ENABLED || bank?.accountNumber) &&
+        vehicles.length > 0 &&
+        drivers.length > 0
+      );
 
   const submitForApproval = async () => {
     setSubmitting(true);
@@ -230,6 +242,18 @@ export const PersonalDetailsScreen = () => {
   const handleSaveProfile = async () => {
     if (!editName || !editMobile || !editAddressLine || !editCity || !editState || !editPincode) {
       Alert.alert("Required Fields", "Please enter Full Name, Mobile Number, and complete Address.");
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(editMobile)) {
+      Alert.alert("Invalid Mobile Number", "Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (editEmergency && !/^[6-9]\d{9}$/.test(editEmergency)) {
+      Alert.alert("Invalid Emergency Contact", "Please enter a valid 10-digit emergency contact number.");
+      return;
+    }
+    if (!/^\d{6}$/.test(editPincode.trim())) {
+      Alert.alert("Invalid Pincode", "Please enter a valid 6-digit pincode.");
       return;
     }
 
@@ -346,12 +370,12 @@ export const PersonalDetailsScreen = () => {
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[styles.statusTitle, !isVerified && { color: '#d97706' }]}>
-              {isVerified ? "Verified Profile" : partnerProfile?.isSubmittedForApproval ? "Profile Under Audit" : "Profile Verification Pending"}
+              {isVerified ? "Verified Profile" : isUnderReview ? "Profile Under Audit" : partnerAuth?.status === 'Hold' ? "Profile On Hold" : "Profile Verification Pending"}
             </Text>
             <Text style={styles.statusSub}>
               {isVerified 
                 ? "Your personal profile & KYC are fully approved."
-                : partnerProfile?.isSubmittedForApproval ? "Your profile details have been submitted for verification audit." : "Please submit your details for verification."}
+                : isUnderReview ? "Your profile details have been submitted for verification audit." : partnerAuth?.status === 'Hold' ? "Our team needs a few changes. Please update your details and send for approval again." : "Please submit your details for verification."}
             </Text>
           </View>
           <Ionicons name={isVerified ? "checkmark-circle" : "alert-circle"} size={22} color={isVerified ? "#16a34a" : "#d97706"} />
@@ -499,15 +523,24 @@ export const PersonalDetailsScreen = () => {
                 <Text style={styles.actionBtnText}>Update Profile</Text>
               </TouchableOpacity>
 
-            {!partnerProfile?.isSubmittedForApproval && (
+            {!isUnderReview && partnerAuth?.status !== 'Approved' && (
                 <TouchableOpacity 
                   style={[
                     styles.actionBtn, 
                     { flex: 1 }, 
                     !isEverythingUploaded ? { backgroundColor: '#e2e8f0', borderColor: '#cbd5e1' } : { backgroundColor: '#16a34a', borderColor: '#16a34a' }
                   ]}
-                  onPress={() => submitForApproval()}
-                  disabled={!isEverythingUploaded || submitting}
+                  onPress={() => {
+                    if (!isEverythingUploaded) {
+                      Alert.alert(
+                        "Complete These First",
+                        missingItems.length ? missingItems.map((item) => `• ${item}`).join('\n') : "Please complete your profile, documents, vehicle and driver details."
+                      );
+                      return;
+                    }
+                    submitForApproval();
+                  }}
+                  disabled={submitting}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="send-outline" size={18} color={!isEverythingUploaded ? "#94a3b8" : "#ffffff"} style={{ marginRight: 6 }} />
@@ -561,9 +594,13 @@ export const PersonalDetailsScreen = () => {
               <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Mobile Number *</Text>
               <TextInput 
                 style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 12, color: '#0f172a' }}
-                keyboardType="phone-pad"
+                keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="10-digit mobile number"
+                placeholderTextColor="#94a3b8"
                 value={editMobile}
-                onChangeText={setEditMobile}
+                onChangeText={(text) => setEditMobile(onlyDigits(text, 10))}
               />
 
               <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Operational Hub / Agency Name</Text>
@@ -576,9 +613,13 @@ export const PersonalDetailsScreen = () => {
               <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Emergency Contact Number</Text>
               <TextInput 
                 style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 16, color: '#0f172a' }}
-                keyboardType="phone-pad"
+                keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="10-digit mobile number"
+                placeholderTextColor="#94a3b8"
                 value={editEmergency}
-                onChangeText={setEditEmergency}
+                onChangeText={(text) => setEditEmergency(onlyDigits(text, 10))}
               />
 
               <Text style={{ fontSize: 13, fontWeight: '700', color: '#475569', marginBottom: 4 }}>Address Line *</Text>
@@ -620,8 +661,10 @@ export const PersonalDetailsScreen = () => {
               <TextInput 
                 style={{ borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 16, color: '#0f172a' }}
                 keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={6}
                 value={editPincode}
-                onChangeText={setEditPincode}
+                onChangeText={(text) => setEditPincode(onlyDigits(text, 6))}
               />
 
               <Text style={{ fontSize: 14, fontWeight: '800', color: '#0f172a', marginTop: 4, marginBottom: 10 }}>

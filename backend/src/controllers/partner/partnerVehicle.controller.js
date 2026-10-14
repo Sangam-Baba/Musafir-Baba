@@ -2,6 +2,19 @@ import PartnerVehicle from "../../models/partner/PartnerVehicle.js";
 import PartnerProfile from "../../models/partner/PartnerProfile.js";
 import PartnerDriver from "../../models/partner/PartnerDriver.js";
 import mongoose from "mongoose";
+import { storeImageIfDataUrl } from "../../services/partnerAccount.service.js";
+
+// Fields only the admin/system may change -- ignored if a partner sends them.
+const PROTECTED_VEHICLE_FIELDS = ["_id", "partnerId", "status", "isDeleted", "deletedAt", "verificationStatus", "createdAt", "updatedAt"];
+const VEHICLE_IMAGE_FIELDS = ["rcImageUrl", "insuranceFileUrl", "pucImageUrl", "permitFileUrl", "vehicleImageUrl"];
+async function cleanVehicleData(vehicleData = {}) {
+  const data = { ...vehicleData };
+  for (const key of PROTECTED_VEHICLE_FIELDS) delete data[key];
+  for (const key of VEHICLE_IMAGE_FIELDS) {
+    if (data[key]) data[key] = await storeImageIfDataUrl(data[key], "partner-vehicles");
+  }
+  return data;
+}
 
 // @route   POST /api/partner/vehicle
 // @desc    Add a new Vehicle
@@ -23,7 +36,8 @@ export const addVehicle = async (req, res) => {
 
     // Support atomic driver creation if "driver" sub-object is supplied
     if (!assignedDriverId && vehicleData.driver) {
-      const { name, mobile, licenseNo, licenceNumber, licenceImageUrl } = vehicleData.driver;
+      const { name, mobile, licenseNo, licenceNumber } = vehicleData.driver;
+      const licenceImageUrl = await storeImageIfDataUrl(vehicleData.driver.licenceImageUrl, "partner-drivers");
       const driverLicence = licenseNo || licenceNumber;
       
       if (!name || !mobile || !driverLicence) {
@@ -70,8 +84,8 @@ export const addVehicle = async (req, res) => {
     }
 
     const vehicle = new PartnerVehicle({
+      ...(await cleanVehicleData(vehicleData)),
       partnerId: profile._id,
-      ...vehicleData,
       assignedDriverId,
       verificationStatus: "Verified",
     });
@@ -200,7 +214,7 @@ export const updateVehicle = async (req, res) => {
 
     // Optional: Only allow update if profile is not Approved, or allow it but keep status logic.
     // Assuming we just update fields provided
-    Object.assign(vehicle, vehicleData);
+    Object.assign(vehicle, await cleanVehicleData(vehicleData));
     await vehicle.save();
 
     return res.status(200).json({

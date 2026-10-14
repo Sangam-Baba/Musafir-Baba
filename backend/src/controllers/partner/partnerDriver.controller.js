@@ -1,5 +1,17 @@
 import PartnerDriver from "../../models/partner/PartnerDriver.js";
 import PartnerProfile from "../../models/partner/PartnerProfile.js";
+import { storeImageIfDataUrl } from "../../services/partnerAccount.service.js";
+
+// Fields only the admin/system may change -- ignored if a partner sends them.
+const PROTECTED_DRIVER_FIELDS = ["_id", "partnerId", "status", "isDeleted", "createdAt", "updatedAt"];
+async function cleanDriverData(driverData = {}) {
+  const data = { ...driverData };
+  for (const key of PROTECTED_DRIVER_FIELDS) delete data[key];
+  for (const key of ["licenceImageUrl", "photoUrl"]) {
+    if (data[key]) data[key] = await storeImageIfDataUrl(data[key], "partner-drivers");
+  }
+  return data;
+}
 
 // @route   POST /api/partner/driver
 // @desc    Add a new Driver
@@ -31,8 +43,8 @@ export const addDriver = async (req, res) => {
     }
 
     const driver = new PartnerDriver({
+      ...(await cleanDriverData(driverData)),
       partnerId: profile._id,
-      ...driverData,
     });
     await driver.save();
 
@@ -95,7 +107,7 @@ export const updateDriver = async (req, res) => {
       }
     }
 
-    Object.assign(driver, driverData);
+    Object.assign(driver, await cleanDriverData(driverData));
     await driver.save();
 
     return res.status(200).json({

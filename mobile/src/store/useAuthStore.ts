@@ -59,6 +59,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
+          // Lets the server sign out just this phone (other devices stay signed in).
+          body: JSON.stringify({ refreshToken: get().refreshToken || undefined }),
         });
       }
     } catch (error) {

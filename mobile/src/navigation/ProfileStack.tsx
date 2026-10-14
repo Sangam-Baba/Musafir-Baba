@@ -106,7 +106,9 @@ const MenuScreen = ({ navigation }: any) => {
 
   const fullName = partnerProfile?.fullName || storeProfile?.name || derivedDefaultName;
   const partnerId = partnerProfile?._id ? `MB-PTR-${partnerProfile._id.slice(-5).toUpperCase()}` : (partnerAuth?._id ? `MB-PTR-${partnerAuth._id.slice(-5).toUpperCase()}` : 'MB-PTR-ACCOUNT');
-  const isVerified = partnerAuth?.status === 'Approved' || partnerProfile?.isSubmittedForApproval;
+  // Verified only once an admin has approved the account (not just submitted).
+  const isApproved = partnerAuth?.status === 'Approved' || !!dashboardData?.isApproved;
+  const isVerified = isApproved;
   const walletBalance = partnerProfile?.walletBalance ?? 0;
 
   const accountItems = [
@@ -268,7 +270,7 @@ const MenuScreen = ({ navigation }: any) => {
             
             <View style={[styles.verifiedTag, !isVerified && { backgroundColor: '#fef3c7' }]}>
               <Text style={[styles.verifiedTagText, !isVerified && { color: '#b45309' }]}>
-                {partnerAuth?.status === 'Approved' ? 'Verified Partner' : partnerProfile?.isSubmittedForApproval ? 'Under Audit' : 'Onboarding Pending'}
+                {isApproved ? 'Verified Partner' : partnerAuth?.status === 'Hold' ? 'On Hold — action needed' : partnerProfile?.isSubmittedForApproval ? 'Under Audit' : 'Onboarding Pending'}
               </Text>
             </View>
           </View>

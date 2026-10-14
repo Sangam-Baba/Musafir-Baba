@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getMyNotifications, markAllNotificationsRead, PartnerNotificationData } from '../api/partnerNotification.api';
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead, PartnerNotificationData } from '../api/partnerNotification.api';
 
 interface RealtimeNotificationEvent {
   id: string;
@@ -16,6 +16,7 @@ interface NotificationState {
   isLoading: boolean;
   fetchNotifications: () => Promise<void>;
   markAllRead: () => Promise<void>;
+  markRead: (id: string) => void;
   handleRealtimeEvent: (event: RealtimeNotificationEvent) => void;
 }
 
@@ -48,6 +49,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       console.error('Error marking notifications read:', e);
     }
   },
+  // One notification: updated on screen right away, then saved.
+  markRead: (id) => {
+    const target = get().notifications.find((n) => n.id === id);
+    if (!target || target.read) return;
+    set((state) => ({
+      notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      unreadCount: Math.max(0, state.unreadCount - 1),
+    }));
+    markNotificationRead(id).catch((e) => console.error('Error marking notification read:', e));
+  },
   handleRealtimeEvent: (event) => {
     const incoming: PartnerNotificationData = {
       id: event.id,
@@ -56,6 +67,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       time: 'Just now',
       type: event.type,
       read: false,
+      data: event.data,
+      createdAt: event.createdAt,
     };
     set((state) => ({
       notifications: [incoming, ...state.notifications],

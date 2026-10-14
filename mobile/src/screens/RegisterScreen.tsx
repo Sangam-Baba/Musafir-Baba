@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthStackParamList } from '../navigation/types';
@@ -31,6 +31,60 @@ export const RegisterScreen = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const route = useRoute<RouteProp<AuthStackParamList, 'Register'>>();
+
+  // Resend OTP (30s cooldown between sends).
+  const [resendIn, setResendIn] = useState(0);
+  const [resending, setResending] = useState(false);
+  const resendTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startCooldown = () => {
+    setResendIn(30);
+    if (resendTimer.current) clearInterval(resendTimer.current);
+    resendTimer.current = setInterval(() => {
+      setResendIn((s) => {
+        if (s <= 1 && resendTimer.current) clearInterval(resendTimer.current);
+        return Math.max(0, s - 1);
+      });
+    }, 1000);
+  };
+  useEffect(() => () => {
+    if (resendTimer.current) clearInterval(resendTimer.current);
+  }, []);
+
+  const handleResendOTP = async (emailToUse = email) => {
+    if (!emailToUse.trim() || resending) return;
+    setResending(true);
+    setErrorMessage('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/partner/auth/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToUse.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccessMessage('A new code has been sent to your email.');
+        startCooldown();
+      } else {
+        setErrorMessage(data.message || 'Could not send a new code. Please try again.');
+      }
+    } catch (error) {
+      setErrorMessage('Unable to connect to server. Check network connection.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // Opened from Login for an account whose email isn't verified yet: go
+  // straight to the code step and send a fresh code.
+  useEffect(() => {
+    const params = route.params;
+    if (params?.verifyEmail && params.email) {
+      setEmail(params.email);
+      setStep(2);
+      handleResendOTP(params.email);
+    }
+  }, []);
 
   // Step 1: Submit email & password to initiate registration
   const handleRegister = async () => {
@@ -60,6 +114,7 @@ export const RegisterScreen = () => {
       if (res.ok || data.success) {
         setSuccessMessage('OTP sent securely to your email. Please check your inbox.');
         setStep(2);
+        startCooldown();
       } else {
         setErrorMessage(data.message || 'Failed to register. Please try again.');
       }
@@ -281,6 +336,20 @@ export const RegisterScreen = () => {
                       <Ionicons name="checkmark-circle-outline" size={18} color="#ffffff" style={{ marginLeft: 6 }} />
                     </View>
                   )}
+                </TouchableOpacity>
+
+                {/* Resend OTP */}
+                <TouchableOpacity
+                  onPress={() => handleResendOTP()}
+                  disabled={resendIn > 0 || resending}
+                  style={{ marginTop: 16, alignItems: 'center' }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#64748b' }}>
+                    Didn't get the code?{' '}
+                    <Text style={{ color: resendIn > 0 || resending ? '#94a3b8' : '#FE5300', fontWeight: '800' }}>
+                      {resending ? 'Sending...' : resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend OTP'}
+                    </Text>
+                  </Text>
                 </TouchableOpacity>
 
                 {/* Change Email Action */}

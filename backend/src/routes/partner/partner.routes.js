@@ -16,7 +16,7 @@ import {
   getEarnings,
   requestPayout,
   getNotifications,
-  markNotificationsRead,
+  markNotificationsRead, markOneNotificationRead,
   getRealtimeToken
 } from "../../controllers/partner/partnerExtra.controller.js";
 
@@ -64,6 +64,7 @@ router.post("/payouts/request", requestPayout);
 // Notifications
 router.get("/notifications", getNotifications);
 router.patch("/notifications/mark-read", markNotificationsRead);
+router.patch("/notifications/:id/read", markOneNotificationRead);
 router.get("/notifications/realtime-token", getRealtimeToken);
 
 // Documents

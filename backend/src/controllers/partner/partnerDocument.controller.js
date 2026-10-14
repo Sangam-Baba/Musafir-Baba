@@ -1,12 +1,16 @@
 import PartnerDocument from "../../models/partner/PartnerDocument.js";
 import PartnerProfile from "../../models/partner/PartnerProfile.js";
+import PartnerVehicle from "../../models/partner/PartnerVehicle.js";
+import PartnerDriver from "../../models/partner/PartnerDriver.js";
+import { storeImageIfDataUrl } from "../../services/partnerAccount.service.js";
 
 // @route   POST /api/partner/document
 // @desc    Add a Document (Aadhaar, PAN, RC, etc.)
 export const uploadDocument = async (req, res) => {
   try {
     const authId = req.partnerId;
-    const { ownerType, ownerId, documentType, fileUrl } = req.body;
+    const { ownerType, ownerId, documentType } = req.body;
+    let { fileUrl, fileUrlBack } = req.body;
 
     if (!ownerType || !ownerId || !documentType || !fileUrl) {
       return res.status(400).json({ success: false, message: "Missing required document fields" });
@@ -17,8 +21,22 @@ export const uploadDocument = async (req, res) => {
       return res.status(404).json({ success: false, message: "Profile not found." });
     }
 
-    // Optional: Add strict validation to ensure ownerId actually belongs to this partner
-    // For now, assume ownerId is valid if passed from dashboard
+    // The document must belong to this partner (their profile, vehicle or driver).
+    const owns =
+      ownerType === "PartnerProfile"
+        ? String(ownerId) === String(profile._id)
+        : ownerType === "PartnerVehicle"
+          ? !!(await PartnerVehicle.exists({ _id: ownerId, partnerId: profile._id }))
+          : ownerType === "PartnerDriver"
+            ? !!(await PartnerDriver.exists({ _id: ownerId, partnerId: profile._id }))
+            : false;
+    if (!owns) {
+      return res.status(403).json({ success: false, message: "You can only upload documents for your own account." });
+    }
+
+    // Keep photos in storage (CDN URL), not inline in the database.
+    fileUrl = await storeImageIfDataUrl(fileUrl, "partner-docs");
+    if (fileUrlBack) fileUrlBack = await storeImageIfDataUrl(fileUrlBack, "partner-docs");
 
     let document = await PartnerDocument.findOne({ ownerType, ownerId, documentType, status: { $ne: "Archived" } });
 
@@ -33,20 +51,21 @@ export const uploadDocument = async (req, res) => {
         await document.save();
 
         // Create new document
+        // New uploads wait for admin review (Approve/Reject in Fleet verification).
         document = new PartnerDocument({
           ownerType,
           ownerId,
           documentType,
           fileUrl,
-          status: "Approved",
-          verificationDate: new Date(),
+          ...(fileUrlBack ? { fileUrlBack } : {}),
+          status: "Pending",
         });
         await document.save();
       } else {
-        // Just update file URL for Pending documents
+        // Pending documents can be replaced until admin reviews them.
         document.fileUrl = fileUrl;
-        document.status = "Approved";
-        document.verificationDate = new Date();
+        if (fileUrlBack) document.fileUrlBack = fileUrlBack;
+        document.status = "Pending";
         await document.save();
       }
     } else {
@@ -55,8 +74,8 @@ export const uploadDocument = async (req, res) => {
         ownerId,
         documentType,
         fileUrl,
-        status: "Approved",
-        verificationDate: new Date(),
+        ...(fileUrlBack ? { fileUrlBack } : {}),
+        status: "Pending",
       });
       await document.save();
     }

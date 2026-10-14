@@ -12,6 +12,7 @@ import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
+import PageFaqs from "@/components/common/PageFaqs";
 
 interface Destination {
   _id: string;
@@ -26,6 +27,7 @@ interface Destination {
   metaDescription: string;
   keywords: string[];
   slug: string;
+  faqSchema?: { question: string; answer: string }[];
 }
 interface Batch {
   _id: string;
@@ -206,6 +208,7 @@ async function DestinationPage({
       ) : (
         <MixedPackagesClient data={totalPackages} category={totalCategory} />
       )}
+      <PageFaqs faqs={destination?.faqSchema} />
       <Script
         key="breadcrumb-schema"
         type="application/ld+json"

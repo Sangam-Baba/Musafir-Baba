@@ -52,8 +52,8 @@ export const VerifiedPartnerScreen = () => {
   const vehicles = dashboardData?.vehicles || [];
   const drivers = dashboardData?.drivers || [];
 
-  const isVerified = auth?.status === 'Approved';
-  const statusLabel = auth?.status === 'Approved' ? 'Verified' : profile?.isSubmittedForApproval ? 'Under Audit' : 'Pending';
+  const isVerified = auth?.status === 'Approved' || !!dashboardData?.isApproved;
+  const statusLabel = isVerified ? 'Verified' : auth?.status === 'Hold' ? 'On Hold' : profile?.isSubmittedForApproval ? 'Under Audit' : 'Pending';
 
   const aadhaarDoc = documents.find((d: any) => d.documentType === 'Aadhaar');
   const panDoc = documents.find((d: any) => d.documentType === 'PAN');

@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner"; // or any toast library
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import DestinationList from "@/components/admin/DestinationList";
+import { Button } from "@/components/ui/button";
+import { FleetPage } from "@/components/admin/fleet/FleetUI";
+import { DestinationHubHeader } from "@/components/admin/destination/DestinationHub";
 
 interface Destination {
   _id: string;
@@ -14,6 +17,7 @@ interface Destination {
   state: string;
   coverImage: string;
   slug: string;
+  status?: string;
 }
 
 export default function DestinationPage() {
@@ -87,18 +91,20 @@ export default function DestinationPage() {
   };
 
   if (!permissions.includes("destination"))
-    return <h1 className="text-2xl font-bold">Access Denied</h1>;
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Destinations</h1>
-        <button
-          onClick={() => router.push("/admin/destination/new")}
-          className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
-        >
-          + Create
-        </button>
-      </div>
+    return <h1 className="text-2xl font-bold">Access Denied</h1>;  return (
+    <FleetPage>
+      <DestinationHubHeader
+        active="destinations"
+        actions={
+          <Button
+            onClick={() => router.push("/admin/destination/new")}
+            className="h-8 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            Create Destination
+          </Button>
+        }
+      />
 
       {loading ? (
         <div className="flex justify-center items-center py-20">
@@ -112,11 +118,12 @@ export default function DestinationPage() {
             country: b.country,
             state: b.state,
             url: `/destinations/${b.slug}`,
+            status: b.status,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
       )}
-    </div>
+    </FleetPage>
   );
 }

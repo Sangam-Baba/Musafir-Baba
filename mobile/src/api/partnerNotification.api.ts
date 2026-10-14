@@ -7,6 +7,9 @@ export interface PartnerNotificationData {
   time: string;
   type: 'Trip' | 'System' | 'Document' | 'Payout';
   read: boolean;
+  // Additive (newer servers): e.g. { rideId } so a tap can open the right screen.
+  data?: Record<string, any>;
+  createdAt?: string;
 }
 
 export interface RealtimeTokenResponse {
@@ -19,6 +22,9 @@ export const getMyNotifications = () =>
 
 export const markAllNotificationsRead = () =>
   apiClient.patch<{ success: boolean; message: string }>('/partner/notifications/mark-read');
+
+export const markNotificationRead = (id: string) =>
+  apiClient.patch<{ success: boolean }>(`/partner/notifications/${id}/read`);
 
 export const getNotificationsRealtimeToken = () =>
   apiClient.get<{ success: boolean; data: RealtimeTokenResponse }>('/partner/notifications/realtime-token');

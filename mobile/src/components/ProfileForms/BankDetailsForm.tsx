@@ -41,7 +41,7 @@ export const BankDetailsForm = ({ onSaveSuccess }: BankDetailsFormProps) => {
         if (result.success && result.data) {
           const profile = result.data.profile;
           const auth = result.data.auth;
-          setIsLocked(profile?.isSubmittedForApproval || auth?.status === 'Approved');
+          setIsLocked((!!profile?.isSubmittedForApproval && !['Hold', 'Rejected'].includes(auth?.status || '')) || auth?.status === 'Approved');
 
           if (result.data.bank) {
             const bank = result.data.bank;

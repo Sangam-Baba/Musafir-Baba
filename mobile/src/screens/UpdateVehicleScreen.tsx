@@ -115,6 +115,11 @@ export const UpdateVehicleScreen = () => {
       Alert.alert("Missing Driver Info", "Please fill in Driver Name, Mobile Number, and License Number.");
       return;
     }
+    // 10-digit Indian mobile (a stored "+91 ..." / "0..." prefix is fine).
+    if (!/^[6-9]\d{9}$/.test(String(driverMobile).replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, ''))) {
+      Alert.alert("Invalid Mobile Number", "Please enter the driver's 10-digit mobile number.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -628,11 +633,13 @@ export const UpdateVehicleScreen = () => {
               <Text style={styles.fieldLabel}>Driver Mobile Number</Text>
               <TextInput
                 style={styles.textInput}
-                placeholder="e.g. +91 98765 43210"
+                placeholder="10-digit mobile number"
                 placeholderTextColor="#94a3b8"
-                keyboardType="phone-pad"
+                keyboardType="number-pad"
+                inputMode="numeric"
+                maxLength={13}
                 value={driverMobile}
-                onChangeText={setDriverMobile}
+                onChangeText={(text) => setDriverMobile(text.replace(/[^0-9+ ]/g, ''))}
               />
 
               <Text style={styles.fieldLabel}>Driver Commercial License (DL) Number</Text>

@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { toast } from "sonner";
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { HelpCircle, Image as ImageIcon, Info, Loader2, MapPinPenIcon, Save, Search, Share2, X } from "lucide-react";
 import { Loader } from "@/components/custom/loader";
 import { schemaTypes } from "@/lib/schemaTypes";
 import { Textarea } from "../ui/textarea";
@@ -25,7 +25,31 @@ import { Label } from "../ui/label";
 import BlogEditor from "./BlogEditor";
 import ImageUploader from "./ImageUploader";
 import OpenGraphManager from "./OpenGraphManager";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { FleetPanel, fleetSelectClass } from "./fleet/FleetUI";
+import { FaqEditor, FormTabsList, TagInput, dSelectMultiple, firstErrorTab } from "./destination/FormBits";
+import type { FormTab } from "./destination/FormBits";
+
+// Sub-tab layout (UI only).
+const SEO_TABS: FormTab[] = [
+  { value: "basic", label: "Basic Detail", icon: Info },
+  { value: "seo", label: "Media & SEO", icon: Search },
+  { value: "faq", label: "FAQ", icon: HelpCircle },
+  { value: "social", label: "Social (OG)", icon: Share2 },
+];
+const SEO_TAB_ORDER = SEO_TABS.map((t) => t.value);
+const SEO_FIELD_TABS: Record<string, string> = {
+  pageTitle: "basic",
+  excerpt: "basic",
+  content: "basic",
+  metaTitle: "seo",
+  metaDescription: "seo",
+  keywords: "seo",
+  schemaType: "seo",
+  coverImage: "seo",
+  faqSchema: "faq",
+  social: "social",
+};
 
 interface Category {
   _id: string;
@@ -50,6 +74,9 @@ const formSchema = z.object({
   destinationId: z.string().min(2, { message: "Destination is required." }),
   categoryId: z.string().min(2, { message: "Category is required." }),
   pageTitle: z.string().optional(),
+  faqSchema: z
+    .array(z.object({ question: z.string(), answer: z.string() }))
+    .optional(),
   coverImage: z
     .object({
       url: z.string().optional(),
@@ -173,10 +200,12 @@ function DestinationSeoNew({
       destinationId: "",
       categoryId: "",
       pageTitle: "",
+      faqSchema: [],
       coverImage: { url: "", public_id: "", alt: "" },
       social: { twitter: { inheritOpenGraph: true } },
     },
   });
+  const faqArray = useFieldArray({ control: form.control, name: "faqSchema" });
 
   const {
     data: destinationSeo,
@@ -200,6 +229,7 @@ function DestinationSeoNew({
         excerpt: destinationSeo.excerpt,
         content: destinationSeo.content,
         pageTitle: destinationSeo.pageTitle ?? "",
+        faqSchema: destinationSeo.faqSchema ?? [],
         coverImage: destinationSeo.coverImage ?? { url: "", public_id: "", alt: "" },
         social: destinationSeo.social ?? { twitter: { inheritOpenGraph: true } },
       });
@@ -247,289 +277,284 @@ function DestinationSeoNew({
 
   const onSubmit = (values: FormData) => mutation.mutate(values);
 
+  // UI only: when validation fails, jump to the first tab with an error.
+  const [tab, setTab] = React.useState<string>("basic");
+  const onInvalid = (errs: Record<string, unknown>) => {
+    const target = firstErrorTab(errs, SEO_FIELD_TABS, SEO_TAB_ORDER);
+    if (target) setTab(target);
+    toast.error("Please fix the highlighted fields");
+  };
+
   if (destinationSeoLoading || categoryLoading || destinationLoading)
     return <Loader size="lg" />;
   if (destinationError || categoryError || destinationSeoError)
     return <p>Something went wrong</p>;
 
   return (
-    <div className="flex flex-col w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-gray-50 px-4 py-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">
-        {id ? "Update" : "Create"} Destination Meta
-      </h2>
+    <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-slate-200/80 bg-white shadow-xl">
+      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+            <MapPinPenIcon size={16} className="text-[#FE5300]" />
+            {id ? "Update" : "Create"} Category SEO Page
+          </h2>
+          <p className="mt-0.5 text-[12px] text-slate-500">
+            SEO and content for /holidays/{"{category}"}/{"{destination}"}. Pick the category first; only destinations with packages in it are listed.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Selects */}
-          <div className="grid md:grid-cols-2 gap-2">
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      value={field.value || ""}
-                      className="w-full rounded-md border p-2"
-                    >
-                      <option value="">Select Category</option>
-                      {Category?.map((cat: Category) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {form.watch("categoryId") && (
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-slate-50/60 px-5 py-4">
+            {/* Selects */}
+            <div className="grid gap-3 rounded-lg border border-slate-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="destinationId"
+                name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Destination</FormLabel>
+                    <FormLabel className="text-[12px] font-medium text-slate-700">Category</FormLabel>
                     <FormControl>
                       <select
                         {...field}
-                        className="w-full rounded-md border p-2"
+                        value={field.value || ""}
+                        className={`${fleetSelectClass} h-9 w-full`}
                       >
-                        <option value="">Select Destination</option>
-                        {Destination?.map((d: Destination) => (
-                          <option key={d._id} value={d._id}>
-                            {d.state}
+                        <option value="">Select Category</option>
+                        {Category?.map((cat: Category) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
                           </option>
                         ))}
                       </select>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-[11px]" />
                   </FormItem>
                 )}
               />
-            )}
+              {form.watch("categoryId") && (
+                <FormField
+                  control={form.control}
+                  name="destinationId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[12px] font-medium text-slate-700">Destination</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className={`${fleetSelectClass} h-9 w-full`}
+                        >
+                          <option value="">Select Destination</option>
+                          {Destination?.map((d: Destination) => (
+                            <option key={d._id} value={d._id}>
+                              {d.state}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            <Tabs value={tab} onValueChange={setTab} className="w-full min-w-0 gap-4">
+              <FormTabsList
+                tabs={SEO_TABS.map((t) => ({
+                  ...t,
+                  hasError: Object.keys(form.formState.errors).some((k) => SEO_FIELD_TABS[k] === t.value),
+                }))}
+              />
+
+              {/* Basic Detail Tab */}
+              <TabsContent value="basic" forceMount className="data-[state=inactive]:hidden">
+                <FleetPanel title="Page content" description="Heading, intro and body shown on the listing page." icon={Info} bodyClassName="space-y-4 p-4">
+                  <FormField
+                    control={form.control}
+                    name="pageTitle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Page Heading (on-page title shown to visitors)</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder='Leave blank to use "Explore Packages in {Destination}"' className="h-9 text-[13px]" />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="excerpt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Excerpt</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} placeholder="Excerpt..." className="text-[13px]" />
+                        </FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="space-y-1.5">
+                    <label htmlFor="content" className="block text-[12px] font-medium text-slate-700">Content</label>
+                    <div className="rounded-md border border-slate-200 p-2">
+                      <BlogEditor
+                        value={form.getValues("content")}
+                        onChange={(val) => form.setValue("content", val)}
+                      />
+                    </div>
+                  </div>
+                </FleetPanel>
+              </TabsContent>
+
+              {/* Media & SEO Tab */}
+              <TabsContent value="seo" forceMount className="data-[state=inactive]:hidden">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <FleetPanel title="Search engine" description="Meta tags for this listing page." icon={Search} bodyClassName="space-y-4 p-4">
+                    <FormField
+                      control={form.control}
+                      name="metaTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Meta Title</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Meta title" className="h-9 text-[13px]" />
+                          </FormControl>
+                          <FormMessage className="text-[11px]" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="metaDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Meta Description</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Meta description" className="h-9 text-[13px]" />
+                          </FormControl>
+                          <FormMessage className="text-[11px]" />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="space-y-1.5">
+                      <Label className="block text-[12px] font-medium text-slate-700">Keywords</Label>
+                      <TagInput values={form.watch("keywords")} onChange={(v) => form.setValue("keywords", v)} />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="schemaType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Schema Type</FormLabel>
+                          <FormControl>
+                            <select
+                              multiple
+                              value={field.value || []}
+                              onChange={(e) => {
+                                const value = Array.from(
+                                  e.target.selectedOptions,
+                                  (option) => option.value
+                                );
+                                field.onChange(value);
+                              }}
+                              className={dSelectMultiple}
+                            >
+                              {schemaTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </select>
+                          </FormControl>
+                          <p className="text-[11px] text-slate-400">Hold Cmd/Ctrl to select multiple.</p>
+                          <FormMessage className="text-[11px]" />
+                        </FormItem>
+                      )}
+                    />
+                  </FleetPanel>
+                  <FleetPanel title="Cover image" description="Banner shown on this page." icon={ImageIcon} bodyClassName="space-y-4 p-4">
+                    <ImageUploader
+                      initialImage={destinationSeo?.coverImage?.url ? destinationSeo.coverImage : undefined}
+                      onUpload={(img) =>
+                        form.setValue("coverImage", {
+                          url: img?.url,
+                          public_id: img?.public_id,
+                          width: img?.width,
+                          height: img?.height,
+                          alt: img?.alt || form.getValues("pageTitle") || form.getValues("metaTitle"),
+                        })
+                      }
+                    />
+                    {form.watch("coverImage")?.url && (
+                      <Input
+                        {...form.register("coverImage.alt")}
+                        placeholder="Cover Image Alt Text"
+                        className="h-9 text-[13px]"
+                      />
+                    )}
+                  </FleetPanel>
+                </div>
+              </TabsContent>
+
+              {/* FAQ Tab */}
+              <TabsContent value="faq" forceMount className="data-[state=inactive]:hidden">
+                <FaqEditor
+                  fields={faqArray.fields}
+                  onAdd={() => faqArray.append({ question: "", answer: "" })}
+                  onRemove={(i) => faqArray.remove(i)}
+                  questionProps={(i) => form.register(`faqSchema.${i}.question`)}
+                  answerProps={(i) => form.register(`faqSchema.${i}.answer`)}
+                />
+              </TabsContent>
+
+              {/* Social (OG) Tab */}
+              <TabsContent value="social" forceMount className="data-[state=inactive]:hidden">
+                <OpenGraphManager
+                  form={form}
+                  moduleType="DESTINATION"
+                  baseMetadata={{
+                    title: form.watch("pageTitle") || form.watch("metaTitle") || "",
+                    description: form.watch("metaDescription") || form.watch("excerpt") || "",
+                    image: form.watch("coverImage")?.url || "https://musafirbaba.com/homebanner.webp",
+                    imageAlt: form.watch("pageTitle") || form.watch("metaTitle") || "",
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
 
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid grid-cols-3 w-full bg-slate-100/50 p-0.5 rounded-lg h-9 mb-4">
-              <TabsTrigger value="basic" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
-                Basic Detail
-              </TabsTrigger>
-              <TabsTrigger value="seo" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
-                Media & SEO
-              </TabsTrigger>
-              <TabsTrigger value="social" className="text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-[#FE5300]">
-                Social (OG)
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Basic Detail Tab */}
-            <TabsContent value="basic" forceMount className="space-y-6 data-[state=inactive]:hidden">
-              <FormField
-                control={form.control}
-                name="pageTitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Page Heading (on-page title shown to visitors)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder='Leave blank to use "Explore Packages in {Destination}"' />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="excerpt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Excerpt</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} placeholder="Excerpt..." />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="space-y-2">
-                <label htmlFor="content">Content</label>
-                <div className="border rounded p-2">
-                  <BlogEditor
-                    value={form.getValues("content")}
-                    onChange={(val) => form.setValue("content", val)}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Media & SEO Tab */}
-            <TabsContent value="seo" forceMount className="space-y-6 data-[state=inactive]:hidden">
-              <FormField
-                control={form.control}
-                name="metaTitle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meta Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Meta title" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="metaDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meta Description</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Meta description" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="space-y-2">
-                <Label className="block text-sm font-medium">Cover Image (banner shown on this page)</Label>
-                <div className="border rounded p-2">
-                  <ImageUploader
-                    initialImage={destinationSeo?.coverImage?.url ? destinationSeo.coverImage : undefined}
-                    onUpload={(img) =>
-                      form.setValue("coverImage", {
-                        url: img?.url,
-                        public_id: img?.public_id,
-                        width: img?.width,
-                        height: img?.height,
-                        alt: img?.alt || form.getValues("pageTitle") || form.getValues("metaTitle"),
-                      })
-                    }
-                  />
-                </div>
-                {form.watch("coverImage")?.url && (
-                  <Input
-                    {...form.register("coverImage.alt")}
-                    placeholder="Cover Image Alt Text"
-                  />
-                )}
-              </div>
-              <FormField
-                control={form.control}
-                name="schemaType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Schema Type</FormLabel>
-                    <FormControl>
-                      <select
-                        multiple
-                        value={field.value || []}
-                        onChange={(e) => {
-                          const value = Array.from(
-                            e.target.selectedOptions,
-                            (option) => option.value
-                          );
-                          field.onChange(value);
-                        }}
-                      >
-                        {schemaTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Keywords input */}
-              <div className="space-y-2">
-                <Label className="block text-sm font-medium">Keywords</Label>
-                <div className="flex flex-wrap gap-2 border rounded p-2">
-                  {form.watch("keywords")?.map((kw, i) => (
-                    <span
-                      key={i}
-                      className="flex items-center gap-1 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full text-sm"
-                    >
-                      {kw}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newKeywords = form
-                            .getValues("keywords")
-                            ?.filter((_, idx) => idx !== i);
-                          form.setValue("keywords", newKeywords);
-                        }}
-                        className="text-gray-600 hover:text-red-500"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </span>
-                  ))}
-
-                  <input
-                    type=" text"
-                    className="flex-1 min-w-[120px] border-none focus:ring-0 focus:outline-none"
-                    placeholder="Type keyword and press Enter"
-                    onBlur={(e) => {
-                      const arr = e.target.value
-                        .split(",")
-                        .map((v) => v.trim())
-                        .filter(Boolean);
-                      if (arr.length > 0) {
-                        form.setValue("keywords", [
-                          ...(form.getValues("keywords") || []),
-                          ...arr,
-                        ]);
-                        e.target.value = "";
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Social (OG) Tab */}
-            <TabsContent value="social" forceMount className="data-[state=inactive]:hidden">
-              <OpenGraphManager
-                form={form}
-                moduleType="DESTINATION"
-                baseMetadata={{
-                  title: form.watch("pageTitle") || form.watch("metaTitle") || "",
-                  description: form.watch("metaDescription") || form.watch("excerpt") || "",
-                  image: form.watch("coverImage")?.url || "https://musafirbaba.com/homebanner.webp",
-                  imageAlt: form.watch("pageTitle") || form.watch("metaTitle") || "",
-                }}
-              />
-            </TabsContent>
-          </Tabs>
-
           {/* Buttons */}
-          <div className="flex items-center justify-between gap-3">
-            <Button
-              type="submit"
-              disabled={mutation.isPending}
-              className="bg-[#FE5300] hover:bg-[#FE5300]/80"
-            >
-              {mutation.isPending ? "Submitting..." : "Submit"}
-            </Button>
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-white px-5 py-3">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="border-gray-400"
+              className="h-9 text-[12px]"
             >
               Close
+            </Button>
+            <Button
+              type="submit"
+              disabled={mutation.isPending}
+              className="h-9 bg-[#FE5300] text-[12px] hover:bg-[#e54b00]"
+            >
+              {mutation.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Save className="mr-1.5 h-3.5 w-3.5" />}
+              {mutation.isPending ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </form>
       </Form>
-      {mutation.isError && toast.error(mutation.error.message)}
-      {mutation.isSuccess && toast.success("Destination Meta created")}
     </div>
   );
 }

@@ -26,6 +26,13 @@ const partnerAuthSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    // Recent refresh tokens (one per signed-in device, newest last, max 5) so
+    // signing in on a second phone doesn't sign the first one out.
+    refreshTokens: { type: [String], default: undefined },
+    // Wrong-code counters: after 5 wrong tries the code stops working and a
+    // new one must be requested.
+    otpAttempts: { type: Number, default: 0 },
+    resetPasswordAttempts: { type: Number, default: 0 },
     resetPasswordToken: {
       type: String,
     },

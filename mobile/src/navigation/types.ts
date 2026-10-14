@@ -1,13 +1,13 @@
 export type AuthStackParamList = {
   Login: undefined;
   OTPVerification: { phone: string };
-  Register: undefined;
+  Register: { email?: string; verifyEmail?: boolean } | undefined;
   ForgotPassword: { initialEmail?: string } | undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
-  Bookings: undefined;
+  Bookings: { filter?: string } | undefined;
   Earnings: undefined;
   Inbox: undefined;
   Menu: undefined;

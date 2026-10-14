@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { API_BASE_URL } from '../utils/config';
+import { getActivation, ActivationCard } from '../components/AccountActivation';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../navigation/types';
@@ -168,9 +169,11 @@ export const HomeScreen = () => {
     }
   }, [token, logout]);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchDashboard();
+    }, [fetchDashboard])
+  );
 
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
@@ -197,6 +200,9 @@ export const HomeScreen = () => {
 
   const partnerStatus = data?.auth?.status || data?.profile?.status || "";
   const activeVehiclesCount = data?.vehicles?.filter((v: any) => v.status === 'Active').length || 0;
+  // Not approved yet: the floating bar and a Home card show what's left.
+  const activation = getActivation(data);
+  const openActivationStep = (screen: string) => navigation.navigate('Menu', { screen });
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
@@ -356,6 +362,9 @@ export const HomeScreen = () => {
             ))}
           </View>
         </View>
+
+        {/* Account activation (only while the account isn't approved) */}
+        <ActivationCard activation={activation} onOpen={openActivationStep} />
 
         {/* Quick Actions Grid */}
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Quick Actions</Text>
@@ -519,8 +528,30 @@ export const HomeScreen = () => {
         <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* Floating Go Online / Offline Toggle Bar */}
+      {/* Floating Go Online / Offline Toggle Bar -- until the account is approved
+          it shows the activation status and opens the next step instead. */}
       <View style={styles.floatingCapsuleContainer}>
+        {activation.state !== 'approved' ? (
+          <View style={styles.floatingCapsule}>
+            <View style={[styles.capsuleLeft, { flex: 1, marginRight: 8 }]}>
+              <View style={styles.pulseContainer}>
+                <View style={[styles.pulseDot, { backgroundColor: activation.state === 'review' ? '#3b82f6' : activation.state === 'ready' ? '#22c55e' : '#f59e0b' }]} />
+              </View>
+              <View style={{ marginLeft: 8, flex: 1 }}>
+                <Text style={styles.capsuleStatusTitle} numberOfLines={1}>{activation.title}</Text>
+                <Text style={styles.capsuleStatusSub} numberOfLines={1}>{activation.subtitle}</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.powerToggleBtn, { backgroundColor: activation.state === 'review' ? '#334155' : '#FE5300' }]}
+              onPress={() => openActivationStep(activation.actionScreen)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name={activation.state === 'review' ? 'time-outline' : 'arrow-forward-circle-outline'} size={16} color="#ffffff" style={{ marginRight: 4 }} />
+              <Text style={styles.powerToggleText}>{activation.actionLabel}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
           <View style={styles.floatingCapsule}>
             <View style={styles.capsuleLeft}>
             <View style={styles.pulseContainer}>
@@ -566,6 +597,7 @@ export const HomeScreen = () => {
             <Text style={styles.powerToggleText}>{isOnline ? 'Go Offline' : 'Go Online'}</Text>
           </TouchableOpacity>
         </View>
+        )}
       </View>
 
       {/* Trip Details Modal Sheet */}
