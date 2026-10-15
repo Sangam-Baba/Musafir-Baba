@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, Animated, ActivityIndicator, StyleSheet } from 'react-native';
 
-const APP_LOGO = require('../../assets/icon.png');
+const APP_LOGO = require('../../assets/branding/mbconnect-logo.png');
 
 export default function ScreenSplash() {
   const fadeAnim = useRef(new Animated.Value(0)).current;

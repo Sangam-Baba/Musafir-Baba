@@ -23,6 +23,9 @@ interface Ticket {
   _id: string;
   ticketId: string;
   riderId?: { fullName?: string; mobileNumber?: string } | null;
+  // MBConnect driver-partner tickets have partnerId instead of riderId.
+  partnerId?: { fullName?: string; mobileNumber?: string } | null;
+  subject?: string;
   service: string;
   serviceLabel: string;
   issueLabel: string;
@@ -35,7 +38,7 @@ interface Ticket {
   status: Status;
   priority: Priority;
   resolutionNote?: string;
-  messages?: { _id: string; from: "RIDER" | "ADMIN"; text?: string; attachments?: Attachment[]; staffName?: string; at: string }[];
+  messages?: { _id: string; from: "RIDER" | "ADMIN" | "PARTNER"; text?: string; attachments?: Attachment[]; staffName?: string; at: string }[];
   statusHistory?: { status: string; by?: string; note?: string; at: string }[];
   adminUnread?: boolean;
   lastActivityAt: string;
@@ -43,6 +46,8 @@ interface Ticket {
 }
 
 const API = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/support-tickets`;
+// Who raised the ticket: rider (MBGO) or driver partner (MBConnect).
+const ownerOf = (t: Ticket) => (t.partnerId ? { ...t.partnerId, isPartner: true } : { ...(t.riderId || {}), isPartner: false });
 const SERVICES = [
   ["", "All services"], ["CAB", "Cabs"], ["TOUR", "Tours"], ["VISA", "Visa"], ["PAYMENT", "Payments"], ["SAFETY", "Safety"],
   ["FLIGHT", "Flights"], ["TRAIN", "Trains"], ["HOTEL", "Hotels"], ["OTHER", "Others"],
@@ -57,6 +62,7 @@ export default function SupportTicketsPage() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState("ACTIVE");
   const [service, setService] = useState("");
+  const [who, setWho] = useState("");
   const [q, setQ] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -64,11 +70,12 @@ export default function SupportTicketsPage() {
 
   const auth = { Authorization: `Bearer ${accessToken}` };
   const list = useQuery<{ data: Ticket[]; total: number; pages: number; counts: Record<string, number> }>({
-    queryKey: ["adminSupportTickets", status, service, search, page],
+    queryKey: ["adminSupportTickets", status, service, who, search, page],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page) });
       if (status !== "ALL") params.set("status", status);
       if (service) params.set("service", service);
+      if (who) params.set("who", who);
       if (search) params.set("q", search);
       const res = await fetch(`${API}?${params}`, { headers: auth });
       if (!res.ok) throw new Error("Failed to load support tickets");
@@ -106,8 +113,13 @@ export default function SupportTicketsPage() {
             <select className={fleetSelectClass} value={service} onChange={(e) => { setService(e.target.value); setPage(1); }}>
               {SERVICES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
+            <select className={fleetSelectClass} value={who} onChange={(e) => { setWho(e.target.value); setPage(1); }}>
+              <option value="">Riders + drivers</option>
+              <option value="RIDER">Riders (MBGO)</option>
+              <option value="PARTNER">Drivers (MBConnect)</option>
+            </select>
             <form onSubmit={(e) => { e.preventDefault(); setSearch(q.trim()); setPage(1); }}>
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ticket ID, rider, phone, booking…" className="h-8 w-56 text-[13px]" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ticket ID, rider/driver, phone, booking…" className="h-8 w-56 text-[13px]" />
             </form>
           </div>
         }
@@ -123,7 +135,7 @@ export default function SupportTicketsPage() {
             <Table className="text-[13px]">
               <TableHeader className="bg-slate-50/60">
                 <TableRow>
-                  {["Ticket", "Rider", "Issue", "Booking", "Priority", "Status", "Last activity"].map((h) => <TableHead key={h} className={fleetTh}>{h}</TableHead>)}
+                  {["Ticket", "Raised by", "Issue", "Booking", "Priority", "Status", "Last activity"].map((h) => <TableHead key={h} className={fleetTh}>{h}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -134,12 +146,15 @@ export default function SupportTicketsPage() {
                       <p className="text-[11px] text-slate-500">{fmt(t.createdAt)}</p>
                     </TableCell>
                     <TableCell className="py-2.5">
-                      <p className="font-medium text-slate-800">{t.riderId?.fullName || "-"}</p>
-                      <p className="text-[11px] text-slate-500">{t.riderId?.mobileNumber || ""}</p>
+                      <p className="font-medium text-slate-800">
+                        {ownerOf(t).fullName || "-"}
+                        {ownerOf(t).isPartner && <span className="ml-1.5 rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-600/20">Driver</span>}
+                      </p>
+                      <p className="text-[11px] text-slate-500">{ownerOf(t).mobileNumber || ""}</p>
                     </TableCell>
                     <TableCell className="max-w-[260px] py-2.5">
                       <p className="font-medium text-slate-800">{t.serviceLabel} · {t.issueLabel}</p>
-                      <p className="truncate text-[11px] text-slate-500">{t.description}</p>
+                      <p className="truncate text-[11px] text-slate-500">{t.subject ? `${t.subject} — ` : ""}{t.description}</p>
                     </TableCell>
                     <TableCell className="py-2.5 text-[12px] text-slate-600">{t.booking?.code ? <><p className="font-mono">{t.booking.code}</p><p className="truncate text-[11px] text-slate-500">{t.booking.title}</p></> : "—"}</TableCell>
                     <TableCell className="py-2.5"><FleetPill className={priorityTone(t.priority)}>{t.priority}</FleetPill></TableCell>
@@ -222,12 +237,15 @@ function TicketSheet({ id, onClose, accessToken, onChanged }: { id: string | nul
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-slate-900">{t.riderId?.fullName || "Rider"}</p>
-                  <p className="text-[12px] text-slate-500">{t.riderId?.mobileNumber}</p>
+                  <p className="font-semibold text-slate-900">
+                    {ownerOf(t).fullName || (ownerOf(t).isPartner ? "Driver partner" : "Rider")}
+                    {ownerOf(t).isPartner && <span className="ml-1.5 rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-600/20">Driver · MBConnect</span>}
+                  </p>
+                  <p className="text-[12px] text-slate-500">{ownerOf(t).mobileNumber}</p>
                 </div>
                 <div className="flex gap-2">
-                  {t.riderId?.mobileNumber && <a href={`tel:${t.riderId.mobileNumber}`} className="inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[12px]"><Phone className="h-3.5 w-3.5" />Call</a>}
-                  {t.riderId?.mobileNumber && <a href={`https://wa.me/91${String(t.riderId.mobileNumber).replace(/\D/g, "").slice(-10)}`} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[12px]"><MessageCircle className="h-3.5 w-3.5" />WhatsApp</a>}
+                  {ownerOf(t).mobileNumber && <a href={`tel:${ownerOf(t).mobileNumber}`} className="inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[12px]"><Phone className="h-3.5 w-3.5" />Call</a>}
+                  {ownerOf(t).mobileNumber && <a href={`https://wa.me/91${String(ownerOf(t).mobileNumber).replace(/\D/g, "").slice(-10)}`} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[12px]"><MessageCircle className="h-3.5 w-3.5" />WhatsApp</a>}
                 </div>
               </div>
               <p className="mt-2 text-[12px] text-slate-500">Preferred contact: <span className="font-medium text-slate-700">{t.preferredContact?.method || "CALL"}</span>{t.preferredContact?.value ? ` · ${t.preferredContact.value}` : ""}</p>
@@ -246,6 +264,7 @@ function TicketSheet({ id, onClose, accessToken, onChanged }: { id: string | nul
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <p className="text-[11px] font-medium uppercase text-slate-400">Issue</p>
               <p className="font-semibold text-slate-900">{t.issueLabel}</p>
+              {t.subject && <p className="mt-0.5 font-medium text-slate-800">{t.subject}</p>}
               {t.quickOptions?.length > 0 && <div className="mt-1 flex flex-wrap gap-1">{t.quickOptions.map((o) => <span key={o} className="rounded bg-orange-50 px-1.5 py-0.5 text-[11px] text-orange-700">{o}</span>)}</div>}
               <p className="mt-2 whitespace-pre-wrap text-slate-700">{t.description}</p>
               {t.expectedResolution && <p className="mt-2 text-[12px] text-slate-500">Expected: {t.expectedResolution}</p>}
@@ -286,7 +305,7 @@ function TicketSheet({ id, onClose, accessToken, onChanged }: { id: string | nul
               <div className="space-y-2">
                 {(t.messages || []).map((m) => (
                   <div key={m._id} className={`max-w-[85%] rounded-lg px-3 py-2 ${m.from === "ADMIN" ? "ml-auto bg-orange-50" : "bg-slate-100"}`}>
-                    <p className="text-[11px] font-medium text-slate-500">{m.from === "ADMIN" ? m.staffName || "Support" : t.riderId?.fullName || "Rider"} · {fmt(m.at)}</p>
+                    <p className="text-[11px] font-medium text-slate-500">{m.from === "ADMIN" ? m.staffName || "Support" : ownerOf(t).fullName || (m.from === "PARTNER" ? "Driver" : "Rider")} · {fmt(m.at)}</p>
                     {m.text && <p className="whitespace-pre-wrap text-slate-800">{m.text}</p>}
                     {(m.attachments || []).map((a, i) => <a key={i} href={a.url} target="_blank" rel="noreferrer" className="mr-2 inline-flex items-center gap-1 text-[12px] text-sky-700"><ImageIcon className="h-3 w-3" />Photo {i + 1}</a>)}
                   </div>
@@ -294,7 +313,7 @@ function TicketSheet({ id, onClose, accessToken, onChanged }: { id: string | nul
               </div>
               {t.status !== "CLOSED" && (
                 <div className="mt-3 flex gap-2">
-                  <Textarea value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Reply to the rider (they'll get a notification)" className="min-h-[60px] text-[13px]" />
+                  <Textarea value={reply} onChange={(e) => setReply(e.target.value)} placeholder={`Reply to the ${t.partnerId ? "driver" : "rider"} (they'll get a notification)`} className="min-h-[60px] text-[13px]" />
                   <Button className="h-auto bg-[#FE5300] hover:bg-[#e54b00]" disabled={busy || !reply.trim()} onClick={async () => { if (await save("/messages", "POST", { text: reply }, "Reply sent")) setReply(""); }}>
                     <Send className="h-4 w-4" />
                   </Button>

@@ -6,6 +6,7 @@ import { addVehicle, assignDriverToVehicle, updateVehicle, getVehicles, getVehic
 import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/partnerDriver.controller.js";
 import { uploadDocument } from "../../controllers/partner/partnerDocument.controller.js";
 import { getStates, getCities, getPincodes } from "../../controllers/locationMaster.controller.js";
+import { getPartnerSupportCatalog, getPartnerSupportTrips, createPartnerTicket, getPartnerTickets, getPartnerTicket, partnerReply } from "../../controllers/partner/partnerSupport.controller.js";
 import {
   updateStatus,
   getBookings,
@@ -65,6 +66,14 @@ router.post("/payouts/request", requestPayout);
 router.get("/notifications", getNotifications);
 router.patch("/notifications/mark-read", markNotificationsRead);
 router.patch("/notifications/:id/read", markOneNotificationRead);
+
+// Help Center tickets (shown in admin > Support Tickets)
+router.get("/support/catalog", getPartnerSupportCatalog);
+router.get("/support/trips", getPartnerSupportTrips);
+router.get("/support/tickets", getPartnerTickets);
+router.post("/support/tickets", createPartnerTicket);
+router.get("/support/tickets/:id", getPartnerTicket);
+router.post("/support/tickets/:id/messages", partnerReply);
 router.get("/notifications/realtime-token", getRealtimeToken);
 
 // Documents

@@ -5,7 +5,7 @@ const attachmentSchema = new mongoose.Schema({ url: String, key: String, format:
 
 const messageSchema = new mongoose.Schema(
   {
-    from: { type: String, enum: ["RIDER", "ADMIN"], required: true },
+    from: { type: String, enum: ["RIDER", "ADMIN", "PARTNER"], required: true },
     text: { type: String, trim: true, maxlength: 2000 },
     attachments: { type: [attachmentSchema], default: [] },
     staffId: { type: mongoose.Schema.Types.ObjectId, ref: "Staff" },
@@ -16,14 +16,17 @@ const messageSchema = new mongoose.Schema(
 );
 
 const statusHistorySchema = new mongoose.Schema(
-  { status: String, note: String, by: { type: String, enum: ["RIDER", "ADMIN", "SYSTEM"] }, at: { type: Date, default: Date.now } },
+  { status: String, note: String, by: { type: String, enum: ["RIDER", "ADMIN", "SYSTEM", "PARTNER"] }, at: { type: Date, default: Date.now } },
   { _id: false }
 );
 
 const supportTicketSchema = new mongoose.Schema(
   {
     ticketId: { type: String, unique: true, index: true }, // "MBGT000123"
-    riderId: { type: mongoose.Schema.Types.ObjectId, ref: "RiderProfile", required: true, index: true },
+    // Rider tickets (MBGO) have riderId; driver-partner tickets (MBConnect) have partnerId instead.
+    riderId: { type: mongoose.Schema.Types.ObjectId, ref: "RiderProfile", required: function () { return !this.partnerId; }, index: true },
+    partnerId: { type: mongoose.Schema.Types.ObjectId, ref: "PartnerProfile", index: true },
+    subject: { type: String, trim: true, maxlength: 150 },
     service: { type: String, required: true, index: true },
     serviceLabel: { type: String },
     issueKey: { type: String, required: true },

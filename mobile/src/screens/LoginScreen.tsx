@@ -90,7 +90,7 @@ export const LoginScreen = () => {
            ========================================================= */}
         <View style={styles.heroBannerContainer}>
           <Image 
-            source={require('../../assets/authBanner.png')} 
+            source={require('../../assets/authBanner-v2.png')} 
             style={styles.heroBannerImage}
             resizeMode="cover"
           />

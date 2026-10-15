@@ -92,7 +92,9 @@ export const MainTabNavigator = () => {
       <Tab.Screen
         name="Menu"
         component={ProfileStack}
-        options={{ title: 'Menu' }}
+        // Leaving the Menu tab returns its stack to the Menu list, so tapping
+        // Menu never reopens a screen that was opened earlier.
+        options={{ title: 'Menu', popToTopOnBlur: true }}
       />
     </Tab.Navigator>
   );
