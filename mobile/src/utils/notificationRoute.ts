@@ -6,11 +6,14 @@ export type NotificationTarget =
   | { tab: 'Home' }
   | { tab: 'Bookings'; filter?: 'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Available' }
   | { tab: 'Earnings' }
-  | { tab: 'Menu'; screen: string };
+  | { tab: 'Menu'; screen: string; params?: Record<string, any> };
 
 export function getNotificationTarget(n: Pick<PartnerNotificationData, 'title' | 'type' | 'data'>): NotificationTarget {
   const title = (n.title || '').toLowerCase();
   const hasRide = !!n.data?.rideId;
+
+  // Support ticket updates open that ticket in the Help Center.
+  if (n.data?.supportTicketId) return { tab: 'Menu', screen: 'TripSupport', params: { ticketId: String(n.data.supportTicketId) } };
 
   // Money
   if (n.type === 'Payout') {
@@ -36,7 +39,7 @@ export function getNotificationTarget(n: Pick<PartnerNotificationData, 'title' |
 }
 
 export function openNotificationTarget(navigation: any, target: NotificationTarget) {
-  if (target.tab === 'Menu') navigation.navigate('Menu', { screen: target.screen });
+  if (target.tab === 'Menu') navigation.navigate('Menu', { screen: target.screen, initial: false, ...(target.params ? { params: target.params } : {}) });
   else if (target.tab === 'Bookings') navigation.navigate('Bookings', target.filter ? { filter: target.filter } : undefined);
   else navigation.navigate(target.tab);
 }

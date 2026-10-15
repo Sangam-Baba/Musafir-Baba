@@ -2,24 +2,24 @@
   "expo": {
     "name": "mbconnect",
     "slug": "mbconnect",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/branding/app-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/branding/splash-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.musafirbaba.mobile",
-      "icon": "./assets/icon.png"
+      "icon": "./assets/branding/app-icon.png"
     },
     "android": {
       "package": "com.musafirbaba.mobile",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/android/ic_launcher-web.png",
+        "foregroundImage": "./assets/branding/adaptive-foreground.png",
         "backgroundColor": "#ffffff"
       },
       "usesCleartextTraffic": true,
@@ -30,7 +30,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/icons/android/ic_launcher-web.png"
+      "favicon": "./assets/branding/favicon.png"
     },
     "plugins": [
       "expo-secure-store",

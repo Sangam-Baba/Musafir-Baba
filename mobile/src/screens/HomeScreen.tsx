@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   View, 
   Text, 
@@ -70,7 +72,12 @@ const DEFAULT_NOTIF_ICON = { icon: 'notifications', color: '#64748b', bg: '#f1f5
 
 type HomeScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Home'>;
 
+const BRAND_LOGO = require('../../assets/branding/mbconnect-logo.png');
+
 export const HomeScreen = () => {
+  // Same top spacing on every main screen: status bar height + 16.
+  const topInset = useSafeAreaInsets().top + 16;
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -202,12 +209,12 @@ export const HomeScreen = () => {
   const activeVehiclesCount = data?.vehicles?.filter((v: any) => v.status === 'Active').length || 0;
   // Not approved yet: the floating bar and a Home card show what's left.
   const activation = getActivation(data);
-  const openActivationStep = (screen: string) => navigation.navigate('Menu', { screen });
+  const openActivationStep = (screen: string) => navigation.navigate('Menu', { screen, initial: false });
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
       {/* Top Header Bar */}
-      <View style={styles.topHeader}>
+      <View style={[styles.topHeader, { paddingTop: topInset }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity 
             onPress={() => navigation.navigate('Menu')} 
@@ -218,13 +225,7 @@ export const HomeScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.brandContainer}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.brandMb}>mb</Text>
-              <Text style={styles.brandConnect}>c</Text>
-              <Ionicons name="disc-outline" size={16} color="#FE5300" style={{ marginHorizontal: -1 }} />
-              <Text style={styles.brandConnect}>nnect</Text>
-            </View>
-            <Text style={styles.brandTagline}>— CONNECT. DRIVE. GROW. —</Text>
+            <Image source={BRAND_LOGO} style={{ width: 64, height: 43 }} resizeMode="contain" accessibilityLabel="MBConnect" />
           </View>
         </View>
 
@@ -244,7 +245,7 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={styles.headerIconBtn} 
-            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport', initial: false })}
             activeOpacity={0.7}
           >
             <Ionicons name="chatbubble-ellipses-outline" size={22} color="#0f172a" />
@@ -371,7 +372,7 @@ export const HomeScreen = () => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
           <TouchableOpacity 
             style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'VehiclesList' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'VehiclesList', initial: false })}
             activeOpacity={0.8}
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#f0fdf4' }]}>
@@ -382,7 +383,7 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'PersonalDetails' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'IdentityProof', initial: false })}
             activeOpacity={0.8}
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#eff6ff' }]}>
@@ -393,7 +394,7 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'PersonalDetails' })}
+            onPress={() => navigation.navigate('Menu', { screen: FINANCIAL_FEATURES_ENABLED ? 'BankDetails' : 'PersonalDetails', initial: false })}
             activeOpacity={0.8}
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#faf5ff' }]}>
@@ -404,7 +405,7 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'FleetRegistry' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'FleetRegistry', initial: false })}
             activeOpacity={0.8}
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#fff7ed' }]}>
@@ -415,7 +416,7 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport', initial: false })}
             activeOpacity={0.8}
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#fef2f2' }]}>
@@ -467,22 +468,6 @@ export const HomeScreen = () => {
         <View style={[styles.upcomingCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 30 }]}>
           <Ionicons name="calendar-outline" size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
           <Text style={{ color: '#64748b', fontSize: 14, fontWeight: '500' }}>No upcoming bookings</Text>
-        </View>
-
-        {/* Banner Promo Pass */}
-        <View style={styles.promoPassCard}>
-          <View style={styles.percentBadge}>
-            <Text style={styles.percentText}>%</Text>
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.promoTitle}>Unlock 0% Commission!</Text>
-            <Text style={styles.promoSub}>Complete a trip to activate 24-hour pass for ₹0</Text>
-          </View>
-
-          <TouchableOpacity onPress={() => Alert.alert("Passes", "0% Commission Pass unlocked!")}>
-            <Text style={styles.viewPassesText}>View Passes &gt;</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Recent Notifications Section (Hidden as requested) */}

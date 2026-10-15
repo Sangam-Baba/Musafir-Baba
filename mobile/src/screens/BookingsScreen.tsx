@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -151,6 +152,9 @@ const MOCK_BOOKINGS: Booking[] = [
 ];
 
 export const BookingsScreen = () => {
+  // Same top spacing on every main screen: status bar height + 16.
+  const topInset = useSafeAreaInsets().top + 16;
+
   const token = useAuthStore((state) => state.token);
   const [activeFilter, setActiveFilter] = useState<'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Available'>('All');
 
@@ -434,7 +438,7 @@ export const BookingsScreen = () => {
       <StatusBar barStyle="light-content" backgroundColor="#FE5300" />
 
       {/* Header Info */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topInset }]}>
         <Text style={styles.title}>Bookings & Trips</Text>
         <Text style={styles.subtitle}>Track active rides, scheduled dispatch & trip history.</Text>
 

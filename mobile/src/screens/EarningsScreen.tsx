@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -16,6 +17,9 @@ import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 
 export const EarningsScreen = () => {
+  // Same top spacing on every main screen: status bar height + 16.
+  const topInset = useSafeAreaInsets().top + 16;
+
   const [timeframe, setTimeframe] = useState<'Week' | 'Month' | 'Year'>('Week');
   const navigation = useNavigation<any>();
   const token = useAuthStore((state) => state.token);
@@ -74,7 +78,7 @@ export const EarningsScreen = () => {
   return (
     <ScrollView 
       style={styles.container} 
-      contentContainerStyle={styles.contentContainer} 
+      contentContainerStyle={[styles.contentContainer, { paddingTop: topInset }]} 
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
@@ -111,7 +115,7 @@ export const EarningsScreen = () => {
           </View>
           <TouchableOpacity 
             style={styles.growthBadge}
-            onPress={() => navigation.navigate('Menu', { screen: 'EarningsTrend' })}
+            onPress={() => navigation.navigate('Menu', { screen: 'EarningsTrend', initial: false })}
           >
             <Ionicons name="trending-up" size={14} color="#16a34a" style={{ marginRight: 2 }} />
             <Text style={styles.growthText}>View Analytics</Text>
@@ -183,7 +187,7 @@ export const EarningsScreen = () => {
       {/* Recent Payouts */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text style={styles.sectionHeader}>RECENT BANK SETTLEMENTS</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Menu', { screen: 'PayoutHistory' })}>
+        <TouchableOpacity onPress={() => navigation.navigate('Menu', { screen: 'PayoutHistory', initial: false })}>
           <Text style={{ fontSize: 12, fontWeight: '700', color: '#FE5300', marginBottom: 12 }}>View History →</Text>
         </TouchableOpacity>
       </View>

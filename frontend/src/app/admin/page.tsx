@@ -205,8 +205,11 @@ function AdminDashBoard() {
           {[
             {
               label: "Total Bookings",
+              // Missing counts show "--" instead of NaN.
               value:
-                allCounts?.bookingCount + allCounts?.customizedTourBookingCount,
+                allCounts?.bookingCount == null && allCounts?.customizedTourBookingCount == null
+                  ? undefined
+                  : (Number(allCounts?.bookingCount) || 0) + (Number(allCounts?.customizedTourBookingCount) || 0),
               color: "text-blue-600",
               link: "/admin/bookings",
             },
@@ -218,7 +221,10 @@ function AdminDashBoard() {
             },
             {
               label: "Blog / News",
-              value: `${allCounts?.blogCount}/${allCounts?.newsCount}`,
+              value:
+                allCounts?.blogCount == null && allCounts?.newsCount == null
+                  ? undefined
+                  : `${allCounts?.blogCount ?? "--"}/${allCounts?.newsCount ?? "--"}`,
               color: "text-amber-600",
               link: "/admin/blogs",
               link2: "/admin/news",
@@ -245,7 +251,7 @@ function AdminDashBoard() {
                   {card.label}
                 </p>
                 <p className={`text-[18px] font-bold mt-1 ${card.color} group-hover/card:translate-x-[1px] transition-transform duration-300`}>
-                  {card.value ?? "--"}
+                  {typeof card.value === "number" && !Number.isFinite(card.value) ? "--" : card.value ?? "--"}
                 </p>
                 <div className="flex items-center gap-3">
                   <Link href={card.link} className="group/link">

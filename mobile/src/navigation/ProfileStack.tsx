@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileStackParamList } from './types';
 import { PersonalDetailsScreen } from '../screens/PersonalDetailsScreen';
@@ -39,6 +40,9 @@ const Stack = createStackNavigator<ProfileStackParamList>();
 type MenuNavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMenu'>;
 
 const MenuScreen = ({ navigation }: any) => {
+  // Same top spacing on every main screen: status bar height + 16.
+  const topInset = useSafeAreaInsets().top + 16;
+
   const token = useAuthStore((state) => state.token);
   const storeProfile = useAuthStore((state) => state.profile);
   const logout = useAuthStore((state) => state.logout);
@@ -223,7 +227,7 @@ const MenuScreen = ({ navigation }: any) => {
   return (
     <ScrollView 
       style={styles.container} 
-      contentContainerStyle={styles.contentContainer} 
+      contentContainerStyle={[styles.contentContainer, { paddingTop: topInset }]} 
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />

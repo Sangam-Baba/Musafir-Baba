@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,6 +17,9 @@ type NotificationItem = {
 };
 
 export const InboxScreen = () => {
+  // Same top spacing on every main screen: status bar height + 16.
+  const topInset = useSafeAreaInsets().top + 16;
+
   const navigation = useNavigation<any>();
   const notifications = useNotificationStore((state) => state.notifications);
   const storeFetchNotifications = useNotificationStore((state) => state.fetchNotifications);
@@ -68,9 +72,10 @@ export const InboxScreen = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topInset }]}>
         <View>
-          {navigation.canGoBack() && (
+          {/* Back only when opened from inside Menu (as a tab it's a top-level screen). */}
+          {navigation.getState()?.type === 'stack' && navigation.canGoBack() && (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
               <Ionicons name="arrow-back" size={22} color="#0f172a" />
             </TouchableOpacity>

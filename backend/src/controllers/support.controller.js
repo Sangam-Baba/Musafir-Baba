@@ -1,6 +1,7 @@
 import { SupportTicket } from "../models/SupportTicket.js";
 import { Counter } from "../models/Counter.js";
 import RiderProfile from "../models/rider/RiderProfile.js";
+import PartnerProfile from "../models/partner/PartnerProfile.js";
 import { Staff } from "../models/Staff.js";
 import { RideBooking } from "../models/RideBooking.js";
 import { TourAppBooking } from "../models/TourAppBooking.js";
@@ -216,6 +217,21 @@ const STATUS_COPY = {
 
 async function notifyRider(ticket, title, message) {
   try {
+    // Driver-partner ticket (MBConnect): notify the partner instead.
+    if (ticket.partnerId) {
+      const partner = await PartnerProfile.findById(ticket.partnerId);
+      if (!partner) return;
+      await notifyUser({
+        recipientType: "Partner",
+        recipientId: partner._id,
+        title,
+        message,
+        type: "System",
+        data: { supportTicketId: ticket._id },
+        pushToken: partner.pushToken,
+      });
+      return;
+    }
     const rider = await RiderProfile.findById(ticket.riderId);
     if (!rider) return;
     await notifyUser({
@@ -249,16 +265,20 @@ export const adminListTickets = async (req, res) => {
     if (req.query.status === "ACTIVE") filter.status = { $in: ["OPEN", "IN_PROGRESS"] };
     if (findService(req.query.service)) filter.service = req.query.service;
     if (isValidPriority(req.query.priority)) filter.priority = req.query.priority;
+    // Who raised it: riders (MBGO) or driver partners (MBConnect).
+    if (req.query.who === "PARTNER") filter.partnerId = { $exists: true, $ne: null };
+    if (req.query.who === "RIDER") filter.riderId = { $exists: true, $ne: null };
     const q = String(req.query.q || "").trim();
     if (q) {
       const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       const riders = await RiderProfile.find({ $or: [{ fullName: rx }, { mobileNumber: rx }] }).select("_id").limit(200).lean();
-      filter.$or = [{ ticketId: rx }, { description: rx }, { "booking.code": rx }, { riderId: { $in: riders.map((r) => r._id) } }];
+      const partners = await PartnerProfile.find({ $or: [{ fullName: rx }, { mobileNumber: rx }] }).select("_id").limit(200).lean();
+      filter.$or = [{ ticketId: rx }, { description: rx }, { subject: rx }, { "booking.code": rx }, { riderId: { $in: riders.map((r) => r._id) } }, { partnerId: { $in: partners.map((p) => p._id) } }];
     }
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = 25;
     const [items, total, counts] = await Promise.all([
-      SupportTicket.find(filter).select("-messages -statusHistory").populate("riderId", "fullName mobileNumber").sort({ lastActivityAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      SupportTicket.find(filter).select("-messages -statusHistory").populate("riderId", "fullName mobileNumber").populate("partnerId", "fullName mobileNumber").sort({ lastActivityAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
       SupportTicket.countDocuments(filter),
       SupportTicket.aggregate([{ $group: { _id: "$status", n: { $sum: 1 } } }]),
     ]);
@@ -272,7 +292,7 @@ export const adminListTickets = async (req, res) => {
 // @route GET /api/admin/support-tickets/:id
 export const adminGetTicket = async (req, res) => {
   try {
-    const ticket = await SupportTicket.findById(req.params.id).populate("riderId", "fullName mobileNumber");
+    const ticket = await SupportTicket.findById(req.params.id).populate("riderId", "fullName mobileNumber").populate("partnerId", "fullName mobileNumber");
     if (!ticket) return res.status(404).json({ success: false, message: "Ticket not found" });
     if (ticket.adminUnread) {
       ticket.adminUnread = false;
@@ -308,7 +328,7 @@ export const adminUpdateTicket = async (req, res) => {
     }
     await ticket.save();
     if (statusChanged && STATUS_COPY[status]) notifyRider(ticket, STATUS_COPY[status].title, STATUS_COPY[status].message(ticket));
-    await ticket.populate("riderId", "fullName mobileNumber");
+    await ticket.populate([{ path: "riderId", select: "fullName mobileNumber" }, { path: "partnerId", select: "fullName mobileNumber" }]);
     return res.json({ success: true, data: ticket });
   } catch (error) {
     console.error("Admin update ticket error:", error.message);
@@ -334,7 +354,7 @@ export const adminReply = async (req, res) => {
     ticket.lastActivityAt = new Date();
     await ticket.save();
     notifyRider(ticket, `Reply on ${ticket.ticketId}`, text.length > 120 ? `${text.slice(0, 117)}...` : text);
-    await ticket.populate("riderId", "fullName mobileNumber");
+    await ticket.populate([{ path: "riderId", select: "fullName mobileNumber" }, { path: "partnerId", select: "fullName mobileNumber" }]);
     return res.json({ success: true, data: ticket });
   } catch (error) {
     console.error("Admin reply error:", error.message);
