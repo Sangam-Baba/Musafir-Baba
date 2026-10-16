@@ -15,7 +15,9 @@ export function getNotificationTarget(n: Pick<PartnerNotificationData, 'title' |
   // Support ticket updates open that ticket in the Help Center.
   if (n.data?.supportTicketId) return { tab: 'Menu', screen: 'TripSupport', params: { ticketId: String(n.data.supportTicketId) } };
 
-  // Money
+  // Money: wallet / withdrawal messages say which screen to open.
+  if (FINANCIAL_FEATURES_ENABLED && n.data?.screen === 'PartnerWallet') return { tab: 'Menu', screen: 'PartnerWallet' };
+  if (FINANCIAL_FEATURES_ENABLED && n.data?.screen === 'PayoutHistory') return { tab: 'Menu', screen: 'PayoutHistory' };
   if (n.type === 'Payout') {
     return FINANCIAL_FEATURES_ENABLED ? { tab: 'Menu', screen: 'PayoutHistory' } : { tab: 'Home' };
   }

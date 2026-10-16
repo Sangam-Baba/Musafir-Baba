@@ -18,6 +18,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { API_BASE_URL } from '../utils/config';
 import { getActivation, ActivationCard } from '../components/AccountActivation';
+import { getWallet, walletBlockReason, type Wallet } from '../api/partnerWallet.api';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../navigation/types';
@@ -176,9 +177,12 @@ export const HomeScreen = () => {
     }
   }, [token, logout]);
 
+  // Partner Wallet (only matters while the program is on).
+  const [wallet, setWallet] = useState<Wallet | null>(null);
   useFocusEffect(
     useCallback(() => {
       fetchDashboard();
+      getWallet().then((r) => setWallet(r.data.data)).catch(() => {});
     }, [fetchDashboard])
   );
 
@@ -366,6 +370,26 @@ export const HomeScreen = () => {
 
         {/* Account activation (only while the account isn't approved) */}
         <ActivationCard activation={activation} onOpen={openActivationStep} />
+
+        {/* Partner Wallet: recharge needed before accepting (approved partners, program on) */}
+        {activation.state === 'approved' && !!walletBlockReason(wallet) && (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('Menu', { screen: 'PartnerWallet', initial: false })}
+            style={{ marginHorizontal: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff7ed', borderWidth: 1, borderColor: '#fed7aa', borderRadius: 18, padding: 14 }}
+          >
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="wallet" size={20} color="#FE5300" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14.5, fontWeight: '800', color: '#0f172a' }}>{(wallet?.balance || 0) > 0 ? 'Low wallet balance' : 'Recharge to start taking rides'}</Text>
+              <Text style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{walletBlockReason(wallet)}</Text>
+            </View>
+            <View style={{ backgroundColor: '#FE5300', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 }}>
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff' }}>Recharge</Text>
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Quick Actions Grid */}
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Quick Actions</Text>

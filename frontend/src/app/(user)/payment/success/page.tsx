@@ -9,6 +9,22 @@ export default async function FailurePage({
   const { from } = await searchParams;
   const isFromMbgo = from === "mbgo";
 
+  // MBConnect driver wallet recharge (opened from the app in the phone browser).
+  if (from === "mbconnect-recharge") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <CheckCircle className="h-16 w-16 text-green-500" />
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Recharge successful</h1>
+          <p className="text-gray-600">The money has been added to your MBConnect wallet. Pull down on the Partner Wallet screen to see your new balance.</p>
+          <p className="mt-4 text-sm text-gray-500">You can close this page and go back to the MBConnect app.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 text-center">

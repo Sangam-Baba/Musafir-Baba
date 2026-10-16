@@ -4,7 +4,7 @@
     "slug": "mbconnect",
     "version": "1.2.0",
     "orientation": "portrait",
-    "icon": "./assets/branding/app-icon.png",
+    "icon": "./assets/branding/drawer-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/branding/splash-logo.png",
@@ -14,13 +14,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.musafirbaba.mobile",
-      "icon": "./assets/branding/app-icon.png"
+      "icon": "./assets/branding/drawer-icon.png"
     },
     "android": {
       "package": "com.musafirbaba.mobile",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/branding/adaptive-foreground.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/branding/drawer-adaptive-foreground.png",
+        "backgroundImage": "./assets/branding/drawer-adaptive-background.png",
+        "backgroundColor": "#FD5A07"
       },
       "usesCleartextTraffic": true,
       "predictiveBackGestureEnabled": false,

@@ -15,6 +15,8 @@ import { getRidePartnerEarning } from "../../services/rideFare.service.js";
 import { computeExtraTimeCharge, istDateTime, CITY_PRICING_MODE } from "../../services/cityFare.service.js";
 import { getLocationMatcher, vehicleServesAddress, isOfferedToPartner } from "../../services/rideDispatch.service.js";
 import { isPartnerApproved, NOT_APPROVED_MESSAGE } from "../../services/partnerAccount.service.js";
+import { recentPaidPayouts } from "./partnerPayout.controller.js";
+import { getWalletConfig, computeTripFee, rideKm, acceptBlockReason, reserveTripFee, unreserve, chargeTripFee } from "../../services/partnerWallet.service.js";
 
 // @desc    Toggle partner's active duty status (online/offline)
 // @route   PATCH /api/partner/status
@@ -145,6 +147,8 @@ export const getBookings = async (req, res) => {
               status: ride.extraTime.status,
             }
           : null,
+        // Additive: Partner Wallet program fee for this trip (held, then charged).
+        platformFee: ride.walletProgram?.applied ? { amount: ride.walletProgram.fee, status: ride.walletProgram.status } : null,
       };
     });
 
@@ -206,16 +210,23 @@ export const getAvailableRides = async (req, res) => {
       return matchingVehicles.some((vehicle) => vehicleServesAddress({ vehicle, settings, profile, address: ride.pickup.address, match }));
     });
 
-    const data = rides.map((ride) => ({
-      id: String(ride._id),
-      pickupLocation: ride.pickup.address,
-      dropoffLocation: ride.drop.address,
-      pickupTime: ride.rideTime,
-      date: ride.rideDate,
-      fare: ride.totalAmount,
-      vehicleCategory: ride.vehicleCategory,
-      distance: `${ride.distanceKm} km`,
-    }));
+    // Partner Wallet program (additive): the fee this ride would hold, and why
+    // Accept is blocked if the wallet can't cover it.
+    const walletCfg = await getWalletConfig();
+    const data = rides.map((ride) => {
+      const fee = walletCfg.enabled ? computeTripFee(walletCfg, ride) : undefined;
+      return {
+        id: String(ride._id),
+        pickupLocation: ride.pickup.address,
+        dropoffLocation: ride.drop.address,
+        pickupTime: ride.rideTime,
+        date: ride.rideDate,
+        fare: ride.totalAmount,
+        vehicleCategory: ride.vehicleCategory,
+        distance: `${ride.distanceKm} km`,
+        ...(walletCfg.enabled ? { platformFee: fee, acceptBlockedReason: acceptBlockReason(walletCfg, profile, fee) || null } : {}),
+      };
+    });
 
     return res.status(200).json({ success: true, total: data.length, data });
   } catch (error) {
@@ -238,7 +249,7 @@ export const acceptRide = async (req, res) => {
       return res.status(403).json({ success: false, message: NOT_APPROVED_MESSAGE });
     }
 
-    const rideBeforeAccept = await RideBooking.findById(req.params.id).select("rideDate rideTime vehicleCategory broadcastPartnerIds");
+    const rideBeforeAccept = await RideBooking.findById(req.params.id).select("rideDate rideTime vehicleCategory broadcastPartnerIds distanceKm tripType status");
 
     // Rides the admin broadcast to selected partners can only be taken by them.
     if (rideBeforeAccept && !isOfferedToPartner(rideBeforeAccept, profile._id)) {
@@ -264,6 +275,25 @@ export const acceptRide = async (req, res) => {
     // itself needs the atomic guard.
     const willRevealImmediately = rideBeforeAccept ? isWithin24h(rideBeforeAccept) : false;
 
+    // Partner Wallet program (only while switched on in admin): hold the trip
+    // fee now; it's charged at completion and given back if the ride is cancelled.
+    const walletCfg = await getWalletConfig();
+    let walletProgram;
+    if (walletCfg.enabled && rideBeforeAccept && rideBeforeAccept.status === "AWAITING_ASSIGNMENT") {
+      const fee = computeTripFee(walletCfg, rideBeforeAccept);
+      const held = await reserveTripFee(profile._id, fee, walletCfg);
+      if (!held) {
+        const fresh = await PartnerProfile.findById(profile._id).lean();
+        return res.status(402).json({
+          success: false,
+          code: "WALLET_BLOCKED",
+          message: acceptBlockReason(walletCfg, fresh, fee) || "Your wallet balance is too low to accept this ride.",
+          fee,
+        });
+      }
+      walletProgram = { applied: true, partnerId: profile._id, feePerKm: walletCfg.feePerKm, km: rideKm(rideBeforeAccept), fee, status: "RESERVED", acceptedAt: new Date() };
+    }
+
     // Atomic guard: only succeeds if the ride is still awaiting assignment.
     // Whichever partner's request lands first wins; everyone else gets the message below.
     const ride = await RideBooking.findOneAndUpdate(
@@ -284,6 +314,7 @@ export const acceptRide = async (req, res) => {
           // so the later reveal cron has nothing left to announce for this
           // ride -- mark it done now to avoid a redundant second notification.
           detailsRevealNotified: willRevealImmediately,
+          ...(walletProgram ? { walletProgram } : {}),
         },
         $push: { statusHistory: { status: "ACCEPTED", note: `Accepted by partner ${profile._id}` } },
       },
@@ -291,6 +322,8 @@ export const acceptRide = async (req, res) => {
     );
 
     if (!ride) {
+      // Someone else got it first -- give the held fee back.
+      if (walletProgram) await unreserve(profile._id, walletProgram.fee);
       return res.status(409).json({ success: false, message: "This ride has already been accepted by another partner." });
     }
 
@@ -427,7 +460,8 @@ export const updateBookingStatus = async (req, res) => {
         freeWaitingMin: ride.extraTime.freeWaitingMin,
         waitingChargePerMin: ride.extraTime.waitingChargePerMin,
         taxPercent: ride.extraTime.taxPercent,
-        commissionPercent: ride.extraTime.commissionPercent,
+        // Partner Wallet program rides carry no commission.
+        commissionPercent: ride.walletProgram?.applied ? 0 : ride.extraTime.commissionPercent,
       });
       ride.extraTime = {
         ...(ride.extraTime.toObject ? ride.extraTime.toObject() : ride.extraTime),
@@ -480,7 +514,7 @@ export const updateBookingStatus = async (req, res) => {
         message: `₹${netEarning.toLocaleString("en-IN")} for trip #MB-${String(ride._id).slice(-6).toUpperCase()} will be added to your wallet within 24 hours.`,
         type: "Trip",
         data: { rideId: ride._id },
-        sendPush: false,
+        pushToken: profile.pushToken,
       });
 
       if (riderProfile) {
@@ -509,6 +543,26 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     await ride.save();
+
+    // Partner Wallet program: take the held per-km fee from the recharge wallet.
+    if (status === "COMPLETED" && ride.walletProgram?.applied) {
+      try {
+        const charged = await chargeTripFee(ride._id);
+        if (charged?.partner) {
+          await notifyUser({
+            recipientType: "Partner",
+            recipientId: charged.partner._id,
+            title: "Platform fee charged",
+            message: `₹${charged.fee.toLocaleString("en-IN")} platform fee for trip #MB-${String(ride._id).slice(-6).toUpperCase()} was taken from your wallet. Balance: ₹${Number(charged.partner.walletBalance).toLocaleString("en-IN")}.`,
+            type: "Payout",
+            data: { rideId: ride._id, screen: "PartnerWallet" },
+            pushToken: charged.partner.pushToken,
+          }).catch(() => {});
+        }
+      } catch (e) {
+        console.error("Trip fee charge error:", e.message);
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -641,7 +695,7 @@ export const getEarnings = async (req, res) => {
         taxes,
         growthPercent: 0,
         chartData,
-        recentPayouts: [],
+        recentPayouts: await recentPaidPayouts(profile._id).catch(() => []),
         availableBalance: profile.walletBalance || 0,
         pendingBalance: profile.pendingWalletBalance || 0,
       },
@@ -652,49 +706,7 @@ export const getEarnings = async (req, res) => {
   }
 };
 
-// @desc    Request Instant Payout
-// @route   POST /api/partner/payouts/request
-export const requestPayout = async (req, res) => {
-  try {
-    const authId = req.partnerId;
-    const { amount } = req.body;
-
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ success: false, message: "Valid payout amount is required." });
-    }
-
-    const profile = await PartnerProfile.findOne({ authId });
-    if (!profile) {
-      return res.status(404).json({ success: false, message: "Profile not found." });
-    }
-
-    if (profile.walletBalance < amount) {
-      return res.status(400).json({ success: false, message: "Insufficient balance for payout." });
-    }
-
-    profile.walletBalance = Math.max(0, profile.walletBalance - amount);
-    await profile.save();
-
-    await notifyUser({
-      recipientType: "Partner",
-      recipientId: profile._id,
-      title: "Payout requested",
-      message: `Your withdrawal request for ₹${amount.toLocaleString("en-IN")} has been submitted and is processing.`,
-      type: "Payout",
-      sendPush: false,
-    });
-
-    return res.status(201).json({
-      success: true,
-      payoutId: `PAY-${Date.now().toString().slice(-8)}`,
-      status: "Processing",
-      message: "Withdrawal request submitted successfully and is processing.",
-    });
-  } catch (error) {
-    console.error("Request Payout Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+// Withdrawals: see partnerPayout.controller.js (POST /api/partner/payouts).
 
 function toRelativeTime(date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);

@@ -13,6 +13,40 @@ async function resolveAdminName(req) {
   return "Admin";
 }
 
+// When the oldest still-unreleased trip earning came in, per partner (keyed by
+// authId). Releases are treated first-in-first-out: walking back from the newest
+// earning until the pending balance is covered gives the oldest one still waiting.
+async function getPendingSince(profiles) {
+  const out = new Map();
+  const withPending = profiles.filter((p) => (p.pendingWalletBalance || 0) > 0);
+  if (!withPending.length) return out;
+  const txns = await PartnerWalletTransaction.find({
+    partnerId: { $in: withPending.map((p) => p.authId) },
+    type: "trip_pending_credit",
+  })
+    .select("partnerId amount createdAt")
+    .sort({ createdAt: -1 })
+    .limit(5000)
+    .lean();
+  const byPartner = new Map();
+  for (const t of txns) {
+    const k = String(t.partnerId);
+    if (!byPartner.has(k)) byPartner.set(k, []);
+    byPartner.get(k).push(t);
+  }
+  for (const p of withPending) {
+    let left = p.pendingWalletBalance;
+    let since = null;
+    for (const t of byPartner.get(String(p.authId)) || []) {
+      since = t.createdAt;
+      left -= t.amount || 0;
+      if (left <= 0.009) break;
+    }
+    if (since) out.set(String(p.authId), since);
+  }
+  return out;
+}
+
 // @route   GET /api/admin/partner-wallets
 // @desc    List partners with their wallet balances (search by name/email/mobile)
 export const getPartnerWallets = async (req, res) => {
@@ -31,7 +65,7 @@ export const getPartnerWallets = async (req, res) => {
 
     const totalProfiles = await PartnerProfile.countDocuments(profileFilter);
     const profiles = await PartnerProfile.find(profileFilter)
-      .select("authId fullName mobileNumber walletBalance pendingWalletBalance")
+      .select("authId fullName mobileNumber walletBalance pendingWalletBalance walletReserved")
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum);
@@ -40,6 +74,7 @@ export const getPartnerWallets = async (req, res) => {
     const auths = await PartnerAuth.find({ _id: { $in: authIds } }).select("email status");
     const authById = new Map(auths.map((a) => [String(a._id), a]));
 
+    const pendingSince = await getPendingSince(profiles);
     const wallets = profiles.map((p) => ({
       partnerId: p._id,
       authId: p.authId,
@@ -49,6 +84,8 @@ export const getPartnerWallets = async (req, res) => {
       status: authById.get(String(p.authId))?.status || "",
       walletBalance: p.walletBalance || 0,
       pendingWalletBalance: p.pendingWalletBalance || 0,
+      walletReserved: p.walletReserved || 0,
+      pendingSince: pendingSince.get(String(p.authId)) || null,
     }));
 
     return res.status(200).json({
@@ -73,7 +110,7 @@ export const getPartnerWalletDetail = async (req, res) => {
   try {
     const { partnerId } = req.params;
     const profile = await PartnerProfile.findById(partnerId).select(
-      "authId fullName mobileNumber walletBalance pendingWalletBalance"
+      "authId fullName mobileNumber walletBalance pendingWalletBalance walletReserved"
     );
     if (!profile) {
       return res.status(404).json({ success: false, message: "Partner not found." });
@@ -95,6 +132,8 @@ export const getPartnerWalletDetail = async (req, res) => {
         status: auth?.status || "",
         walletBalance: profile.walletBalance || 0,
         pendingWalletBalance: profile.pendingWalletBalance || 0,
+        walletReserved: profile.walletReserved || 0,
+        pendingSince: (await getPendingSince([profile])).get(String(profile.authId)) || null,
         transactions,
       },
     });
@@ -126,9 +165,17 @@ export const releasePendingFunds = async (req, res) => {
       return res.status(400).json({ success: false, message: "Release amount exceeds pending balance." });
     }
 
-    profile.pendingWalletBalance = pending - amount;
-    profile.walletBalance = (profile.walletBalance || 0) + amount;
-    await profile.save();
+    // Atomic move so it can't overwrite a platform fee / recharge landing at the same moment.
+    const updated = await PartnerProfile.findOneAndUpdate(
+      { _id: profile._id, pendingWalletBalance: { $gte: amount } },
+      { $inc: { pendingWalletBalance: -amount, walletBalance: amount } },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(400).json({ success: false, message: "Release amount exceeds pending balance." });
+    }
+    profile.walletBalance = updated.walletBalance;
+    profile.pendingWalletBalance = updated.pendingWalletBalance;
 
     const adminName = await resolveAdminName(req);
     await PartnerWalletTransaction.create({
@@ -148,7 +195,8 @@ export const releasePendingFunds = async (req, res) => {
       title: "Wallet balance updated",
       message: `₹${amount.toLocaleString("en-IN")} has been added to your available wallet balance.`,
       type: "Trip",
-      sendPush: false,
+      data: { screen: "PartnerWallet" },
+      pushToken: profile.pushToken,
     });
 
     return res.status(200).json({
@@ -185,13 +233,30 @@ export const adjustWalletBalance = async (req, res) => {
       return res.status(404).json({ success: false, message: "Partner not found." });
     }
 
-    const current = profile.walletBalance || 0;
-    if (direction === "debit" && amount > current) {
-      return res.status(400).json({ success: false, message: "Debit amount exceeds available balance." });
+    // Money held for accepted trips (walletReserved) can't be debited.
+    const free = (profile.walletBalance || 0) - (profile.walletReserved || 0);
+    if (direction === "debit" && amount > free) {
+      return res.status(400).json({
+        success: false,
+        message: profile.walletReserved > 0
+          ? `Debit amount exceeds available balance (₹${profile.walletReserved.toLocaleString("en-IN")} is held for accepted trips).`
+          : "Debit amount exceeds available balance.",
+      });
     }
 
-    profile.walletBalance = direction === "credit" ? current + amount : current - amount;
-    await profile.save();
+    // Atomic change so it can't overwrite a platform fee / recharge landing at the same moment.
+    const updated = await PartnerProfile.findOneAndUpdate(
+      direction === "credit"
+        ? { _id: profile._id }
+        : { _id: profile._id, $expr: { $gte: [{ $subtract: [{ $ifNull: ["$walletBalance", 0] }, { $ifNull: ["$walletReserved", 0] }] }, amount] } },
+      { $inc: { walletBalance: direction === "credit" ? amount : -amount } },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(400).json({ success: false, message: "Debit amount exceeds available balance." });
+    }
+    profile.walletBalance = updated.walletBalance;
+    profile.pendingWalletBalance = updated.pendingWalletBalance;
 
     const adminName = await resolveAdminName(req);
     await PartnerWalletTransaction.create({
@@ -211,7 +276,8 @@ export const adjustWalletBalance = async (req, res) => {
       title: direction === "credit" ? "Wallet credited" : "Wallet debited",
       message: `₹${amount.toLocaleString("en-IN")} has been ${direction === "credit" ? "added to" : "deducted from"} your wallet balance. Reason: ${reason.trim()}`,
       type: "Trip",
-      sendPush: false,
+      data: { screen: "PartnerWallet" },
+      pushToken: profile.pushToken,
     });
 
     return res.status(200).json({

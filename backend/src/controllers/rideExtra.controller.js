@@ -127,7 +127,7 @@ export const verifyExtraTimePaymentSuccess = async (req, res) => {
           message: `₹${payout.toLocaleString("en-IN")} extra time for trip ${shortId(ride._id)} will be added to your wallet within 24 hours.`,
           type: "Trip",
           data: { rideId: ride._id },
-          sendPush: false,
+          pushToken: partner.pushToken,
         }).catch(() => {});
       }
       const rider = await RiderProfile.findById(ride.rider);

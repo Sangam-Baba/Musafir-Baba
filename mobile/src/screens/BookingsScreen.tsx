@@ -23,6 +23,7 @@ import { SafeModal } from '../components/SafeModal';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
 import { buildTripMapUrl, distanceKm } from '../utils/staticMap';
+import { getCancelReasons, getCancelPreview, cancelTrip } from '../api/partnerWallet.api';
 
 type Booking = {
   id: string;
@@ -61,6 +62,9 @@ type AvailableRide = {
   fare: number;
   vehicleCategory: string;
   distance: string;
+  // Partner Wallet program (only sent while it's on).
+  platformFee?: number;
+  acceptBlockedReason?: string | null;
 };
 
 const MOCK_BOOKINGS: Booking[] = [
@@ -264,7 +268,25 @@ export const BookingsScreen = () => {
     }
   };
 
+  // Partner Wallet: explain why Accept is blocked and offer a recharge.
+  const showWalletBlocked = (message: string) => {
+    // Web preview: Alert buttons don't work there, so use the browser dialog.
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${message}\n\nOpen Partner Wallet to recharge?`)) nav.navigate('Menu', { screen: 'PartnerWallet', initial: false });
+      return;
+    }
+    Alert.alert('Recharge needed', message, [
+      { text: 'Not now', style: 'cancel' },
+      { text: 'Recharge', onPress: () => nav.navigate('Menu', { screen: 'PartnerWallet', initial: false }) },
+    ]);
+  };
+
   const handleAcceptRide = async (rideId: string) => {
+    const blockedRide = availableRides.find((r) => r.id === rideId && r.acceptBlockedReason);
+    if (blockedRide?.acceptBlockedReason) {
+      showWalletBlocked(blockedRide.acceptBlockedReason);
+      return;
+    }
     setAcceptingId(rideId);
     try {
       const res = await fetch(`${API_BASE_URL}/partner/rides/${rideId}/accept`, {
@@ -275,6 +297,8 @@ export const BookingsScreen = () => {
       if (res.ok && result.success) {
         Alert.alert('Ride Accepted', 'This ride has been added to your Scheduled bookings.');
         setAvailableRides((prev) => prev.filter((r) => r.id !== rideId));
+      } else if (res.status === 402) {
+        showWalletBlocked(result.message || 'Your wallet balance is too low to accept this ride.');
       } else {
         Alert.alert('Could not accept ride', result.message || 'This ride may have already been accepted by another partner.');
         fetchAvailableRides(false);
@@ -386,9 +410,71 @@ export const BookingsScreen = () => {
     }
   };
 
+  // ---- Driver cancellation (Partner Wallet rules) ----
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReasons, setCancelReasons] = useState<{ key: string; label: string; reviewed: boolean }[]>([]);
+  const [cancelPreview, setCancelPreview] = useState<{ charge: number; rule: string } | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelComment, setCancelComment] = useState('');
+  const [cancelling, setCancelling] = useState(false);
+
+  const openCancel = async () => {
+    if (!selectedBooking) return;
+    setCancelOpen(true);
+    setCancelReason('');
+    setCancelComment('');
+    setCancelPreview(null);
+    try {
+      const [reasons, preview] = await Promise.all([getCancelReasons(), getCancelPreview(selectedBooking.id)]);
+      setCancelReasons(reasons.data.data || []);
+      setCancelPreview(preview.data.data);
+    } catch (e: any) {
+      setCancelOpen(false);
+      Alert.alert('Cannot cancel', e?.response?.data?.message || 'Please try again.');
+    }
+  };
+
+  const confirmCancel = () => {
+    if (!selectedBooking || !cancelReason) return;
+    if (cancelReason === 'OTHER' && cancelComment.trim().length < 3) {
+      Alert.alert('Add a reason', 'Please tell us why you are cancelling.');
+      return;
+    }
+    const reason = cancelReasons.find((r) => r.key === cancelReason);
+    const chargeText = reason?.reviewed
+      ? 'Our team will review this reason before any charge.'
+      : cancelPreview && cancelPreview.charge > 0
+        ? `₹${cancelPreview.charge} will be charged from your wallet.`
+        : 'No cancellation charge.';
+    const doCancel = async () => {
+          setCancelling(true);
+          try {
+            const res = await cancelTrip(selectedBooking.id, cancelReason, cancelComment.trim() || undefined);
+            setCancelOpen(false);
+            setSelectedBooking(null);
+            Alert.alert('Trip cancelled', res.data.message);
+            fetchBookings(false);
+          } catch (e: any) {
+            Alert.alert('Could not cancel', e?.response?.data?.message || 'Please try again.');
+          } finally {
+            setCancelling(false);
+          }
+    };
+    const question = `${chargeText} The rider will be assigned another partner.`;
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Cancel this trip?\n\n${question}`)) doCancel();
+      return;
+    }
+    Alert.alert('Cancel this trip?', question, [
+      { text: 'Keep trip', style: 'cancel' },
+      { text: 'Cancel trip', style: 'destructive', onPress: doCancel },
+    ]);
+  };
+
   const closeModal = () => {
     setSelectedBooking(null);
     setOtpInput('');
+    setCancelOpen(false);
   };
 
   const filteredBookings = bookings;
@@ -513,8 +599,17 @@ export const BookingsScreen = () => {
                 </View>
               </View>
 
+              {item.platformFee != null && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 6 }}>
+                  <Ionicons name="wallet-outline" size={14} color={item.acceptBlockedReason ? '#b45309' : '#64748b'} />
+                  <Text style={{ flex: 1, fontSize: 12, color: item.acceptBlockedReason ? '#b45309' : '#64748b', fontWeight: '600' }}>
+                    {item.acceptBlockedReason ? item.acceptBlockedReason : `Platform fee ₹${item.platformFee} from your wallet`}
+                  </Text>
+                </View>
+              )}
+
               <TouchableOpacity
-                style={[styles.acceptButton, acceptingId === item.id && { opacity: 0.6 }]}
+                style={[styles.acceptButton, acceptingId === item.id && { opacity: 0.6 }, !!item.acceptBlockedReason && { backgroundColor: '#94a3b8' }]}
                 onPress={() => handleAcceptRide(item.id)}
                 disabled={acceptingId === item.id}
                 activeOpacity={0.85}
@@ -523,8 +618,8 @@ export const BookingsScreen = () => {
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
-                    <Ionicons name="checkmark-circle-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
-                    <Text style={styles.acceptButtonText}>Accept Ride</Text>
+                    <Ionicons name={item.acceptBlockedReason ? 'wallet-outline' : 'checkmark-circle-outline'} size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                    <Text style={styles.acceptButtonText}>{item.acceptBlockedReason ? 'Recharge to Accept' : 'Accept Ride'}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -885,6 +980,58 @@ export const BookingsScreen = () => {
                   </>
                 )}
               </TouchableOpacity>
+            )}
+
+            {/* Driver cancellation (before the trip starts) */}
+            {['ACCEPTED', 'DRIVER_EN_ROUTE', 'ARRIVED'].includes(selectedBooking.rawStatus || '') && !cancelOpen && (
+              <TouchableOpacity onPress={openCancel} style={{ marginTop: 12, alignItems: 'center', paddingVertical: 10 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#dc2626' }}>Cancel this trip</Text>
+              </TouchableOpacity>
+            )}
+            {cancelOpen && (
+              <View style={{ marginTop: 12, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: '#fecaca', backgroundColor: '#fff7f7' }}>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: '#0f172a' }}>Why are you cancelling?</Text>
+                {!cancelPreview ? (
+                  <ActivityIndicator color="#dc2626" style={{ marginVertical: 12 }} />
+                ) : (
+                  <>
+                    <Text style={{ fontSize: 12.5, color: cancelPreview.charge > 0 ? '#b91c1c' : '#15803d', fontWeight: '700', marginTop: 4 }}>
+                      {cancelPreview.charge > 0 ? `Cancellation charge: ₹${cancelPreview.charge}` : 'No cancellation charge'} · {cancelPreview.rule}
+                    </Text>
+                    <View style={{ marginTop: 10, gap: 6 }}>
+                      {cancelReasons.map((r) => (
+                        <TouchableOpacity key={r.key} onPress={() => setCancelReason(r.key)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 }}>
+                          <Ionicons name={cancelReason === r.key ? 'radio-button-on' : 'radio-button-off'} size={18} color={cancelReason === r.key ? '#dc2626' : '#94a3b8'} />
+                          <Text style={{ flex: 1, fontSize: 13, color: '#0f172a' }}>{r.label}</Text>
+                          {r.reviewed && <Text style={{ fontSize: 10.5, color: '#b45309', fontWeight: '700' }}>Reviewed by team</Text>}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                    {cancelReason === 'OTHER' && (
+                      <TextInput
+                        value={cancelComment}
+                        onChangeText={setCancelComment}
+                        placeholder="Tell us the reason"
+                        placeholderTextColor="#94a3b8"
+                        maxLength={500}
+                        style={{ marginTop: 8, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, padding: 10, fontSize: 13, backgroundColor: '#ffffff', color: '#0f172a' }}
+                      />
+                    )}
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                      <TouchableOpacity onPress={() => setCancelOpen(false)} style={{ flex: 1, paddingVertical: 11, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center', backgroundColor: '#ffffff' }}>
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155' }}>Keep trip</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={confirmCancel}
+                        disabled={!cancelReason || cancelling}
+                        style={{ flex: 1, paddingVertical: 11, borderRadius: 12, alignItems: 'center', backgroundColor: cancelReason ? '#dc2626' : '#fca5a5' }}
+                      >
+                        {cancelling ? <ActivityIndicator size="small" color="#ffffff" /> : <Text style={{ fontSize: 13, fontWeight: '800', color: '#ffffff' }}>Cancel trip</Text>}
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+              </View>
             )}
 
             <Button title="Close Details" type="outline" onPress={closeModal} style={{ marginTop: 12 }} />
