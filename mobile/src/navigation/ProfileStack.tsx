@@ -33,6 +33,7 @@ import { UpdateVehicleScreen } from '../screens/UpdateVehicleScreen';
 import { BankDetailsScreen } from '../screens/BankDetailsScreen';
 import { BankAccountScreen } from '../screens/BankAccountScreen';
 import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
+import { PartnerWalletScreen } from '../screens/PartnerWalletScreen';
 import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
@@ -141,8 +142,8 @@ const MenuScreen = ({ navigation }: any) => {
       onPress: () => navigation.navigate('VehiclesList'),
     },
     {
-      title: 'Service Area & Pricing',
-      subtitle: 'Operational hubs & per-KM fare rules',
+      title: 'Service Area',
+      subtitle: 'Cities where you want bookings',
       icon: 'map-outline' as const,
       iconBg: '#eff6ff',
       iconColor: '#2563eb',
@@ -172,13 +173,13 @@ const MenuScreen = ({ navigation }: any) => {
       onPress: () => navigation.navigate('TripSupport'),
     },
     {
-      title: 'Subscription',
-      subtitle: 'Partner plans & exclusive benefits',
-      icon: 'sparkles-outline' as const,
+      title: 'Partner Wallet',
+      subtitle: 'Recharge, platform fees & wallet history',
+      icon: 'wallet-outline' as const,
       iconBg: '#fff7ed',
       iconColor: '#FE5300',
-      isComingSoon: true,
-      onPress: () => Alert.alert("Subscription", "Partner subscription plans are coming soon! Stay tuned for exclusive benefits."),
+      isComingSoon: false,
+      onPress: () => navigation.navigate('PartnerWallet'),
     },
     {
       title: 'Contact Support',
@@ -296,7 +297,7 @@ const MenuScreen = ({ navigation }: any) => {
 
             <TouchableOpacity
               style={styles.viewWalletBtn}
-              onPress={() => navigation.navigate('PayoutHistory')}
+              onPress={() => navigation.navigate('PartnerWallet')}
               activeOpacity={0.8}
             >
               <Text style={styles.viewWalletText}>View Wallet &gt;</Text>
@@ -445,6 +446,7 @@ export const ProfileStack = () => {
       )}
       <Stack.Screen name="ProfilePhoto" component={ProfilePhotoScreen} />
       <Stack.Screen name="VerifiedPartner" component={VerifiedPartnerScreen} />
+      <Stack.Screen name="PartnerWallet" component={PartnerWalletScreen} />
     </Stack.Navigator>
   );
 };

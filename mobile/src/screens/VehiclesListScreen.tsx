@@ -207,8 +207,8 @@ export const VehiclesListScreen = () => {
             <Ionicons name="pricetag-outline" size={18} color="#FE5300" />
           </View>
           <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={styles.pricingShortcutTitle}>Service Area & Pricing Settings</Text>
-            <Text style={styles.pricingShortcutSub}>Manage operational hubs & per-KM rates</Text>
+            <Text style={styles.pricingShortcutTitle}>Service Area Settings</Text>
+            <Text style={styles.pricingShortcutSub}>Choose the cities where you want bookings</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#FE5300" />
         </TouchableOpacity>

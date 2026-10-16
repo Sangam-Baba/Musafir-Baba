@@ -8,6 +8,7 @@ import {
   Tags,
   LifeBuoy,
   Smartphone,
+  WalletCards,
   Ban,
   LayoutTemplate,
   Newspaper,
@@ -28,6 +29,7 @@ import {
   KeyRound,
   Activity,
   LayoutDashboard,
+  Banknote,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import { FaHome, FaCog, FaBox } from "react-icons/fa";
@@ -196,6 +198,18 @@ export const NAV_GROUPS = [
         href: "/admin/fleet/wallets",
         icon: IndianRupee,
         permission: "partner-verification", // reuse permission or use a generic one
+      },
+      {
+        label: "Payout Requests",
+        href: "/admin/fleet/payouts",
+        icon: Banknote,
+        permission: "partner-verification", // same access as Partner Wallets
+      },
+      {
+        label: "Wallet Program",
+        href: "/admin/partner-wallet-program",
+        icon: WalletCards,
+        permission: "partner-wallet-program", // must match backend adminPartnerWalletProgram.routes.js
       },
     ],
   },

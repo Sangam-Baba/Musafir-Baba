@@ -137,6 +137,18 @@ const rideBookingSchema = new mongoose.Schema(
     // Admin "broadcast to selected partners": while set, only these partners
     // see/accept the ride. Empty/absent = every eligible partner (normal pool).
     broadcastPartnerIds: { type: [mongoose.Schema.Types.ObjectId], default: undefined },
+    // MBConnect Partner Wallet program, snapshotted when the ride is accepted.
+    // Absent on rides accepted while the program was off (they work as before).
+    walletProgram: {
+      applied: { type: Boolean },
+      partnerId: { type: mongoose.Schema.Types.ObjectId, ref: "PartnerProfile" },
+      feePerKm: { type: Number },
+      km: { type: Number },
+      fee: { type: Number }, // reserved at acceptance, charged at completion
+      status: { type: String, enum: ["RESERVED", "CHARGED", "RELEASED"] },
+      acceptedAt: { type: Date },
+      settledAt: { type: Date },
+    },
     assignedPartnerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PartnerProfile",

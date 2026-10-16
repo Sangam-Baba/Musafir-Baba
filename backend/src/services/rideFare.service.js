@@ -89,6 +89,16 @@ export function countTripDays(rideDate, returnDate) {
 // - Every other ride keeps the original formula exactly:
 //   commission = round(totalAmount × commission%), net = totalAmount − commission.
 export function getRidePartnerEarning(ride) {
+  // Partner Wallet program rides: no commission on earnings -- the platform's
+  // cut is the per-km fee taken from the driver's recharge wallet instead.
+  if (ride?.walletProgram?.applied) {
+    const base = getRidePartnerEarningBase(ride);
+    return { commission: 0, netEarning: base.netEarning + base.commission, platformAndTaxes: base.platformAndTaxes };
+  }
+  return getRidePartnerEarningBase(ride);
+}
+
+function getRidePartnerEarningBase(ride) {
   const totalAmount = Number(ride.totalAmount) || 0;
   if (ride.pricingVersion === PRICING_VERSION && Number.isFinite(ride.partnerPayout)) {
     const commission = Number(ride.commissionAmount) || 0;

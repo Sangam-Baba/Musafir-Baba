@@ -6,6 +6,8 @@ import { addVehicle, assignDriverToVehicle, updateVehicle, getVehicles, getVehic
 import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/partnerDriver.controller.js";
 import { uploadDocument } from "../../controllers/partner/partnerDocument.controller.js";
 import { getStates, getCities, getPincodes } from "../../controllers/locationMaster.controller.js";
+import { getMyPayouts, requestWithdrawal, cancelMyWithdrawal } from "../../controllers/partner/partnerPayout.controller.js";
+import { getMyWallet, initiateRecharge, getDriverCancelReasons, previewDriverCancel, driverCancelRide } from "../../controllers/partner/partnerWallet.controller.js";
 import { getPartnerSupportCatalog, getPartnerSupportTrips, createPartnerTicket, getPartnerTickets, getPartnerTicket, partnerReply } from "../../controllers/partner/partnerSupport.controller.js";
 import {
   updateStatus,
@@ -15,7 +17,6 @@ import {
   updateBookingStatus,
   markRoundTripEvent,
   getEarnings,
-  requestPayout,
   getNotifications,
   markNotificationsRead, markOneNotificationRead,
   getRealtimeToken
@@ -60,7 +61,11 @@ router.post("/rides/:id/accept", acceptRide);
 
 // Earnings & Payouts
 router.get("/earnings", getEarnings);
-router.post("/payouts/request", requestPayout);
+// Withdrawals to bank (recorded; admin marks them paid / cancelled).
+router.get("/payouts", getMyPayouts);
+router.post("/payouts", requestWithdrawal);
+router.post("/payouts/request", requestWithdrawal); // older path, same recorded flow
+router.post("/payouts/:id/cancel", cancelMyWithdrawal);
 
 // Notifications
 router.get("/notifications", getNotifications);
@@ -74,6 +79,13 @@ router.get("/support/tickets", getPartnerTickets);
 router.post("/support/tickets", createPartnerTicket);
 router.get("/support/tickets/:id", getPartnerTicket);
 router.post("/support/tickets/:id/messages", partnerReply);
+
+// Partner Wallet program (recharge balance, driver cancellation)
+router.get("/wallet", getMyWallet);
+router.post("/wallet/recharge", initiateRecharge);
+router.get("/cancel-reasons", getDriverCancelReasons);
+router.get("/bookings/:id/cancel-preview", previewDriverCancel);
+router.post("/bookings/:id/cancel", driverCancelRide);
 router.get("/notifications/realtime-token", getRealtimeToken);
 
 // Documents

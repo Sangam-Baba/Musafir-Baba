@@ -8,6 +8,7 @@ import PartnerDriver from "../models/partner/PartnerDriver.js";
 import { getLocationMatcher, vehicleServiceCities, vehicleServesAddress } from "../services/rideDispatch.service.js";
 import { getApprovedAuthIdSet } from "../services/partnerAccount.service.js";
 import { notifyUser } from "../services/notification/notificationService.js";
+import { getWalletConfig, computeTripFee, rideKm, reserveTripFee, releaseTripFee, acceptBlockReason } from "../services/partnerWallet.service.js";
 
 // @route   GET /api/admin/rides
 // @desc    List ride bookings for the admin management view, optionally filtered by status
@@ -222,6 +223,18 @@ export const assignRideToPartner = async (req, res) => {
     }
 
     const willRevealImmediately = isWithin24h(ride);
+
+    // Partner Wallet program: hold the trip fee from the assigned partner's wallet.
+    const walletCfg = await getWalletConfig();
+    if (walletCfg.enabled) {
+      const fee = computeTripFee(walletCfg, ride);
+      const held = await reserveTripFee(profile._id, fee, walletCfg);
+      if (!held) {
+        return res.status(400).json({ success: false, message: `Partner's wallet can't cover this ride: ${acceptBlockReason(walletCfg, profile, fee) || "balance too low"}` });
+      }
+      ride.walletProgram = { applied: true, partnerId: profile._id, feePerKm: walletCfg.feePerKm, km: rideKm(ride), fee, status: "RESERVED", acceptedAt: new Date() };
+    }
+
     ride.status = "ACCEPTED";
     ride.broadcastPartnerIds = undefined;
     ride.detailsRevealNotified = willRevealImmediately;
@@ -320,6 +333,10 @@ export const reassignRide = async (req, res) => {
 
     const previousPartnerId = ride.assignedPartnerId;
 
+    // Partner Wallet program: the previous partner's held fee goes back to them.
+    await releaseTripFee(ride._id).catch((e) => console.error("Release trip fee error:", e.message));
+    if (ride.walletProgram?.applied) ride.walletProgram = undefined;
+
     ride.assignedPartnerId = undefined;
     ride.assignedVehicleId = undefined;
     ride.assignedDriverId = undefined;
@@ -382,6 +399,8 @@ export const adminCancelRide = async (req, res) => {
     ride.cancelReason = req.body?.reason || "Cancelled by admin";
     ride.statusHistory.push({ status: "CANCELLED", note: ride.cancelReason });
     await ride.save();
+    // Partner Wallet program: give back any fee held for this ride.
+    await releaseTripFee(ride._id).catch((e) => console.error("Release trip fee error:", e.message));
 
     const riderProfile = await RiderProfile.findById(ride.rider);
     if (riderProfile) {

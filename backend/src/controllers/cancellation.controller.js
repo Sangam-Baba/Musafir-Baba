@@ -8,6 +8,7 @@ import { TourAppBooking } from "../models/TourAppBooking.js";
 import { VisaApplication } from "../models/VisaApplication.js";
 import "../models/Visa.js";
 import { notifyUser } from "../services/notification/notificationService.js";
+import { releaseTripFee } from "../services/partnerWallet.service.js";
 import { CANCELLATION_REASONS, findReason } from "../config/cancellationReasons.js";
 import { getCancellationPolicy, CAB_CANCELLABLE, cancellationCode } from "../services/cancellation.service.js";
 
@@ -91,6 +92,8 @@ export const createCancellation = async (req, res) => {
         { new: true }
       );
       if (!updated) return res.status(409).json({ success: false, message: "This ride can no longer be cancelled." });
+      // Partner Wallet program: the driver isn't at fault -- give back any held fee.
+      await releaseTripFee(updated._id).catch((e) => console.error("Release trip fee error:", e.message));
     }
 
     const counter = await Counter.findOneAndUpdate({ name: "cancellation_request" }, { $inc: { count: 1 } }, { new: true, upsert: true });

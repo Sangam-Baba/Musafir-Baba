@@ -86,6 +86,11 @@ const partnerProfileSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // MBConnect Partner Wallet program uses walletBalance above (recharges are
+    // added to it, platform fees / cancellation charges taken from it).
+    // walletReserved = platform fees held for accepted rides (part of walletBalance).
+    walletReserved: { type: Number, default: 0 },
+    firstRechargeAt: { type: Date },
     // Trip earnings land here first on ride completion and stay here until
     // an admin manually releases them into walletBalance (no automatic
     // timer — the 24-hour window is driver-facing messaging only).

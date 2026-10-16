@@ -24,7 +24,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { ChevronRight, Hourglass, IndianRupee, Search, Wallet } from "lucide-react";
+import { AlarmClock, ChevronRight, Hourglass, IndianRupee, Search, Wallet } from "lucide-react";
 import { FleetEmptyState, FleetKpiStrip, FleetPage, FleetPageHeader, FleetPanel, FleetPill, fleetTh, fleetTone } from "@/components/admin/fleet/FleetUI";
 
 interface WalletListItem {
@@ -36,6 +36,8 @@ interface WalletListItem {
   status: string;
   walletBalance: number;
   pendingWalletBalance: number;
+  walletReserved?: number;
+  pendingSince?: string | null; // oldest trip earning still waiting to be released
 }
 
 interface WalletTransaction {
@@ -91,7 +93,20 @@ const TRANSACTION_LABEL: Record<string, string> = {
   admin_release: "Released to available",
   admin_credit: "Manual credit",
   admin_debit: "Manual debit",
+  recharge: "Recharge (PayU)",
+  platform_fee: "Platform fee",
+  cancel_charge: "Cancellation charge",
+  cancel_charge_refund: "Cancellation charge refunded",
+  payout: "Withdrawal to bank",
+  payout_reversed: "Withdrawal cancelled (returned)",
 };
+// Trip earnings should be released within 24 hours (the driver is told so).
+const isOverdue = (since?: string | null) => !!since && Date.now() - new Date(since).getTime() >= 24 * 3600 * 1000;
+const sinceLabel = (since?: string | null) =>
+  since ? new Date(since).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
+
+// Entry types that take money out of the wallet (amounts are stored positive).
+const DEBIT_TYPES = new Set(["admin_debit", "platform_fee", "cancel_charge", "payout"]);
 
 function WalletsPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
@@ -124,6 +139,7 @@ function WalletsPage() {
   const totals = {
     available: wallets.reduce((sum, w) => sum + w.walletBalance, 0),
     pending: wallets.reduce((sum, w) => sum + w.pendingWalletBalance, 0),
+    overdue: wallets.filter((w) => w.pendingWalletBalance > 0 && isOverdue(w.pendingSince)).length,
   };
 
   const refresh = () => {
@@ -234,6 +250,7 @@ function WalletsPage() {
         items={[
           { label: "Total available balance", value: `₹${totals.available.toLocaleString("en-IN")}`, icon: IndianRupee, tone: "emerald" },
           { label: "Total pending balance", value: `₹${totals.pending.toLocaleString("en-IN")}`, icon: Hourglass, tone: "amber" },
+          { label: "Pending over 24 hours", value: `${totals.overdue} ${totals.overdue === 1 ? "partner" : "partners"}`, icon: AlarmClock, tone: totals.overdue ? "red" : "slate" },
         ]}
       />
 
@@ -283,6 +300,7 @@ function WalletsPage() {
                       <div className="mt-2 flex items-center gap-4 text-[12px]">
                         <span className="text-slate-500">Available <span className="font-semibold tabular-nums text-emerald-700">₹{w.walletBalance.toLocaleString("en-IN")}</span></span>
                         <span className="text-slate-500">Pending <span className="font-semibold tabular-nums text-amber-700">₹{w.pendingWalletBalance.toLocaleString("en-IN")}</span></span>
+                        {w.pendingWalletBalance > 0 && isOverdue(w.pendingSince) && <FleetPill className={fleetTone.red}>Over 24h</FleetPill>}
                       </div>
                     </button>
                   </li>
@@ -320,6 +338,11 @@ function WalletsPage() {
                         </TableCell>
                         <TableCell className="py-2.5 text-right font-semibold tabular-nums text-amber-700">
                           ₹{w.pendingWalletBalance.toLocaleString("en-IN")}
+                          {w.pendingWalletBalance > 0 && w.pendingSince && (
+                            <p className={`text-[11px] font-normal ${isOverdue(w.pendingSince) ? "text-red-600" : "text-slate-500"}`}>
+                              {isOverdue(w.pendingSince) ? "Over 24h · " : ""}since {sinceLabel(w.pendingSince)}
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell className="pr-4 py-2.5 text-right">
                           <span className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition-colors group-hover:bg-white group-hover:text-slate-700 group-hover:shadow-sm group-hover:ring-1 group-hover:ring-slate-200">
@@ -360,10 +383,18 @@ function WalletsPage() {
                   <div className="px-4 py-3">
                     <p className="text-[11px] font-medium text-slate-500">Available balance</p>
                     <p className="text-xl font-semibold tabular-nums text-emerald-700">₹{detail.walletBalance.toLocaleString("en-IN")}</p>
+                    {(detail.walletReserved || 0) > 0 && (
+                      <p className="text-[11px] text-slate-500">₹{(detail.walletReserved || 0).toLocaleString("en-IN")} held for accepted trips</p>
+                    )}
                   </div>
                   <div className="border-l border-slate-100 px-4 py-3">
                     <p className="text-[11px] font-medium text-slate-500">Pending balance</p>
                     <p className="text-xl font-semibold tabular-nums text-amber-700">₹{detail.pendingWalletBalance.toLocaleString("en-IN")}</p>
+                    {detail.pendingWalletBalance > 0 && detail.pendingSince && (
+                      <p className={`text-[11px] ${isOverdue(detail.pendingSince) ? "font-medium text-red-600" : "text-slate-500"}`}>
+                        {isOverdue(detail.pendingSince) ? "Waiting over 24 hours · " : ""}since {sinceLabel(detail.pendingSince)}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -476,12 +507,12 @@ function WalletsPage() {
                           </div>
                           <p
                             className={
-                              tx.type === "admin_debit"
+                              DEBIT_TYPES.has(tx.type)
                                 ? "shrink-0 text-[13px] font-semibold tabular-nums text-red-600"
                                 : "shrink-0 text-[13px] font-semibold tabular-nums text-emerald-600"
                             }
                           >
-                            {tx.type === "admin_debit" ? "-" : "+"}₹{tx.amount.toLocaleString("en-IN")}
+                            {DEBIT_TYPES.has(tx.type) ? "-" : "+"}₹{tx.amount.toLocaleString("en-IN")}
                           </p>
                         </li>
                       ))}

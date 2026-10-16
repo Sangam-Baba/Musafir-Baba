@@ -197,6 +197,7 @@ export const ServiceAreaPricingScreen = () => {
     if (!token) return;
     setSaving(true);
     try {
+      // Pricing is no longer edited here; previously saved values are sent back unchanged.
       const savedVehiclesRates = savedVehicles.map(v => ({ id: v.id, kmRate: v.kmRate, dayRate: v.dayRate }));
       const pricingConfig = { locationsList, pricingMethod, rateIncludes, extraCharges, savedVehiclesRates };
 
@@ -215,7 +216,7 @@ export const ServiceAreaPricingScreen = () => {
 
       const result = await res.json();
       if (res.ok && result.success) {
-        Alert.alert("Saved!", "Pricing and Locations have been updated successfully.", [{ text: "OK", onPress: () => navigation.goBack() }]);
+        Alert.alert("Saved!", "Your service areas have been updated.", [{ text: "OK", onPress: () => navigation.goBack() }]);
       } else {
         Alert.alert("Save Failed", result.message || "Unable to save.");
       }
@@ -327,7 +328,7 @@ export const ServiceAreaPricingScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Service Area & Pricing</Text>
+        <Text style={styles.headerTitle}>Service Area</Text>
         <TouchableOpacity style={styles.helpBtn} onPress={() => Alert.alert("Help", "Configure service locations.")}>
           <Ionicons name="information-circle-outline" size={18} color="#0f172a" style={{ marginRight: 2 }} />
           <Text style={styles.helpText}>Help</Text>
@@ -454,107 +455,12 @@ export const ServiceAreaPricingScreen = () => {
           )}
         </View>
 
-        {/* SECTION 2: PRICING METHOD & VEHICLE RATE CARDS */}
-        <View style={styles.pricingSection}>
-          <View style={{ marginBottom: 12 }}>
-            <Text style={styles.sectionHeaderTitle}><Ionicons name="ellipse" size={8} color="#3b82f6" /> 2. Vehicle Pricing Cards</Text>
-          </View>
-
-          <View style={styles.pricingMethodToggle}>
-            {['Per KM', 'Per Day', 'Both (Per KM & Per Day)'].map((method) => {
-              const isSelected = pricingMethod === method;
-              return (
-                <TouchableOpacity key={method} style={[styles.methodPill, isSelected && styles.methodPillActive]} onPress={() => setPricingMethod(method as any)}>
-                  <Text style={[styles.methodPillText, isSelected && styles.methodPillTextActive]}>{method}</Text>
-                </TouchableOpacity>
-              )
-            })}
-          </View>
-
-          {!hasVehicles ? (
-            <View style={styles.noVehiclesBox}>
-              <View style={styles.noVehiclesIconBox}><Ionicons name="warning" size={24} color="#d97706" /></View>
-              <Text style={styles.noVehiclesTitle}>No Vehicles Saved</Text>
-            </View>
-          ) : (
-            <View style={styles.vehicleRatesContainer}>
-              {savedVehicles.map((veh) => (
-                <View key={veh.id} style={styles.vehRateCard}>
-                  <View style={styles.vehRateHeader}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={styles.vehIconBox}><Ionicons name="car" size={16} color="#fb923c" /></View>
-                      <View style={{ marginLeft: 8 }}>
-                        <Text style={styles.vehName}>{veh.name}</Text>
-                        <Text style={styles.vehReg}>{veh.regNumber} • {veh.type}</Text>
-                      </View>
-                    </View>
-                  </View>
-                  
-                  <View style={styles.rateInputsRow}>
-                    {(pricingMethod === 'Per KM' || pricingMethod === 'Both (Per KM & Per Day)') && (
-                      <View style={styles.rateInputBox}>
-                        <Text style={styles.rateInputLabel}>Rate / KM</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Text style={styles.currencySymbol}>₹</Text>
-                          <TextInput style={styles.rateInput} value={veh.kmRate} onChangeText={(val) => handleVehicleRateChange(veh.id, 'kmRate', val)} keyboardType="numeric" />
-                        </View>
-                      </View>
-                    )}
-                    {(pricingMethod === 'Per Day' || pricingMethod === 'Both (Per KM & Per Day)') && (
-                      <View style={[styles.rateInputBox, { marginLeft: (pricingMethod === 'Both (Per KM & Per Day)') ? 8 : 0 }]}>
-                        <Text style={styles.rateInputLabel}>Rate / Day</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Text style={styles.currencySymbol}>₹</Text>
-                          <TextInput style={styles.rateInput} value={veh.dayRate} onChangeText={(val) => handleVehicleRateChange(veh.id, 'dayRate', val)} keyboardType="numeric" />
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* SECTION 3: RATE INCLUDES */}
-        <View style={styles.includesSection}>
-          <View style={styles.includesHeader}>
-            <Text style={styles.includesHeaderTitle}><Ionicons name="checkmark-circle" size={14} color="#059669" /> 3. Rate Includes</Text>
-          </View>
-          <View style={styles.includesGrid}>
-            {rateIncludes.map((inc) => (
-              <TouchableOpacity key={inc.id} style={[styles.includePill, inc.selected && styles.includePillSelected]} onPress={() => toggleInclusion(inc.id)}>
-                <View style={[styles.checkSquare, inc.selected && styles.checkSquareSelected]}>
-                  {inc.selected && <Ionicons name="checkmark" size={12} color="#ffffff" />}
-                </View>
-                <Text style={[styles.includeLabel, inc.selected && styles.includeLabelSelected]} numberOfLines={1}>{inc.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* SECTION 4: EXTRA CHARGES */}
-        <View style={styles.extraChargesSection}>
-          <View style={styles.includesHeader}>
-            <Text style={styles.extraHeaderTitle}><Ionicons name="sparkles" size={14} color="#d97706" /> 4. Extra Charges</Text>
-          </View>
-          
-          <View style={styles.extraChargesList}>
-            {extraCharges.map((charge) => (
-              <View key={charge.id} style={[styles.chargeCard, charge.selected && styles.chargeCardSelected]}>
-                <TouchableOpacity onPress={() => toggleExtraCharge(charge.id)} style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                  <View style={[styles.checkSquare, charge.selected && styles.checkSquareExtraSelected]}>
-                    {charge.selected && <Ionicons name="checkmark" size={12} color="#ffffff" />}
-                  </View>
-                  <Text style={[styles.chargeLabel, charge.selected && styles.chargeLabelSelected]}>{charge.label}</Text>
-                </TouchableOpacity>
-
-                <View style={styles.chargePriceBox}>
-                  <Text style={styles.currencySymbol}>₹</Text>
-                  <TextInput style={[styles.chargeInput, !charge.selected && { color: '#94a3b8' }]} value={charge.price} onChangeText={(val) => handleExtraChargePriceChange(charge.id, val)} editable={charge.selected} keyboardType="numeric" />
-                </View>
-              </View>
-            ))}
+        {/* Fares are set centrally by MBConnect (admin rate card) -- drivers only choose where they work. */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 16, padding: 14, marginBottom: 4 }}>
+          <Ionicons name="pricetag-outline" size={18} color="#2563eb" style={{ marginRight: 10, marginTop: 1 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: '800', color: '#0f172a' }}>Fares are set by MBConnect</Text>
+            <Text style={{ fontSize: 12, color: '#475569', marginTop: 2, lineHeight: 17 }}>Trip prices come from the MBConnect rate card, so you don't need to set any rates. Just add the cities where you want bookings.</Text>
           </View>
         </View>
 

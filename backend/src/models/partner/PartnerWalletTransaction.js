@@ -14,6 +14,12 @@ const partnerWalletTransactionSchema = new mongoose.Schema(
         "admin_release", // admin moved funds from pendingWalletBalance to walletBalance
         "admin_credit", // admin manually added to walletBalance
         "admin_debit", // admin manually deducted from walletBalance
+        "recharge", // driver recharged via PayU (Partner Wallet program)
+        "platform_fee", // per-km platform fee taken on trip completion
+        "cancel_charge", // driver cancellation charge
+        "cancel_charge_refund", // admin waived a cancellation charge
+        "payout", // driver withdrawal to bank requested (money leaves the wallet)
+        "payout_reversed", // withdrawal cancelled, money back in the wallet
       ],
       required: true,
     },
@@ -41,6 +47,9 @@ const partnerWalletTransactionSchema = new mongoose.Schema(
       type: String,
     },
     note: {
+      type: String,
+    },
+    txnid: {
       type: String,
     },
   },
