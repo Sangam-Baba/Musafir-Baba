@@ -40,7 +40,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "MBConnect uses your location to confirm you've arrived at the pickup point."
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "eas": {

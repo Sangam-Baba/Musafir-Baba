@@ -7,6 +7,8 @@ import { addDriver, getDrivers, updateDriver } from "../../controllers/partner/p
 import { uploadDocument } from "../../controllers/partner/partnerDocument.controller.js";
 import { getStates, getCities, getPincodes } from "../../controllers/locationMaster.controller.js";
 import { getMyPayouts, requestWithdrawal, cancelMyWithdrawal } from "../../controllers/partner/partnerPayout.controller.js";
+import { getMyReferral, applyReferralCode } from "../../controllers/partner/partnerReferral.controller.js";
+import { getMyTestRides, tapTestRide } from "../../controllers/partnerTestRide.controller.js";
 import { getMyWallet, initiateRecharge, getDriverCancelReasons, previewDriverCancel, driverCancelRide } from "../../controllers/partner/partnerWallet.controller.js";
 import { getPartnerSupportCatalog, getPartnerSupportTrips, createPartnerTicket, getPartnerTickets, getPartnerTicket, partnerReply } from "../../controllers/partner/partnerSupport.controller.js";
 import {
@@ -66,6 +68,14 @@ router.get("/payouts", getMyPayouts);
 router.post("/payouts", requestWithdrawal);
 router.post("/payouts/request", requestWithdrawal); // older path, same recorded flow
 router.post("/payouts/:id/cancel", cancelMyWithdrawal);
+
+// Refer & Earn
+router.get("/referral", getMyReferral);
+router.post("/referral/apply", applyReferralCode);
+
+// Test rides (admin-broadcast, badged, never acceptable; separate from real rides)
+router.get("/test-rides", getMyTestRides);
+router.post("/test-rides/:id/accept", tapTestRide);
 
 // Notifications
 router.get("/notifications", getNotifications);

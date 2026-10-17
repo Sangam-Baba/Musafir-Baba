@@ -1,0 +1,9 @@
+{
+  "name": "musafir-baba",
+  "private": true,
+  "description": "Repo-level helper scripts only. Each app (backend, frontend, mobile, mobile_user) has its own package.json.",
+  "scripts": {
+    "backup:server": "bash scripts/backup-server.sh",
+    "backup:db": "bash scripts/backup-musafirbaba-db.sh"
+  }
+}

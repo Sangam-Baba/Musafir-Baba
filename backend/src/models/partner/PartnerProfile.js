@@ -91,6 +91,11 @@ const partnerProfileSchema = new mongoose.Schema(
     // walletReserved = platform fees held for accepted rides (part of walletBalance).
     walletReserved: { type: Number, default: 0 },
     firstRechargeAt: { type: Date },
+    // Referral Program: referrer rewards wait here (locked: not withdrawable,
+    // not usable for fees) until the driver has enough rewarded referrals;
+    // then they move into walletBalance once (referralUnlockedAt).
+    referralBalance: { type: Number, default: 0 },
+    referralUnlockedAt: { type: Date },
     // Trip earnings land here first on ride completion and stay here until
     // an admin manually releases them into walletBalance (no automatic
     // timer — the 24-hour window is driver-facing messaging only).

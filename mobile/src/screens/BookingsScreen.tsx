@@ -16,7 +16,9 @@ import {
   Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { TestRideCards } from '../components/TestRideCards';
+import { getMyTestRides, type TestRide } from '../api/testRides.api';
 import * as Location from 'expo-location';
 import { Button } from '../components/Button';
 import { SafeModal } from '../components/SafeModal';
@@ -175,6 +177,13 @@ export const BookingsScreen = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [availableRides, setAvailableRides] = useState<AvailableRide[]>([]);
+  // Admin-broadcast TEST RIDES (badged, never acceptable) -- loaded separately from real rides.
+  const [testRides, setTestRides] = useState<TestRide[]>([]);
+  const fetchTestRides = () => {
+    getMyTestRides()
+      .then((res) => setTestRides(res.data.success ? res.data.data : []))
+      .catch(() => setTestRides([]));
+  };
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -259,7 +268,18 @@ export const BookingsScreen = () => {
     }
   }, [activeFilter]);
 
+  // Test rides: load whenever the Available tab is shown (incl. returning to it).
+  useEffect(() => {
+    if (activeFilter === 'Available') fetchTestRides();
+  }, [activeFilter]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (activeFilter === 'Available') fetchTestRides();
+    }, [activeFilter])
+  );
+
   const onRefresh = () => {
+    if (activeFilter === 'Available') fetchTestRides();
     setRefreshing(true);
     if (activeFilter === 'Available') {
       fetchAvailableRides(false);
@@ -555,16 +575,19 @@ export const BookingsScreen = () => {
           refreshing={refreshing}
           onRefresh={onRefresh}
           ListHeaderComponent={
-            loading ? (
-              <ActivityIndicator size="small" color="#FE5300" style={{ marginVertical: 10 }} />
-            ) : null
+            <>
+              {loading ? <ActivityIndicator size="small" color="#FE5300" style={{ marginVertical: 10 }} /> : null}
+              <TestRideCards rides={testRides} styles={styles} />
+            </>
           }
           ListEmptyComponent={
+            testRides.length ? null : (
             <View style={styles.emptyContainer}>
               <Ionicons name="flash-outline" size={48} color="#94a3b8" />
               <Text style={styles.emptyTitle}>No Rides Available Right Now</Text>
               <Text style={styles.emptyText}>New ride requests matching your vehicle category will show up here.</Text>
             </View>
+            )
           }
           renderItem={({ item }) => (
             <View style={styles.card}>

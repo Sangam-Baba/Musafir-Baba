@@ -18,6 +18,7 @@ export function getNotificationTarget(n: Pick<PartnerNotificationData, 'title' |
   // Money: wallet / withdrawal messages say which screen to open.
   if (FINANCIAL_FEATURES_ENABLED && n.data?.screen === 'PartnerWallet') return { tab: 'Menu', screen: 'PartnerWallet' };
   if (FINANCIAL_FEATURES_ENABLED && n.data?.screen === 'PayoutHistory') return { tab: 'Menu', screen: 'PayoutHistory' };
+  if (n.data?.screen === 'ReferEarn') return { tab: 'Menu', screen: 'ReferEarn' };
   if (n.type === 'Payout') {
     return FINANCIAL_FEATURES_ENABLED ? { tab: 'Menu', screen: 'PayoutHistory' } : { tab: 'Home' };
   }

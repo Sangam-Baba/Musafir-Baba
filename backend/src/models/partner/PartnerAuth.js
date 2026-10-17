@@ -47,6 +47,13 @@ const partnerAuthSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    // ---- Optional: "Continue with Google" (controllers/partner/partnerGoogleAuth.controller.js).
+    // Absent on accounts that never used Google sign-in. ----
+    googleId: { type: String, unique: true, sparse: true },
+    authProviders: { type: [String], default: undefined }, // e.g. ["password", "google"]
+    // ---- Optional: Referral Program (services/partnerReferral.service.js).
+    // This driver's own shareable code; created the first time it's needed. ----
+    referralCode: { type: String, unique: true, sparse: true },
     // Soft delete (admin "Delete partner"). The account and everything linked
     // to it (rides, wallet history, documents, logs) is kept; status "Deleted"
     // blocks login and removes the partner from dispatch. Email stays reserved.

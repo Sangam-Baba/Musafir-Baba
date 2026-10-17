@@ -203,6 +203,9 @@ export function walletSummary(cfg, profile) {
     reserved: money(profile?.walletReserved),
     available: availableBalance(profile),
     pending: money(profile?.pendingWalletBalance),
+    // Referral Program: locked referrer rewards (not withdrawable, not for fees).
+    referralLocked: money(profile?.referralBalance),
+    referralUnlocked: !!profile?.referralUnlockedAt,
     firstRechargeDone: !!profile?.firstRechargeAt,
     rules: {
       firstRechargeMin: cfg.firstRechargeMin,
