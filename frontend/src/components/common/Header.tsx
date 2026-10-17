@@ -29,6 +29,41 @@ import {
 import GlobalSearch from "../global-search/GlobalSearch";
 import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
 
+// Routes where the white nav bar sticks on desktop. Allow-list on purpose:
+// package / visa / rental detail pages, blog posts, bookings, payment,
+// membership and CMS catch-all pages have their own sticky tab bars or side
+// cards pinned near top:0, which a sticky header would cover — they're left
+// out and keep their existing non-sticky header.
+function isStickyHeaderRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  const seg = pathname.split("/").filter(Boolean);
+  const [root] = seg;
+  switch (root) {
+    case "destinations":
+    case "author":
+    case "news":
+    case "auth":
+      return true;
+    case "holidays":
+    case "rental":
+      return seg.length <= 3; // listings only, not package/vehicle detail
+    case "visa":
+    case "blog":
+      return seg.length === 1; // index only, not detail/apply pages
+    case "payment":
+      return seg.length === 1 || seg[1] === "success" || seg[1] === "failed";
+    case "about-us":
+    case "contact-us":
+    case "career":
+    case "plan-my-trip":
+    case "travel-agency":
+    case "thank-you":
+      return seg.length === 1;
+    default:
+      return false;
+  }
+}
+
 export default function Header() {
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
@@ -51,9 +86,30 @@ export default function Header() {
 
   const overlay = isHome && !scrolled;
 
+  // Sticky white bar (desktop): the whole <header> is sticky/fixed, offset
+  // upward by the orange top bar's height so only the white bar stays on
+  // screen. The top bar is display:none below md, so this measures 0 there.
+  const topBarRef = React.useRef<HTMLDivElement>(null);
+  const [topBarHeight, setTopBarHeight] = React.useState(0);
+  React.useLayoutEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
+    const measure = () => setTopBarHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [overlay]);
+
+  const stickyOnThisPage = !isHome && isStickyHeaderRoute(pathname);
+  const headerStyle = stickyOnThisPage ? { top: -topBarHeight } : undefined;
+
   return (
     <header
+      style={headerStyle}
       className={`w-full z-50 ${isHome ? "fixed top-0 left-0 right-0 transition-colors duration-300" : ""} ${
+        stickyOnThisPage ? "md:sticky" : ""
+      } ${
         overlay
           ? "bg-transparent border-b border-transparent"
           : "bg-white border-b border-gray-200"
@@ -117,7 +173,7 @@ export default function Header() {
       ) : (
         <>
           {/* ===== TOP BAR ===== */}
-          <div className="hidden md:flex justify-between items-center w-full md:px-10 px-4 py-2 bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12]">
+          <div ref={topBarRef} className="hidden md:flex justify-between items-center w-full md:px-10 px-4 py-2 bg-gradient-to-r from-[#e84118] via-[#FE5300] to-[#f39c12]">
             {/* Social Links */}
             <div className="flex items-center gap-4 text-white">
               <Link href="https://www.youtube.com/@musafirbabatravels" aria-label="YouTube" className="flex items-center justify-center"><Youtube className="w-[18px] h-[18px] hover:scale-110 transition-transform" /></Link>
@@ -197,7 +253,7 @@ export default function Header() {
                   aria-label="Open search"
                 >
                   <Search className="w-4 h-4 text-gray-500" />
-                  <span className="text-[14px] font-normal truncate">Search destinations...</span>
+                  <span className="text-[14px] font-normal truncate">Search</span>
                 </button>
               </div>
             </div>

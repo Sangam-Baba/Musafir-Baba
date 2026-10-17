@@ -33,7 +33,57 @@ const STATES = {
   CONTACT_AWAITING_PHONE: "CONTACT_AWAITING_PHONE",
 };
 
-export const processState = async (session, message, entities, intent) => {
+// --- Lead field validation -------------------------------------------------
+const NOT_A_NAME = /\b(no|nope|not sure|no idea|don't know|dont know|nothing|hello|hi|hey|yes|ok|okay|test|visa|holiday|trip|package|rental|cancel|skip|later)\b/i;
+
+// Returns the cleaned name, or null if it doesn't look like a real name
+// (digits, symbols, keyboard mashes like "asdkjh", or chat phrases).
+export const validateName = (raw) => {
+  const name = String(raw || "").trim().replace(/\s+/g, " ");
+  if (name.length < 2 || name.length > 50) return null;
+  // Letters (Latin incl. accents, Devanagari) with spaces . ' - only
+  if (!/^[A-Za-zÀ-ɏऀ-ॿ][A-Za-zÀ-ɏऀ-ॿ .'-]*$/.test(name)) return null;
+  if (name.split(" ").length > 5) return null;
+  if (NOT_A_NAME.test(name)) return null;
+  if (/(.)\1\1/i.test(name)) return null; // "aaa", "kkkk"
+  const latin = name.replace(/[^A-Za-z]/g, "");
+  if (latin.length >= 2) {
+    if (!/[aeiouy]/i.test(latin)) return null; // "sdfg"
+    if (/[^aeiouy\s.'-]{5,}/i.test(name)) return null; // "asdkjh" -> "sdkjh"
+  }
+  return name.replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+// Returns a normalised "+<country><number>" string, or null if invalid.
+// Accepts e.g. "9876543210", "098765 43210", "+91 98765-43210",
+// "91 9876543210", "+1 (234) 567-8900", "my number is 9876543210".
+export const validatePhone = (raw) => {
+  const match = String(raw || "").match(/\+?\d[\d\s\-().]{6,20}\d/);
+  if (!match) return null;
+  const hasPlus = match[0].trim().startsWith("+");
+  const digits = match[0].replace(/\D/g, "");
+  let e164 = null;
+
+  if (!hasPlus && /^[6-9]\d{9}$/.test(digits)) e164 = `+91${digits}`;
+  else if (!hasPlus && /^0[6-9]\d{9}$/.test(digits)) e164 = `+91${digits.slice(1)}`;
+  else if (/^91[6-9]\d{9}$/.test(digits)) e164 = `+${digits}`;
+  else if (hasPlus && /^[1-9]\d{7,14}$/.test(digits) && !digits.startsWith("91")) e164 = `+${digits}`;
+  if (!e164) return null;
+
+  const national = e164.startsWith("+91") ? e164.slice(3) : e164.slice(1);
+  if (/^(\d)\1+$/.test(national)) return null; // 9999999999
+  if ("01234567890123456789".includes(national) || "98765432109876543210".includes(national)) {
+    // 1234567890-style sequences (9876543210 is a valid-looking test number
+    // but real people don't have it)
+    return null;
+  }
+  return e164;
+};
+
+const escapeHtml = (s) =>
+  String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+export const processState = async (session, message, entities, intent, meta = {}) => {
   let responseText = "";
   let quickReplies = [];
   let responseUrl = "";
@@ -51,8 +101,9 @@ export const processState = async (session, message, entities, intent) => {
 
   if (intent === "UNCERTAIN" && !excludedUncertainStates.includes(currentState)) {
     if (currentState.startsWith("VISA_") || currentState.startsWith("PKG_") || currentState.startsWith("RENTAL_")) {
+      // Keep what was collected so far (service, destination, …) so it's
+      // included in the lead instead of being thrown away.
       session.currentState = STATES.CONTACT_AWAITING_NAME;
-      session.context = {};
       session.markModified("context");
       await session.save();
       return {
@@ -67,6 +118,14 @@ export const processState = async (session, message, entities, intent) => {
   switch (currentState) {
     // --- VISA FLOW ---
     case STATES.VISA_AWAITING_COUNTRY:
+      // "Other Country" quick reply isn't a country — ask for the name and
+      // stay in this state, instead of saving "Other Country" as the
+      // destination (which then also made the next answer the visa type).
+      if (/^\s*other\s+country\s*$/i.test(message)) {
+        responseText = "Sure! Please type the name of the country you need a visa for.";
+        quickReplies = [];
+        break;
+      }
       context.destination = entities.destination || message;
       session.currentState = STATES.VISA_AWAITING_TYPE;
       responseText = `Got it!\n\nWhat type of visa do you need for ${context.destination}?`;
@@ -178,7 +237,9 @@ export const processState = async (session, message, entities, intent) => {
         responseText = `Based on what you've told me, here are our top picks for you:\n\n`;
         pkgSearch.forEach((pkg, index) => {
           const absoluteUrl = pkg.url ? (process.env.NEXT_PUBLIC_BASE_URL || "https://musafirbaba.com") + pkg.url : "";
-          responseText += `${index + 1}. ${pkg.title}\n${absoluteUrl}\n\n`;
+          responseText += absoluteUrl
+            ? `${index + 1}. ${pkg.title}\n${absoluteUrl}\n\n`
+            : `${index + 1}. ${pkg.title}\n\n`;
         });
         responseText += `I can also connect you with our team to customise one of these for you.`;
       } else {
@@ -222,31 +283,30 @@ export const processState = async (session, message, entities, intent) => {
       break;
 
     // --- CONTACT FLOW ---
-    case STATES.CONTACT_AWAITING_NAME:
-      if (message.trim().length < 2) {
-        responseText = "Please provide a valid name.";
+    case STATES.CONTACT_AWAITING_NAME: {
+      const validName = validateName(message);
+      if (!validName) {
+        responseText = "Please share your full name so our expert knows how to address you (letters only, e.g. Rahul Sharma).";
         quickReplies = [];
         break;
       }
-      context.name = message.trim();
+      context.name = validName;
       session.currentState = STATES.CONTACT_AWAITING_PHONE;
-      responseText = `Thanks ${context.name}!\n\nWhat is your WhatsApp number? Please include the country code (e.g., +91 9876543210 or +1 234567890).`;
+      responseText = `Thanks ${context.name}!\n\nWhat is your WhatsApp number? Indian numbers can be 10 digits; for other countries please add the country code (e.g. +1 234 567 8900).`;
       quickReplies = [];
       break;
+    }
 
-    case STATES.CONTACT_AWAITING_PHONE:
-      // Extract phone number with optional country code, allows various formats
-      const phoneMatch = message.match(/(?:\+?\d{1,4}[\s\-]?)?(?:\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{3,4}[\s\-]?\d{0,4}/);
-      
-      // Simple validation: must contain at least 7 digits in total
-      const digitCount = message.replace(/\D/g, "").length;
-      if (!phoneMatch || digitCount < 7) {
-        responseText = "Please provide a valid phone number with your country code (e.g., +91 9876543210).";
+    case STATES.CONTACT_AWAITING_PHONE: {
+      const validPhone = validatePhone(message);
+      if (!validPhone) {
+        responseText = "That doesn't look like a valid number. Please enter your 10-digit mobile number (e.g. 98XXXXXXXX), or include the country code if you're outside India (e.g. +44 7XXX XXXXXX).";
         quickReplies = [];
         break;
       }
-      
-      context.phone = phoneMatch[0].trim();
+
+      context.phone = validPhone;
+      if (meta.pageUrl) context.pageUrl = meta.pageUrl;
       session.currentState = STATES.IDLE;
       isFlowComplete = true;
       responseText = `Got it, ${context.name}!\n\nYour enquiry has been sent to our team. One of our travel experts will contact you on WhatsApp within 1–2 hours during business hours.\n\nIs there anything else I can help you with?`;
@@ -267,12 +327,16 @@ export const processState = async (session, message, entities, intent) => {
         if (context.date) leadMessage += `Date: ${context.date}\n`;
         if (context.budget) leadMessage += `Budget: ${context.budget}\n`;
         if (context.travelDate) leadMessage += `Travel Dates: ${context.travelDate}\n`;
+        if (context.query) leadMessage += `Question: ${context.query}\n`;
+        if (context.pageUrl) leadMessage += `Page: ${context.pageUrl}\n`;
 
+        // Same convention as the site's enquiry forms (source = page URL),
+        // prefixed so chatbot leads stay identifiable in the admin list.
         const contact = await ContactEnquiry.create({
           name: context.name,
           phone: context.phone,
           message: leadMessage,
-          source: "chatbot",
+          source: context.pageUrl ? `Chatbot - ${context.pageUrl}` : "Chatbot",
         });
 
         // Send Email to Admin
@@ -294,18 +358,18 @@ export const processState = async (session, message, entities, intent) => {
                 <tbody>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; width: 120px; color: #888888;">Name</td>
-                    <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">${contact.name || "N/A"}</td>
+                    <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">${escapeHtml(contact.name) || "N/A"}</td>
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">WhatsApp</td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">
-                      ${contact.phone || "N/A"} 
+                      ${escapeHtml(contact.phone) || "N/A"} 
                     </td>
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; font-weight: 500; color: #888888;">Source</td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #f2f2f2; color: #111111;">
-                      Chatbot
+                      Chatbot${context.pageUrl ? ` &middot; <a href="${escapeHtml(context.pageUrl)}" style="color: #FE5300; text-decoration: underline;">${escapeHtml(context.pageUrl)}</a>` : ""}
                     </td>
                   </tr>
                 </tbody>
@@ -315,7 +379,7 @@ export const processState = async (session, message, entities, intent) => {
               <div style="margin-top: 30px;">
                 <p style="font-size: 14px; font-weight: 500; color: #888888; margin-bottom: 10px;">Interests & Message</p>
                 <div style="font-size: 14px; color: #111111; line-height: 1.8; background-color: #fafafa; padding: 20px; border-radius: 6px;">
-                  ${contact.message.replace(/\n/g, '<br/>')}
+                  ${escapeHtml(contact.message).replace(/\n/g, '<br/>')}
                 </div>
               </div>
             </div>
@@ -341,6 +405,7 @@ export const processState = async (session, message, entities, intent) => {
         console.error("Failed to save and send chatbot lead", err);
       }
       break;
+    }
 
     default:
       session.currentState = STATES.IDLE;

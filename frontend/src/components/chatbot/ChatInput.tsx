@@ -1,36 +1,47 @@
 import React, { useState } from "react";
-import { SendHorizonal } from "lucide-react";
+import { SendHorizonal, Lock } from "lucide-react";
 
-export const ChatInput = ({ onSendMessage }) => {
+export const ChatInput = ({
+  onSendMessage,
+  disabled = false,
+}: {
+  onSendMessage: (text: string) => void;
+  disabled?: boolean;
+}) => {
   const [text, setText] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (text.trim()) {
+    if (text.trim() && !disabled) {
       onSendMessage(text);
       setText("");
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex items-center gap-2 p-3 border-t border-gray-100/50 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.02)] bg-white/95 backdrop-blur-xl rounded-b-3xl"
-    >
-      <input
-        type="text"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Type a message..."
-        className="flex-1 px-4 py-2.5 text-sm bg-gray-50 border border-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FE5300]/20 focus:border-[#FE5300] shadow-inner transition-all duration-200"
-      />
-      <button
-        type="submit"
-        disabled={!text.trim()}
-        className="p-2.5 text-white bg-[#FE5300] rounded-full hover:bg-[#E04800] disabled:opacity-50 transition-all duration-200 hover:scale-105 active:scale-95 shadow-md shadow-[#FE5300]/20"
-      >
-        <SendHorizonal size={18} className="ml-0.5" />
-      </button>
+    <form onSubmit={handleSubmit} className="shrink-0 border-t border-gray-100 bg-white px-3 pt-3 pb-2.5">
+      <div className="flex items-center gap-2 bg-white rounded-2xl pl-4 pr-1.5 py-1.5 ring-1 ring-gray-200 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)] focus-within:ring-2 focus-within:ring-[#FE5300]/45 transition-all">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Type your message…"
+          aria-label="Type your message"
+          className="flex-1 min-w-0 bg-transparent text-[14px] text-gray-800 placeholder:text-gray-400 focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={!text.trim() || disabled}
+          aria-label="Send message"
+          className="w-9 h-9 shrink-0 flex items-center justify-center text-white bg-gradient-to-br from-[#ff6b1f] to-[#FE5300] rounded-xl shadow-[0_4px_12px_-4px_rgba(254,83,0,0.6)] hover:brightness-105 disabled:from-gray-200 disabled:to-gray-300 disabled:shadow-none disabled:cursor-not-allowed active:scale-95 transition-all"
+        >
+          <SendHorizonal size={17} />
+        </button>
+      </div>
+      <p className="flex items-center justify-center gap-1 text-[10.5px] text-gray-400 mt-2">
+        <Lock size={10} aria-hidden="true" />
+        Your details are shared only with our travel experts
+      </p>
     </form>
   );
 };
