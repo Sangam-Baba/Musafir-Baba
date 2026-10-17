@@ -2,7 +2,7 @@
   "expo": {
     "name": "mbconnect",
     "slug": "mbconnect",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "orientation": "portrait",
     "icon": "./assets/branding/drawer-icon.png",
     "userInterfaceStyle": "light",
