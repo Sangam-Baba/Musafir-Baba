@@ -30,6 +30,8 @@ import {
   Activity,
   LayoutDashboard,
   Banknote,
+  Gift,
+  FlaskConical,
 } from "lucide-react";
 import { MdDashboardCustomize } from "react-icons/md";
 import { FaHome, FaCog, FaBox } from "react-icons/fa";
@@ -204,6 +206,18 @@ export const NAV_GROUPS = [
         href: "/admin/fleet/payouts",
         icon: Banknote,
         permission: "partner-verification", // same access as Partner Wallets
+      },
+      {
+        label: "Referrals",
+        href: "/admin/fleet/referrals",
+        icon: Gift,
+        permission: "partner-referrals", // must match backend adminPartnerReferral.routes.js
+      },
+      {
+        label: "Test Rides",
+        href: "/admin/fleet/test-rides",
+        icon: FlaskConical,
+        permission: "partner-test-rides", // must match backend adminPartnerTestRide.routes.js
       },
       {
         label: "Wallet Program",

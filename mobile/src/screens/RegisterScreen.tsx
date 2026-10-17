@@ -17,6 +17,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthStackParamList } from '../navigation/types';
 import { API_BASE_URL } from '../utils/config';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { ReferralCodeField } from '../components/ReferralCodeField';
+import { setPendingReferralSource } from '../api/referral.api';
 
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
@@ -267,6 +270,9 @@ export const RegisterScreen = () => {
                   </View>
                 </View>
 
+                {/* Optional referral code: used by both Create Account and Sign up with Google */}
+                <ReferralCodeField />
+
                 {/* Submit Register CTA Button */}
                 <TouchableOpacity
                   style={styles.primaryBtn}
@@ -289,6 +295,11 @@ export const RegisterScreen = () => {
                   <View style={styles.dividerLine} />
                   <Text style={styles.dividerLabel}>OR</Text>
                   <View style={styles.dividerLine} />
+                </View>
+
+                {/* Sign up with Google: email comes verified, no code needed */}
+                <View style={{ marginBottom: 18 }}>
+                  <GoogleSignInButton mode="signup" onError={setErrorMessage} disabled={loading} onStart={() => setPendingReferralSource('google')} />
                 </View>
 
                 {/* Switch to Sign In */}

@@ -47,6 +47,7 @@ export type ProfileStackParamList = {
   IdentityProof: undefined;
   VerifiedPartner: undefined;
   PartnerWallet: undefined;
+  ReferEarn: undefined;
   ProfilePhoto: undefined;
   BackgroundCheck: undefined;
   TripSupport: undefined;

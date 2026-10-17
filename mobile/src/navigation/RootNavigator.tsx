@@ -7,6 +7,8 @@ import { View, ActivityIndicator } from 'react-native';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
 import { API_BASE_URL } from '../utils/config';
+import { Alert } from 'react-native';
+import { applyPendingReferral } from '../api/referral.api';
 
 import ScreenSplash from '../screens/ScreenSplash';
 
@@ -53,6 +55,17 @@ export const RootNavigator = () => {
       }).catch(e => console.log('Error syncing push token', e));
     }
   }, [isAuthenticated, expoPushToken]);
+
+  // Referral code typed on Register (email or Google sign-up): attach it once
+  // the partner is signed in, and tell them whether it worked.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    applyPendingReferral()
+      .then((r) => {
+        if (r) Alert.alert(r.ok ? 'Referral code added' : 'Referral code not added', r.message);
+      })
+      .catch(() => {});
+  }, [isAuthenticated]);
 
   if (!isReady || showSplash) {
     return <ScreenSplash />;

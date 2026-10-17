@@ -31,7 +31,12 @@ export interface WalletTxn {
     | 'cancel_charge'
     | 'cancel_charge_refund'
     | 'payout'
-    | 'payout_reversed';
+    | 'payout_reversed'
+    | 'referral_bonus'
+    | 'referral_reward'
+    | 'referral_joining_bonus'
+    | 'referral_unlock'
+    | 'referral_reversal';
   amount: number;
   walletBalanceAfter: number;
   pendingWalletBalanceAfter?: number;
@@ -45,6 +50,8 @@ export interface Wallet {
   reserved: number;
   available: number;
   pending: number;
+  referralLocked?: number;
+  referralUnlocked?: boolean;
   firstRechargeDone: boolean;
   rules: WalletRules;
   transactions: WalletTxn[];

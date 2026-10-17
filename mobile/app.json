@@ -2,7 +2,7 @@
   "expo": {
     "name": "mbconnect",
     "slug": "mbconnect",
-    "version": "1.2.0",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/branding/drawer-icon.png",
     "userInterfaceStyle": "light",
@@ -40,7 +40,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "MBConnect uses your location to confirm you've arrived at the pickup point."
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "eas": {

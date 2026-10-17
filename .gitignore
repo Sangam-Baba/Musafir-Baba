@@ -1,0 +1,2 @@
+# Server backups (database dumps + .env files). Never commit these.
+/server-backups/

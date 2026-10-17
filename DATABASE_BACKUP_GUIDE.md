@@ -1,5 +1,7 @@
 # 🗄️ Database Backup & Restore Guide
 
+> To back up the **live production server** (its MongoDB, the CRM and Algebrians databases, and server config), see [docs/SERVER_BACKUP_AND_RESTORE.md](docs/SERVER_BACKUP_AND_RESTORE.md) (`npm run backup:server` from the repo root). This guide covers `npm run backup` in `backend/`, which backs up whatever database `backend/.env` points to.
+
 This repository includes a professional-grade database management system using **MongoDB Database Tools** (`mongodump` & `mongorestore`). This ensures your data is always safe and can be recovered in seconds.
 
 ---

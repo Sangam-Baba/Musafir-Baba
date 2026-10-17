@@ -4,8 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Ban, Building2, Camera, Car, Check, CheckCircle, ChevronRight, Clock, ExternalLink, FileText, Hourglass,
   Landmark, Mail, MapPin, MessageSquare, PauseCircle, Pencil, Phone, RefreshCw, Search, Send, Settings2,
-  ShieldCheck, UserRoundCheck, Users, X, XCircle, Trash2, RotateCcw, AlertTriangle,
+  ShieldCheck, UserRoundCheck, Users, X, XCircle, Trash2, RotateCcw, AlertTriangle, Plus, KeyRound, Upload,
 } from "lucide-react";
+import { PartnerEditDialog, type EditKind } from "./PartnerEditDialog";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
@@ -208,6 +209,8 @@ export default function FleetVerificationClient() {
   // The list is loaded without inline images/files (?lite=true); the full
   // record for the opened partner is fetched on demand.
   const [detailsLoading, setDetailsLoading] = useState(false);
+  // Admin editor (PartnerEditDialog) -- what's being edited right now.
+  const [edit, setEdit] = useState<EditKind | null>(null);
   // List view: client-side search + status filter (display only)
   const [listSearch, setListSearch] = useState("");
   const [listStatus, setListStatus] = useState("all");
@@ -340,6 +343,14 @@ export default function FleetVerificationClient() {
     } finally {
       if (detailsRequestRef.current === partnerId) setDetailsLoading(false);
     }
+  };
+
+  const editLink = "inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#FE5300]";
+  const reloadAfterEdit = () => {
+    if (!selectedPartner) return;
+    fetchPartnerDetails(selectedPartner.auth._id);
+    fetchLogs(selectedPartner.auth._id);
+    fetchPartners();
   };
 
   const handleUpdateProfile = async () => {
@@ -1058,6 +1069,9 @@ export default function FleetVerificationClient() {
                 <button disabled={detailsLoading} onClick={() => updateStatus("Blacklisted")} className={`${miniBtn} h-8 px-3 text-[12px] border border-slate-200 bg-white text-slate-700 hover:border-slate-800 hover:bg-slate-900 hover:text-white`}>
                   <Ban size={13} /> Blacklist
                 </button>
+                <button disabled={detailsLoading} onClick={() => setEdit({ kind: "login" })} className={`${miniBtn} h-8 px-3 text-[12px] border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}>
+                  <KeyRound size={13} /> Login & access
+                </button>
                 {canDeletePartner && (
                   <button
                     disabled={detailsLoading}
@@ -1117,7 +1131,7 @@ export default function FleetVerificationClient() {
                           icon={Building2}
                           action={
                             !isEditingProfile ? (
-                              <button onClick={() => setIsEditingProfile(true)} className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#FE5300]">
+                              <button onClick={() => setEdit({ kind: "profile" })} className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#FE5300]">
                                 <Pencil size={12} /> Edit
                               </button>
                             ) : (
@@ -1168,13 +1182,18 @@ export default function FleetVerificationClient() {
                         <Section
                           title="Bank details"
                           icon={Landmark}
-                          action={selectedPartner.bank ? <StatusPill status={selectedPartner.bank.status} /> : undefined}
+                          action={
+                            <div className="flex items-center gap-2">
+                              {selectedPartner.bank ? <StatusPill status={selectedPartner.bank.status} /> : null}
+                              <button onClick={() => setEdit({ kind: "bank" })} className={editLink}>{selectedPartner.bank ? <><Pencil size={12} /> Edit</> : <><Plus size={12} /> Add</>}</button>
+                            </div>
+                          }
                         >
                           <dl className="grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
                             <Field label="Bank name" value={selectedPartner.bank?.bankName} />
                             <Field label="Account holder" value={selectedPartner.bank?.accountHolderName} />
                             <Field label="Account number" value={selectedPartner.bank?.accountNumber} mono />
-                            <Field label="IFSC code" value={selectedPartner.bank?.ifscCode} mono />
+                            <Field label="IFSC code" value={selectedPartner.bank?.ifscCode || (selectedPartner.bank as any)?.ifsc} mono />
                           </dl>
                           {selectedPartner.bank && (
                             <div className="mt-4 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3">
@@ -1188,7 +1207,7 @@ export default function FleetVerificationClient() {
 
                     {activeAdminTab === "assets" && (
                       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                        <Section title={`Drivers (${selectedPartner.drivers?.length || 0})`} icon={Users}>
+                        <Section title={`Drivers (${selectedPartner.drivers?.length || 0})`} icon={Users} action={<button onClick={() => setEdit({ kind: "driver" })} className={editLink}><Plus size={12} /> Add driver</button>}>
                           {!selectedPartner.drivers?.length ? (
                             <p className="py-4 text-center text-[12px] text-slate-400">No drivers added</p>
                           ) : (
@@ -1218,6 +1237,8 @@ export default function FleetVerificationClient() {
                                         <a href={d.licenceImageUrl} target="_blank" className={fileChip}><FileText size={11} /> Driving licence <ExternalLink size={10} /></a>
                                       ) : <span />}
                                       <div className="flex gap-1.5">
+                                        <button onClick={() => setEdit({ kind: "driver", item: d })} className={editLink}><Pencil size={11} /> Edit</button>
+                                        <button onClick={() => setEdit({ kind: "removeDriver", item: d })} className={`${editLink} hover:text-red-600`}><Trash2 size={11} /> Remove</button>
                                         <button onClick={() => verifyDriver(d._id, "Rejected")} className={rejectBtn}>Reject</button>
                                         <button onClick={() => verifyDriver(d._id, "Active")} className={approveBtn}>Verify</button>
                                       </div>
@@ -1229,7 +1250,7 @@ export default function FleetVerificationClient() {
                           )}
                         </Section>
 
-                        <Section title={`Vehicles (${selectedPartner.vehicles?.length || 0})`} icon={Car}>
+                        <Section title={`Vehicles (${selectedPartner.vehicles?.length || 0})`} icon={Car} action={<button onClick={() => setEdit({ kind: "vehicle" })} className={editLink}><Plus size={12} /> Add vehicle</button>}>
                           {!selectedPartner.vehicles?.length ? (
                             <p className="py-4 text-center text-[12px] text-slate-400">No vehicles added</p>
                           ) : (
@@ -1274,6 +1295,8 @@ export default function FleetVerificationClient() {
                                       </div>
                                     )}
                                     <div className="mt-2.5 flex justify-end gap-1.5">
+                                      <button onClick={() => setEdit({ kind: "vehicle", item: v })} className={editLink}><Pencil size={11} /> Edit</button>
+                                      <button onClick={() => setEdit({ kind: "removeVehicle", item: v })} className={`${editLink} hover:text-red-600`}><Trash2 size={11} /> Remove</button>
                                       <button onClick={() => verifyVehicle(v._id, "Rejected")} className={rejectBtn}>Reject</button>
                                       <button onClick={() => verifyVehicle(v._id, "Active")} className={approveBtn}>Verify</button>
                                     </div>
@@ -1286,6 +1309,11 @@ export default function FleetVerificationClient() {
                       </div>
                     )}
 
+                    {activeAdminTab === "documents" && (selectedPartner.profile as any)?._id && (
+                      <div className="flex justify-end">
+                        <button onClick={() => setEdit({ kind: "document" })} className={`${miniBtn} h-8 px-3 text-[12px] border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}><Upload size={13} /> Upload document</button>
+                      </div>
+                    )}
                     {activeAdminTab === "documents" && (
                       !selectedPartner.documents?.length ? (
                         <div className="rounded-lg border border-dashed border-slate-200 bg-white py-12 text-center text-[12px] text-slate-400">No documents uploaded</div>
@@ -1315,6 +1343,10 @@ export default function FleetVerificationClient() {
                                     <p className="min-w-0 break-words text-[12px] font-medium text-slate-800">{doc.documentType}</p>
                                     <StatusPill status={doc.status} />
                                   </div>
+                                  <div className="mt-1.5 flex items-center gap-3">
+                                    <button onClick={() => setEdit({ kind: "document", preset: { ownerType: (doc as any).ownerType, ownerId: (doc as any).ownerId, documentType: doc.documentType } })} className={editLink}><Upload size={11} /> Replace</button>
+                                    <button onClick={() => setEdit({ kind: "docExpiry", item: doc })} className={editLink}><Clock size={11} /> {(doc as any).expiryDate ? `Exp ${new Date((doc as any).expiryDate).toLocaleDateString()}` : "Set expiry"}</button>
+                                  </div>
                                   <div className="mt-3 grid grid-cols-2 gap-1.5">
                                     <button onClick={() => verifyDocument(doc._id, "Rejected")} className={`${rejectBtn} justify-center`}>Reject</button>
                                     <button onClick={() => verifyDocument(doc._id, "Approved")} className={`${approveBtn} justify-center`}>Approve</button>
@@ -1328,7 +1360,7 @@ export default function FleetVerificationClient() {
                     )}
 
                     {activeAdminTab === "settings" && (
-                      <Section title="Vehicle settings & locations" icon={Settings2}>
+                      <Section title="Vehicle settings & locations" icon={Settings2} action={<button onClick={() => setEdit({ kind: "settings" })} className={editLink}><Pencil size={12} /> Edit</button>}>
                         {(!selectedPartner.settings?.vehicleConfigs || selectedPartner.settings.vehicleConfigs.length === 0) ? (
                           <p className="py-4 text-center text-[12px] text-slate-400">No settings configured yet</p>
                         ) : (
@@ -1372,6 +1404,8 @@ export default function FleetVerificationClient() {
                 )}
               </div>
 
+              <PartnerEditDialog partner={selectedPartner} edit={edit} onClose={() => setEdit(null)} onSaved={reloadAfterEdit} />
+
               {/* Activity rail */}
               <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-white md:w-[300px] md:border-l md:border-t-0">
                 <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
@@ -1402,6 +1436,11 @@ export default function FleetVerificationClient() {
                                 </div>
                               )}
                               {log.comment && <p className="mt-1.5 rounded-md bg-slate-50 px-2 py-1.5 text-[11px] italic text-slate-600">&ldquo;{log.comment}&rdquo;</p>}
+                            </div>
+                          ) : log.actionType === "SystemUpdate" && (log as any).newStatus === "AdminEdit" ? (
+                            <div>
+                              <p className="flex items-center gap-1 text-[12px] font-medium text-violet-700"><Pencil size={11} /> Admin edit</p>
+                              <p className="mt-1 break-words rounded-md border border-violet-100 bg-violet-50/60 px-2 py-1.5 text-[12px] text-slate-700">{log.comment}</p>
                             </div>
                           ) : (
                             <div>

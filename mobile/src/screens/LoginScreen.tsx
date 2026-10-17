@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthStackParamList } from '../navigation/types';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -214,6 +215,11 @@ export const LoginScreen = () => {
               <View style={styles.dividerLine} />
               <Text style={styles.dividerLabel}>OR</Text>
               <View style={styles.dividerLine} />
+            </View>
+
+            {/* Continue with Google (same sign-in result as email login) */}
+            <View style={{ marginBottom: 18 }}>
+              <GoogleSignInButton mode="signin" onError={setErrorMessage} disabled={loading} />
             </View>
 
             {/* Switch to Register */}

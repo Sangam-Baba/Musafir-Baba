@@ -12,6 +12,7 @@ import sendEmail from "../../services/email.service.js";
 import { notifyUser } from "../../services/notification/notificationService.js";
 import { RideBooking } from "../../models/RideBooking.js";
 import { Staff } from "../../models/Staff.js";
+import { onPartnerApproved } from "../../services/partnerReferral.service.js";
 
 // Inline (often base64) image/file fields. The list view never shows them, so
 // "lite" mode leaves them out at query level; the review panel loads them per
@@ -288,6 +289,12 @@ export const updatePartnerStatus = async (req, res) => {
       comment: comment || ""
     });
     await actionLog.save();
+
+    // Referral Program: reward a referral once this partner is approved.
+    // Runs on its own -- it can never fail or slow down the approval.
+    if (status === "Approved" || status === "Active") {
+      onPartnerApproved(partnerId).catch((e) => console.error("Referral reward after approval failed:", e.message));
+    }
 
     // Trigger email notification
     let subject = "";

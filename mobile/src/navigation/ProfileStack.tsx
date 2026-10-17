@@ -34,6 +34,7 @@ import { BankDetailsScreen } from '../screens/BankDetailsScreen';
 import { BankAccountScreen } from '../screens/BankAccountScreen';
 import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
 import { PartnerWalletScreen } from '../screens/PartnerWalletScreen';
+import { ReferEarnScreen } from '../screens/ReferEarnScreen';
 import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
@@ -180,6 +181,15 @@ const MenuScreen = ({ navigation }: any) => {
       iconColor: '#FE5300',
       isComingSoon: false,
       onPress: () => navigation.navigate('PartnerWallet'),
+    },
+    {
+      title: 'Refer & Earn',
+      subtitle: 'Share your code, earn for every approved partner',
+      icon: 'gift-outline' as const,
+      iconBg: '#fdf2f8',
+      iconColor: '#db2777',
+      isComingSoon: false,
+      onPress: () => navigation.navigate('ReferEarn'),
     },
     {
       title: 'Contact Support',
@@ -447,6 +457,7 @@ export const ProfileStack = () => {
       <Stack.Screen name="ProfilePhoto" component={ProfilePhotoScreen} />
       <Stack.Screen name="VerifiedPartner" component={VerifiedPartnerScreen} />
       <Stack.Screen name="PartnerWallet" component={PartnerWalletScreen} />
+      <Stack.Screen name="ReferEarn" component={ReferEarnScreen} />
     </Stack.Navigator>
   );
 };

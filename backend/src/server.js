@@ -9,6 +9,7 @@ import { warmUsageIndex } from "./controllers/media.controller.js";
 import { startMembershipExpiryCron } from "./services/membershipUpdate.service.js";
 import { startRideBroadcastExpiryCron } from "./services/rideBroadcastExpiry.service.js";
 import { startRideDetailsRevealCron } from "./services/rideDetailsReveal.service.js";
+import { startReferralMaintenanceCron } from "./services/partnerReferral.service.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -29,6 +30,9 @@ startRideBroadcastExpiryCron();
 
 // Start ride details reveal cron
 startRideDetailsRevealCron();
+
+// Referral Program: expire overdue referrals, finish any unpaid reward (every 15 min)
+startReferralMaintenanceCron();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

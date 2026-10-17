@@ -21,6 +21,11 @@ const TXN: Record<WalletTxn['type'], { label: string; icon: keyof typeof Ionicon
   cancel_charge_refund: { label: 'Cancellation charge refunded', icon: 'refresh-circle' },
   payout: { label: 'Withdrawal to bank', icon: 'business', out: true },
   payout_reversed: { label: 'Withdrawal cancelled (returned)', icon: 'arrow-undo-circle' },
+  referral_bonus: { label: 'Referral reward (locked)', icon: 'lock-closed', pending: true },
+  referral_reward: { label: 'Referral reward', icon: 'gift' },
+  referral_joining_bonus: { label: 'Referral joining bonus', icon: 'gift' },
+  referral_unlock: { label: 'Referral bonus unlocked', icon: 'lock-open' },
+  referral_reversal: { label: 'Referral reward reversed', icon: 'remove-circle', out: true },
 };
 
 export const PartnerWalletScreen = () => {
@@ -115,6 +120,14 @@ export const PartnerWalletScreen = () => {
               </View>
             </View>
           </View>
+
+          {(wallet.referralLocked || 0) > 0 && !wallet.referralUnlocked && (
+            <TouchableOpacity style={styles.withdrawBtn} activeOpacity={0.85} onPress={() => navigation.navigate('ReferEarn')}>
+              <Ionicons name="lock-closed" size={18} color="#b45309" />
+              <Text style={styles.withdrawText}>Referral bonus (locked) {inr(wallet.referralLocked)}</Text>
+              <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={styles.withdrawBtn} activeOpacity={0.85} onPress={() => navigation.navigate('PayoutHistory')}>
             <Ionicons name="business-outline" size={18} color="#0f172a" />

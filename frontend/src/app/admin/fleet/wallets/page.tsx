@@ -99,6 +99,11 @@ const TRANSACTION_LABEL: Record<string, string> = {
   cancel_charge_refund: "Cancellation charge refunded",
   payout: "Withdrawal to bank",
   payout_reversed: "Withdrawal cancelled (returned)",
+  referral_bonus: "Referral reward (locked — not in wallet yet)",
+  referral_reward: "Referral reward",
+  referral_joining_bonus: "Referral joining bonus",
+  referral_unlock: "Referral bonus unlocked",
+  referral_reversal: "Referral reward reversed",
 };
 // Trip earnings should be released within 24 hours (the driver is told so).
 const isOverdue = (since?: string | null) => !!since && Date.now() - new Date(since).getTime() >= 24 * 3600 * 1000;
@@ -106,7 +111,7 @@ const sinceLabel = (since?: string | null) =>
   since ? new Date(since).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
 
 // Entry types that take money out of the wallet (amounts are stored positive).
-const DEBIT_TYPES = new Set(["admin_debit", "platform_fee", "cancel_charge", "payout"]);
+const DEBIT_TYPES = new Set(["admin_debit", "platform_fee", "cancel_charge", "payout", "referral_reversal"]);
 
 function WalletsPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
