@@ -13,6 +13,13 @@ import { syncKnowledgeBase } from "../services/chatbotSyncService.js";
 export const queryChatbot = async (req, res) => {
   try {
     const { message, sessionId } = req.body;
+    // Page the visitor is chatting from — recorded as the lead's source.
+    const pageUrl =
+      typeof req.body.pageUrl === "string" &&
+      /^https?:\/\//i.test(req.body.pageUrl) &&
+      req.body.pageUrl.length <= 500
+        ? req.body.pageUrl
+        : "";
     
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
@@ -40,18 +47,27 @@ export const queryChatbot = async (req, res) => {
     const { intent, entities } = extractIntent(message);
 
     // Handle global CANCEL/RESET intent
-    if (intent === INTENTS.CANCEL) {
+    // "No, I need something else" is the visa-type confirm step's own quick
+    // reply (-> connect to an expert), not a request to reset the chat.
+    const isVisaConfirmReply =
+      session.currentState === STATES.VISA_AWAITING_TOURIST_CONFIRM &&
+      /something else/i.test(message);
+    if (intent === INTENTS.CANCEL && !isVisaConfirmReply) {
       session.currentState = STATES.IDLE;
       session.context = {};
       await session.save();
-      responseText = "Sure, I've cleared the context. How can I help you now?";
+      // "Something else" / "I have another question" are quick replies that
+      // also route here — reply to them naturally rather than as a reset.
+      responseText = /something else|another question/i.test(message)
+        ? "Sure! Tell me what you're looking for, or pick an option below."
+        : "Sure, I've cleared the context. How can I help you now?";
       await ChatMessage.create({ sessionId: sid, sender: "bot", message: responseText });
       return res.json({ sessionId: sid, response: responseText, quickReplies: ["Plan a holiday trip", "Apply for a visa", "Book a car rental", "Something else"] });
     }
 
     // 3. Process State Machine
     if (session.currentState !== STATES.IDLE) {
-      const stateResult = await processState(session, message, entities, intent);
+      const stateResult = await processState(session, message, entities, intent, { pageUrl });
       responseText = stateResult.responseText;
       quickReplies = stateResult.quickReplies;
       if (stateResult.responseUrl) {
@@ -134,15 +150,17 @@ export const queryChatbot = async (req, res) => {
               ? searchResults[0].content.substring(0, 150) + "..." 
               : searchResults[0].content;
             
-            responseText = `Here is some information regarding ${kbTitle}:\n\n"${snippet}"`;
+            responseText = `Here is some information regarding ${kbTitle}:\n\n"${snippet}"\n\nOur travel expert can help you with the details. May I have your name?`;
             if (searchResults[0].url) {
               responseUrl = searchResults[0].url;
             }
           } else {
-            responseText = "I'm not quite sure I understand. Would you like to speak to a human representative?";
-            quickReplies = ["Yes, contact agent", "No, I'll ask something else"];
-            // Optionally auto-transition to CONTACT_AWAITING_NAME here
+            responseText = "Let me connect you with one of our travel experts who can help with that.\n\nMay I have your name?";
           }
+          // Every conversation ends in lead capture (name + phone)
+          session.context = { serviceType: "General Enquiry", query: message };
+          session.currentState = STATES.CONTACT_AWAITING_NAME;
+          await session.save();
           break;
       }
     }
