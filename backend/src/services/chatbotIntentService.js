@@ -73,7 +73,12 @@ export const extractIntent = (message) => {
   // Extract basic entities (Destination)
   const foundDestination = DESTINATIONS.find((dest) => lowerMsg.includes(dest));
   if (foundDestination) {
-    entities.destination = foundDestination;
+    // Display-cased ("dubai" -> "Dubai", "uk" -> "UK") since it's echoed back
+    // in replies and saved on the lead.
+    entities.destination =
+      foundDestination.length <= 3
+        ? foundDestination.toUpperCase()
+        : foundDestination.charAt(0).toUpperCase() + foundDestination.slice(1);
   }
 
   return {

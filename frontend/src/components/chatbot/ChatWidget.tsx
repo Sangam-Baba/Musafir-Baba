@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Bot, X, RefreshCcw } from "lucide-react";
-import { ChatMessage } from "./ChatMessage";
+import { Bot, X, RotateCcw, BadgeCheck, Sparkles, Star } from "lucide-react";
+import { ChatMessage, BotAvatar } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { QuickReplies } from "./QuickReplies";
 import { getWhatsAppLink } from "@/config/contact";
@@ -13,158 +13,253 @@ const WhatsappIcon = ({ size = 20 }) => (
   </svg>
 );
 
-export default function ChatWidget({ onClose }) {
-  const [messages, setMessages] = useState([]);
-  const [quickReplies, setQuickReplies] = useState([]);
-  const [sessionId, setSessionId] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+// Old builds kept the session in localStorage, so every visit reopened the
+// previous conversation. It now lives in memory only: closing and reopening
+// the chat during a visit keeps it, a fresh visit / reload starts clean.
+const LEGACY_SESSION_KEY = "chat_session_id";
+let memorySessionId: string | null = null;
+// Sent automatically to start a conversation; not something the visitor typed,
+// so it's never shown as their message.
+const GREETING = "Hello";
+const WHATSAPP_REPLY = "Open WhatsApp directly";
+export interface ChatMsg {
+  sender: string;
+  message: string;
+  url?: string;
+  quickReplies?: string[];
+}
 
-  // Auto-scroll
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+const getBaseUrl = () => process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000/api";
+
+export default function ChatWidget({ onClose }: { onClose: () => void }) {
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  const [, setSessionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Mirrors sessionId/isLoading synchronously, so a fast double click or a
+  // reset mid-request can't send twice or pick up a stale session.
+  const sessionRef = useRef<string | null>(null);
+  const busyRef = useRef(false);
+
+  // Auto-scroll the message list only (scrollIntoView could also scroll the page)
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, quickReplies]);
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages, quickReplies, isLoading]);
+
+  const saveSession = (sid: string | null) => {
+    sessionRef.current = sid;
+    memorySessionId = sid;
+    setSessionId(sid);
+  };
+
+  const sendMessage = async (text: string, { silent = false }: { silent?: boolean } = {}) => {
+    const trimmed = (text || "").trim();
+    if (!trimmed || busyRef.current) return;
+
+    if (trimmed === WHATSAPP_REPLY) {
+      openWhatsApp();
+      return;
+    }
+
+    busyRef.current = true;
+    if (!silent) setMessages((prev) => [...prev, { sender: "user", message: trimmed }]);
+    setQuickReplies([]);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(`${getBaseUrl()}/chatbot/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: trimmed,
+          sessionId: sessionRef.current || undefined,
+          // Recorded as the lead's source page
+          pageUrl: typeof window !== "undefined" ? window.location.href : undefined,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.response) throw new Error(data?.error || `HTTP ${res.status}`);
+
+      if (data.sessionId && data.sessionId !== sessionRef.current) saveSession(data.sessionId);
+
+      setMessages((prev) => [...prev, { sender: "bot", message: data.response, url: data.url }]);
+      setQuickReplies(Array.isArray(data.quickReplies) ? data.quickReplies : []);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", message: "Sorry, I am having trouble connecting right now. Please try again, or reach us on WhatsApp." },
+      ]);
+    } finally {
+      busyRef.current = false;
+      setIsLoading(false);
+    }
+  };
+
+  const startNewChat = () => {
+    saveSession(null);
+    setMessages([]);
+    setQuickReplies([]);
+    sendMessage(GREETING, { silent: true });
+  };
+
+  const fetchHistory = async (sid: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${getBaseUrl()}/chatbot/history/${encodeURIComponent(sid)}`);
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !Array.isArray(data) || data.length === 0) {
+        // Expired/unknown session or server error: start fresh instead of
+        // showing an empty (or crashed) window.
+        setIsLoading(false);
+        startNewChat();
+        return;
+      }
+      // Hide the automatic opening "Hello" that started the session
+      const visible = data[0]?.sender === "user" && data[0]?.message === GREETING ? data.slice(1) : data;
+      setMessages(visible);
+      const lastMsg = data[data.length - 1];
+      if (lastMsg?.sender === "bot" && Array.isArray(lastMsg.quickReplies)) {
+        setQuickReplies(lastMsg.quickReplies);
+      }
+      setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+      startNewChat();
+    }
+  };
 
   // Initial load
   useEffect(() => {
-    const sid = localStorage.getItem("chat_session_id");
+    try {
+      localStorage.removeItem(LEGACY_SESSION_KEY);
+    } catch {}
+    const sid = memorySessionId;
     if (sid) {
+      sessionRef.current = sid;
       setSessionId(sid);
       fetchHistory(sid);
     } else {
-      // Send greeting to get session
-      sendMessage("Hello");
+      startNewChat();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const fetchHistory = async (sid) => {
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000/api";
-      const res = await fetch(`${baseUrl}/chatbot/history/${sid}`);
-      const data = await res.json();
-      setMessages(data);
-      if (data.length > 0) {
-        const lastMsg = data[data.length - 1];
-        if (lastMsg.quickReplies && lastMsg.quickReplies.length > 0) {
-          setQuickReplies(lastMsg.quickReplies);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const resetChat = () => {
-    localStorage.removeItem("chat_session_id");
-    setSessionId(null);
-    setMessages([]);
-    setQuickReplies([]);
-    // The useEffect will not re-trigger automatically, so we send the greeting manually
-    setTimeout(() => {
-      // Create a fresh flow
-      const text = "Hello";
-      const userMsg = { sender: "user", message: text };
-      setMessages([userMsg]);
-      setIsLoading(true);
-      
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000/api";
-      fetch(`${baseUrl}/chatbot/query`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }), // no session ID -> creates new
-      }).then(res => res.json()).then(data => {
-        setSessionId(data.sessionId);
-        localStorage.setItem("chat_session_id", data.sessionId);
-        setMessages((prev) => [...prev, { sender: "bot", message: data.response }]);
-        setQuickReplies(data.quickReplies || []);
-      }).finally(() => setIsLoading(false));
-    }, 100);
-  };
 
   const openWhatsApp = () => {
     const text = "Hi Musafir Baba, I need help with my travel plans!";
     window.open(getWhatsAppLink(text), "_blank");
   };
 
-  const sendMessage = async (text) => {
-    const userMsg = { sender: "user", message: text };
-    setMessages((prev) => [...prev, userMsg]);
-    setQuickReplies([]);
-    setIsLoading(true);
-
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000/api";
-      const res = await fetch(`${baseUrl}/chatbot/query`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, sessionId }),
-      });
-      const data = await res.json();
-      
-      if (!sessionId) {
-        setSessionId(data.sessionId);
-        localStorage.setItem("chat_session_id", data.sessionId);
-      }
-
-      setMessages((prev) => [...prev, { sender: "bot", message: data.response, url: data.url }]);
-      setQuickReplies(data.quickReplies || []);
-    } catch (err) {
-      console.error(err);
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", message: "Sorry, I am having trouble connecting right now." },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const headerBtn =
+    "w-9 h-9 flex items-center justify-center rounded-full text-white/85 hover:text-white hover:bg-white/15 active:bg-white/25 transition-colors";
 
   return (
-    <div className="fixed bottom-20 right-4 w-80 sm:w-96 h-[500px] max-h-[80vh] bg-white/80 backdrop-blur-3xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col z-50 border border-white overflow-hidden animate-in zoom-in-95 duration-300 slide-in-from-bottom-5">
+    <div
+      role="dialog"
+      aria-label="Musafir Baba chat assistant"
+      className="fixed z-[60] bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:w-[390px] h-[620px] max-h-[calc(100dvh-7rem)] bg-white rounded-[22px] shadow-[0_32px_80px_-16px_rgba(15,23,42,0.35),0_8px_24px_-8px_rgba(254,83,0,0.18)] ring-1 ring-black/[0.06] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 origin-bottom-right"
+    >
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-xl border-b border-gray-100 p-4 text-gray-800 flex justify-between items-center shrink-0 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] z-10">
-        <div className="flex items-center gap-2">
-          <Bot size={20} className="text-[#FE5300]" />
-          <span className="font-bold tracking-wide text-gray-900">Musafir Baba</span>
-        </div>
-        <div className="flex items-center gap-1 text-gray-500">
-          <button onClick={openWhatsApp} title="Chat on WhatsApp" className="hover:bg-gray-100 hover:text-[#FE5300] p-1.5 rounded-xl transition-all duration-200">
-            <WhatsappIcon size={18} />
-          </button>
-          <button onClick={resetChat} title="New Chat" className="hover:bg-gray-100 hover:text-[#FE5300] p-1.5 rounded-xl transition-all duration-200">
-            <RefreshCcw size={18} />
-          </button>
-          <button onClick={onClose} title="Close" className="hover:bg-gray-100 hover:text-[#FE5300] p-1.5 rounded-xl transition-all duration-200 ml-1">
-            <X size={20} />
-          </button>
+      <div className="relative shrink-0 overflow-hidden bg-gradient-to-br from-[#ff6b1f] via-[#FE5300] to-[#e2430a] text-white px-4 pt-4 pb-3.5">
+        {/* soft decorative glows */}
+        <div aria-hidden="true" className="pointer-events-none absolute -top-14 -right-10 w-40 h-40 rounded-full bg-white/15 blur-2xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 w-36 h-36 rounded-full bg-amber-300/25 blur-2xl" />
+
+        <div className="relative flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative shrink-0">
+              <div className="w-11 h-11 rounded-full bg-white text-[#FE5300] flex items-center justify-center shadow-[0_4px_14px_rgba(0,0,0,0.18)]">
+                <Bot size={22} strokeWidth={2.2} />
+              </div>
+              <span className="absolute bottom-0 right-0 flex w-3 h-3">
+                <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                <span className="relative inline-flex w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-[#FE5300]" />
+              </span>
+            </div>
+            <div className="min-w-0 leading-tight">
+              <p className="flex items-center gap-1 font-semibold text-[15.5px] tracking-tight truncate">
+                Musafir Baba
+                <BadgeCheck size={15} className="shrink-0 text-white/95" aria-label="Verified" />
+              </p>
+              <p className="text-[12px] text-white/85 truncate mt-0.5">Online · Replies in seconds</p>
+            </div>
+          </div>
+          <div className="flex items-center shrink-0 -mr-1.5">
+            <button type="button" onClick={openWhatsApp} title="Chat on WhatsApp" aria-label="Chat on WhatsApp" className={headerBtn}>
+              <WhatsappIcon size={17} />
+            </button>
+            <button type="button" onClick={startNewChat} disabled={isLoading} title="Start a new chat" aria-label="Start a new chat" className={`${headerBtn} disabled:opacity-50`}>
+              <RotateCcw size={17} />
+            </button>
+            <button type="button" onClick={onClose} title="Close" aria-label="Close chat" className={headerBtn}>
+              <X size={19} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Messages Window */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
+      {/* Messages */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain bg-gradient-to-b from-[#fbf8f6] to-[#f4f4f7] px-4 pt-4 pb-2">
+        {/* Welcome card */}
+        <div className="mb-5 rounded-2xl bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-gray-200/70">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-[#FE5300] to-[#ff8a3d] text-white flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(254,83,0,0.6)]">
+              <Sparkles size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[14px] font-semibold text-gray-900">Your personal travel assistant</p>
+              <p className="text-[12.5px] leading-snug text-gray-500 mt-0.5">
+                Holidays, visas &amp; car rentals — our experts follow up on WhatsApp.
+              </p>
+            </div>
+          </div>
+          <div className="mt-3.5 grid grid-cols-3 divide-x divide-gray-100 rounded-xl bg-gray-50/80 py-2 text-center">
+            <div>
+              <p className="flex items-center justify-center gap-0.5 text-[13px] font-bold text-gray-900">
+                4.8 <Star size={11} className="fill-amber-400 text-amber-400" />
+              </p>
+              <p className="text-[10.5px] text-gray-500">Google rating</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-bold text-gray-900">24,000+</p>
+              <p className="text-[10.5px] text-gray-500">Travellers</p>
+            </div>
+            <div>
+              <p className="text-[13px] font-bold text-gray-900">2016</p>
+              <p className="text-[10.5px] text-gray-500">Trusted since</p>
+            </div>
+          </div>
+        </div>
+
         {messages.map((m, idx) => (
-          <ChatMessage key={idx} sender={m.sender} message={m.message} url={m.url} />
+          <ChatMessage
+            key={idx}
+            sender={m.sender}
+            message={m.message}
+            url={m.url}
+            showAvatar={m.sender === "bot" && messages[idx - 1]?.sender !== "bot"}
+          />
         ))}
         {isLoading && (
-          <div className="flex justify-start mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="bg-white text-gray-500 rounded-2xl px-4 py-2.5 text-sm rounded-bl-none shadow-sm border border-gray-100 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+          <div className="flex items-end gap-2 mb-3 animate-in fade-in duration-300">
+            <BotAvatar />
+            <div className="bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-gray-200/70 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-[#FE5300]/70 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 bg-[#FE5300]/70 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 bg-[#FE5300]/70 rounded-full animate-bounce"></span>
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
+        {!isLoading && (
+          <QuickReplies replies={quickReplies} onSelect={(reply) => sendMessage(reply)} />
+        )}
       </div>
 
-      {/* Input Area */}
-      <div className="shrink-0 pt-2 bg-gradient-to-t from-white via-white to-transparent rounded-b-3xl">
-        <QuickReplies replies={quickReplies} onSelect={sendMessage} />
-        <ChatInput onSendMessage={sendMessage} />
-      </div>
+      {/* Input */}
+      <ChatInput onSendMessage={(text) => sendMessage(text)} disabled={isLoading} />
     </div>
   );
 }

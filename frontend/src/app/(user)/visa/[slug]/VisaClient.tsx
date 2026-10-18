@@ -277,11 +277,24 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   // Refs for each tab button so we can scroll it into view when active changes
   const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // Scroll the active tab button into view in the tab bar
+  // Scroll the active tab button into view in the tab bar.
+  // Skipped on first render, and only the tabs row is scrolled sideways —
+  // btn.scrollIntoView also scrolled the *page* down to the (below-the-fold)
+  // tab bar on load, so the page opened mid-way instead of at the banner.
+  // Same approach as the holiday package page (SlugClients.tsx).
+  const isFirstTabRender = useRef(true);
   useEffect(() => {
+    if (isFirstTabRender.current) {
+      isFirstTabRender.current = false;
+      return;
+    }
     const btn = tabButtonRefs.current[active];
-    if (btn) {
-      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    const row = btn?.parentElement;
+    if (btn && row) {
+      const rowRect = row.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const left = row.scrollLeft + (btnRect.left - rowRect.left) - (rowRect.width - btnRect.width) / 2;
+      row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
     }
   }, [active]);
 
