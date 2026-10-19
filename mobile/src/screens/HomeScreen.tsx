@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { 
   View, 
   Text, 
@@ -23,6 +23,9 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../navigation/types';
 import { SafeModal } from '../components/SafeModal';
+import { Linking } from 'react-native';
+import { loadPartnerAppHome, partnerAppHomeCache, type PartnerAppBanner, type PartnerAppAnnouncement } from '../api/partnerAppHome.api';
+import { HomeBannerCarousel, ImportantUpdateBar } from '../components/HomeBannerCarousel';
 
 const BANNER_IMAGES = [
   require('../../design/bannerImages/mbcb1.jpeg'),
@@ -74,10 +77,14 @@ const DEFAULT_NOTIF_ICON = { icon: 'notifications', color: '#64748b', bg: '#f1f5
 type HomeScreenNavigationProp = BottomTabNavigationProp<MainTabParamList, 'Home'>;
 
 const BRAND_LOGO = require('../../assets/branding/mbconnect-logo.png');
+const HOME_HERO = require('../../assets/authBanner-v2.png');
 
 export const HomeScreen = () => {
   // Same top spacing on every main screen: status bar height + 16.
-  const topInset = useSafeAreaInsets().top + 16;
+  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
+  // status-bar overlap this screen really has (measured natively, so it's never
+  // counted twice); this is just the header's own breathing room.
+  const topInset = 12;
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,6 +202,21 @@ export const HomeScreen = () => {
     fetchNotifications();
   }, [fetchNotifications]);
 
+  // Admin-managed banners + Important Update (admin → Connect App Home). Until
+  // they load (or if the request fails) Home shows its built-in banners as before.
+  const [adminBanners, setAdminBanners] = useState<PartnerAppBanner[]>(() => partnerAppHomeCache.banners);
+  const [homeUpdate, setHomeUpdate] = useState<PartnerAppAnnouncement | null>(() => partnerAppHomeCache.announcement);
+  useFocusEffect(
+    useCallback(() => {
+      loadPartnerAppHome()
+        .then((c) => {
+          setAdminBanners(c.banners);
+          setHomeUpdate(c.announcement);
+        })
+        .catch(() => {});
+    }, [])
+  );
+
   const onRefresh = () => {
     setRefreshing(true);
     fetchDashboard();
@@ -213,10 +235,55 @@ export const HomeScreen = () => {
   const activeVehiclesCount = data?.vehicles?.filter((v: any) => v.status === 'Active').length || 0;
   // Not approved yet: the floating bar and a Home card show what's left.
   const activation = getActivation(data);
-  const openActivationStep = (screen: string) => navigation.navigate('Menu', { screen, initial: false });
+  const openActivationStep = (screen: string) => navigation.navigate('Menu', { screen, initial: false, params: { returnTo: 'Home' } });
+
+  // ---- Display-only values for the redesigned Home (no effect on data or actions) ----
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const partnerName = (data?.profile?.fullName || '').trim().split(/\s+/).slice(0, 2).join(' ');
+  const showWalletCard = activation.state === 'approved' && !!wallet?.enabled;
+  const walletReason = walletBlockReason(wallet);
+  const walletMin = wallet?.rules?.minBalance || 0;
+  const walletAvail = wallet?.available ?? wallet?.balance ?? 0;
+  const walletShort = Math.max(0, walletMin - walletAvail);
+  const walletPct = walletMin > 0 ? Math.min(1, Math.max(0, walletAvail / walletMin)) : 1;
+  // Hero crop: the photo's right part (from 41% across, past its baked-in text) fills the
+  // banner's right 62%; the photo already fades to white on that edge, so it blends in.
+  const heroW = Dimensions.get('window').width - 32;
+  const heroImgW = (0.62 * heroW) / 0.59;
+  const heroImgH = heroImgW * (1632 / 2624);
+  const heroImgStyle = { position: 'absolute' as const, width: heroImgW, height: heroImgH, left: -0.41 * heroImgW, top: -0.18 * heroImgH };
+  const inrH = (n: number) => `₹${Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  const openAdminBanner = (b: PartnerAppBanner) => {
+    if (b.action.type === 'URL' && b.action.url) {
+      Linking.openURL(b.action.url).catch(() => {});
+      return;
+    }
+    if (b.action.type !== 'SCREEN') return;
+    const menu = (screen: string) => navigation.navigate('Menu', { screen, initial: false, params: { returnTo: 'Home' } });
+    switch (b.action.screen) {
+      case 'WALLET': return menu('PartnerWallet');
+      case 'REFER_EARN': return menu('ReferEarn');
+      case 'DOCUMENTS': return menu('IdentityProof');
+      case 'VEHICLES': return menu('VehiclesList');
+      case 'SUPPORT': return menu('TripSupport');
+      case 'BOOKINGS': return navigation.navigate('Bookings');
+      case 'EARNINGS': return navigation.navigate(FINANCIAL_FEATURES_ENABLED ? 'Earnings' : 'Bookings');
+      case 'INBOX': return navigation.navigate('Inbox');
+    }
+  };
+  const QUICK_ACTIONS: { label: string; icon: any; color: string; bg: string; go: () => void }[] = [
+    { label: 'Add Vehicle', icon: 'car', color: '#16a34a', bg: '#dcfce7', go: () => navigation.navigate('Menu', { screen: 'VehiclesList', initial: false, params: { returnTo: 'Home' } }) },
+    { label: 'Documents', icon: 'document-text', color: '#2563eb', bg: '#dbeafe', go: () => navigation.navigate('Menu', { screen: 'IdentityProof', initial: false, params: { returnTo: 'Home' } }) },
+    { label: 'Bank Details', icon: 'business', color: '#9333ea', bg: '#f3e8ff', go: () => navigation.navigate('Menu', { screen: FINANCIAL_FEATURES_ENABLED ? 'BankDetails' : 'PersonalDetails', initial: false, params: { returnTo: 'Home' } }) },
+    { label: 'Drivers', icon: 'people', color: '#FE5300', bg: '#ffedd5', go: () => navigation.navigate('Menu', { screen: 'FleetRegistry', initial: false, params: { returnTo: 'Home' } }) },
+    { label: 'Support', icon: 'headset', color: '#dc2626', bg: '#fee2e2', go: () => navigation.navigate('Menu', { screen: 'TripSupport', initial: false, params: { returnTo: 'Home' } }) },
+    { label: 'More', icon: 'grid', color: '#64748b', bg: '#f1f5f9', go: () => navigation.navigate('Menu') },
+  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff' }} />
       {/* Top Header Bar */}
       <View style={[styles.topHeader, { paddingTop: topInset }]}>
         <View style={styles.headerLeft}>
@@ -229,11 +296,17 @@ export const HomeScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.brandContainer}>
-            <Image source={BRAND_LOGO} style={{ width: 64, height: 43 }} resizeMode="contain" accessibilityLabel="MBConnect" />
+            <Image source={BRAND_LOGO} style={{ width: 76, height: 46 }} resizeMode="contain" accessibilityLabel="MBConnect" />
           </View>
         </View>
 
         <View style={styles.headerRight}>
+          {activation.state === 'approved' && (
+            <View style={[styles.hStatusPill, !isOnline && styles.hStatusPillOff]} accessibilityLabel={isOnline ? 'Online' : 'Offline'}>
+              <View style={[styles.hStatusDot, { backgroundColor: isOnline ? '#22c55e' : '#ef4444' }]} />
+              <Text style={[styles.hStatusText, !isOnline && { color: '#b91c1c' }]}>{isOnline ? 'Online' : 'Offline'}</Text>
+            </View>
+          )}
           <TouchableOpacity 
             style={styles.headerIconBtn} 
             onPress={() => navigation.navigate('Inbox')}
@@ -249,7 +322,7 @@ export const HomeScreen = () => {
 
           <TouchableOpacity 
             style={styles.headerIconBtn} 
-            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport', initial: false })}
+            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport', initial: false, params: { returnTo: 'Home' } })}
             activeOpacity={0.7}
           >
             <Ionicons name="chatbubble-ellipses-outline" size={22} color="#0f172a" />
@@ -333,6 +406,33 @@ export const HomeScreen = () => {
         {/* =========================================================
             BANNER CAROUSEL SECTION (Full-view images, Infinite Smooth Loop)
            ========================================================= */}
+        {/* Greeting banner: right part of the existing auth banner photo (car + city),
+            with a curved light panel on the left for the greeting. Display only. */}
+        <View style={styles.hBanner}>
+          <View style={styles.hHeroPhoto}>
+            <Image source={HOME_HERO} style={heroImgStyle} resizeMode="stretch" />
+          </View>
+          {/* curved panel over the photo's left edge, with a thin brand-orange rim */}
+          <View style={[styles.hCurve, { left: Math.round(0.55 * heroW) - 240 }]} />
+          <View style={styles.hBannerText}>
+            <Text style={styles.hGreetSmall}>{greeting},</Text>
+            <Text style={styles.hGreetName} numberOfLines={2}>{partnerName || 'Partner'}{'\u00A0'}👋</Text>
+            <Text style={styles.hGreetSub} numberOfLines={2}>
+              {activation.state !== 'approved'
+                ? 'Finish setting up your account to start taking rides.'
+                : isOnline ? 'You are online and ready for new rides.' : 'Ready for new rides today?'}
+            </Text>
+            <View style={styles.hTagPill}>
+              <Text style={styles.hTagPillText}>Drive More · Earn More</Text>
+            </View>
+          </View>
+
+        </View>
+
+        {/* Admin banners when live; otherwise the built-in carousel below (unchanged). */}
+        {adminBanners.length > 0 ? (
+          <HomeBannerCarousel banners={adminBanners} onOpen={openAdminBanner} />
+        ) : (
         <View style={styles.carouselContainer}>
           <ScrollView
             ref={bannerRef}
@@ -367,99 +467,78 @@ export const HomeScreen = () => {
             ))}
           </View>
         </View>
+        )}
+
+        {/* Important Update from admin (full message is in the Inbox) */}
+        {!!homeUpdate && <ImportantUpdateBar update={homeUpdate} onPress={() => navigation.navigate('Inbox')} />}
 
         {/* Account activation (only while the account isn't approved) */}
         <ActivationCard activation={activation} onOpen={openActivationStep} />
 
-        {/* Partner Wallet: recharge needed before accepting (approved partners, program on) */}
-        {activation.state === 'approved' && !!walletBlockReason(wallet) && (
+        {/* Partner Wallet card (approved partners, program on). Red when a recharge is needed. */}
+        {showWalletCard && (
           <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('Menu', { screen: 'PartnerWallet', initial: false })}
-            style={{ marginHorizontal: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff7ed', borderWidth: 1, borderColor: '#fed7aa', borderRadius: 18, padding: 14 }}
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate('Menu', { screen: 'PartnerWallet', initial: false, params: { returnTo: 'Home' } })}
+            style={[styles.hWalletCard, !!walletReason && styles.hWalletCardLow]}
           >
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="wallet" size={20} color="#FE5300" />
+            <View style={styles.hWalletTop}>
+              <View style={styles.hWalletIcon}>
+                <Ionicons name="wallet" size={24} color="#FE5300" />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.hWalletLabel}>Wallet Balance</Text>
+                <Text style={styles.hWalletAmt}>{inrH(walletAvail)}</Text>
+              </View>
+              <View style={styles.hRechargeBtn}>
+                <Ionicons name="add" size={16} color="#ffffff" />
+                <Text style={styles.hRechargeText}>Recharge</Text>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14.5, fontWeight: '800', color: '#0f172a' }}>{(wallet?.balance || 0) > 0 ? 'Low wallet balance' : 'Recharge to start taking rides'}</Text>
-              <Text style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>{walletBlockReason(wallet)}</Text>
-            </View>
-            <View style={{ backgroundColor: '#FE5300', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 }}>
-              <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff' }}>Recharge</Text>
-            </View>
+            {walletMin > 0 && (
+              <View style={styles.hWalletTrack}>
+                <View style={[styles.hWalletFill, { width: `${walletPct * 100}%`, backgroundColor: walletReason ? '#ef4444' : '#22c55e' }]} />
+              </View>
+            )}
+            {walletReason ? (
+              <View style={styles.hWalletAlert}>
+                <Ionicons name="alert-circle" size={18} color="#dc2626" />
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  {walletShort > 0 && <Text style={styles.hWalletAlertTitle}>Add {inrH(walletShort)} more</Text>}
+                  <Text style={styles.hWalletAlertText}>{walletReason.replace(/^Low wallet balance\.\s*/, '')}</Text>
+                </View>
+              </View>
+            ) : (
+              <Text style={styles.hWalletOk}>
+                <Ionicons name="checkmark-circle" size={13} color="#16a34a" /> You're all set to receive rides{walletMin > 0 ? ` · minimum ${inrH(walletMin)}` : ''}.
+              </Text>
+            )}
           </TouchableOpacity>
         )}
 
-        {/* Quick Actions Grid */}
-        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Quick Actions</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
-          <TouchableOpacity 
-            style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'VehiclesList', initial: false })}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: '#f0fdf4' }]}>
-              <Ionicons name="car" size={20} color="#16a34a" />
+        {/* Quick Actions */}
+        <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Menu')}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.viewAllText}>View all</Text>
+              <Ionicons name="chevron-forward" size={14} color="#FE5300" />
             </View>
-            <Text style={styles.actionPillText}>Add Vehicle</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'IdentityProof', initial: false })}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: '#eff6ff' }]}>
-              <Ionicons name="document-text" size={20} color="#2563eb" />
-            </View>
-            <Text style={styles.actionPillText}>Documents</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: FINANCIAL_FEATURES_ENABLED ? 'BankDetails' : 'PersonalDetails', initial: false })}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: '#faf5ff' }]}>
-              <Ionicons name="business" size={20} color="#9333ea" />
-            </View>
-            <Text style={styles.actionPillText}>Bank Details</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'FleetRegistry', initial: false })}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: '#fff7ed' }]}>
-              <Ionicons name="person" size={20} color="#FE5300" />
-            </View>
-            <Text style={styles.actionPillText}>Drivers</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport', initial: false })}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: '#fef2f2' }]}>
-              <Ionicons name="headset" size={20} color="#dc2626" />
-            </View>
-            <Text style={styles.actionPillText}>Support</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionPill} 
-            onPress={() => navigation.navigate('Menu')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.actionIconBox, { backgroundColor: '#f8fafc' }]}>
-              <Ionicons name="ellipsis-horizontal" size={20} color="#64748b" />
-            </View>
-            <Text style={styles.actionPillText}>More</Text>
-          </TouchableOpacity>
-        </ScrollView>
+        </View>
+        <View style={styles.hQuickGrid}>
+          {QUICK_ACTIONS.map((qa) => (
+            <TouchableOpacity key={qa.label} style={styles.hQuickCard} onPress={qa.go} activeOpacity={0.8}>
+              <View style={[styles.hQuickIcon, { backgroundColor: qa.bg }]}>
+                <Ionicons name={qa.icon} size={22} color={qa.color} />
+              </View>
+              <View style={styles.hQuickLabelRow}>
+                <Text style={styles.hQuickLabel} numberOfLines={1}>{qa.label}</Text>
+                <Ionicons name="chevron-forward" size={12} color="#94a3b8" />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Live Opportunities Section */}
         <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
@@ -472,10 +551,16 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.liveOppCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 30 }]}>
-          <Ionicons name="map-outline" size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
-          <Text style={{ color: '#64748b', fontSize: 14, fontWeight: '500' }}>No live opportunities right now</Text>
-          <Text style={{ color: '#94a3b8', fontSize: 12, marginTop: 4 }}>New trips will appear here</Text>
+        <View style={styles.hEmptyCard}>
+          <View style={[styles.hEmptyIcon, { backgroundColor: '#fff7ed' }]}>
+            <Ionicons name="map" size={26} color="#FE5300" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 14 }}>
+            <Text style={styles.hEmptyTitle}>No live opportunities right now</Text>
+            <Text style={styles.hEmptySub}>
+              {activation.state === 'approved' && !isOnline ? 'Go online to start receiving new ride requests.' : 'New trips will appear here.'}
+            </Text>
+          </View>
         </View>
 
         {/* Upcoming Bookings Section */}
@@ -489,9 +574,14 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.upcomingCard, { alignItems: 'center', justifyContent: 'center', paddingVertical: 30 }]}>
-          <Ionicons name="calendar-outline" size={32} color="#cbd5e1" style={{ marginBottom: 10 }} />
-          <Text style={{ color: '#64748b', fontSize: 14, fontWeight: '500' }}>No upcoming bookings</Text>
+        <View style={styles.hEmptyCard}>
+          <View style={[styles.hEmptyIcon, { backgroundColor: '#eff6ff' }]}>
+            <Ionicons name="calendar" size={26} color="#2563eb" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 14 }}>
+            <Text style={styles.hEmptyTitle}>No upcoming bookings</Text>
+            <Text style={styles.hEmptySub}>Accepted trips will show here with date, route and earnings.</Text>
+          </View>
         </View>
 
         {/* Recent Notifications Section (Hidden as requested) */}
@@ -533,8 +623,8 @@ export const HomeScreen = () => {
         )} 
         */}
 
-        {/* Extra spacing for floating capsule bar */}
-        <View style={{ height: 90 }} />
+        {/* Room for the floating Go Online bar (≈62px incl. its 12px offset) + a small gap */}
+        <View style={{ height: 52 }} />
       </ScrollView>
 
       {/* Floating Go Online / Offline Toggle Bar -- until the account is approved
@@ -663,6 +753,45 @@ export const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  // ---- Home redesign styles ----
+  hStatusPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#dcfce7', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, marginRight: 4 },
+  hStatusPillOff: { backgroundColor: '#fee2e2' },
+  hStatusDot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
+  hStatusText: { fontSize: 12, fontWeight: '800', color: '#15803d' },
+  hGreetRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  hGreetSmall: { fontSize: 14, color: '#475569', fontWeight: '600' },
+  hGreetName: { fontSize: 20, lineHeight: 24, fontWeight: '900', fontStyle: 'italic', color: '#0f172a', marginTop: 1 },
+  hGreetSub: { fontSize: 12.5, color: '#64748b', marginTop: 2 },
+  hGreetArt: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff4ec', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
+  hBanner: { minHeight: 150, borderRadius: 20, overflow: 'hidden', backgroundColor: '#f7f6fa', marginBottom: 14, borderWidth: 1, borderColor: '#eef0f4' },
+  hCurve: { position: 'absolute', top: -32, width: 240, height: 240, borderRadius: 120, backgroundColor: '#f7f6fa', borderWidth: 3, borderColor: '#FE5300' },
+  hHeroPhoto: { position: 'absolute', top: 0, bottom: 0, right: 0, width: '62%', overflow: 'hidden' },
+  hBannerText: { paddingLeft: 14, paddingVertical: 14, width: '50%' },
+  hTagPill: { alignSelf: 'flex-start', marginTop: 10, backgroundColor: '#FE5300', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  hTagPillText: { color: '#ffffff', fontSize: 11, fontWeight: '800', fontStyle: 'italic' },
+  hWalletCard: { marginTop: 16, backgroundColor: '#ffffff', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: '#ffe4d1' },
+  hWalletCardLow: { backgroundColor: '#fffaf6' },
+  hWalletTop: { flexDirection: 'row', alignItems: 'center' },
+  hWalletIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#fff1e8', justifyContent: 'center', alignItems: 'center' },
+  hWalletLabel: { fontSize: 12.5, color: '#475569', fontWeight: '700' },
+  hWalletAmt: { fontSize: 24, fontWeight: '900', color: '#0f172a', marginTop: 1 },
+  hRechargeBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FE5300', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9 },
+  hRechargeText: { color: '#ffffff', fontSize: 13, fontWeight: '800', marginLeft: 3 },
+  hWalletTrack: { height: 6, borderRadius: 3, backgroundColor: '#f1f5f9', marginTop: 12, overflow: 'hidden' },
+  hWalletFill: { height: 6, borderRadius: 3 },
+  hWalletAlert: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#fef2f2', borderRadius: 12, padding: 10, marginTop: 10 },
+  hWalletAlertTitle: { fontSize: 13.5, fontWeight: '800', color: '#dc2626' },
+  hWalletAlertText: { fontSize: 12, color: '#475569', marginTop: 1 },
+  hWalletOk: { fontSize: 12, color: '#15803d', fontWeight: '600', marginTop: 10 },
+  hQuickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 },
+  hQuickCard: { width: '31.5%', backgroundColor: '#ffffff', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 8, alignItems: 'center', borderWidth: 1, borderColor: '#eef2f7' },
+  hQuickIcon: { width: 46, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  hQuickLabelRow: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%' },
+  hQuickLabel: { fontSize: 12, fontWeight: '700', color: '#0f172a', marginRight: 2, flexShrink: 1 },
+  hEmptyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#eef2f7' },
+  hEmptyIcon: { width: 52, height: 52, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  hEmptyTitle: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
+  hEmptySub: { fontSize: 12, color: '#64748b', marginTop: 3, lineHeight: 17 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8fafc' },
   topHeader: {
     flexDirection: 'row',

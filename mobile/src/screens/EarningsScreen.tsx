@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -18,7 +18,10 @@ import { API_BASE_URL } from '../utils/config';
 
 export const EarningsScreen = () => {
   // Same top spacing on every main screen: status bar height + 16.
-  const topInset = useSafeAreaInsets().top + 16;
+  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
+  // status-bar overlap this screen really has (measured natively, so it's never
+  // counted twice); this is just the header's own breathing room.
+  const topInset = 12;
 
   const [timeframe, setTimeframe] = useState<'Week' | 'Month' | 'Year'>('Week');
   const navigation = useNavigation<any>();
@@ -76,6 +79,8 @@ export const EarningsScreen = () => {
   const recentPayouts = earnings?.recentPayouts || [];
 
   return (
+    <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+    <SafeAreaView edges={['top']} />
     <ScrollView 
       style={styles.container} 
       contentContainerStyle={[styles.contentContainer, { paddingTop: topInset }]} 
@@ -222,6 +227,7 @@ export const EarningsScreen = () => {
         ))}
       </View>
     </ScrollView>
+    </View>
   );
 };
 

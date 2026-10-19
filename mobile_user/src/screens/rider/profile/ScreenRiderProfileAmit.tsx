@@ -46,8 +46,10 @@ import {
   Globe,
   Sliders,
   Check,
-  AlertCircle
+  AlertCircle,
+  Star as StarIcon,
 } from 'lucide-react-native';
+import { openPlayStoreForRating, canRateOnPlayStore } from '../../../utils/rateApp';
 
 const PROFILE_CARD = {
   backgroundColor: '#FFFFFF',
@@ -316,6 +318,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
                   { icon: FileText, label: 'Documents', tint: '#2563EB', bg: '#EFF6FF', action: () => onNavigate('41') },
                   { icon: Car, label: 'Trip Preferences', tint: '#EA580C', bg: '#FFF5EF', comingSoon: true, action: () => showToast('Trip Preferences is coming soon') },
                   { icon: Headphones, label: 'Help & Support', tint: '#059669', bg: '#ECFDF5', action: () => onNavigate('37') },
+                  ...(canRateOnPlayStore ? [{ icon: StarIcon, label: 'Rate us on Play Store', tint: '#F59E0B', bg: '#FFFBEB', action: () => { openPlayStoreForRating().catch(() => showToast("Couldn't open the Play Store")); } }] : []),
                   { icon: Shield, label: 'Terms & Conditions', tint: '#475569', bg: '#F1F5F9', action: () => setInAppBrowserUrl('https://musafirbaba.com/mbgo/terms-and-conditions') },
                   { icon: Lock, label: 'Privacy Policy', tint: '#475569', bg: '#F1F5F9', action: () => setInAppBrowserUrl('https://musafirbaba.com/mbgo/privacy-policies') },
                   { icon: HelpCircle, label: 'About MBGO', tint: '#7C3AED', bg: '#F5F3FF', action: () => onNavigate('about') },

@@ -48,6 +48,7 @@ export type ProfileStackParamList = {
   VerifiedPartner: undefined;
   PartnerWallet: undefined;
   ReferEarn: undefined;
+  LegalPage: { title: string; url: string };
   ProfilePhoto: undefined;
   BackgroundCheck: undefined;
   TripSupport: undefined;

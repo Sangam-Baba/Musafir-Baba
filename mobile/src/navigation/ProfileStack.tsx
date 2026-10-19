@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileStackParamList } from './types';
 import { PersonalDetailsScreen } from '../screens/PersonalDetailsScreen';
@@ -11,6 +11,7 @@ import { InboxScreen } from '../screens/InboxScreen';
 import { PayoutHistoryScreen } from '../screens/PayoutHistoryScreen';
 import { ProfilePhotoScreen } from '../screens/ProfilePhotoScreen';
 import { VerifiedPartnerScreen } from '../screens/VerifiedPartnerScreen';
+import { LegalPageScreen, LEGAL_PAGES } from '../screens/LegalPageScreen';
 import { EarningsTrendScreen } from '../screens/EarningsTrendScreen';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -35,6 +36,7 @@ import { BankAccountScreen } from '../screens/BankAccountScreen';
 import { ServiceAreaPricingScreen } from '../screens/ServiceAreaPricingScreen';
 import { PartnerWalletScreen } from '../screens/PartnerWalletScreen';
 import { ReferEarnScreen } from '../screens/ReferEarnScreen';
+import { openPlayStoreForRating, canRateOnPlayStore } from '../utils/rateApp';
 import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
 
 const Stack = createStackNavigator<ProfileStackParamList>();
@@ -43,7 +45,10 @@ type MenuNavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMen
 
 const MenuScreen = ({ navigation }: any) => {
   // Same top spacing on every main screen: status bar height + 16.
-  const topInset = useSafeAreaInsets().top + 16;
+  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
+  // status-bar overlap this screen really has (measured natively, so it's never
+  // counted twice); this is just the header's own breathing room.
+  const topInset = 12;
 
   const token = useAuthStore((state) => state.token);
   const storeProfile = useAuthStore((state) => state.profile);
@@ -191,14 +196,20 @@ const MenuScreen = ({ navigation }: any) => {
       isComingSoon: false,
       onPress: () => navigation.navigate('ReferEarn'),
     },
-    {
-      title: 'Contact Support',
-      subtitle: 'Chat with our support team',
-      icon: 'chatbubble-ellipses-outline' as const,
-      iconBg: '#fef3c7',
-      iconColor: '#d97706',
-      onPress: () => navigation.navigate('TripSupport'),
-    },
+    ...(canRateOnPlayStore
+      ? [
+          {
+            title: 'Rate us on Play Store',
+            subtitle: 'Enjoying MBConnect? Leave a rating & review',
+            icon: 'star-outline' as const,
+            iconBg: '#fffbeb',
+            iconColor: '#f59e0b',
+            onPress: () => {
+              openPlayStoreForRating().catch(() => Alert.alert('Play Store', "Couldn't open the Play Store. Please try again."));
+            },
+          },
+        ]
+      : []),
     {
       title: 'Replay App Tour',
       subtitle: 'See the interactive tutorial again',
@@ -215,7 +226,7 @@ const MenuScreen = ({ navigation }: any) => {
       icon: 'document-text-outline' as const,
       iconBg: '#dcfce7',
       iconColor: '#16a34a',
-      onPress: () => Alert.alert("Terms & Conditions", "MB Connect Partner Terms & Conditions v1.0.0"),
+      onPress: () => navigation.navigate('LegalPage', LEGAL_PAGES.terms),
     },
     {
       title: 'Privacy Policy',
@@ -223,7 +234,7 @@ const MenuScreen = ({ navigation }: any) => {
       icon: 'shield-outline' as const,
       iconBg: '#e0f2fe',
       iconColor: '#2563eb',
-      onPress: () => Alert.alert("Privacy Policy", "MB Connect Privacy & Data Protection Policy v1.0.0"),
+      onPress: () => navigation.navigate('LegalPage', LEGAL_PAGES.privacy),
     },
     {
       title: 'About MBconnect',
@@ -236,6 +247,8 @@ const MenuScreen = ({ navigation }: any) => {
   ];
 
   return (
+    <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+    <SafeAreaView edges={['top']} />
     <ScrollView 
       style={styles.container} 
       contentContainerStyle={[styles.contentContainer, { paddingTop: topInset }]} 
@@ -423,12 +436,27 @@ const MenuScreen = ({ navigation }: any) => {
       </TouchableOpacity>
       <View style={{ height: 100 }} />
     </ScrollView>
+    </View>
   );
 };
 
 export const ProfileStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      // A screen opened from another tab (e.g. Home → Partner Wallet) carries
+      // params.returnTo. Going back from it (back arrow, Android back, swipe) returns
+      // to that tab instead of the Menu list. Everything else behaves as before.
+      screenListeners={({ navigation, route }) => ({
+        beforeRemove: (e: any) => {
+          const returnTo = (route.params as any)?.returnTo;
+          const type = e?.data?.action?.type;
+          if (!returnTo || (type !== 'GO_BACK' && type !== 'POP')) return;
+          e.preventDefault();
+          navigation.getParent()?.navigate(returnTo);
+        },
+      })}
+    >
       <Stack.Screen name="ProfileMenu" component={MenuScreen} />
       <Stack.Screen name="PersonalDetails" component={PersonalDetailsScreen} />
       {FINANCIAL_FEATURES_ENABLED && (
@@ -458,6 +486,7 @@ export const ProfileStack = () => {
       <Stack.Screen name="VerifiedPartner" component={VerifiedPartnerScreen} />
       <Stack.Screen name="PartnerWallet" component={PartnerWalletScreen} />
       <Stack.Screen name="ReferEarn" component={ReferEarnScreen} />
+      <Stack.Screen name="LegalPage" component={LegalPageScreen} />
     </Stack.Navigator>
   );
 };

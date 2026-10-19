@@ -77,11 +77,25 @@ export const ReferEarnScreen = () => {
   const s = data?.stats;
   const progress = s && r ? Math.min(1, s.rewarded / r.unlockAfter) : 0;
 
+  // ---- Display-only helpers (no effect on data, share or apply logic) ----
+  const copyCode = async () => {
+    if (!data) return;
+    try {
+      if (Platform.OS === 'web' && (navigator as any)?.clipboard) {
+        await (navigator as any).clipboard.writeText(data.code);
+        Alert.alert('Copied', 'Referral code copied.');
+        return;
+      }
+      await Share.share({ message: data.code });
+    } catch {}
+  };
+  const pct = Math.round(progress * 100);
+
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+          <Ionicons name="chevron-back" size={24} color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Refer & Earn</Text>
         <View style={{ width: 24 }} />
@@ -101,15 +115,36 @@ export const ReferEarnScreen = () => {
           )}
 
           {/* My code */}
-          <View style={styles.hero}>
-            <Text style={styles.heroLabel}>Your referral code</Text>
-            <Text style={styles.heroCode} selectable>{data.code}</Text>
-            <Text style={styles.heroSub}>
-              Earn {inr(r!.referrerReward)} for every partner who joins with your code and gets approved
-              {r!.joiningBonus ? ` — they get ${inr(r!.joiningBonus)} too.` : '.'}
-            </Text>
-            <TouchableOpacity style={[styles.shareBtn, !data.enabled && { opacity: 0.5 }]} disabled={!data.enabled} onPress={share} activeOpacity={0.85}>
-              <Ionicons name="share-social" size={18} color="#ffffff" />
+          <View style={styles.rHero}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rKicker}>INVITE PARTNERS • EARN TOGETHER</Text>
+                <View style={styles.rCodeRow}>
+                  <View style={styles.rCodeBox}>
+                    <Text style={styles.rCode} selectable numberOfLines={1} adjustsFontSizeToFit>{data.code}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.rCopyBtn} onPress={copyCode} activeOpacity={0.8} accessibilityLabel="Copy referral code">
+                    <Ionicons name="copy-outline" size={18} color="#475569" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.rEarnLine}>
+                  You earn{'\u00A0'}<Text style={styles.rAmt}>{inr(r!.referrerReward)}</Text>
+                  {r!.joiningBonus ? <Text>{'  •  '}Your friend gets{'\u00A0'}<Text style={styles.rAmt}>{inr(r!.joiningBonus)}</Text></Text> : null}
+                </Text>
+                <Text style={styles.rAfter}>after approval.</Text>
+              </View>
+              {/* phone + share illustration (decorative) */}
+              <View style={styles.rArt}>
+                <View style={styles.rPhone}>
+                  <View style={styles.rPhoneAvatar}><Ionicons name="person" size={18} color="#FE5300" /></View>
+                  <View style={[styles.rPhoneLine, { width: 34 }]} />
+                  <View style={[styles.rPhoneLine, { width: 24 }]} />
+                </View>
+                <View style={styles.rShareBubble}><Ionicons name="share-social" size={18} color="#ffffff" /></View>
+              </View>
+            </View>
+            <TouchableOpacity style={[styles.rShareBtn, !data.enabled && { opacity: 0.5 }]} disabled={!data.enabled} onPress={share} activeOpacity={0.85}>
+              <Ionicons name="share-social-outline" size={18} color="#ffffff" />
               <Text style={styles.shareText}>Share invite</Text>
             </TouchableOpacity>
           </View>
@@ -117,22 +152,30 @@ export const ReferEarnScreen = () => {
           {/* Progress + locked */}
           <View style={styles.card}>
             <View style={styles.rowBetween}>
-              <Text style={styles.cardTitle}>Your referrals</Text>
-              <Text style={styles.count}>{s!.rewarded} / {r!.unlockAfter}</Text>
+              <Text style={styles.rCardTitle}>Approved referrals</Text>
+              <Text style={styles.count}>{s!.rewarded} of {r!.unlockAfter}</Text>
             </View>
-            <View style={styles.track}><View style={[styles.fill, { width: `${progress * 100}%` }]} /></View>
+            <View style={[styles.track, { marginBottom: 6 }]}><View style={[styles.fill, { width: `${progress * 100}%` }]} /></View>
+            <View style={styles.rowBetween}>
+              <Text style={styles.rSmall}>{pct}% complete</Text>
+              {!s!.unlocked && <Text style={styles.rSmall}>{Math.max(0, r!.unlockAfter - s!.rewarded)} to go</Text>}
+            </View>
+            <View style={styles.rDivider} />
             {s!.unlocked ? (
-              <Text style={styles.okText}>🎉 Unlocked — your referral rewards go straight to your wallet.</Text>
+              <View style={[styles.rLockBox, { backgroundColor: '#f0fdf4' }]}>
+                <View style={[styles.rLockIcon, { backgroundColor: '#dcfce7' }]}><Ionicons name="lock-open" size={18} color="#16a34a" /></View>
+                <Text style={[styles.okText, { flex: 1 }]}>🎉 Unlocked — your referral rewards go straight to your wallet.</Text>
+              </View>
             ) : (
-              <>
-                <View style={styles.lockRow}>
-                  <Ionicons name="lock-closed" size={16} color="#b45309" />
-                  <Text style={styles.lockText}>Referral bonus (locked): <Text style={{ fontWeight: '900' }}>{inr(s!.lockedBalance)}</Text></Text>
+              <View style={styles.rLockBox}>
+                <View style={styles.rLockIcon}><Ionicons name="lock-closed-outline" size={18} color="#c2410c" /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rLockTitle}>{inr(s!.lockedBalance)} locked</Text>
+                  <Text style={styles.rSmall}>Rewards unlock after {r!.unlockAfter} approved referrals.</Text>
                 </View>
-                <Text style={styles.muted}>Unlocks to your wallet when you reach {r!.unlockAfter} approved referrals. {Math.max(0, r!.unlockAfter - s!.rewarded)} to go.</Text>
-              </>
+              </View>
             )}
-            {s!.pending > 0 && <Text style={[styles.muted, { marginTop: 6 }]}>{s!.pending} waiting for approval.</Text>}
+            {s!.pending > 0 && <Text style={[styles.muted, { marginTop: 8 }]}>{s!.pending} waiting for approval.</Text>}
           </View>
 
           {/* Enter a code (until submission) */}
@@ -167,13 +210,27 @@ export const ReferEarnScreen = () => {
           ) : null}
 
           {/* People I referred */}
-          <Text style={styles.section}>PEOPLE YOU REFERRED</Text>
-          {data.referrals.length === 0 ? (
-            <Text style={[styles.muted, { textAlign: 'center', marginTop: 4 }]}>No referrals yet. Share your code to start earning.</Text>
-          ) : (
-            <View style={styles.card}>
-              {data.referrals.map((x, i) => (
+          <View style={styles.card}>
+            <Text style={styles.rCardTitle}>People you referred</Text>
+            {data.referrals.length === 0 ? (
+              <View style={styles.rEmpty}>
+                <View style={styles.rRays}>
+                  <View style={[styles.rRay, { transform: [{ rotate: '-35deg' }] }]} />
+                  <View style={styles.rRay} />
+                  <View style={[styles.rRay, { transform: [{ rotate: '35deg' }] }]} />
+                </View>
+                <View style={styles.rPeople}>
+                  <Ionicons name="person" size={30} color="#cbd5e1" style={{ marginRight: -8, marginTop: 8 }} />
+                  <Ionicons name="person" size={42} color="#FE5300" style={{ zIndex: 1 }} />
+                  <Ionicons name="person" size={30} color="#cbd5e1" style={{ marginLeft: -8, marginTop: 8 }} />
+                </View>
+                <Text style={styles.rEmptyTitle}>Your network starts here</Text>
+                <Text style={styles.rSmall}>Share your code to invite your first partner.</Text>
+              </View>
+            ) : (
+              data.referrals.map((x, i) => (
                 <View key={x._id} style={[styles.refRow, i > 0 && { borderTopWidth: 1, borderTopColor: '#f1f5f9' }]}>
+                  <View style={styles.rAvatar}><Text style={styles.rAvatarText}>{(x.name || '?').trim().charAt(0).toUpperCase()}</Text></View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.refName}>{x.name}</Text>
                     <Text style={styles.refMeta}>Joined {fmt(x.createdAt)}{x.rejectReason ? ` · ${x.rejectReason}` : ''}</Text>
@@ -183,22 +240,27 @@ export const ReferEarnScreen = () => {
                     {x.status === 'REWARDED' && <Text style={styles.refAmt}>+{inr(x.reward)}</Text>}
                   </View>
                 </View>
-              ))}
-            </View>
-          )}
+              ))
+            )}
+          </View>
 
           {/* Rules + T&C */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>How it works</Text>
+            <Text style={[styles.rCardTitle, { marginBottom: 8 }]}>How it works</Text>
             {[
-              `Share your code. Your friend adds it when signing up (email or Google), or in Refer & Earn before submitting their profile.`,
-              `When MBConnect approves their account, you earn ${inr(r!.referrerReward)}${r!.joiningBonus ? ` and they get ${inr(r!.joiningBonus)} in their wallet` : ''}.`,
-              `Your referral rewards stay locked until you have ${r!.unlockAfter} approved referrals, then they move to your wallet and can be withdrawn.`,
-              `Their account must be approved within ${r!.expiryDays} days of adding your code.`,
-            ].map((t, i) => (
-              <View key={i} style={styles.ruleRow}>
-                <Ionicons name="checkmark-circle" size={15} color="#16a34a" style={{ marginTop: 1 }} />
-                <Text style={styles.ruleText}>{t}</Text>
+              { title: 'Share your code', body: `Your friend adds it when signing up (email or Google), or in Refer & Earn before submitting their profile.` },
+              { title: `Friend gets approved within ${r!.expiryDays} days`, body: `When MBConnect approves their account, you earn ${inr(r!.referrerReward)}${r!.joiningBonus ? ` and they get ${inr(r!.joiningBonus)} in their wallet` : ''}.` },
+              { title: `Rewards unlock at ${r!.unlockAfter} approvals`, body: `Your referral rewards stay locked until you have ${r!.unlockAfter} approved referrals, then they move to your wallet and can be withdrawn.` },
+            ].map((step, i, arr) => (
+              <View key={i} style={styles.rStep}>
+                <View style={{ alignItems: 'center', width: 32 }}>
+                  <View style={styles.rStepNum}><Text style={styles.rStepNumText}>{i + 1}</Text></View>
+                  {i < arr.length - 1 && <View style={styles.rStepLine} />}
+                </View>
+                <View style={{ flex: 1, marginLeft: 12, paddingBottom: i < arr.length - 1 ? 14 : 0 }}>
+                  <Text style={styles.rStepTitle}>{step.title}</Text>
+                  <Text style={styles.ruleText}>{step.body}</Text>
+                </View>
               </View>
             ))}
             {!!data.terms && <Text style={[styles.muted, { marginTop: 10 }]}>{data.terms}</Text>}
@@ -208,6 +270,7 @@ export const ReferEarnScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   headerBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'web' ? 12 : 44, paddingBottom: 12, backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
@@ -247,4 +310,38 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: '800' },
   ruleRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   ruleText: { flex: 1, fontSize: 12.5, color: '#334155', lineHeight: 18 },
+  // ---- Redesign styles ----
+  rHero: { backgroundColor: '#fff4ec', borderRadius: 22, padding: 16, borderWidth: 1, borderColor: '#ffe4d1', overflow: 'hidden' },
+  rKicker: { fontSize: 11, fontWeight: '800', color: '#ea580c', letterSpacing: 0.6 },
+  rCodeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  rCodeBox: { flexShrink: 1, backgroundColor: '#eef2f7', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
+  rCode: { fontSize: 26, fontWeight: '900', color: '#0f172a', letterSpacing: 1.5 },
+  rCopyBtn: { marginLeft: 8, width: 40, height: 40, borderRadius: 10, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e2e8f0', justifyContent: 'center', alignItems: 'center' },
+  rEarnLine: { fontSize: 13, color: '#0f172a', fontWeight: '600', marginTop: 10 },
+  rAmt: { color: '#FE5300', fontWeight: '900' },
+  rAfter: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  rArt: { width: 86, height: 104, marginLeft: 6, justifyContent: 'center', alignItems: 'center' },
+  rPhone: { width: 58, height: 92, borderRadius: 12, borderWidth: 3, borderColor: '#334155', backgroundColor: '#ffffff', alignItems: 'center', paddingTop: 12, transform: [{ rotate: '8deg' }] },
+  rPhoneAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#ffedd5', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  rPhoneLine: { height: 5, borderRadius: 3, backgroundColor: '#e2e8f0', marginBottom: 5 },
+  rShareBubble: { position: 'absolute', right: 0, bottom: 14, width: 38, height: 38, borderRadius: 19, backgroundColor: '#FE5300', justifyContent: 'center', alignItems: 'center', borderWidth: 3, borderColor: '#fff4ec' },
+  rShareBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#FE5300', borderRadius: 14, paddingVertical: 13, marginTop: 14 },
+  rCardTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  rSmall: { fontSize: 12, color: '#64748b' },
+  rDivider: { height: 1, backgroundColor: '#f1f5f9', marginVertical: 12 },
+  rLockBox: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff7ed', borderRadius: 14, padding: 12 },
+  rLockIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#ffedd5', justifyContent: 'center', alignItems: 'center' },
+  rLockTitle: { fontSize: 15, fontWeight: '800', color: '#ea580c', marginBottom: 2 },
+  rEmpty: { alignItems: 'center', paddingVertical: 14 },
+  rRays: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 14 },
+  rRay: { width: 3, height: 10, borderRadius: 2, backgroundColor: '#FE5300' },
+  rPeople: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 8 },
+  rEmptyTitle: { fontSize: 15, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
+  rAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#ffedd5', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  rAvatarText: { fontSize: 14, fontWeight: '800', color: '#ea580c' },
+  rStep: { flexDirection: 'row' },
+  rStepNum: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#fff1e8', justifyContent: 'center', alignItems: 'center' },
+  rStepNumText: { fontSize: 13, fontWeight: '800', color: '#ea580c' },
+  rStepLine: { flex: 1, width: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: '#fdba74', marginVertical: 4 },
+  rStepTitle: { fontSize: 14, fontWeight: '800', color: '#0f172a', marginBottom: 2 },
 });
