@@ -220,6 +220,12 @@ export const NAV_GROUPS = [
         permission: "partner-test-rides", // must match backend adminPartnerTestRide.routes.js
       },
       {
+        label: "Connect App Home",
+        href: "/admin/fleet/app-home",
+        icon: Smartphone,
+        permission: "partner-app-home", // must match backend partnerAppHome.routes.js
+      },
+      {
         label: "Wallet Program",
         href: "/admin/partner-wallet-program",
         icon: WalletCards,

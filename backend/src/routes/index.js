@@ -78,6 +78,7 @@ import partnerWalletPaymentRoutes from "./partner/partnerWalletPayment.routes.js
 import partnerReferralPublicRoutes from "./partner/partnerReferralPublic.routes.js";
 import adminPartnerReferralRoutes from "./adminPartnerReferral.routes.js";
 import adminPartnerTestRideRoutes from "./adminPartnerTestRide.routes.js";
+import partnerAppHomeRoutes, { adminPartnerAppHomeRoutes } from "./partnerAppHome.routes.js";
 import adminPartnerWalletProgramRoutes from "./adminPartnerWalletProgram.routes.js";
 
 const router = Router();
@@ -102,6 +103,7 @@ router.use("/admin/app-home", adminAppHomeRoutes);
 router.use("/admin/partner-wallet-program", adminPartnerWalletProgramRoutes);
 router.use("/admin/partner-referrals", adminPartnerReferralRoutes);
 router.use("/admin/partner-test-rides", adminPartnerTestRideRoutes);
+router.use("/admin/partner-app-home", adminPartnerAppHomeRoutes);
 router.use("/admin/sitemap-source", sitemapDataRoutes);
 router.use("/admin", staffRouter);
 router.use("/category", categoryRoute);
@@ -168,5 +170,6 @@ router.use("/cancellations", cancellationRoutes);
 router.use("/app-home", appHomeRoutes);
 router.use("/partner-wallet-payment", partnerWalletPaymentRoutes);
 router.use("/partner-referral", partnerReferralPublicRoutes);
+router.use("/partner-app-home", partnerAppHomeRoutes);
 router.use("/", locationMasterRoutes);
 export default router;

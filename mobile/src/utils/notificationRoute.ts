@@ -6,11 +6,15 @@ export type NotificationTarget =
   | { tab: 'Home' }
   | { tab: 'Bookings'; filter?: 'All' | 'Ongoing' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Available' }
   | { tab: 'Earnings' }
+  | { tab: 'Inbox' }
   | { tab: 'Menu'; screen: string; params?: Record<string, any> };
 
 export function getNotificationTarget(n: Pick<PartnerNotificationData, 'title' | 'type' | 'data'>): NotificationTarget {
   const title = (n.title || '').toLowerCase();
   const hasRide = !!n.data?.rideId;
+
+  // Admin "Important Update" (Connect App Home): the full message is already in the Inbox.
+  if (n.data?.partnerAnnouncementId) return { tab: 'Inbox' };
 
   // Support ticket updates open that ticket in the Help Center.
   if (n.data?.supportTicketId) return { tab: 'Menu', screen: 'TripSupport', params: { ticketId: String(n.data.supportTicketId) } };

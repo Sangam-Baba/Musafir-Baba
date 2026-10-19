@@ -340,174 +340,224 @@ export const PersonalDetailsScreen = () => {
     }
   };
 
+  // ---- Display-only helpers for the redesigned layout (no data changes) ----
+  const openEdit = () => {
+    setEditPartnerType(partnerType);
+    setShowEditModal(true);
+  };
+  const canEdit = !isLocked;
+  type Badge = { label: string; bg: string; fg: string; icon: 'checkmark-circle' | 'time' | 'alert-circle' | 'ellipse-outline' };
+  const B_VERIFIED: Badge = { label: 'Verified', bg: '#dcfce7', fg: '#16a34a', icon: 'checkmark-circle' };
+  const B_PENDING: Badge = { label: 'Pending', bg: '#fef3c7', fg: '#b45309', icon: 'time' };
+  const B_ACTION: Badge = { label: 'Action needed', bg: '#fee2e2', fg: '#dc2626', icon: 'alert-circle' };
+  const B_MISSING: Badge = { label: 'Missing', bg: '#f1f5f9', fg: '#64748b', icon: 'ellipse-outline' };
+  const docBadge = (docs: any[]): Badge => {
+    if (docs.some((d) => !d)) return B_MISSING;
+    if (docs.some((d) => ['Rejected', 'Re-upload Required', 'Expired'].includes(d.status))) return B_ACTION;
+    if (docs.every((d) => d.status === 'Approved')) return B_VERIFIED;
+    return B_PENDING;
+  };
+  const identityBadge = docBadge([aadhaarDoc, panDoc]);
+  const photoBadge: Badge = partnerProfile?.profilePicture ? (isVerified ? B_VERIFIED : B_PENDING) : B_MISSING;
+  const bankBadge: Badge = !bank ? B_MISSING : bank.status === 'Verified' ? B_VERIFIED : bank.status === 'Rejected' ? B_ACTION : B_PENDING;
+  const statusLabel = isVerified ? 'Verified' : isUnderReview ? 'Under Audit' : partnerAuth?.status === 'Hold' ? 'On Hold' : 'Pending';
+  const statusColor = isVerified ? '#16a34a' : partnerAuth?.status === 'Hold' ? '#ea580c' : '#d97706';
+  const photo = typeof partnerProfile?.profilePicture === 'string' && /^(https?:|data:image)/.test(partnerProfile.profilePicture) ? partnerProfile.profilePicture : '';
+  const [photoFailed, setPhotoFailed] = useState(false);
+
+  const DetailRow = ({ icon, tint, bg, label, value, addable, last }: { icon: keyof typeof Ionicons.glyphMap; tint: string; bg: string; label: string; value: string; addable?: boolean; last?: boolean }) => {
+    const missing = addable && /^(Not Set|Not Provided)$/.test(value);
+    const Row: any = canEdit ? TouchableOpacity : View;
+    return (
+      <Row style={[styles.dRow, last && { borderBottomWidth: 0 }]} {...(canEdit ? { onPress: openEdit, activeOpacity: 0.7 } : {})}>
+        <View style={[styles.dIcon, { backgroundColor: bg }]}>
+          <Ionicons name={icon} size={18} color={tint} />
+        </View>
+        <Text style={styles.dLabel}>{label}</Text>
+        <Text style={styles.dValue} numberOfLines={1}>{value}</Text>
+        {missing && canEdit && <Text style={styles.dAdd}>Add</Text>}
+        {canEdit && <Ionicons name="chevron-forward" size={16} color="#94a3b8" />}
+      </Row>
+    );
+  };
+
+  const CredRow = ({ icon, tint, bg, title, sub, badge, onPress, last }: { icon: keyof typeof Ionicons.glyphMap; tint: string; bg: string; title: string; sub: string; badge: React.ReactNode; onPress?: () => void; last?: boolean }) => (
+    <TouchableOpacity style={[styles.cRow, last && { borderBottomWidth: 0 }]} onPress={onPress} disabled={!onPress} activeOpacity={0.7}>
+      <View style={[styles.cIcon, { backgroundColor: bg }]}>
+        <Ionicons name={icon} size={22} color={tint} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.cTitle}>{title}</Text>
+        <Text style={styles.cSub}>{sub}</Text>
+      </View>
+      {badge}
+      {onPress ? <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 6 }} /> : null}
+    </TouchableOpacity>
+  );
+  const BadgePill = ({ b }: { b: Badge }) => (
+    <View style={[styles.badge, { backgroundColor: b.bg }]}>
+      <Ionicons name={b.icon} size={14} color={b.fg} />
+      <Text style={[styles.badgeText, { color: b.fg }]}>{b.label}</Text>
+    </View>
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+          <Ionicons name="chevron-back" size={24} color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity 
-          style={styles.helpBtn}
-          onPress={() => navigation.navigate('TripSupport')}
-        >
-          <Ionicons name="help-circle-outline" size={16} color="#0f172a" style={{ marginRight: 2 }} />
-          <Text style={styles.helpText}>Help</Text>
+        <TouchableOpacity style={styles.helpBtn} onPress={() => navigation.navigate('TripSupport')}>
+          <Ionicons name="help-circle-outline" size={20} color="#FE5300" style={{ marginRight: 3 }} />
+          <Text style={[styles.helpText, { color: '#FE5300', fontSize: 14 }]}>Help</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.contentContainer} 
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.contentContainer, { gap: 14 }]}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FE5300']} />}
       >
-        <View style={[styles.statusBanner, !isVerified && { backgroundColor: '#fff7ed', borderColor: '#ffedd5' }]}>
-          <View style={[styles.statusShieldBox, !isVerified && { backgroundColor: '#ffedd5' }]}>
-            <Ionicons name={isVerified ? "shield-checkmark" : "time-outline"} size={24} color={isVerified ? "#16a34a" : "#d97706"} />
-          </View>
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={[styles.statusTitle, !isVerified && { color: '#d97706' }]}>
-              {isVerified ? "Verified Profile" : isUnderReview ? "Profile Under Audit" : partnerAuth?.status === 'Hold' ? "Profile On Hold" : "Profile Verification Pending"}
-            </Text>
-            <Text style={styles.statusSub}>
-              {isVerified 
-                ? "Your personal profile & KYC are fully approved."
-                : isUnderReview ? "Your profile details have been submitted for verification audit." : partnerAuth?.status === 'Hold' ? "Our team needs a few changes. Please update your details and send for approval again." : "Please submit your details for verification."}
-            </Text>
-          </View>
-          <Ionicons name={isVerified ? "checkmark-circle" : "alert-circle"} size={22} color={isVerified ? "#16a34a" : "#d97706"} />
-        </View>
-
-        <View style={styles.profileHeaderCard}>
-          <View style={styles.avatarCircle}>
-            <Ionicons name="person" size={32} color="#16a34a" />
-          </View>
-
-          <View style={{ flex: 1, marginLeft: 14 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.profileName}>{fullName}</Text>
-              {isVerified && (
-                <Ionicons name="checkmark-circle" size={16} color="#16a34a" style={{ marginLeft: 4 }} />
+        {/* Profile hero */}
+        <View style={styles.hero}>
+          <View style={styles.heroTop}>
+            <View>
+              <View style={styles.heroAvatar}>
+                {photo && !photoFailed ? (
+                  <Image source={{ uri: photo }} style={styles.heroAvatarImg} onError={() => setPhotoFailed(true)} />
+                ) : (
+                  <Ionicons name="person" size={44} color="#16a34a" />
+                )}
+              </View>
+              {canEdit && (
+                <TouchableOpacity style={styles.cameraBadge} onPress={openEdit} activeOpacity={0.85}>
+                  <Ionicons name="camera" size={14} color="#ffffff" />
+                </TouchableOpacity>
               )}
             </View>
-            <Text style={styles.partnerIdText}>Partner ID: {partnerId}</Text>
-            <View style={[styles.verifiedGreenPill, !isVerified && { backgroundColor: '#fef3c7' }]}>
-              <Text style={[styles.verifiedGreenPillText, !isVerified && { color: '#b45309' }]}>
-                {isVerified ? "Verified Partner" : "Under Audit"}
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={styles.heroName} numberOfLines={2}>
+                {String(fullName).toUpperCase()}
+                {isVerified ? '  ' : ''}
+                {isVerified && <Ionicons name="checkmark-circle" size={17} color="#16a34a" />}
+              </Text>
+              <Text style={styles.heroId}>Partner ID: {partnerId}</Text>
+              <View style={[styles.heroPill, !isVerified && { backgroundColor: '#fef3c7' }]}>
+                <Text style={[styles.heroPillText, !isVerified && { color: '#b45309' }]}>
+                  {isVerified ? 'Verified Partner' : isUnderReview ? 'Under Audit' : partnerAuth?.status === 'Hold' ? 'On Hold — action needed' : 'Onboarding Pending'}
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.ratingBox} onPress={() => navigation.navigate('VerifiedPartner')} activeOpacity={0.8}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <Ionicons name="star" size={16} color="#f59e0b" />
+                <Text style={styles.ratingVal}>4.9</Text>
+              </View>
+              <Text style={styles.ratingLabel}>Rating</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.heroStats}>
+            {[
+              { icon: 'calendar-outline' as const, tint: '#ea580c', bg: '#ffedd5', label: 'Member Since', value: memberSince, color: '#0f172a' },
+              { icon: 'car-outline' as const, tint: '#2563eb', bg: '#dbeafe', label: 'Account Type', value: partnerType, color: '#0f172a' },
+              { icon: 'shield-checkmark-outline' as const, tint: '#2563eb', bg: '#e0e7ff', label: 'Profile Status', value: statusLabel, color: statusColor },
+            ].map((st, i) => (
+              <View key={st.label} style={[styles.heroStat, i > 0 && styles.heroStatDivider]}>
+                <View style={[styles.heroStatIcon, { backgroundColor: st.bg }]}>
+                  <Ionicons name={st.icon} size={13} color={st.tint} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.heroStatLabel} numberOfLines={1}>{st.label}</Text>
+                  <Text style={[styles.heroStatValue, { color: st.color }]} numberOfLines={1}>{st.value}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Status note (until verified) */}
+        {!isVerified && (
+          <View style={[styles.statusBanner, { backgroundColor: '#fff7ed', borderColor: '#ffedd5', marginBottom: 0 }]}>
+            <View style={[styles.statusShieldBox, { backgroundColor: '#ffedd5' }]}>
+              <Ionicons name="time-outline" size={24} color="#d97706" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.statusTitle, { color: '#d97706' }]}>
+                {isUnderReview ? 'Profile Under Audit' : partnerAuth?.status === 'Hold' ? 'Profile On Hold' : 'Profile Verification Pending'}
+              </Text>
+              <Text style={styles.statusSub}>
+                {isUnderReview ? 'Your profile details have been submitted for verification audit.' : partnerAuth?.status === 'Hold' ? 'Our team needs a few changes. Please update your details and send for approval again.' : 'Please submit your details for verification.'}
               </Text>
             </View>
           </View>
+        )}
 
-          <TouchableOpacity 
-            style={styles.viewBadgeBtn}
-            onPress={() => navigation.navigate('VerifiedPartner')}
-          >
-            <Text style={styles.viewBadgeText}>4.9 ★</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.sectionHeader}>Personal & Business Details</Text>
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#e0e7ff' }]}>
-              <Ionicons name="briefcase-outline" size={14} color="#4338ca" />
-            </View>
-            <Text style={styles.infoLabel}>Account Type</Text>
-            <Text style={styles.infoVal}>{partnerType}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#f0fdf4' }]}>
-              <Ionicons name="person-outline" size={14} color="#16a34a" />
-            </View>
-            <Text style={styles.infoLabel}>Full Name</Text>
-            <Text style={styles.infoVal}>{fullName}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#e0f2fe' }]}>
-              <Ionicons name="call-outline" size={14} color="#0284c7" />
-            </View>
-            <Text style={styles.infoLabel}>Mobile Number</Text>
-            <Text style={styles.infoVal}>{mobileNumber}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#f3e8ff' }]}>
-              <Ionicons name="mail-outline" size={14} color="#7c3aed" />
-            </View>
-            <Text style={styles.infoLabel}>Email Address</Text>
-            <Text style={styles.infoVal}>{emailAddress}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#fff7ed' }]}>
-              <Ionicons name="location-outline" size={14} color="#d97706" />
-            </View>
-            <Text style={styles.infoLabel}>Operational Hub / Agency</Text>
-            <Text style={styles.infoVal}>{agencyHub}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={[styles.iconBox, { backgroundColor: '#fef2f2' }]}>
-              <Ionicons name="heart-outline" size={14} color="#dc2626" />
-            </View>
-            <Text style={styles.infoLabel}>Emergency Contact</Text>
-            <Text style={styles.infoVal}>{emergencyContact}</Text>
-          </View>
-
-          <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-            <View style={[styles.iconBox, { backgroundColor: '#f1f5f9' }]}>
-              <Ionicons name="calendar-outline" size={14} color="#475569" />
-            </View>
-            <Text style={styles.infoLabel}>Member Since</Text>
-            <Text style={styles.infoVal}>{memberSince}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.sectionHeader}>Verification & Credentials</Text>
-        <View style={styles.linksCard}>
-          <TouchableOpacity 
-            style={styles.linkRow}
-            onPress={() => navigation.navigate('IdentityProof')}
-          >
-            <Ionicons name="card-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
-            <Text style={styles.linkText}>Identity Proof (Aadhaar / PAN)</Text>
-            <View style={styles.verifiedGreenTag}>
-              <Text style={styles.verifiedGreenTagText}>Verified</Text>
-              <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.linkRow}
-            onPress={() => navigation.navigate('VerifiedPartner')}
-          >
-            <Ionicons name="ribbon-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
-            <Text style={styles.linkText}>Verified Partner Badge & Rating</Text>
-            <View style={styles.verifiedGreenTag}>
-              <Text style={styles.verifiedGreenTagText}>4.9 ★</Text>
-              <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
-            </View>
-          </TouchableOpacity>
-
-          {FINANCIAL_FEATURES_ENABLED && (
-            <TouchableOpacity
-              style={[styles.linkRow, { borderBottomWidth: 0 }]}
-              onPress={() => navigation.navigate('BankAccount')}
-            >
-              <Ionicons name="business-outline" size={18} color="#16a34a" style={{ marginRight: 10 }} />
-              <Text style={styles.linkText}>Account and bank information</Text>
-              <View style={styles.verifiedGreenTag}>
-                <Text style={styles.verifiedGreenTagText}>Verified</Text>
-                <Ionicons name="chevron-forward" size={16} color="#94a3b8" style={{ marginLeft: 4 }} />
-              </View>
+        {/* Personal & Business Details */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle2}>Personal & Business Details</Text>
+          {canEdit && (
+            <TouchableOpacity style={styles.editBtn} onPress={openEdit} activeOpacity={0.8}>
+              <Ionicons name="create-outline" size={16} color="#FE5300" />
+              <Text style={styles.editBtnText}>Edit</Text>
             </TouchableOpacity>
           )}
         </View>
+        <View style={styles.cardBox}>
+          <DetailRow icon="person-outline" tint="#ea580c" bg="#fff1e6" label="Full Name" value={String(fullName).toUpperCase()} />
+          <DetailRow icon="call-outline" tint="#2563eb" bg="#e8f0ff" label="Mobile Number" value={mobileNumber} />
+          <DetailRow icon="mail-outline" tint="#9333ea" bg="#f5ebff" label="Email Address" value={emailAddress} />
+          <DetailRow icon="briefcase-outline" tint="#16a34a" bg="#e8f8ee" label="Operational Hub / Agency" value={agencyHub} addable />
+          <DetailRow icon="heart-outline" tint="#e11d48" bg="#ffe8ee" label="Emergency Contact" value={emergencyContact} addable last />
+        </View>
+
+        {/* Verification & Credentials */}
+        <View style={styles.sectionRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="shield-checkmark" size={20} color="#16a34a" />
+            <Text style={styles.sectionTitle2}>Verification & Credentials</Text>
+          </View>
+          <TouchableOpacity style={styles.viewAllBtn} onPress={() => navigation.navigate('VerifiedPartner')} activeOpacity={0.8}>
+            <Text style={styles.viewAllText}>View All</Text>
+            <Ionicons name="chevron-forward" size={14} color="#FE5300" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.cardBox}>
+          <CredRow icon="card-outline" tint="#ea580c" bg="#fff1e6" title="Identity Proof (Aadhaar / PAN)" sub="Aadhaar (both sides) & PAN card" badge={<BadgePill b={identityBadge} />} onPress={() => navigation.navigate('IdentityProof')} />
+          <CredRow icon="person-outline" tint="#2563eb" bg="#e8f0ff" title="Profile Photo" sub="Account holder photo" badge={<BadgePill b={photoBadge} />} onPress={canEdit ? openEdit : undefined} />
+          {FINANCIAL_FEATURES_ENABLED && (
+            <CredRow icon="business-outline" tint="#9333ea" bg="#f5ebff" title="Account and Bank Information" sub="Bank account for payouts" badge={<BadgePill b={bankBadge} />} onPress={() => navigation.navigate('BankAccount')} />
+          )}
+          <CredRow
+            icon="ribbon-outline"
+            tint="#16a34a"
+            bg="#e8f8ee"
+            title="Partner Badge & Rating"
+            sub={isVerified ? 'Verified Partner' : 'Unlocks after approval'}
+            badge={
+              <View style={[styles.badge, { backgroundColor: '#dcfce7' }]}>
+                <Ionicons name="star" size={13} color="#16a34a" />
+                <Text style={[styles.badgeText, { color: '#16a34a' }]}>4.9</Text>
+              </View>
+            }
+            onPress={() => navigation.navigate('VerifiedPartner')}
+            last
+          />
+        </View>
+
+        {isVerified && (
+          <View style={styles.verifiedCard}>
+            <View style={styles.verifiedArt}>
+              <Ionicons name="shield-checkmark" size={36} color="#ea580c" />
+              <View style={styles.verifiedArtTick}><Ionicons name="checkmark" size={12} color="#ffffff" /></View>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.verifiedTitle}>Your profile is verified</Text>
+              <Text style={styles.verifiedSub}>You can now receive bookings and access all partner features.</Text>
+            </View>
+          </View>
+        )}
 
         {!isLocked && (
           <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
@@ -759,6 +809,48 @@ export const PersonalDetailsScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  // ---- redesigned layout ----
+  hero: { backgroundColor: '#fff4ec', borderRadius: 22, padding: 16, borderWidth: 1, borderColor: '#ffe4d1' },
+  heroTop: { flexDirection: 'row', alignItems: 'center' },
+  heroAvatar: { width: 74, height: 74, borderRadius: 37, backgroundColor: '#dcfce7', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 3, borderColor: '#ffffff' },
+  heroAvatarImg: { width: '100%', height: '100%' },
+  cameraBadge: { position: 'absolute', right: -2, bottom: 0, width: 30, height: 30, borderRadius: 15, backgroundColor: '#FE5300', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#ffffff' },
+  heroName: { fontSize: 15.5, fontWeight: '900', color: '#0f172a', lineHeight: 21 },
+  heroId: { fontSize: 12.5, color: '#64748b', marginTop: 3 },
+  heroPill: { alignSelf: 'flex-start', backgroundColor: '#dcfce7', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4, marginTop: 8 },
+  heroPillText: { fontSize: 12, fontWeight: '800', color: '#16a34a' },
+  ratingBox: { backgroundColor: '#ecfdf3', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center', alignSelf: 'flex-start' },
+  ratingVal: { fontSize: 18, fontWeight: '900', color: '#0f172a' },
+  ratingLabel: { fontSize: 11, color: '#64748b', marginTop: 1 },
+  heroStats: { flexDirection: 'row', marginTop: 16, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#fde3cf' },
+  heroStat: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 2 },
+  heroStatDivider: { borderLeftWidth: 1, borderLeftColor: '#fde3cf', paddingLeft: 6 },
+  heroStatIcon: { width: 24, height: 24, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  heroStatLabel: { fontSize: 9.5, color: '#64748b' },
+  heroStatValue: { fontSize: 12, fontWeight: '800', marginTop: 1 },
+  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
+  sectionTitle2: { fontSize: 17, fontWeight: '900', color: '#0f172a' },
+  editBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1.5, borderColor: '#FE5300', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
+  editBtnText: { fontSize: 13.5, fontWeight: '800', color: '#FE5300' },
+  viewAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: '#fff4ec', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
+  viewAllText: { fontSize: 13, fontWeight: '800', color: '#FE5300' },
+  cardBox: { backgroundColor: '#ffffff', borderRadius: 18, paddingHorizontal: 14, borderWidth: 1, borderColor: '#f1f5f9' },
+  dRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', gap: 10 },
+  dIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  dLabel: { width: 112, fontSize: 13, color: '#64748b' },
+  dValue: { flex: 1, fontSize: 13.5, fontWeight: '800', color: '#0f172a' },
+  dAdd: { fontSize: 13, fontWeight: '800', color: '#FE5300' },
+  cRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', gap: 12 },
+  cIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  cTitle: { fontSize: 14.5, fontWeight: '800', color: '#0f172a' },
+  cSub: { fontSize: 12, color: '#64748b', marginTop: 2 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  badgeText: { fontSize: 12, fontWeight: '800' },
+  verifiedCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fff4ec', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#ffe4d1' },
+  verifiedArt: { width: 64, height: 64, borderRadius: 18, backgroundColor: '#ffd9bf', alignItems: 'center', justifyContent: 'center' },
+  verifiedArtTick: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#ffffff' },
+  verifiedTitle: { fontSize: 15, fontWeight: '900', color: '#0f172a' },
+  verifiedSub: { fontSize: 12.5, color: '#64748b', marginTop: 3, lineHeight: 18 },
   container: { flex: 1, backgroundColor: '#f8fafc' },
   contentContainer: { padding: 16, paddingBottom: 40 },
   headerBar: {

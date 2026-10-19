@@ -5,6 +5,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../store/useAuthStore';
 import { API_BASE_URL } from '../utils/config';
+import { Modal } from 'react-native';
 
 export const IdentityProofScreen = () => {
   const navigation = useNavigation<any>();
@@ -215,20 +216,104 @@ export const IdentityProofScreen = () => {
 
   const profilePicSrc = profilePhotoUri || partnerProfile?.profilePicture;
 
+  // ---- Display-only helpers (no effect on data, uploads or navigation) ----
+  const [previewUri, setPreviewUri] = useState<string>('');
+  const fmtUploaded = (d?: string) =>
+    d
+      ? 'Uploaded on ' +
+        new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+      : 'On file';
+  const photoBadgeLabel = hasProfilePhoto ? (profilePhotoUri && !partnerProfile?.profilePicture ? "Ready" : "Added") : "Pending";
+  const allKycDone = totalVerifiedCount === 3;
+  // Ring segments (decorative): 0 → none, 1 → quarter, 2 → three quarters, 3 → full
+  const ringQuarters = totalVerifiedCount >= 3 ? 4 : totalVerifiedCount === 2 ? 3 : totalVerifiedCount === 1 ? 1 : 0;
+  const ringColor = allKycDone ? '#16a34a' : '#FE5300';
+
+  const renderDocCard = (opts: {
+    key: string;
+    title: string;
+    sub: string;
+    icon: any;
+    tint: { bg: string; fg: string };
+    isVerified: boolean;
+    effectiveUri?: string;
+    pickedUri: string;
+    setter: (uri: string) => void;
+    uploadLabel: string;
+    addedLabel: string;
+    uploadedAt?: string;
+  }) => {
+    const badgeLabel = opts.isVerified ? "Verified" : (opts.pickedUri ? "Ready" : (opts.effectiveUri ? "On File" : "Pending"));
+    const isPending = badgeLabel === 'Pending';
+    return (
+      <View key={opts.key} style={styles.kDocCard}>
+        <View style={styles.docCardHeader}>
+          <View style={[styles.kDocIcon, { backgroundColor: isPending ? '#fff1e8' : opts.tint.bg }]}>
+            <Ionicons name={opts.icon} size={22} color={isPending ? '#FE5300' : opts.tint.fg} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12, marginRight: 6 }}>
+            <Text style={styles.kDocTitle}>{opts.title}</Text>
+            <Text style={styles.docSub}>{opts.sub}</Text>
+          </View>
+          <View style={[styles.kBadge, opts.isVerified ? styles.badgeGreen : (opts.effectiveUri ? styles.badgeBlue : styles.kBadgeOrange)]}>
+            {!isPending && (
+              <Ionicons
+                name={opts.isVerified ? 'checkmark-circle' : 'cloud-done-outline'}
+                size={12}
+                color={opts.isVerified ? '#16a34a' : '#1d4ed8'}
+                style={{ marginRight: 3 }}
+              />
+            )}
+            <Text style={[styles.badgeText, opts.isVerified ? styles.badgeTextGreen : (opts.effectiveUri ? styles.badgeTextBlue : { color: '#c2410c' })]}>
+              {badgeLabel}
+            </Text>
+          </View>
+        </View>
+
+        {opts.effectiveUri ? (
+          <TouchableOpacity style={styles.kSlotFilled} onPress={() => pickImage(opts.setter)} activeOpacity={0.85}>
+            <Image source={{ uri: opts.effectiveUri }} style={styles.kThumb} />
+            <View style={{ flex: 1, marginLeft: 10, marginRight: 6 }}>
+              <Text style={styles.uploadSlotTextFilled}>{opts.addedLabel}</Text>
+              <Text style={styles.kSlotMeta}>
+                {opts.pickedUri ? 'Selected · tap Save below to upload' : fmtUploaded(opts.uploadedAt)}
+              </Text>
+              {!isLocked && <Text style={styles.kSlotHint}>Tap to change</Text>}
+            </View>
+            <TouchableOpacity style={styles.kViewBtn} onPress={() => setPreviewUri(opts.effectiveUri || '')} activeOpacity={0.8}>
+              <Text style={styles.kViewBtnText}>View</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.kSlotEmpty} onPress={() => pickImage(opts.setter)} activeOpacity={0.85}>
+            <Ionicons name="cloud-upload-outline" size={22} color="#334155" style={{ marginRight: 10 }} />
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={styles.kSlotTitle}>{opts.uploadLabel}</Text>
+              <Text style={styles.kSlotMeta}>JPG or PNG image</Text>
+            </View>
+            <View style={styles.kBrowseBtn}>
+              <Text style={styles.kBrowseBtnText}>Browse</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       {/* Top Header */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#0f172a" />
+          <Ionicons name="chevron-back" size={24} color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Identity & KYC Documents</Text>
         <TouchableOpacity 
           style={styles.helpBtn}
           onPress={() => navigation.navigate('TripSupport')}
         >
-          <Ionicons name="help-circle-outline" size={16} color="#0f172a" style={{ marginRight: 2 }} />
-          <Text style={styles.helpText}>Help</Text>
+          <Ionicons name="help-circle-outline" size={18} color="#FE5300" style={{ marginRight: 3 }} />
+          <Text style={[styles.helpText, { color: '#FE5300', fontSize: 13 }]}>Help</Text>
         </TouchableOpacity>
       </View>
 
@@ -242,214 +327,133 @@ export const IdentityProofScreen = () => {
       >
         {loading && <ActivityIndicator size="small" color="#FE5300" style={{ marginBottom: 12 }} />}
 
-        {/* Profile Avatar */}
-        <View style={{ alignItems: 'center', marginBottom: 20 }}>
-          <TouchableOpacity onPress={() => pickImage(setProfilePhotoUri)}>
-            <View style={styles.avatarCircle}>
+        {/* Profile Photo Card */}
+        <View style={styles.kPhotoCard}>
+          <TouchableOpacity onPress={() => pickImage(setProfilePhotoUri)} activeOpacity={0.85}>
+            <View style={styles.kAvatar}>
               {profilePicSrc ? (
-                <Image source={{ uri: profilePicSrc }} style={styles.avatarImage} />
+                <Image source={{ uri: profilePicSrc }} style={styles.kAvatarImg} />
               ) : (
-                <Ionicons name="person" size={40} color="#94a3b8" />
+                <Ionicons name="person" size={36} color="#94a3b8" />
               )}
-              <View style={styles.avatarEditBadge}>
-                <Ionicons name="camera" size={12} color="#ffffff" />
-              </View>
+            </View>
+            <View style={styles.kAvatarBadge}>
+              <Ionicons name="camera" size={12} color="#ffffff" />
             </View>
           </TouchableOpacity>
-          <Text style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>
-            {profilePicSrc ? 'Tap to change profile photo' : 'Tap to add profile photo'}
-          </Text>
+          <View style={{ flex: 1, marginLeft: 14, marginRight: 6 }}>
+            <View style={styles.kPhotoTitleRow}>
+              <Text style={styles.kPhotoTitle}>Profile Photo</Text>
+              <View style={[styles.kBadge, hasProfilePhoto ? styles.badgeGreen : styles.kBadgeOrange, { marginLeft: 6 }]}>
+                {hasProfilePhoto && <Ionicons name="checkmark-circle" size={12} color="#16a34a" style={{ marginRight: 3 }} />}
+                <Text style={[styles.badgeText, hasProfilePhoto ? styles.badgeTextGreen : { color: '#c2410c' }]}>{photoBadgeLabel}</Text>
+              </View>
+            </View>
+            <Text style={styles.kPhotoSub}>This photo will be visible to customers for identification.</Text>
+          </View>
+          <TouchableOpacity style={styles.kChangeBtn} onPress={() => pickImage(setProfilePhotoUri)} activeOpacity={0.8}>
+            <Ionicons name="camera-outline" size={14} color="#FE5300" style={{ marginRight: 4 }} />
+            <Text style={styles.kChangeBtnText}>{profilePicSrc ? 'Change' : 'Add'}</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Status Banner */}
-        <View style={[styles.statusBanner, totalVerifiedCount < 3 && { backgroundColor: '#fff7ed', borderColor: '#ffedd5' }]}>
-          <View style={[styles.statusShieldBox, totalVerifiedCount < 3 && { backgroundColor: '#ffedd5' }]}>
-            <Ionicons 
-              name={totalVerifiedCount === 3 ? "shield-checkmark" : "time-outline"} 
-              size={24} 
-              color={totalVerifiedCount === 3 ? "#16a34a" : "#d97706"} 
+        {/* KYC Progress Card */}
+        <View style={[styles.kProgressCard, allKycDone && { backgroundColor: '#f0fdf4', borderColor: '#dcfce7' }]}>
+          <View style={styles.kRing}>
+            <View
+              style={[
+                styles.kRingArc,
+                {
+                  borderTopColor: ringQuarters >= 1 ? ringColor : 'transparent',
+                  borderRightColor: ringQuarters >= 2 ? ringColor : 'transparent',
+                  borderBottomColor: ringQuarters >= 3 ? ringColor : 'transparent',
+                  borderLeftColor: ringQuarters >= 4 ? ringColor : 'transparent',
+                },
+              ]}
             />
+            <Text style={[styles.kRingText, allKycDone && { color: '#16a34a' }]}>{totalVerifiedCount}/3</Text>
           </View>
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={[styles.statusTitle, totalVerifiedCount < 3 && { color: '#d97706' }]}>
-              {totalVerifiedCount === 3 ? "KYC Fully Verified" : `KYC Verification (${totalVerifiedCount}/3 Complete)`}
+          <View style={{ flex: 1, marginLeft: 14, marginRight: 6 }}>
+            <Text style={[styles.kProgressTitle, allKycDone && { color: '#16a34a' }]}>
+              {allKycDone ? 'KYC Fully Verified' : 'KYC Verification In Progress'}
             </Text>
-            <Text style={styles.statusSub}>
-              {totalVerifiedCount === 3 
-                ? "Aadhaar Card, PAN Card & Profile Photo are fully verified."
-                : "Upload mandatory 3 documents: Aadhaar (both sides), PAN Card & Profile Photo."}
+            <Text style={styles.kProgressSub}>
+              {allKycDone
+                ? 'Aadhaar Card, PAN Card & Profile Photo are fully verified.'
+                : 'Upload mandatory documents: Aadhaar (both sides), PAN Card & Profile Photo.'}
             </Text>
           </View>
-          <Ionicons 
-            name={totalVerifiedCount === 3 ? "checkmark-circle" : "alert-circle"} 
-            size={22} 
-            color={totalVerifiedCount === 3 ? "#16a34a" : "#d97706"} 
-          />
+          <View style={[styles.kBadge, allKycDone ? styles.badgeGreen : styles.kBadgeOrange]}>
+            <Ionicons
+              name={allKycDone ? 'checkmark-circle' : 'hourglass-outline'}
+              size={12}
+              color={allKycDone ? '#16a34a' : '#c2410c'}
+              style={{ marginRight: 3 }}
+            />
+            <Text style={[styles.badgeText, allKycDone ? styles.badgeTextGreen : { color: '#c2410c' }]}>
+              {allKycDone ? 'Verified' : 'Pending'}
+            </Text>
+          </View>
         </View>
 
         {/* Section Header */}
-        <Text style={styles.sectionHeader}>Mandatory Account Holder Documents</Text>
-
-        {/* 1. Aadhaar Card Front */}
-        <View style={styles.docCard}>
-          <View style={styles.docCardHeader}>
-            <View style={[styles.docIconBox, { backgroundColor: isAadhaarVerified ? '#dcfce7' : '#ffedd5' }]}>
-              <Ionicons name="card-outline" size={18} color={isAadhaarVerified ? "#16a34a" : "#d97706"} />
-            </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.docTitle}>1. Aadhaar Card – Front Side</Text>
-              <Text style={styles.docSub}>Government Issued Unique Identity Card</Text>
-            </View>
-            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : (effectiveAadhaarFront ? styles.badgeBlue : styles.badgeAmber)]}>
-              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : (effectiveAadhaarFront ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
-                {isAadhaarVerified ? "Verified" : (aadhaarFrontUri ? "Ready" : (effectiveAadhaarFront ? "On File" : "Pending"))}
-              </Text>
-            </View>
+        <View style={styles.kSectionRow}>
+          <Text style={styles.kSectionTitle}>Mandatory Documents</Text>
+          <View style={styles.kSafeRow}>
+            <Ionicons name="shield-checkmark-outline" size={18} color="#64748b" style={{ marginRight: 5 }} />
+            <Text style={styles.kSafeText}>Your documents are safe{'\n'}and secure with us.</Text>
           </View>
-          <TouchableOpacity 
-            style={[styles.uploadSlot, effectiveAadhaarFront && styles.uploadSlotFilled]}
-            onPress={() => pickImage(setAadhaarFrontUri)}
-          >
-            {effectiveAadhaarFront ? (
-              <>
-                <Image source={{ uri: effectiveAadhaarFront }} style={styles.docThumbnail} />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.uploadSlotTextFilled}>Aadhaar Front Attached</Text>
-                  <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>
-                </View>
-                <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
-              </>
-            ) : (
-              <>
-                <Ionicons name="cloud-upload-outline" size={18} color="#64748b" style={{ marginRight: 8 }} />
-                <Text style={styles.uploadSlotText}>Choose Aadhaar Front Image</Text>
-                <Text style={styles.browseBtnText}>Browse</Text>
-              </>
-            )}
-          </TouchableOpacity>
         </View>
 
-        {/* 2. Aadhaar Back */}
-        <View style={styles.docCard}>
-          <View style={styles.docCardHeader}>
-            <View style={[styles.docIconBox, { backgroundColor: isAadhaarVerified ? '#dcfce7' : '#ffedd5' }]}>
-              <Ionicons name="card-outline" size={18} color={isAadhaarVerified ? "#16a34a" : "#d97706"} />
-            </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.docTitle}>2. Aadhaar Card – Back Side</Text>
-              <Text style={styles.docSub}>Government Issued Unique Identity Card</Text>
-            </View>
-            <View style={[styles.badgePill, isAadhaarVerified ? styles.badgeGreen : (effectiveAadhaarBack ? styles.badgeBlue : styles.badgeAmber)]}>
-              <Text style={[styles.badgeText, isAadhaarVerified ? styles.badgeTextGreen : (effectiveAadhaarBack ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
-                {isAadhaarVerified ? "Verified" : (aadhaarBackUri ? "Ready" : (effectiveAadhaarBack ? "On File" : "Pending"))}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity 
-            style={[styles.uploadSlot, effectiveAadhaarBack && styles.uploadSlotFilled]}
-            onPress={() => pickImage(setAadhaarBackUri)}
-          >
-            {effectiveAadhaarBack ? (
-              <>
-                <Image source={{ uri: effectiveAadhaarBack }} style={styles.docThumbnail} />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.uploadSlotTextFilled}>Aadhaar Back Attached</Text>
-                  <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>
-                </View>
-                <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
-              </>
-            ) : (
-              <>
-                <Ionicons name="cloud-upload-outline" size={18} color="#64748b" style={{ marginRight: 8 }} />
-                <Text style={styles.uploadSlotText}>Choose Aadhaar Back Image</Text>
-                <Text style={styles.browseBtnText}>Browse</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+        {renderDocCard({
+          key: 'aadhaar-front',
+          title: '1. Aadhaar Card – Front Side',
+          sub: 'Government Issued Unique Identity Card',
+          icon: 'card-outline',
+          tint: { bg: '#dcfce7', fg: '#16a34a' },
+          isVerified: isAadhaarVerified,
+          effectiveUri: effectiveAadhaarFront,
+          pickedUri: aadhaarFrontUri,
+          setter: setAadhaarFrontUri,
+          uploadLabel: 'Upload Aadhaar Front Side',
+          addedLabel: 'Aadhaar Front Side Added',
+          uploadedAt: aadhaarDoc?.updatedAt || aadhaarDoc?.createdAt,
+        })}
 
-        {/* 3. PAN Card */}
-        <View style={styles.docCard}>
-          <View style={styles.docCardHeader}>
-            <View style={[styles.docIconBox, { backgroundColor: isPanVerified ? '#dcfce7' : '#ffedd5' }]}>
-              <Ionicons name="pricetag-outline" size={18} color={isPanVerified ? "#16a34a" : "#d97706"} />
-            </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.docTitle}>3. PAN Card Copy</Text>
-              <Text style={styles.docSub}>Permanent Account Number for Payouts</Text>
-            </View>
-            <View style={[styles.badgePill, isPanVerified ? styles.badgeGreen : (effectivePan ? styles.badgeBlue : styles.badgeAmber)]}>
-              <Text style={[styles.badgeText, isPanVerified ? styles.badgeTextGreen : (effectivePan ? styles.badgeTextBlue : styles.badgeTextAmber)]}>
-                {isPanVerified ? "Verified" : (panUri ? "Ready" : (effectivePan ? "On File" : "Pending"))}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity 
-            style={[styles.uploadSlot, effectivePan && styles.uploadSlotFilled]}
-            onPress={() => pickImage(setPanUri)}
-          >
-            {effectivePan ? (
-              <>
-                <Image source={{ uri: effectivePan }} style={styles.docThumbnail} />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.uploadSlotTextFilled}>PAN Card Attached</Text>
-                  <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>
-                </View>
-                <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
-              </>
-            ) : (
-              <>
-                <Ionicons name="cloud-upload-outline" size={18} color="#64748b" style={{ marginRight: 8 }} />
-                <Text style={styles.uploadSlotText}>Choose PAN Card Image</Text>
-                <Text style={styles.browseBtnText}>Browse</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+        {renderDocCard({
+          key: 'aadhaar-back',
+          title: '2. Aadhaar Card – Back Side',
+          sub: 'Government Issued Unique Identity Card',
+          icon: 'card-outline',
+          tint: { bg: '#dcfce7', fg: '#16a34a' },
+          isVerified: isAadhaarVerified,
+          effectiveUri: effectiveAadhaarBack,
+          pickedUri: aadhaarBackUri,
+          setter: setAadhaarBackUri,
+          uploadLabel: 'Upload Aadhaar Back Side',
+          addedLabel: 'Aadhaar Back Side Added',
+          uploadedAt: (aadhaarBackDoc || aadhaarDoc)?.updatedAt || (aadhaarBackDoc || aadhaarDoc)?.createdAt,
+        })}
 
-        {/* 4. Profile Photo */}
-        <View style={styles.docCard}>
-          <View style={styles.docCardHeader}>
-            <View style={[styles.docIconBox, { backgroundColor: hasProfilePhoto ? '#dcfce7' : '#ffedd5' }]}>
-              <Ionicons name="person-outline" size={18} color={hasProfilePhoto ? "#16a34a" : "#d97706"} />
-            </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.docTitle}>4. Account Profile Photo</Text>
-              <Text style={styles.docSub}>Clear Passport Size Face Photo</Text>
-            </View>
-            <View style={[styles.badgePill, hasProfilePhoto ? styles.badgeGreen : styles.badgeAmber]}>
-              <Text style={[styles.badgeText, hasProfilePhoto ? styles.badgeTextGreen : styles.badgeTextAmber]}>
-                {hasProfilePhoto ? (profilePhotoUri && !partnerProfile?.profilePicture ? "Ready" : "Uploaded") : "Pending"}
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity 
-            style={[styles.uploadSlot, profilePhotoUri && styles.uploadSlotFilled]}
-            onPress={() => pickImage(setProfilePhotoUri)}
-          >
-            {profilePhotoUri ? (
-              <>
-                <Image source={{ uri: profilePhotoUri }} style={styles.docThumbnail} />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <Text style={styles.uploadSlotTextFilled}>Profile Photo Attached</Text>
-                  <Text style={{ fontSize: 10, color: '#16a34a', marginTop: 1 }}>Tap to change</Text>
-                </View>
-                <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
-              </>
-            ) : (
-              <>
-                <Ionicons name="camera-outline" size={18} color="#64748b" style={{ marginRight: 8 }} />
-                <Text style={styles.uploadSlotText}>Choose Account Profile Photo</Text>
-                <Text style={styles.browseBtnText}>Browse</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
+        {renderDocCard({
+          key: 'pan',
+          title: '3. PAN Card Copy',
+          sub: 'Permanent Account Number for Payouts',
+          icon: 'pricetag-outline',
+          tint: { bg: '#e0f2fe', fg: '#2563eb' },
+          isVerified: isPanVerified,
+          effectiveUri: effectivePan,
+          pickedUri: panUri,
+          setter: setPanUri,
+          uploadLabel: 'Upload PAN Card',
+          addedLabel: 'PAN Card Added',
+          uploadedAt: panDoc?.updatedAt || panDoc?.createdAt,
+        })}
 
         {/* Save / Upload Button */}
         {(aadhaarFrontUri || aadhaarBackUri || panUri || profilePhotoUri) && (
           <TouchableOpacity
-            style={[styles.saveBtn, submitting && { opacity: 0.7 }]}
+            style={[styles.saveBtn, styles.kSaveBtn, submitting && { opacity: 0.7 }]}
             onPress={handleSaveDocuments}
             disabled={submitting}
             activeOpacity={0.85}
@@ -469,13 +473,24 @@ export const IdentityProofScreen = () => {
         <View style={styles.supportFooter}>
           <Text style={styles.supportText}>Facing document upload issues?</Text>
           <TouchableOpacity onPress={() => navigation.navigate('TripSupport')}>
-            <Text style={styles.supportLink}>Contact 24/7 Partner Support</Text>
+            <Text style={[styles.supportLink, { color: '#FE5300' }]}>Contact 24/7 Partner Support</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Image preview (display only) */}
+      <Modal visible={!!previewUri} transparent animationType="fade" onRequestClose={() => setPreviewUri('')}>
+        <TouchableOpacity style={styles.kPreviewBackdrop} activeOpacity={1} onPress={() => setPreviewUri('')}>
+          {!!previewUri && <Image source={{ uri: previewUri }} style={styles.kPreviewImg} resizeMode="contain" />}
+          <View style={styles.kPreviewClose}>
+            <Ionicons name="close" size={22} color="#ffffff" />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
@@ -583,4 +598,43 @@ const styles = StyleSheet.create({
   supportFooter: { alignItems: 'center', marginVertical: 16 },
   supportText: { fontSize: 12, color: '#64748b' },
   supportLink: { fontSize: 12, fontWeight: '800', color: '#16a34a', marginTop: 2 },
+  // ---- Redesign styles ----
+  kPhotoCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff4ec', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: '#ffe4d1', marginBottom: 12 },
+  kAvatar: { width: 76, height: 76, borderRadius: 38, backgroundColor: '#f1f5f9', borderWidth: 2, borderColor: '#ffffff', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  kAvatarImg: { width: 76, height: 76, borderRadius: 38 },
+  kAvatarBadge: { position: 'absolute', bottom: 0, right: -2, width: 26, height: 26, borderRadius: 13, backgroundColor: '#FE5300', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#ffffff' },
+  kPhotoTitleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
+  kPhotoTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  kPhotoSub: { fontSize: 12, color: '#64748b', marginTop: 4, lineHeight: 16 },
+  kChangeBtn: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#FE5300', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: '#ffffff' },
+  kChangeBtnText: { color: '#FE5300', fontSize: 12, fontWeight: '800' },
+  kBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
+  kBadgeOrange: { backgroundColor: '#ffedd5' },
+  kProgressCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff7ed', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: '#ffedd5', marginBottom: 20 },
+  kRing: { width: 64, height: 64, borderRadius: 32, borderWidth: 6, borderColor: 'rgba(254,83,0,0.12)', justifyContent: 'center', alignItems: 'center' },
+  kRingArc: { position: 'absolute', top: -6, left: -6, width: 64, height: 64, borderRadius: 32, borderWidth: 6, transform: [{ rotate: '-45deg' }] },
+  kRingText: { fontSize: 18, fontWeight: '900', color: '#c2410c' },
+  kProgressTitle: { fontSize: 15, fontWeight: '800', color: '#ea580c' },
+  kProgressSub: { fontSize: 12, color: '#64748b', marginTop: 3, lineHeight: 16 },
+  kSectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingHorizontal: 2 },
+  kSectionTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
+  kSafeRow: { flexDirection: 'row', alignItems: 'center' },
+  kSafeText: { fontSize: 10, color: '#64748b', lineHeight: 13 },
+  kDocCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: '#eef2f7', marginBottom: 12 },
+  kDocIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  kDocTitle: { fontSize: 14, fontWeight: '800', color: '#0f172a' },
+  kSlotEmpty: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderStyle: 'dashed', borderColor: '#fdba74', borderRadius: 14, padding: 12, backgroundColor: '#fffaf6' },
+  kSlotTitle: { fontSize: 13, fontWeight: '700', color: '#0f172a' },
+  kSlotMeta: { fontSize: 11, color: '#64748b', marginTop: 2 },
+  kSlotHint: { fontSize: 10, color: '#16a34a', marginTop: 1 },
+  kBrowseBtn: { backgroundColor: '#FE5300', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  kBrowseBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '800' },
+  kSlotFilled: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#bbf7d0', borderRadius: 14, padding: 10, backgroundColor: '#f0fdf4' },
+  kThumb: { width: 64, height: 44, borderRadius: 8, backgroundColor: '#e2e8f0' },
+  kViewBtn: { borderWidth: 1, borderColor: '#2563eb', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: '#ffffff' },
+  kViewBtnText: { color: '#2563eb', fontSize: 12, fontWeight: '800' },
+  kSaveBtn: { backgroundColor: '#FE5300', shadowColor: '#FE5300', marginTop: 6 },
+  kPreviewBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.92)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  kPreviewImg: { width: '100%', height: '75%' },
+  kPreviewClose: { position: 'absolute', top: 48, right: 20, width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
 });
