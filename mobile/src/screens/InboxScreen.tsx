@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -18,9 +18,8 @@ type NotificationItem = {
 
 export const InboxScreen = () => {
   // Same top spacing on every main screen: status bar height + 16.
-  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
-  // status-bar overlap this screen really has (measured natively, so it's never
-  // counted twice); this is just the header's own breathing room.
+  // Safe area: App.tsx already pads the whole app below the status bar
+  // (paddingTop: insets.top), so this is just the header's own breathing room.
   const topInset = 12;
 
   const navigation = useNavigation<any>();
@@ -74,7 +73,6 @@ export const InboxScreen = () => {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']} />
       {/* Header */}
       <View style={[styles.header, { paddingTop: topInset }]}>
         <View>

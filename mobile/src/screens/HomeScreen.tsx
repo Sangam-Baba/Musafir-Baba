@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { FINANCIAL_FEATURES_ENABLED } from '../config/features';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   View, 
   Text, 
@@ -38,6 +38,10 @@ const BANNER_IMAGES = [
   require('../../design/bannerImages/mbcb8.jpeg'),
   require('../../design/bannerImages/mbcb9.jpeg'),
 ];
+
+// Built-in carousel is turned off: Home shows admin banners (Connect App Home) when
+// live, otherwise the name banner. Set to true to bring the built-in carousel back.
+const SHOW_BUILT_IN_CAROUSEL = false;
 
 // Infinite loop array: [Last Image Clone, ...Original Images, First Image Clone]
 const INFINITE_BANNER_IMAGES = [
@@ -81,9 +85,8 @@ const HOME_HERO = require('../../assets/authBanner-v2.png');
 
 export const HomeScreen = () => {
   // Same top spacing on every main screen: status bar height + 16.
-  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
-  // status-bar overlap this screen really has (measured natively, so it's never
-  // counted twice); this is just the header's own breathing room.
+  // Safe area: App.tsx already pads the whole app below the status bar
+  // (paddingTop: insets.top), so this is just the header's own breathing room.
   const topInset = 12;
 
   const [data, setData] = useState<DashboardData | null>(null);
@@ -250,6 +253,7 @@ export const HomeScreen = () => {
   // Hero crop: the photo's right part (from 41% across, past its baked-in text) fills the
   // banner's right 62%; the photo already fades to white on that edge, so it blends in.
   const heroW = Dimensions.get('window').width - 32;
+  const heroH = Math.round(heroW / 2); // name banner and admin banners share this 2:1 size
   const heroImgW = (0.62 * heroW) / 0.59;
   const heroImgH = heroImgW * (1632 / 2624);
   const heroImgStyle = { position: 'absolute' as const, width: heroImgW, height: heroImgH, left: -0.41 * heroImgW, top: -0.18 * heroImgH };
@@ -272,18 +276,9 @@ export const HomeScreen = () => {
       case 'INBOX': return navigation.navigate('Inbox');
     }
   };
-  const QUICK_ACTIONS: { label: string; icon: any; color: string; bg: string; go: () => void }[] = [
-    { label: 'Add Vehicle', icon: 'car', color: '#16a34a', bg: '#dcfce7', go: () => navigation.navigate('Menu', { screen: 'VehiclesList', initial: false, params: { returnTo: 'Home' } }) },
-    { label: 'Documents', icon: 'document-text', color: '#2563eb', bg: '#dbeafe', go: () => navigation.navigate('Menu', { screen: 'IdentityProof', initial: false, params: { returnTo: 'Home' } }) },
-    { label: 'Bank Details', icon: 'business', color: '#9333ea', bg: '#f3e8ff', go: () => navigation.navigate('Menu', { screen: FINANCIAL_FEATURES_ENABLED ? 'BankDetails' : 'PersonalDetails', initial: false, params: { returnTo: 'Home' } }) },
-    { label: 'Drivers', icon: 'people', color: '#FE5300', bg: '#ffedd5', go: () => navigation.navigate('Menu', { screen: 'FleetRegistry', initial: false, params: { returnTo: 'Home' } }) },
-    { label: 'Support', icon: 'headset', color: '#dc2626', bg: '#fee2e2', go: () => navigation.navigate('Menu', { screen: 'TripSupport', initial: false, params: { returnTo: 'Home' } }) },
-    { label: 'More', icon: 'grid', color: '#64748b', bg: '#f1f5f9', go: () => navigation.navigate('Menu') },
-  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff' }} />
       {/* Top Header Bar */}
       <View style={[styles.topHeader, { paddingTop: topInset }]}>
         <View style={styles.headerLeft}>
@@ -408,7 +403,8 @@ export const HomeScreen = () => {
            ========================================================= */}
         {/* Greeting banner: right part of the existing auth banner photo (car + city),
             with a curved light panel on the left for the greeting. Display only. */}
-        <View style={styles.hBanner}>
+        {adminBanners.length === 0 && (
+        <View style={[styles.hBanner, { minHeight: heroH }]}>
           <View style={styles.hHeroPhoto}>
             <Image source={HOME_HERO} style={heroImgStyle} resizeMode="stretch" />
           </View>
@@ -428,11 +424,13 @@ export const HomeScreen = () => {
           </View>
 
         </View>
+        )}
 
-        {/* Admin banners when live; otherwise the built-in carousel below (unchanged). */}
+        {/* Admin banners when live (same size as the name banner, which they replace).
+            The built-in carousel below only shows if SHOW_BUILT_IN_CAROUSEL is turned on. */}
         {adminBanners.length > 0 ? (
           <HomeBannerCarousel banners={adminBanners} onOpen={openAdminBanner} />
-        ) : (
+        ) : SHOW_BUILT_IN_CAROUSEL ? (
         <View style={styles.carouselContainer}>
           <ScrollView
             ref={bannerRef}
@@ -467,7 +465,7 @@ export const HomeScreen = () => {
             ))}
           </View>
         </View>
-        )}
+        ) : null}
 
         {/* Important Update from admin (full message is in the Inbox) */}
         {!!homeUpdate && <ImportantUpdateBar update={homeUpdate} onPress={() => navigation.navigate('Inbox')} />}
@@ -516,29 +514,75 @@ export const HomeScreen = () => {
           </TouchableOpacity>
         )}
 
-        {/* Quick Actions */}
-        <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Menu')}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.viewAllText}>View all</Text>
-              <Ionicons name="chevron-forward" size={14} color="#FE5300" />
+        {/* Quick Actions Grid */}
+        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Quick Actions</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
+          <TouchableOpacity 
+            style={styles.quickActionPill} 
+            onPress={() => navigation.navigate('Menu', { screen: 'VehiclesList', initial: false, params: { returnTo: 'Home' } })}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#f0fdf4' }]}>
+              <Ionicons name="car" size={20} color="#16a34a" />
             </View>
+            <Text style={styles.actionPillText}>Add Vehicle</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.hQuickGrid}>
-          {QUICK_ACTIONS.map((qa) => (
-            <TouchableOpacity key={qa.label} style={styles.hQuickCard} onPress={qa.go} activeOpacity={0.8}>
-              <View style={[styles.hQuickIcon, { backgroundColor: qa.bg }]}>
-                <Ionicons name={qa.icon} size={22} color={qa.color} />
-              </View>
-              <View style={styles.hQuickLabelRow}>
-                <Text style={styles.hQuickLabel} numberOfLines={1}>{qa.label}</Text>
-                <Ionicons name="chevron-forward" size={12} color="#94a3b8" />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+
+          <TouchableOpacity 
+            style={styles.quickActionPill} 
+            onPress={() => navigation.navigate('Menu', { screen: 'IdentityProof', initial: false, params: { returnTo: 'Home' } })}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#eff6ff' }]}>
+              <Ionicons name="document-text" size={20} color="#2563eb" />
+            </View>
+            <Text style={styles.actionPillText}>Documents</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.quickActionPill} 
+            onPress={() => navigation.navigate('Menu', { screen: FINANCIAL_FEATURES_ENABLED ? 'BankDetails' : 'PersonalDetails', initial: false, params: { returnTo: 'Home' } })}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#faf5ff' }]}>
+              <Ionicons name="business" size={20} color="#9333ea" />
+            </View>
+            <Text style={styles.actionPillText}>Bank Details</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.quickActionPill} 
+            onPress={() => navigation.navigate('Menu', { screen: 'FleetRegistry', initial: false, params: { returnTo: 'Home' } })}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#fff7ed' }]}>
+              <Ionicons name="person" size={20} color="#FE5300" />
+            </View>
+            <Text style={styles.actionPillText}>Drivers</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.quickActionPill} 
+            onPress={() => navigation.navigate('Menu', { screen: 'TripSupport', initial: false, params: { returnTo: 'Home' } })}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#fef2f2' }]}>
+              <Ionicons name="headset" size={20} color="#dc2626" />
+            </View>
+            <Text style={styles.actionPillText}>Support</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.quickActionPill} 
+            onPress={() => navigation.navigate('Menu')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.actionIconBox, { backgroundColor: '#f8fafc' }]}>
+              <Ionicons name="ellipsis-horizontal" size={20} color="#64748b" />
+            </View>
+            <Text style={styles.actionPillText}>More</Text>
+          </TouchableOpacity>
+        </ScrollView>
 
         {/* Live Opportunities Section */}
         <View style={[styles.sectionHeaderRow, { marginTop: 22 }]}>
@@ -783,11 +827,6 @@ const styles = StyleSheet.create({
   hWalletAlertTitle: { fontSize: 13.5, fontWeight: '800', color: '#dc2626' },
   hWalletAlertText: { fontSize: 12, color: '#475569', marginTop: 1 },
   hWalletOk: { fontSize: 12, color: '#15803d', fontWeight: '600', marginTop: 10 },
-  hQuickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 },
-  hQuickCard: { width: '31.5%', backgroundColor: '#ffffff', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 8, alignItems: 'center', borderWidth: 1, borderColor: '#eef2f7' },
-  hQuickIcon: { width: 46, height: 46, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-  hQuickLabelRow: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%' },
-  hQuickLabel: { fontSize: 12, fontWeight: '700', color: '#0f172a', marginRight: 2, flexShrink: 1 },
   hEmptyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#eef2f7' },
   hEmptyIcon: { width: 52, height: 52, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
   hEmptyTitle: { fontSize: 14, fontWeight: '800', color: '#0f172a' },

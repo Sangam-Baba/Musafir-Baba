@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileStackParamList } from './types';
 import { PersonalDetailsScreen } from '../screens/PersonalDetailsScreen';
@@ -45,9 +45,8 @@ type MenuNavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMen
 
 const MenuScreen = ({ navigation }: any) => {
   // Same top spacing on every main screen: status bar height + 16.
-  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
-  // status-bar overlap this screen really has (measured natively, so it's never
-  // counted twice); this is just the header's own breathing room.
+  // Safe area: App.tsx already pads the whole app below the status bar
+  // (paddingTop: insets.top), so this is just the header's own breathing room.
   const topInset = 12;
 
   const token = useAuthStore((state) => state.token);
@@ -248,7 +247,6 @@ const MenuScreen = ({ navigation }: any) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
-    <SafeAreaView edges={['top']} />
     <ScrollView 
       style={styles.container} 
       contentContainerStyle={[styles.contentContainer, { paddingTop: topInset }]} 
