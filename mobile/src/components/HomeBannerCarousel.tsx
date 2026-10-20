@@ -9,9 +9,9 @@ import type { PartnerAppBanner, PartnerAppAnnouncement } from '../api/partnerApp
 const AUTO_ADVANCE_MS = 3500;
 
 export function HomeBannerCarousel({ banners, onOpen }: { banners: PartnerAppBanner[]; onOpen: (b: PartnerAppBanner) => void }) {
-  // Same size as the built-in banners: full content width, 3:2.
+  // Same size as Home's name banner: full content width, 2:1.
   const width = Dimensions.get('window').width - 32;
-  const height = Math.round(width / 1.5);
+  const height = Math.round(width / 2);
   const count = banners.length;
   const [index, setIndex] = useState(0);
   const [dragging, setDragging] = useState(false);

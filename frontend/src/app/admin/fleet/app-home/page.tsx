@@ -18,8 +18,8 @@ import { FleetPage, FleetPageHeader, FleetPanel, FleetPill, fleetTone, FleetEmpt
 
 const BASE = process.env.NEXT_PUBLIC_BASE_URL;
 const API = `${BASE}/admin/partner-app-home`;
-const W = 1536;
-const H = 1024;
+const W = 1600;
+const H = 800;
 const TARGET_BYTES = 220 * 1024;
 
 type ActionType = "NONE" | "SCREEN" | "URL";
@@ -73,7 +73,7 @@ function windowState(x: { isActive: boolean; startAt?: string | null; endAt?: st
   return { label: "Scheduled", tone: fleetTone.sky };
 }
 
-// Center-crops to 3:2, resizes to 1536x1024 and encodes WebP, lowering the
+// Center-crops to 2:1, resizes to 1600x800 and encodes WebP, lowering the
 // quality until it's under ~220 KB.
 async function makeBannerImage(file: File): Promise<{ blob: Blob; preview: string }> {
   const url = URL.createObjectURL(file);
@@ -84,7 +84,7 @@ async function makeBannerImage(file: File): Promise<{ blob: Blob; preview: strin
       i.onerror = () => reject(new Error("Could not read this image"));
       i.src = url;
     });
-    if (img.naturalWidth < 1000 || img.naturalHeight < 666) throw new Error(`Image is too small (${img.naturalWidth}x${img.naturalHeight}). Use at least 1536x1024.`);
+    if (img.naturalWidth < 1000 || img.naturalHeight < 500) throw new Error(`Image is too small (${img.naturalWidth}x${img.naturalHeight}). Use at least 1600x800.`);
     const srcRatio = img.naturalWidth / img.naturalHeight;
     let sw = img.naturalWidth;
     let sh = img.naturalHeight;
@@ -260,14 +260,14 @@ function BannersTab() {
     <>
       <FleetPanel
         title="Carousel banners"
-        description={`Shown in this order on the MBConnect app's Home (up to 10 live). Images are resized to ${W}x${H} (3:2, same as the app's built-in banners) and compressed to WebP automatically.`}
+        description={`Shown in this order on the MBConnect app's Home (up to 10 live). Images are resized to ${W}x${H} (2:1, same size as the Home name banner they replace) and compressed to WebP automatically.`}
         icon={ImagePlus}
         actions={<Button size="sm" onClick={openNew} className="bg-[#FE5300] hover:bg-[#e54b00]"><Plus size={14} /> Add banner</Button>}
       >
         {isLoading ? (
           <Loader />
         ) : !banners.length ? (
-          <FleetEmptyState icon={ImagePlus} title="No banners yet" hint="When there are no live banners, the app shows its built-in banners." />
+          <FleetEmptyState icon={ImagePlus} title="No banners yet" hint="When there are no live banners, the app shows the Home name banner instead." />
         ) : (
           <Table>
             <TableHeader>
@@ -294,7 +294,7 @@ function BannersTab() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={b.image.url} alt={b.title} className="h-14 w-[84px] rounded-md object-cover ring-1 ring-slate-200" />
+                        <img src={b.image.url} alt={b.title} className="h-12 w-24 rounded-md object-cover ring-1 ring-slate-200" />
                         <div className="min-w-0">
                           <div className="text-[13px] font-medium text-slate-900 truncate max-w-[220px]">{b.title}</div>
                           <div className="text-[11px] text-slate-500">{b.image.size ? `${Math.round(b.image.size / 1024)} KB` : ""}</div>
@@ -327,11 +327,11 @@ function BannersTab() {
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{editing ? "Edit banner" : "Add banner"}</SheetTitle>
-            <SheetDescription>Upload any image - it's cropped to {W}x{H} (3:2) from the centre and compressed. Keep text away from the edges.</SheetDescription>
+            <SheetDescription>Upload any image - it's cropped to {W}x{H} (2:1) from the centre and compressed. Keep text away from the edges.</SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-4 px-4 pb-6">
             <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }} />
-            <button type="button" onClick={() => fileRef.current?.click()} className="relative flex aspect-[3/2] w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 hover:border-[#FE5300]">
+            <button type="button" onClick={() => fileRef.current?.click()} className="relative flex aspect-[2/1] w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 hover:border-[#FE5300]">
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={image.preview} alt="" className="h-full w-full object-cover" />

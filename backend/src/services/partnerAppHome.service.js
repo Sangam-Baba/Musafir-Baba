@@ -8,8 +8,8 @@ import PartnerProfile from "../models/partner/PartnerProfile.js";
 // Mirrors MBGO's appHome.service.js but uses its own collections and
 // delivers to partners -- MBGO's banners/updates are untouched.
 
-export const PARTNER_BANNER_WIDTH = 1536;
-export const PARTNER_BANNER_HEIGHT = 1024;
+export const PARTNER_BANNER_WIDTH = 1600;
+export const PARTNER_BANNER_HEIGHT = 800;
 export const MAX_PARTNER_BANNER_BYTES = 400 * 1024; // admin compresses to ~120-250 KB
 export const MAX_LIVE_PARTNER_BANNERS = 10;
 

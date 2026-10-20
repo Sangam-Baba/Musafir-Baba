@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { WebView } from 'react-native-webview';
 
@@ -28,7 +27,6 @@ export const LegalPageScreen = () => {
 
   return (
     <View style={styles.root}>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: '#ffffff' }} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn} accessibilityLabel="Back">
           <Ionicons name="chevron-back" size={24} color="#0f172a" />

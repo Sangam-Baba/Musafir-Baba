@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -159,9 +159,8 @@ const MOCK_BOOKINGS: Booking[] = [
 
 export const BookingsScreen = () => {
   // Same top spacing on every main screen: status bar height + 16.
-  // Safe area: an <SafeAreaView edges={['top']}> spacer above reserves exactly the
-  // status-bar overlap this screen really has (measured natively, so it's never
-  // counted twice); this is just the header's own breathing room.
+  // Safe area: App.tsx already pads the whole app below the status bar
+  // (paddingTop: insets.top), so this is just the header's own breathing room.
   const topInset = 12;
 
   const token = useAuthStore((state) => state.token);
@@ -546,7 +545,6 @@ export const BookingsScreen = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FE5300" />
 
-      <SafeAreaView edges={['top']} />
       {/* Header Info */}
       <View style={[styles.header, { paddingTop: topInset }]}>
         <Text style={styles.title}>Bookings & Trips</Text>
