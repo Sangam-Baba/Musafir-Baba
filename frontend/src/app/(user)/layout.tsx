@@ -76,9 +76,6 @@ export default function UserLayout({
 }) {
   return (
     <>
-      {/* Only 2 preconnects max — Lighthouse flags 4+ as harmful */}
-      <link rel="preconnect" href="https://musafir-baba-backend.onrender.com" />
-      <link rel="dns-prefetch" href="https://musafir-baba-backend.onrender.com" />
       {/* GTM: dns-prefetch only (not preconnect) to avoid blocking */}
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       <link rel="dns-prefetch" href="https://static.doubleclick.net" />
