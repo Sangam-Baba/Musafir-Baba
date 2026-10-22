@@ -23,6 +23,7 @@ import {
 } from 'lucide-react-native';
 import { loginRider, googleLoginRider, registerRider, verifyRiderOtp, resendRiderOtp, forgotRiderPassword, resetRiderPassword } from '../../../api/riderAuth.api';
 import { getGoogleIdToken, isGoogleSignInAvailable, isGoogleWebSignInAvailable, renderGoogleWebButton } from '../../../utils/googleSignIn';
+import RiderReferralField from '../../../components/RiderReferralField';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 // Hero background image for the auth screens (WebP format for native Android/iOS decoding)
@@ -750,6 +751,9 @@ export default function ScreenRiderAuth({ activeScreen, onNavigate }: { activeSc
                   </TouchableOpacity>
                 </View>
               </View>
+
+              {/* Referral code (optional; hidden while the program is off) */}
+              <RiderReferralField />
 
               {/* Terms & Conditions Agreement */}
               <TouchableOpacity onPress={() => setAgreedToTerms(!agreedToTerms)} style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 2 }}>

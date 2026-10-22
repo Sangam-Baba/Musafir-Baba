@@ -73,7 +73,11 @@ export default function Header() {
   // the `else` branch below, which renders the exact solid header markup
   // this file has always rendered — nothing about other pages changes.
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  // Vercel's ISR background regeneration renders the homepage with pathname
+  // "/index" while the browser reports "/" — without this the cached HTML
+  // gets the solid header, hydration fails (React #418) and the whole page
+  // is re-rendered client-side, which wrecks LCP/INP on mobile.
+  const isHome = pathname === "/" || pathname === "/index";
   const [scrolled, setScrolled] = React.useState(false);
 
   React.useEffect(() => {

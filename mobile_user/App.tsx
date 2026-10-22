@@ -65,6 +65,9 @@ import ScreenSupportReview from './src/screens/rider/support/ScreenSupportReview
 import ScreenSupportTicket from './src/screens/rider/support/ScreenSupportTicket';
 import ScreenSupportTickets from './src/screens/rider/support/ScreenSupportTickets';
 import ScreenAbout from './src/screens/rider/profile/ScreenAbout';
+import ScreenReferEarn from './src/screens/rider/profile/ScreenReferEarn';
+import ScreenWallet from './src/screens/rider/profile/ScreenWallet';
+import { applyPendingRiderReferral } from './src/api/riderReferral.api';
 import ScreenCancelBooking from './src/screens/rider/cancel/ScreenCancelBooking';
 import { useNotificationStore } from './src/store/useNotificationStore';
 import { openNotificationTarget } from './src/utils/notificationRoute';
@@ -231,6 +234,18 @@ function AppContent() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    // A referral code typed on Create Account is added right after sign-in
+    // (OTP or Google), then the profile is refreshed so the wallet shows the bonus.
+    if (isAuthenticated) {
+      applyPendingRiderReferral()
+        .then((msg) => {
+          if (msg) getRiderProfile().then((res) => setProfile(res.data.data)).catch(() => {});
+        })
+        .catch(() => {});
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (isAuthenticated && expoPushToken) {
       updateRiderPushToken(expoPushToken).catch((e) => console.log('Error syncing push token', e));
     }
@@ -318,6 +333,8 @@ function AppContent() {
       case 'support-ticket': return <ScreenSupportTicket variant="detail" onNavigate={navigate} onBack={goBack} />;
       case 'support-tickets': return <ScreenSupportTickets onNavigate={navigate} onBack={goBack} />;
       case 'about': return <ScreenAbout onNavigate={navigate} onBack={goBack} />;
+      case 'refer-earn': return <ScreenReferEarn onNavigate={navigate} onBack={goBack} />;
+      case 'wallet': return <ScreenWallet onNavigate={navigate} onBack={goBack} />;
       case 'cancel-booking': return <ScreenCancelBooking onNavigate={navigate} onBack={goBack} />;
       case '38': return <ScreenNotifications onNavigate={navigate} onBack={goBack} />;
       case '39': return <ScreenSavedItems onNavigate={navigate} />;

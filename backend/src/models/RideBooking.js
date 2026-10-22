@@ -112,6 +112,19 @@ const rideBookingSchema = new mongoose.Schema(
         default: "Pending",
       },
     },
+    // ---- MBGO wallet used on this ride (services/riderWallet.service.js).
+    // Absent unless the rider chose "Use MB Wallet". totalAmount, commission
+    // and partnerPayout never change -- PayU is charged totalAmount - amount.
+    // RESERVED (held at payment start) -> USED (payment succeeded)
+    // RESERVED -> RELEASED (payment failed / abandoned); RESERVED|USED -> REFUNDED (ride cancelled)
+    walletRedemption: {
+      amount: { type: Number },
+      status: { type: String, enum: ["RESERVED", "USED", "RELEASED", "REFUNDED"] },
+      reservedAt: { type: Date },
+      usedAt: { type: Date },
+      releasedAt: { type: Date },
+      refundedAt: { type: Date },
+    },
     status: {
       type: String,
       enum: [

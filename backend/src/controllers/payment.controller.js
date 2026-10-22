@@ -7,6 +7,7 @@ import { VehicleBooking } from "../models/VehicleBooking.js";
 import { VisaApplication } from "../models/VisaApplication.js";
 import { RideBooking } from "../models/RideBooking.js";
 import { releaseRideToPartnerPool, getBroadcastExpiry, isWithin24h, REVEAL_WINDOW_HOURS } from "./ride.controller.js";
+import { prepareRideWallet, onRidePaymentSuccess, refundCancelledRideWallet } from "../services/riderWallet.service.js";
 import { notifyUser } from "../services/notification/notificationService.js";
 import RiderProfile from "../models/rider/RiderProfile.js";
 import RiderAuth from "../models/rider/RiderAuth.js";
@@ -123,7 +124,12 @@ export const createRidePayment = async (req, res) => {
     // PayU requires amount as a string with exactly 2 decimal places --
     // ride.totalAmount is a plain Number (e.g. 7461), which PayU's own
     // validation rejects before it even gets to hash verification.
-    const amount = Number(ride.totalAmount).toFixed(2);
+    // MB Wallet (optional): held on the ride; PayU is charged the rest. Without
+    // useWallet this is 0 and the amount is ride.totalAmount exactly as before.
+    const walletUsed = await prepareRideWallet(ride, riderProfile, req.body?.useWallet === true);
+    const amount = walletUsed > 0
+      ? Number(Math.round((Number(ride.totalAmount) - walletUsed) * 100) / 100).toFixed(2)
+      : Number(ride.totalAmount).toFixed(2);
     const productinfo = "MBGO Ride Booking";
     const firstname = riderProfile.fullName || "Rider";
     // Riders authenticate via phone/OTP and commonly have no email on file.
@@ -156,7 +162,7 @@ export const createRidePayment = async (req, res) => {
       service_provider: "payu_paisa",
     };
 
-    return res.json({ success: true, payuUrl: `${payuBaseUrl}/_payment`, paymentData });
+    return res.json({ success: true, payuUrl: `${payuBaseUrl}/_payment`, paymentData, walletUsed, payable: Number(amount) });
   } catch (error) {
     console.error("Create Ride Payment Error:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
@@ -824,6 +830,12 @@ export const verifyRideSuccessPayment = async (req, res) => {
 
   if (ride) {
     try {
+      await onRidePaymentSuccess(ride._id, amount); // MB Wallet hold -> used (no-op for rides without wallet)
+    } catch (error) {
+      console.error("Ride wallet success error:", error.message);
+    }
+
+    try {
       await releaseRideToPartnerPool(ride);
     } catch (error) {
       console.error("Release Ride To Partner Pool Error:", error.message);
@@ -897,6 +909,13 @@ export const verifyRideFailurePayment = async (req, res) => {
     },
     { new: true },
   ).exec();
+  if (ride) {
+    try {
+      await refundCancelledRideWallet(ride._id); // MB Wallet hold back to the wallet (no-op for rides without wallet)
+    } catch (error) {
+      console.error("Ride wallet refund error:", error.message);
+    }
+  }
   console.log("Ride Payment Failed:", data, ride);
 
   return res.redirect(`${process.env.FRONTEND_URL}/payment/failed?from=mbgo`);

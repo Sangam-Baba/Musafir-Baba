@@ -16,7 +16,9 @@ export function getCancellationPolicy(service, booking, now = Date.now()) {
   if (service === "CAB") {
     if (booking.status === "ONGOING") return no("Your trip has already started, so it can't be cancelled. Please contact support.");
     if (!CAB_CANCELLABLE.includes(booking.status)) return no("This ride can no longer be cancelled.");
-    const paid = booking.paymentInfo?.status === "Paid" ? Number(booking.totalAmount) || 0 : 0;
+    // MB Wallet part (if any) goes back to the wallet automatically, not as cash.
+    const walletPart = booking.walletRedemption?.status === "USED" ? Number(booking.walletRedemption.amount) || 0 : 0;
+    const paid = booking.paymentInfo?.status === "Paid" ? Math.max(0, (Number(booking.totalAmount) || 0) - walletPart) : 0;
     return { allowed: true, type: "INSTANT", paidAmount: paid };
   }
 
