@@ -10,6 +10,7 @@ import { startMembershipExpiryCron } from "./services/membershipUpdate.service.j
 import { startRideBroadcastExpiryCron } from "./services/rideBroadcastExpiry.service.js";
 import { startRideDetailsRevealCron } from "./services/rideDetailsReveal.service.js";
 import { startReferralMaintenanceCron } from "./services/partnerReferral.service.js";
+import { startMbgoWalletCron } from "./services/riderReferral.service.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -33,6 +34,9 @@ startRideDetailsRevealCron();
 
 // Referral Program: expire overdue referrals, finish any unpaid reward (every 15 min)
 startReferralMaintenanceCron();
+
+// MBGO: MB Wallet holds/refunds on rides + rider referral expiry/retries (every 5 min)
+startMbgoWalletCron();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

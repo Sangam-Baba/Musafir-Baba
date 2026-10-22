@@ -48,6 +48,7 @@ import {
   Check,
   AlertCircle,
   Star as StarIcon,
+  Gift as GiftIcon,
 } from 'lucide-react-native';
 import { openPlayStoreForRating, canRateOnPlayStore } from '../../../utils/rateApp';
 
@@ -282,13 +283,13 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
 
               {/* Wallet & Coupons */}
               <View style={{ flexDirection: 'row', gap: 10 }}>
-                <TouchableOpacity onPress={() => showToast("MB Wallet is coming soon")} activeOpacity={0.85} style={{ ...PROFILE_CARD, flex: 1, gap: 10 }}>
+                <TouchableOpacity onPress={() => onNavigate('wallet')} activeOpacity={0.85} style={{ ...PROFILE_CARD, flex: 1, gap: 10 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFF5EF', alignItems: 'center', justifyContent: 'center' }}>
                       <Wallet size={17} color="#FF4500" strokeWidth={2} />
                     </View>
                     <View style={{ backgroundColor: '#FF4500', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 }}>
-                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#FFFFFF' }}>Coming soon</Text>
+                      <Text style={{ fontSize: 10.5, fontWeight: '600', color: '#FFFFFF' }}>Use on rides</Text>
                     </View>
                   </View>
                   <View>
@@ -316,6 +317,7 @@ export default function ScreenRiderProfileAmit({ onNavigate }: { onNavigate: (sc
               <View style={{ ...PROFILE_CARD, padding: 0, overflow: 'hidden' }}>
                 {[
                   { icon: FileText, label: 'Documents', tint: '#2563EB', bg: '#EFF6FF', action: () => onNavigate('41') },
+                  { icon: GiftIcon, label: 'Refer & Earn', tint: '#DB2777', bg: '#FDF2F8', action: () => onNavigate('refer-earn') },
                   { icon: Car, label: 'Trip Preferences', tint: '#EA580C', bg: '#FFF5EF', comingSoon: true, action: () => showToast('Trip Preferences is coming soon') },
                   { icon: Headphones, label: 'Help & Support', tint: '#059669', bg: '#ECFDF5', action: () => onNavigate('37') },
                   ...(canRateOnPlayStore ? [{ icon: StarIcon, label: 'Rate us on Play Store', tint: '#F59E0B', bg: '#FFFBEB', action: () => { openPlayStoreForRating().catch(() => showToast("Couldn't open the Play Store")); } }] : []),

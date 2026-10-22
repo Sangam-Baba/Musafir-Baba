@@ -196,6 +196,12 @@ export const NAV_GROUPS = [
         permission: "app-home", // must match backend appHome.routes.js
       },
       {
+        label: "MBGO Referrals",
+        href: "/admin/mbgo-referrals",
+        icon: Gift,
+        permission: "rider-referrals", // must match backend adminRiderReferral.routes.js
+      },
+      {
         label: "Partner Wallets",
         href: "/admin/fleet/wallets",
         icon: IndianRupee,

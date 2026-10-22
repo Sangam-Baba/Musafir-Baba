@@ -3,6 +3,8 @@ import { apiClient } from './axios';
 export interface PayUCheckout {
   payuUrl: string;
   paymentData: Record<string, string | number>;
+  walletUsed?: number; // ₹ taken from MB Wallet (only when useWallet was sent)
+  payable?: number; // ₹ PayU will charge
 }
 
 // The generic /payment endpoint (used by every other booking type) is gated
@@ -11,8 +13,10 @@ export interface PayUCheckout {
 // /payment/ride is the rider-authenticated equivalent — the backend resolves
 // the amount/txnid/product info itself from the stored ride rather than
 // trusting them from the client.
-export const initiateRidePayment = (rideId: string) =>
-  apiClient.post<PayUCheckout>('/payment/ride', { rideId });
+// useWallet (optional): pay part of the bill from MB Wallet. Without it the
+// request is exactly as before and the full fare is charged.
+export const initiateRidePayment = (rideId: string, useWallet?: boolean) =>
+  apiClient.post<PayUCheckout>('/payment/ride', useWallet ? { rideId, useWallet: true } : { rideId });
 
 // PayU expects a real browser POST with all fields as a form submission, not
 // a GET redirect — build a tiny auto-submitting HTML page for the WebView.

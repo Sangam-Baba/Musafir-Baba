@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, Modal, ActivityIndicator } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { WebView } from 'react-native-webview';
-import { Bus as BusIcon, Info as InfoIcon } from 'lucide-react-native';
+import { Bus as BusIcon, Info as InfoIcon, Check as WalletTick } from 'lucide-react-native';
 import { createRide, getRideById, isRateCardOffer, type RideOffer } from '../../../api/ride.api';
 import { initiateRidePayment, buildPayUAutoSubmitHtml } from '../../../api/payment.api';
+import { getMyRiderWallet } from '../../../api/riderReferral.api';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { API_BASE_URL } from '../../../utils/config';
 import { inr, plural, formatDisplayDate, AddressLine, MetaChip, RATE_CARD_TINT, RideFlowHeader, TripSummaryCard } from './rideUi';
 import { useRideStore } from '../../../store/useRideStore';
@@ -157,6 +159,31 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
   // for this trip, otherwise the quoted amount.
   const payableAmount = (existingRideId && bookedTotal) || selectedOffer?.totalAmount || 0;
 
+  // ---- MB Wallet (optional): part of the bill paid from the wallet. The server
+  // decides the exact amount; this preview uses the same rule (cap, ₹1 left for PayU).
+  const isSignedIn = useAuthStore((s) => s.isAuthenticated);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletCap, setWalletCap] = useState(0);
+  const [useWallet, setUseWallet] = useState(true);
+  const refreshWallet = () => {
+    if (!isSignedIn) return;
+    getMyRiderWallet()
+      .then((res) => {
+        setWalletBalance(Number(res.data.data.balance) || 0);
+        setWalletCap(Number(res.data.data.maxPerRide) || 0);
+      })
+      .catch(() => {});
+  };
+  useEffect(refreshWallet, [isSignedIn]);
+  const walletUsable = (() => {
+    let a = Math.min(walletBalance, payableAmount - 1);
+    if (walletCap > 0) a = Math.min(a, walletCap);
+    a = Math.floor(a * 100) / 100;
+    return a >= 1 ? a : 0;
+  })();
+  const walletApplied = useWallet ? walletUsable : 0;
+  const toPayAmount = Math.round((payableAmount - walletApplied) * 100) / 100;
+
   const createBooking = async () => {
     const res = await createRide({
       pickup: { address: pickup, ...(pickupCoords || {}) },
@@ -173,7 +200,7 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
   };
 
   const openCheckout = async (id: string) => {
-    const res = await initiateRidePayment(id);
+    const res = await initiateRidePayment(id, walletApplied > 0);
     setCheckoutBaseUrl(new URL(res.data.payuUrl).origin);
     setCheckoutHtml(buildPayUAutoSubmitHtml(res.data));
   };
@@ -229,6 +256,7 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
     if (!isTerminal || !currentRideId) return;
 
     setCheckoutHtml(null);
+    setTimeout(refreshWallet, 800);
     try {
       const res = await getRideById(currentRideId);
       const rideData = res.data?.data;
@@ -337,6 +365,28 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
                   <View style={{ borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 12 }}>
                     <FareRow label="Total payable" amount={payableAmount} bold />
                   </View>
+                  {walletUsable > 0 && (
+                    <>
+                      <TouchableOpacity
+                        onPress={() => setUseWallet(!useWallet)}
+                        activeOpacity={0.85}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: useWallet }}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: useWallet ? '#FFF4EE' : '#F8FAFC', borderWidth: 1, borderColor: useWallet ? '#FFD3BD' : '#E2E8F0', borderRadius: 12, padding: 12 }}
+                      >
+                        <View style={{ width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: useWallet ? '#FF4500' : '#CBD5E1', backgroundColor: useWallet ? '#FF4500' : '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                          {useWallet && <WalletTick size={13} color="#FFFFFF" strokeWidth={3} />}
+                        </View>
+                        <Wallet size={18} color="#FF4500" strokeWidth={2} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#0F172A' }}>Use MB Wallet</Text>
+                          <Text style={{ fontSize: 11.5, color: '#64748B', marginTop: 1 }}>{inr(walletBalance)} available{walletCap > 0 ? ` · up to ${inr(walletCap)} per ride` : ''}</Text>
+                        </View>
+                        <Text style={{ fontSize: 13.5, fontWeight: '700', color: useWallet ? '#16A34A' : '#94A3B8' }}>−{inr(walletUsable)}</Text>
+                      </TouchableOpacity>
+                      {useWallet && <FareRow label="To pay now" amount={toPayAmount} bold />}
+                    </>
+                  )}
                   {!!quote?.payableOnTripNote && isRateCardOffer(selectedOffer) && (
                     <View style={{ backgroundColor: '#FFFBEB', borderRadius: 10, padding: 10, flexDirection: 'row', gap: 8 }}>
                       <InfoIcon size={14} color="#B45309" strokeWidth={2} style={{ marginTop: 1 }} />
@@ -1003,8 +1053,8 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
         {selectedOffer && (
           <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#EEF2F6', paddingHorizontal: 14, paddingTop: 10, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12, zIndex: 40 }}>
             <View>
-              <Text style={{ fontSize: 11, fontWeight: '500', color: '#94A3B8' }}>Total payable</Text>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#0F172A', letterSpacing: -0.3 }}>{inr(payableAmount)}</Text>
+              <Text style={{ fontSize: 11, fontWeight: '500', color: '#94A3B8' }}>{walletApplied > 0 ? 'To pay now' : 'Total payable'}</Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#0F172A', letterSpacing: -0.3 }}>{inr(toPayAmount)}</Text>
             </View>
             <TouchableOpacity
               onPress={handleProceedToBooking}
@@ -1013,7 +1063,7 @@ export default function ScreenFareSummary({ onNavigate, onBack }: { onNavigate: 
               style={{ flex: 1, height: 48, borderRadius: 12, backgroundColor: isBooking ? '#FDA584' : '#FF4500', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#FF4500', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 3 }}
             >
               {isBooking ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Lock size={15} color="#FFFFFF" strokeWidth={2} />}
-              <Text style={{ fontSize: 15, fontWeight: '600', color: '#FFFFFF' }}>{isBooking ? 'Please wait...' : `Pay ${inr(payableAmount)}`}</Text>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: '#FFFFFF' }}>{isBooking ? 'Please wait...' : `Pay ${inr(toPayAmount)}`}</Text>
             </TouchableOpacity>
           </View>
         )}

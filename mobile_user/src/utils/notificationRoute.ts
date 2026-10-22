@@ -12,6 +12,7 @@ const id = (v: any) => (v == null ? '' : String(v));
 
 export function getNotificationCategory(n: { type?: string; data?: Record<string, any> }): NotificationCategory {
   const d = n.data || {};
+  if (d.screen === 'refer-earn' || d.screen === 'wallet') return 'PAYMENT'; // MBGO Refer & Earn / MB Wallet
   if (d.supportTicketId) return 'SUPPORT';
   if (d.cancellationId) return 'CANCELLATION';
   if (d.visaApplicationId) return 'VISA';
@@ -28,6 +29,11 @@ export async function openNotificationTarget(n: { type?: string; data?: Record<s
   const d = n.data || {};
   const category = getNotificationCategory(n);
   try {
+    // MBGO Refer & Earn / MB Wallet messages open their own screens.
+    if (d.screen === 'refer-earn' || d.screen === 'wallet') {
+      navigate(d.screen);
+      return true;
+    }
     if (category === 'SUPPORT') {
       useSupportStore.getState().openTicket(id(d.supportTicketId));
       navigate('support-ticket');
