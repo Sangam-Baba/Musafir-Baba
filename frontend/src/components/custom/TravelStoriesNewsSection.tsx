@@ -88,7 +88,7 @@ function Card({ item, badge, badgeColor }: { item: FeedItem; badge: string; badg
       <p className="text-[12.5px] font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-[#FE5300] transition-colors">
         {item.title}
       </p>
-      <p className="text-[10.5px] text-gray-400 mt-1">
+      <p className="text-[10.5px] text-gray-500 font-medium mt-1">
         {formatDate(item.createdAt)}
         {rt ? ` • ${rt}` : ""}
       </p>
@@ -155,7 +155,7 @@ export default async function TravelStoriesNewsSection() {
           viewAllHref="/blog"
           viewAllLabel="View All Blogs"
           badge="Blog"
-          badgeColor="bg-[#FE5300]"
+          badgeColor="bg-[#D64300]"
         />
         <Panel
           title="Travel News & Updates"

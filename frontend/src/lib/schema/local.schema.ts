@@ -1,13 +1,15 @@
 export const getLocalSchema = () => {
   return {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": ["LocalBusiness", "TravelAgency"],
     name: "MusafirBaba",
     image: "https://musafirbaba.com/logo.svg",
     "@id": "https://musafirbaba.com/",
     url: "https://musafirbaba.com/",
     telephone: "+91-92896 02447",
     priceRange: "₹5,000–₹20,000",
+    currenciesAccepted: "INR",
+    paymentAccepted: "Cash, Credit Card, Debit Card, UPI, Net Banking",
     address: {
       "@type": "PostalAddress",
       streetAddress:

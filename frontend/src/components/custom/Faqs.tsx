@@ -29,7 +29,7 @@ export function Faqs({ faqs }: FaqsProps) {
       <div className="flex flex-col items-start max-w-7xl mx-auto">
         {/* Section Title */}
         <div className="w-full flex flex-col gap-1 items-center text-center mb-10 md:mb-14">
-          <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
+          <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#C23E00] uppercase">
             COMMON QUESTIONS
           </span>
           <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">

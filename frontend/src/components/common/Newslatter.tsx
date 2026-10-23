@@ -61,11 +61,13 @@ function Newslatter() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
+          aria-label="Email address for travel updates and offers"
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-[#FE5300] transition-colors"
         />
         <button
           onClick={handleSubmit}
-          className="w-full bg-[#FE5300] hover:bg-[#e04800] text-white text-sm font-semibold py-2 rounded-md transition-colors"
+          aria-label="Subscribe to newsletter"
+          className="w-full bg-[#FE5300] hover:bg-[#e04800] text-white text-sm font-semibold py-2 rounded-md transition-colors cursor-pointer"
         >
           Subscribe
         </button>

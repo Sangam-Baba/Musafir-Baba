@@ -3,6 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://musafirbaba.com"),
   title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
   description:
     "Most trusted travel agency in India for holidays, tour packages, and visa services. Expert guidance for hassle-free travel.",
@@ -54,17 +55,21 @@ import { Poppins, Inter, Playfair_Display } from "next/font/google";
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
+  display: "swap",
   variable: "--font-poppins",
 });
 
 const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-inter",
 });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
   variable: "--font-playfair",
 });
 
@@ -75,6 +80,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${inter.variable} ${playfair.variable}`}>
+      <head>
+        {/* Preconnect to external image and CDN domains */}
+        <link rel="preconnect" href="https://cdn.musafirbaba.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdn.musafirbaba.com" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        {/* AI Agent discovery link for LLMs */}
+        <link rel="alternate" type="text/markdown" title="LLMs.txt" href="/llms.txt" />
+      </head>
       <body className="min-h-screen flex flex-col font-sans">
         {children}
         <SpeedInsights />

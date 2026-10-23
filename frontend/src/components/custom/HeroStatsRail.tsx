@@ -33,7 +33,7 @@ export default function HeroStatsRail() {
             rounded-xl px-4 py-2.5 md:min-w-[172px]
           "
         >
-          <span className="block text-[11px] text-gray-300">{label}</span>
+          <span className="block text-[11px] text-gray-200 font-medium">{label}</span>
           <span className="flex items-center gap-1.5">
             <span className="text-[17px] font-semibold text-white leading-tight">{value}</span>
             {stars && (
@@ -44,7 +44,7 @@ export default function HeroStatsRail() {
               </span>
             )}
           </span>
-          {caption && <span className="block text-[10px] text-gray-400">{caption}</span>}
+          {caption && <span className="block text-[10px] text-white/75">{caption}</span>}
         </div>
       ))}
     </div>

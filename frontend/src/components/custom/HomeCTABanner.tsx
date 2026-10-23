@@ -58,7 +58,7 @@ export default function HomeCTABanner() {
         <div className="flex items-center gap-3 flex-shrink-0">
           <Link
             href="/plan-my-trip"
-            className="flex items-center gap-2 bg-white text-[#FE5300] font-bold text-[12.5px] px-5 py-3 rounded-md hover:bg-gray-50 transition-colors whitespace-nowrap"
+            className="flex items-center gap-2 bg-white text-[#C23E00] font-bold text-[12.5px] px-5 py-3 rounded-md hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             <Sparkles className="w-4 h-4" /> PLAN MY TRIP
           </Link>

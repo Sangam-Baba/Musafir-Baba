@@ -88,7 +88,7 @@ export default function FloatingButton() {
       {!isOpen && showTeaser && (
         <div
           onClick={handleOpenChat}
-          className={`fixed ${hasStickyPriceBar ? "bottom-[205px]" : "bottom-[145px]"} right-4 md:bottom-36 md:right-6 z-50 w-72 sm:w-80 bg-white/95 backdrop-blur-xl p-3.5 rounded-2xl shadow-[0_12px_35px_-8px_rgba(249,115,22,0.25)] border border-orange-100/80 cursor-pointer group hover:border-[#FE5300]/40 transition-all duration-300 animate-in fade-in slide-in-from-bottom-3`}
+          className={`fixed ${hasStickyPriceBar ? "bottom-[205px]" : "bottom-[145px]"} right-4 md:bottom-36 md:right-6 z-50 w-72 sm:w-80 bg-white/95 backdrop-blur-xl p-3.5 rounded-2xl shadow-[0_12px_35px_-8px_rgba(249,115,22,0.25)] border border-orange-100/80 cursor-pointer group hover:border-[#FE5300]/40 transition-[opacity,transform] duration-300 animate-in fade-in slide-in-from-bottom-3`}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -101,7 +101,7 @@ export default function FloatingButton() {
           <button
             type="button"
             onClick={handleDismissTeaser}
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors z-10"
+            className="absolute top-1 right-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2.5 rounded-full transition-colors z-10 min-w-[36px] min-h-[36px] flex items-center justify-center"
             title="Dismiss message"
             aria-label="Dismiss message"
           >
@@ -118,12 +118,12 @@ export default function FloatingButton() {
             <div className="flex-1 pr-3">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="text-xs font-bold text-gray-900 tracking-tight">Musafir Baba</span>
-                <span className="bg-orange-100 text-[#FE5300] text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">AI Help</span>
+                <span className="bg-orange-100 text-orange-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">AI Help</span>
               </div>
               <p className="text-[12.5px] text-gray-600 leading-snug">
                 Planning a trip or need visa assistance? Chat with us!
               </p>
-              <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#FE5300] group-hover:translate-x-0.5 transition-transform">
+              <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-orange-700 group-hover:translate-x-0.5 transition-transform">
                 <span>Start conversation</span>
                 <span>→</span>
               </div>

@@ -2,9 +2,12 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { Navbar } from "./Navbar";
-import Sidebar from "../custom/Sidebar";
 import { useUIStore } from "@/store/useUIStore";
 import { AccountIcon } from "../custom/AccountIcon";
+import dynamic from "next/dynamic";
+
+const Sidebar = dynamic(() => import("../custom/Sidebar"), { ssr: false });
+const GlobalSearch = dynamic(() => import("../global-search/GlobalSearch"), { ssr: false });
 import {
   Youtube,
   Facebook,
@@ -26,7 +29,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import GlobalSearch from "../global-search/GlobalSearch";
 import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
 
 // Routes where the white nav bar sticks on desktop. Allow-list on purpose:

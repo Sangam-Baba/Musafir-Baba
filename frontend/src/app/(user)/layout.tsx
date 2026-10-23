@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/common/Header";
-import "../globals.css";
 import Footer from "@/components/common/Footer";
 import Script from "next/script";
 import dynamic from "next/dynamic";
@@ -86,12 +85,12 @@ export default function UserLayout({
         <Header />
         <main className="flex-grow">
           {children}
-          {/* <PlanMyTrip /> */}
-          <QueryDailogBox />
-          <WhatsAppButton />
-          <MobileBottom />
-          <FloatingButton />
         </main>
+        {/* Floating action widgets outside <main> for proper accessibility semantics */}
+        <QueryDailogBox />
+        <WhatsAppButton />
+        <MobileBottom />
+        <FloatingButton />
         <LazyAuthDialog />
         <Footer />
         <Toaster />
