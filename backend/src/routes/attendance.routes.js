@@ -13,7 +13,9 @@ import {
   getMyLeaves,
   getTodayAttendance,
   adminMarkAttendance,
-  getMonthlyReport
+  getMonthlyReport,
+  getAttendanceTimeEditAccess,
+  editAttendanceTimes
 } from "../controllers/attendance.controller.js";
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
@@ -133,6 +135,24 @@ attendanceRouter.get(
   validateSession,
   authorizedRoles(["admin", "superadmin", "staff"]),
   getMonthlyReport
+);
+
+// Edit check-in/check-out times — the controller additionally restricts this
+// to a single allow-listed account (see ATTENDANCE_TIME_EDITOR_EMAIL).
+attendanceRouter.get(
+  "/edit-times/access",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getAttendanceTimeEditAccess
+);
+
+attendanceRouter.patch(
+  "/edit-times",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  editAttendanceTimes
 );
 
 export default attendanceRouter;

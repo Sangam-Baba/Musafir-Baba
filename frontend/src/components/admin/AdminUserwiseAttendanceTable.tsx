@@ -17,6 +17,7 @@ import { Calendar as CalendarIcon, MapPin, Info, Coffee, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { useAttendanceTimeEditAccess, EditAttendanceTimeModal, EditTimeTarget } from "@/components/admin/AttendanceTimeEditor";
 
 export default function AdminUserwiseAttendanceTable() {
   const role = useAdminAuthStore((state) => state.role);
@@ -38,6 +39,8 @@ export default function AdminUserwiseAttendanceTable() {
   const [markStatus, setMarkStatus] = useState("Present");
   const [markReason, setMarkReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const canEditTimes = useAttendanceTimeEditAccess();
+  const [editTimeTarget, setEditTimeTarget] = useState<EditTimeTarget | null>(null);
 
   useEffect(() => {
     fetchStaffList();
@@ -340,6 +343,22 @@ export default function AdminUserwiseAttendanceTable() {
                         >
                           Override Status
                         </button>
+                        {canEditTimes && selectedStaff && selectedStaff !== "me" && (
+                          <button
+                            onClick={() =>
+                              setEditTimeTarget({
+                                staffId: selectedStaff,
+                                staffName: staffList.find((s) => s._id === selectedStaff)?.name,
+                                date: record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() + 5.5 * 3600000).toISOString().split('T')[0] : record.date) : "",
+                                checkInTime: record.checkInTime,
+                                checkOutTime: record.checkOutTime,
+                              })
+                            }
+                            className="ml-2 text-[10px] bg-orange-50 text-[#FE5300] border border-orange-200 px-2 py-1 rounded font-bold hover:bg-orange-100 transition-colors"
+                          >
+                            Edit Time
+                          </button>
+                        )}
                       </TableCell>
                     )}
                   </TableRow>
@@ -392,6 +411,9 @@ export default function AdminUserwiseAttendanceTable() {
             </div>
           </div>
         </div>
+      )}
+      {editTimeTarget && (
+        <EditAttendanceTimeModal target={editTimeTarget} onClose={() => setEditTimeTarget(null)} onSaved={fetchRecords} />
       )}
       {showMarkStatusModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

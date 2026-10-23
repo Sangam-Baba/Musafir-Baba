@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Calendar as CalendarIcon, MapPin, Camera, Info, Coffee, X } from "lucide-react";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { useAttendanceTimeEditAccess, EditAttendanceTimeModal, EditTimeTarget } from "@/components/admin/AttendanceTimeEditor";
 
 export default function AdminAttendanceTable() {
   const role = useAdminAuthStore((state) => state.role);
@@ -31,6 +32,8 @@ export default function AdminAttendanceTable() {
   const [leaveType, setLeaveType] = useState("Leave");
   const [leaveReason, setLeaveReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const canEditTimes = useAttendanceTimeEditAccess();
+  const [editTimeTarget, setEditTimeTarget] = useState<EditTimeTarget | null>(null);
 
   useEffect(() => {
     fetchRecords();
@@ -239,6 +242,22 @@ export default function AdminAttendanceTable() {
                               Mark Leave
                             </button>
                           )}
+                          {canEditTimes && record.staff && (
+                            <button
+                              onClick={() =>
+                                setEditTimeTarget({
+                                  staffId: record.staff._id || record.staff.id || (record._id.startsWith("absent_") ? record._id.replace("absent_", "") : record.staff),
+                                  staffName: record.staff?.name,
+                                  date: dateFilter,
+                                  checkInTime: record.checkInTime,
+                                  checkOutTime: record.checkOutTime,
+                                })
+                              }
+                              className="text-[10px] bg-orange-50 text-[#FE5300] border border-orange-200 px-2 py-1 rounded font-bold hover:bg-orange-100 transition-colors"
+                            >
+                              Edit Time
+                            </button>
+                          )}
                         </div>
                       </TableCell>
                     )}
@@ -292,6 +311,9 @@ export default function AdminAttendanceTable() {
             </div>
           </div>
         </div>
+      )}
+      {editTimeTarget && (
+        <EditAttendanceTimeModal target={editTimeTarget} onClose={() => setEditTimeTarget(null)} onSaved={fetchRecords} />
       )}
       {showMarkLeaveModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
