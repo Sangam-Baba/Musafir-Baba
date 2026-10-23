@@ -102,13 +102,16 @@ export default function ExploreDestinationsPanel() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center bg-gray-200/70 p-1 rounded-xl">
+          <div role="tablist" aria-label="Destination region selector" className="flex items-center bg-gray-200/70 p-1 rounded-xl">
             {(["india", "world"] as const).map((t) => {
               const isSelected = tab === t;
               return (
                 <button
                   key={t}
                   type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  aria-label={`${t === "india" ? "India" : "World"} destinations`}
                   onClick={() => {
                     setTab(t);
                     setActive(null);
@@ -155,11 +158,13 @@ export default function ExploreDestinationsPanel() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search state (e.g. Goa, Kerala, Sikkim)..."
+                aria-label="Search destination states"
                 className="w-full bg-white text-[12.5px] text-gray-800 placeholder-gray-400 pl-8.5 pr-8 py-2 rounded-xl border border-gray-200 focus:outline-hidden focus:border-[#FE5300] transition-colors"
               />
               {searchQuery && (
                 <button
                   type="button"
+                  aria-label="Clear destination search"
                   onClick={() => setSearchQuery("")}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
@@ -226,7 +231,7 @@ export default function ExploreDestinationsPanel() {
 
             <Link
               href="/destinations"
-              className="flex items-center justify-center gap-1.5 w-full bg-[#FE5300] hover:bg-[#e04800] active:scale-[0.99] text-white text-[13px] font-bold py-2.5 rounded-xl transition-all shadow-xs cursor-pointer"
+              className="flex items-center justify-center gap-1.5 w-full bg-[#D64300] hover:bg-[#b83800] active:scale-[0.99] text-white text-[13px] font-bold py-2.5 rounded-xl transition-all shadow-xs cursor-pointer"
             >
               Explore All Destinations <ArrowRight className="w-4 h-4" />
             </Link>
@@ -252,7 +257,7 @@ export default function ExploreDestinationsPanel() {
               <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">
                 All Global Destinations
               </span>
-              <span className="text-[10.5px] font-bold text-[#FE5300] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200/70">
+              <span className="text-[10.5px] font-bold text-[#B83200] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200/70">
                 {INTERNATIONAL_SPOTS.length} Available
               </span>
             </div>
@@ -265,11 +270,13 @@ export default function ExploreDestinationsPanel() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search global destination..."
+                aria-label="Search global destinations"
                 className="w-full bg-white text-[12.5px] text-gray-800 placeholder-gray-400 pl-8.5 pr-8 py-1.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-[#FE5300] transition-colors"
               />
               {searchQuery && (
                 <button
                   type="button"
+                  aria-label="Clear global destination search"
                   onClick={() => setSearchQuery("")}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-gray-600 cursor-pointer"
                 >

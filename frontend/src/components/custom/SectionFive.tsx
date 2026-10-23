@@ -58,7 +58,7 @@ function SectionFive() {
 
           <div className="w-full flex items-center gap-3 mb-8">
             <span className="h-px bg-gray-200 flex-1" />
-            <span className="text-[12px] text-gray-400 uppercase font-medium">Or</span>
+            <span className="text-[12px] text-gray-500 uppercase font-medium">Or</span>
             <span className="h-px bg-gray-200 flex-1" />
           </div>
 
@@ -66,7 +66,7 @@ function SectionFive() {
             <p className="text-gray-600 font-medium mb-3 text-[14px]">Talk to our travel expert</p>
             <a
               href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
-              className="flex items-center justify-center gap-3 text-[18px] font-bold text-[#FE5300] hover:text-[#e04800] transition-colors group"
+              className="flex items-center justify-center gap-3 text-[18px] font-bold text-[#C23E00] hover:text-[#9e3300] transition-colors group"
             >
               <span className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 transition-colors">
                 <Phone className="w-3.5 h-3.5" />
@@ -77,7 +77,7 @@ function SectionFive() {
               href={getWhatsAppLink()}
               target="_blank"
               rel="nofollow noopener noreferrer"
-              className="block text-[11px] text-gray-400 mt-4 hover:text-[#25D366] transition-colors"
+              className="block text-[11px] text-gray-500 mt-4 hover:text-[#25D366] transition-colors font-medium"
             >
               24/7 available on Call &amp; WhatsApp
             </a>

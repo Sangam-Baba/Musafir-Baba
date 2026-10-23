@@ -26,14 +26,21 @@ export function CarouselDots() {
   }, [api]);
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-4">
+    <div className="flex items-center justify-center gap-1 mt-4">
       {Array.from({ length: snapCount }).map((_, i) => (
         <button
           key={i}
+          type="button"
+          aria-label={`Go to slide ${i + 1}`}
           onClick={() => api?.scrollTo(i)}
-          className={`h-2 w-2 rounded-full transition-all
-          ${i === selectedIndex ? "bg-[#FE5300] w-4" : "bg-gray-300"}`}
-        />
+          className="p-2.5 flex items-center justify-center min-w-[36px] min-h-[36px] rounded-full transition-colors"
+        >
+          <span
+            className={`h-2 rounded-full transition-all block ${
+              i === selectedIndex ? "bg-[#FE5300] w-4" : "bg-gray-300 w-2"
+            }`}
+          />
+        </button>
       ))}
     </div>
   );

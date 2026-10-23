@@ -27,7 +27,7 @@ function Footer() {
       {/* Desktop Footer */}
       <div className="hidden md:grid md:grid-cols-12 gap-6 py-15 px-4 md:px-10 lg:px-25 items-start">
         <div className="md:col-span-3 flex flex-col gap-2 ">
-          <Image src={logo} alt="logo" />
+          <Image src={logo} alt="Musafir Baba - Best Travel Agency in India" />
           <p>
             {" "}
             MusafirBaba, a trusted name in the tour and travel industry in
@@ -105,31 +105,31 @@ function Footer() {
               <p className="text-lg font-bold">Follow Us</p>
               <p className="w-[5%] h-0.5 bg-[#FE5300]"></p>
               <div className="flex items-center  gap-4 pt-2">
-                <Link href="https://www.youtube.com/@musafirbabatravels">
+                <Link href="https://www.youtube.com/@musafirbabatravels" aria-label="Follow Musafir Baba on YouTube" target="_blank" rel="noopener noreferrer">
                   <Youtube
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="http://facebook.com/hellomusafirbaba">
+                <Link href="http://facebook.com/hellomusafirbaba" aria-label="Follow Musafir Baba on Facebook" target="_blank" rel="noopener noreferrer">
                   <Facebook
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://x.com/itsmusafirbaba">
+                <Link href="https://x.com/itsmusafirbaba" aria-label="Follow Musafir Baba on X" target="_blank" rel="noopener noreferrer">
                   <LucideTwitter
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://www.instagram.com/hello_musafirbaba">
+                <Link href="https://www.instagram.com/hello_musafirbaba" aria-label="Follow Musafir Baba on Instagram" target="_blank" rel="noopener noreferrer">
                   <Instagram
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://in.linkedin.com/company/musafirbaba">
+                <Link href="https://in.linkedin.com/company/musafirbaba" aria-label="Follow Musafir Baba on LinkedIn" target="_blank" rel="noopener noreferrer">
                   <Linkedin
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
@@ -231,31 +231,31 @@ function Footer() {
 
               {/* Socials */}
               <div className="flex items-center  gap-4 pt-4">
-                <Link href="https://www.youtube.com/@musafirbabatravels">
+                <Link href="https://www.youtube.com/@musafirbabatravels" aria-label="Follow Musafir Baba on YouTube" target="_blank" rel="noopener noreferrer">
                   <Youtube
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="http://facebook.com/hellomusafirbaba">
+                <Link href="http://facebook.com/hellomusafirbaba" aria-label="Follow Musafir Baba on Facebook" target="_blank" rel="noopener noreferrer">
                   <Facebook
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://x.com/itsmusafirbaba">
+                <Link href="https://x.com/itsmusafirbaba" aria-label="Follow Musafir Baba on X" target="_blank" rel="noopener noreferrer">
                   <LucideTwitter
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://www.instagram.com/hello_musafirbaba">
+                <Link href="https://www.instagram.com/hello_musafirbaba" aria-label="Follow Musafir Baba on Instagram" target="_blank" rel="noopener noreferrer">
                   <Instagram
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"
                   />
                 </Link>
-                <Link href="https://in.linkedin.com/company/musafirbaba">
+                <Link href="https://in.linkedin.com/company/musafirbaba" aria-label="Follow Musafir Baba on LinkedIn" target="_blank" rel="noopener noreferrer">
                   <Linkedin
                     color="#FE5300"
                     className="w-6 h-6 hover:scale-110 transition-transform"

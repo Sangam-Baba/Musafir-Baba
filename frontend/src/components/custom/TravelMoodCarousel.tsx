@@ -48,13 +48,14 @@ export default function TravelMoodCarousel({ categories }: { categories: MoodCat
             <Link
               key={cat.id}
               href={`/holidays/${cat.slug}`}
+              aria-label={`Explore ${cat.name} holiday packages`}
               className="group flex-shrink-0 w-[150px] sm:w-[170px] snap-start"
             >
               <div className="relative h-[190px] sm:h-[210px] rounded-2xl overflow-hidden bg-gray-100">
                 {cardImage.url && (
                   <Image
                     src={cardImage.url}
-                    alt={cardImage.alt || cat.name}
+                    alt=""
                     fill
                     sizes="170px"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

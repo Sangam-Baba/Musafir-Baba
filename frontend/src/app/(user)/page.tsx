@@ -4,6 +4,7 @@ import Image from "next/image";
 import Script from "next/script";
 
 export const metadata: Metadata = {
+  title: "MusafirBaba - Best Travel Agency in India | Holidays | Visas",
   description:
     "Planning your next trip? Call MusafirBaba - Best travel agency in India for holiday packages, visa assistance, car rentals & flight, bus or hotel bookings",
 };
@@ -17,7 +18,6 @@ import TrySearchChips from "@/components/custom/TrySearchChips";
 import TrustBadgesRow from "@/components/custom/TrustBadgesRow";
 import QuickServiceTiles from "@/components/custom/QuickServiceTiles";
 import TravelMoodSection from "@/components/custom/TravelMoodSection";
-import ExploreDestinationsPanel from "@/components/custom/ExploreDestinationsPanel";
 import VisaMadeEasySection from "@/components/custom/VisaMadeEasySection";
 import WhyChooseBanner from "@/components/custom/WhyChooseBanner";
 import TestimonialsBanner from "@/components/custom/TestimonialsBanner";
@@ -26,6 +26,13 @@ import HomeCTABanner from "@/components/custom/HomeCTABanner";
 
 // ─── Below-the-fold Client Components (dynamic imports to defer JS) ──
 import dynamic from "next/dynamic";
+
+const ExploreDestinationsPanel = dynamic(
+  () => import("@/components/custom/ExploreDestinationsPanel"),
+  {
+    loading: () => <div className="h-[420px] bg-gray-50 animate-pulse rounded-2xl" />,
+  }
+);
 
 
 const WhyChoose = dynamic(() => import("@/components/custom/WhyChoose").then(mod => ({ default: mod.default })));
@@ -51,6 +58,8 @@ const Partners = dynamic(
 import { getOrganizationSchema } from "@/lib/schema/organization.schema";
 import { getLocalSchema } from "@/lib/schema/local.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
+import { getFAQSchema } from "@/lib/schema/faq.schema";
+import { getWebSiteSchema } from "@/lib/schema/website.schema";
 
 const faqs = [
   {
@@ -147,9 +156,11 @@ export default async function HomePage() {
   const organizationSchema = getOrganizationSchema();
   const localBusinessSchema = getLocalSchema();
   const breadcrumbSchema = getBreadcrumbSchema("/");
+  const faqSchema = getFAQSchema(faqs);
+  const websiteSchema = getWebSiteSchema();
 
   return (
-    <main>
+    <>
       {/* ── Hero Banner (New Design) ─────────────────────────────────────────── */}
       {/* Header is now `fixed` and transparent-over-photo on this page (see
           components/common/Header.tsx), so it no longer reserves layout
@@ -161,9 +172,10 @@ export default async function HomePage() {
         <Image
           // src="/homebanner32.avif"
           src="/homebanner007.avif"
-          alt="Home Banner"
+          alt="Where will your next story begin - Musafir Baba Travel Partner"
           fill
           priority
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover -z-10"
         />
@@ -181,29 +193,12 @@ export default async function HomePage() {
               animation: customBlink 1.2s ease-in-out infinite;
             }
             @keyframes customBreathe {
-              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-              50% { transform: scale(1.02); box-shadow: 0 0 10px 0 rgba(16, 185, 129, 0.25); }
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.02); }
             }
             .animate-custom-breathe {
               animation: customBreathe 3s ease-in-out infinite;
-            }
-            @keyframes mountainBreathe {
-              0%, 100% { transform: scaleY(1); }
-              50% { transform: scaleY(1.05); }
-            }
-            .animate-mountain-breathe-1 {
-              animation: mountainBreathe 8s ease-in-out infinite;
-              transform-origin: bottom;
-            }
-            .animate-mountain-breathe-2 {
-              animation: mountainBreathe 12s ease-in-out infinite;
-              transform-origin: bottom;
-              animation-delay: -4s;
-            }
-            .animate-mountain-breathe-3 {
-              animation: mountainBreathe 15s ease-in-out infinite;
-              transform-origin: bottom;
-              animation-delay: -8s;
+              will-change: transform;
             }
           `}} />
 
@@ -301,6 +296,16 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-    </main>
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <Script
+        id="website-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+    </>
   );
 }

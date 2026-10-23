@@ -30,7 +30,9 @@ import { Check, ChevronDown, Clock, MapPin, X } from "lucide-react";
 import { useAuthDialogStore } from "@/store/useAuthDialogStore";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 import Breadcrumb from "@/components/common/Breadcrumb";
-import WhyChoose from "@/components/custom/WhyChoose";
+// "Why Us" section is hidden on package pages for now — see the commented
+// block near the bottom. Uncomment both to bring it back.
+// import WhyChoose from "@/components/custom/WhyChoose";
 import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
 import PackageCard from "@/components/custom/PackageCard";
@@ -138,7 +140,9 @@ function SlugClients({
     itineraries: !!(pkg.itinerary && pkg.itinerary.length > 0),
     hotels: hasHtmlContent(pkg.hotelsAndAccommodation),
     includeexclude: hasInclusions || hasExclusions,
-    whychoosemusafirbaba: true,
+    // Hidden on package pages for now (section below is commented out).
+    // Restore to `true` together with that block to bring "Why Us" back.
+    whychoosemusafirbaba: false,
     faqs: !!(pkg.faqs && pkg.faqs.some((f) => (f?.question || "").trim() || hasHtmlContent(f?.answer))),
     helpfulresources: !!(pkg.helpfulResources && pkg.helpfulResources.some((res: { title?: string; url?: string }) => (res?.title || "").trim() || (res?.url || "").trim())),
   };
@@ -844,7 +848,11 @@ function SlugClients({
       <div className="flex flex-col gap-12 md:gap-20 mt-12 md:mt-16 pb-16">
 
         <Testimonial data={pkg?.reviews ?? []} />
-        <div className="w-full max-w-7xl mx-auto px-8 flex flex-col items-center">
+        {/* max-md:overflow-x-clip — the mobile stacked-cards carousel fans its
+            back cards past the screen edge, which made the whole page scroll
+            sideways. `clip` (not `hidden`) only trims what's off-screen and
+            doesn't create a scroll container, so the cards look the same. */}
+        <div className="w-full max-w-7xl mx-auto px-8 flex flex-col items-center max-md:overflow-x-clip">
         <h2 className="text-2xl font-bold">Related Packages</h2>
         <p className="w-1/16 h-1 bg-[#FE5300] mb-4 mt-2"></p>
         {relatedGroupPackages && relatedGroupPackages.length > 0 && (
@@ -877,10 +885,11 @@ function SlugClients({
       </div>
       </div>
 
-      {/* Why Choose MusafirBaba - Full Width */}
+      {/* Why Choose MusafirBaba - Full Width — hidden on package pages for now.
       <div id="whychoosemusafirbaba" className="w-full border-t border-gray-200 pt-12 pb-16 mt-8">
         <WhyChoose />
       </div>
+      */}
 
       {/* right-20 (not right-0) leaves the bottom-right corner clear of the
           site-wide floating "AI Help" chat launcher (FloatingButton.tsx,

@@ -47,7 +47,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
             without pushing it out of line with the link). */}
         <div className="w-full flex flex-col items-center text-center gap-2 mb-6">
           <div className="flex flex-col gap-1 items-center">
-            <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#FE5300] uppercase">
+            <span className="text-[10px] md:text-[12px] font-semibold tracking-[0.08em] text-[#C23E00] uppercase">
               TOP-RATED PACKAGES
             </span>
             <h2 className="text-2xl md:text-[32px] leading-tight font-medium text-gray-900">
@@ -60,19 +60,21 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
 
           <Link
             href={`/holidays/${active}`}
-            className="flex items-center gap-1 text-[#FE5300] font-medium hover:text-[#e04800] transition-colors shrink-0"
+            className="flex items-center gap-1 text-[#C23E00] font-medium hover:text-[#9e3300] transition-colors shrink-0"
           >
             View all <ArrowRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
 
         {/* Tabs */}
-        <div className="flex w-full overflow-x-auto no-scrollbar border-b border-gray-200 mb-8 gap-4 md:gap-8">
+        <div role="tablist" aria-label="Featured tour package categories" className="flex w-full overflow-x-auto no-scrollbar border-b border-gray-200 mb-8 gap-4 md:gap-8">
           {categoriesPkg.map((tab) => {
             const isActive = active === tab.slug;
             return (
               <button
                 key={tab.slug}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setActive(tab.slug)}
                 className={`px-1 py-3 whitespace-nowrap text-[15px] md:text-base font-medium transition-colors relative ${
                   isActive
@@ -97,18 +99,18 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
             if (!tab.categoryPackages || !tab.categoryPackages?.length)
               return null;
 
+            if (!isActive) return null;
+
             return (
               <div
                 key={tab.slug}
-                className={`${
-                  isActive ? "block" : "hidden"
-                } transition-opacity duration-300 w-full`}
+                className="transition-opacity duration-300 w-full"
               >
                 <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
                   {tab.categoryPackages.slice(0, 4).map((pkg) => (
                     <FeaturedPackageCard
                       key={pkg._id}
-                      priority={isActive}
+                      priority={false}
                       pkg={{
                         id: pkg._id,
                         name: pkg.title,
@@ -142,7 +144,7 @@ export function FeaturedTour({ categoriesPkg }: { categoriesPkg: Category[] }) {
                             <div className="p-1">
                               <FeaturedPackageCard
                                 key={pkg._id}
-                                priority={isActive && i < 2}
+                                priority={false}
                                 pkg={{
                                   id: pkg._id,
                                   name: pkg.title,

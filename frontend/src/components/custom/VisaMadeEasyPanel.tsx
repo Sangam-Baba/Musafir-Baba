@@ -77,14 +77,14 @@ export default function VisaMadeEasyPanel({ durations }: { durations: VisaDurati
         {/* Floating visa card, anchored to whichever pin is active */}
         <div
           ref={cardRef}
-          className="absolute w-[150px] bg-white rounded-xl shadow-lg p-3 transition-all duration-300 ease-out"
+          className="absolute w-[150px] bg-white rounded-xl shadow-lg p-3 transition-[opacity] duration-300 ease-out"
           style={
             cardPos
               ? { left: cardPos.left, top: cardPos.top }
               : { left: `${activeSpot.xPercent}%`, top: `${activeSpot.yPercent}%`, opacity: 0 }
           }
         >
-          <p className="text-[13px] font-bold text-[#FE5300] mb-1.5 flex items-center gap-1.5">
+          <p className="text-[13px] font-bold text-[#C23E00] mb-1.5 flex items-center gap-1.5">
             <span className="text-[16px]">{activeSpot.emoji}</span> {activeSpot.country} Visa
           </p>
           <ul className="flex flex-col gap-1 mb-2.5">

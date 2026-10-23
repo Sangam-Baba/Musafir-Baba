@@ -111,13 +111,16 @@ export default function HeroSearchWidget({
   return (
     <div className="w-full max-w-[560px] sm:max-w-[640px] lg:max-w-[720px] bg-white rounded-2xl shadow-xl p-4 md:p-5 relative z-20 mt-4 md:mt-6 mb-4">
       {/* Service tabs */}
-      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div role="tablist" aria-label="Travel service search options" className="flex items-center gap-1.5 mb-4 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
             <button
               key={tab.id}
               type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-label={`${tab.label} search tab`}
               onClick={() => {
                 setActiveTab(tab.id);
                 setIsSearching(false);
@@ -125,10 +128,10 @@ export default function HeroSearchWidget({
               title={tab.enabled ? undefined : "Coming soon — tap to see how to reach us"}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[12.5px] font-semibold flex-shrink-0 transition-colors cursor-pointer ${
                 isActive
-                  ? "bg-[#FE5300] text-white"
+                  ? "bg-[#D64300] text-white shadow-xs"
                   : tab.enabled
-                  ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-50 text-gray-500 hover:bg-gray-100"
               }`}
             >
               <tab.icon className="w-3.5 h-3.5" strokeWidth={2} />
@@ -159,6 +162,7 @@ export default function HeroSearchWidget({
             href={getWhatsAppLink(`Hi, I'd like help booking ${activeTabConfig.label.toLowerCase()}.`)}
             target="_blank"
             rel="nofollow noopener noreferrer"
+            aria-label={`Chat on WhatsApp to book ${activeTabConfig.label}`}
             className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[13px] font-bold px-5 py-2.5 rounded-lg transition-colors"
           >
             <MessageCircle className="w-4 h-4" />
@@ -178,6 +182,7 @@ export default function HeroSearchWidget({
               value={holiday.search}
               onChange={(e) => setHoliday((prev) => ({ ...prev, search: e.target.value }))}
               placeholder="Search country, state..."
+              aria-label="Search destination by country or state"
               className={selectTriggerClass}
             />
           </div>
@@ -188,7 +193,7 @@ export default function HeroSearchWidget({
               value={holiday.category}
               onValueChange={(v) => setHoliday((prev) => ({ ...prev, category: v }))}
             >
-              <SelectTrigger className={selectTriggerClass}>
+              <SelectTrigger aria-label="Select holiday package type" className={selectTriggerClass}>
                 <SelectValue placeholder="Any Package" />
               </SelectTrigger>
               <SelectContent>
@@ -213,6 +218,7 @@ export default function HeroSearchWidget({
                 max={500000}
                 value={holiday.price}
                 onChange={(e) => setHoliday((prev) => ({ ...prev, price: Number(e.target.value) }))}
+                aria-label="Holiday maximum budget"
                 className={rangeSliderClass}
                 style={rangeFillStyle(holiday.price, 100, 500000)}
               />
@@ -230,6 +236,7 @@ export default function HeroSearchWidget({
                 max={25}
                 value={holiday.duration}
                 onChange={(e) => setHoliday((prev) => ({ ...prev, duration: Number(e.target.value) }))}
+                aria-label="Holiday duration in days"
                 className={rangeSliderClass}
                 style={rangeFillStyle(holiday.duration, 1, 25)}
               />
@@ -248,7 +255,7 @@ export default function HeroSearchWidget({
                 setRental((prev) => ({ ...prev, vehicleType: v, seats: v !== "car" ? "" : prev.seats }))
               }
             >
-              <SelectTrigger className={selectTriggerClass}>
+              <SelectTrigger aria-label="Select vehicle category" className={selectTriggerClass}>
                 <SelectValue placeholder="Any Vehicle" />
               </SelectTrigger>
               <SelectContent>
@@ -268,7 +275,7 @@ export default function HeroSearchWidget({
               value={rental.location}
               onValueChange={(v) => setRental((prev) => ({ ...prev, location: v }))}
             >
-              <SelectTrigger className={selectTriggerClass}>
+              <SelectTrigger aria-label="Select rental pickup location" className={selectTriggerClass}>
                 <SelectValue placeholder="Any Location" />
               </SelectTrigger>
               <SelectContent>
@@ -289,7 +296,7 @@ export default function HeroSearchWidget({
                 value={rental.seats}
                 onValueChange={(v) => setRental((prev) => ({ ...prev, seats: v }))}
               >
-                <SelectTrigger className={selectTriggerClass}>
+                <SelectTrigger aria-label="Select number of seats" className={selectTriggerClass}>
                   <SelectValue placeholder="Any Seats" />
                 </SelectTrigger>
                 <SelectContent>
@@ -318,6 +325,7 @@ export default function HeroSearchWidget({
                 step={500}
                 value={rental.price}
                 onChange={(e) => setRental((prev) => ({ ...prev, price: Number(e.target.value) }))}
+                aria-label="Vehicle rental daily budget"
                 className={rangeSliderClass}
                 style={rangeFillStyle(rental.price, 500, 50000)}
               />
@@ -334,7 +342,7 @@ export default function HeroSearchWidget({
               value={visa.visaType}
               onValueChange={(v) => setVisa((prev) => ({ ...prev, visaType: v }))}
             >
-              <SelectTrigger className={selectTriggerClass}>
+              <SelectTrigger aria-label="Select visa type" className={selectTriggerClass}>
                 <SelectValue placeholder="All Visas" />
               </SelectTrigger>
               <SelectContent>
@@ -357,6 +365,7 @@ export default function HeroSearchWidget({
               value={visa.country}
               onChange={(e) => setVisa((prev) => ({ ...prev, country: e.target.value }))}
               placeholder="Search country..."
+              aria-label="Search visa destination country"
               className={selectTriggerClass}
             />
           </div>
@@ -373,6 +382,7 @@ export default function HeroSearchWidget({
                 step={1000}
                 value={visa.maxPrice}
                 onChange={(e) => setVisa((prev) => ({ ...prev, maxPrice: Number(e.target.value) }))}
+                aria-label="Visa maximum budget"
                 className={rangeSliderClass}
                 style={rangeFillStyle(visa.maxPrice, 0, 5000000)}
               />

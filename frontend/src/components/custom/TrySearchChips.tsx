@@ -27,7 +27,7 @@ export default function TrySearchChips() {
 
   return (
     <div className="flex items-center gap-2 md:gap-3 flex-wrap relative z-20">
-      <span className="text-[11px] md:text-[12px] text-gray-300 font-medium flex-shrink-0">
+      <span className="text-[11px] md:text-[12px] text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] font-semibold flex-shrink-0">
         Try asking…
       </span>
       <div className="flex items-center gap-2 flex-wrap">
@@ -41,12 +41,12 @@ export default function TrySearchChips() {
               type="button"
               onClick={() => handleClick(s.href)}
               disabled={isAnyLoading}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-[12px] font-medium transition-all backdrop-blur-sm cursor-pointer active:scale-95 ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] md:text-[12px] font-medium transition-all backdrop-blur-md cursor-pointer active:scale-95 ${
                 isLoading
                   ? "bg-[#FE5300] text-white border border-[#FE5300] shadow-md scale-105 font-semibold"
                   : isAnyLoading
-                  ? "opacity-40 text-white/70 bg-white/5 border border-white/15 cursor-not-allowed"
-                  : "text-white bg-white/10 border border-white/25 hover:bg-white/25 hover:border-white/40 hover:scale-105"
+                  ? "opacity-40 text-white/70 bg-black/30 border border-white/15 cursor-not-allowed"
+                  : "text-white bg-black/35 border border-white/30 hover:bg-black/50 hover:border-white/50 hover:scale-105 shadow-xs"
               }`}
             >
               {isLoading ? (

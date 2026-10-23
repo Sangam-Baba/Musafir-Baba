@@ -37,7 +37,7 @@ function Stars({ count = 5 }: { count?: number }) {
 const REVIEWS = [
   { initials: "NA", color: "bg-[#d93025]", name: "Neha & Arjun", trip: "Manali Trip", quote: "It was the best decision we made. Everything was perfectly planned." },
   { initials: "AM", color: "bg-[#1967d2]", name: "Anjali Mehta", trip: "Kashmir Trip", quote: "Superb experience, amazing support throughout the trip." },
-  { initials: "TK", color: "bg-[#e37400]", name: "The Kapoor Family", trip: "Goa Trip", quote: "Great services for family trips. Highly recommended!" },
+  { initials: "TK", color: "bg-[#c2410c]", name: "The Kapoor Family", trip: "Goa Trip", quote: "Great services for family trips. Highly recommended!" },
 ];
 
 // Real destination photography already used elsewhere in the app (same
