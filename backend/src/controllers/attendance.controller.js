@@ -887,3 +887,128 @@ export const getMonthlyReport = async (req, res, next) => {
   }
 };
 
+
+// ─── Edit check-in / check-out times ─────────────────────────────────────────
+// Restricted to a single account. The email is always re-read from the Staff
+// collection by the authenticated user id, so it can't be spoofed from the
+// client. Nothing above this line uses these helpers.
+const ATTENDANCE_TIME_EDITOR_EMAIL = "admin1@musafirbaba.com";
+const HHMM_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+const isAttendanceTimeEditor = async (userId) => {
+  if (!userId) return false;
+  const staff = await Staff.findById(userId).select("email isActive");
+  if (!staff || staff.isActive === false) return false;
+  return (staff.email || "").trim().toLowerCase() === ATTENDANCE_TIME_EDITOR_EMAIL;
+};
+
+// Same rounding as checkOut: 8h 28m -> 8.28
+const msToHHMMNumber = (ms) => {
+  if (ms < 0) return 0;
+  const totalMins = Math.floor(ms / 60000);
+  const hours = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  return parseFloat(`${hours}.${mins.toString().padStart(2, "0")}`);
+};
+
+const toISTHHMM = (date) =>
+  date
+    ? new Date(date).toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false })
+    : null;
+
+export const getAttendanceTimeEditAccess = async (req, res, next) => {
+  try {
+    const allowed = await isAttendanceTimeEditor(req.user?.sub);
+    return res.status(200).json({ success: true, allowed });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editAttendanceTimes = async (req, res, next) => {
+  try {
+    if (!(await isAttendanceTimeEditor(req.user?.sub))) {
+      return res.status(403).json({ success: false, message: "You are not allowed to edit attendance times." });
+    }
+
+    const { staffId, date, checkIn, checkOut } = req.body || {};
+    if (!staffId || !date || !DATE_REGEX.test(date)) {
+      return res.status(400).json({ success: false, message: "staffId and date (YYYY-MM-DD) are required." });
+    }
+    if (!checkIn || !HHMM_REGEX.test(checkIn)) {
+      return res.status(400).json({ success: false, message: "A valid check-in time (HH:mm) is required." });
+    }
+    if (checkOut && !HHMM_REGEX.test(checkOut)) {
+      return res.status(400).json({ success: false, message: "Check-out time must be HH:mm." });
+    }
+
+    const staff = await Staff.findById(staffId).select("name");
+    if (!staff) {
+      return res.status(404).json({ success: false, message: "Staff not found." });
+    }
+
+    // Times are entered in IST for the selected day
+    const newCheckIn = new Date(`${date}T${checkIn}:00.000+05:30`);
+    const newCheckOut = checkOut ? new Date(`${date}T${checkOut}:00.000+05:30`) : null;
+    if (newCheckOut && newCheckOut <= newCheckIn) {
+      return res.status(400).json({ success: false, message: "Check-out must be after check-in." });
+    }
+
+    let attendance = await Attendance.findOne({
+      staff: staffId,
+      date: { $gte: parseLocalDateStr(date), $lte: getISTEndOfDay(date) },
+    }).sort({ updatedAt: -1 });
+
+    if (!attendance) {
+      attendance = new Attendance({ staff: staffId, date: parseLocalDateStr(date) });
+    }
+
+    const oldValue = { checkIn: toISTHHMM(attendance.checkInTime), checkOut: toISTHHMM(attendance.checkOutTime) };
+
+    attendance.checkInTime = newCheckIn;
+    attendance.checkOutTime = newCheckOut || undefined;
+
+    // Status always follows the edited check-in, using the same 9:15 AM rule
+    // checkIn uses. Leave fields (leaveType/leaveStatus) and leave balances are
+    // deliberately left untouched.
+    const [h, m] = checkIn.split(":").map(Number);
+    attendance.attendanceStatus = h > 9 || (h === 9 && m > 15) ? "Late" : "Present";
+
+    if (newCheckOut) {
+      // Mirror checkOut: an open break ends at check-out
+      const openBreak = attendance.breaks.find((b) => !b.end);
+      if (openBreak) openBreak.end = newCheckOut;
+
+      let totalBreakMs = 0;
+      attendance.breaks.forEach((b) => {
+        if (b.start && b.end) totalBreakMs += b.end - b.start;
+      });
+      const totalOfficeMs = newCheckOut - newCheckIn;
+      attendance.totalOfficeHours = msToHHMMNumber(totalOfficeMs);
+      attendance.totalWorkingHours = msToHHMMNumber(totalOfficeMs - totalBreakMs);
+    } else {
+      // Same as a record that hasn't checked out yet
+      attendance.totalOfficeHours = 0;
+      attendance.totalWorkingHours = 0;
+    }
+
+    await attendance.save();
+
+    await AuditLog.create({
+      userId: req.user.sub,
+      userName: ATTENDANCE_TIME_EDITOR_EMAIL,
+      role: req.user.role,
+      actionType: "UPDATE",
+      moduleName: "Attendance",
+      entityId: attendance._id,
+      documentTitle: staff.name || "N/A",
+      description: `Edited check-in/check-out for ${staff.name || staffId} on ${date}`,
+      changes: { oldValue, newValue: { checkIn, checkOut: checkOut || null } },
+    });
+
+    return res.status(200).json({ success: true, message: "Attendance times updated.", attendance });
+  } catch (error) {
+    next(error);
+  }
+};
