@@ -1,12 +1,18 @@
 import CareerClientPage from "./pageClient";
 import { Metadata } from "next";
 import { getWebPageBySlug } from "../[...slug]/page";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 const getAllJobs = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/job`);
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.data ?? [];
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/job`, { signal: apiTimeoutSignal() });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data ?? [];
+  } catch (error) {
+    console.error("Failed to fetch jobs:", error);
+    return [];
+  }
 };
 
 export async function generateMetadata(): Promise<Metadata> {

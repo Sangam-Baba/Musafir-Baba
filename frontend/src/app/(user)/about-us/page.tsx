@@ -6,6 +6,7 @@ import { getWebPageSchema } from "@/lib/schema/webpage.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
 import { notFound } from "next/navigation";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 interface ImageType {
   url: string;
@@ -39,14 +40,22 @@ interface FormValues {
 }
 
 // Fetch Function
+// A failed/stalled request is treated like a non-OK response (notFound,
+// called outside the try so it isn't swallowed) instead of failing the build
 const getWebPageBySlug = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`,
-    { next: { revalidate: 60 } }
-  );
-  if (!res.ok) return notFound();
-  const data = await res.json();
-  return data?.data as FormValues;
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/aboutus/68e8f5bee2f305d5077f7a99`,
+      { next: { revalidate: 60 }, signal: apiTimeoutSignal() }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      return data?.data as FormValues;
+    }
+  } catch (error) {
+    console.error("Failed to fetch about us:", error);
+  }
+  return notFound();
 };
 
 export async function generateMetadata(): Promise<Metadata> {

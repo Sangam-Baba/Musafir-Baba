@@ -4,6 +4,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 interface AuthoreInterface {
   name: string;
@@ -15,10 +16,15 @@ interface AuthoreInterface {
 }
 
 const getAllAuthor = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data?.data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/authors`, { signal: apiTimeoutSignal() });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.data;
+  } catch (error) {
+    console.error("Failed to fetch authors:", error);
+    return null;
+  }
 };
 export async function generateMetadata() {
   return {

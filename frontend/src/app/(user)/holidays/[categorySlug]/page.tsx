@@ -8,6 +8,7 @@ import img1 from "../../../../../public/Hero1.jpg";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 interface Props {
   params: Promise<{ categorySlug: string }>;
@@ -78,15 +79,21 @@ export async function getCategoryBySlug(slug: string) {
   return res.json();
 }
 export async function getPackageByCategorySlug(slug: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
-    {
-      next: { revalidate: 60, tags: ['packages'] },
-    },
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data?.data;
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}`,
+      {
+        next: { revalidate: 60, tags: ['packages'] },
+        signal: apiTimeoutSignal(),
+      },
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.data;
+  } catch (error) {
+    console.error(`Failed to fetch packages for category "${slug}":`, error);
+    return null;
+  }
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
