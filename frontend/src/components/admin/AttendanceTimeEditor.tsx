@@ -121,7 +121,7 @@ export function EditAttendanceTimeModal({
               />
             </div>
           </div>
-          <p className="text-[11px] text-slate-400">Leave check-out empty if the staff member hasn&apos;t checked out. Hours and status (Present, or Late after 9:15 AM) are recalculated on save.</p>
+          <p className="text-[11px] text-slate-400">Leave check-out empty if the staff member hasn&apos;t checked out. Hours and status (Present, or Late after the staff member&apos;s shift start + grace; 9:15 AM if no shift) are recalculated on save.</p>
           {error && <p className="text-[12px] font-medium text-red-600">{error}</p>}
         </div>
         <div className="p-4 border-t border-slate-100 flex justify-end gap-2">

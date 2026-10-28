@@ -47,6 +47,13 @@ const staffSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Assigned office shift. When null, check-in falls back to the default
+    // 9:15 AM late rule. Only changed through /api/shifts (admin only).
+    shift: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shift",
+      default: null,
+    },
     joiningDate: {
       type: Date,
       default: null,
