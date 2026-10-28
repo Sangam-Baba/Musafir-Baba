@@ -37,7 +37,7 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import { BlogContent } from "@/components/custom/BlogContent";
 import PackageCard from "@/components/custom/PackageCard";
 import { GroupPackageInterface } from "./page";
-import { TabConfigItem, BuiltinTabKey, DEFAULT_TABS_CONFIG, ALWAYS_VISIBLE_BUILTIN_KEYS, getTabDisplayLabel } from "@/lib/packageTabs";
+import { TabConfigItem, BuiltinTabKey, DEFAULT_TABS_CONFIG, ALWAYS_VISIBLE_BUILTIN_KEYS, BUILTIN_DEFAULT_SECTION_TITLE, getTabDisplayLabel } from "@/lib/packageTabs";
 import ReadMore from "@/components/common/ReadMore";
 import EffectCardRelatedPackages from "@/components/custom/EffectCardRelatedPackages";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
@@ -174,6 +174,15 @@ function SlugClients({
   const tabOrderIndex: Record<string, number> = {};
   visibleTabsConfig.forEach((entry, i) => { tabOrderIndex[entry.key] = i; });
   const customTabEntries = visibleTabsConfig.filter((entry) => entry.type === "custom");
+
+  // Built-in section headings: the admin's per-package `sectionTitle` if set,
+  // otherwise the heading these sections have always had.
+  const builtinEntry = (builtinKey: BuiltinTabKey) =>
+    resolvedTabsConfig.find((entry) => entry.type === "builtin" && entry.builtinKey === builtinKey);
+  const builtinSectionTitle = (builtinKey: BuiltinTabKey) =>
+    builtinEntry(builtinKey)?.sectionTitle?.trim() || BUILTIN_DEFAULT_SECTION_TITLE[builtinKey];
+  // Optional rich-text intro shown above the itinerary steps
+  const itineraryIntro = builtinEntry("itineraries")?.content;
 
   const tabKeys = tabs.map((t) => t.key);
 
@@ -518,7 +527,7 @@ function SlugClients({
               {pkg.whyChooseThisPackage && tabOrderIndex["whychoose"] !== undefined && (
                 <div id="whychoose" style={{ order: tabOrderIndex["whychoose"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Why Choose This Package?</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{builtinSectionTitle("whychoose")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">
@@ -530,7 +539,7 @@ function SlugClients({
               {tabOrderIndex["description"] !== undefined && (
               <div id="description" style={{ order: tabOrderIndex["description"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
-                  <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Package Overview</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{builtinSectionTitle("description")}</h2>
                   <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                 </div>
                 <div className="md:hidden text-gray-600 leading-relaxed text-base">
@@ -545,10 +554,16 @@ function SlugClients({
               {tabOrderIndex["itineraries"] !== undefined && (
               <div id="itineraries" style={{ order: tabOrderIndex["itineraries"] }} className="scroll-mt-40 mb-8 pb-6 border-b border-gray-200 last:border-0 overflow-hidden">
                   <div className="flex flex-col gap-2 mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Journey Route</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{builtinSectionTitle("itineraries")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
-                  
+
+                  {hasHtmlContent(itineraryIntro) && (
+                    <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed mb-4">
+                      <BlogContent html={itineraryIntro || ""} />
+                    </section>
+                  )}
+
                   <div className="relative pt-4 pb-4 w-full">
                     <Accordion
                       type="multiple"
@@ -647,7 +662,7 @@ function SlugClients({
               {pkg.hotelsAndAccommodation && tabOrderIndex["hotels"] !== undefined && (
                 <div id="hotels" style={{ order: tabOrderIndex["hotels"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">Hotels & Accommodation</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{builtinSectionTitle("hotels")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
                   <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">
@@ -700,7 +715,7 @@ function SlugClients({
               {pkg.faqs && pkg.faqs.length > 0 && tabOrderIndex["faqs"] !== undefined && (
                 <div id="faqs" style={{ order: tabOrderIndex["faqs"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">FAQs</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{builtinSectionTitle("faqs")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <FaqAccordion

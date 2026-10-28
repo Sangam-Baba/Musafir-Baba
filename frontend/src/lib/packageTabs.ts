@@ -18,11 +18,14 @@ export interface TabConfigItem {
   label: string;
   type: "builtin" | "custom";
   builtinKey?: BuiltinTabKey;
+  // Custom tabs: the tab's rich-text body. Built-in "itineraries": optional
+  // rich-text intro shown above the itinerary steps. Unused by other built-ins.
   content?: string;
   hidden?: boolean;
-  // Custom tabs only: the h2 heading shown above the tab's content on the
-  // page. `label` is the short name on the tab pill. Falls back to `label`
-  // when empty (custom tabs saved before this field existed).
+  // The h2 heading shown above the tab's content on the page. `label` is the
+  // short name on the tab pill. Custom tabs fall back to `label` when empty;
+  // built-ins in BUILTIN_DEFAULT_SECTION_TITLE fall back to their old fixed
+  // heading, so packages that never set it render exactly as before.
   sectionTitle?: string;
 }
 
@@ -63,6 +66,18 @@ export const BUILTIN_RICH_TEXT_FIELD: Partial<Record<BuiltinTabKey, string>> = {
   whychoose: "whyChooseThisPackage",
   description: "description",
   hotels: "hotelsAndAccommodation",
+};
+
+// Built-in sections with a single h2 heading, mapped to the heading the page
+// has always shown. An admin can override it per package via `sectionTitle`.
+// Inclusions/Exclusions (two headings), Resources (no h2) and Why Us (fixed
+// site-wide block) aren't listed, so their headings stay fixed.
+export const BUILTIN_DEFAULT_SECTION_TITLE: Partial<Record<BuiltinTabKey, string>> = {
+  whychoose: "Why Choose This Package?",
+  description: "Package Overview",
+  itineraries: "Journey Route",
+  hotels: "Hotels & Accommodation",
+  faqs: "FAQs",
 };
 
 // Built-in tab names are fixed (not editable in the admin Tabs editor), so a
