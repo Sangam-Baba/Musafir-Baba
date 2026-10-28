@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Newspaper } from "lucide-react";
 import type { News } from "@/app/(user)/news/page";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 // Homepage-only replacement for the shared BlogsHome component
 // (components/custom/BlogsHome.tsx) — that file stays untouched since it's
@@ -28,6 +29,7 @@ async function getBlogs(): Promise<FeedItem[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs?category=&page=1&limit=${POOL_SIZE}`, {
       next: { revalidate: 360 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return [];
     const data = await res.json();
@@ -41,6 +43,7 @@ async function getNews(): Promise<FeedItem[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/?page=1&limit=${POOL_SIZE}`, {
       next: { revalidate: 360 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return [];
     const data = await res.json();

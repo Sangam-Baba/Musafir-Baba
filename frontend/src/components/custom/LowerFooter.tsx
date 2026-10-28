@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 interface Item {
   _id: string;
@@ -17,6 +18,7 @@ const getFooter = async () => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/footer`, {
       next: { revalidate: 120 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) {
       // A transient backend blip during build used to throw here and crash

@@ -1,4 +1,5 @@
 import VisaMadeEasyPanel, { type VisaDurations } from "./VisaMadeEasyPanel";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 export interface VisaSpot {
   country: string;
@@ -48,6 +49,7 @@ async function getDurations(): Promise<VisaDurations> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa/?country=`, {
       next: { revalidate: 3600 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return {};
     const data = await res.json();

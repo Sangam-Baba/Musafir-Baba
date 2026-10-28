@@ -1,4 +1,5 @@
 import HeroSearchWidget from "@/components/custom/HeroSearchWidget";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 // Same `/category` endpoint holidays/page.tsx and TravelMoodSection.tsx
 // already fetch (Next.js dedupes identical fetch calls, so this doesn't add
@@ -9,6 +10,7 @@ async function getHeroCategories(): Promise<{ id: string; name: string; slug: st
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
       next: { revalidate: 300 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return [];
     data = await res.json();
@@ -34,6 +36,7 @@ async function getHeroVehicleFilters(): Promise<{
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/filters`, {
       next: { revalidate: 300 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return { types: [], locations: [] };
     const data = await res.json();

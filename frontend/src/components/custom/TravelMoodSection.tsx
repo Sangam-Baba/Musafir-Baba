@@ -1,4 +1,5 @@
 import TravelMoodCarousel from "./TravelMoodCarousel";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 export interface MoodCategory {
   id: string;
@@ -15,6 +16,7 @@ async function getCategories(): Promise<MoodCategory[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
       next: { revalidate: 300 },
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return [];
     data = await res.json();

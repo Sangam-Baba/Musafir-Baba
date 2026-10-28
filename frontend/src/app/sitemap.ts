@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { Category } from "./admin/blogs/new/page";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 // export const dynamic = "force-dynamic";
 interface coverImage {
   url: string;
@@ -101,7 +102,7 @@ interface Visa {
 // Example: Fetch blog slugs from your DB or API
 async function getBlogs() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/?status=published`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/blogs/?status=published`, { signal: apiTimeoutSignal() });
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];
@@ -111,7 +112,7 @@ async function getBlogs() {
 }
 async function getNews() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/?status=published`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/news/?status=published`, { signal: apiTimeoutSignal() });
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];
@@ -123,6 +124,7 @@ async function getNews() {
 async function getCategory() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
+      signal: apiTimeoutSignal(),
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -136,6 +138,7 @@ async function getCategory() {
 async function getPackages() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages/`, {
+      signal: apiTimeoutSignal(),
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -151,6 +154,7 @@ async function getPackages() {
 async function getDestination() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
+      signal: apiTimeoutSignal(),
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -165,6 +169,7 @@ async function getDestination() {
 const getAllWebPage = async () => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/?status=published`, {
+      signal: apiTimeoutSignal(),
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -178,7 +183,7 @@ const getAllWebPage = async () => {
 
 const getAllVisa = async () => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`, { signal: apiTimeoutSignal() });
     if (!res.ok) return [];
     const data = await res.json();
     return data?.data || [];
@@ -188,15 +193,18 @@ const getAllVisa = async () => {
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const blogs = await getBlogs();
-  const news = await getNews();
-  const category = await getCategory();
+  // Fetched in parallel so a few slow/stalled requests can't add up past
+  // the 60s static generation limit (each is capped by apiTimeoutSignal)
+  const [blogs, news, category, packages, destinations, webpages, visas] = await Promise.all([
+    getBlogs(),
+    getNews(),
+    getCategory(),
+    getPackages(),
+    getDestination(),
+    getAllWebPage(),
+    getAllVisa(),
+  ]);
   const categories = category?.data ?? [];
-  const packages = await getPackages();
-  const destinations = await getDestination();
-  const webpages = await getAllWebPage();
-
-  const visas = await getAllVisa();
 
   const uniqueDestinations = [];
 

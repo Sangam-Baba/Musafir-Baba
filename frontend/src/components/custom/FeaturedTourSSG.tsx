@@ -1,4 +1,5 @@
 import { FeaturedTour } from "./FeaturedTour";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 const CATEGORY_SLUGS = [
   { slug: "early-bird", label: "Early Bird 2026" },
@@ -16,6 +17,7 @@ async function getPackageByCategorySlug(slug: string) {
       `${process.env.NEXT_PUBLIC_BASE_URL}/packages/category/${slug}?limit=12&minimal=true`,
       {
         next: { revalidate: 60, tags: ['packages'] },
+        signal: apiTimeoutSignal(),
       }
     );
     if (!res.ok) return [];

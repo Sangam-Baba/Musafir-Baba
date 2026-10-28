@@ -1,20 +1,29 @@
 import React from "react";
 import Link from "next/link";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 interface Item {
   text: string;
   url: string;
 }
+// Rendered in the site-wide footer, so it must never throw: a failed request
+// would otherwise fail every prerendered page. Empty column on failure.
 const getFooter = async (title: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
-    {
-      next: { revalidate: 120 },
-    }
-  );
-  if (!res.ok) throw new Error("Failed to fetch footer");
-  const data = await res.json();
-  return data.data[0];
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/footer/?title=${title}`,
+      {
+        next: { revalidate: 120 },
+        signal: apiTimeoutSignal(),
+      }
+    );
+    if (!res.ok) return undefined;
+    const data = await res.json();
+    return data?.data?.[0];
+  } catch (error) {
+    console.error(`Failed to fetch footer "${title}":`, error);
+    return undefined;
+  }
 };
 interface FooterItemProps {
   title: string;
