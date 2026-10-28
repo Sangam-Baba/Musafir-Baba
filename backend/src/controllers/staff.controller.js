@@ -350,6 +350,8 @@ const updateAdmin = async (req, res) => {
         message: "This staff member has a recorded Date of Leaving and cannot be reactivated here. Clear their Date of Leaving in Settings first.",
       });
     }
+    // Shift assignment only goes through the admin-only /api/shifts/assign
+    if (req.body && "shift" in req.body) delete req.body.shift;
     if (req.body?.password) {
       const hashedpassword = await bcrypt.hash(req.body.password, 10);
       req.body.password = hashedpassword;

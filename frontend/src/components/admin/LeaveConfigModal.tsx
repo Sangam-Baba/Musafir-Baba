@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { secureAdminFetch } from "@/lib/secureAdminFetch";
 import { toast } from "sonner";
 import { ListUserInterface } from "@/app/admin/role/page";
@@ -19,6 +19,26 @@ export default function LeaveConfigModal({ user, onClose, onSuccess }: LeaveConf
     if (Number.isNaN(d.getTime())) return "";
     return d.toISOString().slice(0, 10);
   };
+
+  // Shift is saved through the admin-only /shifts/assign endpoint, separately
+  // from the leave-balance payload. shifts stays null if the list can't be
+  // loaded (e.g. non-admin), which hides the field.
+  const [shifts, setShifts] = useState<{ _id: string; name: string; startTime: string; endTime: string }[] | null>(null);
+  const [shiftId, setShiftId] = useState(user.shift ?? "");
+
+  useEffect(() => {
+    secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/shifts`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res && res.success) {
+          const list = res.data.shifts;
+          setShifts(list);
+          // A reference to a deleted shift is treated as no shift
+          if (user.shift && !list.some((s: { _id: string }) => s._id === user.shift)) setShiftId("");
+        }
+      })
+      .catch(() => {});
+  }, [user.shift]);
 
   const [formData, setFormData] = useState({
     attendanceEligible: user.attendanceEligible ?? true,
@@ -54,6 +74,14 @@ export default function LeaveConfigModal({ user, onClose, onSuccess }: LeaveConf
 
       const res = await response.json();
       if (response.ok && res.success) {
+        if (shifts && shiftId !== (user.shift ?? "")) {
+          const shiftRes = await secureAdminFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/shifts/assign`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ staffIds: [user._id], shiftId: shiftId || null }),
+          }).then((r) => r.json());
+          if (!shiftRes?.success) toast.error(shiftRes?.message || "Failed to update shift");
+        }
         toast.success("Leave balance updated successfully");
         onSuccess();
         onClose();
@@ -93,6 +121,25 @@ export default function LeaveConfigModal({ user, onClose, onSuccess }: LeaveConf
               className="data-[state=checked]:bg-[#FE5300]"
             />
           </div>
+
+          {shifts && (
+            <div className="space-y-1 border-b border-slate-100 pb-4">
+              <label className="text-[12px] font-bold text-slate-600">Shift</label>
+              <select
+                value={shiftId}
+                onChange={(e) => setShiftId(e.target.value)}
+                className="w-full p-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:border-[#FE5300] transition-colors bg-white"
+              >
+                <option value="">No shift (default 9:15 AM late rule)</option>
+                {shifts.map((s) => (
+                  <option key={s._id} value={s._id}>{s.name} ({s.startTime} – {s.endTime})</option>
+                ))}
+              </select>
+              {formData.attendanceEligible && !shiftId && (
+                <p className="text-[11px] font-medium text-amber-600">Attendance-eligible staff should be allocated a shift.</p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">

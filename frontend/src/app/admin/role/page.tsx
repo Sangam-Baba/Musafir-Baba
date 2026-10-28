@@ -33,6 +33,7 @@ export interface ListUserInterface {
   onlineStatus?: string;
   isActive: boolean;
   attendanceEligible?: boolean;
+  shift?: string | null;
   totalLeaveBalance?: number;
   availableLeaveBalance?: number;
   totalShortLeaveBalance?: number;
@@ -227,6 +228,7 @@ function UsersPage() {
               b.loginInfo?.currentStatus === "Online" ? "Online" : "Offline",
             isActive: b.isActive ?? true,
             attendanceEligible: b.attendanceEligible,
+            shift: b.shift ?? null,
             totalLeaveBalance: b.totalLeaveBalance,
             availableLeaveBalance: b.availableLeaveBalance,
             totalShortLeaveBalance: b.totalShortLeaveBalance,

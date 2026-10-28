@@ -1,4 +1,6 @@
-export const getAttendanceStatus = (checkInTime: string | null | undefined, recordDate: string | Date = new Date(), leaveType?: string, leaveStatus?: string, attendanceStatus?: string) => {
+// absentAfterMinutes: minutes since midnight after which a missing check-in
+// today shows as Absent (default 9:30 AM; callers pass shift start + 30)
+export const getAttendanceStatus = (checkInTime: string | null | undefined, recordDate: string | Date = new Date(), leaveType?: string, leaveStatus?: string, attendanceStatus?: string, absentAfterMinutes: number = 9 * 60 + 30) => {
   const targetDate = new Date(recordDate);
   const now = new Date();
 
@@ -30,7 +32,7 @@ export const getAttendanceStatus = (checkInTime: string | null | undefined, reco
     if (isToday) {
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
-      if (currentHour > 9 || (currentHour === 9 && currentMinute > 30)) {
+      if (currentHour * 60 + currentMinute > absentAfterMinutes) {
         return { label: "Absent", color: "bg-red-50 text-red-600 border-red-200" };
       }
       return { label: "Pending", color: "bg-slate-50 text-slate-500 border-slate-200" };

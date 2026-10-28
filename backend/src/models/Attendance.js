@@ -58,6 +58,11 @@ const attendanceSchema = new mongoose.Schema(
       enum: ["Present", "Late", "Absent", "Leave", "Short Leave", "Half Day", "WFH", "Holiday", "Weekend"],
       default: "Absent",
     },
+    // Snapshot of the shift the Late/Present status was judged against.
+    // Only set when the staffer had a shift at check-in time.
+    shiftName: { type: String },
+    shiftStartTime: { type: String },
+    shiftGraceMinutes: { type: Number },
   },
   { timestamps: true }
 );

@@ -19,6 +19,7 @@ import {
 
 export default function AttendanceView() {
   const [attendance, setAttendance] = useState<any>(null);
+  const [shift, setShift] = useState<{ name: string; startTime: string; endTime: string; graceMinutes: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -47,6 +48,7 @@ export default function AttendanceView() {
       const res = await response.json();
       if (res && res.success) {
         setAttendance(res.attendance);
+        setShift(res.shift || null);
       }
     } catch (error) {
       console.error("Failed to fetch attendance:", error);
@@ -167,7 +169,9 @@ export default function AttendanceView() {
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
-  const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date(), attendance?.leaveType, attendance?.leaveStatus, attendance?.attendanceStatus);
+  // Pending turns to Absent 30 min after shift start (9:30 AM without a shift)
+  const shiftStartMinutes = shift?.startTime ? Number(shift.startTime.slice(0, 2)) * 60 + Number(shift.startTime.slice(3, 5)) : null;
+  const statusInfo = getAttendanceStatus(attendance?.checkInTime, attendance?.date || new Date(), attendance?.leaveType, attendance?.leaveStatus, attendance?.attendanceStatus, shiftStartMinutes !== null ? shiftStartMinutes + 30 : undefined);
 
   const getOngoingStats = () => {
     const formatMsToHHMM = (ms: number) => {
@@ -236,6 +240,7 @@ export default function AttendanceView() {
               </span>
             </div>
             <span className="text-[12px] font-semibold text-slate-500">
+              {shift && <span className="mr-3 text-slate-400">{shift.name} · {shift.startTime}–{shift.endTime}</span>}
               {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </span>
           </CardTitle>

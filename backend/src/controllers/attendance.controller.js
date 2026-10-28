@@ -42,6 +42,29 @@ const getStartOfDay = () => {
   return new Date(`${istDateStr}T00:00:00.000+05:30`);
 };
 
+// ─── Shift-based late rule ───────────────────────────────────────────────────
+// Late = check-in (IST, minute precision) after shift start + grace minutes.
+// Staff without a shift keep the original rule: late after 9:15 AM.
+const DEFAULT_LATE_AFTER_MINUTES = 9 * 60 + 15;
+
+const getStaffShift = async (userId) => {
+  const staff = await Staff.findById(userId).select("shift").populate("shift");
+  return staff?.shift || null; // null also when the referenced shift no longer exists
+};
+
+const getLateAfterMinutes = (startTime, graceMinutes) => {
+  if (!startTime || !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) return DEFAULT_LATE_AFTER_MINUTES;
+  const [h, m] = startTime.split(":").map(Number);
+  return h * 60 + m + (Number(graceMinutes) || 0);
+};
+
+const applyShiftSnapshot = (attendance, shift) => {
+  if (!shift) return;
+  attendance.shiftName = shift.name;
+  attendance.shiftStartTime = shift.startTime;
+  attendance.shiftGraceMinutes = shift.graceMinutes;
+};
+
 const checkEligibility = async (userId) => {
   const staff = await Staff.findById(userId);
   if (staff && staff.attendanceEligible === false) {
@@ -57,7 +80,8 @@ export const getTodayAttendance = async (req, res, next) => {
       staff: req.user.sub,
       date: startOfDay,
     });
-    return res.status(200).json({ success: true, attendance });
+    const shift = await getStaffShift(req.user.sub);
+    return res.status(200).json({ success: true, attendance, shift });
   } catch (error) {
     next(error);
   }
@@ -105,12 +129,14 @@ export const checkIn = async (req, res, next) => {
     attendance.checkInTime = new Date();
     attendance.checkInLocation = { lat, lng, distance };
     if (checkInPhotoUrl) attendance.checkInPhotoUrl = checkInPhotoUrl;
-    // Determine if late (after 9:15 AM IST)
+    // Determine if late (after shift start + grace, or 9:15 AM IST without a shift)
     const checkInTimeIST = new Date(attendance.checkInTime.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
     const hours = checkInTimeIST.getHours();
     const minutes = checkInTimeIST.getMinutes();
-    
-    if (hours > 9 || (hours === 9 && minutes > 15)) {
+    const shift = await getStaffShift(req.user.sub);
+    applyShiftSnapshot(attendance, shift);
+
+    if (hours * 60 + minutes > getLateAfterMinutes(shift?.startTime, shift?.graceMinutes)) {
       attendance.attendanceStatus = "Late";
     } else {
       attendance.attendanceStatus = "Present";
@@ -969,11 +995,20 @@ export const editAttendanceTimes = async (req, res, next) => {
     attendance.checkInTime = newCheckIn;
     attendance.checkOutTime = newCheckOut || undefined;
 
-    // Status always follows the edited check-in, using the same 9:15 AM rule
-    // checkIn uses. Leave fields (leaveType/leaveStatus) and leave balances are
-    // deliberately left untouched.
+    // Status always follows the edited check-in, using the same shift rule
+    // checkIn uses: the shift snapshotted on the record if it has one, else the
+    // staffer's current shift, else 9:15 AM. Leave fields (leaveType/leaveStatus)
+    // and leave balances are deliberately left untouched.
+    let lateAfter;
+    if (attendance.shiftStartTime) {
+      lateAfter = getLateAfterMinutes(attendance.shiftStartTime, attendance.shiftGraceMinutes);
+    } else {
+      const shift = await getStaffShift(staffId);
+      applyShiftSnapshot(attendance, shift);
+      lateAfter = getLateAfterMinutes(shift?.startTime, shift?.graceMinutes);
+    }
     const [h, m] = checkIn.split(":").map(Number);
-    attendance.attendanceStatus = h > 9 || (h === 9 && m > 15) ? "Late" : "Present";
+    attendance.attendanceStatus = h * 60 + m > lateAfter ? "Late" : "Present";
 
     if (newCheckOut) {
       // Mirror checkOut: an open break ends at check-out
