@@ -87,12 +87,13 @@ export async function getPackageByCategorySlug(slug: string) {
         signal: apiTimeoutSignal(),
       },
     );
-    if (!res.ok) return null;
+    // Callers .map() the result, so a failure must return [] (not null)
+    if (!res.ok) return [];
     const data = await res.json();
-    return data?.data;
+    return data?.data ?? [];
   } catch (error) {
     console.error(`Failed to fetch packages for category "${slug}":`, error);
-    return null;
+    return [];
   }
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

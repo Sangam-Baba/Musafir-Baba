@@ -29,6 +29,7 @@ import {
   TabConfigItem,
   ALWAYS_VISIBLE_BUILTIN_KEYS,
   BUILTIN_RICH_TEXT_FIELD,
+  BUILTIN_DEFAULT_SECTION_TITLE,
   makeCustomTabKey,
   getTabDisplayLabel,
 } from "@/lib/packageTabs";
@@ -58,6 +59,7 @@ function SortableTabRow({ entry, onLabelChange, onSectionTitleChange, onToggleHi
 
   const isAlwaysVisible = entry.type === "builtin" && ALWAYS_VISIBLE_BUILTIN_KEYS.has(entry.builtinKey as any);
   const canExpand = !!onContentChange || !!customBody;
+  const builtinDefaultTitle = entry.type === "builtin" && entry.builtinKey ? BUILTIN_DEFAULT_SECTION_TITLE[entry.builtinKey] : undefined;
 
   return (
     <div ref={setNodeRef} style={style} className="bg-white border rounded-md">
@@ -72,9 +74,9 @@ function SortableTabRow({ entry, onLabelChange, onSectionTitleChange, onToggleHi
           <GripVertical className="w-4 h-4" />
         </button>
 
-        {/* Only custom tabs have an editable title. Built-in tabs show their
-            saved name (including any earlier rename) as fixed text, so it is
-            kept as-is on the live page and saved back unchanged. */}
+        {/* Only custom tabs have an editable tab name. Built-in tabs show
+            their fixed name; those with a single page heading (see
+            BUILTIN_DEFAULT_SECTION_TITLE) also get a Section title field. */}
         {entry.type === "custom" ? (
           <div className="flex-1 min-w-0 grid grid-cols-1 gap-1.5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             <label className="flex flex-col gap-0.5">
@@ -93,6 +95,27 @@ function SortableTabRow({ entry, onLabelChange, onSectionTitleChange, onToggleHi
                 value={entry.sectionTitle ?? ""}
                 onChange={(e) => onSectionTitleChange?.(e.target.value)}
                 placeholder={entry.label ? `Defaults to "${entry.label}"` : "Heading shown above the content"}
+              />
+            </label>
+          </div>
+        ) : builtinDefaultTitle && onSectionTitleChange ? (
+          <div className="flex-1 min-w-0 grid grid-cols-1 gap-1.5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Tab name</span>
+              <div
+                className="h-7 flex items-center px-2 text-xs font-medium text-gray-700 truncate"
+                title="Built-in tab name (not editable)"
+              >
+                <span className="truncate">{getTabDisplayLabel(entry)}</span>
+              </div>
+            </div>
+            <label className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Section title (H2 on page)</span>
+              <Input
+                className="h-7 text-xs px-2 rounded-sm"
+                value={entry.sectionTitle ?? ""}
+                onChange={(e) => onSectionTitleChange(e.target.value)}
+                placeholder={`Defaults to "${builtinDefaultTitle}"`}
               />
             </label>
           </div>
@@ -296,7 +319,8 @@ export default function PackageTabsEditor({
       <p className="text-[11px] text-gray-500 leading-relaxed">
         Drag to reorder how tabs appear on the package page. Built-in tabs can be hidden (if content is empty
         they're hidden automatically regardless of this toggle); their names are fixed. Custom tabs have a Tab name (shown on the
-        tab pill) and a Section title (the H2 heading above its content; uses the Tab name if left empty). Overview, Itinerary and Inclusions
+        tab pill) and a Section title (the H2 heading above its content; uses the Tab name if left empty). Most built-in tabs also
+        have a Section title; left empty, they keep their usual heading. Overview, Itinerary and Inclusions
         can't be hidden since they hold required content. Any tab with no content is not shown on the page at all
         (no heading, no tab). Every built-in tab's content can be edited right here —
         it's the exact same data as the Content/FAQs & Review tabs, just a second way in. Add fully custom tabs
@@ -321,7 +345,18 @@ export default function PackageTabsEditor({
               } else {
                 switch (entry.builtinKey) {
                   case "itineraries":
-                    customBody = itineraryBody;
+                    // Intro is stored on this tab entry's own `content`
+                    // (shown above the steps on the page); the steps below
+                    // are the same `itinerary` field array as the Content tab.
+                    customBody = (
+                      <div className="space-y-3">
+                        <div>
+                          <FormLabel className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Intro (Optional, shown above the itinerary)</FormLabel>
+                          <BlogEditor value={entry.content || ""} onChange={(content: string) => update(entry.key, { content })} />
+                        </div>
+                        {itineraryBody}
+                      </div>
+                    );
                     break;
                   case "includeexclude":
                     customBody = inclusionsExclusionsBody;
@@ -347,7 +382,11 @@ export default function PackageTabsEditor({
                   key={entry.key}
                   entry={rowEntry}
                   onLabelChange={(label) => update(entry.key, { label })}
-                  onSectionTitleChange={entry.type === "custom" ? (sectionTitle) => update(entry.key, { sectionTitle }) : undefined}
+                  onSectionTitleChange={
+                    entry.type === "custom" || (entry.builtinKey && BUILTIN_DEFAULT_SECTION_TITLE[entry.builtinKey])
+                      ? (sectionTitle) => update(entry.key, { sectionTitle })
+                      : undefined
+                  }
                   onToggleHidden={() => update(entry.key, { hidden: !entry.hidden })}
                   onRemove={entry.type === "custom" ? () => removeCustomTab(entry.key) : undefined}
                   onContentChange={onContentChange}
