@@ -13,6 +13,7 @@
 // import { Clock, MapPin } from "lucide-react";
 // import { FaMoneyBill } from "react-icons/fa";
 import dynamic from "next/dynamic";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 const HomeVideoBanner = dynamic(() => import("./HomeVideoBanner"), {
   loading: () => (
@@ -77,6 +78,7 @@ export const getAllMedia = async () => {
         "Content-Type": "application/json",
       },
       next: { revalidate: 3600 }, // Cache for 1 hour
+      signal: apiTimeoutSignal(),
     });
     if (!res.ok) return [];
     const data = await res.json();
