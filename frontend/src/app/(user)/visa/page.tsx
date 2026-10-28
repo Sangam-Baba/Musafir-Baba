@@ -3,6 +3,7 @@ import VisaClientPage from "./visaClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 export const metadata: Metadata = {
   title: "Tourist Visa Services for 180+ Countries | MusafirBaba",
@@ -13,21 +14,27 @@ export const metadata: Metadata = {
   },
 };
 export const getVisa = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`, {
-    next: {
-      revalidate: 60,
-    },
-  });
-  if (!res.ok) {
-    // A transient backend blip during build used to throw here and crash
-    // the entire static export (all pages), not just this one. Degrade to
-    // an empty list instead — matches the array shape callers already
-    // expect (see the `// []` below).
-    console.error("Failed to fetch visas:", res.status);
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/visa`, {
+      next: {
+        revalidate: 60,
+      },
+      signal: apiTimeoutSignal(),
+    });
+    if (!res.ok) {
+      // A transient backend blip during build used to throw here and crash
+      // the entire static export (all pages), not just this one. Degrade to
+      // an empty list instead — matches the array shape callers already
+      // expect (see the `// []` below).
+      console.error("Failed to fetch visas:", res.status);
+      return [];
+    }
+    const data = await res.json();
+    return data?.data; // []
+  } catch (error) {
+    console.error("Failed to fetch visas:", error);
     return [];
   }
-  const data = await res.json();
-  return data?.data; // []
 };
 
 export default async function VisaMainPage({

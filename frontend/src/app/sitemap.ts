@@ -130,7 +130,9 @@ async function getCategory() {
       credentials: "include",
     });
     if (!res.ok) return { data: [] };
-    return res.json();
+    // Must be awaited inside the try: a body-read failure/timeout would
+    // otherwise reject outside it and fail the sitemap prerender
+    return await res.json();
   } catch (error) {
     return { data: [] };
   }

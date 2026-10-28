@@ -6,18 +6,27 @@ import Script from "next/script";
 import { getFAQSchema } from "@/lib/schema/faq.schema";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { extractHeadings, addIdsToHeadings } from "@/utils/blogUtils";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
+// A failed/stalled request is treated like a non-OK response (notFound,
+// called outside the try so it isn't swallowed) instead of failing the build
 export const getWebPageBySlug = async (slug: string, token?: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
-    {
-      next: { revalidate: 120 },
-    },
-  );
-
-  if (!res.ok) return notFound();
-  const data = await res.json();
-  return data?.data;
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/webpage/slug?slug=${slug}&&token=${token}`,
+      {
+        next: { revalidate: 120 },
+        signal: apiTimeoutSignal(),
+      },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      return data?.data;
+    }
+  } catch (error) {
+    console.error(`Failed to fetch webpage "${slug}":`, error);
+  }
+  return notFound();
 };
 
 export async function generateMetadata({

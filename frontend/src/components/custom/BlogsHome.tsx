@@ -2,20 +2,28 @@ import { MoveRight, Globe, Newspaper, Plane, Camera, Sun } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { News } from "@/app/(user)/news/page";
+import { apiTimeoutSignal } from "@/lib/apiTimeout";
 
 interface NewType extends News {
   type: string;
 }
 
 const getCombinedData = async () => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/combined-news-blog`,
-    {
-      next: { revalidate: 360 },
-    }
-  );
-  const data = await res.json();
-  return data.data;
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/combined-news-blog`,
+      {
+        next: { revalidate: 360 },
+        signal: apiTimeoutSignal(),
+      }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data ?? [];
+  } catch (error) {
+    console.error("Failed to fetch blogs/news:", error);
+    return [];
+  }
 };
 
 const iconMap = [Newspaper, Plane, Camera, Sun];
