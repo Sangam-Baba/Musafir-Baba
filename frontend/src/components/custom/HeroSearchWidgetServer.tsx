@@ -5,11 +5,16 @@ import HeroSearchWidget from "@/components/custom/HeroSearchWidget";
 // a real extra network round-trip) — feeds the hero search widget's
 // Holidays "Package Type" dropdown with real category slugs.
 async function getHeroCategories(): Promise<{ id: string; name: string; slug: string }[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
+  let data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    data = await res.json();
+  } catch {
+    return [];
+  }
   return (data?.data ?? []).map((c: { _id: string; name: string; slug: string }) => ({
     id: c._id,
     name: c.name,
@@ -26,12 +31,16 @@ async function getHeroVehicleFilters(): Promise<{
   types: string[];
   locations: { id: string; name: string }[];
 }> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/filters`, {
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return { types: [], locations: [] };
-  const data = await res.json();
-  return data?.data ?? { types: [], locations: [] };
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/filters`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return { types: [], locations: [] };
+    const data = await res.json();
+    return data?.data ?? { types: [], locations: [] };
+  } catch {
+    return { types: [], locations: [] };
+  }
 }
 
 // Isolates the two data fetches behind their own async Server Component so

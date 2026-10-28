@@ -11,11 +11,16 @@ export interface MoodCategory {
 // Same fetch pattern as src/app/(user)/holidays/page.tsx's getCategory() —
 // the one real, canonical categories endpoint, already used elsewhere.
 async function getCategories(): Promise<MoodCategory[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
+  let data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/category`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    data = await res.json();
+  } catch {
+    return [];
+  }
   return (data?.data ?? [])
     .filter((c: { isActive?: boolean }) => c.isActive !== false)
     .map((c: { _id: string; name: string; slug: string; coverImage?: { url: string; alt: string }; cardImage?: { url: string; alt: string } }) => ({

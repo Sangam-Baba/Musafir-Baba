@@ -70,16 +70,21 @@ const HomeVideoBanner = dynamic(() => import("./HomeVideoBanner"), {
 // };
 
 export const getAllMedia = async () => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/videobanner`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    next: { revalidate: 3600 }, // Cache for 1 hour
-  });
-  if (!res.ok) throw new Error("Failed to fetch media");
-  const data = await res.json();
-  return data?.data;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/videobanner`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data;
+  } catch (error) {
+    console.error("Failed to fetch media:", error);
+    return [];
+  }
 };
 export async function SevenSection() {
   // const bestSeller = await getBestSeller();
