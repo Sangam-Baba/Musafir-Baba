@@ -22,7 +22,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import Link from "next/link";
-import { NAV_GROUPS, SIDEBAR_HINTS } from "@/config/navigation";
+import { NAV_GROUPS, SIDEBAR_HINTS, SIDEBAR_SECTIONS } from "@/config/navigation";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 
 
@@ -44,6 +44,28 @@ const FALLBACK_TONES: SectionTone[] = [
   { band: "bg-fuchsia-50/80 hover:bg-fuchsia-50", tile: "bg-fuchsia-500", label: "text-fuchsia-700", chevron: "text-fuchsia-400", line: "border-fuchsia-200" },
 ];
 const sectionTone = (label: string, index: number) => SECTION_TONES[label] || FALLBACK_TONES[index % FALLBACK_TONES.length];
+
+// Sub-heading colours for SIDEBAR_SECTIONS (full class strings for Tailwind).
+const SUBSECTION_TONES: Record<string, { title: string; badge: string; dot: string }> = {
+  slate: { title: "text-slate-600 dark:text-slate-300", badge: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400", dot: "bg-slate-400" },
+  sky: { title: "text-sky-700 dark:text-sky-300", badge: "bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-300", dot: "bg-sky-500" },
+  orange: { title: "text-orange-700 dark:text-orange-300", badge: "bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-300", dot: "bg-orange-500" },
+};
+
+// Splits a group's (already filtered) items into sub-sections using
+// SIDEBAR_HINTS.section. Items without a section come first, in their
+// original order; a group with no sectioned items returns one bucket.
+type NavItem = (typeof NAV_GROUPS)[number]["items"][number];
+function splitIntoSections(items: NavItem[]) {
+  const unsectioned = items.filter((item) => !SIDEBAR_HINTS[item.href]?.section);
+  const buckets: { section: (typeof SIDEBAR_SECTIONS)[number] | null; items: NavItem[] }[] = [];
+  if (unsectioned.length) buckets.push({ section: null, items: unsectioned });
+  for (const section of SIDEBAR_SECTIONS) {
+    const inSection = items.filter((item) => SIDEBAR_HINTS[item.href]?.section === section.key);
+    if (inSection.length) buckets.push({ section, items: inSection });
+  }
+  return buckets;
+}
 
 export function AdminSidebar() {
   const role = useAdminAuthStore((s) => s.role);
@@ -119,7 +141,25 @@ export function AdminSidebar() {
 
                   <CollapsibleContent className="overflow-hidden">
                     <SidebarMenuSub className={`mb-1 ml-[21px] mr-0 mt-1.5 gap-0.5 border-l-2 py-0 pl-2.5 pr-0 ${tone.line}`}>
-                      {group.items.map((item) => {
+                      {splitIntoSections(group.items).flatMap(({ section, items }, bucketIndex) => {
+                        const subTone = section ? SUBSECTION_TONES[section.tone] || SUBSECTION_TONES.slate : null;
+                        const heading = section && subTone ? (
+                          <SidebarMenuSubItem
+                            key={`section:${section.key}`}
+                            className={`flex items-center gap-1.5 px-2 pb-1 group-data-[collapsible=icon]:hidden ${bucketIndex > 0 ? "mt-3" : "mt-0.5"}`}
+                          >
+                            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${subTone.dot}`} />
+                            <span className={`text-[10.5px] font-bold uppercase tracking-[0.08em] ${subTone.title}`}>
+                              {section.title}
+                            </span>
+                            {section.badge && (
+                              <span className={`rounded px-1.5 py-px text-[9.5px] font-medium ${subTone.badge}`}>
+                                {section.badge}
+                              </span>
+                            )}
+                          </SidebarMenuSubItem>
+                        ) : null;
+                        return [heading, ...items.map((item) => {
                         const Icon = item.icon;
                         const hint = SIDEBAR_HINTS[item.href];
                         const active =
@@ -133,7 +173,7 @@ export function AdminSidebar() {
                               onClick={() => {
                                 if (!active) setPendingHref(item.href);
                               }}
-                              title={displayLabel}
+                              title={section ? `${displayLabel} · ${section.title}` : displayLabel}
                               className={`group/item relative flex min-h-8 items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors duration-150 ${
                                 active
                                   ? "bg-slate-900/[0.04] font-semibold text-slate-900 dark:bg-white/10 dark:text-white"
@@ -158,6 +198,7 @@ export function AdminSidebar() {
                             </Link>
                           </SidebarMenuSubItem>
                         );
+                        })];
                       })}
                     </SidebarMenuSub>
                   </CollapsibleContent>
