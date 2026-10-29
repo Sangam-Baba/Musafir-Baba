@@ -958,7 +958,7 @@ export const editAttendanceTimes = async (req, res, next) => {
       return res.status(403).json({ success: false, message: "You are not allowed to edit attendance times." });
     }
 
-    const { staffId, date, checkIn, checkOut } = req.body || {};
+    const { staffId, date, checkIn, checkOut, breaks } = req.body || {};
     if (!staffId || !date || !DATE_REGEX.test(date)) {
       return res.status(400).json({ success: false, message: "staffId and date (YYYY-MM-DD) are required." });
     }
@@ -981,6 +981,48 @@ export const editAttendanceTimes = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Check-out must be after check-in." });
     }
 
+    // Optional: replace the day's breaks. When `breaks` isn't sent the existing
+    // breaks are left exactly as they are.
+    let newBreaks = null;
+    if (breaks !== undefined) {
+      if (!Array.isArray(breaks)) {
+        return res.status(400).json({ success: false, message: "Breaks must be a list." });
+      }
+      newBreaks = [];
+      for (const [i, b] of breaks.entries()) {
+        const label = `Break ${i + 1}`;
+        if (!b?.start || !HHMM_REGEX.test(b.start)) {
+          return res.status(400).json({ success: false, message: `${label}: a valid start time (HH:mm) is required.` });
+        }
+        if (b.end && !HHMM_REGEX.test(b.end)) {
+          return res.status(400).json({ success: false, message: `${label}: end time must be HH:mm.` });
+        }
+        const start = new Date(`${date}T${b.start}:00.000+05:30`);
+        const end = b.end ? new Date(`${date}T${b.end}:00.000+05:30`) : null;
+        if (end && end <= start) {
+          return res.status(400).json({ success: false, message: `${label}: end must be after start.` });
+        }
+        if (start < newCheckIn) {
+          return res.status(400).json({ success: false, message: `${label}: can't start before check-in.` });
+        }
+        if (newCheckOut && (!end || end > newCheckOut)) {
+          return res.status(400).json({ success: false, message: `${label}: must end by check-out.` });
+        }
+        newBreaks.push({ start, end });
+      }
+      newBreaks.sort((a, b) => a.start - b.start);
+      for (let i = 0; i < newBreaks.length; i++) {
+        const cur = newBreaks[i];
+        const next = newBreaks[i + 1];
+        if (!cur.end && next) {
+          return res.status(400).json({ success: false, message: "Only the last break can be left open (no end time)." });
+        }
+        if (next && cur.end > next.start) {
+          return res.status(400).json({ success: false, message: "Breaks can't overlap." });
+        }
+      }
+    }
+
     let attendance = await Attendance.findOne({
       staff: staffId,
       date: { $gte: parseLocalDateStr(date), $lte: getISTEndOfDay(date) },
@@ -991,9 +1033,15 @@ export const editAttendanceTimes = async (req, res, next) => {
     }
 
     const oldValue = { checkIn: toISTHHMM(attendance.checkInTime), checkOut: toISTHHMM(attendance.checkOutTime) };
+    if (newBreaks) {
+      oldValue.breaks = attendance.breaks.map((b) => ({ start: toISTHHMM(b.start), end: toISTHHMM(b.end) }));
+    }
 
     attendance.checkInTime = newCheckIn;
     attendance.checkOutTime = newCheckOut || undefined;
+    if (newBreaks) {
+      attendance.breaks = newBreaks.map((b) => (b.end ? b : { start: b.start }));
+    }
 
     // Status always follows the edited check-in, using the same shift rule
     // checkIn uses: the shift snapshotted on the record if it has one, else the
@@ -1038,8 +1086,15 @@ export const editAttendanceTimes = async (req, res, next) => {
       moduleName: "Attendance",
       entityId: attendance._id,
       documentTitle: staff.name || "N/A",
-      description: `Edited check-in/check-out for ${staff.name || staffId} on ${date}`,
-      changes: { oldValue, newValue: { checkIn, checkOut: checkOut || null } },
+      description: `Edited check-in/check-out${newBreaks ? " and breaks" : ""} for ${staff.name || staffId} on ${date}`,
+      changes: {
+        oldValue,
+        newValue: {
+          checkIn,
+          checkOut: checkOut || null,
+          ...(newBreaks && { breaks: breaks.map((b) => ({ start: b.start, end: b.end || null })) }),
+        },
+      },
     });
 
     return res.status(200).json({ success: true, message: "Attendance times updated.", attendance });

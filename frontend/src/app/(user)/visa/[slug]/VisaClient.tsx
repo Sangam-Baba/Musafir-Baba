@@ -15,8 +15,9 @@ import { Testimonial } from "@/components/custom/Testimonial";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
 import TextToSpeech from "@/components/custom/TextToSpeech";
+import VisaGallery from "@/components/visa/VisaGallery";
 
-type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips";
+type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips" | "gallery";
 
 interface Faq {
   question: string;
@@ -342,6 +343,8 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   if (hasContent(visa.process)) tabs.push({ key: "process", label: "Process" });
   if (hasContent(visa.rejectionReasons)) tabs.push({ key: "rejectionReasons", label: "Rejection Reasons" });
   if (hasContent(visa.expertTips)) tabs.push({ key: "expertTips", label: "Expert Tips" });
+  const galleryImages = Array.isArray(visa.gallery) ? visa.gallery.filter((img: any) => img?.url) : [];
+  if (galleryImages.length > 0) tabs.push({ key: "gallery", label: "Gallery" });
   if (hasContent(visa.faqs)) tabs.push({ key: "faqs", label: "FAQs" });
 
 
@@ -426,7 +429,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] w-full mb-6">
         {/* Constrained container for the tabs matching the site width */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
-          <div className="flex flex-nowrap md:flex-wrap w-full gap-2 pb-1 overflow-x-auto no-scrollbar md:overflow-visible snap-x snap-mandatory md:snap-none">
+          <div className="flex flex-nowrap w-full gap-2 lg:gap-1.5 pb-1 overflow-x-auto no-scrollbar snap-x snap-mandatory md:snap-none">
             {tabs.map((tab) => (
               <Button
                 key={tab.key}
@@ -442,7 +445,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                     setTimeout(() => { isClickScrollingRef.current = false; }, 800);
                   }
                 }}
-                className={`shrink-0 snap-start text-xs md:text-sm h-8 md:h-9 px-3 md:px-4 rounded-full ${
+                className={`shrink-0 snap-start text-xs md:text-[13px] h-8 md:h-9 px-3 md:px-3.5 lg:px-3 whitespace-nowrap rounded-full ${
                   active === tab.key
                     ? "bg-[#FE5300] hover:bg-[#FE5300] text-white"
                     : "bg-white hover:bg-gray-50 text-black border border-[#FE5300]"
@@ -608,6 +611,12 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {galleryImages.length > 0 && (
+                <div id="gallery" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+                  <VisaGallery images={galleryImages} country={visa.country} />
                 </div>
               )}
 

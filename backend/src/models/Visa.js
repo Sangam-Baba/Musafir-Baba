@@ -80,6 +80,16 @@ const visaSchema = new mongoose.Schema(
       width: Number,
       height: Number,
     },
+    gallery: [
+      {
+        url: String,
+        alt: String,
+        caption: String,
+        public_id: String,
+        width: Number,
+        height: Number,
+      },
+    ],
     duration: {
       type: String,
       trim: true,

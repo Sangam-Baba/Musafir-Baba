@@ -453,7 +453,36 @@ export const NAV_GROUPS = [
 //  - activePrefix: also highlight the entry on any path starting with this
 //  - mergedInto:   hide the entry when the user can already see the entry
 //                  that has this permission (the pages stay reachable via tabs)
-export const SIDEBAR_HINTS: Record<string, { label?: string; activePrefix?: string; mergedInto?: string }> = {
+//  - section:      key into SIDEBAR_SECTIONS; groups the entry under that
+//                  sub-heading inside its nav group (display order only)
+export const SIDEBAR_HINTS: Record<string, { label?: string; activePrefix?: string; mergedInto?: string; section?: string }> = {
   "/admin/destination": { label: "Destinations & SEO", activePrefix: "/admin/destination" },
   "/admin/destination-seo": { label: "Destinations & SEO", mergedInto: "destination" },
+
+  // Fleet Management: split by which app the page serves.
+  "/admin/fleet/dashboard": { section: "fleet-shared" },
+  "/admin/ride-bookings": { section: "fleet-shared" },
+  "/admin/ride-pricing": { section: "fleet-shared" },
+  "/admin/fleet/work-locations": { section: "fleet-shared" },
+  "/admin/support-tickets": { section: "fleet-shared" },
+
+  "/admin/rider-verification": { section: "fleet-mbgo" },
+  "/admin/cancellations": { section: "fleet-mbgo" },
+  "/admin/app-home": { label: "Home Screen", section: "fleet-mbgo" },
+  "/admin/mbgo-referrals": { label: "Referrals", section: "fleet-mbgo" },
+
+  "/admin/fleet-verification": { section: "fleet-mbconnect" },
+  "/admin/fleet/wallets": { section: "fleet-mbconnect" },
+  "/admin/fleet/payouts": { section: "fleet-mbconnect" },
+  "/admin/partner-wallet-program": { section: "fleet-mbconnect" },
+  "/admin/fleet/referrals": { section: "fleet-mbconnect" },
+  "/admin/fleet/test-rides": { section: "fleet-mbconnect" },
+  "/admin/fleet/app-home": { label: "Home Screen", section: "fleet-mbconnect" },
 };
+
+// Sub-headings used by SIDEBAR_HINTS.section, in display order.
+export const SIDEBAR_SECTIONS: { key: string; title: string; badge?: string; tone: string }[] = [
+  { key: "fleet-shared", title: "Rides & Operations", badge: "Both apps", tone: "slate" },
+  { key: "fleet-mbgo", title: "MBGO", badge: "Rider app", tone: "sky" },
+  { key: "fleet-mbconnect", title: "MBConnect", badge: "Driver app", tone: "orange" },
+];
