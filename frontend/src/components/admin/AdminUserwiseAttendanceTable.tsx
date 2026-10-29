@@ -352,6 +352,7 @@ export default function AdminUserwiseAttendanceTable() {
                                 date: record.date ? (record.date.length > 10 ? new Date(new Date(record.date).getTime() + 5.5 * 3600000).toISOString().split('T')[0] : record.date) : "",
                                 checkInTime: record.checkInTime,
                                 checkOutTime: record.checkOutTime,
+                                breaks: record.breaks,
                               })
                             }
                             className="ml-2 text-[10px] bg-orange-50 text-[#FE5300] border border-orange-200 px-2 py-1 rounded font-bold hover:bg-orange-100 transition-colors"

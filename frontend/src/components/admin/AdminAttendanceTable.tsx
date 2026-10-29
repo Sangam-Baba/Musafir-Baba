@@ -251,6 +251,7 @@ export default function AdminAttendanceTable() {
                                   date: dateFilter,
                                   checkInTime: record.checkInTime,
                                   checkOutTime: record.checkOutTime,
+                                  breaks: record.breaks,
                                 })
                               }
                               className="text-[10px] bg-orange-50 text-[#FE5300] border border-orange-200 px-2 py-1 rounded font-bold hover:bg-orange-100 transition-colors"
