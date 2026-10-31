@@ -192,7 +192,7 @@ function Lightbox({
   );
 }
 
-export default function VisaGallery({ images, country }: { images?: GalleryImage[]; country?: string }) {
+export default function VisaGallery({ images, country, title }: { images?: GalleryImage[]; country?: string; title?: string }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const list = (images || []).filter((img) => img?.url);
   if (list.length === 0) return null;
@@ -205,7 +205,7 @@ export default function VisaGallery({ images, country }: { images?: GalleryImage
     <div>
       <div className="flex items-end justify-between gap-3 mb-5">
         <div className="flex flex-col gap-2">
-          <h2 className="text-xl font-bold font-heading text-black">{country ? `${country} Gallery` : "Gallery"}</h2>
+          <h2 className="text-xl font-bold font-heading text-black">{title || (country ? `${country} Gallery` : "Gallery")}</h2>
           <div className="w-12 h-1 bg-[#FE5300]"></div>
         </div>
         {list.length > 1 && (

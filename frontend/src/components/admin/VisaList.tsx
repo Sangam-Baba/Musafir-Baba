@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -10,138 +9,142 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ExternalLink } from "lucide-react";
-import { motion } from "framer-motion";
+import { Edit, Trash2, ExternalLink, Plane } from "lucide-react";
+import { FleetPill, fleetTone, fleetTh, fleetBtnSm } from "@/components/admin/fleet/FleetUI";
+
 interface Visa {
   id: string;
   country: string;
   cost: number;
   url: string;
   visaType: string;
+  image?: string;
+  isActive?: boolean;
+  updatedAt?: string;
+  options?: number;
+  path?: string;
 }
 
-interface AuthorsTableProps {
+interface VisaTableProps {
   visa: Visa[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export default function AuthorsList({
-  visa,
-  onEdit,
-  onDelete,
-}: AuthorsTableProps) {
+const formatFee = (cost: number) => (cost ? `₹${Number(cost).toLocaleString("en-IN")}` : "—");
+const formatDate = (date?: string) =>
+  date ? new Date(date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+
+function CountryCell({ item }: { item: Visa }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400">
+        {item.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.image} alt="" loading="lazy" className="h-full w-full object-cover" />
+        ) : (
+          <Plane size={15} />
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-[13px] font-semibold text-slate-900">{item.country}</p>
+        {item.path && <p className="truncate font-mono text-[11px] text-slate-400">{item.path}</p>}
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ active }: { active?: boolean }) {
+  return active === false ? (
+    <FleetPill className={fleetTone.amber}>Inactive</FleetPill>
+  ) : (
+    <FleetPill className={fleetTone.emerald}>Live</FleetPill>
+  );
+}
+
+function RowActions({ item, onEdit, onDelete }: { item: Visa; onEdit: (id: string) => void; onDelete: (id: string) => void }) {
+  return (
+    <div className="flex justify-end gap-1.5">
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Preview"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700"
+      >
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+      <Button variant="outline" className={`${fleetBtnSm} gap-1 border-slate-200 text-slate-700`} onClick={() => onEdit(item.id)} title="Edit">
+        <Edit className="h-3.5 w-3.5" /> Edit
+      </Button>
+      <Button
+        variant="outline"
+        className="h-7 w-7 border-red-100 p-0 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
+        onClick={() => onDelete(item.id)}
+        title="Delete"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+}
+
+export default function VisaList({ visa, onEdit, onDelete }: VisaTableProps) {
   return (
     <div className="w-full">
-      {/* Desktop Table */}
+      {/* Desktop table */}
       <div className="hidden md:block">
-        <Table className="border border-slate-100 shadow-sm rounded-xl overflow-hidden bg-white">
+        <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b border-slate-100">
-              <TableHead className="w-[20%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10 px-4">Country</TableHead>
-              <TableHead className="w-[15%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Fee</TableHead>
-              <TableHead className="w-[20%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Visa Type</TableHead>
-              <TableHead className="w-[25%] text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">URL</TableHead>
-              <TableHead className="w-[20%] text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right h-10 pr-4">Actions</TableHead>
+            <TableRow className="bg-slate-50/60 hover:bg-slate-50/60">
+              <TableHead className={`${fleetTh} pl-4`}>Country</TableHead>
+              <TableHead className={fleetTh}>Visa type</TableHead>
+              <TableHead className={`${fleetTh} text-right`}>Options</TableHead>
+              <TableHead className={`${fleetTh} text-right`}>Fee</TableHead>
+              <TableHead className={fleetTh}>Status</TableHead>
+              <TableHead className={fleetTh}>Updated</TableHead>
+              <TableHead className={`${fleetTh} pr-4 text-right`}>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visa.map((cat: Visa) => (
-              <motion.tr
-                key={cat.id}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="group border-b border-slate-50 hover:bg-slate-50/80 transition-colors duration-300 ease-in-out"
-              >
-                <TableCell className="py-2 px-4">
-                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight block group-hover:translate-x-[1px] transition-transform duration-300 ease-in-out">
-                    {cat.country}
-                  </span>
+            {visa.map((item) => (
+              <TableRow key={item.id} className="border-slate-100 hover:bg-slate-50/70">
+                <TableCell className="py-2.5 pl-4">
+                  <CountryCell item={item} />
                 </TableCell>
-                <TableCell className="py-2">
-                  <span className="text-[13px] font-semibold text-slate-700 tracking-tight">₹{cat.cost}</span>
+                <TableCell className="py-2.5">
+                  {item.visaType ? <FleetPill className={fleetTone.sky} dot={false}>{item.visaType}</FleetPill> : <span className="text-slate-400">—</span>}
                 </TableCell>
-                <TableCell className="py-2">
-                  <span className="text-[11px] font-medium text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded capitalize">
-                    {cat.visaType}
-                  </span>
+                <TableCell className="py-2.5 text-right text-[13px] tabular-nums text-slate-600">{item.options ?? 0}</TableCell>
+                <TableCell className="py-2.5 text-right text-[13px] font-semibold tabular-nums text-slate-900">{formatFee(item.cost)}</TableCell>
+                <TableCell className="py-2.5">
+                  <StatusPill active={item.isActive} />
                 </TableCell>
-                <TableCell className="py-2">
-                  <a
-                    href={cat.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-400 lowercase font-mono group/link"
-                  >
-                    <ExternalLink size={12} className="opacity-40 group-hover/link:opacity-100 group-hover/link:scale-110 transition-all duration-300 ease-in-out" />
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out truncate max-w-[150px]">
-                      /visa/{cat.country.toLowerCase().replace(/\s+/g, "-")}
-                    </span>
-                  </a>
+                <TableCell className="py-2.5 text-[12px] text-slate-500">{formatDate(item.updatedAt)}</TableCell>
+                <TableCell className="py-2.5 pr-4">
+                  <RowActions item={item} onEdit={onEdit} onDelete={onDelete} />
                 </TableCell>
-                <TableCell className="py-2 text-right pr-4">
-                  <div className="flex justify-end gap-1.5">
-                    <Button
-                      variant="outline"
-                      className="h-7 w-7 p-0 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                      onClick={() => onEdit(cat.id)}
-                      title="Edit"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="h-7 w-7 p-0 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border-0 transition-colors"
-                      onClick={() => onDelete(cat.id)}
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </motion.tr>
+              </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-4">
-        {visa.map((cat: Visa) => (
-          <Card key={cat.id} className="shadow-md">
-            <CardContent className="p-4 space-y-2">
-              <h3 className="font-semibold text-lg">{cat.country}</h3>
-              <h3 className="font-semibold text-lg">{cat.cost}</h3>
-              <h3 className="font-semibold text-lg">{cat.visaType}</h3>
-              <a
-                href={cat.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline inline-flex items-center gap-1 text-sm"
-              >
-                <ExternalLink size={16} />
-                Visit
-              </a>
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => onEdit(cat.id)}
-                >
-                  <Edit className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => onDelete(cat.id)}
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Mobile list */}
+      <div className="divide-y divide-slate-100 md:hidden">
+        {visa.map((item) => (
+          <div key={item.id} className="space-y-2.5 px-4 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <CountryCell item={item} />
+              <StatusPill active={item.isActive} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[12px] text-slate-500">
+              {item.visaType && <FleetPill className={fleetTone.sky} dot={false}>{item.visaType}</FleetPill>}
+              <span className="font-semibold text-slate-900">{formatFee(item.cost)}</span>
+              <span>· {item.options ?? 0} options</span>
+            </div>
+            <RowActions item={item} onEdit={onEdit} onDelete={onDelete} />
+          </div>
         ))}
       </div>
     </div>
