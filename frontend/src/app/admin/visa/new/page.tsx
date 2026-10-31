@@ -29,6 +29,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getAllAuthors } from "../../webpage/new/page";
 import OpenGraphManager from "@/components/admin/OpenGraphManager";
 import VisaGalleryManager, { VisaGalleryImage } from "@/components/admin/VisaGalleryManager";
+import VisaTabsEditor from "@/components/admin/VisaTabsEditor";
+import { ExternalLink } from "lucide-react";
+import { FleetPage, FleetPill, fleetTone } from "@/components/admin/fleet/FleetUI";
+import { VisaPageHeader, VisaAdminTabsList, VisaTabPanel, VisaSaveBar, VisaCollapsibleEditor, VisaSmallEditor } from "@/components/admin/visa/VisaAdminUI";
+import { VisaTabConfigItem, resolveVisaTabsConfig, toSavedTabsConfig } from "@/lib/visaTabs";
 interface Faq {
   question: string;
   answer: string;
@@ -155,6 +160,10 @@ export default function CreateVisaPage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
   const [showReviewsModal, setShowReviewsModal] = useState(false);
+  // Kept outside react-hook-form (like packages' tabsConfig) and only sent on
+  // save once the admin changes something in the Tabs tab.
+  const [tabsConfig, setTabsConfig] = useState<VisaTabConfigItem[]>(() => resolveVisaTabsConfig(null));
+  const [tabsTouched, setTabsTouched] = useState(false);
   const [editReviewsId, setEditReviewsId] = useState<string | null>(null);
   const [reviewsDetails, setReviewsDetails] = useState<Reviews[]>([]);
   const defaultValues: Visa = {
@@ -349,32 +358,481 @@ export default function CreateVisaPage() {
       cost: values.cost === "" as any ? 0 : Number(values.cost || 0),
       visaProcessed: values.visaProcessed === "" as any ? 0 : Number(values.visaProcessed || 0),
       visas: sanitizedVisas,
-    });
+      ...(tabsTouched && { tabsConfig: toSavedTabsConfig(tabsConfig) }),
+    } as Visa);
   };
 
   const schemaTypes = ["FAQ", "Webpage", "Review"];
 
+  // Structured editors shown both in their own admin tab and inside the Tabs
+  // panel (VisaTabsEditor). Inactive tabs unmount, so only one copy is live.
+  const rejectionReasonsEditor = (
+    <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+      <FormLabel className="text-[12px] font-medium text-slate-700">Visa Rejection Reasons</FormLabel>
+      {visaRejectionReasonsOptions.length === 0 ? (
+        <div className="text-[11px] text-gray-400 italic">No rejection reasons found in Master Data.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {visaRejectionReasonsOptions.map((reason: any) => {
+            const current = form.watch("rejectionReasons") || [];
+            const isChecked = current.includes(reason._id);
+            return (
+              <div key={reason._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
+                <Checkbox
+                  id={`reason-${reason._id}`}
+                  checked={isChecked}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      form.setValue("rejectionReasons", [...current, reason._id]);
+                    } else {
+                      form.setValue("rejectionReasons", current.filter((id) => id !== reason._id));
+                    }
+                  }}
+                  className="mt-0.5"
+                />
+                <div className="space-y-1 leading-none">
+                  <label
+                    htmlFor={`reason-${reason._id}`}
+                    className="text-[11px] font-semibold text-slate-800 cursor-pointer"
+                  >
+                    {reason.title}
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+  const expertTipsEditor = (
+    <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
+      <FormLabel className="text-[12px] font-medium text-slate-700">Visa Expert Tips</FormLabel>
+      {visaExpertTipsOptions.length === 0 ? (
+        <div className="text-[11px] text-gray-400 italic">No expert tips found in Master Data.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {visaExpertTipsOptions.map((tip: any) => {
+            const current = form.watch("expertTips") || [];
+            const isChecked = current.includes(tip._id);
+            return (
+              <div key={tip._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
+                <Checkbox
+                  id={`tip-${tip._id}`}
+                  checked={isChecked}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      form.setValue("expertTips", [...current, tip._id]);
+                    } else {
+                      form.setValue("expertTips", current.filter((id) => id !== tip._id));
+                    }
+                  }}
+                  className="mt-0.5"
+                />
+                <div className="space-y-1 leading-none">
+                  <label
+                    htmlFor={`tip-${tip._id}`}
+                    className="text-[11px] font-semibold text-slate-800 cursor-pointer"
+                  >
+                    {tip.title}
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+  const visaCardsEditor = (
+    <>
+      <div className="flex justify-between items-center pt-2">
+        <FormLabel className="text-[12px] font-medium text-slate-700">Visa Cards</FormLabel>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="h-7 text-[11px] font-semibold rounded-sm"
+          onClick={() => visasArray.append({
+            visaPurpose: "",
+            visaType: "",
+            gstTypeOrPercentageText: "",
+            documents: "",
+            processSteps: "",
+            visaValidity: "",
+            visaDuration: "",
+            entryType: "",
+            processTime: "",
+            validityEntries: [{ 
+              visaValidity: "", 
+              visaDuration: "", 
+              entryType: "", 
+              processTime: "",
+              governmentFee: 0,
+              serviceCharges: 0,
+              gst: 0,
+              expressVisaDuration: "",
+              expressGovernmentFee: 0,
+              expressServiceCharges: 0,
+            }],
+            isExpress: false,
+          })}
+        >
+          <Plus className="w-3 h-3 mr-1" /> Add Visa Card
+        </Button>
+      </div>
+
+      {visasArray.fields.length === 0 && (
+        <div className="text-center py-10 text-[11px] text-gray-500 border border-dashed rounded bg-white">
+          No visa cards added yet. Click "Add Visa Card" to get started.
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {visasArray.fields.map((field, index) => {
+          const isCollapsed = collapsedCards[index];
+          const purpose = form.watch(`visas.${index}.visaPurpose`);
+          const vType = form.watch(`visas.${index}.visaType`);
+          const isExpress = form.watch(`visas.${index}.isExpress`);
+          return (
+            <div key={field.id} className="border rounded-md bg-white shadow-sm">
+              {/* Card Header */}
+              <div
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b cursor-pointer rounded-t-md"
+                onClick={() => toggleCard(index)}
+              >
+                <div className="flex items-center gap-2">
+                  {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-gray-500" /> : <ChevronUp className="w-3.5 h-3.5 text-gray-500" />}
+                  <span className="text-xs font-semibold text-gray-700">
+                    {purpose || vType ? `${purpose}${purpose && vType ? ' — ' : ''}${vType}` : `Visa Card #${index + 1}`}
+                  </span>
+                  {isExpress && <span className="text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-semibold">EXPRESS</span>}
+                </div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-sm"
+                  onClick={(e) => { e.stopPropagation(); visasArray.remove(index); }}
+                >
+                  <X size={12} />
+                </Button>
+              </div>
+
+              {/* Card Body */}
+              {!isCollapsed && (
+                <div className="p-3 space-y-3">
+                  {/* Row 1: Purpose + Type */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name={`visas.${index}.visaPurpose`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-0.5">
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Visa Purpose</FormLabel>
+                          <FormControl>
+                            <select className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]" {...field}>
+                              <option value="">Select Purpose</option>
+                              {visaPurposeOptions.map((opt: any) => (
+                                <option key={opt._id} value={opt.name}>{opt.name}</option>
+                              ))}
+                            </select>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`visas.${index}.visaType`}
+                      render={({ field }) => (
+                        <FormItem className="space-y-0.5">
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Visa Type</FormLabel>
+                          <FormControl>
+                            <select className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]" {...field}>
+                              <option value="">Select Type</option>
+                              <option value="E-Visa">E-Visa</option>
+                              <option value="DAC">DAC</option>
+                              <option value="EVOA">EVOA</option>
+                              <option value="Sticker">Sticker</option>
+                              <option value="ETA">ETA</option>
+                              <option value="PAR">PAR</option>
+                            </select>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Row 3: Validity & Pricing Entries (Multiple per card) */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200">
+                      <Label className="text-[12px] font-bold text-gray-700 uppercase tracking-widest">Validity & Pricing Entries</Label>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="default"
+                        className="h-7 text-[10px] font-semibold rounded-sm bg-[#FE5300] hover:bg-[#e44a00]"
+                        onClick={() => {
+                          const current = form.getValues(`visas.${index}.validityEntries`) || [];
+                          form.setValue(`visas.${index}.validityEntries`, [
+                            ...current,
+                            { 
+                              visaValidity: "", visaDuration: "", entryType: "", processTime: "",
+                              governmentFee: 0, serviceCharges: 0, gst: 0,
+                              expressVisaDuration: "", expressGovernmentFee: 0, expressServiceCharges: 0
+                            }
+                          ]);
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Add Entry
+                      </Button>
+                    </div>
+
+                    {(form.watch(`visas.${index}.validityEntries`) || []).map((_: any, vIdx: number) => (
+                      <div key={vIdx} className="relative bg-white p-3 rounded-lg border border-gray-200 shadow-sm space-y-3">
+                        {/* Remove button */}
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full shadow-md z-10"
+                          onClick={() => {
+                            const current = form.getValues(`visas.${index}.validityEntries`) || [];
+                            if (current.length > 1) {
+                              form.setValue(`visas.${index}.validityEntries`, current.filter((_: any, i: number) => i !== vIdx));
+                            }
+                          }}
+                        >
+                          <X size={12} />
+                        </Button>
+
+                        {/* Entry Basics */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {/* Visa Validity */}
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">Validity</Label>
+                            <select
+                              className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.visaValidity`) || ""}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.visaValidity`, e.target.value)}
+                            >
+                              <option value="">Select Validity</option>
+                              {visaValidityOptions.map((opt: any) => (
+                                <option key={opt._id} value={formatDuration(opt)}>{formatDuration(opt)}</option>
+                              ))}
+                            </select>
+                          </div>
+                          {/* Visa Duration */}
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">Duration</Label>
+                            <select
+                              className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.visaDuration`) || ""}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.visaDuration`, e.target.value)}
+                            >
+                              <option value="">Select Duration</option>
+                              {visaDurationOptions.map((opt: any) => (
+                                <option key={opt._id} value={formatDuration(opt)}>{formatDuration(opt)}</option>
+                              ))}
+                            </select>
+                          </div>
+                          {/* Entry Type */}
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">Entry</Label>
+                            <select
+                              className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.entryType`) || ""}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.entryType`, e.target.value)}
+                            >
+                              <option value="">Select Entry</option>
+                              <option value="Single">Single</option>
+                              <option value="Multiple">Multiple</option>
+                            </select>
+                          </div>
+                          {/* Process Time */}
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">Process Time</Label>
+                            <Input
+                              className="h-8 text-[13px] px-2.5 rounded-md"
+                              placeholder="e.g. 3-4 Days"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.processTime`) || ""}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.processTime`, e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Standard Pricing */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-gray-100">
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">Gov Fee</Label>
+                            <Input
+                              className="h-7 text-xs px-2 rounded-sm bg-gray-50"
+                              type="number"
+                              placeholder="0"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.governmentFee`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.governmentFee`)}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.governmentFee`, e.target.value === "" ? "" as any : Number(e.target.value))}
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">Service Charges</Label>
+                            <Input
+                              className="h-7 text-xs px-2 rounded-sm bg-gray-50"
+                              type="number"
+                              placeholder="0"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.serviceCharges`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.serviceCharges`)}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.serviceCharges`, e.target.value === "" ? "" as any : Number(e.target.value))}
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <Label className="text-[11px] font-medium text-slate-500">GST (%)</Label>
+                            <Input
+                              className="h-7 text-xs px-2 rounded-sm bg-gray-50"
+                              type="number"
+                              placeholder="0"
+                              value={form.watch(`visas.${index}.validityEntries.${vIdx}.gst`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.gst`)}
+                              onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.gst`, e.target.value === "" ? "" as any : Number(e.target.value))}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Express Pricing (Conditional) */}
+                        {isExpress && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-2 bg-orange-50/50 rounded border border-orange-100">
+                            <div className="space-y-0.5">
+                              <Label className="text-[10px] font-bold text-orange-700 uppercase tracking-widest">Express Process Time</Label>
+                              <Input
+                                className="h-7 text-xs px-2 rounded-sm border-orange-200"
+                                placeholder="e.g. 1-2 Days"
+                                value={form.watch(`visas.${index}.validityEntries.${vIdx}.expressVisaDuration`) || ""}
+                                onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.expressVisaDuration`, e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-0.5">
+                              <Label className="text-[10px] font-bold text-orange-700 uppercase tracking-widest">Express Gov Fee</Label>
+                              <Input
+                                className="h-7 text-xs px-2 rounded-sm border-orange-200"
+                                type="number"
+                                placeholder="0"
+                                value={form.watch(`visas.${index}.validityEntries.${vIdx}.expressGovernmentFee`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.expressGovernmentFee`)}
+                                onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.expressGovernmentFee`, e.target.value === "" ? "" as any : Number(e.target.value))}
+                              />
+                            </div>
+                            <div className="space-y-0.5">
+                              <Label className="text-[10px] font-bold text-orange-700 uppercase tracking-widest">Express Service Charges</Label>
+                              <Input
+                                className="h-7 text-xs px-2 rounded-sm border-orange-200"
+                                type="number"
+                                placeholder="0"
+                                value={form.watch(`visas.${index}.validityEntries.${vIdx}.expressServiceCharges`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.expressServiceCharges`)}
+                                onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.expressServiceCharges`, e.target.value === "" ? "" as any : Number(e.target.value))}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {(form.watch(`visas.${index}.validityEntries`) || []).length === 0 && (
+                      <div className="text-center py-3 text-[10px] text-gray-400 border border-dashed rounded bg-white">
+                        No validity entries. Click &quot;Add Entry&quot; above.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Row 4: Documents + Process Steps (Rich Text) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-0.5">
+                      <Label className="text-[12px] font-medium text-slate-700">Documents</Label>
+                      <div className="text-xs">
+                        <VisaSmallEditor
+                          value={form.getValues(`visas.${index}.documents`) || ""}
+                          onChange={(val) => form.setValue(`visas.${index}.documents`, val)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-0.5">
+                      <Label className="text-[12px] font-medium text-slate-700">Process Steps</Label>
+                      <div className="text-xs">
+                        <VisaSmallEditor
+                          value={form.getValues(`visas.${index}.processSteps`) || ""}
+                          onChange={(val) => form.setValue(`visas.${index}.processSteps`, val)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Express Toggle at the bottom (conditional fields are now inside validity entries) */}
+                  <div className="flex items-center gap-3 pt-2 border-t">
+                    <Switch
+                      checked={isExpress}
+                      onCheckedChange={(checked) => form.setValue(`visas.${index}.isExpress`, checked)}
+                    />
+                    <Label className="text-[12px] font-medium text-slate-700">Enable Express Pricing for Entries</Label>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+  const faqsEditor = (
+    <div className="bg-slate-50/60 p-3 rounded-lg border border-slate-200/80">
+      <FormLabel className="mb-2 block text-[12px] font-medium text-slate-700">Frequently Asked Questions (FAQs)</FormLabel>
+      <div className="space-y-2">
+        {faqsArray.fields.map((field, index) => (
+          <div key={field.id} className="flex gap-2 p-2 bg-white rounded border shadow-sm relative group">
+            <div className="w-full space-y-1.5">
+              <Input className="h-7 text-xs font-medium rounded-sm px-2" {...form.register(`faqs.${index}.question`)} placeholder="Question" />
+              <div className="text-xs">
+                <VisaSmallEditor
+                  value={form.getValues(`faqs.${index}.answer`)}
+                  onChange={(val) => form.setValue(`faqs.${index}.answer`, val)}
+                />
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="shrink-0 h-7 w-7 p-0 rounded-sm"
+              onClick={() => faqsArray.remove(index)}
+            >
+              <X size={12} />
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button size="sm" type="button" variant="outline" className="mt-2 w-full md:w-auto h-7 text-[11px] font-semibold rounded-sm tracking-wide" onClick={() => faqsArray.append({ question: "", answer: "" })}>
+        + Add FAQ
+      </Button>
+    </div>
+  );
+  const galleryEditor = (
+    <VisaGalleryManager
+      value={form.watch("gallery") || []}
+      onChange={(images) => form.setValue("gallery", images, { shouldDirty: true })}
+      defaultAlt={form.watch("country") || form.watch("title") || ""}
+    />
+  );
+
   return (
-    <div className="w-full bg-gray-50/30 p-2 lg:p-4">
-      <div className="w-full rounded-md bg-white p-4 shadow border border-gray-100">
-        <h1 className="mb-3 text-center text-lg font-extrabold text-gray-800 tracking-tight">Create Visa</h1>
+    <FleetPage className="gap-4">
+        <VisaPageHeader
+          title="Create Visa"
+          description="Add a new visa: details, pricing and page content."
+          badges={form.watch("country") ? <FleetPill className={fleetTone.slate}>{form.watch("country")}</FleetPill> : undefined}
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8 h-8 rounded-md p-0.5 mb-2 bg-gray-100">
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="basic">Basic Detail</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="content">Content</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="visas">Visas</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="media">Media</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="seo">SEO & Docs</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="faqs">FAQs & Review</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="gallery">Gallery</TabsTrigger>
-                <TabsTrigger className="rounded h-full leading-none text-[11px] font-medium data-[state=active]:shadow-sm" value="social">Social (OG)</TabsTrigger>
-              </TabsList>
+            <Tabs defaultValue="basic" className="w-full min-w-0 gap-4">
+              <VisaAdminTabsList />
 
               {/* TAB 1: BASIC INFO */}
               <TabsContent value="basic" className="space-y-3">
+                <VisaTabPanel tab="basic">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* Name */}
                   <FormField
@@ -382,9 +840,9 @@ export default function CreateVisaPage() {
                     name="title"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Title</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Title</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" placeholder="Thailand Visa" {...field} required />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" placeholder="Thailand Visa" {...field} required />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -396,9 +854,9 @@ export default function CreateVisaPage() {
                     name="slug"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Permalink</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Permalink</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" placeholder="thailand-visa" {...field} required />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" placeholder="thailand-visa" {...field} required />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -410,9 +868,9 @@ export default function CreateVisaPage() {
                     name="country"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Country</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Country</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" placeholder="Thailand" {...field} required />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" placeholder="Thailand" {...field} required />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -425,10 +883,10 @@ export default function CreateVisaPage() {
                     name="visaType"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Type</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Visa Type</FormLabel>
                         <FormControl>
                           <select
-                            className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
                             {...field}
                             required
                           >
@@ -452,10 +910,10 @@ export default function CreateVisaPage() {
                     name="author"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Author</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Author</FormLabel>
                         <FormControl>
                           <select
-                            className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                            className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
                             {...field}
                           >
                             <option value="">Select Author</option>
@@ -477,10 +935,10 @@ export default function CreateVisaPage() {
                     name="cost"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Fee</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Fee</FormLabel>
                         <FormControl>
                           <Input
-                            className="h-7 text-xs px-2 rounded-sm"
+                            className="h-8 text-[13px] px-2.5 rounded-md"
                             type="number"
                             placeholder="100"
                             value={field.value === 0 ? "" : field.value}
@@ -499,10 +957,10 @@ export default function CreateVisaPage() {
                     name="visaProcessed"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Total Processed</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Total Processed</FormLabel>
                         <FormControl>
                           <Input
-                            className="h-7 text-xs px-2 rounded-sm"
+                            className="h-8 text-[13px] px-2.5 rounded-md"
                             type="number"
                             placeholder="100"
                             value={field.value === 0 ? "" : field.value}
@@ -520,451 +978,28 @@ export default function CreateVisaPage() {
                     name="duration"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Duration</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Duration</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="2 to 7" {...field} />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" type="text" placeholder="2 to 7" {...field} />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
                 </div>
+                </VisaTabPanel>
               </TabsContent>
 
-              {/* TAB: VISAS */}
-              <TabsContent value="visas" className="space-y-5">
-                
-                {/* Rejection Reasons Multi-Select */}
-                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
-                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Rejection Reasons</FormLabel>
-                  {visaRejectionReasonsOptions.length === 0 ? (
-                    <div className="text-[11px] text-gray-400 italic">No rejection reasons found in Master Data.</div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {visaRejectionReasonsOptions.map((reason: any) => {
-                        const current = form.watch("rejectionReasons") || [];
-                        const isChecked = current.includes(reason._id);
-                        return (
-                          <div key={reason._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
-                            <Checkbox
-                              id={`reason-${reason._id}`}
-                              checked={isChecked}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  form.setValue("rejectionReasons", [...current, reason._id]);
-                                } else {
-                                  form.setValue("rejectionReasons", current.filter((id) => id !== reason._id));
-                                }
-                              }}
-                              className="mt-0.5"
-                            />
-                            <div className="space-y-1 leading-none">
-                              <label
-                                htmlFor={`reason-${reason._id}`}
-                                className="text-[11px] font-semibold text-slate-800 cursor-pointer"
-                              >
-                                {reason.title}
-                              </label>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Expert Tips Multi-Select */}
-                <div className="bg-white p-3 border rounded-md shadow-sm space-y-3">
-                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Expert Tips</FormLabel>
-                  {visaExpertTipsOptions.length === 0 ? (
-                    <div className="text-[11px] text-gray-400 italic">No expert tips found in Master Data.</div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {visaExpertTipsOptions.map((tip: any) => {
-                        const current = form.watch("expertTips") || [];
-                        const isChecked = current.includes(tip._id);
-                        return (
-                          <div key={tip._id} className="flex items-start space-x-2 border rounded-md p-2 bg-slate-50 hover:bg-slate-100 transition-colors">
-                            <Checkbox
-                              id={`tip-${tip._id}`}
-                              checked={isChecked}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  form.setValue("expertTips", [...current, tip._id]);
-                                } else {
-                                  form.setValue("expertTips", current.filter((id) => id !== tip._id));
-                                }
-                              }}
-                              className="mt-0.5"
-                            />
-                            <div className="space-y-1 leading-none">
-                              <label
-                                htmlFor={`tip-${tip._id}`}
-                                className="text-[11px] font-semibold text-slate-800 cursor-pointer"
-                              >
-                                {tip.title}
-                              </label>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-between items-center pt-2">
-                  <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Cards</FormLabel>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px] font-semibold rounded-sm"
-                    onClick={() => visasArray.append({
-                      visaPurpose: "",
-                      visaType: "",
-                      gstTypeOrPercentageText: "",
-                      documents: "",
-                      processSteps: "",
-                      visaValidity: "",
-                      visaDuration: "",
-                      entryType: "",
-                      processTime: "",
-                      validityEntries: [{ 
-                        visaValidity: "", 
-                        visaDuration: "", 
-                        entryType: "", 
-                        processTime: "",
-                        governmentFee: 0,
-                        serviceCharges: 0,
-                        gst: 0,
-                        expressVisaDuration: "",
-                        expressGovernmentFee: 0,
-                        expressServiceCharges: 0,
-                      }],
-                      isExpress: false,
-                    })}
-                  >
-                    <Plus className="w-3 h-3 mr-1" /> Add Visa Card
-                  </Button>
-                </div>
-
-                {visasArray.fields.length === 0 && (
-                  <div className="text-center py-10 text-[11px] text-gray-500 border border-dashed rounded bg-white">
-                    No visa cards added yet. Click "Add Visa Card" to get started.
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {visasArray.fields.map((field, index) => {
-                    const isCollapsed = collapsedCards[index];
-                    const purpose = form.watch(`visas.${index}.visaPurpose`);
-                    const vType = form.watch(`visas.${index}.visaType`);
-                    const isExpress = form.watch(`visas.${index}.isExpress`);
-                    return (
-                      <div key={field.id} className="border rounded-md bg-white shadow-sm">
-                        {/* Card Header */}
-                        <div
-                          className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b cursor-pointer rounded-t-md"
-                          onClick={() => toggleCard(index)}
-                        >
-                          <div className="flex items-center gap-2">
-                            {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-gray-500" /> : <ChevronUp className="w-3.5 h-3.5 text-gray-500" />}
-                            <span className="text-xs font-semibold text-gray-700">
-                              {purpose || vType ? `${purpose}${purpose && vType ? ' — ' : ''}${vType}` : `Visa Card #${index + 1}`}
-                            </span>
-                            {isExpress && <span className="text-[9px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-semibold">EXPRESS</span>}
-                          </div>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="h-6 w-6 p-0 rounded-sm"
-                            onClick={(e) => { e.stopPropagation(); visasArray.remove(index); }}
-                          >
-                            <X size={12} />
-                          </Button>
-                        </div>
-
-                        {/* Card Body */}
-                        {!isCollapsed && (
-                          <div className="p-3 space-y-3">
-                            {/* Row 1: Purpose + Type */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <FormField
-                                control={form.control}
-                                name={`visas.${index}.visaPurpose`}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-0.5">
-                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Purpose</FormLabel>
-                                    <FormControl>
-                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
-                                        <option value="">Select Purpose</option>
-                                        {visaPurposeOptions.map((opt: any) => (
-                                          <option key={opt._id} value={opt.name}>{opt.name}</option>
-                                        ))}
-                                      </select>
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name={`visas.${index}.visaType`}
-                                render={({ field }) => (
-                                  <FormItem className="space-y-0.5">
-                                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Visa Type</FormLabel>
-                                    <FormControl>
-                                      <select className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" {...field}>
-                                        <option value="">Select Type</option>
-                                        <option value="E-Visa">E-Visa</option>
-                                        <option value="DAC">DAC</option>
-                                        <option value="EVOA">EVOA</option>
-                                        <option value="Sticker">Sticker</option>
-                                        <option value="ETA">ETA</option>
-                                        <option value="PAR">PAR</option>
-                                      </select>
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            {/* Row 3: Validity & Pricing Entries (Multiple per card) */}
-                            <div className="space-y-3">
-                              <div className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200">
-                                <Label className="text-[12px] font-bold text-gray-700 uppercase tracking-widest">Validity & Pricing Entries</Label>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="default"
-                                  className="h-7 text-[10px] font-semibold rounded-sm bg-[#FE5300] hover:bg-[#e44a00]"
-                                  onClick={() => {
-                                    const current = form.getValues(`visas.${index}.validityEntries`) || [];
-                                    form.setValue(`visas.${index}.validityEntries`, [
-                                      ...current,
-                                      { 
-                                        visaValidity: "", visaDuration: "", entryType: "", processTime: "",
-                                        governmentFee: 0, serviceCharges: 0, gst: 0,
-                                        expressVisaDuration: "", expressGovernmentFee: 0, expressServiceCharges: 0
-                                      }
-                                    ]);
-                                  }}
-                                >
-                                  <Plus className="w-3 h-3 mr-1" /> Add Entry
-                                </Button>
-                              </div>
-
-                              {(form.watch(`visas.${index}.validityEntries`) || []).map((_: any, vIdx: number) => (
-                                <div key={vIdx} className="relative bg-white p-3 rounded-lg border border-gray-200 shadow-sm space-y-3">
-                                  {/* Remove button */}
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full shadow-md z-10"
-                                    onClick={() => {
-                                      const current = form.getValues(`visas.${index}.validityEntries`) || [];
-                                      if (current.length > 1) {
-                                        form.setValue(`visas.${index}.validityEntries`, current.filter((_: any, i: number) => i !== vIdx));
-                                      }
-                                    }}
-                                  >
-                                    <X size={12} />
-                                  </Button>
-                                  
-                                  {/* Entry Basics */}
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {/* Visa Validity */}
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Validity</Label>
-                                      <select
-                                        className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.visaValidity`) || ""}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.visaValidity`, e.target.value)}
-                                      >
-                                        <option value="">Select Validity</option>
-                                        {visaValidityOptions.map((opt: any) => (
-                                          <option key={opt._id} value={formatDuration(opt)}>{formatDuration(opt)}</option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    {/* Visa Duration */}
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Duration</Label>
-                                      <select
-                                        className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.visaDuration`) || ""}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.visaDuration`, e.target.value)}
-                                      >
-                                        <option value="">Select Duration</option>
-                                        {visaDurationOptions.map((opt: any) => (
-                                          <option key={opt._id} value={formatDuration(opt)}>{formatDuration(opt)}</option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    {/* Entry Type */}
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Entry</Label>
-                                      <select
-                                        className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.entryType`) || ""}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.entryType`, e.target.value)}
-                                      >
-                                        <option value="">Select Entry</option>
-                                        <option value="Single">Single</option>
-                                        <option value="Multiple">Multiple</option>
-                                      </select>
-                                    </div>
-                                    {/* Process Time */}
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Process Time</Label>
-                                      <Input
-                                        className="h-7 text-xs px-2 rounded-sm"
-                                        placeholder="e.g. 3-4 Days"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.processTime`) || ""}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.processTime`, e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Standard Pricing */}
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-gray-100">
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Gov Fee</Label>
-                                      <Input
-                                        className="h-7 text-xs px-2 rounded-sm bg-gray-50"
-                                        type="number"
-                                        placeholder="0"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.governmentFee`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.governmentFee`)}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.governmentFee`, e.target.value === "" ? "" as any : Number(e.target.value))}
-                                      />
-                                    </div>
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Service Charges</Label>
-                                      <Input
-                                        className="h-7 text-xs px-2 rounded-sm bg-gray-50"
-                                        type="number"
-                                        placeholder="0"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.serviceCharges`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.serviceCharges`)}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.serviceCharges`, e.target.value === "" ? "" as any : Number(e.target.value))}
-                                      />
-                                    </div>
-                                    <div className="space-y-0.5">
-                                      <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">GST (%)</Label>
-                                      <Input
-                                        className="h-7 text-xs px-2 rounded-sm bg-gray-50"
-                                        type="number"
-                                        placeholder="0"
-                                        value={form.watch(`visas.${index}.validityEntries.${vIdx}.gst`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.gst`)}
-                                        onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.gst`, e.target.value === "" ? "" as any : Number(e.target.value))}
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Express Pricing (Conditional) */}
-                                  {isExpress && (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-2 bg-orange-50/50 rounded border border-orange-100">
-                                      <div className="space-y-0.5">
-                                        <Label className="text-[10px] font-bold text-orange-700 uppercase tracking-widest">Express Process Time</Label>
-                                        <Input
-                                          className="h-7 text-xs px-2 rounded-sm border-orange-200"
-                                          placeholder="e.g. 1-2 Days"
-                                          value={form.watch(`visas.${index}.validityEntries.${vIdx}.expressVisaDuration`) || ""}
-                                          onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.expressVisaDuration`, e.target.value)}
-                                        />
-                                      </div>
-                                      <div className="space-y-0.5">
-                                        <Label className="text-[10px] font-bold text-orange-700 uppercase tracking-widest">Express Gov Fee</Label>
-                                        <Input
-                                          className="h-7 text-xs px-2 rounded-sm border-orange-200"
-                                          type="number"
-                                          placeholder="0"
-                                          value={form.watch(`visas.${index}.validityEntries.${vIdx}.expressGovernmentFee`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.expressGovernmentFee`)}
-                                          onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.expressGovernmentFee`, e.target.value === "" ? "" as any : Number(e.target.value))}
-                                        />
-                                      </div>
-                                      <div className="space-y-0.5">
-                                        <Label className="text-[10px] font-bold text-orange-700 uppercase tracking-widest">Express Service Charges</Label>
-                                        <Input
-                                          className="h-7 text-xs px-2 rounded-sm border-orange-200"
-                                          type="number"
-                                          placeholder="0"
-                                          value={form.watch(`visas.${index}.validityEntries.${vIdx}.expressServiceCharges`) === 0 ? "" : form.watch(`visas.${index}.validityEntries.${vIdx}.expressServiceCharges`)}
-                                          onChange={(e) => form.setValue(`visas.${index}.validityEntries.${vIdx}.expressServiceCharges`, e.target.value === "" ? "" as any : Number(e.target.value))}
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                              
-                              {(form.watch(`visas.${index}.validityEntries`) || []).length === 0 && (
-                                <div className="text-center py-3 text-[10px] text-gray-400 border border-dashed rounded bg-white">
-                                  No validity entries. Click &quot;Add Entry&quot; above.
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Row 4: Documents + Process Steps (Rich Text) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="space-y-0.5">
-                                <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Documents</Label>
-                                <div className="border rounded-sm overflow-hidden text-xs">
-                                  <SmallEditor
-                                    value={form.getValues(`visas.${index}.documents`) || ""}
-                                    onChange={(val) => form.setValue(`visas.${index}.documents`, val)}
-                                  />
-                                </div>
-                              </div>
-                              <div className="space-y-0.5">
-                                <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Process Steps</Label>
-                                <div className="border rounded-sm overflow-hidden text-xs">
-                                  <SmallEditor
-                                    value={form.getValues(`visas.${index}.processSteps`) || ""}
-                                    onChange={(val) => form.setValue(`visas.${index}.processSteps`, val)}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Express Toggle at the bottom (conditional fields are now inside validity entries) */}
-                            <div className="flex items-center gap-3 pt-2 border-t">
-                              <Switch
-                                checked={isExpress}
-                                onCheckedChange={(checked) => form.setValue(`visas.${index}.isExpress`, checked)}
-                              />
-                              <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Enable Express Pricing for Entries</Label>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </TabsContent>
 
               {/* TAB 2: CONTENT */}
               <TabsContent value="content" className="space-y-3">
-                {/* Content */}
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem className="space-y-0.5">
-                      <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Content</FormLabel>
-                      <FormControl className="text-xs">
-                        <BlogEditor value={field.value} onChange={field.onChange} />
-                      </FormControl>
-                      <FormMessage className="text-[10px]" />
-                    </FormItem>
-                  )}
-                />
+                <VisaTabPanel tab="content">
 
                 {/* Quick Summary */}
                 <FormField control={form.control} name="quickSummary" render={({ field }) => (
                   <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Quick Summary</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormLabel className="text-[12px] font-medium text-slate-700">Quick Summary</FormLabel>
+                    <FormControl><VisaCollapsibleEditor value={field.value} onChange={field.onChange} /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )} />
@@ -972,8 +1007,8 @@ export default function CreateVisaPage() {
                 {/* Highlights */}
                 <FormField control={form.control} name="highlights" render={({ field }) => (
                   <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Highlights</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormLabel className="text-[12px] font-medium text-slate-700">Highlights</FormLabel>
+                    <FormControl><VisaCollapsibleEditor value={field.value} onChange={field.onChange} /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )} />
@@ -981,52 +1016,20 @@ export default function CreateVisaPage() {
                 {/* Quick Answer */}
                 <FormField control={form.control} name="quickAnswer" render={({ field }) => (
                   <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Quick Answer</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormLabel className="text-[12px] font-medium text-slate-700">Quick Answer</FormLabel>
+                    <FormControl><VisaCollapsibleEditor value={field.value} onChange={field.onChange} /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )} />
 
-                {/* Why This Visa */}
-                <FormField control={form.control} name="whyThisVisa" render={({ field }) => (
-                  <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Why This Visa</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )} />
 
-                {/* Eligibility */}
-                <FormField control={form.control} name="eligibility" render={({ field }) => (
-                  <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Eligibility</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )} />
 
-                {/* Fees and Charges */}
-                <FormField control={form.control} name="feesAndCharges" render={({ field }) => (
-                  <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Fees and Charges</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )} />
 
-                {/* How to Apply */}
-                <FormField control={form.control} name="howToApply" render={({ field }) => (
-                  <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">How to Apply</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
-                    <FormMessage className="text-[10px]" />
-                  </FormItem>
-                )} />
 
                 {/* Helpful Resources */}
                 <div className="space-y-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between">
-                    <Label className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Helpful Resources</Label>
+                    <Label className="text-[12px] font-medium text-slate-700">Helpful Resources</Label>
                     <Button
                       type="button"
                       variant="secondary"
@@ -1059,8 +1062,8 @@ export default function CreateVisaPage() {
                 {/* CTA */}
                 <FormField control={form.control} name="cta" render={({ field }) => (
                   <FormItem className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">CTA</FormLabel>
-                    <FormControl className="text-xs"><BlogEditor value={field.value} onChange={field.onChange} /></FormControl>
+                    <FormLabel className="text-[12px] font-medium text-slate-700">CTA</FormLabel>
+                    <FormControl><VisaCollapsibleEditor value={field.value} onChange={field.onChange} /></FormControl>
                     <FormMessage className="text-[10px]" />
                   </FormItem>
                 )} />
@@ -1072,27 +1075,29 @@ export default function CreateVisaPage() {
                   name="excerpt"
                   render={({ field }) => (
                     <FormItem className="space-y-0.5">
-                      <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Excerpt</FormLabel>
+                      <FormLabel className="text-[12px] font-medium text-slate-700">Excerpt</FormLabel>
                       <FormControl>
-                        <Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Short description" {...field} />
+                        <Input className="h-8 text-[13px] px-2.5 rounded-md" type="text" placeholder="Short description" {...field} />
                       </FormControl>
                       <FormMessage className="text-[10px]" />
                     </FormItem>
                   )}
                 />
+                </VisaTabPanel>
               </TabsContent>
 
               {/* TAB 3: MEDIA */}
               <TabsContent value="media" className="space-y-3">
+                <VisaTabPanel tab="media">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-start gap-3">
                   {/* Avatar */}
-                  <div className="space-y-2 p-2 border rounded bg-gray-50/50">
+                  <div className="space-y-2 p-3 border border-slate-200/80 rounded-lg bg-slate-50/60">
                     <FormField
                       control={form.control}
                       name="coverImage"
                       render={() => (
                         <FormItem className="space-y-0.5">
-                          <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Avatar</FormLabel>
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Avatar</FormLabel>
                           <FormControl>
                             <div className="max-w-[160px] mx-auto w-full">
                               <ImageUploader
@@ -1122,13 +1127,13 @@ export default function CreateVisaPage() {
                   </div>
 
                   {/* Banner Image */}
-                  <div className="space-y-2 p-2 border rounded bg-gray-50/50">
+                  <div className="space-y-2 p-3 border border-slate-200/80 rounded-lg bg-slate-50/60">
                     <FormField
                       control={form.control}
                       name="bannerImage"
                       render={() => (
                         <FormItem className="space-y-0.5">
-                          <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Banner Image</FormLabel>
+                          <FormLabel className="text-[12px] font-medium text-slate-700">Banner Image</FormLabel>
                           <FormControl>
                             <div className="max-w-[160px] mx-auto w-full">
                               <ImageUploader
@@ -1157,10 +1162,12 @@ export default function CreateVisaPage() {
                     />
                   </div>
                 </div>
+                </VisaTabPanel>
               </TabsContent>
 
               {/* TAB 4: SEO & DOCS */}
               <TabsContent value="seo" className="space-y-3">
+                <VisaTabPanel tab="seo">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* metaTitle */}
                   <FormField
@@ -1168,9 +1175,9 @@ export default function CreateVisaPage() {
                     name="metaTitle"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">SEO MetaTitle</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">SEO MetaTitle</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Title for SEO" {...field} />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" type="text" placeholder="Title for SEO" {...field} />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -1183,9 +1190,9 @@ export default function CreateVisaPage() {
                     name="metaDescription"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">SEO MetaDescription</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">SEO MetaDescription</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Description for SEO" {...field} />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" type="text" placeholder="Description for SEO" {...field} />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -1198,9 +1205,9 @@ export default function CreateVisaPage() {
                     name="canonicalUrl"
                     render={({ field }) => (
                       <FormItem className="space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Canonical Url</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Canonical Url</FormLabel>
                         <FormControl>
-                          <Input className="h-7 text-xs px-2 rounded-sm" type="text" placeholder="Canonical Url" {...field} />
+                          <Input className="h-8 text-[13px] px-2.5 rounded-md" type="text" placeholder="Canonical Url" {...field} />
                         </FormControl>
                         <FormMessage className="text-[10px]" />
                       </FormItem>
@@ -1213,7 +1220,7 @@ export default function CreateVisaPage() {
                     name="schemaType"
                     render={({ field }) => (
                       <FormItem className="flex flex-col space-y-0.5">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Schema Type</FormLabel>
+                        <FormLabel className="text-[12px] font-medium text-slate-700">Schema Type</FormLabel>
                         <FormControl>
                           <select
                             className="w-full rounded-sm border border-gray-300 p-1 text-[11px] h-16 bg-white focus:outline-none focus:ring-1 focus:ring-primary"
@@ -1250,7 +1257,7 @@ export default function CreateVisaPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t">
                   {/* keywords */}
                   <div className="space-y-1">
-                    <Label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Keywords</Label>
+                    <Label className="block text-[12px] font-medium text-slate-700">Keywords</Label>
                     <div className="flex flex-wrap gap-1 border border-gray-300 rounded-sm p-1 min-h-[30px] bg-white">
                       {form.watch("keywords")?.map((kw, i) => (
                         <span key={i} className="flex items-center gap-0.5 bg-gray-100 px-1.5 py-0.5 rounded text-[10px] border">
@@ -1292,7 +1299,7 @@ export default function CreateVisaPage() {
 
                   {/* necessaryDocuments */}
                   <div className="space-y-1">
-                    <Label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Necessary Documents Checklist</Label>
+                    <Label className="block text-[12px] font-medium text-slate-700">Necessary Documents Checklist</Label>
                     <div className="flex flex-wrap gap-1 border border-gray-300 rounded-sm p-1 min-h-[30px] bg-white">
                       {form.watch("necessaryDocuments")?.map((doc, i) => (
                         <span key={i} className="flex items-center gap-0.5 bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] border border-blue-100">
@@ -1325,75 +1332,18 @@ export default function CreateVisaPage() {
                     </div>
                   </div>
 
-                  {/* documentsContent */}
-                  <FormField
-                    control={form.control}
-                    name="documentsContent"
-                    render={({ field }) => (
-                      <FormItem className="space-y-0.5 col-span-1 md:col-span-2">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Documents Info</FormLabel>
-                        <FormControl className="text-xs bg-white">
-                          <SmallEditor value={field.value || ""} onChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage className="text-[10px]" />
-                      </FormItem>
-                    )}
-                  />
 
-                  {/* process */}
-                  <FormField
-                    control={form.control}
-                    name="process"
-                    render={({ field }) => (
-                      <FormItem className="space-y-0.5 col-span-1 md:col-span-2 pt-2">
-                        <FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Process Steps</FormLabel>
-                        <FormControl className="text-xs bg-white">
-                          <SmallEditor value={field.value || ""} onChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage className="text-[10px]" />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+                </VisaTabPanel>
               </TabsContent>
 
               {/* TAB 5: FAQS & REVIEWS */}
               <TabsContent value="faqs" className="space-y-4">
-                {/* FAQs Dynamic */}
-                <div className="bg-gray-50/50 p-3 rounded border">
-                  <FormLabel className="mb-2 block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Frequently Asked Questions (FAQs)</FormLabel>
-                  <div className="space-y-2">
-                    {faqsArray.fields.map((field, index) => (
-                      <div key={field.id} className="flex gap-2 p-2 bg-white rounded border shadow-sm relative group">
-                        <div className="w-full space-y-1.5">
-                          <Input className="h-7 text-xs font-medium rounded-sm px-2" {...form.register(`faqs.${index}.question`)} placeholder="Question" />
-                          <div className="border rounded-sm overflow-hidden text-xs">
-                            <SmallEditor
-                              value={form.getValues(`faqs.${index}.answer`)}
-                              onChange={(val) => form.setValue(`faqs.${index}.answer`, val)}
-                            />
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="shrink-0 h-7 w-7 p-0 rounded-sm"
-                          onClick={() => faqsArray.remove(index)}
-                        >
-                          <X size={12} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <Button size="sm" type="button" variant="outline" className="mt-2 w-full md:w-auto h-7 text-[11px] font-semibold rounded-sm tracking-wide" onClick={() => faqsArray.append({ question: "", answer: "" })}>
-                    + Add FAQ
-                  </Button>
-                </div>
+                <VisaTabPanel tab="faqs">
 
                 {/* Reviews */}
-                <div className="bg-gray-50/50 p-3 rounded border">
-                  <FormLabel className="mb-2 block text-[11px] font-bold text-gray-600 uppercase tracking-widest">Attached Reviews</FormLabel>
+                <div className="bg-slate-50/60 p-3 rounded-lg border border-slate-200/80">
+                  <FormLabel className="mb-2 block text-[12px] font-medium text-slate-700">Attached Reviews</FormLabel>
                   
                   {reviewsDetails.length === 0 ? (
                     <div className="text-center py-4 text-[11px] text-gray-500 border border-dashed rounded bg-white">
@@ -1439,19 +1389,35 @@ export default function CreateVisaPage() {
                     </div>
                   )}
                 </div>
+                </VisaTabPanel>
               </TabsContent>
 
-              {/* TAB: GALLERY */}
-              <TabsContent value="gallery" className="space-y-3">
-                <VisaGalleryManager
-                  value={form.watch("gallery") || []}
-                  onChange={(images) => form.setValue("gallery", images, { shouldDirty: true })}
-                  defaultAlt={form.watch("country") || form.watch("title") || ""}
+
+              {/* TAB: TABS (order / visibility / custom tabs on the visa page) */}
+              <TabsContent value="tabs" className="space-y-3">
+                <VisaTabPanel tab="tabs">
+                <VisaTabsEditor
+                  value={tabsConfig}
+                  onChange={(next) => {
+                    setTabsConfig(next);
+                    setTabsTouched(true);
+                  }}
+                  form={form}
+                  country={form.watch("country")}
+                  builtinBodies={{
+                    visasList: visaCardsEditor,
+                    rejectionReasons: rejectionReasonsEditor,
+                    expertTips: expertTipsEditor,
+                    gallery: galleryEditor,
+                    faqs: faqsEditor,
+                  }}
                 />
+                </VisaTabPanel>
               </TabsContent>
 
               {/* TAB 7: SOCIAL (OG) */}
               <TabsContent value="social" className="space-y-3">
+                <VisaTabPanel tab="social">
                 <OpenGraphManager 
                   form={form} 
                   moduleType="VISA" 
@@ -1462,14 +1428,15 @@ export default function CreateVisaPage() {
                     imageAlt: form.watch("metaTitle") || form.watch("title") || ""
                   }} 
                 />
+                </VisaTabPanel>
               </TabsContent>
             </Tabs>
 
-            <div className="pt-3 border-t mt-4 flex justify-end">
-              <Button size="sm" type="submit" className="w-full md:w-auto px-6 h-8 text-[11px] font-bold uppercase tracking-widest rounded shadow-sm" disabled={mutation.isPending}>
+            <VisaSaveBar hint="Changes in every tab are saved together.">
+              <Button size="sm" type="submit" className="h-8 px-5 text-[12px] font-semibold bg-[#FE5300] hover:bg-[#e44a00]" disabled={mutation.isPending}>
                 {mutation.isPending ? "Creating..." : "Create Visa"}
               </Button>
-            </div>
+            </VisaSaveBar>
           </form>
         </Form>
 
@@ -1483,7 +1450,6 @@ export default function CreateVisaPage() {
             Visa Creation successful!
           </p>
         )}
-      </div>
-    </div>
+    </FleetPage>
   );
 }

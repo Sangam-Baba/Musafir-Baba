@@ -22,8 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormLabel } from "@/components/ui/form";
-import BlogEditor from "@/components/admin/BlogEditor";
-import SmallEditor from "@/components/admin/SmallEditor";
+import { CompactBlogEditor as BlogEditor, CompactSmallEditor as SmallEditor } from "@/components/admin/AdminFormUI";
 import ImageUploader from "@/components/admin/ImageUploader";
 import {
   TabConfigItem,
@@ -62,7 +61,7 @@ function SortableTabRow({ entry, onLabelChange, onSectionTitleChange, onToggleHi
   const builtinDefaultTitle = entry.type === "builtin" && entry.builtinKey ? BUILTIN_DEFAULT_SECTION_TITLE[entry.builtinKey] : undefined;
 
   return (
-    <div ref={setNodeRef} style={style} className="bg-white border rounded-md">
+    <div ref={setNodeRef} style={style} className="rounded-lg border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-slate-300">
       <div className="flex items-center gap-2 p-2">
         <button
           type="button"

@@ -80,6 +80,20 @@ const visaSchema = new mongoose.Schema(
       width: Number,
       height: Number,
     },
+    // Optional admin-controlled tab order/visibility/custom tabs for the visa
+    // detail page. Empty (every visa until an admin customises it) means the
+    // page renders its original fixed tab order.
+    tabsConfig: [
+      {
+        key: { type: String, required: true },
+        label: { type: String, required: true },
+        type: { type: String, enum: ["builtin", "custom"], default: "builtin" },
+        builtinKey: { type: String },
+        content: { type: String },
+        hidden: { type: Boolean, default: false },
+        sectionTitle: { type: String },
+      },
+    ],
     gallery: [
       {
         url: String,

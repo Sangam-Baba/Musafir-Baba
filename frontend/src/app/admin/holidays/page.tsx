@@ -1,12 +1,15 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { clearCache } from "@/app/actions";
 import Pagination from "@/components/common/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "@/components/custom/loader";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Package, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FleetPage, FleetPanel, fleetSelectClass } from "@/components/admin/fleet/FleetUI";
+import { AdminPageHeader } from "@/components/admin/AdminFormUI";
 import PackagesList from "@/components/admin/PackagesList";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Input } from "@/components/ui/input";
@@ -109,6 +112,8 @@ const getAllPackages = async (
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
+      // Admin list must always be fresh (e.g. right after an approval)
+      cache: "no-store",
     }
   );
   if (!res.ok) throw new Error("Failed to fetch packages");
@@ -135,6 +140,16 @@ const getDestinations = async () => {
 // needs real headroom above the old 500 max, not a bump that'll be too
 // small again soon.
 const PAGE_SIZE_OPTIONS = [10, 50, 100, 500, 2000];
+
+// Fleet-style look for the shared PackagesList table, applied from outside so
+// the customized-package lists that also use it are unaffected: drop the
+// table's own card (it now sits in a panel), soften the header row, and pad
+// the "Columns" button row.
+const PACKAGES_TABLE_STYLES = [
+  "[&_table]:rounded-none [&_table]:border-0 [&_table]:shadow-none",
+  "[&_th]:h-9 [&_th]:text-[11px] [&_th]:font-medium [&_th]:normal-case [&_th]:tracking-normal [&_th]:text-slate-500",
+  "[&>div>div:first-child]:px-4 [&>div>div:first-child]:pt-3",
+].join(" ");
 function PackagePage() {
   const [filter, setFilter] = useState({ search: "" });
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -158,6 +173,8 @@ function PackagePage() {
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const role = useAdminAuthStore((state) => state.role) as string;
   const [previewId, setPreviewId] = useState<string | null>(null);
+  // Packages whose approval request is currently in flight
+  const approvingIds = useRef<Set<string>>(new Set());
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const permissions = useAdminAuthStore(
     (state) => state.permissions
@@ -211,6 +228,8 @@ function PackagePage() {
   };
 
   const handleApprove = async (id: string, publish: boolean) => {
+    // Ignore repeat clicks while this package's approval is still in flight
+    if (approvingIds.current.has(id)) return;
     if (
       !confirm(
         publish
@@ -219,36 +238,44 @@ function PackagePage() {
       )
     )
       return;
+    approvingIds.current.add(id);
+    const toastId = toast.loading(publish ? "Approving and publishing…" : "Approving changes…");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/packages/${id}/approve`,
-        {
+      const sendApprove = (token: string | null) =>
+        fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/packages/${id}/approve`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ publish }),
-        }
-      );
+        });
+      let res = await sendApprove(useAdminAuthStore.getState().accessToken);
+      // The access token can expire while this page sits open; refresh it once
+      // and retry instead of failing until the page is reloaded.
+      if (res.status === 401) {
+        await useAdminAuthStore.getState().refreshAccessToken();
+        res = await sendApprove(useAdminAuthStore.getState().accessToken);
+      }
       if (!res.ok) {
         // Surface the server's reason (session expired, permission, validation…)
         const body = await res.json().catch(() => null);
         throw new Error(body?.error || body?.message || `Failed to approve package (HTTP ${res.status})`);
       }
-      toast.success(publish ? "Package approved and published" : "Package changes approved");
-      
-      // Trigger frontend cache revalidation using Server Action
-      try {
-        await clearCache('/holidays', 'packages');
-      } catch (err) {
-        console.error('Failed to revalidate cache:', err);
-      }
-      
+      toast.success(publish ? "Package approved and published" : "Package changes approved", { id: toastId });
+
+      // Show the updated row right away; the public-site cache revalidation
+      // (a round trip to the Next server) runs in the background instead of
+      // holding up the list refresh.
       refetch();
+      clearCache('/holidays', 'packages').catch((err) => {
+        console.error('Failed to revalidate cache:', err);
+      });
     } catch (error) {
       console.log("error in approving", error);
-      toast.error(error instanceof Error && error.message ? `Approval failed: ${error.message}` : "Something went wrong while approving package");
+      toast.error(error instanceof Error && error.message ? `Approval failed: ${error.message}` : "Something went wrong while approving package", { id: toastId });
+    } finally {
+      approvingIds.current.delete(id);
     }
   };
 
@@ -284,20 +311,36 @@ function PackagePage() {
   if (isError) return <h1>{error.message}</h1>;
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">All Packages</h1>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between  ">
+    <FleetPage>
+      <AdminPageHeader
+        section="Packages"
+        icon={Package}
+        title="All Packages"
+        description={`${meta.total.toLocaleString("en-IN")} packages · manage pricing, batches and what's live on the website.`}
+        actions={
+          <Button size="sm" className="h-8 gap-1.5 bg-[#FE5300] px-3 text-[12px] font-semibold hover:bg-[#e44a00]" onClick={() => router.push("/admin/holidays/new")}>
+            <Plus className="h-3.5 w-3.5" /> Create package
+          </Button>
+        }
+      />
+
+      <FleetPanel
+        title="Packages"
+        actions={
+        <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
+          <div className="relative w-full md:w-60">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
           <Input
             type="text"
             placeholder="Search by name or destination"
-            className="border border-gray-300 rounded-lg px-4 py-2 w-full max-w-[300px]"
+            className="h-8 w-full pl-8 text-[13px]"
             value={filter.search}
             onChange={(e) => {
               setFilter({ search: e.target.value });
               setPage(1);
             }}
           />
+          </div>
           <Select
             value={statusFilter || "all"}
             onValueChange={(v) => {
@@ -305,7 +348,7 @@ function PackagePage() {
               setPage(1);
             }}
           >
-            <SelectTrigger className="w-full md:w-[160px]">
+            <SelectTrigger size="sm" className="h-8 w-full text-[13px] md:w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -321,7 +364,7 @@ function PackagePage() {
               setPage(1);
             }}
           >
-            <SelectTrigger className="w-full md:w-[180px]">
+            <SelectTrigger size="sm" className="h-8 w-full text-[13px] md:w-[160px]">
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent>
@@ -342,7 +385,7 @@ function PackagePage() {
               setPage(1);
             }}
           >
-            <SelectTrigger className="w-full md:w-[190px]">
+            <SelectTrigger size="sm" className="h-8 w-full text-[13px] md:w-[180px]">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
@@ -351,20 +394,17 @@ function PackagePage() {
             </SelectContent>
           </Select>
         </div>
-        <button
-          onClick={() => router.push("/admin/holidays/new")}
-          className="bg-primary text-white px-4 py-2 rounded-lg shadow hover:bg-primary/90 transition"
-        >
-          + Create
-        </button>
-      </div>
-
+        }
+      >
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="space-y-4">
+        <div>
+          {/* PackagesList is shared with the customized-package lists, so it's
+              restyled from here (this page only) instead of edited. */}
+          <div className={PACKAGES_TABLE_STYLES}>
           <PackagesList
             packages={
               Array.isArray(packages)
@@ -397,20 +437,21 @@ function PackagePage() {
             onReject={handleReject}
             onPreview={handlePreview}
           />
-          <div className="flex items-center justify-between px-2 py-4">
+          </div>
+          <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <p className="text-[12px] text-slate-500">
                 Showing {meta.total === 0 ? 0 : ((page - 1) * pageSize) + 1} - {Math.min(page * pageSize, meta.total)} of {meta.total}
               </p>
-              <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                Per Page
+              <label className="flex items-center gap-2 text-[12px] text-slate-500">
+                Per page
                 <select
                   value={pageSize}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="border border-gray-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 normal-case tracking-normal"
+                  className={fleetSelectClass}
                 >
                   {PAGE_SIZE_OPTIONS.map((size) => (
                     <option key={size} value={size}>
@@ -428,8 +469,9 @@ function PackagePage() {
           </div>
         </div>
       )}
+      </FleetPanel>
       <PreviewDrawer id={previewId} isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setPreviewId(null); }} />
-    </div>
+    </FleetPage>
   );
 }
 

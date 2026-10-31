@@ -16,8 +16,9 @@ import HelpfulResources from "@/components/custom/HelpfulResources";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
 import TextToSpeech from "@/components/custom/TextToSpeech";
 import VisaGallery from "@/components/visa/VisaGallery";
+import { VisaBuiltinTabKey, VisaTabConfigItem, VISA_ALWAYS_VISIBLE_BUILTIN_KEYS, resolveVisaTabsConfig, getVisaTabDisplayLabel } from "@/lib/visaTabs";
 
-type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips" | "gallery";
+type TabKey = "description" | "faqs" | "documents" | "process" | "visasList" | "highlights" | "quickAnswer" | "whyThisVisa" | "eligibility" | "feesAndCharges" | "howToApply" | "helpfulResources" | "cta" | "rejectionReasons" | "expertTips" | "gallery" | `custom-${string}`;
 
 interface Faq {
   question: string;
@@ -347,6 +348,47 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
   if (galleryImages.length > 0) tabs.push({ key: "gallery", label: "Gallery" });
   if (hasContent(visa.faqs)) tabs.push({ key: "faqs", label: "FAQs" });
 
+  // Admin-customised tab order / visibility / custom tabs (lib/visaTabs.ts).
+  // A visa without a saved tabsConfig skips all of this: the tabs above stay
+  // as they are and every helper below returns undefined / true, so the page
+  // renders exactly as before.
+  const isCustomTabs = Array.isArray(visa.tabsConfig) && visa.tabsConfig.length > 0;
+  const resolvedTabsConfig: VisaTabConfigItem[] = isCustomTabs ? resolveVisaTabsConfig(visa.tabsConfig) : [];
+  const builtinAvailability: Record<VisaBuiltinTabKey, boolean> = {
+    visasList: hasContent(visa.visas),
+    whyThisVisa: hasContent(visa.whyThisVisa),
+    description: hasContent(visa.content),
+    eligibility: hasContent(visa.eligibility),
+    documents: hasContent(visa.documentsContent),
+    feesAndCharges: hasContent(visa.feesAndCharges),
+    howToApply: hasContent(visa.howToApply),
+    process: hasContent(visa.process),
+    rejectionReasons: hasContent(visa.rejectionReasons),
+    expertTips: hasContent(visa.expertTips),
+    gallery: galleryImages.length > 0,
+    faqs: hasContent(visa.faqs),
+  };
+  const visibleTabsConfig = resolvedTabsConfig.filter((entry) => {
+    const isAlwaysVisible = entry.type === "builtin" && VISA_ALWAYS_VISIBLE_BUILTIN_KEYS.has(entry.builtinKey as VisaBuiltinTabKey);
+    if (entry.hidden && !isAlwaysVisible) return false;
+    if (entry.type === "custom") return hasContent(entry.content);
+    return builtinAvailability[entry.builtinKey as VisaBuiltinTabKey] ?? false;
+  });
+  if (isCustomTabs) {
+    tabs.splice(0, tabs.length, ...visibleTabsConfig.map((entry) => ({ key: entry.key as TabKey, label: getVisaTabDisplayLabel(entry, visa.country) })));
+  }
+  // Sections keep their own markup; customised visas reorder them with CSS
+  // `order` (same approach as the package page).
+  const tabOrderIndex: Record<string, number> = {};
+  visibleTabsConfig.forEach((entry, i) => { tabOrderIndex[entry.key] = i; });
+  const showSection = (key: string) => !isCustomTabs || tabOrderIndex[key] !== undefined;
+  const sectionStyle = (key: string): React.CSSProperties | undefined => (isCustomTabs ? { order: tabOrderIndex[key] } : undefined);
+  // Author / reviews / resources / CTA always stay after every tab section
+  const afterTabsStyle: React.CSSProperties | undefined = isCustomTabs ? { order: visibleTabsConfig.length } : undefined;
+  const sectionTitle = (key: string, fallback: string) =>
+    (isCustomTabs && resolvedTabsConfig.find((entry) => entry.key === key)?.sectionTitle?.trim()) || fallback;
+  const customTabEntries = visibleTabsConfig.filter((entry) => entry.type === "custom");
+
 
   // ── Scroll spy: update active tab when sections scroll into view ──
   const tabKeys = tabs.map((t) => t.key);
@@ -461,7 +503,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Content Column */}
         <article className="w-full md:w-[65%]">
-          <div className="w-full">
+          <div className={isCustomTabs ? "w-full flex flex-col" : "w-full"}>
         {(() => {
           const sectionHeadings: Record<string, string> = {
             highlights: "Highlights",
@@ -474,11 +516,11 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
           };
           
           const renderDynamicSection = (key: string) => {
-            if (!hasContent(visa[key])) return null;
+            if (!hasContent(visa[key]) || !showSection(key)) return null;
             return (
-              <div id={key} key={key} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              <div id={key} key={key} style={sectionStyle(key)} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
-                  <h2 className="text-xl font-bold font-heading text-black">{sectionHeadings[key]}</h2>
+                  <h2 className="text-xl font-bold font-heading text-black">{sectionTitle(key, sectionHeadings[key])}</h2>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
                 <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -490,10 +532,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
 
           return (
             <>
-              {visa.visas && visa.visas.length > 0 && (
-                <div id="visasList" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {visa.visas && visa.visas.length > 0 && showSection("visasList") && (
+                <div id="visasList" style={sectionStyle("visasList")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">Visa Types</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("visasList", "Visa Types")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-5 pb-4 md:grid md:grid-cols-1 md:gap-6 md:overflow-visible md:snap-none md:pb-0">
@@ -512,10 +554,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
 
               {renderDynamicSection("whyThisVisa")}
 
-              {hasContent(visa.content) && (
-                <div id="description" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {hasContent(visa.content) && showSection("description") && (
+                <div id="description" style={sectionStyle("description")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">Visa Info</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("description", "Visa Info")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -526,10 +568,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
 
               {renderDynamicSection("eligibility")}
 
-              {hasContent(visa.documentsContent) && (
-                <div id="documents" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {hasContent(visa.documentsContent) && showSection("documents") && (
+                <div id="documents" style={sectionStyle("documents")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">Documents</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("documents", "Documents")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div 
@@ -542,10 +584,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               {renderDynamicSection("feesAndCharges")}
               {renderDynamicSection("howToApply")}
 
-              {hasContent(visa.process) && (
-                <div id="process" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {hasContent(visa.process) && showSection("process") && (
+                <div id="process" style={sectionStyle("process")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">Step-by-Step Process</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("process", "Step-by-Step Process")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   {Array.isArray(visa.process) ? (
@@ -566,10 +608,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
-              {hasContent(visa.rejectionReasons) && (
-                <div id="rejectionReasons" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {hasContent(visa.rejectionReasons) && showSection("rejectionReasons") && (
+                <div id="rejectionReasons" style={sectionStyle("rejectionReasons")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">Common Rejection Reasons</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("rejectionReasons", "Common Rejection Reasons")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
@@ -590,10 +632,10 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
-              {hasContent(visa.expertTips) && (
-                <div id="expertTips" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {hasContent(visa.expertTips) && showSection("expertTips") && (
+                <div id="expertTips" style={sectionStyle("expertTips")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">Expert Tips</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("expertTips", "Expert Tips")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none md:pb-0">
@@ -614,16 +656,16 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
 
-              {galleryImages.length > 0 && (
-                <div id="gallery" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
-                  <VisaGallery images={galleryImages} country={visa.country} />
+              {galleryImages.length > 0 && showSection("gallery") && (
+                <div id="gallery" style={sectionStyle("gallery")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+                  <VisaGallery images={galleryImages} country={visa.country} title={sectionTitle("gallery", "") || undefined} />
                 </div>
               )}
 
-              {hasContent(visa.faqs) && (
-                <div id="faqs" className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+              {hasContent(visa.faqs) && showSection("faqs") && (
+                <div id="faqs" style={sectionStyle("faqs")} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h2 className="text-xl font-bold font-heading text-black">FAQs</h2>
+                    <h2 className="text-xl font-bold font-heading text-black">{sectionTitle("faqs", "FAQs")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <Accordion
@@ -656,7 +698,7 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               )}
 
               {/* About the Author Section moved above Testimonials */}
-              <div id="author" className="scroll-mt-40 mb-16 mt-12">
+              <div id="author" style={afterTabsStyle} className="scroll-mt-40 mb-16 mt-12">
                 <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-4 shadow-sm">
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
@@ -689,13 +731,13 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
               </div>
 
               {visa.reviews && visa.reviews.length > 0 && (
-                <div id="testimonials" className="mb-16 pb-12 border-b border-gray-100 last:border-0">
+                <div id="testimonials" style={afterTabsStyle} className="mb-16 pb-12 border-b border-gray-100 last:border-0">
                   <Testimonial data={visa.reviews} />
                 </div>
               )}
 
               {hasContent(visa.helpfulResources) && (
-                <div id="helpfulResources" className="mb-16 w-full">
+                <div id="helpfulResources" style={afterTabsStyle} className="mb-16 w-full">
                   {Array.isArray(visa.helpfulResources) ? (
                     <HelpfulResources data={visa.helpfulResources} />
                   ) : (
@@ -714,12 +756,25 @@ export default function VisaClient({ visa, sidebar, bottomContent }: { visa: any
                 </div>
               )}
               {hasContent(visa.cta) && (
-                <div className="w-full mt-8 mb-8 flex justify-center items-center">
+                <div style={afterTabsStyle} className="w-full mt-8 mb-8 flex justify-center items-center">
                   <div className="text-center w-full [&_img]:mx-auto [&_img]:max-w-full hover:opacity-95 transition-opacity">
                     <BlogContent html={visa.cta} />
                   </div>
                 </div>
               )}
+
+              {/* Admin-created custom tabs (tabsConfig); only customised visas have any */}
+              {customTabEntries.map((entry) => (
+                <div key={entry.key} id={entry.key} style={sectionStyle(entry.key)} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
+                  <div className="flex flex-col gap-2 mb-5">
+                    <h2 className="text-xl font-bold font-heading text-black">{entry.sectionTitle?.trim() || entry.label}</h2>
+                    <div className="w-12 h-1 bg-[#FE5300]"></div>
+                  </div>
+                  <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                    <BlogContent html={entry.content || ""} />
+                  </section>
+                </div>
+              ))}
             </>
           );
         })()}
