@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://musafirbaba.com/homebanner007.avif",
+        url: "https://musafirbaba.com/homebanner008.avif",
         width: 1200,
         height: 630,
         alt: "MBGo - Smart Mobility & Ride Booking App by MusafirBaba",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["https://musafirbaba.com/homebanner007.avif"],
+    images: ["https://musafirbaba.com/homebanner008.avif"],
   },
 };
 

@@ -17,7 +17,7 @@ export default function MBGoHero() {
       {/* Background Hero Banner Image with smooth atmospheric gradient */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Image
-          src="/homebanner007.avif"
+          src="/homebanner008.avif"
           alt="MBGo by MusafirBaba - Smart Mobility & Ride Booking App"
           fill
           priority

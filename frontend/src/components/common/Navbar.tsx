@@ -134,7 +134,7 @@ export function Navbar({
                 href={link.href}
                 className={`flex items-center gap-1 transition-all active:scale-95 ${
                   isDark
-                    ? "text-black hover:text-[#FE5300] active:text-[#FE5300] font-semibold"
+                    ? "text-white hover:text-[#FE5300] active:text-[#FE5300] font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]"
                     : "text-gray-800 hover:text-[#FE5300] active:text-[#FE5300]"
                 }`}
               >
@@ -155,7 +155,7 @@ export function Navbar({
                 {link.dropdown && (
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${isDismissed ? "" : "group-hover/nav-item:rotate-180"} ${
-                      isDark ? "text-black/80" : "opacity-70"
+                      isDark ? "text-white/80" : "opacity-70"
                     }`}
                     aria-hidden="true"
                   />

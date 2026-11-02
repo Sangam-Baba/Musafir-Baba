@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import logo from "../../../public/logo.png";
+import logoWhite from "../../../public/logo-white.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -137,7 +138,7 @@ export default function Header() {
           <div className="flex items-center ml-2 md:ml-0">
             <Link href="/" className="block w-32 md:w-44">
               <Image
-                src={logo}
+                src={logoWhite}
                 alt="Musafir Baba Logo"
                 style={{ width: "100%", height: "auto" }}
                 className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]"
@@ -155,11 +156,11 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-4">
             <a
               href={`tel:${CONTACT_INFO.PHONE_NUMBER}`}
-              className="flex items-center gap-2 text-black hover:text-black/70 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]"
             >
-              <Phone className="w-4 h-4 text-black" />
+              <Phone className="w-4 h-4 text-white" />
               <span className="flex flex-col leading-tight text-left">
-                <span className="text-[10px] text-black/70">Call Us</span>
+                <span className="text-[10px] text-white/80">Call Us</span>
                 <span className="text-[13px] font-semibold tracking-wide">
                   {CONTACT_INFO.PHONE_NUMBER_FORMATTED}
                 </span>
