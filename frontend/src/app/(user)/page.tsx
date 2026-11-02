@@ -171,7 +171,7 @@ export default async function HomePage() {
       <section className="w-full px-6 md:px-14 lg:px-20 pt-20 md:pt-28 lg:pt-32 pb-3 md:pb-4 lg:pb-6 relative flex flex-col items-start justify-between min-h-screen overflow-visible md:h-screen md:overflow-hidden">
         <Image
           // src="/homebanner32.avif"
-          src="/homebanner007.avif"
+          src="/homebanner008.avif"
           alt="Where will your next story begin - Musafir Baba Travel Partner"
           fill
           priority
