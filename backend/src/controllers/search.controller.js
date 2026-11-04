@@ -43,7 +43,11 @@ export const globalSearch = async (req, res) => {
         .select("title slug mainCategory destination")
         .limit(limit)
         .lean(),
-      Destination.find({ name: regex, status: "published" }).select("name state").limit(limit).lean(),
+      Destination.find({ name: regex, status: "published" })
+        .select("name state slug parent")
+        .populate("parent", "slug")
+        .limit(limit)
+        .lean(),
       WebPage.find({ title: regex, status: "published" }).select("title fullSlug").limit(limit).lean(),
       Visa.find({ country: regex }).select("country slug").limit(limit).lean(),
       CustomizedTourPackage.find({ title: regex, status: "published" }).select("title slug").limit(limit).lean(),
@@ -73,7 +77,13 @@ export const globalSearch = async (req, res) => {
       }
     });
 
-    destinations.forEach((i) => results.push({ title: i.name, url: `/destinations/${i.state}`, type: "Destination" }));
+    destinations.forEach((i) =>
+      results.push({
+        title: i.name,
+        url: i.parent ? `/destinations/${i.parent.slug}/${i.slug}` : `/destinations/${i.state}`,
+        type: "Destination",
+      }),
+    );
     webpages.forEach((i) => results.push({ title: i.title, url: `/${i.fullSlug}`, type: "WebPage" }));
     visas.forEach((i) => results.push({ title: `${i.country} Visa`, url: `/visa/${i.slug}`, type: "Visa" }));
     customized.forEach((i) => results.push({ title: i.title, url: `/holidays/customised-tour-packages/${i.slug}`, type: "Customized Package" }));

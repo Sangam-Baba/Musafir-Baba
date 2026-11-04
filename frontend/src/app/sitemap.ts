@@ -168,6 +168,21 @@ async function getDestination() {
   }
 }
 
+// Published sub-destinations, with their parent's slug for the URL
+async function getSubDestinations() {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/destination?parent=sub&status=published&limit=1000`,
+      { signal: apiTimeoutSignal() },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data || [];
+  } catch (error) {
+    return [];
+  }
+}
+
 const getAllWebPage = async () => {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/webpage/?status=published`, {
@@ -197,7 +212,7 @@ const getAllVisa = async () => {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetched in parallel so a few slow/stalled requests can't add up past
   // the 60s static generation limit (each is capped by apiTimeoutSignal)
-  const [blogs, news, category, packages, destinations, webpages, visas] = await Promise.all([
+  const [blogs, news, category, packages, destinations, webpages, visas, subDestinations] = await Promise.all([
     getBlogs(),
     getNews(),
     getCategory(),
@@ -205,6 +220,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getDestination(),
     getAllWebPage(),
     getAllVisa(),
+    getSubDestinations(),
   ]);
   const categories = category?.data ?? [];
 
@@ -317,6 +333,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     })),
+    ...subDestinations
+      .filter((sub: { parent?: { slug?: string } }) => sub.parent?.slug)
+      .map((sub: { slug: string; parent: { slug: string }; updatedAt: string }) => ({
+        url: `https://musafirbaba.com/destinations/${sub.parent.slug}/${sub.slug}`,
+        lastModified: new Date(sub.updatedAt),
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      })),
     ...webpages.map((page: Webpage) => ({
       url: `https://musafirbaba.com/${page?.fullSlug}`,
       lastModified: new Date(page.updatedAt),

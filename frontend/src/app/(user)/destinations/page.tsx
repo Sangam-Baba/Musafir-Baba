@@ -10,6 +10,8 @@ export interface DestinationInterface {
   name: string;
   country: string;
   state: string;
+  slug?: string;
+  region?: string | null;
   coverImage: {
     url: string;
     alt: string;

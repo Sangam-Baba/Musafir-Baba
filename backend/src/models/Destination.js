@@ -65,12 +65,36 @@ const destinationSchema = new mongoose.Schema(
       default: "package",
     },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
+    // Domestic / International split on /destinations. Optional: when unset
+    // the frontend falls back to country === "india" ? domestic : international.
+    region: {
+      type: String,
+      enum: ["domestic", "international", null],
+      default: null,
+      set: (v) => v || null,
+    },
+    // Set only on sub-destinations (one level deep). Top-level destinations
+    // (every pre-existing document) have no parent, so `{ parent: null }`
+    // matches them all.
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Destination",
+      default: null,
+      index: true,
+      set: (v) => v || null,
+    },
   },
   { timestamps: true },
 );
 
 destinationSchema.pre("save", function (next) {
-  if (this.isModified("name")) {
+  if (this.parent) {
+    // Sub-destinations share their parent's state, so their slug comes from
+    // their own name (URL: /destinations/{parent.slug}/{slug})
+    if (this.isModified("name") || this.isModified("parent")) {
+      this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+  } else if (this.isModified("name")) {
     this.slug = slugify(this.state, { lower: true, strict: true });
   }
   next();
@@ -106,9 +130,22 @@ destinationSchema.pre("findOneAndUpdate", function (next) {
   }
   next();
 });
-destinationSchema.pre("findOneAndUpdate", function (next) {
+destinationSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate();
-  if (update.state) {
+  let parent = update.parent;
+  if (parent === undefined && update.state) {
+    const existing = await this.model
+      .findOne(this.getQuery())
+      .select("parent")
+      .lean();
+    parent = existing?.parent;
+  }
+  if (parent) {
+    if (update.name) {
+      update.slug = slugify(update.name, { lower: true, strict: true });
+      this.setUpdate(update);
+    }
+  } else if (update.state) {
     update.slug = slugify(update.state, { lower: true, strict: true });
     this.setUpdate(update);
   }

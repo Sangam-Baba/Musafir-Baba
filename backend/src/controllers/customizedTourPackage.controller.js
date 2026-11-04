@@ -108,6 +108,7 @@ const getAllCustomizedTourPackages = async (req, res) => {
           { city: req.query.destination },
           { slug: req.query.destination },
         ],
+        parent: null,
       }).select("_id");
       if (!dest) {
         return res
@@ -115,6 +116,16 @@ const getAllCustomizedTourPackages = async (req, res) => {
           .json({ success: false, message: "Destination not found" });
       }
       filter.destination = dest._id;
+    }
+    // Optional sub-destination _id (used by /destinations/{parent}/{sub})
+    const subDestination = req.query?.subDestination?.trim();
+    if (subDestination) {
+      if (!mongoose.Types.ObjectId.isValid(subDestination)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid sub-destination" });
+      }
+      filter.subDestination = subDestination;
     }
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.slug) filter.slug = req.query.slug;

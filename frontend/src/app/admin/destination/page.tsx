@@ -9,6 +9,7 @@ import DestinationList from "@/components/admin/DestinationList";
 import { Button } from "@/components/ui/button";
 import { FleetPage } from "@/components/admin/fleet/FleetUI";
 import { DestinationHubHeader } from "@/components/admin/destination/DestinationHub";
+import { getDestinationHref, getDestinationRegion } from "@/lib/destinationRegion";
 
 interface Destination {
   _id: string;
@@ -18,6 +19,8 @@ interface Destination {
   coverImage: string;
   slug: string;
   status?: string;
+  region?: string | null;
+  parent?: { _id: string; name: string; slug: string } | null;
 }
 
 export default function DestinationPage() {
@@ -34,7 +37,7 @@ export default function DestinationPage() {
     try {
       setLoading(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/destination`, // adjust API route
+        `${process.env.NEXT_PUBLIC_BASE_URL}/destination?parent=all&limit=1000`,
         { cache: "no-store" }
       );
       const data = await res.json();
@@ -117,8 +120,10 @@ export default function DestinationPage() {
             name: b.name,
             country: b.country,
             state: b.state,
-            url: `/destinations/${b.slug}`,
+            url: getDestinationHref(b),
             status: b.status,
+            region: getDestinationRegion(b),
+            parentName: b.parent?.name,
           }))}
           onEdit={handleEdit}
           onDelete={handleDelete}

@@ -293,6 +293,8 @@ const getPackages = async (req, res) => {
       // before this existed, so every other caller of this endpoint (the
       // public /holidays listing page, etc.) keeps its original ordering.
       sort,
+      // Optional sub-destination _id (used by /destinations/{parent}/{sub})
+      subDestination,
     } = req.query;
 
     const query = {};
@@ -326,6 +328,7 @@ const getPackages = async (req, res) => {
           { state: destination },
           { city: destination },
         ],
+        parent: null,
       }).select("_id");
       if (!dest) {
         return res
@@ -333,6 +336,15 @@ const getPackages = async (req, res) => {
           .json({ success: false, message: "Destination not found" });
       }
       query.destination = dest._id;
+    }
+
+    if (subDestination) {
+      if (!mongoose.Types.ObjectId.isValid(subDestination)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid sub-destination" });
+      }
+      query.subDestination = subDestination;
     }
 
     // ✅ Search filter (title or destination name/country/state/city) — the
@@ -349,7 +361,8 @@ const getPackages = async (req, res) => {
       }).select("_id");
       const searchOr = [{ title: { $regex: search, $options: "i" } }];
       if (matchingDestinations.length > 0) {
-        searchOr.push({ destination: { $in: matchingDestinations.map((d) => d._id) } });
+        const ids = matchingDestinations.map((d) => d._id);
+        searchOr.push({ destination: { $in: ids } }, { subDestination: { $in: ids } });
       }
       query.$and = [...(query.$and || []), { $or: searchOr }];
     }

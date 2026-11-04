@@ -53,7 +53,7 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
 const DEPTH_ICONS: Record<string, LucideIcon[]> = {
   holidays: [TreePalm, Tag, MapPin, Luggage],
   rental: [Car, Tag, MapPin, Car],
-  destinations: [Compass, MapPin],
+  destinations: [Compass, MapPin, MapPin],
 };
 
 function getSegmentIcon(pathSegments: string[], index: number): LucideIcon {

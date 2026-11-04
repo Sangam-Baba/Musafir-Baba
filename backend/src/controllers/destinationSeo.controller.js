@@ -94,6 +94,7 @@ const getDestinationSeo = async (req, res) => {
     }
     const destinationId = await Destination.findOne({
       state: destination_slug,
+      parent: null,
     }).select("_id");
     const categoryId = await Category.findOne({ slug: category_slug }).select(
       "_id"

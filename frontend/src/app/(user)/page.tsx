@@ -192,13 +192,13 @@ export default async function HomePage() {
             .animate-custom-blink {
               animation: customBlink 1.2s ease-in-out infinite;
             }
+            /* Glow-only pulse: scaling the badge rasterised its text and made it blurry */
             @keyframes customBreathe {
-              0%, 100% { transform: scale(1); }
-              50% { transform: scale(1.02); }
+              0%, 100% { box-shadow: 0 1px 2px rgba(16, 185, 129, 0.15), 0 0 0 0 rgba(16, 185, 129, 0.25); }
+              50% { box-shadow: 0 1px 2px rgba(16, 185, 129, 0.15), 0 0 0 4px rgba(16, 185, 129, 0.12); }
             }
             .animate-custom-breathe {
               animation: customBreathe 3s ease-in-out infinite;
-              will-change: transform;
             }
           `}} />
 
@@ -213,7 +213,7 @@ export default async function HomePage() {
             Where will your <span className="italic font-serif text-[#FE5300]">next story</span> begin?
           </h1>
 
-          <p className="text-sm md:text-base text-gray-600 font-light max-w-2xl mb-1 md:mb-2">
+          <p className="text-sm md:text-base text-gray-800 font-normal max-w-2xl mb-1 md:mb-2 [text-shadow:0_1px_1px_rgba(255,255,255,0.9),0_0_10px_rgba(255,255,255,0.85)]">
             From mountains and beaches to spiritual journeys and global adventures — we plan every trip like it&apos;s our own.
           </p>
 

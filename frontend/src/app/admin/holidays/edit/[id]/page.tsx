@@ -1,5 +1,6 @@
 "use client";
 
+import SubDestinationSelect from "@/components/admin/destination/SubDestinationSelect";
 import React, { useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -79,6 +80,7 @@ interface PackageFormValues {
   reviews?: string[];
   slug: string;
   destination: string;
+  subDestination?: string | null;
   mainCategory: string;
   otherCategory: string[];
   addOns?: AddOns[];
@@ -378,6 +380,7 @@ export default function CreatePackagePage() {
       form.reset({
         ...sourceData,
         destination: sourceData.destination?._id?.toString() || sourceData.destination || "",
+        subDestination: sourceData.subDestination?._id?.toString() || sourceData.subDestination || "",
         author: sourceData.author?._id?.toString() || sourceData.author || "",
         batch: batchIds,
         reviews: reviewsIds,
@@ -528,6 +531,13 @@ export default function CreatePackagePage() {
                   <FormField control={form.control} name="destination" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[12px] font-medium text-slate-700">Destination *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]" value={field.value || ""}><option value="" disabled>Select a destination</option>{destination?.map((dest: Destination) => (<option key={dest._id} value={dest._id}>{dest.state.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
+                  <SubDestinationSelect
+                    destinationId={form.watch("destination")}
+                    value={form.watch("subDestination")}
+                    onChange={(v) => form.setValue("subDestination", v)}
+                    labelClassName="text-[12px] font-medium text-slate-700"
+                    className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
+                  />
                   <FormField control={form.control} name="mainCategory" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[12px] font-medium text-slate-700">Main Category *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]" value={field.value || ""}><option value="" disabled>Select a category</option>{category?.map((cat: Category) => (<option key={cat._id} value={cat._id}>{cat.name.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>
                   )} />
