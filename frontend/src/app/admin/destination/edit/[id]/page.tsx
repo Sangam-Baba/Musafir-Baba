@@ -32,6 +32,7 @@ import {
   DESTINATION_TABS,
   type DestinationFormTab,
 } from "@/components/admin/destination/destinationFormTabs";
+import DestinationHierarchyFields from "@/components/admin/destination/DestinationHierarchyFields";
 
 interface Destination {
   name: string;
@@ -57,6 +58,8 @@ interface Destination {
   metaDescription: string;
   keywords: string[];
   status: "draft" | "published" | "archived";
+  region?: string | null;
+  parent?: string | null;
   popularAttractions: string[];
   thingsToDo: string[];
   faqSchema?: { question: string; answer: string }[];
@@ -107,6 +110,8 @@ const formSchema = z.object({
     .array(z.object({ question: z.string(), answer: z.string() }))
     .optional(),
   status: z.enum(["draft", "published", "archived"]),
+  region: z.string().nullable().optional(),
+  parent: z.string().nullable().optional(),
 });
 
 const update = async (
@@ -126,7 +131,10 @@ const update = async (
       body: JSON.stringify(values),
     }
   );
-  if (!res.ok) throw new Error("Failed to update destination");
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.message || "Failed to update destination");
+  }
   return res.json();
 };
 
@@ -185,7 +193,11 @@ export default function EditDestination() {
 
   useEffect(() => {
     if (destination) {
-      form.reset(destination); // simpler than calling setValue for each field
+      form.reset({
+        ...destination,
+        region: destination.region ?? "",
+        parent: destination.parent ?? "",
+      }); // simpler than calling setValue for each field
     }
   }, [destination, form]);
 
@@ -195,8 +207,8 @@ export default function EditDestination() {
     onSuccess: () => {
       toast.success("Destination updated successfully!");
     },
-    onError: () => {
-      toast.error("Failed to update destination");
+    onError: (error) => {
+      toast.error(error.message || "Failed to update destination");
     },
   });
 
@@ -263,12 +275,29 @@ export default function EditDestination() {
                 <Field label="Country Name" error={errors.country?.message}>
                   <input {...form.register("country")} placeholder="Country" className={dInput} />
                 </Field>
-                <Field label="State" hint="Also used as the page URL slug." error={errors.state?.message}>
+                <Field
+                  label="State"
+                  hint={form.watch("parent") ? "Sub-destination URL slug comes from its name." : "Also used as the page URL slug."}
+                  error={errors.state?.message}
+                >
                   <input {...form.register("state")} placeholder="State" className={dInput} />
                 </Field>
                 <Field label="City" error={errors.city?.message}>
                   <input {...form.register("city")} placeholder="City" className={dInput} />
                 </Field>
+                <DestinationHierarchyFields
+                  parent={form.watch("parent") ?? ""}
+                  region={form.watch("region") ?? ""}
+                  excludeId={id}
+                  onParentChange={(p) => {
+                    form.setValue("parent", p?._id ?? "");
+                    if (p) {
+                      form.setValue("country", p.country);
+                      form.setValue("state", p.state);
+                    }
+                  }}
+                  onRegionChange={(v) => form.setValue("region", v)}
+                />
               </div>
               <Field label="Description" hint="Shown under the page heading." error={errors.description?.message}>
                 <textarea {...form.register("description")} placeholder="Description" className={dTextarea} />

@@ -8,6 +8,7 @@ import { DestinationInterface } from "@/app/(user)/destinations/page";
 import { Search } from "lucide-react";
 import ReadMore from "@/components/common/ReadMore";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import { getDestinationRegion } from "@/lib/destinationRegion";
 function DestinationPageClient({
   destinations,
 }: {
@@ -29,6 +30,22 @@ function DestinationPageClient({
     );
     setFilteredDestinations(filtered);
   }, [filter, destinations]);
+
+  const [tab, setTab] = useState<"all" | "domestic" | "international">("all");
+  const tabs = [
+    { key: "all" as const, label: "All", items: filteredDestinations },
+    {
+      key: "domestic" as const,
+      label: "Domestic",
+      items: filteredDestinations.filter((d) => getDestinationRegion(d) === "domestic"),
+    },
+    {
+      key: "international" as const,
+      label: "International",
+      items: filteredDestinations.filter((d) => getDestinationRegion(d) === "international"),
+    },
+  ];
+  const visibleDestinations = tabs.find((t) => t.key === tab)?.items ?? [];
 
   const content = `
 
@@ -194,9 +211,36 @@ function DestinationPageClient({
       </div>
 
       <div className="max-w-7xl mx-auto py-16 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mt-6">
-          {filteredDestinations.map(
-            (destination: DestinationInterface, i: number) => (
+        <div
+          role="tablist"
+          aria-label="Destination type"
+          className="flex flex-wrap gap-2 border-b border-gray-200"
+        >
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.key}
+              onClick={() => setTab(t.key)}
+              className={`-mb-px border-b-2 px-4 py-2.5 text-base md:text-lg font-semibold transition-colors ${
+                tab === t.key
+                  ? "border-[#FE5300] text-[#FE5300]"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {t.label}
+              <span className="ml-1.5 text-sm font-medium text-gray-400">
+                ({t.items.length})
+              </span>
+            </button>
+          ))}
+        </div>
+        {visibleDestinations.length === 0 ? (
+          <p className="mt-10 text-center text-gray-500">No destinations found</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mt-6">
+            {visibleDestinations.map((destination: DestinationInterface) => (
               <Link
                 key={destination._id}
                 href={`/destinations/${destination.state}`}
@@ -230,9 +274,9 @@ function DestinationPageClient({
                   </CardContent>
                 </Card>
               </Link>
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

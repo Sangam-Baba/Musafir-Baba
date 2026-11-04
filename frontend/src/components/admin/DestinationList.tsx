@@ -28,6 +28,8 @@ interface Destination {
   state: string;
   url: string;
   status?: string;
+  region?: string;
+  parentName?: string;
 }
 interface DestinationTableProps {
   destinations: Destination[];
@@ -59,7 +61,7 @@ export default function DestinationList({
       .filter(
         ({ dest }) =>
           !q ||
-          [dest.name, dest.country, dest.state].some((v) => v?.toLowerCase().includes(q))
+          [dest.name, dest.country, dest.state, dest.parentName].some((v) => v?.toLowerCase().includes(q))
       );
   }, [destinations, query]);
 
@@ -97,6 +99,8 @@ export default function DestinationList({
                   <TableHead className={fleetTh}>Name</TableHead>
                   <TableHead className={fleetTh}>Country</TableHead>
                   <TableHead className={fleetTh}>State</TableHead>
+                  <TableHead className={fleetTh}>Region</TableHead>
+                  <TableHead className={fleetTh}>Parent</TableHead>
                   <TableHead className={fleetTh}>Status</TableHead>
                   <TableHead className={fleetTh}>URL</TableHead>
                   <TableHead className={`${fleetTh} pr-4 text-right`}>Actions</TableHead>
@@ -109,6 +113,8 @@ export default function DestinationList({
                     <TableCell className="font-medium text-slate-900">{dest.name}</TableCell>
                     <TableCell className="max-w-[220px] truncate text-slate-600">{capitalize(dest.country)}</TableCell>
                     <TableCell className="max-w-[220px] truncate text-slate-600">{capitalize(dest.state)}</TableCell>
+                    <TableCell className="text-slate-600">{capitalize(dest.region)}</TableCell>
+                    <TableCell className="max-w-[180px] truncate text-slate-600">{dest.parentName || "—"}</TableCell>
                     <TableCell>
                       <StatusPill status={dest.status} />
                     </TableCell>
@@ -156,7 +162,11 @@ export default function DestinationList({
                     <p className="text-[12px] text-slate-500">
                       {capitalize(dest.state)}
                       {dest.country ? `, ${capitalize(dest.country)}` : ""}
+                      {dest.region ? ` · ${capitalize(dest.region)}` : ""}
                     </p>
+                    {dest.parentName && (
+                      <p className="text-[11px] text-slate-400">Sub-destination of {dest.parentName}</p>
+                    )}
                   </div>
                   <StatusPill status={dest.status} />
                 </div>

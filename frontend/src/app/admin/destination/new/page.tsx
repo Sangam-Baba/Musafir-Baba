@@ -32,6 +32,7 @@ import {
   DESTINATION_TABS,
   type DestinationFormTab,
 } from "@/components/admin/destination/destinationFormTabs";
+import DestinationHierarchyFields from "@/components/admin/destination/DestinationHierarchyFields";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -90,6 +91,8 @@ const formSchema = z.object({
     .array(z.object({ question: z.string(), answer: z.string() }))
     .optional(),
   status: z.enum(["draft", "published", "archived"]),
+  region: z.string().nullable().optional(),
+  parent: z.string().nullable().optional(),
 });
 const create = async (values: z.infer<typeof formSchema>, token: string) => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/destination`, {
@@ -101,7 +104,10 @@ const create = async (values: z.infer<typeof formSchema>, token: string) => {
     credentials: "include",
     body: JSON.stringify(values),
   });
-  if (!res.ok) throw new Error("Failed to create destination");
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.message || "Failed to create destination");
+  }
   return res.json().then((data) => {
     console.log(data);
   });
@@ -130,6 +136,8 @@ export default function CreateDestination() {
       thingsToDo: [],
       faqSchema: [],
       status: "draft",
+      region: "",
+      parent: "",
     },
   });
   const faqArray = useFieldArray({ control: form.control, name: "faqSchema" });
@@ -142,7 +150,7 @@ export default function CreateDestination() {
       toast.success("Destination created successfully!");
     },
     onError: (error) => {
-      toast.error("Failed to create destination");
+      toast.error(error.message || "Failed to create destination");
       console.error(error);
     },
   });
@@ -202,12 +210,28 @@ export default function CreateDestination() {
                 <Field label="Country" error={errors.country?.message}>
                   <input {...form.register("country")} placeholder="Country" className={dInput} />
                 </Field>
-                <Field label="State" hint="Also used as the page URL slug." error={errors.state?.message}>
+                <Field
+                  label="State"
+                  hint={form.watch("parent") ? "Sub-destination URL slug comes from its name." : "Also used as the page URL slug."}
+                  error={errors.state?.message}
+                >
                   <input {...form.register("state")} placeholder="State" className={dInput} />
                 </Field>
                 <Field label="City" error={errors.city?.message}>
                   <input {...form.register("city")} placeholder="City" className={dInput} />
                 </Field>
+                <DestinationHierarchyFields
+                  parent={form.watch("parent") ?? ""}
+                  region={form.watch("region") ?? ""}
+                  onParentChange={(p) => {
+                    form.setValue("parent", p?._id ?? "");
+                    if (p) {
+                      form.setValue("country", p.country);
+                      form.setValue("state", p.state);
+                    }
+                  }}
+                  onRegionChange={(v) => form.setValue("region", v)}
+                />
               </div>
               <Field label="Description" hint="Shown under the page heading." error={errors.description?.message}>
                 <textarea {...form.register("description")} placeholder="Description" className={dTextarea} />

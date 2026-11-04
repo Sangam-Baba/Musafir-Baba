@@ -54,7 +54,10 @@ export const getSitemapSourceData = async (req, res) => {
         .populate("mainCategory", "slug")
         .populate("author", "name")
         .lean(),
-      Destination.find({}).select(`name state ${metaFields}`).lean(),
+      Destination.find({})
+        .select(`name state slug parent ${metaFields}`)
+        .populate("parent", "slug")
+        .lean(),
       WebPage.find({})
         .select(`title fullSlug author ${metaFields}`)
         .populate("author", "name")

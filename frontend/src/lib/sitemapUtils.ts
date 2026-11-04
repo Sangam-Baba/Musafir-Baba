@@ -150,7 +150,16 @@ export function buildSitemapItems(source: any): SitemapItem[] {
   packages?.data?.forEach((p: any) =>
     items.push(createItem(p.title, `/holidays/${p.mainCategory?.slug}/${p.destination?.state}/${p.slug}`, "holiday", p)),
   );
-  destinations?.data?.forEach((d: any) => items.push(createItem(d.name, `/destinations/${d.state}`, "destination", d)));
+  destinations?.data?.forEach((d: any) =>
+    items.push(
+      createItem(
+        d.name,
+        d.parent?.slug ? `/destinations/${d.parent.slug}/${d.slug}` : `/destinations/${d.state}`,
+        "destination",
+        d,
+      ),
+    ),
+  );
   visas?.data?.forEach((v: any) => items.push(createItem(`${v.country} Visa`, `/visa/${v.slug}`, "visa", v)));
   customized?.data?.forEach((c: any) =>
     items.push(createItem(c.title, `/holidays/customised-tour-packages/${c.slug}`, "customized", c)),

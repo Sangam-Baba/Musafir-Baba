@@ -15,6 +15,14 @@ const packageSchema = new mongoose.Schema(
       ref: "Destination",
       required: true,
     },
+    // Optional sub-destination of `destination`. URLs/canonical keep using
+    // `destination` only, so tagging a sub-destination never changes them.
+    subDestination: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Destination",
+      default: null,
+      set: (v) => v || null,
+    },
 
     coverImage: {
       url: String,

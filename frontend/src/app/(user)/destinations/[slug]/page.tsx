@@ -13,6 +13,9 @@ import Script from "next/script";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
 import PageFaqs from "@/components/common/PageFaqs";
+import SubDestinationGrid, {
+  SubDestinationCard,
+} from "@/components/custom/SubDestinationGrid";
 
 interface Destination {
   _id: string;
@@ -119,6 +122,23 @@ const getDestinationBySlug = async (slug: string) => {
   const data = await res.json();
   return data?.data;
 };
+// Published sub-destinations of a main destination (empty when it has none)
+async function getSubDestinations(
+  parentId?: string,
+): Promise<SubDestinationCard[]> {
+  if (!parentId) return [];
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/destination?parent=${parentId}&status=published&view=card`,
+      { next: { revalidate: 60 } },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data ?? [];
+  } catch {
+    return [];
+  }
+}
 export async function generateMetadata({
   params,
 }: {
@@ -153,6 +173,7 @@ async function DestinationPage({
   const destination = await getDestinationBySlug(slug);
   const packages = await getGroupPackageByDestinationSlug(slug);
   const customizedPkg = await getPackageByDestinationSlug(slug);
+  const subDestinations = await getSubDestinations(destination?._id);
   const newCustomizedPkg = (customizedPkg || []).map(
     (pkg: CustomizedPackageInterface) => ({
       ...pkg,
@@ -199,6 +220,11 @@ async function DestinationPage({
           <ReadMore content={destination?.content} />
         </div>
       )}
+      <SubDestinationGrid
+        parentSlug={slug}
+        parentName={destination?.name || slug}
+        items={subDestinations}
+      />
       {totalPackages.length === 0 ? (
         <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
           <p className="text-2xl font-semibold text-gray-800 text-center">
