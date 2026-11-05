@@ -27,7 +27,8 @@ import { Reviews } from "@/app/admin/holidays/new/page";
 import { getReviewsByIds } from "@/app/admin/holidays/new/page";
 import { CustomizedPackageValues } from "@/app/admin/customized-tour-package/new/page";
 import SmallEditor from "@/components/admin/SmallEditor";
-import SubDestinationSelect from "@/components/admin/destination/SubDestinationSelect";
+import SubDestinationSelect, { toIdList } from "@/components/admin/destination/SubDestinationSelect";
+import ExtraDestinationSelect from "@/components/admin/destination/ExtraDestinationSelect";
 import BlogEditor from "@/components/admin/BlogEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllAuthors } from "../../../webpage/new/page";
@@ -154,7 +155,10 @@ export default function CreatePackagePage() {
       form.reset({
         ...mergedData,
         destination: mergedData.destination._id || mergedData.destination,
-        subDestination: mergedData.subDestination?._id || mergedData.subDestination || "",
+        // Older packages keep one `subDestination`; saving moves it into the list
+        subDestinations: toIdList(mergedData.subDestinations, mergedData.subDestination),
+        extraDestinations: toIdList(mergedData.extraDestinations),
+        subDestination: null,
         author: mergedData.author?._id || mergedData.author,
         reviews: reviewsIds,
         coverImages: mergedData.coverImages?.length ? mergedData.coverImages : (mergedData.coverImage ? [mergedData.coverImage] : []),
@@ -307,10 +311,17 @@ export default function CreatePackagePage() {
                   )} />
                   <SubDestinationSelect
                     destinationId={form.watch("destination")}
-                    value={form.watch("subDestination")}
-                    onChange={(v) => form.setValue("subDestination", v)}
+                    extraDestinationIds={form.watch("extraDestinations")}
+                    value={form.watch("subDestinations")}
+                    onChange={(v) => form.setValue("subDestinations", v)}
                     labelClassName="text-[11px] font-bold text-gray-600 uppercase tracking-widest"
-                    className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <ExtraDestinationSelect
+                    destinationId={form.watch("destination")}
+                    value={form.watch("extraDestinations")}
+                    onChange={(v) => form.setValue("extraDestinations", v)}
+                    labelClassName="text-[11px] font-bold text-gray-600 uppercase tracking-widest"
+                    selectClassName="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <FormField control={form.control} name="author" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Author</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full rounded-sm border border-gray-300 px-2 h-7 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary" value={field.value || ""}><option value="">No Author Assigned</option>{allauthors?.map((author: any) => (<option key={author._id} value={author._id}>{author.name}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>

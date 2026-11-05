@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import React from "react";
 import { CustomizedPackageInterface } from "@/app/(user)/holidays/customised-tour-packages/[destination]/page";
 import { getCategory } from "@/app/(user)/holidays/page";
-import MixedPackagesClient from "../../../holidays/PackagesClient";
+import DestinationPackagesClient, {
+  SubDestinationOption,
+} from "@/components/custom/DestinationPackagesClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
@@ -26,6 +28,7 @@ interface SubDestination {
 }
 interface GroupPackage {
   slug: string;
+  destination?: { state?: string };
   mainCategory: { slug: string };
   batch?: { quad: number }[];
 }
@@ -70,6 +73,23 @@ async function getCustomizedPackages(subId: string) {
   return data?.data ?? [];
 }
 
+// Sibling sub-destinations, listed in the filter sidebar
+async function getSiblingSubDestinations(
+  parentId: string,
+): Promise<SubDestinationOption[]> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/destination?parent=${parentId}&status=published&view=card`,
+      { next: { revalidate: 60 } },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: { params: Params }) {
   const { slug, sub } = await params;
   const destination = await getSubDestination(slug, sub);
@@ -96,10 +116,11 @@ async function SubDestinationPage({ params }: { params: Params }) {
   const destination = await getSubDestination(slug, sub);
   if (!destination) return notFound();
 
-  const [packages, customizedPkg, categorydata] = await Promise.all([
+  const [packages, customizedPkg, categorydata, siblings] = await Promise.all([
     getGroupPackages(destination._id),
     getCustomizedPackages(destination._id),
     getCategory(),
+    getSiblingSubDestinations(destination.parent._id),
   ]);
   const newCustomizedPkg = (customizedPkg || []).map(
     (pkg: CustomizedPackageInterface) => ({
@@ -120,7 +141,7 @@ async function SubDestinationPage({ params }: { params: Params }) {
     "Explore Packages in " + destination.name,
     `https://musafirbaba.com/destinations/${slug}/${sub}`,
     (packages || []).map((pkg: GroupPackage) => ({
-      url: `https://musafirbaba.com/holidays/${pkg.mainCategory?.slug}/${slug}/${pkg.slug}`,
+      url: `https://musafirbaba.com/holidays/${pkg.mainCategory?.slug}/${pkg.destination?.state ?? slug}/${pkg.slug}`,
     })),
   );
 
@@ -149,7 +170,14 @@ async function SubDestinationPage({ params }: { params: Params }) {
           </p>
         </div>
       ) : (
-        <MixedPackagesClient data={totalPackages} category={[...categories]} />
+        <DestinationPackagesClient
+          data={totalPackages}
+          category={[...categories]}
+          subDestinations={siblings}
+          parentSlug={slug}
+          parentName={destination.parent.name}
+          activeSubId={destination._id}
+        />
       )}
       <PageFaqs faqs={destination.faqSchema} />
       <Script
