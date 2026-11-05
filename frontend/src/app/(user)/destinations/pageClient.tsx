@@ -214,7 +214,7 @@ function DestinationPageClient({
         <div
           role="tablist"
           aria-label="Destination type"
-          className="flex flex-wrap gap-2 border-b border-gray-200"
+          className="flex gap-1 md:gap-2 overflow-x-auto no-scrollbar shadow-[inset_0_-1px_0_0_#e5e7eb]"
         >
           {tabs.map((t) => (
             <button
@@ -223,7 +223,7 @@ function DestinationPageClient({
               role="tab"
               aria-selected={tab === t.key}
               onClick={() => setTab(t.key)}
-              className={`-mb-px border-b-2 px-4 py-2.5 text-base md:text-lg font-semibold transition-colors ${
+              className={`shrink-0 whitespace-nowrap border-b-2 px-3 md:px-4 py-2.5 text-sm sm:text-base md:text-lg font-semibold transition-colors ${
                 tab === t.key
                   ? "border-[#FE5300] text-[#FE5300]"
                   : "border-transparent text-gray-600 hover:text-gray-900"

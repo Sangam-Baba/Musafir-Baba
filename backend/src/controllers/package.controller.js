@@ -295,6 +295,8 @@ const getPackages = async (req, res) => {
       sort,
       // Optional sub-destination _id (used by /destinations/{parent}/{sub})
       subDestination,
+      // "true" also matches packages listing `destination` in extraDestinations
+      includeExtra,
     } = req.query;
 
     const query = {};
@@ -335,7 +337,14 @@ const getPackages = async (req, res) => {
           .status(404)
           .json({ success: false, message: "Destination not found" });
       }
-      query.destination = dest._id;
+      if (includeExtra === "true") {
+        query.$and = [
+          ...(query.$and || []),
+          { $or: [{ destination: dest._id }, { extraDestinations: dest._id }] },
+        ];
+      } else {
+        query.destination = dest._id;
+      }
     }
 
     if (subDestination) {
@@ -344,7 +353,10 @@ const getPackages = async (req, res) => {
           .status(400)
           .json({ success: false, message: "Invalid sub-destination" });
       }
-      query.subDestination = subDestination;
+      query.$and = [
+        ...(query.$and || []),
+        { $or: [{ subDestination }, { subDestinations: subDestination }] },
+      ];
     }
 
     // ✅ Search filter (title or destination name/country/state/city) — the
@@ -362,7 +374,12 @@ const getPackages = async (req, res) => {
       const searchOr = [{ title: { $regex: search, $options: "i" } }];
       if (matchingDestinations.length > 0) {
         const ids = matchingDestinations.map((d) => d._id);
-        searchOr.push({ destination: { $in: ids } }, { subDestination: { $in: ids } });
+        searchOr.push(
+          { destination: { $in: ids } },
+          { subDestination: { $in: ids } },
+          { subDestinations: { $in: ids } },
+          { extraDestinations: { $in: ids } },
+        );
       }
       query.$and = [...(query.$and || []), { $or: searchOr }];
     }

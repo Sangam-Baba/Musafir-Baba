@@ -2,20 +2,15 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
 import { notFound } from "next/navigation";
 import React from "react";
-import {
-  getPackageByDestinationSlug,
-  CustomizedPackageInterface,
-} from "@/app/(user)/holidays/customised-tour-packages/[destination]/page";
+import { CustomizedPackageInterface } from "@/app/(user)/holidays/customised-tour-packages/[destination]/page";
 import { getCategory } from "@/app/(user)/holidays/page";
-import MixedPackagesClient from "../../holidays/PackagesClient";
+import DestinationPackagesClient from "@/components/custom/DestinationPackagesClient";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import Script from "next/script";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import ReadMore from "@/components/common/ReadMore";
 import PageFaqs from "@/components/common/PageFaqs";
-import SubDestinationGrid, {
-  SubDestinationCard,
-} from "@/components/custom/SubDestinationGrid";
+import { SubDestinationOption } from "@/components/custom/DestinationPackagesClient";
 
 interface Destination {
   _id: string;
@@ -97,12 +92,30 @@ interface Package {
 }
 async function getGroupPackageByDestinationSlug(slug: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages/?destination=${slug}&includeExtra=true`,
     {
       next: { revalidate: 60 },
     },
   );
   if (!res.ok) return null;
+  const data = await res.json();
+  return data?.data;
+}
+
+// Same as getPackageByDestinationSlug() in customised-tour-packages, plus
+// packages that list this destination as an extra one
+async function getCustomizedPackagesForDestination(slug: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customizedtourpackage?destination=${slug}&includeExtra=true`,
+    {
+      next: { revalidate: 60 },
+    },
+  );
+  if (res.status === 404) return notFound();
+  if (!res.ok) {
+    console.error("Failed to fetch packages:", res.status);
+    return [];
+  }
   const data = await res.json();
   return data?.data;
 }
@@ -125,7 +138,7 @@ const getDestinationBySlug = async (slug: string) => {
 // Published sub-destinations of a main destination (empty when it has none)
 async function getSubDestinations(
   parentId?: string,
-): Promise<SubDestinationCard[]> {
+): Promise<SubDestinationOption[]> {
   if (!parentId) return [];
   try {
     const res = await fetch(
@@ -172,7 +185,7 @@ async function DestinationPage({
   const { slug } = await params;
   const destination = await getDestinationBySlug(slug);
   const packages = await getGroupPackageByDestinationSlug(slug);
-  const customizedPkg = await getPackageByDestinationSlug(slug);
+  const customizedPkg = await getCustomizedPackagesForDestination(slug);
   const subDestinations = await getSubDestinations(destination?._id);
   const newCustomizedPkg = (customizedPkg || []).map(
     (pkg: CustomizedPackageInterface) => ({
@@ -197,7 +210,7 @@ async function DestinationPage({
     "Explore Packages in " + slug,
     `https://musafirbaba.com/destinations/${slug}`,
     (packages || []).map((pkg: Package) => ({
-      url: `https://musafirbaba.com/holidays/${pkg.mainCategory.slug}/${slug}/${pkg.slug}`,
+      url: `https://musafirbaba.com/holidays/${pkg.mainCategory.slug}/${pkg.destination?.state ?? slug}/${pkg.slug}`,
     })),
   );
   return (
@@ -220,11 +233,6 @@ async function DestinationPage({
           <ReadMore content={destination?.content} />
         </div>
       )}
-      <SubDestinationGrid
-        parentSlug={slug}
-        parentName={destination?.name || slug}
-        items={subDestinations}
-      />
       {totalPackages.length === 0 ? (
         <div className="w-full md:max-w-7xl mx-auto px-4 md:px-8 lg:px-10 mt-10">
           <p className="text-2xl font-semibold text-gray-800 text-center">
@@ -232,7 +240,13 @@ async function DestinationPage({
           </p>
         </div>
       ) : (
-        <MixedPackagesClient data={totalPackages} category={totalCategory} />
+        <DestinationPackagesClient
+          data={totalPackages}
+          category={totalCategory}
+          subDestinations={subDestinations}
+          parentSlug={slug}
+          parentName={destination?.name}
+        />
       )}
       <PageFaqs faqs={destination?.faqSchema} />
       <Script

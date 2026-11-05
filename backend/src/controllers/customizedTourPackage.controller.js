@@ -115,7 +115,15 @@ const getAllCustomizedTourPackages = async (req, res) => {
           .status(404)
           .json({ success: false, message: "Destination not found" });
       }
-      filter.destination = dest._id;
+      // ?includeExtra=true also matches packages listing it in extraDestinations
+      if (req.query?.includeExtra === "true") {
+        filter.$and = [
+          ...(filter.$and || []),
+          { $or: [{ destination: dest._id }, { extraDestinations: dest._id }] },
+        ];
+      } else {
+        filter.destination = dest._id;
+      }
     }
     // Optional sub-destination _id (used by /destinations/{parent}/{sub})
     const subDestination = req.query?.subDestination?.trim();
@@ -125,7 +133,10 @@ const getAllCustomizedTourPackages = async (req, res) => {
           .status(400)
           .json({ success: false, message: "Invalid sub-destination" });
       }
-      filter.subDestination = subDestination;
+      filter.$and = [
+        ...(filter.$and || []),
+        { $or: [{ subDestination }, { subDestinations: subDestination }] },
+      ];
     }
     if (req.query?.title) filter.title = req.query.title;
     if (req.query?.slug) filter.slug = req.query.slug;

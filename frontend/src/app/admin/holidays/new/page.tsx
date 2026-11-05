@@ -1,5 +1,6 @@
 "use client";
 import SubDestinationSelect from "@/components/admin/destination/SubDestinationSelect";
+import ExtraDestinationSelect from "@/components/admin/destination/ExtraDestinationSelect";
 import React, { useEffect, useState } from "react";
 import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -86,6 +87,8 @@ interface PackageFormValues {
   slug: string;
   destination: string;
   subDestination?: string | null;
+  subDestinations?: string[];
+  extraDestinations?: string[];
   mainCategory: string;
   otherCategory: string[];
   reviews?: string[];
@@ -456,10 +459,17 @@ export default function CreatePackagePage() {
                   )} />
                   <SubDestinationSelect
                     destinationId={form.watch("destination")}
-                    value={form.watch("subDestination")}
-                    onChange={(v) => form.setValue("subDestination", v)}
+                    extraDestinationIds={form.watch("extraDestinations")}
+                    value={form.watch("subDestinations")}
+                    onChange={(v) => form.setValue("subDestinations", v)}
                     labelClassName="text-[12px] font-medium text-slate-700"
-                    className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
+                  />
+                  <ExtraDestinationSelect
+                    destinationId={form.watch("destination")}
+                    value={form.watch("extraDestinations")}
+                    onChange={(v) => form.setValue("extraDestinations", v)}
+                    labelClassName="text-[12px] font-medium text-slate-700"
+                    selectClassName="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
                   />
                   <FormField control={form.control} name="mainCategory" render={({ field }) => (
                     <FormItem className="space-y-0.5"><FormLabel className="text-[12px] font-medium text-slate-700">Main Category *</FormLabel><FormControl><select {...field} onChange={(e) => field.onChange(e.target.value)} className="w-full h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]" value={field.value || ""}><option value="" disabled>Select a category</option>{category?.map((cat: Category) => (<option key={cat._id} value={cat._id}>{cat.name.toLocaleUpperCase()}</option>))}</select></FormControl><FormMessage className="text-[10px]" /></FormItem>

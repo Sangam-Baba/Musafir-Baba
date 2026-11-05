@@ -23,6 +23,24 @@ const packageSchema = new mongoose.Schema(
       default: null,
       set: (v) => v || null,
     },
+    // A package can belong to several sub-destinations. `subDestination`
+    // above is the older single value; both are read, and saving from the
+    // admin forms moves it into this list.
+    subDestinations: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Destination" }],
+      default: undefined,
+      set: (v) =>
+        (Array.isArray(v) ? v : v ? [v] : []).filter(Boolean),
+    },
+    // Other main destinations this package is also listed on. Listing only:
+    // URLs/canonical keep using `destination`, and only callers that pass
+    // ?includeExtra=true (the /destinations pages) see these.
+    extraDestinations: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Destination" }],
+      default: undefined,
+      set: (v) =>
+        (Array.isArray(v) ? v : v ? [v] : []).filter(Boolean),
+    },
 
     coverImage: {
       url: String,
