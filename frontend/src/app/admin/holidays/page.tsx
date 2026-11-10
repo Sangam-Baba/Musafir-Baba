@@ -106,8 +106,13 @@ const getAllPackages = async (
   destination: string,
   sort: string
 ) => {
+  // On prod, Cloudflare edge-caches GET /api/packages by full URL and ignores
+  // the browser's no-store/no-cache headers, so right after an approval the
+  // list kept showing the stale row (local has no Cloudflare, hence the
+  // difference). A unique `_ts` makes every admin request a cache miss; the
+  // backend ignores unknown query params, and public-site caching is untouched.
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=${status}&destination=${destination}&sort=${sort}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/packages?page=${page}&search=${search}&limit=${limit}&status=${status}&destination=${destination}&sort=${sort}&_ts=${Date.now()}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
