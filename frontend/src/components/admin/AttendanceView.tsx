@@ -458,6 +458,7 @@ export default function AttendanceView() {
       {cameraConfig.action && (
         <CameraModal 
           title={cameraConfig.title}
+          requireFace
           onCancel={() => setCameraConfig({ action: null, title: "" })}
           onCapture={(base64) => {
             const action = cameraConfig.action;
