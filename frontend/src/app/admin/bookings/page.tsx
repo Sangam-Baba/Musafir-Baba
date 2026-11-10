@@ -14,17 +14,85 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Search, Filter } from "lucide-react";
+  AlertTriangle,
+  CalendarCheck,
+  CheckCircle2,
+  Clock3,
+  Plus,
+  Search,
+  Sparkles,
+  Users,
+  XCircle,
+} from "lucide-react";
 import Pagination from "@/components/common/Pagination";
 import ManualBooking from "@/components/admin/ManualBooking";
+import {
+  FleetEmptyState,
+  FleetKpiStrip,
+  FleetPage,
+  FleetPanel,
+  FleetPill,
+  fleetSelectClass,
+  fleetTh,
+  fleetTone,
+} from "@/components/admin/fleet/FleetUI";
+import { AdminPageHeader } from "@/components/admin/AdminFormUI";
+import { cn } from "@/lib/utils";
+
+// ---- Page-local display helpers (presentation only) ----
+// Same status buckets as getStatusColor below, rendered with the admin pill style.
+function pillTone(status?: string) {
+  const s = String(status ?? "").toLowerCase();
+  if (s === "confirmed" || s === "completed" || s === "paid") return fleetTone.emerald;
+  if (s === "pending" || s === "processing") return fleetTone.amber;
+  if (s === "cancelled" || s === "failed" || s === "refunded") return fleetTone.red;
+  if (s === "upcoming" || s === "ongoing" || s === "active") return fleetTone.sky;
+  return fleetTone.slate;
+}
+
+function StatusPill({ value, prefix }: { value?: string; prefix?: string }) {
+  if (!value) return <span className="text-[12px] text-slate-300">-</span>;
+  return (
+    <FleetPill className={cn(pillTone(value), "capitalize")}>
+      {prefix ? `${prefix}: ${value}` : value}
+    </FleetPill>
+  );
+}
+
+function TypePill({ type }: { type: "group" | "customized" }) {
+  return type === "group" ? (
+    <FleetPill className={fleetTone.orange} dot={false}>
+      <span className="inline-flex items-center gap-1"><Users size={11} /> Group</span>
+    </FleetPill>
+  ) : (
+    <FleetPill className={fleetTone.violet} dot={false}>
+      <span className="inline-flex items-center gap-1"><Sparkles size={11} /> Customized</span>
+    </FleetPill>
+  );
+}
+
+const initials = (name?: string) =>
+  (name ?? "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join("") || "?";
+
+const AVATAR_TONES = [
+  "bg-orange-50 text-orange-600 ring-orange-100",
+  "bg-sky-50 text-sky-600 ring-sky-100",
+  "bg-violet-50 text-violet-600 ring-violet-100",
+  "bg-emerald-50 text-emerald-600 ring-emerald-100",
+  "bg-amber-50 text-amber-600 ring-amber-100",
+  "bg-rose-50 text-rose-600 ring-rose-100",
+];
+const avatarTone = (seed: string) =>
+  AVATAR_TONES[[...(seed ?? "")].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_TONES.length];
+
+const formatAmount = (value?: number) =>
+  `₹${Number(value ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 interface BookingBase {
   _id: string;
@@ -290,164 +358,105 @@ function BookingPage() {
   if (!permissions.includes("bookings"))
     return <h1 className="mx-auto text-2xl">Access Denied</h1>;
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 lg:p-8 max-w-7xl mx-auto">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Bookings
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400">
-            Manage and track all tour bookings
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={filterType}
-            onChange={(e) =>
-              setFilterType(e.target.value as "all" | "group" | "customized")
-            }
-            className="rounded-md border px-3 py-2 bg-white"
-          >
-            <option value="all">All</option>
-            <option value="group">Group</option>
-            <option value="customized">Customized</option>
-          </select>
-
+    <FleetPage className="pb-8">
+      <AdminPageHeader
+        section="Main"
+        icon={CalendarCheck}
+        title="Bookings"
+        description="Manage and track all tour bookings: group departures and customized tours."
+        actions={
           <Button
-            className="bg-[#FE5300] hover:bg-[#FE5300]"
+            size="sm"
+            className="h-8 gap-1.5 bg-[#FE5300] px-3 text-[12px] font-semibold hover:bg-[#e44a00]"
             onClick={() => setIsModalOpen(true)}
           >
-            + Add Booking
+            <Plus className="h-3.5 w-3.5" /> Add booking
           </Button>
+        }
+      />
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <ManualBooking onClose={() => setIsModalOpen(false)} />
         </div>
+      )}
 
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <ManualBooking onClose={() => setIsModalOpen(false)} />
-          </div>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Total Bookings (Shown / All)
-            </p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">
-              {filteredData.length} / {bookingStats.total}
-            </p>
-          </CardContent>
-        </Card>
+      <FleetKpiStrip
+        items={[
+          {
+            label: "Total bookings (shown / all)",
+            value: `${filteredData.length} / ${bookingStats.total}`,
+            icon: CalendarCheck,
+            tone: "orange",
+          },
+          { label: "Confirmed", value: bookingStats.confirmed, icon: CheckCircle2, tone: "emerald" },
+          { label: "Pending", value: bookingStats.pending, icon: Clock3, tone: "amber" },
+          { label: "Cancelled", value: bookingStats.cancelled, icon: XCircle, tone: "red" },
+        ]}
+      />
 
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Confirmed
-            </p>
-            <p className="text-3xl font-bold text-emerald-600">
-              {bookingStats.confirmed}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Pending
-            </p>
-            <p className="text-3xl font-bold text-amber-600">
-              {bookingStats.pending}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Cancelled
-            </p>
-            <p className="text-3xl font-bold text-red-600">
-              {bookingStats.cancelled}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <Card className="mb-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-        <CardHeader>
-          <CardTitle>Bookings List</CardTitle>
-          <CardDescription>View and manage all tour bookings</CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="flex gap-2 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+      <FleetPanel
+        title="Bookings list"
+        description="View and manage all tour bookings"
+        actions={
+          <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
+            <div className="relative w-full md:w-72">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
               <Input
                 placeholder="Search by name, email, or package..."
-                className="pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                className="h-8 w-full pl-8 text-[13px]"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
-            <Button variant="outline" className="gap-2 bg-transparent">
-              <Filter className="w-4 h-4" />
-              Filter
-            </Button>
+            <select
+              value={filterType}
+              onChange={(e) =>
+                setFilterType(e.target.value as "all" | "group" | "customized")
+              }
+              className={cn(fleetSelectClass, "w-full md:w-[150px]")}
+              aria-label="Booking type"
+            >
+              <option value="all">All types</option>
+              <option value="group">Group</option>
+              <option value="customized">Customized</option>
+            </select>
           </div>
-
-          {isGroupLoading || isCustomizedLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader size="lg" message="Loading bookings..." />
-            </div>
-          ) : isGroupError || isCustomizedError ? (
-            <div className="text-center py-12">
-              <p className="text-red-600 dark:text-red-400">
-                Error: {String(groupError?.message ?? customizedError?.message)}
-              </p>
-            </div>
-          ) : filteredData.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-slate-500 dark:text-slate-400">
-                No bookings found
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+        }
+      >
+        {isGroupLoading || isCustomizedLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader size="lg" message="Loading bookings..." />
+          </div>
+        ) : isGroupError || isCustomizedError ? (
+          <div className="flex flex-col items-center gap-2 py-12 text-center">
+            <AlertTriangle className="h-5 w-5 text-rose-400" />
+            <p className="text-[13px] text-red-600">
+              Error: {String(groupError?.message ?? customizedError?.message)}
+            </p>
+          </div>
+        ) : filteredData.length === 0 ? (
+          <FleetEmptyState
+            icon={CalendarCheck}
+            title="No bookings found"
+            hint={searchTerm || filterType !== "all" ? "Try a different search or booking type." : undefined}
+          />
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden overflow-x-auto md:block">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      S/N
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Guest
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Package
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Payment
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Trip Status
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Travel Date
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Booking Date
-                    </TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">
-                      Booking Type
-                    </TableHead>
-                    <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">
-                      Amount
-                    </TableHead>
+                  <TableRow className="border-b border-slate-100 bg-slate-50/60 hover:bg-slate-50/60">
+                    <TableHead className={cn(fleetTh, "w-10 pl-4")}>#</TableHead>
+                    <TableHead className={fleetTh}>Guest</TableHead>
+                    <TableHead className={fleetTh}>Package</TableHead>
+                    <TableHead className={fleetTh}>Status</TableHead>
+                    <TableHead className={fleetTh}>Payment</TableHead>
+                    <TableHead className={fleetTh}>Trip</TableHead>
+                    <TableHead className={fleetTh}>Travel date</TableHead>
+                    <TableHead className={fleetTh}>Booked on</TableHead>
+                    <TableHead className={cn(fleetTh, "pr-4 text-right")}>Amount</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -455,97 +464,130 @@ function BookingPage() {
                   {filteredData.map((booking, index) => (
                     <TableRow
                       key={booking._id}
-                      className="border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      className="border-b border-slate-50 transition-colors last:border-0 hover:bg-orange-50/30"
                     >
-                      <TableCell className="text-slate-700 dark:text-slate-300 font-medium">
+                      <TableCell className="py-3 pl-4 text-[12px] tabular-nums text-slate-400">
                         {index + 1}
                       </TableCell>
 
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <p className="font-medium text-slate-900 dark:text-white">
-                            {booking.user?.name}
-                          </p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {booking.user?.email}
-                          </p>
+                      <TableCell className="max-w-[220px] py-3">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <div
+                            className={cn(
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-1 ring-inset",
+                              avatarTone(booking._id)
+                            )}
+                          >
+                            {initials(booking.user?.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-[13px] font-medium capitalize text-slate-900" title={booking.user?.name}>
+                              {booking.user?.name || "-"}
+                            </p>
+                            <p className="truncate text-[11px] text-slate-500" title={booking.user?.email}>
+                              {booking.user?.email}
+                            </p>
+                          </div>
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-slate-700 dark:text-slate-300">
-                        {booking.packageId?.title ?? "-"}
-                      </TableCell>
-
-                      <TableCell>
-                        <Badge
-                          className={`${getStatusColor(
-                            booking.bookingStatus
-                          )} border-0`}
+                      <TableCell className="max-w-[300px] py-3">
+                        <p
+                          className="line-clamp-2 whitespace-normal text-[13px] leading-snug text-slate-700"
+                          title={booking.packageId?.title}
                         >
-                          {booking.bookingStatus}
-                        </Badge>
+                          {booking.packageId?.title ?? "-"}
+                        </p>
+                        <div className="mt-1">
+                          <TypePill type={booking.type} />
+                        </div>
                       </TableCell>
 
-                      <TableCell>
-                        <Badge
-                          className={`${getStatusColor(
-                            booking.paymentInfo?.status
-                          )} border-0`}
-                        >
-                          {booking.paymentInfo?.status}
-                        </Badge>
+                      <TableCell className="py-3">
+                        <StatusPill value={booking.bookingStatus} />
                       </TableCell>
 
-                      <TableCell>
-                        <Badge
-                          className={`${getStatusColor(
-                            (booking as GroupBooking).batchId?.status
-                          )} border-0`}
-                        >
-                          {(booking as GroupBooking).batchId?.status ?? "-"}
-                        </Badge>
+                      <TableCell className="py-3">
+                        <StatusPill value={booking.paymentInfo?.status} />
+                        {booking.paymentMethod && (
+                          <p className="mt-1 text-[11px] text-slate-400">{booking.paymentMethod}</p>
+                        )}
                       </TableCell>
 
-                      <TableCell className="text-slate-700 dark:text-slate-300">
+                      <TableCell className="py-3">
+                        <StatusPill value={(booking as GroupBooking).batchId?.status} />
+                      </TableCell>
+
+                      <TableCell className="whitespace-nowrap py-3 text-[12px] tabular-nums text-slate-600">
                         {formatDate(booking.date)}
                       </TableCell>
 
-                      <TableCell className="text-slate-700 dark:text-slate-300">
+                      <TableCell className="whitespace-nowrap py-3 text-[12px] tabular-nums text-slate-500">
                         {formatDate(booking.createdAt ?? booking.bookingDate)}
                       </TableCell>
 
-                      <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
-                        <span className="capitalize">{booking.type}</span>
-                      </TableCell>
-
-                      <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
-                        Rs.{Number(booking.totalPrice ?? 0).toFixed(2)}
+                      <TableCell className="whitespace-nowrap py-3 pr-4 text-right text-[13px] font-semibold tabular-nums text-slate-900">
+                        {formatAmount(booking.totalPrice)}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      <div>
-        {isCustomizedLoading || isGroupLoading ? (
-          <Loader />
-        ) : (
-          <Pagination
-            currentPage={page}
-            totalPages={Math.max(
-              1,
-              Math.ceil((bookingStats.total || 0) / limit)
-            )}
-            onPageChange={handlePageChange}
-            pageSize={limit}
-          />
+            {/* Mobile list */}
+            <div className="divide-y divide-slate-100 md:hidden">
+              {filteredData.map((booking) => (
+                <div key={booking._id} className="flex items-start gap-3 px-4 py-3">
+                  <div
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-1 ring-inset",
+                      avatarTone(booking._id)
+                    )}
+                  >
+                    {initials(booking.user?.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="truncate text-[13px] font-medium capitalize text-slate-900">
+                        {booking.user?.name || "-"}
+                      </p>
+                      <span className="shrink-0 text-[13px] font-semibold tabular-nums text-slate-900">
+                        {formatAmount(booking.totalPrice)}
+                      </span>
+                    </div>
+                    <p className="truncate text-[11px] text-slate-500">{booking.user?.email}</p>
+                    <p className="mt-1 line-clamp-2 text-[12px] text-slate-700">{booking.packageId?.title ?? "-"}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <TypePill type={booking.type} />
+                      <StatusPill value={booking.bookingStatus} />
+                      <StatusPill value={booking.paymentInfo?.status} prefix="Payment" />
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-slate-400">
+                      Travel {formatDate(booking.date)} · Booked {formatDate(booking.createdAt ?? booking.bookingDate)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
-      </div>
-    </main>
+
+        {!(isCustomizedLoading || isGroupLoading) && (
+          <div className="border-t border-slate-100 px-4 py-3">
+            <Pagination
+              currentPage={page}
+              totalPages={Math.max(
+                1,
+                Math.ceil((bookingStats.total || 0) / limit)
+              )}
+              onPageChange={handlePageChange}
+              pageSize={limit}
+            />
+          </div>
+        )}
+      </FleetPanel>
+    </FleetPage>
   );
 }
 

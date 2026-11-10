@@ -11,6 +11,8 @@ import { News } from "../models/News.js";
 import { Blog } from "../models/Blog.js";
 import { ContactEnquiry } from "../models/ContactInquiry.js";
 import { Document } from "../models/Document.js";
+import { Vehicle } from "../models/Vehicle.js";
+import { VehicleBooking } from "../models/VehicleBooking.js";
 
 const getDashboardSummary = async (req, res) => {
   try {
@@ -361,7 +363,99 @@ const getUserDashboardSummary = async (req, res) => {
   }
 };
 
+// Platform-wide counts for the admin dashboard (read-only, additive endpoint;
+// the older summary/chart endpoints above are unchanged). Every count runs
+// through `safe`, so one failing collection returns null for that number
+// instead of failing the whole dashboard.
+const getDashboardOverview = async (req, res) => {
+  try {
+    const safe = (promise) => promise.catch((err) => {
+      console.log("Dashboard overview count failed", err.message);
+      return null;
+    });
+
+    const now = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    // Month-to-date vs the same number of days last month, so early in a month
+    // the comparison isn't "this month so far" against a full previous month.
+    const lastMonthSamePoint = new Date(
+      Math.min(lastMonthStart.getTime() + (now.getTime() - thisMonthStart.getTime()), thisMonthStart.getTime()),
+    );
+    const thisMonth = { createdAt: { $gte: thisMonthStart } };
+    const lastMonth = { createdAt: { $gte: lastMonthStart, $lt: lastMonthSamePoint } };
+    const hasPending = { pendingUpdates: { $ne: null } };
+    const isVisaEnquiry = { source: { $regex: "visa", $options: "i" } };
+
+    // Scope: packages, package bookings, enquiries, blogs, news and vehicle
+    // rentals only. Fleet management (rides, partners, riders, app support)
+    // is intentionally not part of this dashboard.
+    const tasks = {
+      // Packages
+      packagesTotal: Package.countDocuments({}),
+      packagesPublished: Package.countDocuments({ status: "published" }),
+      packagesDraft: Package.countDocuments({ status: "draft" }),
+      packagesPendingApproval: Package.countDocuments(hasPending),
+      packagesThisMonth: Package.countDocuments(thisMonth),
+      customTourPackagesTotal: CustomizedTourPackage.countDocuments({}),
+      customTourPackagesPublished: CustomizedTourPackage.countDocuments({ status: "published" }),
+      customTourPackagesPendingApproval: CustomizedTourPackage.countDocuments(hasPending),
+
+      // Package bookings (website)
+      holidayBookingsTotal: Booking.countDocuments({}),
+      holidayBookingsConfirmed: Booking.countDocuments({ bookingStatus: "Confirmed" }),
+      holidayBookingsPending: Booking.countDocuments({ bookingStatus: "Pending" }),
+      holidayBookingsCancelled: Booking.countDocuments({ bookingStatus: "Cancelled" }),
+      holidayBookingsThisMonth: Booking.countDocuments(thisMonth),
+      holidayBookingsLastMonth: Booking.countDocuments(lastMonth),
+      customTourBookingsTotal: CustomizedTourBooking.countDocuments({}),
+      customTourBookingsConfirmed: CustomizedTourBooking.countDocuments({ bookingStatus: "Confirmed" }),
+      customTourBookingsPending: CustomizedTourBooking.countDocuments({ bookingStatus: "Pending" }),
+      customTourBookingsCancelled: CustomizedTourBooking.countDocuments({ bookingStatus: "Cancelled" }),
+      customTourBookingsThisMonth: CustomizedTourBooking.countDocuments(thisMonth),
+      customTourBookingsLastMonth: CustomizedTourBooking.countDocuments(lastMonth),
+
+      // Enquiries
+      enquiriesTotal: ContactEnquiry.countDocuments({}),
+      enquiriesVisa: ContactEnquiry.countDocuments(isVisaEnquiry),
+      enquiriesThisMonth: ContactEnquiry.countDocuments(thisMonth),
+      enquiriesLastMonth: ContactEnquiry.countDocuments(lastMonth),
+
+      // Blogs & news
+      blogsPublished: Blog.countDocuments({ status: "published" }),
+      blogsDraft: Blog.countDocuments({ status: "draft" }),
+      blogsThisMonth: Blog.countDocuments(thisMonth),
+      blogsLastMonth: Blog.countDocuments(lastMonth),
+      newsPublished: News.countDocuments({ status: "published" }),
+      newsDraft: News.countDocuments({ status: "draft" }),
+      newsThisMonth: News.countDocuments(thisMonth),
+      newsLastMonth: News.countDocuments(lastMonth),
+
+      // Vehicle rentals (website vehicles, not fleet)
+      vehiclesTotal: Vehicle.countDocuments({}),
+      vehiclesPublished: Vehicle.countDocuments({ status: "published" }),
+      vehiclesDraft: Vehicle.countDocuments({ status: "draft" }),
+      vehicleBookingsTotal: VehicleBooking.countDocuments({}),
+      vehicleBookingsConfirmed: VehicleBooking.countDocuments({ bookingStatus: "Confirmed" }),
+      vehicleBookingsPending: VehicleBooking.countDocuments({ bookingStatus: "Pending" }),
+      vehicleBookingsCancelled: VehicleBooking.countDocuments({ bookingStatus: "Cancelled" }),
+      vehicleBookingsThisMonth: VehicleBooking.countDocuments(thisMonth),
+      vehicleBookingsLastMonth: VehicleBooking.countDocuments(lastMonth),
+    };
+
+    const keys = Object.keys(tasks);
+    const values = await Promise.all(keys.map((k) => safe(tasks[k])));
+    const data = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
+
+    return res.status(200).json({ success: true, data, generatedAt: now.toISOString() });
+  } catch (error) {
+    console.error("Dashboard overview failed:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 export {
+  getDashboardOverview,
   getDashboardSummary,
   getMonthlyBookings,
   getBookingVSVisaEnquiry,

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -10,12 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, X, User, Mail, Phone, Calendar, CheckCircle, RotateCcw, FileText, ChevronLeft, ChevronRight, Smartphone } from "lucide-react";
+import { Eye, X, User, Mail, FileText, ChevronLeft, ChevronRight, Smartphone, RotateCcw, ExternalLink, Globe, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
+import { FleetEmptyState, FleetPill, fleetTh, fleetTone } from "@/components/admin/fleet/FleetUI";
+import { cn } from "@/lib/utils";
 
 interface VisaApplication {
   _id: string;
@@ -84,6 +85,64 @@ interface VisaApplicationListProps {
   onStatusUpdate: () => void;
 }
 
+// ---- Display-only helpers ----
+const statusTone = (status: string) => {
+  switch (status) {
+    case "Approved": return fleetTone.emerald;
+    case "Returned":
+    case "Rejected": return fleetTone.red;
+    case "Applied":
+    case "Submitted": return fleetTone.sky;
+    case "Under Review":
+    case "Pending": return fleetTone.amber;
+    case "Reviewed":
+    case "Processing": return fleetTone.violet;
+    default: return fleetTone.slate;
+  }
+};
+
+function StatusPill({ status }: { status: string }) {
+  return <FleetPill className={statusTone(status)}>{status || "-"}</FleetPill>;
+}
+
+const applicantName = (app: VisaApplication) =>
+  app.userId?.name || (app.riderId ? app.riderId.fullName || app.riderId.mobileNumber || "MBGo Rider" : "Guest User");
+
+const initials = (name?: string) =>
+  (name ?? "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join("") || "?";
+
+const AVATAR_TONES = [
+  "bg-orange-50 text-orange-600 ring-orange-100",
+  "bg-sky-50 text-sky-600 ring-sky-100",
+  "bg-violet-50 text-violet-600 ring-violet-100",
+  "bg-emerald-50 text-emerald-600 ring-emerald-100",
+  "bg-amber-50 text-amber-600 ring-amber-100",
+  "bg-rose-50 text-rose-600 ring-rose-100",
+];
+const avatarTone = (seed: string) =>
+  AVATAR_TONES[[...(seed ?? "")].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_TONES.length];
+
+const formatDay = (d?: string) =>
+  d ? new Date(d).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' }) : "-";
+
+const SectionTitle = ({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) => (
+  <h4 className="mb-2 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+    <Icon size={12} className="text-[#FE5300]" /> {children}
+  </h4>
+);
+
+const Field = ({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) => (
+  <div className={cn("flex min-w-0 flex-col", className)}>
+    <span className="text-[11px] text-slate-500">{label}</span>
+    <span className="min-w-0 text-[13px] font-medium text-slate-800">{children}</span>
+  </div>
+);
+
 export default function VisaApplicationList({ applications, onStatusUpdate }: VisaApplicationListProps) {
   const [selectedApp, setSelectedApp] = useState<VisaApplication | null>(null);
   const [returnReason, setReturnReason] = useState("");
@@ -123,87 +182,92 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Approved": return "bg-green-50 text-green-700 border-green-150";
-      case "Returned": return "bg-red-50 text-red-700 border-red-150";
-      case "Applied": return "bg-blue-50 text-blue-700 border-blue-150";
-      case "Under Review": return "bg-orange-50 text-orange-700 border-orange-150";
-      case "Reviewed": return "bg-purple-50 text-purple-700 border-purple-150";
-      case "Processing": return "bg-indigo-50 text-indigo-700 border-indigo-150";
-      default: return "bg-slate-50 text-slate-700 border-slate-150";
-    }
-  };
+  if (totalItems === 0) {
+    return <FleetEmptyState icon={Globe} title="No visa applications found" hint="Try a different search or status filter." />;
+  }
 
   return (
     <div className="w-full">
-      <div className="bg-white rounded-xl border border-slate-100 shadow-xs overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden md:block">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50/50 border-b border-slate-100">
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 w-[120px]">App ID</TableHead>
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Account Holder</TableHead>
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Visa Details</TableHead>
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">Travellers</TableHead>
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</TableHead>
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Submitted On</TableHead>
-              <TableHead className="py-2.5 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 text-right">Actions</TableHead>
+            <TableRow className="border-b border-slate-100 bg-slate-50/60 hover:bg-slate-50/60">
+              <TableHead className={cn(fleetTh, "w-[130px] pl-4")}>Application</TableHead>
+              <TableHead className={fleetTh}>Applicant</TableHead>
+              <TableHead className={fleetTh}>Visa</TableHead>
+              <TableHead className={fleetTh}>Travellers</TableHead>
+              <TableHead className={fleetTh}>Status</TableHead>
+              <TableHead className={fleetTh}>Submitted</TableHead>
+              <TableHead className={cn(fleetTh, "pr-4 text-right")}>
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.map((app) => (
-              <TableRow key={app._id} className="group hover:bg-slate-50/80 border-b border-slate-50 last:border-0 transition-colors duration-300 ease-in-out">
-                <TableCell className="font-mono text-[13px] font-bold text-[#FE5300] py-2 px-4">
-                  {app.applicationId || "DRAFT"}
+              <TableRow
+                key={app._id}
+                onClick={() => setSelectedApp(app)}
+                className="group cursor-pointer border-b border-slate-50 transition-colors last:border-0 hover:bg-orange-50/30"
+              >
+                <TableCell className="py-3 pl-4">
+                  <span className="font-mono text-[12px] font-semibold text-[#FE5300]">{app.applicationId || "DRAFT"}</span>
                 </TableCell>
-                <TableCell className="py-2 px-4 max-w-[160px] sm:max-w-[200px]">
-                  <div className="flex items-start gap-2.5 transition-transform duration-300 ease-in-out group-hover:translate-x-[1px]">
-                    <div className="p-1.5 bg-orange-50 rounded-lg text-[#FE5300] transition-colors duration-300 ease-in-out shrink-0">
-                      <User size={14} />
+                <TableCell className="max-w-[230px] py-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-1 ring-inset", avatarTone(app._id))}>
+                      {initials(applicantName(app))}
                     </div>
-                    <div className="flex flex-col overflow-hidden w-full">
-                      <span className="text-[13px] font-semibold text-slate-700 leading-tight truncate block max-w-[120px] sm:max-w-[160px]" title={app.userId?.name || app.riderId?.fullName || "Guest User"}>
-                        {app.userId?.name || (app.riderId ? app.riderId.fullName || app.riderId.mobileNumber || "MBGo Rider" : "Guest User")}
-                      </span>
-                      {app.riderId && !app.userId && (
-                        <span className="inline-flex w-fit items-center gap-1 mt-0.5 text-[9px] font-black uppercase tracking-wider text-[#FE5300]">
-                          <Smartphone size={10} /> MBGo App
-                        </span>
-                      )}
-                      <span className="text-[10px] text-slate-400 font-mono lowercase font-medium mt-0.5 truncate block max-w-[120px] sm:max-w-[160px]" title={app.userId?.email || app.email}>
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <p className="truncate text-[13px] font-medium capitalize text-slate-900" title={app.userId?.name || app.riderId?.fullName || "Guest User"}>
+                          {applicantName(app)}
+                        </p>
+                        {app.riderId && !app.userId && (
+                          <FleetPill className={fleetTone.orange} dot={false}>
+                            <span className="inline-flex items-center gap-1"><Smartphone size={10} /> MBGo</span>
+                          </FleetPill>
+                        )}
+                      </div>
+                      <p className="truncate text-[11px] text-slate-500" title={app.userId?.email || app.email}>
                         {app.userId?.email || app.email}
-                      </span>
+                      </p>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="py-2 px-4 max-w-[220px] sm:max-w-[280px]">
-                  <div className="flex flex-col transition-transform duration-300 ease-in-out group-hover:translate-x-[1px]">
-                    <span className="text-[13px] font-semibold text-slate-700 leading-tight truncate block" title={app.visaId?.title}>
-                      {app.visaId?.title}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider mt-0.5">{app.visaId?.country}</span>
-                  </div>
+                <TableCell className="max-w-[300px] py-3">
+                  <p className="truncate text-[13px] text-slate-800" title={app.visaId?.title}>
+                    {app.visaId?.title || <span className="text-slate-300">-</span>}
+                  </p>
+                  {app.visaId?.country && (
+                    <p className="mt-0.5 flex items-center gap-1 text-[11px] capitalize text-slate-500">
+                      <Globe size={11} className="text-slate-400" /> {app.visaId.country.replace(/-/g, " ")}
+                    </p>
+                  )}
                 </TableCell>
-                <TableCell className="text-center py-2 px-4">
-                  <span className="inline-flex items-center justify-center bg-slate-50 text-slate-500 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-slate-100 uppercase tracking-widest transition-all duration-300 ease-in-out">
-                    {app.travellers?.length || 0} Pax
+                <TableCell className="py-3">
+                  <span className="inline-flex items-center gap-1 text-[12px] tabular-nums text-slate-600">
+                    <Users size={12} className="text-slate-400" /> {app.travellers?.length || 0} pax
                   </span>
                 </TableCell>
-                <TableCell className="py-2 px-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${getStatusColor(app.applicationStatus)} transition-colors duration-300 ease-in-out`}>
-                    {app.applicationStatus}
-                  </span>
+                <TableCell className="py-3">
+                  <StatusPill status={app.applicationStatus} />
                 </TableCell>
-                <TableCell className="text-[11px] font-semibold text-slate-500 py-2 px-4">
-                  {new Date(app.createdAt).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })}
+                <TableCell className="whitespace-nowrap py-3 text-[12px] tabular-nums text-slate-600">
+                  {formatDay(app.createdAt)}
                 </TableCell>
-                <TableCell className="text-right py-2 px-4">
+                <TableCell className="py-3 pr-4 text-right">
                   <Button
                     variant="ghost"
-                    onClick={() => setSelectedApp(app)}
-                    className="inline-flex items-center justify-center h-7 w-7 p-0 rounded-md text-slate-400 hover:text-[#FE5300] hover:bg-orange-50 transition-all duration-300 ease-in-out group/icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedApp(app);
+                    }}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md p-0 text-slate-400 transition-colors hover:bg-orange-50 hover:text-[#FE5300]"
+                    aria-label={`View application ${app.applicationId || ""}`}
                   >
-                    <Eye className="h-4 w-4 opacity-40 group-hover/icon:opacity-100 group-hover/icon:scale-110 transition-all duration-300 ease-in-out" />
+                    <Eye className="h-4 w-4" />
                   </Button>
                 </TableCell>
               </TableRow>
@@ -212,9 +276,37 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
         </Table>
       </div>
 
+      {/* Mobile list */}
+      <div className="divide-y divide-slate-100 md:hidden">
+        {paginatedData.map((app) => (
+          <button
+            key={app._id}
+            type="button"
+            onClick={() => setSelectedApp(app)}
+            className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-orange-50/30"
+          >
+            <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-1 ring-inset", avatarTone(app._id))}>
+              {initials(applicantName(app))}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-[13px] font-medium capitalize text-slate-900">{applicantName(app)}</p>
+                <span className="shrink-0 font-mono text-[11px] font-semibold text-[#FE5300]">{app.applicationId || "DRAFT"}</span>
+              </div>
+              <p className="truncate text-[12px] text-slate-700">{app.visaId?.title || "-"}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <StatusPill status={app.applicationStatus} />
+                <span className="text-[11px] text-slate-500">{app.travellers?.length || 0} pax</span>
+                <span className="ml-auto text-[11px] tabular-nums text-slate-400">{formatDay(app.createdAt)}</span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+
       {/* Pagination Footer */}
-      <div className="flex items-center justify-between px-2 py-4">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+      <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[12px] text-slate-500">
           Showing {totalItems > 0 ? startIndex + 1 : 0} - {Math.min(startIndex + itemsPerPage, totalItems)} of {totalItems}
         </p>
 
@@ -223,14 +315,15 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 rounded-lg border-slate-200 transition-colors duration-300 ease-in-out bg-white hover:bg-slate-50"
+              className="h-8 w-8 rounded-md border-slate-200 bg-white p-0 hover:bg-slate-50"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={activePage <= 1}
+              aria-label="Previous page"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            
-            <div className="flex items-center gap-1 px-4">
+
+            <div className="flex items-center gap-1 px-1">
                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                  let pageNum = activePage;
                  if (totalPages <= 5) pageNum = i + 1;
@@ -245,7 +338,7 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
                      key={pageNum}
                      variant={activePage === pageNum ? "default" : "ghost"}
                      size="sm"
-                     className={`h-8 w-8 p-0 rounded-lg transition-all duration-300 ease-in-out ${activePage === pageNum ? 'bg-[#FE5300] hover:bg-[#FE5300] text-white font-black' : 'text-slate-600 hover:text-[#FE5300] hover:bg-orange-50'}`}
+                     className={`h-8 min-w-8 rounded-md px-2 text-[12px] tabular-nums ${activePage === pageNum ? 'bg-[#FE5300] font-semibold text-white hover:bg-[#FE5300]' : 'text-slate-600 hover:bg-orange-50 hover:text-[#FE5300]'}`}
                      onClick={() => setCurrentPage(pageNum)}
                    >
                      {pageNum}
@@ -257,9 +350,10 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 rounded-lg border-slate-200 transition-colors duration-300 ease-in-out bg-white hover:bg-slate-50"
+              className="h-8 w-8 rounded-md border-slate-200 bg-white p-0 hover:bg-slate-50"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={activePage >= totalPages}
+              aria-label="Next page"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -269,9 +363,9 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
 
       <AnimatePresence>
         {selectedApp && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-[2px]">
             {/* Backdrop clickable overlay */}
-            <div 
+            <div
               className="absolute inset-0 cursor-pointer"
               onClick={() => setSelectedApp(null)}
             />
@@ -280,174 +374,146 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 26, stiffness: 220 }}
-              className="relative z-10 bg-white h-full w-full max-w-[480px] sm:max-w-[540px] shadow-2xl flex flex-col overflow-hidden border-l border-slate-100"
+              className="relative z-10 flex h-full w-full max-w-[480px] flex-col overflow-hidden border-l border-slate-200 bg-white shadow-2xl sm:max-w-[540px]"
             >
-              <div className="px-5 py-4 border-b flex items-center justify-between bg-slate-50/50 border-slate-100">
-                <div className="flex flex-col">
-                  <h3 className="text-[14px] font-bold text-slate-800 leading-tight">Application Details</h3>
-                  <span className="text-[10px] text-slate-400 font-mono mt-0.5 lowercase">ID: {selectedApp.applicationId || "DRAFT"}</span>
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ring-1 ring-inset", avatarTone(selectedApp._id))}>
+                    {initials(applicantName(selectedApp))}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-[15px] font-semibold capitalize text-slate-900">{applicantName(selectedApp)}</h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      <span className="font-mono text-[11px] font-semibold text-[#FE5300]">{selectedApp.applicationId || "DRAFT"}</span>
+                      <StatusPill status={selectedApp.applicationStatus} />
+                    </div>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedApp(null)} 
-                  className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center transition-colors duration-300 ease-in-out"
+                <button
+                  onClick={() => setSelectedApp(null)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  aria-label="Close"
                 >
                   <X size={16} />
                 </button>
               </div>
 
-              <div className="p-5 overflow-y-auto space-y-6 flex-1 max-h-full">
-                {/* Main status indicator */}
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between transition-colors duration-300 ease-in-out">
-                   <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Submitted Version</span>
-                      <span className="text-[11px] font-bold text-slate-500 capitalize">{selectedApp.visaId?.title}</span>
-                   </div>
-                   <div className="text-right">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 leading-none">Status</span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${getStatusColor(selectedApp.applicationStatus)} transition-colors duration-300 ease-in-out`}>
-                        {selectedApp.applicationStatus}
-                      </span>
-                   </div>
+              <div className="flex-1 space-y-5 overflow-y-auto p-5">
+                {/* Visa summary */}
+                <div className="rounded-lg border border-slate-200/80 bg-slate-50/60 p-4">
+                  <span className="text-[11px] text-slate-500">Applied for</span>
+                  <p className="mt-0.5 text-[13px] font-semibold text-slate-900">{selectedApp.visaId?.title || "-"}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-500">
+                    {selectedApp.visaId?.country && (
+                      <span className="inline-flex items-center gap-1 capitalize"><Globe size={12} /> {selectedApp.visaId.country.replace(/-/g, " ")}</span>
+                    )}
+                    <span className="inline-flex items-center gap-1"><Users size={12} /> {selectedApp.travellers?.length || 0} pax</span>
+                    <span>Submitted {formatDay(selectedApp.createdAt)}</span>
+                  </div>
                 </div>
 
                 {/* Account details if user is logged in */}
                 {selectedApp.userId && (
-                  <div className="space-y-3 pt-2">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 flex items-center gap-2">
-                        <Mail size={12} className="text-[#FE5300]" />
-                        Account Contact
-                      </h4>
-                      <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 grid grid-cols-2 gap-4">
-                         <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Email Address</span>
-                            <span className="text-[12px] font-semibold text-slate-700 font-mono truncate">{selectedApp.userId.email}</span>
-                         </div>
-                         <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Phone Number</span>
-                            <span className="text-[12px] font-semibold text-slate-700 font-mono">{selectedApp.userId.phone || "N/A"}</span>
-                         </div>
-                      </div>
-                  </div>
+                  <section>
+                    <SectionTitle icon={Mail}>Account contact</SectionTitle>
+                    <div className="grid grid-cols-2 gap-4 rounded-lg border border-slate-200/80 p-3">
+                      <Field label="Email">
+                        <span className="block truncate">{selectedApp.userId.email}</span>
+                      </Field>
+                      <Field label="Phone">{selectedApp.userId.phone || "N/A"}</Field>
+                    </div>
+                  </section>
                 )}
 
                 {/* MBGo app applicant: rider, chosen visa option and eligibility answers */}
                 {selectedApp.riderId && (
-                  <div className="space-y-3 pt-2">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 flex items-center gap-2">
-                      <Smartphone size={12} className="text-[#FE5300]" />
-                      MBGo App Application
-                    </h4>
-                    <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 grid grid-cols-2 gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Rider</span>
-                        <span className="text-[12px] font-semibold text-slate-700">{selectedApp.riderId.fullName || "N/A"}</span>
-                        <span className="text-[11px] text-slate-500 font-mono">{selectedApp.riderId.mobileNumber || ""}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Contact Given</span>
-                        <span className="text-[12px] font-semibold text-slate-700 font-mono truncate">{selectedApp.email || "N/A"}</span>
-                        <span className="text-[11px] text-slate-500 font-mono">{selectedApp.phone || ""}</span>
-                      </div>
-                      <div className="flex flex-col col-span-2">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Visa Option</span>
-                        <span className="text-[12px] font-semibold text-slate-700">
-                          {getChosenVisaLabel(selectedApp) || "N/A"}
-                          {selectedApp.isExpress ? " · Express" : ""}
-                        </span>
+                  <section>
+                    <SectionTitle icon={Smartphone}>MBGo app application</SectionTitle>
+                    <div className="grid grid-cols-2 gap-4 rounded-lg border border-slate-200/80 p-3">
+                      <Field label="Rider">
+                        {selectedApp.riderId.fullName || "N/A"}
+                        <span className="block text-[12px] font-normal text-slate-500">{selectedApp.riderId.mobileNumber || ""}</span>
+                      </Field>
+                      <Field label="Contact given">
+                        <span className="block truncate">{selectedApp.email || "N/A"}</span>
+                        <span className="block text-[12px] font-normal text-slate-500">{selectedApp.phone || ""}</span>
+                      </Field>
+                      <Field label="Visa option" className="col-span-2">
+                        {getChosenVisaLabel(selectedApp) || "N/A"}
+                        {selectedApp.isExpress ? " · Express" : ""}
                         {typeof selectedApp.totalCost === "number" && (
-                          <span className="text-[11px] text-slate-500">Total ₹{selectedApp.totalCost.toLocaleString("en-IN")} · Payment {selectedApp.paymentInfo?.status || "Pending"}</span>
+                          <span className="block text-[12px] font-normal text-slate-500">Total ₹{selectedApp.totalCost.toLocaleString("en-IN")} · Payment {selectedApp.paymentInfo?.status || "Pending"}</span>
                         )}
-                      </div>
+                      </Field>
                       {selectedApp.eligibility && (selectedApp.eligibility.purpose || selectedApp.eligibility.travelDate || selectedApp.eligibility.stayDuration) && (
-                        <div className="flex flex-col col-span-2">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Eligibility Answers</span>
-                          <span className="text-[11px] font-medium text-slate-600">
+                        <Field label="Eligibility answers" className="col-span-2">
+                          <span className="font-normal text-slate-600">
                             {[
                               selectedApp.eligibility.purpose,
                               selectedApp.eligibility.travelDate && `Travel ${selectedApp.eligibility.travelDate}`,
                               selectedApp.eligibility.stayDuration && `Stay ${selectedApp.eligibility.stayDuration}`,
                             ].filter(Boolean).join(" · ")}
                           </span>
-                        </div>
+                        </Field>
                       )}
                       {selectedApp.resubmittedAt && (
-                        <div className="flex flex-col col-span-2">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Resubmitted After Return</span>
-                          <span className="text-[11px] font-medium text-slate-600">
+                        <Field label="Resubmitted after return" className="col-span-2">
+                          <span className="font-normal text-slate-600">
                             {new Date(selectedApp.resubmittedAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                             {selectedApp.returnReason ? ` · Earlier reason: ${selectedApp.returnReason}` : ""}
                           </span>
-                        </div>
+                        </Field>
                       )}
                     </div>
-                  </div>
+                  </section>
                 )}
 
                 {/* Traveller details */}
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 flex items-center gap-2">
-                    <User size={12} className="text-[#FE5300]" />
-                    Travellers ({selectedApp.travellers?.length || 0} Pax)
-                  </h4>
-                  <div className="space-y-2">
+                <section>
+                  <SectionTitle icon={User}>Travellers ({selectedApp.travellers?.length || 0} pax)</SectionTitle>
+                  <div className="divide-y divide-slate-100 rounded-lg border border-slate-200/80">
                     {selectedApp.travellers?.map((pax, i) => (
-                      <div key={i} className="p-3 bg-slate-50/50 rounded-xl border border-slate-100 hover:border-orange-200 transition-colors duration-300 ease-in-out group">
-                        <div className="grid grid-cols-3 gap-2">
-                           <div className="flex flex-col col-span-2">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Full Name</span>
-                              <span className="text-[12px] font-bold text-slate-700 sentence-case">{pax.firstName} {pax.lastName}</span>
-                           </div>
-                           <div className="flex flex-col items-end justify-center">
-                              <span className="w-5 h-5 bg-white border border-slate-200 rounded-md flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-[#FE5300] group-hover:text-white group-hover:border-[#FE5300] transition-all duration-300 ease-in-out">
-                                {i + 1}
-                              </span>
-                           </div>
-                           <div className="flex flex-col mt-1">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Date of Birth</span>
-                              <span className="text-[11px] font-medium text-slate-600">{pax.dob}</span>
-                           </div>
-                           <div className="flex flex-col mt-1">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Gender</span>
-                              <span className="text-[11px] font-medium text-slate-600 capitalize">{pax.gender}</span>
-                           </div>
+                      <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] font-medium capitalize text-slate-900">{pax.firstName} {pax.lastName}</p>
+                          <p className="text-[11px] text-slate-500">
+                            DOB {pax.dob} · <span className="capitalize">{pax.gender}</span>
+                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
 
                 {/* Documents categorized */}
-                <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-1.5 flex items-center gap-2">
-                    <FileText size={12} className="text-[#FE5300]" />
-                    Document Scans
-                  </h4>
-                  
+                <section className="space-y-3">
+                  <SectionTitle icon={FileText}>Documents</SectionTitle>
+
                   {selectedApp.travellers?.map((pax, pIdx) => {
                     const paxDocs = selectedApp.documents?.filter(d => d.travellerId === pIdx.toString() || d.travellerId === (pIdx + 1).toString());
                     if (paxDocs?.length === 0) return null;
 
                     return (
-                      <div key={pIdx} className="space-y-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-[9px]">{pax.firstName} {pax.lastName}</p>
-                        <div className="space-y-1.5">
+                      <div key={pIdx} className="space-y-1.5">
+                        <p className="text-[11px] font-medium capitalize text-slate-500">{pax.firstName} {pax.lastName}</p>
+                        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                           {paxDocs?.map((doc, i) => (
                             <a
                               key={i}
                               href={doc.media.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center justify-between p-2.5 bg-white rounded-lg hover:bg-slate-50/50 transition border border-slate-100 group/doc"
+                              className="group/doc flex items-center gap-2.5 rounded-lg border border-slate-200/80 bg-white p-2.5 transition-colors hover:border-orange-200 hover:bg-orange-50/40"
                             >
-                              <div className="flex items-center gap-2.5">
-                                 <div className="p-1.5 bg-orange-50 rounded text-[#FE5300] group-hover/doc:bg-[#FE5300] group-hover/doc:text-white transition-colors duration-300 ease-in-out">
-                                    <FileText size={14} />
-                                 </div>
-                                 <div className="flex flex-col">
-                                    <span className="text-[12px] font-semibold text-slate-700 leading-tight">{doc.name}</span>
-                                    <span className="text-[9px] text-slate-400 font-medium">Click to review scan</span>
-                                 </div>
+                              <div className="rounded-md bg-orange-50 p-1.5 text-[#FE5300] transition-colors group-hover/doc:bg-[#FE5300] group-hover/doc:text-white">
+                                <FileText size={14} />
                               </div>
+                              <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-slate-700">{doc.name}</span>
+                              <ExternalLink size={12} className="shrink-0 text-slate-300 group-hover/doc:text-[#FE5300]" />
                             </a>
                           ))}
                         </div>
@@ -457,42 +523,38 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
 
                   {/* General legacy/general documents */}
                   {selectedApp.documents?.filter(d => !d.travellerId).length > 0 && (
-                    <div className="space-y-2 border-t border-slate-100 pt-3">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-[9px]">General Documents</p>
-                      <div className="space-y-1.5">
+                    <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                      <p className="text-[11px] font-medium text-slate-500">General documents</p>
+                      <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                         {selectedApp.documents?.filter(d => !d.travellerId).map((doc, i) => (
                           <a
                             key={i}
                             href={doc.media.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-between p-2.5 bg-white rounded-lg hover:bg-slate-50/50 transition border border-slate-100 group/doc"
+                            className="group/doc flex items-center gap-2.5 rounded-lg border border-slate-200/80 bg-white p-2.5 transition-colors hover:bg-slate-50"
                           >
-                            <div className="flex items-center gap-2.5">
-                               <div className="p-1.5 bg-slate-50 rounded text-slate-400 group-hover/doc:bg-slate-400 group-hover/doc:text-white transition-colors duration-300 ease-in-out">
-                                  <FileText size={14} />
-                               </div>
-                               <div className="flex flex-col">
-                                  <span className="text-[12px] font-semibold text-slate-700 leading-tight">{doc.name}</span>
-                                  <span className="text-[9px] text-slate-400 font-medium">General Attachments</span>
-                               </div>
+                            <div className="rounded-md bg-slate-100 p-1.5 text-slate-400 transition-colors group-hover/doc:bg-slate-400 group-hover/doc:text-white">
+                              <FileText size={14} />
                             </div>
+                            <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-slate-700">{doc.name}</span>
+                            <ExternalLink size={12} className="shrink-0 text-slate-300" />
                           </a>
                         ))}
                       </div>
                     </div>
                   )}
-                </div>
+                </section>
 
                 {/* Return Reason for Returned status */}
                 {selectedApp.applicationStatus === "Returned" && (
-                  <div className="p-3 bg-red-50/50 border border-red-100 rounded-xl flex items-start gap-2.5">
-                    <div className="p-1.5 bg-red-100 text-red-600 rounded">
+                  <div className="flex items-start gap-2.5 rounded-lg border border-red-100 bg-red-50/60 p-3">
+                    <div className="rounded-md bg-red-100 p-1.5 text-red-600">
                        <RotateCcw size={14} />
                     </div>
                     <div className="flex flex-col">
-                      <p className="text-[9px] text-red-500 font-black uppercase mb-0.5 tracking-wider">Return Reason</p>
-                      <p className="text-[12px] text-red-700 font-medium leading-relaxed">{selectedApp.returnReason}</p>
+                      <p className="mb-0.5 text-[11px] font-medium text-red-600">Return reason</p>
+                      <p className="text-[12px] leading-relaxed text-red-700">{selectedApp.returnReason}</p>
                     </div>
                   </div>
                 )}
@@ -500,11 +562,11 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
 
               {/* Status Update CTA footer wrapper */}
               {(selectedApp.applicationStatus === "Applied" || selectedApp.applicationStatus === "Under Review" || selectedApp.applicationStatus === "Reviewed" || selectedApp.applicationStatus === "Processing" || selectedApp.applicationStatus === "Submitted") && (
-                <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-3">
+                <div className="space-y-3 border-t border-slate-100 bg-slate-50/60 p-5">
                   <div className="space-y-1">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Update status or Add Return Reason</p>
+                    <p className="text-[11px] font-medium text-slate-500">Update status, or add a reason to return it</p>
                     <Input
-                      className="h-9 text-[12px] bg-white border-slate-200 focus-visible:ring-1 focus-visible:ring-[#FE5300] focus:ring-1 focus:ring-[#FE5300] focus-visible:ring-offset-0 focus:outline-none rounded-lg"
+                      className="h-9 rounded-md border-slate-200 bg-white text-[12px] focus-visible:ring-1 focus-visible:ring-[#FE5300] focus-visible:ring-offset-0"
                       placeholder="e.g., Passport photo is blurry..."
                       value={returnReason}
                       onChange={(e) => setReturnReason(e.target.value)}
@@ -513,17 +575,17 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
                   <div className="flex gap-2">
                     {(selectedApp.applicationStatus === "Applied" || selectedApp.applicationStatus === "Submitted") && (
                       <Button
-                        className="flex-1 h-9 text-[11px] bg-[#FE5300] hover:bg-[#FE5300]/90 text-white font-bold rounded-lg shadow-sm"
+                        className="h-9 flex-1 rounded-md bg-[#FE5300] text-[12px] font-semibold text-white hover:bg-[#e44a00]"
                         onClick={() => handleUpdateStatus(selectedApp._id, "Reviewed")}
                         disabled={isUpdating}
                       >
                         Mark Reviewed
                       </Button>
                     )}
-                    
+
                     {selectedApp.applicationStatus === "Reviewed" && (
                       <Button
-                        className="flex-1 h-9 text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm"
+                        className="h-9 flex-1 rounded-md bg-sky-600 text-[12px] font-semibold text-white hover:bg-sky-700"
                         onClick={() => handleUpdateStatus(selectedApp._id, "Processing")}
                         disabled={isUpdating}
                       >
@@ -533,17 +595,17 @@ export default function VisaApplicationList({ applications, onStatusUpdate }: Vi
 
                     {(selectedApp.applicationStatus === "Reviewed" || selectedApp.applicationStatus === "Processing") && (
                       <Button
-                        className="flex-1 h-9 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm"
+                        className="h-9 flex-1 rounded-md bg-emerald-600 text-[12px] font-semibold text-white hover:bg-emerald-700"
                         onClick={() => handleUpdateStatus(selectedApp._id, "Approved")}
                         disabled={isUpdating}
                       >
                         Approve Final
                       </Button>
                     )}
-                    
+
                     <Button
                       variant="destructive"
-                      className="flex-1 h-9 text-[11px] font-bold rounded-lg shadow-sm"
+                      className="h-9 flex-1 rounded-md text-[12px] font-semibold"
                       onClick={() => handleUpdateStatus(selectedApp._id, "Returned", returnReason)}
                       disabled={isUpdating || !returnReason}
                     >
