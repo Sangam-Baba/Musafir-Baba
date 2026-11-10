@@ -8,6 +8,7 @@ import {
   getLatestAcitvity,
   getCombinedNewsBlog,
   getUserDashboardSummary,
+  getDashboardOverview,
 } from "../controllers/dashboard.controller.js";
 import { validateSession } from "../middleware/session.middleware.js";
 
@@ -19,6 +20,14 @@ dashboardRoute.get(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   getDashboardSummary
+);
+
+dashboardRoute.get(
+  "/overview",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  getDashboardOverview
 );
 
 dashboardRoute.get(
