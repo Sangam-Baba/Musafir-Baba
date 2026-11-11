@@ -77,7 +77,7 @@ export const getSitemapSourceData = async (req, res) => {
         .lean(),
       Vehicle.find({})
         .select(`title slug vehicleType location author ${metaFields}`)
-        .populate("location", "name")
+        .populate("location", "name slug")
         .populate("author", "name")
         .lean(),
       AboutUs.find({}).select(`title ${metaFields}`).lean(),

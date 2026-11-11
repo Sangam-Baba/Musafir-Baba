@@ -134,8 +134,8 @@ vehicleSchema.pre("save", async function (next) {
       const loc = await mongoose.model("VehiclePickUpDestination").findById(this.location).lean();
       if (loc) locSlug = loc.slug;
     }
-    const vType = this.vehicleType ? slugify(this.vehicleType, { lower: true }) : "car";
-    this.canonicalUrl = `/rental/${vType}${locSlug ? '/' + locSlug : ''}/${this.slug}`;
+    const vType = this.vehicleType ? slugify(this.vehicleType, { lower: true, strict: true }) : "other";
+    this.canonicalUrl = `/rental/${locSlug || 'any'}/${vType}/${this.slug}`;
   }
   next();
 });
@@ -172,9 +172,9 @@ vehicleSchema.pre("findOneAndUpdate", async function (next) {
         const loc = await mongoose.model("VehiclePickUpDestination").findById(locId).lean();
         if (loc) locSlug = loc.slug;
       }
-      let vTypeRaw = update.vehicleType || existindDoc.vehicleType || "car";
-      let vType = slugify(vTypeRaw, { lower: true });
-      update.canonicalUrl = `/rental/${vType}${locSlug ? '/' + locSlug : ''}/${finalSlug}`;
+      let vTypeRaw = update.vehicleType || existindDoc.vehicleType || "other";
+      let vType = slugify(vTypeRaw, { lower: true, strict: true });
+      update.canonicalUrl = `/rental/${locSlug || 'any'}/${vType}/${finalSlug}`;
     }
   }
 

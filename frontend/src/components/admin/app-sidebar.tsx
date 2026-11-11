@@ -34,6 +34,7 @@ const SECTION_TONES: Record<string, SectionTone> = {
   "Content Management": { band: "bg-sky-50/80 hover:bg-sky-50", tile: "bg-sky-500", label: "text-sky-700", chevron: "text-sky-400", line: "border-sky-200" },
   "Fleet Management": { band: "bg-emerald-50/80 hover:bg-emerald-50", tile: "bg-emerald-500", label: "text-emerald-700", chevron: "text-emerald-400", line: "border-emerald-200" },
   "Packages": { band: "bg-violet-50/80 hover:bg-violet-50", tile: "bg-violet-500", label: "text-violet-700", chevron: "text-violet-400", line: "border-violet-200" },
+  "Rentals": { band: "bg-cyan-50/80 hover:bg-cyan-50", tile: "bg-cyan-500", label: "text-cyan-700", chevron: "text-cyan-400", line: "border-cyan-200" },
   "Bills & Invoice": { band: "bg-amber-50/80 hover:bg-amber-50", tile: "bg-amber-500", label: "text-amber-700", chevron: "text-amber-400", line: "border-amber-200" },
   "Master Data": { band: "bg-rose-50/80 hover:bg-rose-50", tile: "bg-rose-500", label: "text-rose-700", chevron: "text-rose-400", line: "border-rose-200" },
   "Settings": { band: "bg-slate-100/80 hover:bg-slate-100", tile: "bg-slate-600", label: "text-slate-700", chevron: "text-slate-400", line: "border-slate-200" },

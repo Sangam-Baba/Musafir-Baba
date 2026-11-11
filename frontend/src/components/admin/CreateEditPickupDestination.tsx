@@ -15,12 +15,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/custom/loader";
-import { Textarea } from "../ui/textarea";
-import BlogEditor from "./BlogEditor";
 import ImageUploader from "./ImageUploader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { MapPin } from "lucide-react";
+import { FleetPage } from "@/components/admin/fleet/FleetUI";
+import { AdminSaveBar, CompactBlogEditor } from "@/components/admin/AdminFormUI";
+import { dInput, dTextarea } from "@/components/admin/destination/FormBits";
+import {
+  CityTabPanel,
+  CityTabsList,
+  RentalPageHeader,
+  rLabel,
+  rPrimaryBtn,
+  rSecondaryBtn,
+} from "@/components/admin/rental/RentalAdminUI";
 import { useRouter } from "next/navigation";
 
 export const pickupDestinationSchema = z.object({
@@ -170,35 +179,29 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
     : form.watch("keywords");
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border p-6 w-full max-w-full">
-      <h2 className="text-[18px] font-bold mb-6 text-slate-800">
-        {id ? "Edit Pickup Destination" : "Create Pickup Destination"}
-      </h2>
+    <FleetPage className="gap-4">
+      <RentalPageHeader
+        icon={MapPin}
+        title={id ? "Edit City" : "Create City"}
+        description="A pickup city. Its page (e.g. /rental/delhi) lists every vehicle there; each city + type page gets its own content under City + Type Pages."
+      />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid grid-cols-4 w-full mb-6 max-w-3xl bg-slate-100 p-1">
-              <TabsTrigger value="general" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">General</TabsTrigger>
-              <TabsTrigger value="content" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">Content</TabsTrigger>
-              <TabsTrigger value="media" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">Media</TabsTrigger>
-              <TabsTrigger value="seo" className="text-[13px] data-[state=active]:bg-white data-[state=active]:text-[#FE5300]">SEO</TabsTrigger>
-            </TabsList>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Tabs defaultValue="general" className="w-full gap-4">
+            <CityTabsList />
 
-            <TabsContent value="general" forceMount className="space-y-6 data-[state=inactive]:hidden">
-              <div className="grid md:grid-cols-2 gap-6">
+            <TabsContent value="general" forceMount className="data-[state=inactive]:hidden">
+              <CityTabPanel tab="general">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Destination Name *</FormLabel>
+                      <FormLabel className={rLabel}>City name *</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g. Delhi" 
-                          {...field} 
-                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                        />
+                        <input placeholder="e.g. Delhi" {...field} className={dInput} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -209,33 +212,24 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Page Title (H1)</FormLabel>
+                      <FormLabel className={rLabel}>Page heading (H1)</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g. Rental Services in Delhi" 
-                          {...field} 
-                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                        />
+                        <input placeholder="e.g. Car & Traveller Rental in Delhi" {...field} className={dInput} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid gap-4 md:grid-cols-3">
                 <FormField
                   control={form.control}
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">City</FormLabel>
+                      <FormLabel className={rLabel}>City</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g. New Delhi" 
-                          {...field} 
-                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                        />
+                        <input placeholder="e.g. New Delhi" {...field} className={dInput} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -246,13 +240,9 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">State</FormLabel>
+                      <FormLabel className={rLabel}>State</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g. Delhi" 
-                          {...field} 
-                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                        />
+                        <input placeholder="e.g. Delhi" {...field} className={dInput} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -263,12 +253,9 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Status</FormLabel>
+                      <FormLabel className={rLabel}>Status</FormLabel>
                       <FormControl>
-                        <select 
-                          {...field} 
-                          className="w-full rounded-md bg-slate-50 border-transparent shadow-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] h-8 px-3"
-                        >
+                        <select {...field} className={dInput}>
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
                         </select>
@@ -278,71 +265,70 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   )}
                 />
               </div>
+              </CityTabPanel>
             </TabsContent>
 
-            <TabsContent value="content" forceMount className="space-y-6 data-[state=inactive]:hidden">
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Page Content</FormLabel>
-                    <FormControl>
-                      <div className="border border-slate-200 rounded-lg overflow-hidden">
-                        <BlogEditor value={field.value || ""} onChange={field.onChange} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <TabsContent value="content" forceMount className="data-[state=inactive]:hidden">
+              <CityTabPanel tab="content">
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <CompactBlogEditor value={field.value || ""} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CityTabPanel>
             </TabsContent>
 
-            <TabsContent value="media" forceMount className="space-y-6 data-[state=inactive]:hidden">
-              <FormField
-                control={form.control}
-                name="bannerImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Banner Image (Recommended 1920x600)</FormLabel>
-                    <FormControl>
-                      <div className="w-full bg-slate-50 p-4 rounded-lg border border-slate-100">
-                        <ImageUploader
-                          initialImage={field.value}
-                          onUpload={(img) => {
-                            if (!img) {
-                              field.onChange(null);
-                              return;
-                            }
-                            field.onChange({
-                              url: img.url,
-                              alt: img.alt || form.getValues("title") || form.getValues("name"),
-                            });
-                          }}
-                          className="aspect-[3/1]"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <TabsContent value="media" forceMount className="data-[state=inactive]:hidden">
+              <CityTabPanel tab="media">
+                <FormField
+                  control={form.control}
+                  name="bannerImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={rLabel}>Banner image (recommended 1920×600)</FormLabel>
+                      <FormControl>
+                        <div className="w-full rounded-lg border border-slate-200/80 bg-slate-50/60 p-4">
+                          <ImageUploader
+                            initialImage={field.value}
+                            onUpload={(img) => {
+                              if (!img) {
+                                field.onChange(null);
+                                return;
+                              }
+                              field.onChange({
+                                url: img.url,
+                                alt: img.alt || form.getValues("title") || form.getValues("name"),
+                              });
+                            }}
+                            className="aspect-[3/1]"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CityTabPanel>
             </TabsContent>
 
-            <TabsContent value="seo" forceMount className="space-y-6 data-[state=inactive]:hidden">
-              <div className="grid md:grid-cols-2 gap-6">
+            <TabsContent value="seo" forceMount className="data-[state=inactive]:hidden">
+              <CityTabPanel tab="seo">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="metaTitle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Meta Title</FormLabel>
+                      <FormLabel className={rLabel}>Meta title</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter SEO Title" 
-                          {...field} 
-                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                        />
+                        <input placeholder="Enter SEO title" {...field} className={dInput} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -353,34 +339,25 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="canonicalUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Canonical URL</FormLabel>
+                      <FormLabel className={rLabel}>Canonical URL</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="https://musafirbaba.com/rental/..." 
-                          {...field} 
-                          className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                        />
+                        <input placeholder="https://musafirbaba.com/rental/..." {...field} className={dInput} />
                       </FormControl>
+                      <p className="text-[11px] text-slate-400">Optional. The city page currently uses its own address as canonical.</p>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="metaDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Meta Description</FormLabel>
+                      <FormLabel className={rLabel}>Meta description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Enter SEO Description" 
-                          {...field} 
-                          rows={3} 
-                          className="bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] resize-none"
-                        />
+                        <textarea placeholder="Enter SEO description" {...field} rows={3} className={dTextarea} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -391,61 +368,52 @@ export const CreateEditPickupDestination = ({ id }: { id: string | null }) => {
                   name="excerpt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Excerpt (Short Description)</FormLabel>
+                      <FormLabel className={rLabel}>Excerpt (short description)</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Short snippet for previews" 
-                          {...field} 
-                          rows={3} 
-                          className="bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px] resize-none"
-                        />
+                        <textarea placeholder="Short snippet for previews" {...field} rows={3} className={dTextarea} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="keywords"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-[11px] font-medium text-slate-500 capitalize">Keywords (Comma separated)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g. car rentals delhi, cheap cars" 
-                        value={keywordsString || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className="h-8 bg-slate-50 border-transparent shadow-none focus-visible:ring-1 focus-visible:ring-[#FE5300] text-[13px]" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="keywords"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={rLabel}>Keywords (comma separated)</FormLabel>
+                      <FormControl>
+                        <input
+                          placeholder="e.g. car rentals delhi, cheap cars"
+                          value={keywordsString || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className={dInput}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CityTabPanel>
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-3 border-t pt-5 mt-8">
-            <Button 
-              type="button" 
-              variant="outline" 
+          <AdminSaveBar hint="Changes show on this city's page within a minute.">
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => router.push("/admin/master-data/pickup-destination")}
-              className="h-8 px-4 text-[13px] font-medium text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 shadow-none"
+              className={rSecondaryBtn}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={mutation.isPending} 
-              className="h-8 px-6 text-[13px] font-medium bg-[#FE5300] hover:bg-[#e14a00] text-white shadow-none transition-colors"
-            >
-              {mutation.isPending ? "Saving..." : "Save Destination"}
+            <Button type="submit" disabled={mutation.isPending} className={rPrimaryBtn}>
+              {mutation.isPending ? "Saving..." : id ? "Save changes" : "Create city"}
             </Button>
-          </div>
+          </AdminSaveBar>
         </form>
       </Form>
-    </div>
+    </FleetPage>
   );
 };

@@ -25,7 +25,10 @@ import { Label } from "../ui/label";
 import SmallEditor from "./SmallEditor";
 import { X, Plus, Minus, Maximize2, Minimize2 } from "lucide-react";
 import { DestinationInterface } from "@/app/(user)/destinations/page";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { FleetPage } from "@/components/admin/fleet/FleetUI";
+import { AdminSaveBar } from "@/components/admin/AdminFormUI";
+import { RentalPageHeader, VehicleTabPanel, VehicleTabsList, rPrimaryBtn, rSecondaryBtn } from "@/components/admin/rental/RentalAdminUI";
 
 const fetchMasterData = async (accessToken: string, endpoint: string) => {
   const res = await fetch(
@@ -97,7 +100,7 @@ export const vehicleSchema = z.object({
   tripProtectionFee: z.coerce.number(),
   convenienceFee: z.coerce.number(),
   vehicleTransmission: z.string().min(1, "Transmission is required"),
-  location: z.string(),
+  location: z.string().min(1, "Please select a destination"),
 
   faqs: z
     .array(
@@ -146,7 +149,12 @@ const createVehicle = async (accessToken: string, form: FormData) => {
     },
     body: JSON.stringify(form),
   });
-  if (!res.ok) throw new Error("Vehicle creation failed");
+  // Surface the backend's message (e.g. a permalink already used at this
+  // destination); same text as before when there is none
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || "Vehicle creation failed");
+  }
   return res.json();
 };
 
@@ -163,7 +171,10 @@ const updateVehicle = async (
     },
     body: JSON.stringify(form),
   });
-  if (!res.ok) throw new Error("vehicle update failed");
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message || "vehicle update failed");
+  }
   return res.json();
 };
 
@@ -398,37 +409,25 @@ export const CreateEditVehicle = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full">
-      <div className="flex items-center justify-between mb-6 pb-2 border-b">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          {id ? "Update Vehicle" : "Create Vehicle"}
-        </h2>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-gray-500 hover:text-red-500 hover:bg-red-50"
-            onClick={onClose}
-          >
-            <X className="h-5 w-5" />
+    <FleetPage className="gap-4">
+      <RentalPageHeader
+        title={id ? "Edit Vehicle" : "Create Vehicle"}
+        description="One vehicle in one pickup city. To offer it in another city, use Duplicate on the vehicles list."
+        actions={
+          <Button type="button" variant="outline" size="sm" className={`${rSecondaryBtn} gap-1.5`} onClick={onClose}>
+            <X className="h-3.5 w-3.5" /> Close
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid grid-cols-5 w-full mb-6">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
-              <TabsTrigger value="media">Media</TabsTrigger>
-              <TabsTrigger value="additional">Additional</TabsTrigger>
-              <TabsTrigger value="seo">SEO</TabsTrigger>
-            </TabsList>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Tabs defaultValue="general" className="w-full gap-4">
+            <VehicleTabsList />
 
             {/* --- General Tab --- */}
-            <TabsContent value="general" className="space-y-4 pt-1 px-1">
+            <TabsContent value="general">
+              <VehicleTabPanel tab="general">
               <div className="grid md:grid-cols-2 gap-5">
                 <FormField
                   control={form.control}
@@ -602,10 +601,12 @@ export const CreateEditVehicle = ({
                   )}
                 />
               </div>
+              </VehicleTabPanel>
             </TabsContent>
 
             {/* --- Pricing & Inventory Tab --- */}
-            <TabsContent value="pricing" className="space-y-4 pt-1 px-1">
+            <TabsContent value="pricing">
+              <VehicleTabPanel tab="pricing">
               <FormField
                 control={form.control}
                 name="pricingType"
@@ -897,10 +898,12 @@ export const CreateEditVehicle = ({
                   )}
                 />
               </div>
+              </VehicleTabPanel>
             </TabsContent>
 
             {/* --- Media & Content Tab --- */}
-            <TabsContent value="media" className="space-y-6 pt-1 px-1">
+            <TabsContent value="media">
+              <VehicleTabPanel tab="media">
               <div className="mb-4">
                 <FormLabel className="mb-3 text-lg font-semibold block">Vehicle Gallery</FormLabel>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -961,10 +964,12 @@ export const CreateEditVehicle = ({
                   </FormItem>
                 )}
               />
+              </VehicleTabPanel>
             </TabsContent>
 
             {/* --- Additional Info Tab --- */}
-            <TabsContent value="additional" className="space-y-6 pt-1 px-1">
+            <TabsContent value="additional">
+              <VehicleTabPanel tab="additional">
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b pb-2">
                   <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Vehicle Features</Label>
@@ -1209,10 +1214,12 @@ export const CreateEditVehicle = ({
                   + Add Helpful Resource
                 </Button>
               </div>
+              </VehicleTabPanel>
             </TabsContent>
 
             {/* --- SEO Tab --- */}
-            <TabsContent value="seo" className="space-y-6 pt-1 px-1">
+            <TabsContent value="seo">
+              <VehicleTabPanel tab="seo">
               <div className="grid md:grid-cols-1 gap-5">
                 <FormField
                   control={form.control}
@@ -1298,21 +1305,23 @@ export const CreateEditVehicle = ({
                   />
                 </div>
               </div>
+              </VehicleTabPanel>
             </TabsContent>
           </Tabs>
 
-          <div className="flex items-center justify-between gap-4 p-6 border-t mt-8 bg-gray-50/50 -mx-6 -mb-6 rounded-b-xl sticky bottom-0 z-20">
-            <div className="flex items-center gap-4">
+          {/* The hint slot renders inside a <p>, so the Status field (a <div>)
+              sits with the buttons instead */}
+          <AdminSaveBar hint="Drafts stay hidden from the website until published.">
               <FormField
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-2 space-y-0">
-                    <FormLabel className="font-bold text-gray-600 uppercase text-[10px] tracking-widest">Post Status:</FormLabel>
+                  <FormItem className="mr-1 flex items-center gap-2 space-y-0">
+                    <FormLabel className="text-[12px] font-medium text-slate-700">Status</FormLabel>
                     <FormControl>
                       <select
                         {...field}
-                        className="h-9 rounded-lg border-gray-300 bg-white px-3 text-sm font-semibold focus:ring-[#FE5300] outline-none border shadow-sm"
+                        className="h-8 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#FE5300]"
                       >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
@@ -1321,34 +1330,31 @@ export const CreateEditVehicle = ({
                   </FormItem>
                 )}
               />
-            </div>
-            <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
                 disabled={mutation.isPending}
-                className="px-5 h-9 text-xs font-bold border-gray-200 bg-white uppercase tracking-widest"
+                className={rSecondaryBtn}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={mutation.isPending}
-                className="h-9 px-8 text-xs font-bold uppercase tracking-widest bg-[#FE5300] hover:bg-[#E44B00] shadow-md shadow-[#FE5300]/20"
+                className={rPrimaryBtn}
               >
-                {mutation.isPending ? "Syncing..." : id ? "Update Records" : "Create Vehicle"}
+                {mutation.isPending ? "Saving..." : id ? "Save changes" : "Create vehicle"}
               </Button>
-            </div>
-          </div>
+          </AdminSaveBar>
         </form>
       </Form>
 
       {mutation.isError && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-medium">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-600">
           Error: {mutation.error.message}
         </div>
       )}
-    </div>
+    </FleetPage>
   );
 };

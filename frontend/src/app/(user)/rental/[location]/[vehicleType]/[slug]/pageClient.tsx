@@ -28,6 +28,7 @@ import Link from "next/link";
 import WhyChooseUs from "@/components/custom/WhyChooseUS";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
 import { IVehicleUserData } from "./page";
+import { rentalVehiclePath } from "@/lib/rentalUrl";
 type TabKey = "description" | "features" | "includeexclude" | "availablefor" | "rentaloptions" | "relatedvehicles" | "whychooseus" | "howbookingworks";
 
 interface FormData {
@@ -186,7 +187,7 @@ export default function RentalPageClient({
     if (!accessToken) {
       useAuthDialogStore
         .getState()
-        .openDialog("login", undefined, `/rental/${vehicle.vehicleType?.toLowerCase() || 'other'}/${vehicle.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any'}/${vehicle.slug}`);
+        .openDialog("login", undefined, rentalVehiclePath(vehicle));
       return;
     }
     if (data.policyAccepted === false)
@@ -789,7 +790,7 @@ export default function RentalPageClient({
                     price: veh.price,
                     vehicleBrand: veh.vehicleBrand,
                     vehicleYear: veh.vehicleYear,
-                    url: `/rental/${veh.vehicleType?.toLowerCase() || 'other'}/${veh.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any'}/${veh.slug}`,
+                    url: rentalVehiclePath(veh),
                     pricingType: veh.pricingType,
                     seatingOptions: veh.seatingOptions,
                   }}

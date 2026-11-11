@@ -52,7 +52,7 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
 // e.g. /holidays/[category]/[destination]/[package]
 const DEPTH_ICONS: Record<string, LucideIcon[]> = {
   holidays: [TreePalm, Tag, MapPin, Luggage],
-  rental: [Car, Tag, MapPin, Car],
+  rental: [Car, MapPin, Tag, Car],
   destinations: [Compass, MapPin, MapPin],
 };
 

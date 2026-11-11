@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import RentalPageClient from "./pageClient";
+import { rentalLocationSlug, rentalTypeSlug, rentalVehiclePath } from "@/lib/rentalUrl";
 
 export interface IVehicleUserData {
   _id: string;
@@ -8,6 +9,7 @@ export interface IVehicleUserData {
   location: {
     _id: string;
     name: string;
+    slug?: string;
     state: string;
     country: string;
   };
@@ -57,9 +59,11 @@ export interface IVehicleUserData {
   availableStock: number;
 }
 
-const getVehicleBySlug = async (slug: string) => {
+// `location` (the URL's first segment) picks the right vehicle when the same
+// slug exists in several cities; the backend falls back to slug-only otherwise
+const getVehicleBySlug = async (slug: string, location: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/slug/${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/slug/${slug}?location=${encodeURIComponent(location)}`,
   );
   if (!res.ok) {
     // A failure here (genuine 404 or a transient backend blip) now routes
@@ -72,9 +76,9 @@ const getVehicleBySlug = async (slug: string) => {
   return data?.data;
 };
 
-const getRelatedVehicles = async (slug: string) => {
+const getRelatedVehicles = async (slug: string, location: string) => {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/related/${slug}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/related/${slug}?location=${encodeURIComponent(location)}`,
   );
 
   if (!res.ok) {
@@ -85,15 +89,16 @@ const getRelatedVehicles = async (slug: string) => {
   return data?.data;
 };
 
-export async function generateMetadata({ params }: { params: Promise<{ vehicleType: string, destination: string, slug: string }> }) {
-  const { vehicleType, destination, slug } = await params;
-  const vehicle = await getVehicleBySlug(slug);
+export async function generateMetadata({ params }: { params: Promise<{ location: string, vehicleType: string, slug: string }> }) {
+  const { location, slug } = await params;
+  const vehicle = await getVehicleBySlug(slug, location);
 
   if (!vehicle) return { title: "Not Found" };
 
-  const url = vehicle.canonicalUrl 
-    ? `https://musafirbaba.com${vehicle.canonicalUrl}`
-    : `https://musafirbaba.com/rental/${vehicleType}/${destination}/${slug}`;
+  // Always the vehicle's own /rental/{location}/{type}/{slug} URL. The stored
+  // vehicle.canonicalUrl is not used: older records hold the previous
+  // /rental/{type}/{location}/... shape (now a redirect) or malformed values.
+  const url = `https://musafirbaba.com${rentalVehiclePath(vehicle)}`;
 
   return {
     title: vehicle.metaTitle || `${vehicle.title || vehicle.vehicleName} - MusafirBaba`,
@@ -105,14 +110,21 @@ export async function generateMetadata({ params }: { params: Promise<{ vehicleTy
   };
 }
 
-async function page({ params }: { params: Promise<{ vehicleType: string, destination: string, slug: string }> }) {
-  const { slug } = await params;
-  const relatedVehicles = await getRelatedVehicles(slug);
+async function page({ params }: { params: Promise<{ location: string, vehicleType: string, slug: string }> }) {
+  const { location, vehicleType, slug } = await params;
+  const relatedVehicles = await getRelatedVehicles(slug, location);
 
-  const vehicle = await getVehicleBySlug(slug);
+  const vehicle = await getVehicleBySlug(slug, location);
 
   if (!vehicle) {
     notFound();
+  }
+
+  // Any other path for this vehicle (old /rental/{type}/{location}/... links,
+  // a wrong location or type) moves permanently to its one real URL. The
+  // segments compared are [a-z0-9-] only, so this can never loop.
+  if (location !== rentalLocationSlug(vehicle) || vehicleType !== rentalTypeSlug(vehicle)) {
+    permanentRedirect(rentalVehiclePath(vehicle));
   }
 
   return (

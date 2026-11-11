@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, Edit, Trash2 } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Fuel } from "lucide-react";
+import { FleetEmptyState, FleetPage, FleetPanel, fleetTh } from "@/components/admin/fleet/FleetUI";
+import { RentalPageHeader, RentalStatusPill, rPrimaryBtn } from "@/components/admin/rental/RentalAdminUI";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Button } from "@/components/ui/button";
@@ -59,60 +61,57 @@ export default function FuelTypePage() {
   const fuelTypes = data?.data || [];
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Vehicle Fuel Types</h1>
-        <Button onClick={() => setIsOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" /> Add Fuel Type
-        </Button>
-      </div>
+    <FleetPage>
+      <RentalPageHeader
+        icon={Fuel}
+        title="Fuel Types"
+        description="Fuel types offered in the vehicle form."
+        actions={
+          <Button size="sm" className={rPrimaryBtn} onClick={() => setIsOpen(true)}>
+            <Plus className="h-3.5 w-3.5" /> Add fuel type
+          </Button>
+        }
+      />
 
-      {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-slate-950 rounded-lg border shadow-sm">
+      <FleetPanel title="All fuel types" description={`${fuelTypes.length} total`}>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : fuelTypes.length === 0 ? (
+          <FleetEmptyState icon={Fuel} title="No fuel types yet" hint="Add fuel types like Petrol or Diesel." />
+        ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className={`${fleetTh} pl-4`}>Name</TableHead>
+                <TableHead className={fleetTh}>Status</TableHead>
+                <TableHead className={`${fleetTh} pr-4 text-right`}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {fuelTypes.map((type: any) => (
-                <TableRow key={type._id}>
-                  <TableCell className="font-medium">{type.name}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      type.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}>
-                      {type.status}
-                    </span>
+                <TableRow key={type._id} className="hover:bg-slate-50/70">
+                  <TableCell className="py-2.5 pl-4 text-[13px] font-medium text-slate-900">{type.name}</TableCell>
+                  <TableCell className="py-2.5">
+                    <RentalStatusPill status={type.status} />
                   </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditId(type._id); setIsOpen(true); }}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(type._id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                  <TableCell className="py-2.5 pr-4">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="outline" size="icon" title="Edit" aria-label="Edit" className="h-7 w-7 border-slate-200 text-slate-500 hover:border-orange-200 hover:bg-orange-50 hover:text-[#FE5300]" onClick={() => { setEditId(type._id); setIsOpen(true); }}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="outline" size="icon" title="Delete" aria-label="Delete" className="h-7 w-7 border-slate-200 text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(type._id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
-              {fuelTypes.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                    No fuel types found.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
+      </FleetPanel>
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
@@ -124,6 +123,6 @@ export default function FuelTypePage() {
           />
         </div>
       )}
-    </div>
+    </FleetPage>
   );
 }

@@ -337,7 +337,7 @@ export default function DestinationPackagesClient({
   );
 }
 
-function FilterSection({
+export function FilterSection({
   title,
   icon: Icon,
   children,
@@ -357,7 +357,7 @@ function FilterSection({
   );
 }
 
-function RangeField({
+export function RangeField({
   value,
   min,
   max,
@@ -366,6 +366,7 @@ function RangeField({
   suffix,
   minLabel,
   maxLabel,
+  step,
 }: {
   value: number;
   min: number;
@@ -375,6 +376,7 @@ function RangeField({
   suffix?: string;
   minLabel: string;
   maxLabel: string;
+  step?: number;
 }) {
   return (
     <div>
@@ -386,6 +388,7 @@ function RangeField({
         type="range"
         min={min}
         max={max}
+        step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="mt-3 w-full cursor-pointer accent-[#FE5300]"
@@ -398,14 +401,14 @@ function RangeField({
   );
 }
 
-const subOptionClass = (active?: boolean) =>
+export const subOptionClass = (active?: boolean) =>
   `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
     active
       ? "bg-orange-50 font-semibold text-[#FE5300]"
       : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
   }`;
 
-function SubCheck({ active }: { active?: boolean }) {
+export function SubCheck({ active }: { active?: boolean }) {
   return (
     <span
       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors ${
@@ -439,7 +442,7 @@ function SubOptionLink({
   );
 }
 
-function Pill({
+export function Pill({
   label,
   count,
   active,
