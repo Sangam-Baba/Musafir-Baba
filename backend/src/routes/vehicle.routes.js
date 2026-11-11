@@ -8,6 +8,7 @@ import {
   getAllPublishedVehicle,
   getRelatedVehicle,
   getVehicleFilters,
+  duplicateVehicle,
 } from "../controllers/vehicle.controller.js";
 import { Router } from "express";
 import isAuthenticated from "../middleware/auth.middleware.js";
@@ -22,6 +23,13 @@ vehicleRoutes.post(
   validateSession,
   authorizedRoles(["admin", "superadmin"]),
   createVehicle,
+);
+vehicleRoutes.post(
+  "/:id/duplicate",
+  isAuthenticated,
+  validateSession,
+  authorizedRoles(["admin", "superadmin"]),
+  duplicateVehicle,
 );
 vehicleRoutes.get("/", getAllVehicle);
 vehicleRoutes.get("/all", getAllPublishedVehicle);

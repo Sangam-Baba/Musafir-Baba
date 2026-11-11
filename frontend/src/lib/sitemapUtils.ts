@@ -1,3 +1,4 @@
+import { rentalVehiclePath } from "@/lib/rentalUrl";
 // Shared between the admin Sitemap Management server page
 // (app/admin/sitemap/page.tsx, which renders the current page of results)
 // and its client table (app/admin/sitemap/SitemapTable.tsx, which fetches
@@ -177,9 +178,7 @@ export function buildSitemapItems(source: any): SitemapItem[] {
     }
   });
   vehicles?.data?.forEach((v: any) => {
-    const type = v.vehicleType?.toLowerCase() || "other";
-    const dest = v.location?.name?.toLowerCase().replace(/\s+/g, "-") || "any";
-    items.push(createItem(v.title, `/rental/${type}/${dest}/${v.slug}`, "vehicle", v));
+    items.push(createItem(v.title, rentalVehiclePath(v), "vehicle", v));
   });
   aboutus?.data?.forEach((a: any) => items.push(createItem(a.title, `/about-us`, "aboutus", a)));
 

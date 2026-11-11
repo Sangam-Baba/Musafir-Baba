@@ -1,3 +1,4 @@
+import slugify from "slugify";
 import { Blog } from "../models/Blog.js";
 import { News } from "../models/News.js";
 import { Category } from "../models/Category.js";
@@ -57,7 +58,7 @@ export const globalSearch = async (req, res) => {
         .select("title categoryId destinationId")
         .limit(limit)
         .lean(),
-      Vehicle.find({ title: regex, status: "published" }).populate("location", "name").select("title slug vehicleType location").limit(limit).lean(),
+      Vehicle.find({ title: regex, status: "published" }).populate("location", "name slug").select("title slug vehicleType location").limit(limit).lean(),
       AboutUs.find({ title: regex }).select("title").limit(limit).lean(),
     ]);
 
@@ -99,9 +100,11 @@ export const globalSearch = async (req, res) => {
     });
 
     vehicles.forEach((i) => {
-      const type = i.vehicleType?.toLowerCase() || 'other';
-      const dest = i.location?.name?.toLowerCase().replace(/\s+/g, '-') || 'any';
-      results.push({ title: i.title, url: `/rental/${type}/${dest}/${i.slug}`, type: "Vehicle" });
+      // Same shape as frontend/src/lib/rentalUrl.ts: /rental/{location}/{type}/{slug}
+      const strict = (s) => (s ? slugify(s, { lower: true, strict: true }) : "");
+      const dest = strict(i.location?.slug) || strict(i.location?.name) || 'any';
+      const type = strict(i.vehicleType) || 'other';
+      results.push({ title: i.title, url: `/rental/${dest}/${type}/${i.slug}`, type: "Vehicle" });
     });
     aboutus.forEach((i) => results.push({ title: i.title, url: `/about-us`, type: "About Us" }));
 

@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, Edit, Trash2 } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, MapPin } from "lucide-react";
+import { FleetEmptyState, FleetPage, FleetPanel, fleetTh } from "@/components/admin/fleet/FleetUI";
+import { RentalPageHeader, RentalStatusPill, rPrimaryBtn } from "@/components/admin/rental/RentalAdminUI";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Button } from "@/components/ui/button";
@@ -60,78 +62,59 @@ export default function PickupDestinationPage() {
   const destinations = data?.data || [];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-[18px] font-bold text-slate-800 dark:text-white">Pickup Destinations</h1>
-        <Button onClick={() => router.push("/admin/master-data/pickup-destination/create")} className="bg-[#FE5300] hover:bg-[#e14a00]">
-          <Plus className="w-4 h-4 mr-2" /> Add Destination
-        </Button>
-      </div>
+    <FleetPage>
+      <RentalPageHeader
+        icon={MapPin}
+        title="Cities (Pickup Points)"
+        description="Cities vehicles are picked up from. Each has its own page, e.g. /rental/delhi."
+        actions={
+          <Button size="sm" className={rPrimaryBtn} onClick={() => router.push("/admin/master-data/pickup-destination/create")}>
+            <Plus className="h-3.5 w-3.5" /> Add city
+          </Button>
+        }
+      />
 
-      {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-slate-950 rounded-lg border shadow-sm overflow-hidden">
+      <FleetPanel title="All cities" description={`${destinations.length} total`}>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : destinations.length === 0 ? (
+          <FleetEmptyState icon={MapPin} title="No cities yet" hint="Add the cities you rent vehicles in." />
+        ) : (
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Name</TableHead>
-                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">City</TableHead>
-                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">State</TableHead>
-                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10">Status</TableHead>
-                <TableHead className="text-[10px] font-bold text-slate-400 uppercase tracking-wider h-10 text-right">Actions</TableHead>
+                <TableHead className={`${fleetTh} pl-4`}>Name</TableHead><TableHead className={`${fleetTh}`}>City</TableHead><TableHead className={`${fleetTh}`}>State</TableHead>
+                <TableHead className={fleetTh}>Status</TableHead>
+                <TableHead className={`${fleetTh} pr-4 text-right`}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {destinations.map((dest: any) => (
-                <TableRow key={dest._id} className="group hover:bg-slate-50/80 transition-colors duration-300">
-                  <TableCell className="py-2">
-                    <span className="text-[13px] font-semibold text-slate-700 tracking-tight transition-transform duration-300 group-hover:translate-x-[1px] inline-block">
-                      {dest.name}
-                    </span>
+                <TableRow key={dest._id} className="hover:bg-slate-50/70">
+                  <TableCell className="py-2.5 pl-4 text-[13px] font-medium text-slate-900">{dest.name}</TableCell>
+                  <TableCell className="py-2.5 text-[12px] text-slate-600">{dest.city || "—"}</TableCell>
+                  <TableCell className="py-2.5 text-[12px] capitalize text-slate-600">{dest.state || "—"}</TableCell>
+                  <TableCell className="py-2.5">
+                    <RentalStatusPill status={dest.status} />
                   </TableCell>
-                  <TableCell className="py-2 text-[13px] text-slate-600">{dest.city}</TableCell>
-                  <TableCell className="py-2 text-[13px] text-slate-600 capitalize">{dest.state}</TableCell>
-                  <TableCell className="py-2">
-                    <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-widest ${
-                      dest.status === "active" ? "bg-green-50 text-green-600" : "bg-slate-100 text-slate-400"
-                    }`}>
-                      {dest.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-2 text-right space-x-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 text-slate-400 hover:text-indigo-500 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-300"
-                      onClick={() => router.push(`/admin/master-data/pickup-destination/edit/${dest._id}`)}
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-300"
-                      onClick={() => handleDelete(dest._id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                  <TableCell className="py-2.5 pr-4">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="outline" size="icon" title="Edit" aria-label="Edit" className="h-7 w-7 border-slate-200 text-slate-500 hover:border-orange-200 hover:bg-orange-50 hover:text-[#FE5300]" onClick={() => router.push(`/admin/master-data/pickup-destination/edit/${dest._id}`)}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="outline" size="icon" title="Delete" aria-label="Delete" className="h-7 w-7 border-slate-200 text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(dest._id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
-              {destinations.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-muted-foreground text-[13px]">
-                    No destinations found.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
-        </div>
-      )}
-    </div>
+        )}
+      </FleetPanel>
+    </FleetPage>
   );
 }

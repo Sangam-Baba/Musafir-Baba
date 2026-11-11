@@ -32,6 +32,7 @@ const ROUTE_PERMISSION_MAP = {
   "/api/master-data/brand": "master-vehicle-brand",
   "/api/master-data/type": "master-vehicle-type",
   "/api/master-data/pickup-destination": "master-pickup-destination",
+  "/api/rental-city-page": "master-pickup-destination",
   "/api/master-data/fuel-type": "master-fuel-type",
   "/api/master-data/transmission": "master-transmission",
   "/api/master-data/visa-type": "master-visa-type",

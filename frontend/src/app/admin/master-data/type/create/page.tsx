@@ -3,7 +3,7 @@ import { CreateEditVehicleType } from "@/components/admin/CreateEditVehicleType"
 
 export default function CreateVehicleTypePage() {
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div>
       <CreateEditVehicleType id={null} />
     </div>
   );

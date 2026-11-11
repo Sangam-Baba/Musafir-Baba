@@ -97,12 +97,6 @@ export const NAV_GROUPS = [
       },
       { label: "Visa", href: "/admin/visa", icon: Rocket, permission: "visa" },
       {
-        label: "Vehicle",
-        href: "/admin/vehicle",
-        icon: Car,
-        permission: "vehicle",
-      },
-      {
         label: "Career",
         href: "/admin/career",
         icon: Briefcase,
@@ -288,6 +282,60 @@ export const NAV_GROUPS = [
     ],
   },
   {
+    // Everything for car & bike rentals in one place. Items, hrefs and
+    // permissions are unchanged from their old groups (Content Management /
+    // Master Data), so the route guard and saved staff permissions are
+    // unaffected; Pickup Destinations stays before City + Type Pages so the
+    // staff form keeps labelling that shared permission "Pickup Destinations".
+    label: "Rentals",
+    icon: Car,
+    items: [
+      {
+        label: "Vehicle",
+        href: "/admin/vehicle",
+        icon: Car,
+        permission: "vehicle",
+      },
+      {
+        label: "Pickup Destinations",
+        href: "/admin/master-data/pickup-destination",
+        icon: MapPin,
+        permission: "master-pickup-destination",
+      },
+      {
+        // Content for /rental/{city}/{type}; same access as Pickup Destinations
+        label: "City + Type Pages",
+        href: "/admin/rental-city-pages",
+        icon: MapPin,
+        permission: "master-pickup-destination",
+      },
+      {
+        label: "Vehicle Types",
+        href: "/admin/master-data/type",
+        icon: ListChecks,
+        permission: "master-vehicle-type",
+      },
+      {
+        label: "Vehicle Brands",
+        href: "/admin/master-data/brand",
+        icon: Tags,
+        permission: "master-vehicle-brand",
+      },
+      {
+        label: "Fuel Types",
+        href: "/admin/master-data/fuel-type",
+        icon: Database,
+        permission: "master-fuel-type",
+      },
+      {
+        label: "Transmissions",
+        href: "/admin/master-data/transmission",
+        icon: Settings,
+        permission: "master-transmission",
+      },
+    ],
+  },
+  {
     label: "Bills & Invoice",
     icon: FaBox,
     items: [
@@ -303,36 +351,6 @@ export const NAV_GROUPS = [
     label: "Master Data",
     icon: Database,
     items: [
-      {
-        label: "Vehicle Brands",
-        href: "/admin/master-data/brand",
-        icon: Tags,
-        permission: "master-vehicle-brand",
-      },
-      {
-        label: "Vehicle Types",
-        href: "/admin/master-data/type",
-        icon: ListChecks,
-        permission: "master-vehicle-type",
-      },
-      {
-        label: "Pickup Destinations",
-        href: "/admin/master-data/pickup-destination",
-        icon: MapPin,
-        permission: "master-pickup-destination",
-      },
-      {
-        label: "Fuel Types",
-        href: "/admin/master-data/fuel-type",
-        icon: Database,
-        permission: "master-fuel-type",
-      },
-      {
-        label: "Transmissions",
-        href: "/admin/master-data/transmission",
-        icon: Settings,
-        permission: "master-transmission",
-      },
       {
         label: "Sales Person",
         href: "/admin/master-data/sales-person",
@@ -456,6 +474,14 @@ export const NAV_GROUPS = [
 //  - section:      key into SIDEBAR_SECTIONS; groups the entry under that
 //                  sub-heading inside its nav group (display order only)
 export const SIDEBAR_HINTS: Record<string, { label?: string; activePrefix?: string; mergedInto?: string; section?: string }> = {
+  // Rentals
+  "/admin/vehicle": { label: "Vehicles" },
+  "/admin/master-data/pickup-destination": { label: "Cities (Pickup Points)" },
+  "/admin/rental-city-pages": { label: "City + Type Pages" },
+  "/admin/master-data/brand": { label: "Brands", section: "rentals-options" },
+  "/admin/master-data/fuel-type": { section: "rentals-options" },
+  "/admin/master-data/transmission": { section: "rentals-options" },
+
   "/admin/destination": { label: "Destinations & SEO", activePrefix: "/admin/destination" },
   "/admin/destination-seo": { label: "Destinations & SEO", mergedInto: "destination" },
 
@@ -485,4 +511,5 @@ export const SIDEBAR_SECTIONS: { key: string; title: string; badge?: string; ton
   { key: "fleet-shared", title: "Rides & Operations", badge: "Both apps", tone: "slate" },
   { key: "fleet-mbgo", title: "MBGO", badge: "Rider app", tone: "sky" },
   { key: "fleet-mbconnect", title: "MBConnect", badge: "Driver app", tone: "orange" },
+  { key: "rentals-options", title: "Vehicle Options", tone: "slate" },
 ];

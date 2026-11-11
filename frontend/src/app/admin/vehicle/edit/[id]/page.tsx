@@ -9,7 +9,7 @@ export default function EditVehiclePage() {
   const id = params?.id as string;
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div>
       <CreateEditVehicle id={id} onClose={() => router.push("/admin/vehicle")} />
     </div>
   );
