@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T08 consistency kit (no transactions)
+
+- **Goal:** the building blocks that make "no double booking" work on the standalone production MongoDB.
+- **Done:** S00-T08 → DONE. `core/db/transition.js` (one conditional update: status check + `statusChangedAt` + events; only options allowed are `systemScope` — no sessions), `core/db/events.js` (`newEvent` with `module.entity.pastVerb` types, `pendingEvents` fields), `core/db/owned-counter.js` (`applyOwned` with capacity check, `undoOwned`, `transferOwned` — owner recorded in the same document, pipeline updates, repeat-safe), `core/jobs/reconciler.js` (rules for stuck statuses, attempt counter, alert after 3), `core/db/invariants.js`.
+- **Not done / why:** scheduling the reconciler every 30 s comes with the scheduler (S00-T03); the relay of `pendingEvents` to the outbox is S00-T11.
+- **Files / PR:** `backend/src/b2b/core/{db,jobs}/*`, tests `consistency-kit.test.js` + test-only `helpers/sample-hold-flow.js` (miniature of the Stage 04 inventory flow with the real validator).
+- **Tests run:** `npm run test:b2b` ✅ 166/166 — hold flow crashed after each of 5 steps and confirm flow after each of 5 steps → reconciler always restores a consistent state; 20 buyers / 3 rooms → exactly 3; overlapping stays → no night oversold; validator refuses impossible writes; 10 concurrent transitions → 1 winner. `tsc` ✅; guards ✅.
+- **Decisions / deferrals:** Mongoose quirk recorded in code — a subdocument field named `type` must be declared as `{ type: String }`.
+- **Next step:** S00-T03 — MongoDB job queue + lease-locked scheduler (then run the reconciler from the worker).
+
+
 ## 2026-11-12 — AI (Claude) — S00-T09 tenant guard, S00-T10 idempotency
 
 - **Goal:** no org can reach another org's data; repeated requests never run twice.
