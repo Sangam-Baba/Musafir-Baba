@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T15 self-hosted realtime
+
+- **Goal:** live notifications and availability updates without third-party services, Redis or change streams.
+- **Done:** S00-T15 → DONE. `core/realtime/rooms.js` (personal rooms from the token; browsers may only join `availability:property:*`), `token.js` (HS256 on node:crypto, ≤ 15 min, audience `b2b-realtime`, timing-safe check), `signals.js` (`publish`, `publishCacheEvict` → capped `rt_signals`; `createSignalReader` with a tailable cursor, resumes from last id, skips signals older than 2 min after restart), `server.js` (Socket.IO: handshake token, ≤ 20 connections per IP, ≤ 20 public rooms per socket, 4 KB messages, `cache:evict` never sent to browsers), `realtime.js` process, `GET /api/v1/realtime/token`, config `B2B_REALTIME_SECRET` / `B2B_REALTIME_ORIGINS`, migration `0005-rt-signals`.
+- **Not done / why:** new Cloudflare hostname for the realtime container — at first deploy; API-process cache eviction listener — when the first cache is used (Stage 06).
+- **Files / PR:** `backend/src/b2b/core/realtime/*`, `routes/realtime.js`, `routes/v1.js`, `realtime.js`, `core/config.js`, `migrations/index.js`, `tests/b2b/realtime.test.js`; `package.json`: `socket.io` 4.8.1 (runtime, 18 packages added, none changed), `socket.io-client` 4.8.1 (dev).
+- **Tests run:** `npm run test:b2b` ✅ 197/197 (real Socket.IO server + client: member receives org event via MongoDB; anonymous can follow availability, not personal rooms; other org receives nothing; forged token refused); `tsc` ✅; guards ✅; migration `0005` applied on dev; realtime process live on dev: health `database: up`, SIGTERM exit 0.
+- **Decisions / deferrals:** realtime tokens signed with node:crypto (no `@types/jsonwebtoken`).
+- **Next step:** S00-T21 health details, then Stage 00 tooling/docs tasks (module generator, ADRs, AGENTS.md, `npm run progress`).
+
+
 ## 2026-11-12 — AI (Claude) — S00-T14b rate limiter + cache
 
 - **Goal:** request limits that work across processes and restarts, and a short-lived cache — without Redis or new packages.

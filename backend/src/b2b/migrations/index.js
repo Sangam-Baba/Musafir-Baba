@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * All B2B migrations, in run order. Each module adds its own here as it is built
- * (e.g. `0005-htl-properties`). Modules that store events also add a
+ * (e.g. `0006-htl-properties`). Modules that store events also add a
  * partial index `{ hasPendingEvents: 1 }` (where hasPendingEvents exists) for the relay. Ids are never renamed or reused.
  */
 import { INBOX_COLLECTION, OUTBOX_COLLECTION } from '../core/db/events-relay.js';
@@ -9,6 +9,7 @@ import { IDEMPOTENCY_COLLECTION } from '../core/db/idempotency.js';
 import { JOBS_COLLECTION } from '../core/jobs/queue.js';
 import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
+import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -54,6 +55,13 @@ export const MIGRATIONS = [
     up: async (ctx) => {
       await ctx.createCollection(RATE_LIMITS_COLLECTION);
       await ctx.createIndex(RATE_LIMITS_COLLECTION, { expiresAt: 1 }, { name: 'expires_ttl', expireAfterSeconds: 0 });
+    },
+  },
+  {
+    id: '0005-rt-signals',
+    description: 'Realtime signals: capped collection (64 MB) read with a tailable cursor',
+    up: async (ctx) => {
+      await ctx.createCollection(SIGNALS_COLLECTION, { cappedSizeBytes: SIGNALS_CAPPED_BYTES });
     },
   },
 ];

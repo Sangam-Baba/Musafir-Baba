@@ -15,6 +15,7 @@ import { notFoundHandler, problemHandler } from '../core/http/problem.js';
 import { requestTimeout, securityHeaders } from '../core/http/protection.js';
 import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
+import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -44,6 +45,8 @@ export function createB2BRouter(options = {}) {
   router.get('/meta/version', publicRoute(), (_req, res) => {
     res.json({ name: 'musafirbaba-b2b', version: process.env.B2B_VERSION ?? 'dev' });
   });
+
+  router.use('/realtime', realtimeRoutes({ secret: env.B2B_REALTIME_SECRET }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));
