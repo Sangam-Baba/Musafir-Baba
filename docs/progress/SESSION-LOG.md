@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T03 job queue + scheduler, S00-T14 worker wiring
+
+- **Goal:** background work on MongoDB (no Redis) that is safe with several worker containers.
+- **Done:** S00-T03 → DONE: `core/jobs/queue.js` (`enqueue` with dedupe, `claimNext` = one findOneAndUpdate with lease and crash takeover, `completeJob`/`failJob` only by the current owner, exponential backoff 5 s→1 h, `DEAD` after maxAttempts), `runner.js` (claim/run loop, idle back-off 0.5→5 s, clean stop), `scheduler.js` (lease-locked schedules, once across workers, crash takeover, error recorded); migration `0002-core-jobs-and-schedules`. S00-T14 → DONE: `worker.js` runs the job runner, reconciler every 30 s and invariant checks every 10 min; registry `background.js` for modules.
+- **Not done / why:** rate limiter + cache split out as S00-T14b (total tasks now 22).
+- **Files / PR:** `backend/src/b2b/core/jobs/{queue,runner,scheduler}.js`, `background.js`, `worker.js`, `migrations/index.js`, `tests/b2b/jobs.test.js`.
+- **Tests run:** `npm run test:b2b` ✅ 176/176 (30 jobs × 2 racing workers → each once; 2 schedulers → once per interval; crash takeover; stale owner can't complete); `tsc` ✅; guards ✅; migration `0002` applied on dev; worker started live on dev, both schedules recorded a run, SIGTERM exit 0.
+- **Decisions / deferrals:** —
+- **Next step:** S00-T11 — events relay (`pendingEvents` → `core_outbox` → jobs per consumer, `core_inbox` dedupe).
+
+
 ## 2026-11-12 — AI (Claude) — S00-T08 consistency kit (no transactions)
 
 - **Goal:** the building blocks that make "no double booking" work on the standalone production MongoDB.
