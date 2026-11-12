@@ -88,7 +88,7 @@
 | `core_jobs` | `queue`, `payload`, `runAt`, `status (READY/RUNNING/DONE/DEAD)`, `attempts`, `maxAttempts`, `lockedBy?`, `lockedUntil?`, `lastError?`, `dedupeKey?` | `{queue, status, runAt}`; **partial** unique `{queue, dedupeKey}` (where `dedupeKey` exists); TTL on `finishedAt` for `DONE` (7 days, partial) |
 | `core_schedules` | `name`, `everyMs` or `cron`, `nextRunAt`, `lockedBy?`, `lockedUntil?`, `lastRunAt`, `lastError?` | unique `{name}` |
 | `rt_signals` | `room`, `event`, `data` (ids/dates only), `at` | TTL `{at}` 24 h |
-| `core_rate_limits` | Managed by `rate-limiter-flexible` (key, points, expiry) | TTL on expiry |
+| `core_rate_limits` | Managed by the in-house rate limiter (key, points, expiry) | TTL on expiry |
 
 ## 6. Identifiers
 

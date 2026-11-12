@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T14b rate limiter + cache
+
+- **Goal:** request limits that work across processes and restarts, and a short-lived cache — without Redis or new packages.
+- **Done:** S00-T14b → DONE. `core/rate-limit.js`: fixed-window counters in `core_rate_limits` (one upsert per call, duplicate-key retry), over-limit keys remembered in memory until the window ends (no further DB writes), `rateLimit(limiter, keyOf)` middleware (RateLimit-* headers, 429 `RATE_LIMITED` + Retry-After), `clientIp` (CF-Connecting-IP; existing app's `trust proxy` not changed). `core/cache.js`: LRU + TTL + `deletePrefix`. Migration `0004-core-rate-limits`.
+- **Not done / why:** wiring limits onto real routes happens with those routes (login in Stage 01, booking in Stage 08).
+- **Files / PR:** `backend/src/b2b/core/{rate-limit,cache}.js`, `migrations/index.js`, `tests/b2b/rate-limit-cache.test.js`; plan: rate limiter/cache now in-house (no `rate-limiter-flexible`, no `lru-cache`).
+- **Tests run:** `npm run test:b2b` ✅ 190/190 (20 parallel calls across two limiters → exactly 10 allowed); `tsc` ✅; guards ✅; migration `0004` applied on dev.
+- **Decisions / deferrals:** in-house instead of packages — no new runtime dependency in the existing app.
+- **Next step:** S00-T15 — self-hosted realtime (Socket.IO reading `rt_signals`).
+
+
 ## 2026-11-12 — AI (Claude) — S00-T11 event relay
 
 - **Goal:** deliver stored events (booking confirmed, KYC approved …) to their consumers exactly once, without transactions.

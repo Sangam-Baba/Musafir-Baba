@@ -30,7 +30,7 @@
 | # | Existing file | Edit | When `B2B_ENABLED` is off |
 | --- | --- | --- | --- |
 | B1 | `backend/src/app.js` | Two lines: `import { mountB2B } from "./b2b/mount.js";` and `mountB2B(app);` placed right after the CORS block | `mountB2B` returns immediately — no route, no middleware added |
-| B2 | `backend/package.json` | New `devDependencies` (`typescript` for checking, `vitest`, `@types/express`) and scripts `test:b2b`, `typecheck:b2b`, `b2b:worker`, `b2b:realtime`; later a few runtime dependencies (e.g. `socket.io`, `rate-limiter-flexible`), each pinned to an exact version | Dev dependencies aren't installed in production (`npm ci --omit=dev`); new runtime packages are only loaded by new code |
+| B2 | `backend/package.json` | New `devDependencies` (`typescript` for checking, `vitest`, `@types/express`) and scripts `test:b2b`, `typecheck:b2b`, `b2b:worker`, `b2b:realtime`; later a few runtime dependencies (e.g. `socket.io`), each pinned to an exact version | Dev dependencies aren't installed in production (`npm ci --omit=dev`); new runtime packages are only loaded by new code |
 | B3 | `backend/package-lock.json` | Updated by the B2 installs. **Rule: no existing package may change version** — every install is checked with a lockfile diff, and a package that forces bumps is not used (e.g. `supertest` was dropped because it bumped `qs`/`form-data`; tests use built-in `fetch`) | — |
 | B4 | Server deployment | Two **new** containers (worker, realtime) from the same image; existing container unchanged | Don't start them |
 | B5 | Backend env | New `B2B_*` variables added | `B2B_ENABLED=false` |

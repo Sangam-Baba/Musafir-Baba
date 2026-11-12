@@ -1,13 +1,14 @@
 // @ts-check
 /**
  * All B2B migrations, in run order. Each module adds its own here as it is built
- * (e.g. `0004-htl-properties`). Modules that store events also add a
+ * (e.g. `0005-htl-properties`). Modules that store events also add a
  * partial index `{ hasPendingEvents: 1 }` (where hasPendingEvents exists) for the relay. Ids are never renamed or reused.
  */
 import { INBOX_COLLECTION, OUTBOX_COLLECTION } from '../core/db/events-relay.js';
 import { IDEMPOTENCY_COLLECTION } from '../core/db/idempotency.js';
 import { JOBS_COLLECTION } from '../core/jobs/queue.js';
 import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
+import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -45,6 +46,14 @@ export const MIGRATIONS = [
       await ctx.createIndex(OUTBOX_COLLECTION, { relayedAt: 1 }, { name: 'relayed_ttl', expireAfterSeconds: ninetyDays });
       await ctx.createCollection(INBOX_COLLECTION);
       await ctx.createIndex(INBOX_COLLECTION, { processedAt: 1 }, { name: 'processed_ttl', expireAfterSeconds: ninetyDays });
+    },
+  },
+  {
+    id: '0004-core-rate-limits',
+    description: 'Rate-limit counters, removed when their window ends',
+    up: async (ctx) => {
+      await ctx.createCollection(RATE_LIMITS_COLLECTION);
+      await ctx.createIndex(RATE_LIMITS_COLLECTION, { expiresAt: 1 }, { name: 'expires_ttl', expireAfterSeconds: 0 });
     },
   },
 ];

@@ -52,7 +52,7 @@
 | K13 | PayU payment succeeds after rooms were lost, or stays pending | L | M | Payment window < hold, one extension, poller, automatic idempotent refunds, clear customer message |
 | K14 | New infrastructure (worker, realtime, ClamAV, Chromium) on one Docker host runs out of memory | M | M | Size the host in Stage 00; add a second host if needed |
 | K16 | Without WhatsApp/SMS, a hotel not watching the dashboard misses a new booking | M | H | In-app alert with sound, email (D25), owner escalation at 30 min, ops calls the hotel at 60 min (`11-…` §8); revisit DEF-016 after the pilot |
-| K17 | Without Redis, jobs, rate limits and usage counters add write load to the single MongoDB server | M | M | Batching, `inMemoryBlockOnConsumed`, TTL indexes, MongoDB metrics alerts from Stage 00; load-tested in Stage 16; Redis adapters behind the same interfaces if DEF-020 triggers are hit |
+| K17 | Without Redis, jobs, rate limits and usage counters add write load to the single MongoDB server | M | M | Batching, in-memory blocking of over-limit keys, TTL indexes, MongoDB metrics alerts from Stage 00; load-tested in Stage 16; Redis adapters behind the same interfaces if DEF-020 triggers are hit |
 | K18 | Without transactions, a bug in undo/reconciler logic leaves rooms blocked or a journal entry missing | M | M | Owner ids in the same document (exact undo), validator `held = Σ holds.qty`, reconciler every 30 s, invariant checks every 10 min with paging, crash-injection tests for every flow. Rooms can be briefly blocked, never double sold |
 | K15 | No CA engaged yet — GST answers arrive late | H | H | Engage a CA before Stage 05 (about week 8–10); questions ready in §3 |
 

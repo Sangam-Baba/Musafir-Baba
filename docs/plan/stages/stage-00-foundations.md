@@ -61,7 +61,7 @@ The vehicle-partner module (MBGO/MBConnect) is **out of scope** — don't map or
 
 ### 3.5 Worker, jobs and realtime base (no Redis — D22, `01-architecture.md` §8.2)
 - `core/jobs`: MongoDB job queue (`core_jobs`, lease claim via `findOneAndUpdate`, backoff, `DEAD` + alert, `dedupeKey`) and scheduler (`core_schedules`, lease lock so each tick runs once); job registry.
-- `core/rate-limit`: `rate-limiter-flexible` with the MongoDB store (`core_rate_limits`, TTL); `core/cache`: in-process `lru-cache`, cleared by `cache:evict` signals.
+- `core/rate-limit`: the in-house MongoDB rate limiter (`core_rate_limits`, TTL); `core/cache`: in-process LRU cache (`core/cache.js`), cleared by `cache:evict` signals.
 - `core/realtime`: `realtime.publish(room, event, data)` → `rt_signals` (**capped** collection, 64 MB).
 - **Self-hosted realtime** (`11-notifications-and-realtime.md`): `b2b-realtime` runs **Socket.IO**, reads `rt_signals` with a **tailable cursor** (resumes from the last `_id`; polling fallback); handshake verifies a short-lived realtime JWT from `GET /api/v1/realtime/token`; server-side room joins. Check tailable cursors on Atlas M0 (dev) — else use the polling fallback there.
 

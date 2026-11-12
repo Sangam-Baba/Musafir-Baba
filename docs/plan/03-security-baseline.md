@@ -60,7 +60,7 @@ See `01-architecture.md` §6. Plus:
 | Body | `express.json({ limit: '1mb' })`; uploads via presigned URLs |
 | Validation | zod `.strict()`; reject `$`/`.` keys (no global `sanitizeFilter`) |
 | Mass assignment | Map validated DTO → domain explicitly; never `Model.create(req.body)` |
-| Rate limiting | `rate-limiter-flexible` with its MongoDB store (no Redis — D22) per IP, user, API key, org; stricter on login/OTP/search/booking; `429` + `Retry-After` |
+| Rate limiting | the in-house MongoDB rate limiter (no Redis, no package — D22) per IP, user, API key, org; stricter on login/OTP/search/booking; `429` + `Retry-After` |
 | Resource limits | Pagination caps, query timeouts (`maxTimeMS`), max nights/rooms, max concurrent holds per org |
 | Enumeration | Random public references; same 404 for "not yours" and "doesn't exist" |
 | SSRF | Tenant-provided URLs (webhooks) only via a guarded HTTP client (resolve DNS → block private, loopback, link-local, metadata ranges; HTTPS only; no redirects) |

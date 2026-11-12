@@ -293,7 +293,7 @@ Tenant id only from `ctx` · `requirePermission` on every route · `authz.assert
 
 ## 10. Dependencies
 
-New package only with justification in the PR (maintained, licence, size, CVEs). Prefer what is already in the stack: zod 4, React Query, React Hook Form, zustand, Tailwind 4, shadcn, date-fns(-tz), `rate-limiter-flexible`, `lru-cache`. No Redis/BullMQ (D22) — jobs go through `core/jobs`.
+New package only with justification in the PR (maintained, licence, size, CVEs). Prefer what is already in the stack: zod 4, React Query, React Hook Form, zustand, Tailwind 4, shadcn, date-fns(-tz), no extra packages for logging, rate limits or caching (in-house `core/` modules). No Redis/BullMQ (D22) — jobs go through `core/jobs`.
 
 ## 11. Tests (how test code looks)
 
