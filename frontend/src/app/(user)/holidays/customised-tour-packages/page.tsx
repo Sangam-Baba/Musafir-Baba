@@ -3,6 +3,7 @@ import Hero from "@/components/custom/Hero";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { getCategoryBySlug } from "../[categorySlug]/page";
 import CustomizedTourClient from "./CustomizedTourClient";
+import HolidayCategoryNav from "@/components/custom/HolidayCategoryNav";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
@@ -158,7 +159,10 @@ async function CustomizedPackagePage() {
       )}
 
       {/* Show packages under this category */}
-      <CustomizedTourClient allPkgs={AllPackages} />
+      <CustomizedTourClient
+        allPkgs={AllPackages}
+        categoryNav={<HolidayCategoryNav activeSlug="customised-tour-packages" />}
+      />
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"

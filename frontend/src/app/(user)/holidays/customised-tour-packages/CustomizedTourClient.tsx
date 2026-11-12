@@ -2,26 +2,40 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, MapPin } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  IndianRupee,
+  MapPin,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { FilterSection, RangeField } from "@/components/custom/DestinationPackagesClient";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { CustomizedPackageInterface } from "./page";
 import { calculateHours } from "@/utils/readingTime";
 function CustomizedTourClient({
   allPkgs,
+  categoryNav,
 }: {
   allPkgs: CustomizedPackageInterface[];
+  // Optional category pills row (rendered above the results)
+  categoryNav?: React.ReactNode;
 }) {
   // const { packagesData } = pkg;
   const [filter, setFilter] = useState({
@@ -63,124 +77,155 @@ function CustomizedTourClient({
       [name]: name === "price" || name === "duration" ? Number(value) : value,
     }));
   };
-  return (
-    <section className="w-full mb-12">
-      {/* FIlter */}
-      <div className="w-full md:max-w-7xl mx-auto flex  px-4 md:px-6 lg:px-8 items-center justify-end my-8">
-        {/* filter */}
-        <div className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 border md:border-md border-[#FE5300] rounded-xl shadow-sm">
-          <div className="w-full md:max-w-[150px]">
-            <Select
-              value={filter.sort}
-              onValueChange={(value) =>
-                setFilter((prev) => ({ ...prev, sort: value }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort ↑ ↓" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Sort By</SelectLabel>
+  // Same reset as before
+  const resetFilters = () => {
+    const reset = {
+      search: "",
+      sort: "",
+      price: 500000,
+      duration: 25,
+    };
+    setFilter(reset);
+    setFilteredPkgs(allPkgs);
+  };
+  const isFiltered =
+    filter.search !== "" || filter.price !== 500000 || filter.duration !== 25;
 
-                  <SelectItem key={1} value="desc">
-                    High to Low
-                  </SelectItem>
-                  <SelectItem key={2} value="asc">
-                    Low to High
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Country Search */}
-          <Input
+  const panel = (
+    <div className="divide-y divide-slate-100">
+      <FilterSection title="Search" icon={Search}>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
             type="text"
             name="search"
-            placeholder="Search country, state..."
             value={filter.search}
             onChange={handleChange}
-            className="w-full md:max-w-[300px]"
+            placeholder="Search country, state..."
+            className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50/60 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 transition focus:border-[#FE5300]/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FE5300]/15"
           />
-
-          {/* Price Slider */}
-          <div className="flex flex-col w-full md:max-w-[250px]">
-            <Label className="text-black-500 text-sm whitespace-nowrap">
-              Budget:{" "}
-              <span className="font-semibold text-[#FE5300]">
-                ₹{filter.price.toLocaleString()}
-              </span>{" "}
-              / person
-            </Label>
-            <Input
-              type="range"
-              name="price"
-              onChange={handleChange}
-              value={filter.price}
-              min={0}
-              max={500000}
-              className="cursor-pointer accent-[#FE5300]"
-            />
-          </div>
-          {/* Duration Slider */}
-          <div className="flex flex-col w-full md:max-w-[150px]">
-            <Label className="text-black-500 text-sm">
-              Duration:{" "}
-              <span className="font-semibold text-[#FE5300]">
-                {filter.duration.toLocaleString()}
-              </span>{" "}
-              Days
-            </Label>
-            <Input
-              type="range"
-              name="duration"
-              value={filter.duration}
-              onChange={handleChange}
-              min={1}
-              max={25}
-              className="cursor-pointer accent-[#FE5300]"
-            />
-          </div>
-
-          {/* Reset Button */}
-          <Button
-            type="button"
-            onClick={() => {
-              const reset = {
-                search: "",
-                sort: "",
-                price: 500000,
-                duration: 25,
-              };
-              setFilter(reset);
-              setFilteredPkgs(allPkgs);
-            }}
-            className="
-      w-full md:w-auto 
-      font-semibold 
-      bg-[#FF5300] hover:bg-[#FE5300] 
-      text-white 
-      rounded-lg px-5 py-4
-    "
-          >
-            Reset
-          </Button>
         </div>
-      </div>
+      </FilterSection>
+
+      <FilterSection title="Budget" icon={IndianRupee}>
+        <RangeField
+          value={filter.price}
+          min={0}
+          max={500000}
+          onChange={(v) => setFilter((prev) => ({ ...prev, price: v }))}
+          display={`Up to ₹${filter.price.toLocaleString()}`}
+          suffix="/ person"
+          minLabel="₹0"
+          maxLabel="₹5L"
+        />
+      </FilterSection>
+
+      <FilterSection title="Duration" icon={Clock}>
+        <RangeField
+          value={filter.duration}
+          min={1}
+          max={25}
+          onChange={(v) => setFilter((prev) => ({ ...prev, duration: v }))}
+          display={`Up to ${filter.duration} ${filter.duration === 1 ? "day" : "days"}`}
+          minLabel="1 day"
+          maxLabel="25 days"
+        />
+      </FilterSection>
+    </div>
+  );
+
+  return (
+    <section className="w-full md:max-w-7xl mx-auto px-4 md:px-6 lg:px-8 my-10">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+        {/* Sidebar (desktop) */}
+        <aside className="hidden lg:block w-[272px] shrink-0 lg:sticky lg:top-28">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.04)]">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                <SlidersHorizontal className="h-4 w-4 text-[#FE5300]" />
+                Filters
+              </p>
+              {isFiltered && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-[#FE5300]"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Reset
+                </button>
+              )}
+            </div>
+            {panel}
+          </div>
+        </aside>
+
+        {/* Results */}
+        <div className="min-w-0 flex-1">
+          {categoryNav && <div className="mb-2">{categoryNav}</div>}
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-500">
+              <span className="font-semibold text-slate-900">{filteredPkgs?.length ?? 0}</span>{" "}
+              {filteredPkgs?.length === 1 ? "package" : "packages"} found
+            </p>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              {/* Filters drawer (mobile / tablet) */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="lg:hidden inline-flex h-9 flex-1 sm:flex-none justify-center items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-[#FE5300]/40 hover:text-[#FE5300]"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Filters
+                    {isFiltered && <span className="h-1.5 w-1.5 rounded-full bg-[#FE5300]" />}
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[88%] max-w-sm overflow-y-auto p-0">
+                  <SheetHeader className="border-b border-slate-100 px-5 py-4">
+                    <SheetTitle className="flex items-center gap-2 text-base">
+                      <SlidersHorizontal className="h-4 w-4 text-[#FE5300]" />
+                      Filters
+                    </SheetTitle>
+                  </SheetHeader>
+                  {panel}
+                  <div className="px-5 py-4">
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="w-full rounded-lg border border-slate-200 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:border-[#FE5300]/40 hover:text-[#FE5300]"
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              <Select
+                value={filter.sort}
+                onValueChange={(value) =>
+                  setFilter((prev) => ({ ...prev, sort: value }))
+                }
+              >
+                <SelectTrigger className="h-9 flex-1 sm:flex-none sm:w-[170px] rounded-lg border-slate-200 bg-white text-sm shadow-sm">
+                  <SelectValue placeholder="Sort by price" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Price: High to Low</SelectItem>
+                  <SelectItem value="asc">Price: Low to High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
       {/* Show packages under this category */}
       {filteredPkgs && filteredPkgs.length > 0 ? (
-        <div
-          className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8
-    flex gap-4 overflow-x-auto no-scrollbar
-    md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
-    md:gap-6 md:overflow-visible"
-        >
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
           {filteredPkgs.map((pkg: CustomizedPackageInterface) => (
             <Link
               key={pkg._id}
               href={`/holidays/customised-tour-packages/${pkg?.destination?.state}/${pkg.slug}`}
-              className="cursor-pointer min-w-[280px] sm:min-w-[300px] md:min-w-0"
+              className="cursor-pointer block min-w-0"
             >
               <Card className="overflow-hidden pt-0 pb-0 rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer">
                 {/* Image + Price tag */}
@@ -240,10 +285,23 @@ function CustomizedTourClient({
           ))}
         </div>
       ) : (
-        <div className="flex items-center justify-center text-3xl font-bold ">
-          No packages found
+        <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-16 text-center">
+          <p className="text-lg font-semibold text-slate-900">No packages found</p>
+          <p className="mt-1 text-sm text-slate-500">Try widening your budget or duration.</p>
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-[#FE5300] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#e54b00]"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Clear filters
+            </button>
+          )}
         </div>
       )}
+        </div>
+      </div>
     </section>
   );
 }

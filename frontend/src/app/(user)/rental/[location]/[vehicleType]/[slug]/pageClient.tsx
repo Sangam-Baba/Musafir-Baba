@@ -29,7 +29,8 @@ import WhyChooseUs from "@/components/custom/WhyChooseUS";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
 import { IVehicleUserData } from "./page";
 import { rentalVehiclePath } from "@/lib/rentalUrl";
-type TabKey = "description" | "features" | "includeexclude" | "availablefor" | "rentaloptions" | "relatedvehicles" | "whychooseus" | "howbookingworks";
+import { VehicleTabConfigItem, resolveVehicleTabsConfig } from "@/lib/vehicleTabs";
+type TabKey = "description" | "features" | "includeexclude" | "availablefor" | "rentaloptions" | "relatedvehicles" | "whychooseus" | "howbookingworks" | `custom-${string}`;
 
 interface FormData {
   checkIn: string;
@@ -254,9 +255,32 @@ export default function RentalPageClient({
   if (hasContent(vehicle?.rentalOptions)) tabs.push({ key: "rentaloptions", label: "Rental Options" });
   if (hasContent(vehicle?.howBookingWorks)) tabs.push({ key: "howbookingworks", label: "How Booking Works" });
 
+  // Admin "Tabs" config (order / hidden / section titles / custom tabs). Only
+  // applied when the vehicle has one saved; otherwise everything below falls
+  // back to the original fixed layout (no order styles, same headings, same pills).
+  const storedTabs = (vehicle as { tabsConfig?: VehicleTabConfigItem[] } | undefined)?.tabsConfig;
+  const tabsCustomised = Array.isArray(storedTabs) && storedTabs.length > 0;
+  const resolvedTabs = tabsCustomised ? resolveVehicleTabsConfig(storedTabs) : [];
+  const tabEntry = (key: string) => resolvedTabs.find((e) => e.key === key);
+  // Even numbers for sections, so Author can sit at an odd slot right after FAQs
+  const sectionStyle = (key: string): React.CSSProperties | undefined =>
+    tabsCustomised ? { order: resolvedTabs.findIndex((e) => e.key === key) * 2 } : undefined;
+  const sectionHidden = (key: string) => tabsCustomised && !!tabEntry(key)?.hidden;
+  const sectionTitle = (key: string, fallback: string) =>
+    (tabsCustomised && tabEntry(key)?.sectionTitle?.trim()) || fallback;
+  const customTabSections = resolvedTabs.filter((e) => e.type === "custom" && !e.hidden && hasContent(e.content));
+  const pillTabs: { key: TabKey; label: string }[] = tabsCustomised
+    ? resolvedTabs
+        .filter((e) => !e.hidden && (e.type === "custom" ? hasContent(e.content) : tabs.some((t) => t.key === e.key)))
+        .map((e) => ({
+          key: e.key as TabKey,
+          label: e.type === "custom" ? e.label : tabs.find((t) => t.key === e.key)?.label ?? e.label,
+        }))
+    : tabs;
+
   const today = new Date().toISOString().split("T")[0];
 
-  const tabKeys = tabs.map((t) => t.key);
+  const tabKeys = pillTabs.map((t) => t.key);
   useEffect(() => {
     if (tabKeys.length === 0) return;
     const observers: IntersectionObserver[] = [];
@@ -338,7 +362,7 @@ export default function RentalPageClient({
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] w-full mb-6">
         <div className="max-w-7xl mx-auto px-4 py-2 md:py-4">
           <div className="flex flex-nowrap md:flex-wrap w-full gap-2 pb-1 overflow-x-auto no-scrollbar md:overflow-visible snap-x snap-mandatory md:snap-none">
-            {tabs.map((tab) => (
+            {pillTabs.map((tab) => (
               <Button
                 key={tab.key}
                 size="sm"
@@ -369,11 +393,12 @@ export default function RentalPageClient({
         {/* Main Content (Left) */}
         <section className="w-full md:w-[68%] lg:w-[72%]">
             {/* Tab Content */}
-            <div className="w-full">
+            <div className={tabsCustomised ? "w-full flex flex-col" : "w-full"}>
 
-              <div id="description" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {!sectionHidden("description") && (
+              <div id="description" style={sectionStyle("description")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
-                  <h3 className="text-xl font-bold font-heading text-black">Overview</h3>
+                  <h3 className="text-xl font-bold font-heading text-black">{sectionTitle("description", "Overview")}</h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
                 <div className="md:hidden">
@@ -383,10 +408,12 @@ export default function RentalPageClient({
                   <BlogContent html={vehicle?.content} />
                 </section>
               </div>
+              )}
 
-              <div id="features" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {!sectionHidden("features") && (
+              <div id="features" style={sectionStyle("features")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-5">
-                  <h3 className="text-xl font-bold font-heading text-black">Key Features</h3>
+                  <h3 className="text-xl font-bold font-heading text-black">{sectionTitle("features", "Key Features")}</h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -402,8 +429,10 @@ export default function RentalPageClient({
                   )}
                 </ul>
               </div>
+              )}
 
-              <div id="includeexclude" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {!sectionHidden("includeexclude") && (
+              <div id="includeexclude" style={sectionStyle("includeexclude")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                   {/* Inclusions */}
                   <div>
@@ -446,11 +475,12 @@ export default function RentalPageClient({
                   </div>
                 </div>
               </div>
+              )}
 
-              {hasContent(vehicle?.availableFor) && (
-                <div id="availablefor" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {hasContent(vehicle?.availableFor) && !sectionHidden("availablefor") && (
+                <div id="availablefor" style={sectionStyle("availablefor")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Available For</h3>
+                    <h3 className="text-xl font-bold font-heading text-black">{sectionTitle("availablefor", "Available For")}</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -459,10 +489,10 @@ export default function RentalPageClient({
                 </div>
               )}
 
-              {hasContent(vehicle?.rentalOptions) && (
-                <div id="rentaloptions" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {hasContent(vehicle?.rentalOptions) && !sectionHidden("rentaloptions") && (
+                <div id="rentaloptions" style={sectionStyle("rentaloptions")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">Rental Options</h3>
+                    <h3 className="text-xl font-bold font-heading text-black">{sectionTitle("rentaloptions", "Rental Options")}</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -475,10 +505,10 @@ export default function RentalPageClient({
 
 
 
-              {hasContent(vehicle?.howBookingWorks) && (
-                <div id="howbookingworks" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {hasContent(vehicle?.howBookingWorks) && !sectionHidden("howbookingworks") && (
+                <div id="howbookingworks" style={sectionStyle("howbookingworks")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
-                    <h3 className="text-xl font-bold font-heading text-black">How Booking Works</h3>
+                    <h3 className="text-xl font-bold font-heading text-black">{sectionTitle("howbookingworks", "How Booking Works")}</h3>
                     <div className="w-12 h-1 bg-[#FE5300]"></div>
                   </div>
                   <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
@@ -487,10 +517,11 @@ export default function RentalPageClient({
                 </div>
               )}
 
-              <div id="faqs" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+              {!sectionHidden("faqs") && (
+              <div id="faqs" style={sectionStyle("faqs")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
                 <div className="flex flex-col gap-2 mb-8 items-center">
                   <h3 className="text-xl md:text-2xl font-bold font-heading text-center text-black">
-                    Frequently Asked Questions
+                    {sectionTitle("faqs", "Frequently Asked Questions")}
                   </h3>
                   <div className="w-12 h-1 bg-[#FE5300]"></div>
                 </div>
@@ -518,8 +549,23 @@ export default function RentalPageClient({
                   ))}
                   </Accordion>
               </div>
+              )}
 
-              <div id="author" className="scroll-mt-40 mb-8">
+              {/* Admin-created custom tabs (only when the vehicle has a saved tabs config) */}
+              {customTabSections.map((entry) => (
+                <div key={entry.key} id={entry.key} style={sectionStyle(entry.key)} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0">
+                  <div className="flex flex-col gap-2 mb-5">
+                    <h3 className="text-xl font-bold font-heading text-black">{entry.sectionTitle?.trim() || entry.label}</h3>
+                    <div className="w-12 h-1 bg-[#FE5300]"></div>
+                  </div>
+                  <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                    <BlogContent html={entry.content || ""} />
+                  </section>
+                </div>
+              ))}
+
+              {/* Author stays right after FAQs, as in the original layout */}
+              <div id="author" style={tabsCustomised ? { order: resolvedTabs.findIndex((e) => e.key === "faqs") * 2 + 1 } : undefined} className="scroll-mt-40 mb-8">
                 <div className="bg-orange-50/40 rounded-2xl p-6 md:p-8 border border-orange-100 flex flex-col gap-4 shadow-sm">
                   <h4 className="text-lg md:text-xl font-bold font-heading text-gray-900">Author Information</h4>
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
@@ -551,8 +597,8 @@ export default function RentalPageClient({
                 </div>
               </div>
 
-              {hasContent(vehicle?.helpfulResources) && (
-                <div id="resources" className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0 w-full">
+              {hasContent(vehicle?.helpfulResources) && !sectionHidden("resources") && (
+                <div id="resources" style={sectionStyle("resources")} className="scroll-mt-40 mb-8 pb-8 md:mb-12 md:pb-12 lg:mb-16 lg:pb-16 border-b border-gray-200 last:border-0 w-full">
                   <HelpfulResources data={vehicle.helpfulResources} />
                 </div>
               )}

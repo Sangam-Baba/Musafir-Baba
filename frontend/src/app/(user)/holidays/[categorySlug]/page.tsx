@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import GroupPkgClient from "./PackageSlugClient";
+import HolidayCategoryNav from "@/components/custom/HolidayCategoryNav";
 import Script from "next/script";
 import { notFound } from "next/navigation";
 import Hero from "@/components/custom/Hero";
@@ -191,7 +192,10 @@ export default async function Page({
           <ReadMore content={category?.content} />
         </div>
       )}
-      <GroupPkgClient packagesData={packages} />
+      <GroupPkgClient
+        packagesData={packages}
+        categoryNav={<HolidayCategoryNav activeSlug={categorySlug} />}
+      />
 
       <Script
         id="breadcrumb-schema"

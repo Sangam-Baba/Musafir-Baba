@@ -44,6 +44,8 @@ import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
 import TextToSpeech from "@/components/custom/TextToSpeech";
 import HelpfulResources from "@/components/custom/HelpfulResources";
 import PackageEssentialsList from "@/components/custom/PackageEssentialsList";
+import AuthorSocialLinks, { AuthorSocialLink } from "@/components/custom/AuthorSocialLinks";
+import ItineraryJourney from "@/components/custom/ItineraryJourney";
 
 // Was a closed union of the 8 built-in tab keys. Widened to a plain string
 // so admin-defined custom tabs (arbitrary generated keys) can flow through
@@ -564,98 +566,7 @@ function SlugClients({
                     </section>
                   )}
 
-                  <div className="relative pt-4 pb-4 w-full">
-                    <Accordion
-                      type="multiple"
-                      defaultValue={["itinerary-0"]}
-                      className="w-full relative z-10 flex flex-col gap-0"
-                    >
-                      {pkg.itinerary.map((item: Itinerary, i: number) => {
-                        const isEven = i % 2 === 0;
-                        const isLast = i === pkg.itinerary.length - 1;
-
-                        return (
-                          <AccordionItem
-                            key={i}
-                            value={`itinerary-${i}`}
-                            className="relative border-b-0 group w-full"
-                          >
-                            {/* Mobile: a plain straight dashed line reads much
-                                cleaner on a narrow screen than the alternating
-                                S-curve below, which needs the wide zig-zag
-                                swing to look intentional. Desktop (md:+) keeps
-                                the original curve completely untouched. */}
-                            {!isLast && (
-                              <div className="md:hidden absolute left-[15px] top-[28px] bottom-0 w-0 border-l-2 border-dashed border-[#FE5300] z-0 pointer-events-none"></div>
-                            )}
-
-                            {/* SVG Curved Route Line (desktop only, unchanged; only drawn if not last item) */}
-                            {!isLast && (
-                              <div className="hidden md:block absolute top-[28px] left-[28px] w-[40px] h-full z-0 pointer-events-none">
-                                <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                                  {isEven ? (
-                                    <path d="M 0 0 C 0 50, 100 50, 100 100" stroke="#FE5300" strokeWidth="2.5" strokeDasharray="6 6" fill="none" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
-                                  ) : (
-                                    <path d="M 100 0 C 100 50, 0 50, 0 100" stroke="#FE5300" strokeWidth="2.5" strokeDasharray="6 6" fill="none" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
-                                  )}
-                                </svg>
-                              </div>
-                            )}
-
-                            {/* Node Marker: fixed single position on mobile (no
-                                alternating swing); desktop keeps the original
-                                alternating left-20/left-60 placement exactly. */}
-                            <div className={`absolute top-[20px] left-[8px] ${isEven ? 'md:left-[20px]' : 'md:left-[60px]'} w-[16px] h-[16px] rounded-full bg-white border-[3px] border-[#FE5300] shadow-md z-20 flex items-center justify-center group-hover:scale-125 transition-all duration-300`}>
-                               {i === 0 && <div className="w-[6px] h-[6px] bg-green-500 rounded-full"></div>}
-                               {isLast && i !== 0 && <div className="w-[6px] h-[6px] bg-red-500 rounded-full"></div>}
-                            </div>
-
-                            {/* Content Card */}
-                            <div className="ml-[36px] md:ml-[110px] relative z-30 pb-6 md:pb-8 pr-4 sm:pr-6 md:pr-8">
-                              <div className="bg-white border border-gray-100/80 hover:border-[#FE5300]/30 shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-300">
-                                <AccordionTrigger
-                                  className="text-sm font-semibold text-gray-800 hover:no-underline p-3 md:p-4 flex items-start transition-colors duration-200 focus-visible:ring-0 focus-visible:outline-none"
-                                >
-                                  <div className="leading-snug transition-colors flex flex-col gap-1 w-full text-left items-start">
-                                    {(() => {
-                                      const splitIndex = item.title.indexOf(':');
-                                      if (splitIndex !== -1) {
-                                        const dayPart = item.title.substring(0, splitIndex).trim();
-                                        const locationPart = item.title.substring(splitIndex + 1).trim();
-                                        return (
-                                          <>
-                                            <span className="text-[10px] font-bold text-[#FE5300] uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded border border-orange-100/50">{dayPart}</span>
-                                            <span className="text-[13px] md:text-[14px] font-semibold text-gray-800 group-hover:text-[#FE5300] transition-colors mt-0.5 leading-snug">{locationPart}</span>
-                                          </>
-                                        );
-                                      }
-                                      return <span className="text-[13px] md:text-[14px] font-semibold text-gray-800 group-hover:text-[#FE5300] transition-colors">{item.title}</span>;
-                                    })()}
-                                  </div>
-                                </AccordionTrigger>
-                                
-                                <AccordionContent className="px-3 md:px-4 pb-3 md:pb-4 pt-0 flex flex-col items-start">
-                                  <div className="bg-gray-50/60 rounded-lg p-3 md:p-4 text-gray-600 leading-relaxed text-left border border-gray-100/80 w-full">
-                                    <ul className="space-y-2 relative z-10 flex flex-col">
-                                      {item.description.split("\n").map((line, idx) => (
-                                        line.trim() ? (
-                                          <li key={idx} className="flex items-start gap-2 justify-start">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FE5300]/60 shrink-0 mt-1.5"></div>
-                                            <span className="text-[12px] md:text-[13px] leading-relaxed">{line.trim()}</span>
-                                          </li>
-                                        ) : null
-                                      ))}
-                                    </ul>
-                                  </div>
-                                </AccordionContent>
-                              </div>
-                            </div>
-
-                          </AccordionItem>
-                        );
-                      })}
-                    </Accordion>
-                  </div>
+                  <ItineraryJourney itinerary={pkg.itinerary} />
               </div>
               )}
 
@@ -786,6 +697,12 @@ function SlugClients({
                           <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base flex-1">
                             <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {displayAuthor.name} {displayAuthor.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{displayAuthor.role}</span>}</p>
                             {displayAuthor.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{displayAuthor.about}</p>}
+                            {namedAuthor && (
+                              <AuthorSocialLinks
+                                links={(namedAuthor as { socialLinks?: AuthorSocialLink[] }).socialLinks}
+                                authorName={namedAuthor.name}
+                              />
+                            )}
                             <p suppressHydrationWarning><span className="font-semibold text-gray-800">Last Updated:</span> {pkg.updatedAt ? new Date(pkg.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Regularly Updated Before Every Yatra Season"}</p>
                             </div>
                         </>

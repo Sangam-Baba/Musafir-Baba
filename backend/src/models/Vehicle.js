@@ -114,6 +114,20 @@ const vehicleSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Author",
     },
+    // Admin-managed order/visibility/custom tabs for the rental detail page
+    // (same shape as Package/Visa tabsConfig). Empty means the page renders
+    // its original fixed section order.
+    tabsConfig: [
+      {
+        key: { type: String, required: true },
+        label: { type: String, required: true },
+        type: { type: String, enum: ["builtin", "custom"], default: "builtin" },
+        builtinKey: { type: String },
+        content: { type: String },
+        hidden: { type: Boolean, default: false },
+        sectionTitle: { type: String },
+      },
+    ],
     status: {
       type: String,
       enum: ["draft", "published"],

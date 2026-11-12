@@ -2,6 +2,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
 import { notFound } from "next/navigation";
 import CustomizedTourClient from "../CustomizedTourClient";
+import HolidayCategoryNav from "@/components/custom/HolidayCategoryNav";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
 import Script from "next/script";
@@ -149,7 +150,10 @@ async function DestinationPage({
       )}
 
       {/* Show packages under this category */}
-      <CustomizedTourClient allPkgs={packages} />
+      <CustomizedTourClient
+        allPkgs={packages}
+        categoryNav={<HolidayCategoryNav activeSlug="customised-tour-packages" />}
+      />
       <Script
         id="breadcrumb-schema"
         type="application/ld+json"

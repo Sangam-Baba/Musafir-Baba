@@ -202,7 +202,7 @@ const getPackageBySlug = async (req, res) => {
       status: "published",
     })
       .populate("destination", "_id name country state city slug coverImage")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .lean();
 
     if (!pkg) {
@@ -213,7 +213,7 @@ const getPackageBySlug = async (req, res) => {
 
     if (!pkg.author) {
       const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
-        .select("name role about avatar")
+        .select("name role about avatar socialLinks")
         .lean();
       if (defaultAuthor) {
         pkg.author = defaultAuthor;
@@ -236,7 +236,7 @@ const getPackageById = async (req, res) => {
     const pkg = await Package.findById({ _id: id, status: "published" })
       .populate("destination", "_id name country state city slug coverImage")
       .populate("batch")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .lean();
 
     if (!pkg) {
@@ -257,7 +257,7 @@ const getAllPackages = async (req, res) => {
     const packages = await Package.find({ status: "published" })
       .select("_id title batch duration coverImage slug isFeatured status")
       .populate("batch")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .lean();
 
     if (!packages)
@@ -419,7 +419,7 @@ const getPackages = async (req, res) => {
           )
           .populate("batch")
           .populate("mainCategory", "_id name slug")
-          .populate("author", "name role about avatar")
+          .populate("author", "name role about avatar socialLinks")
           .populate("reviews")
           .sort(sortOption)
           .skip((page - 1) * limit)
@@ -430,7 +430,7 @@ const getPackages = async (req, res) => {
     const defaultAuthor = isCardView
       ? null
       : await Author.findOne({ name: /Abhishek Rai/i })
-          .select("name role about avatar")
+          .select("name role about avatar socialLinks")
           .lean();
 
     if (defaultAuthor) {
@@ -487,7 +487,7 @@ const getPackageByCategorySlug = async (req, res) => {
     query = query
       .populate("destination", "_id name country state city slug")
       .populate("batch")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .populate("mainCategory", "name slug");
 
     if (limit) {
@@ -504,7 +504,7 @@ const getPackageByCategorySlug = async (req, res) => {
 
     const { Author } = await import("../models/Authors.js");
     const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
-      .select("name role about avatar")
+      .select("name role about avatar socialLinks")
       .lean();
 
     if (defaultAuthor) {
@@ -530,7 +530,7 @@ const getBestSeller = async (req, res) => {
       .populate("destination", "_id name country state")
       .populate("batch", "quad")
       .populate("mainCategory", "name slug")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .select("title destination batch mainCategory slug coverImage ")
       .lean();
 

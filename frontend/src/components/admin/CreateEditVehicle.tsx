@@ -29,6 +29,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FleetPage } from "@/components/admin/fleet/FleetUI";
 import { AdminSaveBar } from "@/components/admin/AdminFormUI";
 import { RentalPageHeader, VehicleTabPanel, VehicleTabsList, rPrimaryBtn, rSecondaryBtn } from "@/components/admin/rental/RentalAdminUI";
+import VehicleTabsEditor from "@/components/admin/VehicleTabsEditor";
+import { VehicleTabConfigItem, resolveVehicleTabsConfig, toSavedVehicleTabsConfig } from "@/lib/vehicleTabs";
 
 const fetchMasterData = async (accessToken: string, endpoint: string) => {
   const res = await fetch(
@@ -278,6 +280,17 @@ export const CreateEditVehicle = ({
 
   const vehicle = data?.data;
 
+  // Page tabs config: kept outside react-hook-form (like packages/visas) and
+  // only sent on save once the admin changes something in the Tabs tab.
+  const [tabsConfig, setTabsConfig] = useState<VehicleTabConfigItem[]>(() => resolveVehicleTabsConfig(null));
+  const [tabsTouched, setTabsTouched] = useState(false);
+  useEffect(() => {
+    if (id && vehicle) {
+      setTabsConfig(resolveVehicleTabsConfig(vehicle.tabsConfig));
+      setTabsTouched(false);
+    }
+  }, [id, vehicle]);
+
   const faqsArray = useFieldArray({
     control: form.control,
     name: "faqs",
@@ -388,6 +401,7 @@ export const CreateEditVehicle = ({
       features: values.features?.map((f) => f.value).filter(Boolean),
       inclusions: values.inclusions?.map((i) => i.value).filter(Boolean),
       exclusions: values.exclusions?.map((e) => e.value).filter(Boolean),
+      ...(tabsTouched && { tabsConfig: toSavedVehicleTabsConfig(tabsConfig) }),
     };
     console.log(finalValues);
     mutation.mutate(finalValues as any);
@@ -407,6 +421,231 @@ export const CreateEditVehicle = ({
     });
     toast.info("Populated configuration from single pricing");
   };
+
+  // Page-section editors: shown inside their rows in the Tabs tab (the only
+  // place each section is edited, same as the visa admin). Same fields and
+  // field arrays as before, only moved.
+  // Features (was in the Additional tab)
+  const featuresEditor = (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between border-b pb-2">
+        <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Vehicle Features</Label>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
+          onClick={() => featuresArray.append({ value: "" })}
+        >
+          + Add Row
+        </Button>
+      </div>
+      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 pt-2">
+        {featuresArray.fields.map((field, index) => (
+          <div key={field.id} className="flex gap-2 group items-center">
+            <span className="w-1.5 h-1.5 bg-[#FE5300] rounded-full shrink-0" />
+            <Input
+              placeholder="e.g. AC, Bluetooth, Power Windows"
+              className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
+              {...form.register(`features.${index}.value`)}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
+              onClick={() => featuresArray.remove(index)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Inclusions / Exclusions (was in the Additional tab)
+  const inclusionsExclusionsEditor = (
+    <div className="grid md:grid-cols-2 gap-6">
+      {/* Dynamic Inclusions */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="font-semibold block text-gray-700 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Inclusions
+          </Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
+            onClick={() => inclusionsArray.append({ value: "" })}
+          >
+            + Add Row
+          </Button>
+        </div>
+        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+          {inclusionsArray.fields.map((field, index) => (
+            <div key={field.id} className="flex gap-2 group">
+              <Input
+                placeholder="e.g. Helmet included"
+                className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
+                {...form.register(`inclusions.${index}.value`)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
+                onClick={() => inclusionsArray.remove(index)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Dynamic Exclusions */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="font-semibold block text-gray-700 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> Exclusions
+          </Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
+            onClick={() => exclusionsArray.append({ value: "" })}
+          >
+            + Add Row
+          </Button>
+        </div>
+        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+          {exclusionsArray.fields.map((field, index) => (
+            <div key={field.id} className="flex gap-2 group">
+              <Input
+                placeholder="e.g. Fuel not included"
+                className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
+                {...form.register(`exclusions.${index}.value`)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
+                onClick={() => exclusionsArray.remove(index)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // FAQs (was in the Additional tab)
+  const faqsEditor = (
+    <div className="space-y-4">
+      <div className="space-y-4">
+        {faqsArray.fields.map((field, index) => (
+          <div key={field.id} className="p-5 border rounded-2xl bg-white shadow-sm space-y-4 relative group hover:border-[#FE5300]/50 transition-colors border-gray-100">
+            <FormField
+              control={form.control}
+              name={`faqs.${index}.question`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-bold text-gray-700">Question {index + 1}</FormLabel>
+                  <FormControl><Input placeholder="e.g. Is fuel included?" {...field} className="bg-gray-50/30" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="space-y-2">
+               <FormLabel className="font-bold text-gray-700">Answer</FormLabel>
+               <div className="border rounded-lg overflow-hidden">
+                 <SmallEditor
+                    value={form.watch(`faqs.${index}.answer`) || ""}
+                    onChange={(val) => form.setValue(`faqs.${index}.answer`, val)}
+                 />
+               </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => faqsArray.remove(index)}
+            >
+              <X className="w-4 h-4 mr-1" /> Delete FAQ
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full h-12 dashed font-semibold hover:bg-[#FE5300]/5 hover:text-[#FE5300] border-2 border-dashed border-gray-200"
+        onClick={() => faqsArray.append({ question: "", answer: "" })}
+      >
+        + Add Question & Answer
+      </Button>
+    </div>
+  );
+
+  // Helpful Resources (was in the Additional tab)
+  const resourcesEditor = (
+    <div className="space-y-4">
+      <div className="space-y-4">
+        {helpfulResourcesArray.fields.map((field, index) => (
+          <div key={field.id} className="p-5 border rounded-2xl bg-white shadow-sm space-y-4 relative group hover:border-[#FE5300]/50 transition-colors border-gray-100">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name={`helpfulResources.${index}.title`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold text-gray-700">Title</FormLabel>
+                    <FormControl><Input placeholder="e.g. Terms and Conditions" {...field} className="bg-gray-50/30" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`helpfulResources.${index}.url`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold text-gray-700">URL</FormLabel>
+                    <FormControl><Input placeholder="https://..." {...field} className="bg-gray-50/30" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => helpfulResourcesArray.remove(index)}
+            >
+              <X className="w-4 h-4 mr-1" /> Remove
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full h-12 dashed font-semibold hover:bg-[#FE5300]/5 hover:text-[#FE5300] border-2 border-dashed border-gray-200"
+        onClick={() => helpfulResourcesArray.append({ title: "", url: "" })}
+      >
+        + Add Helpful Resource
+      </Button>
+    </div>
+  );
 
   return (
     <FleetPage className="gap-4">
@@ -946,200 +1185,19 @@ export const CreateEditVehicle = ({
                 </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold">Detailed Description</FormLabel>
-                    <FormControl>
-                      <div className="border rounded-lg overflow-hidden min-h-[300px]">
-                        <BlogEditor
-                          value={form.getValues("content")}
-                          onChange={(val) => form.setValue("content", val)}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               </VehicleTabPanel>
             </TabsContent>
 
             {/* --- Additional Info Tab --- */}
             <TabsContent value="additional">
               <VehicleTabPanel tab="additional">
+              {/* Shown above the page tabs; the tab sections themselves are edited in the Tabs tab */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-2">
-                  <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Vehicle Features</Label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
-                    onClick={() => featuresArray.append({ value: "" })}
-                  >
-                    + Add Row
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 pt-2">
-                  {featuresArray.fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 group items-center">
-                      <span className="w-1.5 h-1.5 bg-[#FE5300] rounded-full shrink-0" />
-                      <Input
-                        placeholder="e.g. AC, Bluetooth, Power Windows"
-                        className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
-                        {...form.register(`features.${index}.value`)}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
-                        onClick={() => featuresArray.remove(index)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6 pt-4 border-t">
-                {/* Dynamic Inclusions */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-semibold block text-gray-700 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Inclusions
-                    </Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
-                      onClick={() => inclusionsArray.append({ value: "" })}
-                    >
-                      + Add Row
-                    </Button>
-                  </div>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                    {inclusionsArray.fields.map((field, index) => (
-                      <div key={field.id} className="flex gap-2 group">
-                        <Input
-                          placeholder="e.g. Helmet included"
-                          className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
-                          {...form.register(`inclusions.${index}.value`)}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
-                          onClick={() => inclusionsArray.remove(index)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Dynamic Exclusions */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-semibold block text-gray-700 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> Exclusions
-                    </Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-[#FE5300] hover:bg-[#FE5300]/10 h-7 px-2 text-xs"
-                      onClick={() => exclusionsArray.append({ value: "" })}
-                    >
-                      + Add Row
-                    </Button>
-                  </div>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                    {exclusionsArray.fields.map((field, index) => (
-                      <div key={field.id} className="flex gap-2 group">
-                        <Input
-                          placeholder="e.g. Fuel not included"
-                          className="h-9 text-sm rounded-lg border-gray-200 focus:border-[#FE5300]"
-                          {...form.register(`exclusions.${index}.value`)}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50"
-                          onClick={() => exclusionsArray.remove(index)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-6 border-t mt-4">
-                <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Vehicle FAQs</Label>
-                <div className="space-y-4">
-                  {faqsArray.fields.map((field, index) => (
-                    <div key={field.id} className="p-5 border rounded-2xl bg-white shadow-sm space-y-4 relative group hover:border-[#FE5300]/50 transition-colors border-gray-100">
-                      <FormField
-                        control={form.control}
-                        name={`faqs.${index}.question`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="font-bold text-gray-700">Question {index + 1}</FormLabel>
-                            <FormControl><Input placeholder="e.g. Is fuel included?" {...field} className="bg-gray-50/30" /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="space-y-2">
-                         <FormLabel className="font-bold text-gray-700">Answer</FormLabel>
-                         <div className="border rounded-lg overflow-hidden">
-                           <SmallEditor
-                              value={form.watch(`faqs.${index}.answer`) || ""}
-                              onChange={(val) => form.setValue(`faqs.${index}.answer`, val)}
-                           />
-                         </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => faqsArray.remove(index)}
-                      >
-                        <X className="w-4 h-4 mr-1" /> Delete FAQ
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-12 dashed font-semibold hover:bg-[#FE5300]/5 hover:text-[#FE5300] border-2 border-dashed border-gray-200"
-                  onClick={() => faqsArray.append({ question: "", answer: "" })}
-                >
-                  + Add Question & Answer
-                </Button>
-              </div>
-
-              <div className="space-y-4 pt-6 border-t mt-4">
                 {/* <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Rich Text Details</Label> */}
                 <div className="space-y-6">
                   {[
                     { name: "vehicleAtAGlance", label: "Vehicle At A Glance" },
                     { name: "quickAnswers", label: "Quick Answers" },
-                    { name: "availableFor", label: "Available For" },
-                    { name: "rentalOptions", label: "Rental Options" },
-                    { name: "howBookingWorks", label: "How Booking Works" },
                   ].map((field) => (
                     <FormField
                       key={field.name}
@@ -1164,56 +1222,6 @@ export const CreateEditVehicle = ({
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 border-t mt-4">
-                <Label className="text-lg font-semibold block underline decoration-[#FE5300] underline-offset-4">Helpful Resources</Label>
-                <div className="space-y-4">
-                  {helpfulResourcesArray.fields.map((field, index) => (
-                    <div key={field.id} className="p-5 border rounded-2xl bg-white shadow-sm space-y-4 relative group hover:border-[#FE5300]/50 transition-colors border-gray-100">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`helpfulResources.${index}.title`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-bold text-gray-700">Title</FormLabel>
-                              <FormControl><Input placeholder="e.g. Terms and Conditions" {...field} className="bg-gray-50/30" /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`helpfulResources.${index}.url`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-bold text-gray-700">URL</FormLabel>
-                              <FormControl><Input placeholder="https://..." {...field} className="bg-gray-50/30" /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => helpfulResourcesArray.remove(index)}
-                      >
-                        <X className="w-4 h-4 mr-1" /> Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-12 dashed font-semibold hover:bg-[#FE5300]/5 hover:text-[#FE5300] border-2 border-dashed border-gray-200"
-                  onClick={() => helpfulResourcesArray.append({ title: "", url: "" })}
-                >
-                  + Add Helpful Resource
-                </Button>
-              </div>
               </VehicleTabPanel>
             </TabsContent>
 
@@ -1305,6 +1313,30 @@ export const CreateEditVehicle = ({
                   />
                 </div>
               </div>
+              </VehicleTabPanel>
+            </TabsContent>
+
+            {/* --- Tabs Tab (order / visibility / custom tabs on the vehicle page) --- */}
+            <TabsContent value="tabs">
+              <VehicleTabPanel tab="tabs">
+                <VehicleTabsEditor
+                  value={tabsConfig}
+                  onChange={(next) => {
+                    setTabsConfig(next);
+                    setTabsTouched(true);
+                  }}
+                  form={form}
+                  builtinBodies={{
+                    features: featuresEditor,
+                    includeexclude: inclusionsExclusionsEditor,
+                    faqs: faqsEditor,
+                    resources: resourcesEditor,
+                  }}
+                  errorKeys={{
+                    faqs: !!form.formState.errors.faqs,
+                    resources: !!form.formState.errors.helpfulResources,
+                  }}
+                />
               </VehicleTabPanel>
             </TabsContent>
           </Tabs>
