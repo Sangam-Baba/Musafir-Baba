@@ -46,7 +46,7 @@ The vehicle-partner module (MBGO/MBConnect) is **out of scope** — don't map or
 - New Cloudflare hostname for the realtime container only (new route); staging first.
 
 ### 3.3 Core kernel (`src/core`)
-- `money.js` (Money in paise), `dates.js` (`StayDate` strings, nights list, hotel-time-zone deadlines), `ids.js` (public reference generator with check char), `clock.js`, `errors.js` (typed errors + RFC 9457 mapper), `context.js` (`RequestContext`), `logger.js` (pino + redaction), `config.js` (zod-validated env).
+- `money.js` (Money in paise), `dates.js` (`StayDate` strings, nights list, hotel-time-zone deadlines), `ids.js` (public reference generator with check char), `clock.js`, `errors.js` (typed errors + RFC 9457 mapper), `context.js` (`RequestContext`), `logger.js` (own JSON-lines logger with redaction — no package), `config.js` (zod-validated env).
 - `db/tenant-plugin.js`: Mongoose plugin for tenant models — throws on unscoped queries unless `tenantScope: 'SYSTEM'` with `reason` (logged).
 - `db/idempotency.js`: `withIdempotency(ctx, key, fn)` — `core_idempotency_keys` with unique `{scope, key}`, request hash, stored response, TTL 24 h.
 - `http/`: request id, context builder, `requirePermission()`, zod `validate()`, idempotency-key header parser, error middleware, `helmet`, body limits.

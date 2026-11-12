@@ -247,7 +247,7 @@ Redis is **not set up and not planned for now**. Everything it would have done r
 
 ## 11. Observability
 
-- Structured JSON logs (pino) with `requestId`, `orgId`, `actorId`, `channel`; secrets/PII redacted.
+- Structured JSON logs (`core/logger.js`, no extra package) with `requestId`, `orgId`, `actorId`, `channel`; secrets/PII redacted.
 - OpenTelemetry tracing (HTTP, Mongo, PayU) if feasible; at minimum request timing + Mongo slow-query logs.
 - Business metrics: searches/min, booking success rate, payment success rate, holds expired, double-booking attempts blocked (should exist and be > 0 under load — it shows the guard works), wallet low balances.
 

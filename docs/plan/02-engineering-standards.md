@@ -147,7 +147,7 @@ export class Money {
 
 ## 8. Logging
 
-- pino JSON: `ts, level, msg, requestId, orgId, actorId, channel, module, action, durationMs`.
+- JSON lines from `core/logger.js` (no logging package — keeps the existing app's dependencies unchanged): `time, level, msg, requestId, orgId, actorId, channel, module, action, durationMs`.
 - Redacted always: passwords, OTPs, tokens, API keys, `authorization`/`cookie` headers, PAN, bank account numbers, full phone/email.
 - `info` for business milestones (booking confirmed, KYC approved), `warn` for handled anomalies (sold-out race lost), `error` for things needing action.
 
