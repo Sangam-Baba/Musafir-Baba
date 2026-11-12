@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T04 zero-impact guards
+
+- **Goal:** make it impossible for B2B code to write to existing collections.
+- **Done:** S00-T04 → DONE. Allowed-prefix list in code (`core/db/prefixes.js`, aligned with plan §4.2: added `id_`, `file_`, `aud_`, `rt_`; audit never uses the existing `AuditLog`); `defineModel()` (B2B instance, explicit prefixed collection, strict) + start-up check in api/worker/realtime; migration runner with restricted context, prefix checks, `core_migrations` records and lease lock, `npm run b2b:migrate`; `legacy-read/` — `findCustomerById`, `findStaffById`, `findSessionById` (native `findOne` with fixed projections, `maxTimeMS` 2 s, no passwords).
+- **Not done / why:** —
+- **Files / PR:** `backend/src/b2b/core/db/{prefixes,model,migrations}.js`, `backend/src/b2b/legacy-read/index.js`, `backend/src/b2b/{migrate.js,migrations/index.js}`, tests; `package.json` (+ `b2b:migrate` script, dev dep `mongodb-memory-server` 10.1.4).
+- **Tests run:** `npm run test:b2b` ✅ 46/46 (on standalone MongoDB 8.0.4 in memory); `tsc` ✅; `npm run b2b:migrate` on dev DB ✅ (only creates `core_migrations`).
+- **Decisions / deferrals:** `mongodb-memory-server` pinned to 10.1.4 — newer versions bumped existing `debug`/`semver` (lockfile rule).
+- **Next step:** S00-T05 — CI: protected paths, lockfile guard, lint bans for `src/b2b`.
+
+
 ## 2026-11-12 — AI (Claude) — S00-T02 `backend/src/b2b/` skeleton
 
 - **Goal:** isolated B2B code inside the existing backend, switched off by default.

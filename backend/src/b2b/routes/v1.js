@@ -8,6 +8,7 @@ import express from 'express';
 
 import { loadConfig } from '../core/config.js';
 import { connectB2BDatabase, databaseState } from '../core/db/connection.js';
+import { assertRegisteredModelsAllowed } from '../core/db/model.js';
 import { requestId } from '../core/http/request-id.js';
 
 const BODY_LIMIT = '1mb';
@@ -18,6 +19,7 @@ const BODY_LIMIT = '1mb';
  */
 export function createB2BRouter(options = {}) {
   const env = options.env ?? process.env;
+  assertRegisteredModelsAllowed();
   if (options.connect !== false) startDatabase(env);
 
   const router = express.Router();

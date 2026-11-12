@@ -10,11 +10,13 @@
 import 'dotenv/config';
 
 import { loadConfig } from './core/config.js';
+import { assertRegisteredModelsAllowed } from './core/db/model.js';
 import { connectB2BDatabase } from './core/db/connection.js';
 import { failStartup, handleShutdown } from './core/lifecycle.js';
 
 async function main() {
   const config = loadConfig(process.env);
+  assertRegisteredModelsAllowed();
   await connectB2BDatabase(config.MONGO_URI, 'worker');
   handleShutdown('worker', []);
   console.log('[b2b:worker] ready');

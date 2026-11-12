@@ -13,7 +13,8 @@
     "test:b2b": "vitest run --root tests/b2b",
     "typecheck:b2b": "tsc -p src/b2b/jsconfig.json",
     "b2b:worker": "node src/b2b/worker.js",
-    "b2b:realtime": "node src/b2b/realtime.js"
+    "b2b:realtime": "node src/b2b/realtime.js",
+    "b2b:migrate": "node src/b2b/migrate.js"
   },
   "keywords": [],
   "author": "",
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@types/express": "5.0.6",
+    "mongodb-memory-server": "10.1.4",
     "nodemon": "^3.1.14",
     "typescript": "5.9.3",
     "vitest": "3.2.7"

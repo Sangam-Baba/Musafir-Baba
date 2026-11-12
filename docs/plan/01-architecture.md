@@ -116,11 +116,14 @@ modules/hotel-booking/
 | kyc | `kyc_` | subscriptions | `sub_` |
 | files | `file_` | metering | `mtr_` |
 | notifications | `ntf_` | billing | `bil_` |
-| audit | `aud_` (or existing `AuditLog`) | api-access | `api_` |
+| audit | `aud_` (never the existing `AuditLog` — `12-…` D1) | api-access | `api_` |
 | hotel-catalog | `htl_` | webhooks | `whk_` |
 | hotel-inventory | `inv_` | documents | `doc_` |
 | pricing | `prc_` | reporting | `rpt_` |
-| hotel-booking | `hbk_` | core | `core_` (idempotency keys, outbox) |
+| hotel-booking | `hbk_` | core | `core_` (idempotency keys, outbox, jobs, migrations) |
+| realtime | `rt_` (signals) | | |
+
+The list is enforced in code by `backend/src/b2b/core/db/prefixes.js`.
 
 ## 5. Request pipeline (every `/api/v1` request)
 
