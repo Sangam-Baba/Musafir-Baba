@@ -54,7 +54,7 @@ const getWebPage = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate("parent", "title slug")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .select("-content -faqs")
       .lean();
 
@@ -86,7 +86,7 @@ const getWebPageBySlug = async (req, res) => {
     })
       .populate("reviews")
       .populate("parent", "title slug")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .lean();
     if (!webpage)
       return res.status(404).json({ success: false, message: "Invalid Slug" });
@@ -109,7 +109,7 @@ const getWebPageById = async (req, res) => {
     console.log(id);
     if (!id)
       return res.status(404).json({ success: false, message: "Invalid id" });
-    const webpage = await WebPage.findById({ _id: id }).populate("author", "name role about avatar").lean();
+    const webpage = await WebPage.findById({ _id: id }).populate("author", "name role about avatar socialLinks").lean();
     if (!webpage)
       return res.status(404).json({ success: false, message: "Invalid id" });
     res.status(200).json({ success: true, data: webpage });

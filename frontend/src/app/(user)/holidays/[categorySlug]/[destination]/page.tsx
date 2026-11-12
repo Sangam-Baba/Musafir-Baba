@@ -2,6 +2,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import Hero from "@/components/custom/Hero";
 import { notFound } from "next/navigation";
 import GroupPkgClient from "../PackageSlugClient";
+import HolidayCategoryNav from "@/components/custom/HolidayCategoryNav";
 import Script from "next/script";
 import { getBreadcrumbSchema } from "@/lib/schema/breadcrumb.schema";
 import { getCollectionSchema } from "@/lib/schema/collection.schema";
@@ -162,7 +163,10 @@ async function DestinationPage({
       )}
 
       {/* Show packages under this category */}
-      <GroupPkgClient packagesData={packages} />
+      <GroupPkgClient
+        packagesData={packages}
+        categoryNav={<HolidayCategoryNav activeSlug={categorySlug} />}
+      />
       <PageFaqs faqs={meta?.faqSchema} />
       <Script
         id="breadcrumb-schema"

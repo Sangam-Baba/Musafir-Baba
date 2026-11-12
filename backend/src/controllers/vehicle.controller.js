@@ -424,6 +424,7 @@ const duplicateVehicle = async (req, res) => {
       faqs: stripIds(fields.faqs),
       seatingOptions: stripIds(fields.seatingOptions),
       helpfulResources: stripIds(fields.helpfulResources),
+      tabsConfig: stripIds(fields.tabsConfig),
       location,
       status: "draft",
     });

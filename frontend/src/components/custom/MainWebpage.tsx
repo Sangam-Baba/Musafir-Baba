@@ -20,6 +20,7 @@ import { Share2, Trophy, Medal, Star, Facebook, Twitter, Instagram, Linkedin } f
 import { TableOfContents } from "@/components/custom/TableOfContents";
 import { Heading } from "@/utils/blogUtils";
 import TextToSpeech from "@/components/custom/TextToSpeech";
+import AuthorSocialLinks, { AuthorSocialLink } from "@/components/custom/AuthorSocialLinks";
 
 interface Faq {
   question: string;
@@ -188,6 +189,12 @@ async function MainWebPage({
                   <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {page.author?.name || "MusafirBaba Travel Team"} {page.author?.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{page.author.role}</span>}</p>
                   {!page.author?.name && <p><span className="font-semibold text-gray-800">Reviewed By:</span> Destination Specialist</p>}
                   {page.author?.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{page.author.about}</p>}
+                  {(() => {
+                    const author = (page as { author?: { name?: string; socialLinks?: AuthorSocialLink[] } }).author;
+                    return author?.name ? (
+                      <AuthorSocialLinks links={author.socialLinks} authorName={author.name} />
+                    ) : null;
+                  })()}
                   <p><span className="font-semibold text-gray-800">Last Updated:</span> {new Date(page.updatedAt).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",

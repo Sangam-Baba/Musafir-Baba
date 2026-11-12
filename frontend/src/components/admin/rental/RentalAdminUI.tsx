@@ -10,6 +10,7 @@ import {
   IndianRupee,
   Info,
   Layers,
+  LayoutList,
   Search,
 } from "lucide-react";
 import { AdminFormTab, AdminPageHeader, AdminTabPanel, AdminTabsList } from "@/components/admin/AdminFormUI";
@@ -38,16 +39,17 @@ export function RentalStatusPill({ status }: { status?: string }) {
 
 // ---- Tab sets (values match each form's existing TabsContent values) ----
 
-type VehicleTab = "general" | "pricing" | "media" | "additional" | "seo";
+type VehicleTab = "general" | "pricing" | "media" | "additional" | "tabs" | "seo";
 const VEHICLE_TABS: (AdminFormTab & { value: VehicleTab })[] = [
   { value: "general", label: "General", icon: Info, title: "Vehicle details", description: "Title, permalink, pickup city, type, brand, model, fuel and transmission." },
   { value: "pricing", label: "Pricing & Stock", icon: IndianRupee, title: "Pricing & stock", description: "Single or per-seat pricing, units available and fees." },
-  { value: "media", label: "Media", icon: ImageIcon, title: "Media & description", description: "Gallery images and the detailed description." },
-  { value: "additional", label: "Additional", icon: Layers, title: "Additional details", description: "Features, inclusions, FAQs, page sections and helpful resources." },
+  { value: "media", label: "Media", icon: ImageIcon, title: "Media", description: "Gallery images shown at the top of the vehicle page." },
+  { value: "additional", label: "Additional", icon: Layers, title: "Additional details", description: "Vehicle at a Glance and Quick Answers, shown above the page tabs." },
+  { value: "tabs", label: "Tabs", icon: LayoutList, title: "Page tabs", description: "Order, visibility, headings and content of every section on the vehicle page." },
   { value: "seo", label: "SEO", icon: Search, title: "SEO", description: "Meta title, description, excerpt and keywords." },
 ];
 export function VehicleTabsList() {
-  return <AdminTabsList tabs={VEHICLE_TABS} gridClassName="lg:grid-cols-5" />;
+  return <AdminTabsList tabs={VEHICLE_TABS} gridClassName="lg:grid-cols-6" />;
 }
 export function VehicleTabPanel({ tab, children }: { tab: VehicleTab; children: React.ReactNode }) {
   return <AdminTabPanel tab={VEHICLE_TABS.find((t) => t.value === tab)!}>{children}</AdminTabPanel>;
