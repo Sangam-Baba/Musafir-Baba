@@ -15,7 +15,11 @@ const SOURCE_RULES = [
   { rule: 'no require() — ES modules only', re: /\brequire\s*\(/ },
   { rule: 'no third-party messaging SDKs (D26)', re: /from\s+['"](ably|expo-server-sdk|firebase-admin|twilio)['"]/ },
   { rule: 'read the time through the Clock (core/clock.js)', re: /new Date\(\s*\)|Date\.now\s*\(/, allowIn: ['core/clock.js'] },
-  { rule: 'use the B2B Mongoose instance (core/db/connection.js), never the default one', re: /import\s+mongoose\s+from\s+['"]mongoose['"]/, allowIn: ['core/db/connection.js'] },
+  {
+    rule: 'use the B2B Mongoose instance (core/db/connection.js), never the default one',
+    re: /import\s+mongoose\s+from\s+['"]mongoose['"]/,
+    allowIn: ['core/db/connection.js'],
+  },
   { rule: 'define models with defineModel() (core/db/model.js)', re: /\.model\s*\(\s*['"]/, allowIn: ['core/db/model.js'] },
 ];
 

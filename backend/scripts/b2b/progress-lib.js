@@ -14,7 +14,11 @@ const END = '<!-- progress:end -->';
 /** @typedef {{ done: number, total: number, deferred: number, percent: number, status: string }} StageCount */
 
 /** @param {string} line */
-const cells = (line) => line.split('|').slice(1, -1).map((c) => c.trim());
+const cells = (line) =>
+  line
+    .split('|')
+    .slice(1, -1)
+    .map((c) => c.trim());
 
 /**
  * @param {string} stage e.g. '00'
@@ -49,7 +53,8 @@ export function countStage(file) {
   const percent = countable === 0 ? 0 : Math.round((done / countable) * 100);
   let status = 'NOT_STARTED';
   if (live.some((t) => t.status === 'BLOCKED')) status = 'BLOCKED';
-  else if (countable > 0 && done === countable) status = 'DONE';
+  // A human signs a stage off by filling in its Finished date (AGENTS.md: never mark a stage DONE yourself).
+  else if (countable > 0 && done === countable) status = file.finished && file.finished !== '—' ? 'DONE' : 'AWAITING_SIGN_OFF';
   else if (live.some((t) => ['DOING', 'REVIEW', 'DONE'].includes(t.status))) status = 'IN_PROGRESS';
   return { done, total: live.length, deferred, percent, status };
 }
@@ -64,7 +69,7 @@ export function validate(files, deferredMarkdown) {
   const problems = [];
   for (const f of files) {
     for (const t of f.tasks) {
-      if (!(/** @type {readonly string[]} */ (STATUSES)).includes(t.status)) problems.push(`${t.id}: unknown status "${t.status}"`);
+      if (!(/** @type {readonly string[]} */ (STATUSES).includes(t.status))) problems.push(`${t.id}: unknown status "${t.status}"`);
       if (t.status === 'DEFERRED') {
         const ref = /DEF-\d{3}/.exec(t.notes)?.[0];
         if (!ref) problems.push(`${t.id}: DEFERRED needs a DEF-nnn reference in Notes`);

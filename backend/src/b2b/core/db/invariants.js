@@ -24,7 +24,8 @@ export function createInvariantChecks() {
       for (const inv of registry.values()) {
         try {
           const violations = await inv.check();
-          if (violations.length > 0) logger.error({ invariant: inv.name, count: violations.length, sample: violations.slice(0, 5) }, 'invariant violated');
+          if (violations.length > 0)
+            logger.error({ invariant: inv.name, count: violations.length, sample: violations.slice(0, 5) }, 'invariant violated');
           reports.push({ name: inv.name, violations });
         } catch (error) {
           logger.error({ invariant: inv.name, err: error }, 'invariant check failed to run');

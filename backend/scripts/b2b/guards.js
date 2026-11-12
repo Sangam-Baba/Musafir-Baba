@@ -9,7 +9,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { checkB2BSource, checkExistingSource } from './code-rules.js';
-import { checkAppJs, checkLockfile, checkPackageJson, checkPaths } from './guards-lib.js';
+import { checkAppJs, checkLockfile, checkPackageJson, checkPaths, checkSecrets } from './guards-lib.js';
 
 /**
  * @param {string[]} args
@@ -29,9 +29,18 @@ const atBase = (file) => git(['show', `${base}:${file}`]);
 const atHead = (file) => readFileSync(path.join(root, file), 'utf8');
 
 function changedFiles() {
-  const tracked = git(['diff', '--name-status', '--no-renames', base]).trim().split('\n').filter(Boolean)
-    .map((l) => { const [status = '', file = ''] = l.split('\t'); return { status: status[0] ?? '', path: file }; });
-  const untracked = git(['ls-files', '--others', '--exclude-standard']).trim().split('\n').filter(Boolean)
+  const tracked = git(['diff', '--name-status', '--no-renames', base])
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => {
+      const [status = '', file = ''] = l.split('\t');
+      return { status: status[0] ?? '', path: file };
+    });
+  const untracked = git(['ls-files', '--others', '--exclude-standard'])
+    .trim()
+    .split('\n')
+    .filter(Boolean)
     .map((file) => ({ status: 'A', path: file }));
   return [...tracked, ...untracked];
 }
@@ -50,10 +59,13 @@ function codeProblems() {
   const b2b = path.join(src, 'b2b');
   const rel = (/** @type {string} */ from, /** @type {string} */ f) => path.relative(from, f).split(path.sep).join('/');
   const inB2B = jsFiles(b2b).flatMap((f) => checkB2BSource(rel(b2b, f), readFileSync(f, 'utf8')));
-  const existing = jsFiles(src).filter((f) => !f.startsWith(b2b + path.sep))
+  const existing = jsFiles(src)
+    .filter((f) => !f.startsWith(b2b + path.sep))
     .flatMap((f) => checkExistingSource(rel(src, f), readFileSync(f, 'utf8')));
-  return [...inB2B.map((v) => ({ ...v, file: `backend/src/b2b/${v.file}` })), ...existing.map((v) => ({ ...v, file: `backend/src/${v.file}` }))]
-    .map((v) => `${v.file}:${v.line} — ${v.rule}`);
+  return [
+    ...inB2B.map((v) => ({ ...v, file: `backend/src/b2b/${v.file}` })),
+    ...existing.map((v) => ({ ...v, file: `backend/src/${v.file}` })),
+  ].map((v) => `${v.file}:${v.line} — ${v.rule}`);
 }
 
 function main() {
@@ -69,9 +81,19 @@ function main() {
   if (changed.has('backend/package-lock.json')) {
     const lock = checkLockfile(JSON.parse(atBase('backend/package-lock.json')), JSON.parse(atHead('backend/package-lock.json')));
     problems.push(...lock.problems);
-    console.log(`lockfile: ${lock.added.length} packages added (${lock.addedRuntime.length} runtime${lock.addedRuntime.length ? ': ' + lock.addedRuntime.join(', ') : ''})`);
+    console.log(
+      `lockfile: ${lock.added.length} packages added (${lock.addedRuntime.length} runtime${lock.addedRuntime.length ? ': ' + lock.addedRuntime.join(', ') : ''})`,
+    );
   }
   problems.push(...codeProblems());
+  for (const { status, path: file } of changes) {
+    if (status === 'D' || file.endsWith('package-lock.json')) continue;
+    try {
+      problems.push(...checkSecrets(file, readFileSync(path.join(root, file), 'utf8')));
+    } catch {
+      // unreadable or binary — not a text file we scan
+    }
+  }
 
   console.log(`b2b guards — compared with ${baseRef} (${base.slice(0, 7)}), ${changes.length} changed files`);
   if (problems.length === 0) {

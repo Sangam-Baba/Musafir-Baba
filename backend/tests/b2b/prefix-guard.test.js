@@ -6,14 +6,26 @@ import { assertRegisteredModelsAllowed, defineModel } from '../../src/b2b/core/d
 import { assertAllowedCollection, isAllowedCollection } from '../../src/b2b/core/db/prefixes.js';
 
 describe('allowed collection names', () => {
-  it.each(['htl_properties', 'inv_inventory_days', 'core_jobs', 'rt_signals', 'wal_accounts', 'id_users'])(
-    'allows %s',
-    (name) => expect(isAllowedCollection(name)).toBe(true),
+  it.each(['htl_properties', 'inv_inventory_days', 'core_jobs', 'rt_signals', 'wal_accounts', 'id_users'])('allows %s', (name) =>
+    expect(isAllowedCollection(name)).toBe(true),
   );
 
   it.each([
-    'users', 'staffs', 'sessions', 'bookings', 'auditlogs', 'invoices', 'subscriptions', 'notifications', // existing
-    'htl_', 'core', 'HTL_properties', 'htl-properties', 'orgs_x', '', 'system.indexes',
+    'users',
+    'staffs',
+    'sessions',
+    'bookings',
+    'auditlogs',
+    'invoices',
+    'subscriptions',
+    'notifications', // existing
+    'htl_',
+    'core',
+    'HTL_properties',
+    'htl-properties',
+    'orgs_x',
+    '',
+    'system.indexes',
   ])('refuses %s', (name) => expect(isAllowedCollection(name)).toBe(false));
 
   it('explains the rule in the error', () => {

@@ -32,8 +32,20 @@ async function main() {
   const deps = { clock: systemClock, logger };
 
   const scheduler = createScheduler({ workerId, ...deps });
-  scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: async () => { await reconciler.runOnce(deps); } });
-  scheduler.register({ name: 'invariants', everyMs: INVARIANTS_EVERY_MS, run: async () => { await invariantChecks.runAll(logger); } });
+  scheduler.register({
+    name: 'reconciler',
+    everyMs: RECONCILE_EVERY_MS,
+    run: async () => {
+      await reconciler.runOnce(deps);
+    },
+  });
+  scheduler.register({
+    name: 'invariants',
+    everyMs: INVARIANTS_EVERY_MS,
+    run: async () => {
+      await invariantChecks.runAll(logger);
+    },
+  });
   const handlers = new Map([...jobHandlers, ...consumerJobHandlers(eventBus, systemClock)]);
   const runner = createJobRunner({ handlers, workerId, ...deps });
   const relay = createEventRelay({ sources: eventSources, bus: eventBus, ...deps });
@@ -42,7 +54,10 @@ async function main() {
   relay.start();
   runner.start();
   handleShutdown('worker', [() => scheduler.stop(), () => relay.stop(), () => runner.stop()]);
-  logger.info({ jobHandlers: handlers.size, reconcileRules: reconciler.rules().length, eventSources: eventSources.length }, 'b2b worker ready');
+  logger.info(
+    { jobHandlers: handlers.size, reconcileRules: reconciler.rules().length, eventSources: eventSources.length },
+    'b2b worker ready',
+  );
 }
 
 main().catch((error) => failStartup('worker', error));

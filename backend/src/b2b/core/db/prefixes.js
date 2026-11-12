@@ -6,8 +6,29 @@
  */
 
 export const ALLOWED_PREFIXES = /** @type {const} */ ([
-  'id_', 'org_', 'acl_', 'kyc_', 'file_', 'aud_', 'htl_', 'inv_', 'prc_', 'ord_', 'hbk_', 'wal_',
-  'pay_', 'ntf_', 'mtr_', 'sub_', 'bil_', 'api_', 'whk_', 'doc_', 'rpt_', 'core_', 'rt_',
+  'id_',
+  'org_',
+  'acl_',
+  'kyc_',
+  'file_',
+  'aud_',
+  'htl_',
+  'inv_',
+  'prc_',
+  'ord_',
+  'hbk_',
+  'wal_',
+  'pay_',
+  'ntf_',
+  'mtr_',
+  'sub_',
+  'bil_',
+  'api_',
+  'whk_',
+  'doc_',
+  'rpt_',
+  'core_',
+  'rt_',
 ]);
 
 const VALID_NAME = /^[a-z][a-z0-9_]*$/;

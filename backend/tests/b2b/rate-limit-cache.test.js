@@ -15,7 +15,9 @@ import { startMongo } from './helpers/mongo.js';
 let mongo;
 let nowMs = Date.parse('2026-11-12T10:00:00Z');
 const clock = { now: () => new Date(nowMs) };
-const advance = (/** @type {number} */ ms) => { nowMs += ms; };
+const advance = (/** @type {number} */ ms) => {
+  nowMs += ms;
+};
 
 beforeAll(async () => {
   mongo = await startMongo();
@@ -56,7 +58,11 @@ describe('rate limiter (MongoDB)', () => {
   it('returns 429 with Retry-After and RateLimit headers through the middleware', async () => {
     const lim = createRateLimiter({ name: 'booking', points: 1, windowMs: 60_000, clock });
     const app = express();
-    app.get('/x', rateLimit(lim, (req) => `ip:${clientIp(req)}`), (_req, res) => res.json({ ok: true }));
+    app.get(
+      '/x',
+      rateLimit(lim, (req) => `ip:${clientIp(req)}`),
+      (_req, res) => res.json({ ok: true }),
+    );
     app.use(problemHandler(createLogger({ write: () => {} })));
     const server = await startServer(app);
     try {
@@ -96,7 +102,8 @@ describe('in-process cache', () => {
 
 describe('clientIp', () => {
   /** @param {Record<string, string>} headers @param {string} [remote] */
-  const req = (headers, remote = '10.0.0.5') => /** @type {any} */ ({ get: (/** @type {string} */ h) => headers[h.toLowerCase()], socket: { remoteAddress: remote } });
+  const req = (headers, remote = '10.0.0.5') =>
+    /** @type {any} */ ({ get: (/** @type {string} */ h) => headers[h.toLowerCase()], socket: { remoteAddress: remote } });
 
   it('uses a well-formed CF-Connecting-IP, otherwise the socket address', () => {
     expect(clientIp(req({ 'cf-connecting-ip': '203.0.113.7' }))).toBe('203.0.113.7');

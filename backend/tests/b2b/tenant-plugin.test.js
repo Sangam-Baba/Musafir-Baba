@@ -11,18 +11,34 @@ let mongo;
 const OrgA = new b2bMongoose.Types.ObjectId();
 const OrgB = new b2bMongoose.Types.ObjectId();
 
-const Rate = defineTenantModel('ProbeRate', new b2bMongoose.Schema({ orgId: b2bMongoose.Schema.Types.ObjectId, amount: Number }), 'prc_probe_rates', ['orgId']);
+const Rate = defineTenantModel(
+  'ProbeRate',
+  new b2bMongoose.Schema({ orgId: b2bMongoose.Schema.Types.ObjectId, amount: Number }),
+  'prc_probe_rates',
+  ['orgId'],
+);
 const Order = defineTenantModel(
   'ProbeOrder',
-  new b2bMongoose.Schema({ clientOrgId: b2bMongoose.Schema.Types.ObjectId, hotelOrgId: b2bMongoose.Schema.Types.ObjectId, customerId: String, ref: String }),
+  new b2bMongoose.Schema({
+    clientOrgId: b2bMongoose.Schema.Types.ObjectId,
+    hotelOrgId: b2bMongoose.Schema.Types.ObjectId,
+    customerId: String,
+    ref: String,
+  }),
   'ord_probe_orders',
   ['clientOrgId', 'customerId', 'hotelOrgId'],
 );
 
 beforeAll(async () => {
   mongo = await startMongo();
-  await Rate.create([{ orgId: OrgA, amount: 100 }, { orgId: OrgB, amount: 200 }]);
-  await Order.create([{ clientOrgId: OrgA, hotelOrgId: OrgB, ref: 'o1' }, { customerId: 'c1', hotelOrgId: OrgB, ref: 'o2' }]);
+  await Rate.create([
+    { orgId: OrgA, amount: 100 },
+    { orgId: OrgB, amount: 200 },
+  ]);
+  await Order.create([
+    { clientOrgId: OrgA, hotelOrgId: OrgB, ref: 'o1' },
+    { customerId: 'c1', hotelOrgId: OrgB, ref: 'o2' },
+  ]);
 });
 afterAll(async () => mongo.stop());
 
@@ -50,7 +66,12 @@ describe('tenant guard — unscoped access throws', () => {
   });
 
   it('nothing was changed by the refused writes', async () => {
-    expect(await Rate.find({ orgId: { $in: [OrgA, OrgB] } }).sort({ amount: 1 }).lean().then((r) => r.map((x) => x.amount))).toEqual([100, 200]);
+    expect(
+      await Rate.find({ orgId: { $in: [OrgA, OrgB] } })
+        .sort({ amount: 1 })
+        .lean()
+        .then((r) => r.map((x) => x.amount)),
+    ).toEqual([100, 200]);
   });
 
   it('refuses new documents without an ownership field (create and insertMany)', async () => {

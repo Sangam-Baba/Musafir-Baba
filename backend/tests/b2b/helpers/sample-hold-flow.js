@@ -17,16 +17,38 @@ export const HELD = { counter: 'held', list: 'holds' };
 export const BOOKED = { counter: 'booked', list: 'bookings' };
 export const SYS = systemScope('test-booking-engine');
 
-export const Night = defineTenantModel('ProbeNight', new m.Schema({
-  hotelOrgId: String, roomTypeId: String, date: String, total: Number, held: Number, booked: Number, version: Number,
-  holds: [{ _id: false, ownerId: String, qty: Number }], bookings: [{ _id: false, ownerId: String, qty: Number }],
-}), 'inv_probe_nights', ['hotelOrgId']);
+export const Night = defineTenantModel(
+  'ProbeNight',
+  new m.Schema({
+    hotelOrgId: String,
+    roomTypeId: String,
+    date: String,
+    total: Number,
+    held: Number,
+    booked: Number,
+    version: Number,
+    holds: [{ _id: false, ownerId: String, qty: Number }],
+    bookings: [{ _id: false, ownerId: String, qty: Number }],
+  }),
+  'inv_probe_nights',
+  ['hotelOrgId'],
+);
 
 const HOLD_STATUSES = ['PLACING', 'ACTIVE', 'CONFIRMING', 'CONFIRMED', 'FAILED'];
-export const Hold = defineTenantModel('ProbeHold', new m.Schema({
-  _id: String, hotelOrgId: String, roomTypeId: String, dates: [String], qty: Number, bookingId: String,
-  ...stateFields(m, HOLD_STATUSES),
-}), 'inv_probe_holds', ['hotelOrgId']);
+export const Hold = defineTenantModel(
+  'ProbeHold',
+  new m.Schema({
+    _id: String,
+    hotelOrgId: String,
+    roomTypeId: String,
+    dates: [String],
+    qty: Number,
+    bookingId: String,
+    ...stateFields(m, HOLD_STATUSES),
+  }),
+  'inv_probe_holds',
+  ['hotelOrgId'],
+);
 
 /**
  * Collection validator — the database's own last line of defence (05-… §3).
@@ -35,12 +57,15 @@ export const Hold = defineTenantModel('ProbeHold', new m.Schema({
 export async function createCollections(db) {
   const ctx = createMigrationContext(db);
   await ctx.createCollection('inv_probe_nights', {
-    validator: { $and: [
-      { $expr: { $lte: [{ $add: ['$held', '$booked'] }, '$total'] } },
-      { held: { $gte: 0 } }, { booked: { $gte: 0 } },
-      { $expr: { $eq: ['$held', { $sum: '$holds.qty' }] } },
-      { $expr: { $eq: ['$booked', { $sum: '$bookings.qty' }] } },
-    ] },
+    validator: {
+      $and: [
+        { $expr: { $lte: [{ $add: ['$held', '$booked'] }, '$total'] } },
+        { held: { $gte: 0 } },
+        { booked: { $gte: 0 } },
+        { $expr: { $eq: ['$held', { $sum: '$holds.qty' }] } },
+        { $expr: { $eq: ['$booked', { $sum: '$bookings.qty' }] } },
+      ],
+    },
   });
   await ctx.createCollection('inv_probe_holds');
 }
@@ -54,7 +79,17 @@ export async function seedNights(hotelOrgId, roomTypeId, dates, total) {
 export function holdSteps(h, clock) {
   const night = (/** @type {string} */ date) => ({ hotelOrgId: h.hotelOrgId, roomTypeId: h.roomTypeId, date });
   return [
-    async () => { await Hold.create({ _id: h.id, hotelOrgId: h.hotelOrgId, roomTypeId: h.roomTypeId, dates: h.dates, qty: h.qty, status: 'PLACING', statusChangedAt: clock.now() }); },
+    async () => {
+      await Hold.create({
+        _id: h.id,
+        hotelOrgId: h.hotelOrgId,
+        roomTypeId: h.roomTypeId,
+        dates: h.dates,
+        qty: h.qty,
+        status: 'PLACING',
+        statusChangedAt: clock.now(),
+      });
+    },
     ...h.dates.map((date) => async () => {
       const { filter, update } = applyOwned(HELD, h.id, h.qty, { capacity: { total: 'total', others: ['booked'] } });
       const res = await Night.updateOne({ ...night(date), ...filter }, update);
@@ -62,12 +97,17 @@ export function holdSteps(h, clock) {
       const already = await Night.countDocuments({ ...night(date), 'holds.ownerId': h.id });
       if (already === 0) throw Object.assign(new Error('SOLD_OUT'), { code: 'SOLD_OUT' });
     }),
-    async () => { await transition(Hold, { id: h.id, scope: { hotelOrgId: h.hotelOrgId }, from: 'PLACING', to: 'ACTIVE', clock }); },
+    async () => {
+      await transition(Hold, { id: h.id, scope: { hotelOrgId: h.hotelOrgId }, from: 'PLACING', to: 'ACTIVE', clock });
+    },
   ];
 }
 
 /** Give back every night of a hold (idempotent), then mark it FAILED. */
-export async function failHold(/** @type {Record<string, any>} */ hold, /** @type {import('../../../src/b2b/core/clock.js').Clock} */ clock) {
+export async function failHold(
+  /** @type {Record<string, any>} */ hold,
+  /** @type {import('../../../src/b2b/core/clock.js').Clock} */ clock,
+) {
   for (const date of hold.dates) {
     const { filter, update } = undoOwned(HELD, hold._id);
     await Night.updateOne({ hotelOrgId: hold.hotelOrgId, roomTypeId: hold.roomTypeId, date, ...filter }, update);
@@ -76,7 +116,10 @@ export async function failHold(/** @type {Record<string, any>} */ hold, /** @typ
 }
 
 /** Full hold attempt: run the steps; on SOLD_OUT give back what was taken. */
-export async function placeHold(/** @type {Parameters<typeof holdSteps>[0]} */ h, /** @type {import('../../../src/b2b/core/clock.js').Clock} */ clock) {
+export async function placeHold(
+  /** @type {Parameters<typeof holdSteps>[0]} */ h,
+  /** @type {import('../../../src/b2b/core/clock.js').Clock} */ clock,
+) {
   try {
     for (const step of holdSteps(h, clock)) await step();
     return 'ACTIVE';
@@ -91,12 +134,23 @@ export async function placeHold(/** @type {Parameters<typeof holdSteps>[0]} */ h
 /** @param {{ id: string, hotelOrgId: string, roomTypeId: string, dates: string[] }} h @param {string} bookingId @param {import('../../../src/b2b/core/clock.js').Clock} clock */
 export function confirmSteps(h, bookingId, clock) {
   return [
-    async () => { await transition(Hold, { id: h.id, scope: { hotelOrgId: h.hotelOrgId }, from: 'ACTIVE', to: 'CONFIRMING', set: { bookingId }, clock }); },
+    async () => {
+      await transition(Hold, {
+        id: h.id,
+        scope: { hotelOrgId: h.hotelOrgId },
+        from: 'ACTIVE',
+        to: 'CONFIRMING',
+        set: { bookingId },
+        clock,
+      });
+    },
     ...h.dates.map((date) => async () => {
       const { filter, update } = transferOwned(HELD, BOOKED, h.id, bookingId);
       await Night.updateOne({ hotelOrgId: h.hotelOrgId, roomTypeId: h.roomTypeId, date, ...filter }, update);
     }),
-    async () => { await transition(Hold, { id: h.id, scope: { hotelOrgId: h.hotelOrgId }, from: 'CONFIRMING', to: 'CONFIRMED', clock }); },
+    async () => {
+      await transition(Hold, { id: h.id, scope: { hotelOrgId: h.hotelOrgId }, from: 'CONFIRMING', to: 'CONFIRMED', clock });
+    },
   ];
 }
 
@@ -104,11 +158,17 @@ export function confirmSteps(h, bookingId, clock) {
 export function sampleReconciler() {
   const reconciler = createReconciler();
   reconciler.register({
-    name: 'probe-hold-placing', model: Hold, stuckStatus: 'PLACING', olderThanMs: 30_000,
+    name: 'probe-hold-placing',
+    model: Hold,
+    stuckStatus: 'PLACING',
+    olderThanMs: 30_000,
     resume: (doc, { clock }) => failHold(doc, clock),
   });
   reconciler.register({
-    name: 'probe-hold-confirming', model: Hold, stuckStatus: 'CONFIRMING', olderThanMs: 30_000,
+    name: 'probe-hold-confirming',
+    model: Hold,
+    stuckStatus: 'CONFIRMING',
+    olderThanMs: 30_000,
     resume: async (doc, { clock }) => {
       for (const step of confirmSteps(/** @type {any} */ ({ ...doc, id: doc._id }), doc.bookingId, clock).slice(1)) await step();
     },

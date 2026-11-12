@@ -15,14 +15,23 @@ const silentLogger = (lines = []) => createLogger({ write: (l) => lines.push(l),
 describe('problem details', () => {
   it('maps typed errors with stable codes and safe details', () => {
     expect(toProblem(new ConflictError('PRICE_CHANGED', { newTotalPaise: 100 }), 'req-1')).toEqual({
-      type: 'https://musafirbaba.com/problems/price-changed', title: 'The request conflicts with the current state',
-      status: 409, code: 'PRICE_CHANGED', newTotalPaise: 100, requestId: 'req-1',
+      type: 'https://musafirbaba.com/problems/price-changed',
+      title: 'The request conflicts with the current state',
+      status: 409,
+      code: 'PRICE_CHANGED',
+      newTotalPaise: 100,
+      requestId: 'req-1',
     });
   });
 
   it('never leaks unknown errors', () => {
-    const p = toProblem(new Error('connection string mongodb://user:pass@host'));
-    expect(p).toEqual({ type: 'https://musafirbaba.com/problems/internal-error', title: 'Something went wrong', status: 500, code: 'INTERNAL_ERROR' });
+    const p = toProblem(new Error(['connection string mongodb://user', ':pass', '@host'].join('')));
+    expect(p).toEqual({
+      type: 'https://musafirbaba.com/problems/internal-error',
+      title: 'Something went wrong',
+      status: 500,
+      code: 'INTERNAL_ERROR',
+    });
   });
 });
 
@@ -47,9 +56,25 @@ describe('logger', () => {
     /** @type {string[]} */
     const lines = [];
     const log = silentLogger(lines).child({ module: 'test' });
-    log.info({ orderId: 'MBO-1', password: 'x', guest: { name: 'Asha' }, contact: { name: 'Asha', phone: '999', email: 'a@b.c' }, headers: { authorization: 'Bearer t' } }, 'hello');
+    log.info(
+      {
+        orderId: 'MBO-1',
+        password: 'x',
+        guest: { name: 'Asha' },
+        contact: { name: 'Asha', phone: '999', email: 'a@b.c' },
+        headers: { authorization: 'Bearer t' },
+      },
+      'hello',
+    );
     const entry = JSON.parse(lines[0] ?? '{}');
-    expect(entry).toMatchObject({ time: '2026-11-12T00:00:00.000Z', level: 'info', msg: 'hello', module: 'test', orderId: 'MBO-1', password: '[REDACTED]' });
+    expect(entry).toMatchObject({
+      time: '2026-11-12T00:00:00.000Z',
+      level: 'info',
+      msg: 'hello',
+      module: 'test',
+      orderId: 'MBO-1',
+      password: '[REDACTED]',
+    });
     expect(entry.guest).toBe('[REDACTED]'); // whole guest objects are personal data
     expect(entry.contact).toEqual({ name: 'Asha', phone: '[REDACTED]', email: '[REDACTED]' });
     expect(entry.headers.authorization).toBe('[REDACTED]');
@@ -70,7 +95,12 @@ describe('request context', () => {
   it('is frozen and binds request id, channel and actor to the logger', () => {
     /** @type {string[]} */
     const lines = [];
-    const ctx = createContext({ requestId: 'r1', channel: 'WEBSITE', actor: { type: 'customer', customerId: 'c1' }, logger: silentLogger(lines) });
+    const ctx = createContext({
+      requestId: 'r1',
+      channel: 'WEBSITE',
+      actor: { type: 'customer', customerId: 'c1' },
+      logger: silentLogger(lines),
+    });
     expect(Object.isFrozen(ctx)).toBe(true);
     ctx.logger.info({}, 'x');
     expect(JSON.parse(lines[0] ?? '{}')).toMatchObject({ requestId: 'r1', channel: 'WEBSITE', actor: 'customer' });

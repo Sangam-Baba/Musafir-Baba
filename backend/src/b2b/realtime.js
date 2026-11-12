@@ -35,7 +35,10 @@ async function main() {
   await connectB2BDatabase(config.MONGO_URI, 'realtime');
 
   const logger = baseLogger.child({ process: 'realtime' });
-  const origins = (config.B2B_REALTIME_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+  const origins = (config.B2B_REALTIME_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   const httpServer = http.createServer(handleRequest);
   const realtime = createRealtimeServer({ httpServer, secret: config.B2B_REALTIME_SECRET, origins, clock: systemClock, logger });
   const reader = createSignalReader({ onSignal: (s) => realtime.deliver(s), clock: systemClock, logger });

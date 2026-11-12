@@ -12,11 +12,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:b2b": "vitest run --root tests/b2b",
     "typecheck:b2b": "tsc -p src/b2b/jsconfig.json",
+    "lint:b2b": "eslint -c scripts/b2b/eslint.config.js src/b2b tests/b2b scripts/b2b && prettier --config scripts/b2b/prettier.json --check \"src/b2b/**/*.js\" \"tests/b2b/**/*.js\" \"scripts/b2b/**/*.js\"",
+    "format:b2b": "prettier --config scripts/b2b/prettier.json --write \"src/b2b/**/*.js\" \"tests/b2b/**/*.js\" \"scripts/b2b/**/*.js\"",
     "b2b:worker": "node src/b2b/worker.js",
     "b2b:realtime": "node src/b2b/realtime.js",
     "b2b:migrate": "node src/b2b/migrate.js",
     "b2b:guards": "node scripts/b2b/guards.js",
-    "b2b:progress": "node scripts/b2b/progress.js"
+    "b2b:progress": "node scripts/b2b/progress.js",
+    "b2b:gen-module": "node scripts/b2b/gen-module.js"
   },
   "keywords": [],
   "author": "",
@@ -50,9 +53,13 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.1",
     "@types/express": "5.0.6",
+    "eslint": "9.39.1",
+    "eslint-plugin-jsdoc": "50.6.17",
     "mongodb-memory-server": "10.1.4",
     "nodemon": "^3.1.14",
+    "prettier": "3.6.2",
     "socket.io-client": "4.8.1",
     "typescript": "5.9.3",
     "vitest": "3.2.7"

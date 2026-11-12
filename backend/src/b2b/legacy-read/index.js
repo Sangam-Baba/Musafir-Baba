@@ -55,8 +55,13 @@ export async function findCustomerById(id) {
   const doc = await readOne('users', { _id }, { name: 1, email: 1, phone: 1, role: 1, isActive: 1, isVerified: 1 });
   if (!doc) return null;
   return {
-    id: String(doc._id), name: str(doc.name), email: str(doc.email), phone: str(doc.phone),
-    role: str(doc.role), isActive: doc.isActive !== false, isVerified: doc.isVerified === true,
+    id: String(doc._id),
+    name: str(doc.name),
+    email: str(doc.email),
+    phone: str(doc.phone),
+    role: str(doc.role),
+    isActive: doc.isActive !== false,
+    isVerified: doc.isVerified === true,
   };
 }
 
@@ -71,8 +76,12 @@ export async function findStaffById(id) {
   if (!doc) return null;
   const permissions = Array.isArray(doc.permissions) ? doc.permissions.filter((p) => typeof p === 'string') : [];
   return {
-    id: String(doc._id), name: str(doc.name), email: str(doc.email), role: str(doc.role),
-    permissions, isActive: doc.isActive !== false,
+    id: String(doc._id),
+    name: str(doc.name),
+    email: str(doc.email),
+    role: str(doc.role),
+    permissions,
+    isActive: doc.isActive !== false,
   };
 }
 
@@ -85,7 +94,9 @@ export async function findSessionById(sessionId) {
   const doc = await readOne('sessions', { sessionId }, { sessionId: 1, userId: 1, status: 1, revoked: 1 });
   if (!doc) return null;
   return {
-    sessionId: String(doc.sessionId), userId: doc.userId ? String(doc.userId) : null,
-    status: str(doc.status), revoked: doc.revoked === true,
+    sessionId: String(doc.sessionId),
+    userId: doc.userId ? String(doc.userId) : null,
+    status: str(doc.status),
+    revoked: doc.revoked === true,
   };
 }

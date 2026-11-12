@@ -48,7 +48,9 @@ export function publishCacheEvict(prefix, deps) {
  */
 export function createSignalReader(options) {
   const retryMs = options.retryMs ?? 500;
-  let lastId = b2bMongoose.Types.ObjectId.createFromTime(Math.floor((options.clock.now().getTime() - (options.maxAgeMs ?? 120_000)) / 1000));
+  let lastId = b2bMongoose.Types.ObjectId.createFromTime(
+    Math.floor((options.clock.now().getTime() - (options.maxAgeMs ?? 120_000)) / 1000),
+  );
   let running = false;
   /** @type {import('mongodb').FindCursor<Signal> | null} */
   let cursor = null;

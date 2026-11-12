@@ -79,7 +79,11 @@ async function runRule(rule, deps) {
  */
 async function countAttempt(rule, doc, scope) {
   const updated = await rule.model
-    .findOneAndUpdate({ _id: doc._id, status: rule.stuckStatus }, { $inc: { reconcileAttempts: 1 } }, { new: true, projection: { reconcileAttempts: 1 } })
+    .findOneAndUpdate(
+      { _id: doc._id, status: rule.stuckStatus },
+      { $inc: { reconcileAttempts: 1 } },
+      { new: true, projection: { reconcileAttempts: 1 } },
+    )
     .setOptions(scope)
     .lean();
   return Number(/** @type {any} */ (updated)?.reconcileAttempts ?? 0);

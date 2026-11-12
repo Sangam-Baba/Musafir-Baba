@@ -13,7 +13,9 @@ import { startMongo } from './helpers/mongo.js';
 let mongo;
 let nowMs = Date.parse('2026-11-12T10:00:00Z');
 const clock = { now: () => new Date(nowMs) };
-const advance = (/** @type {number} */ ms) => { nowMs += ms; };
+const advance = (/** @type {number} */ ms) => {
+  nowMs += ms;
+};
 const quiet = createLogger({ write: () => {} });
 
 beforeAll(async () => {
@@ -41,7 +43,14 @@ describe('job queue', () => {
     for (let i = 0; i < 30; i += 1) await enqueue({ name: 'count', payload: { i }, clock });
     /** @type {number[]} */
     const seen = [];
-    const handlers = new Map([['count', async (/** @type {any} */ p) => { seen.push(p.i); }]]);
+    const handlers = new Map([
+      [
+        'count',
+        async (/** @type {any} */ p) => {
+          seen.push(p.i);
+        },
+      ],
+    ]);
     const r1 = createJobRunner({ handlers, workerId: 'w1', clock, logger: quiet });
     const r2 = createJobRunner({ handlers, workerId: 'w2', clock, logger: quiet });
     for (;;) {
@@ -54,7 +63,14 @@ describe('job queue', () => {
 
   it('failures retry with backoff, then go DEAD after maxAttempts', async () => {
     await enqueue({ name: 'flaky', maxAttempts: 2, clock });
-    const handlers = new Map([['flaky', async () => { throw new Error('PayU down'); }]]);
+    const handlers = new Map([
+      [
+        'flaky',
+        async () => {
+          throw new Error('PayU down');
+        },
+      ],
+    ]);
     const runner = createJobRunner({ handlers, workerId: 'w1', clock, logger: quiet });
     expect(await runner.processOne()).toBe(true);
     let job = await JobRecord.findOne({ name: 'flaky' }).lean();
@@ -98,7 +114,21 @@ describe('job queue', () => {
   it('the runner loop processes work and stops cleanly', async () => {
     await enqueue({ name: 'a', clock });
     let done = 0;
-    const runner = createJobRunner({ handlers: new Map([['a', async () => { done += 1; }]]), workerId: 'w', clock, logger: quiet, minIdleMs: 10, maxIdleMs: 20 });
+    const runner = createJobRunner({
+      handlers: new Map([
+        [
+          'a',
+          async () => {
+            done += 1;
+          },
+        ],
+      ]),
+      workerId: 'w',
+      clock,
+      logger: quiet,
+      minIdleMs: 10,
+      maxIdleMs: 20,
+    });
     runner.start();
     await new Promise((r) => setTimeout(r, 200));
     await runner.stop();
@@ -111,7 +141,14 @@ describe('scheduler', () => {
     let runs = 0;
     const make = (/** @type {string} */ id) => {
       const s = createScheduler({ workerId: id, clock, logger: quiet });
-      s.register({ name: 'reconciler', everyMs: 30_000, run: async () => { runs += 1; await new Promise((r) => setTimeout(r, 20)); } });
+      s.register({
+        name: 'reconciler',
+        everyMs: 30_000,
+        run: async () => {
+          runs += 1;
+          await new Promise((r) => setTimeout(r, 20));
+        },
+      });
       return s;
     };
     const [a, b] = [make('w1'), make('w2')];
@@ -125,10 +162,23 @@ describe('scheduler', () => {
   });
 
   it('a crashed run is taken over after its lease; errors are recorded and do not stop later runs', async () => {
-    await ScheduleRecord.create({ _id: 'invariants', everyMs: 600_000, nextRunAt: clock.now(), lockedBy: 'crashed', lockedUntil: new Date(nowMs + 600_000) });
+    await ScheduleRecord.create({
+      _id: 'invariants',
+      everyMs: 600_000,
+      nextRunAt: clock.now(),
+      lockedBy: 'crashed',
+      lockedUntil: new Date(nowMs + 600_000),
+    });
     let calls = 0;
     const s = createScheduler({ workerId: 'w1', clock, logger: quiet });
-    s.register({ name: 'invariants', everyMs: 600_000, run: async () => { calls += 1; throw new Error('check broke'); } });
+    s.register({
+      name: 'invariants',
+      everyMs: 600_000,
+      run: async () => {
+        calls += 1;
+        throw new Error('check broke');
+      },
+    });
     expect(await s.tick()).toEqual([]);
     advance(600_001);
     expect(await s.tick()).toEqual(['invariants']);

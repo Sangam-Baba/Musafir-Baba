@@ -24,15 +24,21 @@ describe('health', () => {
   });
 
   it('ok when work is keeping up', async () => {
-    await mongo.db.collection('core_schedules').insertOne({ _id: /** @type {any} */ ('reconciler'), everyMs: 30000, nextRunAt: now, lastRunAt: new Date(now.getTime() - 20_000) });
+    await mongo.db
+      .collection('core_schedules')
+      .insertOne({ _id: /** @type {any} */ ('reconciler'), everyMs: 30000, nextRunAt: now, lastRunAt: new Date(now.getTime() - 20_000) });
     expect(await checkHealth(clock)).toEqual({ status: 'ok', database: 'up', jobLagSeconds: 0, reconcilerLastRunSecondsAgo: 20 });
   });
 
   it('degraded when jobs wait too long or the reconciler stopped', async () => {
-    await mongo.db.collection('core_jobs').insertOne({ queue: 'default', name: 'x', status: 'READY', runAt: new Date(now.getTime() - 90_000), attempts: 0, maxAttempts: 5 });
+    await mongo.db
+      .collection('core_jobs')
+      .insertOne({ queue: 'default', name: 'x', status: 'READY', runAt: new Date(now.getTime() - 90_000), attempts: 0, maxAttempts: 5 });
     expect(await checkHealth(clock)).toMatchObject({ status: 'degraded', jobLagSeconds: 90 });
     await mongo.db.collection('core_jobs').deleteMany({});
-    await mongo.db.collection('core_schedules').insertOne({ _id: /** @type {any} */ ('reconciler'), everyMs: 30000, nextRunAt: now, lastRunAt: new Date(now.getTime() - 300_000) });
+    await mongo.db
+      .collection('core_schedules')
+      .insertOne({ _id: /** @type {any} */ ('reconciler'), everyMs: 30000, nextRunAt: now, lastRunAt: new Date(now.getTime() - 300_000) });
     expect(await checkHealth(clock)).toMatchObject({ status: 'degraded', reconcilerLastRunSecondsAgo: 300 });
   });
 });
@@ -54,6 +60,12 @@ describe('progress counting', () => {
     const f = parseStageFile('00', stage);
     expect(f.tasks.map((t) => t.id)).toEqual(['S00-T01', 'S00-T02', 'S00-T03', 'S00-T04', 'S00-T14b']);
     expect(countStage(f)).toEqual({ done: 2, total: 4, deferred: 1, percent: 67, status: 'IN_PROGRESS' });
+  });
+
+  it('all tasks done → AWAITING_SIGN_OFF until a human fills in Finished', () => {
+    const allDone = stage.replace('| DOING |', '| DONE |');
+    expect(countStage(parseStageFile('00', allDone)).status).toBe('AWAITING_SIGN_OFF');
+    expect(countStage(parseStageFile('00', allDone.replace('| **Finished** | — |', '| **Finished** | 2026-11-20 |'))).status).toBe('DONE');
   });
 
   it('flags deferred tasks without a DEFERRED.md row and unknown statuses', () => {

@@ -23,7 +23,7 @@ Plan decisions stay in `docs/plan/09-decisions-and-risks.md` and `docs/adr/`. Th
 | `TODO` | Not started |
 | `DOING` | Someone (or an AI session) is working on it now |
 | `REVIEW` | PR open, waiting for human review |
-| `DONE` | Committed on the stage branch with tests and guards green (merged to `main` at a quiet time — merging redeploys the backend) |
+| `DONE` | (task) Committed on the stage branch with tests and guards green (merged to `main` at a quiet time — merging redeploys the backend) |
 | `BLOCKED` | Can't continue — reason and blocker ID in Notes; also listed in `STATUS.md` → Blockers |
 | `DEFERRED` | Left out **on purpose** — must have a `DEF-…` row in `DEFERRED.md` |
 | `DROPPED` | No longer needed — reason in Notes (and an ADR if it changes the plan) |
@@ -33,7 +33,8 @@ Plan decisions stay in `docs/plan/09-decisions-and-risks.md` and `docs/adr/`. Th
 | `NOT_STARTED` | No task started |
 | `IN_PROGRESS` | At least one task started |
 | `BLOCKED` | The stage can't progress until a blocker is cleared |
-| `DONE` | Every task is `DONE`, `DEFERRED` or `DROPPED`; every Definition-of-Done box is ticked; mandatory tests green |
+| `AWAITING_SIGN_OFF` | Every task is `DONE`, `DEFERRED` or `DROPPED`, but no human has signed the stage off yet |
+| `DONE` | A human checked the Definition of Done and filled in the stage's **Finished** date (an AI never does this) |
 
 **Progress %** of a stage = `DONE ÷ (all tasks − DROPPED − DEFERRED)`. Deferred tasks are shown separately so leaving things out never looks like finishing them.
 

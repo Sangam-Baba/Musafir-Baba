@@ -33,7 +33,8 @@ Plan decisions stay in `docs/plan/09-decisions-and-risks.md` and `docs/adr/`. Th
 | `NOT_STARTED` | No task started |
 | `IN_PROGRESS` | At least one task started |
 | `BLOCKED` | The stage can't progress until a blocker is cleared |
-| `DONE` | Every task is `DONE`, `DEFERRED` or `DROPPED`; every Definition-of-Done box is ticked; mandatory tests green |
+| `AWAITING_SIGN_OFF` | Every task is `DONE`, `DEFERRED` or `DROPPED`, but no human has signed the stage off yet |
+| `DONE` | A human checked the Definition of Done and filled in the stage's **Finished** date (an AI never does this) |
 
 **Progress %** of a stage = `DONE ÷ (all tasks − DROPPED − DEFERRED)`. Deferred tasks are shown separately so leaving things out never looks like finishing them.
 

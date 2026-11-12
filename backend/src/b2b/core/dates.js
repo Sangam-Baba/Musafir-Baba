@@ -55,8 +55,7 @@ export function nightsOf(checkIn, checkOut) {
  * @param {import('./clock.js').Clock} clock @param {string} timeZone @returns {StayDate}
  */
 export function todayIn(clock, timeZone) {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' })
-    .format(clock.now());
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(clock.now());
   return toStayDate(parts);
 }
 
@@ -77,8 +76,14 @@ export function hotelDeadline(date, time, timeZone) {
 /** Offset of `timeZone` from UTC at instant `t`, in ms. @param {number} t @param {string} timeZone */
 function offsetMs(t, timeZone) {
   const f = new Intl.DateTimeFormat('en-US', {
-    timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
   /** @type {Record<string, number>} */
   const p = {};

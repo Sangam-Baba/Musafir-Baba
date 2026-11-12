@@ -51,6 +51,9 @@ jobs:
       - name: Progress files consistent
         run: npm run b2b:progress -- --check
 
+      - name: Lint + formatting (new code only)
+        run: npm run lint:b2b
+
       - name: Type check (new code only)
         run: npm run typecheck:b2b
 

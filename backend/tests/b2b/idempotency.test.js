@@ -10,7 +10,12 @@ import { startMongo } from './helpers/mongo.js';
 /** @type {Awaited<ReturnType<typeof startMongo>>} */
 let mongo;
 const clock = fixedClock(new Date('2026-11-12T10:00:00Z'));
-const base = { scope: 'customer:c1', key: '3f2b8c1e-9d4a-4f6b-8a2c-1e5d7f9b0a3c', requestHash: hashRequest({ method: 'POST', path: '/orders', body: { a: 1 } }), clock };
+const base = {
+  scope: 'customer:c1',
+  key: '3f2b8c1e-9d4a-4f6b-8a2c-1e5d7f9b0a3c',
+  requestHash: hashRequest({ method: 'POST', path: '/orders', body: { a: 1 } }),
+  clock,
+};
 
 beforeAll(async () => {
   mongo = await startMongo();
@@ -50,33 +55,52 @@ describe('withIdempotency', () => {
   it('same key, different request → IDEMPOTENCY_KEY_REUSED', async () => {
     await withIdempotency(base, async () => ({ statusCode: 201, body: {} }));
     const other = { ...base, requestHash: hashRequest({ method: 'POST', path: '/orders', body: { a: 2 } }) };
-    await expect(withIdempotency(other, async () => ({ statusCode: 201, body: {} }))).rejects.toMatchObject({ code: 'IDEMPOTENCY_KEY_REUSED', status: 422 });
+    await expect(withIdempotency(other, async () => ({ statusCode: 201, body: {} }))).rejects.toMatchObject({
+      code: 'IDEMPOTENCY_KEY_REUSED',
+      status: 422,
+    });
   });
 
   it('a failed run can be retried with the same key', async () => {
-    await expect(withIdempotency(base, async () => { throw new Error('PayU timeout'); })).rejects.toThrow('PayU timeout');
+    await expect(
+      withIdempotency(base, async () => {
+        throw new Error('PayU timeout');
+      }),
+    ).rejects.toThrow('PayU timeout');
     expect(await withIdempotency(base, async () => ({ statusCode: 201, body: { ok: 1 } }))).toMatchObject({ replayed: false });
   });
 
   it('an abandoned run (crashed process) is taken over after its lease', async () => {
     await mongo.db.collection(IDEMPOTENCY_COLLECTION).insertOne({
-      scope: base.scope, key: base.key, requestHash: base.requestHash, status: 'IN_PROGRESS',
-      leaseUntil: new Date('2026-11-12T09:59:00Z'), expiresAt: new Date('2026-11-13T10:00:00Z'),
+      scope: base.scope,
+      key: base.key,
+      requestHash: base.requestHash,
+      status: 'IN_PROGRESS',
+      leaseUntil: new Date('2026-11-12T09:59:00Z'),
+      expiresAt: new Date('2026-11-13T10:00:00Z'),
     });
-    expect(await withIdempotency(base, async () => ({ statusCode: 201, body: { recovered: true } }))).toMatchObject({ body: { recovered: true } });
+    expect(await withIdempotency(base, async () => ({ statusCode: 201, body: { recovered: true } }))).toMatchObject({
+      body: { recovered: true },
+    });
   });
 
   it('keys are per caller', async () => {
     await withIdempotency(base, async () => ({ statusCode: 201, body: { who: 'c1' } }));
-    expect(await withIdempotency({ ...base, scope: 'customer:c2' }, async () => ({ statusCode: 201, body: { who: 'c2' } }))).toMatchObject({ body: { who: 'c2' }, replayed: false });
+    expect(await withIdempotency({ ...base, scope: 'customer:c2' }, async () => ({ statusCode: 201, body: { who: 'c2' } }))).toMatchObject({
+      body: { who: 'c2' },
+      replayed: false,
+    });
   });
 });
 
 describe('helpers', () => {
   it('hashRequest ignores key order but not values', () => {
-    expect(hashRequest({ method: 'post', path: '/x', body: { a: 1, b: [1, { c: 2, d: 3 }] } }))
-      .toBe(hashRequest({ method: 'POST', path: '/x', body: { b: [1, { d: 3, c: 2 }], a: 1 } }));
-    expect(hashRequest({ method: 'POST', path: '/x', body: { a: 1 } })).not.toBe(hashRequest({ method: 'POST', path: '/x', body: { a: 2 } }));
+    expect(hashRequest({ method: 'post', path: '/x', body: { a: 1, b: [1, { c: 2, d: 3 }] } })).toBe(
+      hashRequest({ method: 'POST', path: '/x', body: { b: [1, { d: 3, c: 2 }], a: 1 } }),
+    );
+    expect(hashRequest({ method: 'POST', path: '/x', body: { a: 1 } })).not.toBe(
+      hashRequest({ method: 'POST', path: '/x', body: { a: 2 } }),
+    );
   });
 
   it('scope comes from the actor; anonymous callers cannot use idempotency', () => {

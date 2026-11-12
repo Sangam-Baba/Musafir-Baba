@@ -39,7 +39,12 @@ const outboxSchema = new b2bMongoose.Schema(
 export const OutboxEvent = defineModel('OutboxEvent', outboxSchema, OUTBOX_COLLECTION);
 
 const inboxSchema = new b2bMongoose.Schema(
-  { _id: { type: String }, consumer: { type: String, required: true }, eventId: { type: String, required: true }, processedAt: { type: Date, required: true } },
+  {
+    _id: { type: String },
+    consumer: { type: String, required: true },
+    eventId: { type: String, required: true },
+    processedAt: { type: Date, required: true },
+  },
   { versionKey: false },
 );
 export const InboxRecord = defineModel('InboxRecord', inboxSchema, INBOX_COLLECTION);
@@ -85,18 +90,30 @@ export async function relayOnce(source, bus, clock, batchSize = 100) {
     }
     const ids = events.map((e) => e.eventId);
     await source.updateOne({ _id: doc._id }, { $pull: { pendingEvents: { eventId: { $in: ids } } } }).setOptions(RELAY_SCOPE);
-    await source.updateOne({ _id: doc._id, pendingEvents: { $size: 0 } }, { $unset: { pendingEvents: '', hasPendingEvents: '' } }).setOptions(RELAY_SCOPE);
+    await source
+      .updateOne({ _id: doc._id, pendingEvents: { $size: 0 } }, { $unset: { pendingEvents: '', hasPendingEvents: '' } })
+      .setOptions(RELAY_SCOPE);
   }
   return moved;
 }
 
 /**
- * @param {DomainEvent} event @param {{ sourceCollection: string, sourceId: string }} source
- * @param {ReturnType<typeof createEventBus>} bus @param {import('../clock.js').Clock} clock
+ * @param {DomainEvent} event
+ * @param {{ sourceCollection: string, sourceId: string }} source
+ * @param {ReturnType<typeof createEventBus>} bus
+ * @param {import('../clock.js').Clock} clock
  */
 async function publish(event, source, bus, clock) {
   try {
-    await OutboxEvent.create({ _id: event.eventId, type: event.type, version: event.version, occurredAt: event.occurredAt, payload: event.payload, ...source, relayedAt: clock.now() });
+    await OutboxEvent.create({
+      _id: event.eventId,
+      type: event.type,
+      version: event.version,
+      occurredAt: event.occurredAt,
+      payload: event.payload,
+      ...source,
+      relayedAt: clock.now(),
+    });
   } catch (error) {
     if (!isDuplicate(error)) throw error;
   }
@@ -160,7 +177,9 @@ export function createEventRelay(options) {
       timer = setInterval(() => {
         if (busy) return; // previous pass still running — skip instead of piling up
         busy = true;
-        current = runAll().finally(() => { busy = false; });
+        current = runAll().finally(() => {
+          busy = false;
+        });
       }, options.intervalMs ?? 500);
     },
     async stop() {

@@ -41,7 +41,9 @@ const IdempotencyRecord = defineModel('IdempotencyRecord', schema, IDEMPOTENCY_C
  * @param {{ method: string, path: string, body?: unknown }} request
  */
 export function hashRequest(request) {
-  return createHash('sha256').update(stableStringify([request.method.toUpperCase(), request.path, request.body ?? null])).digest('hex');
+  return createHash('sha256')
+    .update(stableStringify([request.method.toUpperCase(), request.path, request.body ?? null]))
+    .digest('hex');
 }
 
 /** @param {unknown} v @returns {string} */
@@ -49,7 +51,10 @@ function stableStringify(v) {
   if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
   if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
   const o = /** @type {Record<string, unknown>} */ (v);
-  return `{${Object.keys(o).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(o[k])}`).join(',')}}`;
+  return `{${Object.keys(o)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${stableStringify(o[k])}`)
+    .join(',')}}`;
 }
 
 /**
@@ -59,12 +64,18 @@ function stableStringify(v) {
 export function idempotencyScope(ctx) {
   const a = ctx.actor;
   switch (a.type) {
-    case 'customer': return `customer:${a.customerId}`;
-    case 'member': return `org:${a.orgId}`;
-    case 'staff': return `staff:${a.staffId}`;
-    case 'system': return `system:${a.reason}`;
-    case 'anonymous': throw new AppError('IDEMPOTENCY_SCOPE_MISSING', 401, 'Sign in required');
-    default: return assertNever(a);
+    case 'customer':
+      return `customer:${a.customerId}`;
+    case 'member':
+      return `org:${a.orgId}`;
+    case 'staff':
+      return `staff:${a.staffId}`;
+    case 'system':
+      return `system:${a.reason}`;
+    case 'anonymous':
+      throw new AppError('IDEMPOTENCY_SCOPE_MISSING', 401, 'Sign in required');
+    default:
+      return assertNever(a);
   }
 }
 
@@ -100,7 +111,12 @@ async function claim({ scope, key, requestHash, clock }) {
   const lease = new Date(now.getTime() + LEASE_MS);
   try {
     const created = await IdempotencyRecord.create({
-      scope, key, requestHash, status: 'IN_PROGRESS', leaseUntil: lease, expiresAt: new Date(now.getTime() + TTL_MS),
+      scope,
+      key,
+      requestHash,
+      status: 'IN_PROGRESS',
+      leaseUntil: lease,
+      expiresAt: new Date(now.getTime() + TTL_MS),
     });
     return { id: created._id };
   } catch (error) {
@@ -108,7 +124,8 @@ async function claim({ scope, key, requestHash, clock }) {
   }
   const existing = await IdempotencyRecord.findOne({ scope, key }).lean();
   if (!existing) throw new ConflictError('IDEMPOTENCY_IN_PROGRESS'); // removed by a failed run a moment ago
-  if (existing.requestHash !== requestHash) throw new AppError('IDEMPOTENCY_KEY_REUSED', 422, 'This Idempotency-Key was used for a different request');
+  if (existing.requestHash !== requestHash)
+    throw new AppError('IDEMPOTENCY_KEY_REUSED', 422, 'This Idempotency-Key was used for a different request');
   if (existing.status === 'DONE' && existing.response) {
     return { id: existing._id, replay: { statusCode: Number(existing.response.statusCode), body: existing.response.body } };
   }

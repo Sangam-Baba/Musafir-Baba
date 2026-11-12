@@ -55,14 +55,20 @@ describe('migration runner', () => {
 
   it('a second runner cannot run while the lock is held', async () => {
     await mongo.db.collection('core_migrations').insertOne({
-      _id: /** @type {any} */ ('__lock'), lockedBy: 'other', lockedUntil: new Date('2026-11-12T10:05:00Z'),
+      _id: /** @type {any} */ ('__lock'),
+      lockedBy: 'other',
+      lockedUntil: new Date('2026-11-12T10:05:00Z'),
     });
     await expect(runMigrations([createProperties], deps)).rejects.toThrow(/holds the lock/);
   });
 
   it('creates capped collections (for rt_signals)', async () => {
     /** @type {import('../../src/b2b/core/db/migrations.js').Migration} */
-    const capped = { id: '0003-rt-probe', description: 'x', up: (ctx) => ctx.createCollection('rt_probe', { cappedSizeBytes: 1024 * 1024 }) };
+    const capped = {
+      id: '0003-rt-probe',
+      description: 'x',
+      up: (ctx) => ctx.createCollection('rt_probe', { cappedSizeBytes: 1024 * 1024 }),
+    };
     await runMigrations([capped], deps);
     const [info] = await mongo.db.listCollections({ name: 'rt_probe' }).toArray();
     expect(/** @type {any} */ (info)?.options?.capped).toBe(true);

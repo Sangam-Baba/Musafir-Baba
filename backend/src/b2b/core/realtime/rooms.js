@@ -27,12 +27,17 @@ export function isValidRoom(room) {
  */
 export function roomsForActor(actor) {
   switch (actor.type) {
-    case 'customer': return [`b2b:customer:${actor.customerId}`];
-    case 'member': return [`b2b:user:${actor.userId}`, `b2b:org:${actor.orgId}`];
-    case 'staff': return [`b2b:staff:${actor.staffId}`, 'b2b:admin:general'];
+    case 'customer':
+      return [`b2b:customer:${actor.customerId}`];
+    case 'member':
+      return [`b2b:user:${actor.userId}`, `b2b:org:${actor.orgId}`];
+    case 'staff':
+      return [`b2b:staff:${actor.staffId}`, 'b2b:admin:general'];
     case 'anonymous':
-    case 'system': return [];
-    default: return assertNever(actor);
+    case 'system':
+      return [];
+    default:
+      return assertNever(actor);
   }
 }
 

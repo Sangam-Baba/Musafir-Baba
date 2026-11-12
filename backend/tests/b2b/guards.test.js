@@ -2,21 +2,23 @@
 import { describe, expect, it } from 'vitest';
 
 import { checkB2BSource, checkExistingSource } from '../../scripts/b2b/code-rules.js';
-import { checkAppJs, checkLockfile, checkPackageJson, checkPaths } from '../../scripts/b2b/guards-lib.js';
+import { checkAppJs, checkLockfile, checkPackageJson, checkPaths, checkSecrets } from '../../scripts/b2b/guards-lib.js';
 
 describe('checkPaths — B2B branches may only change their own folders and B1–B3', () => {
   it('accepts new B2B files, docs and the approved edits', () => {
-    expect(checkPaths([
-      { status: 'A', path: 'backend/src/b2b/modules/hotel-catalog/index.js' },
-      { status: 'A', path: 'backend/tests/b2b/x.test.js' },
-      { status: 'M', path: 'docs/plan/README.md' },
-      { status: 'A', path: 'docs/adr/0001-isolated-b2b-folder.md' },
-      { status: 'M', path: 'backend/src/app.js' },
-      { status: 'M', path: 'backend/package.json' },
-      { status: 'M', path: 'backend/package-lock.json' },
-      { status: 'A', path: '.github/workflows/b2b-guards.yml' },
-      { status: 'D', path: 'planning folder/musafirbaba-b2b-plan/README.md' },
-    ])).toEqual([]);
+    expect(
+      checkPaths([
+        { status: 'A', path: 'backend/src/b2b/modules/hotel-catalog/index.js' },
+        { status: 'A', path: 'backend/tests/b2b/x.test.js' },
+        { status: 'M', path: 'docs/plan/README.md' },
+        { status: 'A', path: 'docs/adr/0001-isolated-b2b-folder.md' },
+        { status: 'M', path: 'backend/src/app.js' },
+        { status: 'M', path: 'backend/package.json' },
+        { status: 'M', path: 'backend/package-lock.json' },
+        { status: 'A', path: '.github/workflows/b2b-guards.yml' },
+        { status: 'D', path: 'planning folder/musafirbaba-b2b-plan/README.md' },
+      ]),
+    ).toEqual([]);
   });
 
   it.each([
@@ -36,7 +38,8 @@ describe('checkPaths — B2B branches may only change their own folders and B1�
 
 describe('checkAppJs — B1 may only add the mount lines', () => {
   const base = 'import express from "express";\nconst app = express();\napp.use(cors());\napp.use(express.json());\nexport default app;\n';
-  const withMount = 'import express from "express";\nimport { mountB2B } from "./b2b/mount.js";\nconst app = express();\napp.use(cors());\n\nmountB2B(app);\n\napp.use(express.json());\nexport default app;\n';
+  const withMount =
+    'import express from "express";\nimport { mountB2B } from "./b2b/mount.js";\nconst app = express();\napp.use(cors());\n\nmountB2B(app);\n\napp.use(express.json());\nexport default app;\n';
 
   it('accepts the mount lines', () => expect(checkAppJs(base, withMount)).toEqual([]));
   it('rejects any other change', () => {
@@ -47,10 +50,20 @@ describe('checkAppJs — B1 may only add the mount lines', () => {
 });
 
 describe('checkPackageJson — B2 may only add', () => {
-  const base = { name: 'backend', type: 'module', scripts: { start: 'node src/server.js' }, dependencies: { express: '^5.1.0' }, devDependencies: { nodemon: '^3' } };
+  const base = {
+    name: 'backend',
+    type: 'module',
+    scripts: { start: 'node src/server.js' },
+    dependencies: { express: '^5.1.0' },
+    devDependencies: { nodemon: '^3' },
+  };
 
   it('accepts new dev deps and b2b scripts', () => {
-    const head = { ...base, scripts: { ...base.scripts, 'test:b2b': 'vitest', 'b2b:worker': 'node x' }, devDependencies: { ...base.devDependencies, vitest: '3.2.7' } };
+    const head = {
+      ...base,
+      scripts: { ...base.scripts, 'test:b2b': 'vitest', 'b2b:worker': 'node x' },
+      devDependencies: { ...base.devDependencies, vitest: '3.2.7' },
+    };
     expect(checkPackageJson(base, head)).toEqual([]);
   });
 
@@ -59,6 +72,7 @@ describe('checkPackageJson — B2 may only add', () => {
     expect(checkPackageJson(base, { ...base, scripts: { start: 'node dist/server.js' } })).toHaveLength(1);
     expect(checkPackageJson(base, { ...base, type: 'commonjs' })).toHaveLength(1);
     expect(checkPackageJson(base, { ...base, scripts: { ...base.scripts, build: 'tsc' } })).toHaveLength(1);
+    expect(checkPackageJson(base, { ...base, scripts: { ...base.scripts, 'lint:b2b': 'eslint', 'format:b2b': 'prettier' } })).toEqual([]);
   });
 });
 
@@ -66,12 +80,20 @@ describe('checkLockfile — B3: no existing package may change', () => {
   const base = { packages: { '': { version: '1.0.0' }, 'node_modules/qs': { version: '6.13.0' } } };
 
   it('accepts pure additions and reports runtime ones', () => {
-    const head = { packages: { ...base.packages, 'node_modules/vitest': { version: '3.2.7', dev: true }, 'node_modules/pino': { version: '9.0.0' } } };
-    expect(checkLockfile(base, head)).toEqual({ problems: [], added: ['node_modules/vitest', 'node_modules/pino'], addedRuntime: ['node_modules/pino'] });
+    const head = {
+      packages: { ...base.packages, 'node_modules/vitest': { version: '3.2.7', dev: true }, 'node_modules/pino': { version: '9.0.0' } },
+    };
+    expect(checkLockfile(base, head)).toEqual({
+      problems: [],
+      added: ['node_modules/vitest', 'node_modules/pino'],
+      addedRuntime: ['node_modules/pino'],
+    });
   });
 
   it('rejects a version bump or removal', () => {
-    expect(checkLockfile(base, { packages: { '': { version: '1.0.0' }, 'node_modules/qs': { version: '6.14.0' } } }).problems).toEqual(['lockfile: node_modules/qs 6.13.0 → 6.14.0']);
+    expect(checkLockfile(base, { packages: { '': { version: '1.0.0' }, 'node_modules/qs': { version: '6.14.0' } } }).problems).toEqual([
+      'lockfile: node_modules/qs 6.13.0 → 6.14.0',
+    ]);
     expect(checkLockfile(base, { packages: { '': { version: '1.0.0' } } }).problems).toEqual(['lockfile: node_modules/qs removed']);
   });
 });
@@ -98,7 +120,9 @@ describe('code rules for src/b2b', () => {
   });
 
   it('requires // @ts-check on the first line', () => {
-    expect(checkB2BSource('a.js', "import x from './x.js';\n")).toEqual([{ file: 'a.js', line: 1, rule: 'first line must be // @ts-check' }]);
+    expect(checkB2BSource('a.js', "import x from './x.js';\n")).toEqual([
+      { file: 'a.js', line: 1, rule: 'first line must be // @ts-check' },
+    ]);
   });
 
   it('keeps legacy-read read-only', () => {
@@ -116,5 +140,25 @@ describe('existing code must not depend on B2B code', () => {
     expect(checkExistingSource('app.js', 'import { mountB2B } from "./b2b/mount.js";')).toEqual([]);
     expect(checkExistingSource('app.js', 'import { x } from "./b2b/routes/v1.js";')).toHaveLength(1);
     expect(checkExistingSource('routes/index.js', 'import { mountB2B } from "../b2b/mount.js";')).toHaveLength(1);
+  });
+});
+
+describe('checkSecrets', () => {
+  // Fake secrets are assembled at runtime so this file itself never contains a secret-shaped string.
+  const j = (/** @type {string[]} */ ...parts) => parts.join('');
+  it.each([
+    [j('MONGO_URI="mongodb+srv://admin', ':S3cretPass', '@cluster0.abc.mongodb.net/test"')],
+    [j('key: AK', 'IAABCDEFGHIJKLMNOP')],
+    [j('-----BEGIN PRIV', 'ATE KEY-----')],
+    [j('const k = "r', 'e_abcdefghijklmnopqrstuvwxyz12";')],
+    [j('JWT_ACCESS_', 'SECRET=supersecretvalue123')],
+  ])('flags secret #%#', (text) => {
+    expect(checkSecrets('x.js', text)).toHaveLength(1);
+  });
+
+  it('ignores placeholders and test-only values', () => {
+    expect(checkSecrets('x.md', 'MONGO_URI=mongodb+srv://user:password@cluster.example.mongodb.net/test')).toEqual([]);
+    expect(checkSecrets('x.js', "const SECRET = 'test-secret-that-is-at-least-32-characters-long';")).toEqual([]);
+    expect(checkSecrets('x.md', 'local dev (`mongodb+srv://…` in `backend/.env`)')).toEqual([]);
   });
 });

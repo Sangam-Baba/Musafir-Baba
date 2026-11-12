@@ -13,11 +13,22 @@ const staffId = new ObjectId();
 beforeAll(async () => {
   mongo = await startMongo();
   await mongo.db.collection('users').insertOne({
-    _id: userId, name: 'Asha', email: 'asha@example.com', phone: '9999999999',
-    password: 'hashed-secret', role: 'user', isVerified: true, isActive: true,
+    _id: userId,
+    name: 'Asha',
+    email: 'asha@example.com',
+    phone: '9999999999',
+    password: 'hashed-secret',
+    role: 'user',
+    isVerified: true,
+    isActive: true,
   });
   await mongo.db.collection('staffs').insertOne({
-    _id: staffId, name: 'Ravi', email: 'ravi@example.com', password: 'hashed', role: 'admin', permissions: ['blogs'],
+    _id: staffId,
+    name: 'Ravi',
+    email: 'ravi@example.com',
+    password: 'hashed',
+    role: 'admin',
+    permissions: ['blogs'],
   });
   await mongo.db.collection('sessions').insertOne({ sessionId: 's-1', userId, status: 'logout' });
 });
@@ -33,8 +44,13 @@ describe('legacy-read (read-only access to existing data)', () => {
   it('reads a customer without the password', async () => {
     const customer = await legacyRead.findCustomerById(userId.toHexString());
     expect(customer).toEqual({
-      id: userId.toHexString(), name: 'Asha', email: 'asha@example.com', phone: '9999999999',
-      role: 'user', isActive: true, isVerified: true,
+      id: userId.toHexString(),
+      name: 'Asha',
+      email: 'asha@example.com',
+      phone: '9999999999',
+      role: 'user',
+      isActive: true,
+      isVerified: true,
     });
     expect(JSON.stringify(customer)).not.toContain('hashed-secret');
   });
@@ -42,7 +58,10 @@ describe('legacy-read (read-only access to existing data)', () => {
   it('reads staff with permissions, and a session', async () => {
     expect(await legacyRead.findStaffById(staffId.toHexString())).toMatchObject({ role: 'admin', permissions: ['blogs'] });
     expect(await legacyRead.findSessionById('s-1')).toEqual({
-      sessionId: 's-1', userId: userId.toHexString(), status: 'logout', revoked: false,
+      sessionId: 's-1',
+      userId: userId.toHexString(),
+      status: 'logout',
+      revoked: false,
     });
   });
 

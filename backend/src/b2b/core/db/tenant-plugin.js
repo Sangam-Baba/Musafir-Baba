@@ -33,8 +33,19 @@ export function systemScope(reason, options = {}) {
 }
 
 const QUERY_OPS = [
-  'find', 'findOne', 'countDocuments', 'distinct', 'updateOne', 'updateMany', 'replaceOne',
-  'deleteOne', 'deleteMany', 'findOneAndUpdate', 'findOneAndDelete', 'findOneAndReplace', 'estimatedDocumentCount',
+  'find',
+  'findOne',
+  'countDocuments',
+  'distinct',
+  'updateOne',
+  'updateMany',
+  'replaceOne',
+  'deleteOne',
+  'deleteMany',
+  'findOneAndUpdate',
+  'findOneAndDelete',
+  'findOneAndReplace',
+  'estimatedDocumentCount',
 ];
 
 /** @param {unknown} v */
@@ -82,7 +93,9 @@ export function tenantPlugin(schema, options) {
 
   schema.pre(/** @type {any} */ (QUERY_OPS), function () {
     const query = /** @type {import('mongoose').Query<unknown, unknown> & { op?: string }} */ (/** @type {unknown} */ (this));
-    check(query.model.modelName, String(query.op), /** @type {TenantOptions} */ (query.getOptions()), () => isScoped(query.getFilter(), fields));
+    check(query.model.modelName, String(query.op), /** @type {TenantOptions} */ (query.getOptions()), () =>
+      isScoped(query.getFilter(), fields),
+    );
   });
 
   schema.pre('aggregate', function () {

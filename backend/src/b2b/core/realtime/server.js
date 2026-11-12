@@ -76,6 +76,9 @@ export function createRealtimeServer(options) {
       if (signal.room === CACHE_EVICT_ROOM) return; // for API caches, not browsers
       io.to(signal.room).emit(signal.event, signal.data);
     },
-    close: () => new Promise((resolve) => { io.close(() => resolve(undefined)); }),
+    close: () =>
+      new Promise((resolve) => {
+        io.close(() => resolve(undefined));
+      }),
   };
 }

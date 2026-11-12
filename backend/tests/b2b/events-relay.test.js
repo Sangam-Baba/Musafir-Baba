@@ -22,8 +22,20 @@ const HOTEL = 'hotel-1';
 let received = [];
 function makeBus() {
   const bus = createEventBus();
-  bus.subscribe({ consumer: 'notifications', types: ['hotel-inventory.hold.activated'], handler: async (e) => { received.push({ consumer: 'notifications', type: e.type, holdId: e.payload.holdId }); } });
-  bus.subscribe({ consumer: 'analytics', types: ['hotel-inventory.hold.activated', 'hotel-inventory.hold.failed'], handler: async (e) => { received.push({ consumer: 'analytics', type: e.type, holdId: e.payload.holdId }); } });
+  bus.subscribe({
+    consumer: 'notifications',
+    types: ['hotel-inventory.hold.activated'],
+    handler: async (e) => {
+      received.push({ consumer: 'notifications', type: e.type, holdId: e.payload.holdId });
+    },
+  });
+  bus.subscribe({
+    consumer: 'analytics',
+    types: ['hotel-inventory.hold.activated', 'hotel-inventory.hold.failed'],
+    handler: async (e) => {
+      received.push({ consumer: 'analytics', type: e.type, holdId: e.payload.holdId });
+    },
+  });
   return bus;
 }
 
@@ -35,7 +47,12 @@ beforeAll(async () => {
 afterAll(async () => mongo.stop());
 beforeEach(async () => {
   received = [];
-  await Promise.all([Hold.deleteMany({ hotelOrgId: HOTEL }), OutboxEvent.deleteMany({}), InboxRecord.deleteMany({}), JobRecord.deleteMany({})]);
+  await Promise.all([
+    Hold.deleteMany({ hotelOrgId: HOTEL }),
+    OutboxEvent.deleteMany({}),
+    InboxRecord.deleteMany({}),
+    JobRecord.deleteMany({}),
+  ]);
 });
 
 /** @param {string} id */
@@ -50,7 +67,11 @@ describe('relay', () => {
   it('moves the event to the outbox, queues one job per subscriber, clears the document', async () => {
     const event = await activateWithEvent('h1');
     expect(await relayOnce(Hold, makeBus(), clock)).toBe(1);
-    expect(await OutboxEvent.findById(event.eventId).lean()).toMatchObject({ type: 'hotel-inventory.hold.activated', sourceCollection: 'inv_probe_holds', sourceId: 'h1' });
+    expect(await OutboxEvent.findById(event.eventId).lean()).toMatchObject({
+      type: 'hotel-inventory.hold.activated',
+      sourceCollection: 'inv_probe_holds',
+      sourceId: 'h1',
+    });
     expect((await JobRecord.find({}).lean()).map((j) => j.name).sort()).toEqual(['event:analytics', 'event:notifications']);
     const doc = await Hold.findOne({ _id: 'h1', hotelOrgId: HOTEL }).lean();
     expect(doc?.hasPendingEvents).toBeUndefined();
@@ -93,7 +114,9 @@ describe('consumers', () => {
     const bus = makeBus();
     await relayOnce(Hold, bus, clock);
     const runner = createJobRunner({ handlers: consumerJobHandlers(bus, clock), workerId: 'w', clock, logger: quiet });
-    while (await runner.processOne()) { /* drain */ }
+    while (await runner.processOne()) {
+      /* drain */
+    }
     expect(received.sort((a, b) => a.consumer.localeCompare(b.consumer))).toEqual([
       { consumer: 'analytics', type: 'hotel-inventory.hold.activated', holdId: 'h4' },
       { consumer: 'notifications', type: 'hotel-inventory.hold.activated', holdId: 'h4' },
@@ -105,7 +128,9 @@ describe('consumers', () => {
     const event = await activateWithEvent('h5');
     const bus = makeBus();
     await relayOnce(Hold, bus, clock);
-    const handle = /** @type {import('../../src/b2b/core/jobs/runner.js').JobHandler} */ (consumerJobHandlers(bus, clock).get('event:notifications'));
+    const handle = /** @type {import('../../src/b2b/core/jobs/runner.js').JobHandler} */ (
+      consumerJobHandlers(bus, clock).get('event:notifications')
+    );
     await handle({ eventId: event.eventId }, /** @type {any} */ ({}));
     await handle({ eventId: event.eventId }, /** @type {any} */ ({}));
     expect(received.filter((r) => r.consumer === 'notifications')).toHaveLength(1);

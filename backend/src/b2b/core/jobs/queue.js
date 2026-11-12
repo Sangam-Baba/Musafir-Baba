@@ -44,8 +44,13 @@ export async function enqueue(input) {
   const queue = input.queue ?? 'default';
   try {
     const job = await JobRecord.create({
-      queue, name: input.name, payload: input.payload ?? {}, runAt: input.runAt ?? input.clock.now(),
-      status: 'READY', attempts: 0, maxAttempts: input.maxAttempts ?? 5,
+      queue,
+      name: input.name,
+      payload: input.payload ?? {},
+      runAt: input.runAt ?? input.clock.now(),
+      status: 'READY',
+      attempts: 0,
+      maxAttempts: input.maxAttempts ?? 5,
       ...(input.dedupeKey ? { dedupeKey: input.dedupeKey } : {}),
     });
     return { id: job._id, created: true };
@@ -63,7 +68,13 @@ export async function enqueue(input) {
 export async function claimNext({ queue, workerId, leaseMs, clock }) {
   const now = clock.now();
   const job = await JobRecord.findOneAndUpdate(
-    { queue, $or: [{ status: 'READY', runAt: { $lte: now } }, { status: 'RUNNING', lockedUntil: { $lt: now } }] },
+    {
+      queue,
+      $or: [
+        { status: 'READY', runAt: { $lte: now } },
+        { status: 'RUNNING', lockedUntil: { $lt: now } },
+      ],
+    },
     { $set: { status: 'RUNNING', lockedBy: workerId, lockedUntil: new Date(now.getTime() + leaseMs) }, $inc: { attempts: 1 } },
     { sort: { runAt: 1 }, new: true },
   ).lean();

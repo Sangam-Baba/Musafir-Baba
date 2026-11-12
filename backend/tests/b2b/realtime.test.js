@@ -56,14 +56,21 @@ async function client(auth) {
 }
 
 /** @param {import('socket.io-client').Socket} socket @param {string} event @param {number} [ms] */
-const next = (socket, event, ms = 4000) => new Promise((resolve, reject) => {
-  const t = setTimeout(() => reject(new Error(`no "${event}" within ${ms} ms`)), ms);
-  socket.once(event, (data) => { clearTimeout(t); resolve(data); });
-});
+const next = (socket, event, ms = 4000) =>
+  new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`no "${event}" within ${ms} ms`)), ms);
+    socket.once(event, (data) => {
+      clearTimeout(t);
+      resolve(data);
+    });
+  });
 
 describe('realtime delivery through MongoDB signals', () => {
   it('a signed-in member receives events for their org room', async () => {
-    const { token } = signRealtimeToken({ sub: 'u1', rooms: roomsForActor({ type: 'member', userId: 'u1', orgId: 'org1', permissions: [] }) }, { secret: SECRET, clock });
+    const { token } = signRealtimeToken(
+      { sub: 'u1', rooms: roomsForActor({ type: 'member', userId: 'u1', orgId: 'org1', permissions: [] }) },
+      { secret: SECRET, clock },
+    );
     const socket = await client({ token });
     try {
       const received = next(socket, 'notification:new');
@@ -92,7 +99,9 @@ describe('realtime delivery through MongoDB signals', () => {
     const socket = await client({ token });
     try {
       let got = 0;
-      socket.onAny(() => { got += 1; });
+      socket.onAny(() => {
+        got += 1;
+      });
       await publish('b2b:org:org1', 'notification:new', { inboxId: 'n2' }, { clock });
       await publishCacheEvict('property:MBHT-ABC123:', { clock });
       await new Promise((r) => setTimeout(r, 1500));
@@ -103,7 +112,10 @@ describe('realtime delivery through MongoDB signals', () => {
   });
 
   it('a forged or expired token is refused at the handshake', async () => {
-    const forged = signRealtimeToken({ sub: 'x', rooms: ['b2b:org:org1'] }, { secret: 'another-secret-of-at-least-32-characters!!', clock }).token;
+    const forged = signRealtimeToken(
+      { sub: 'x', rooms: ['b2b:org:org1'] },
+      { secret: 'another-secret-of-at-least-32-characters!!', clock },
+    ).token;
     await expect(client({ token: forged })).rejects.toThrow(/INVALID_TOKEN/);
   });
 });
@@ -131,7 +143,10 @@ describe('GET /api/v1/realtime/token', () => {
   it('needs a signed-in caller and returns their rooms', async () => {
     const make = (/** @type {any} */ actor) => {
       const app = express();
-      app.use('/api/v1', createB2BRouter({ connect: false, logger: quiet, env: { B2B_REALTIME_SECRET: SECRET }, authenticate: async () => actor }));
+      app.use(
+        '/api/v1',
+        createB2BRouter({ connect: false, logger: quiet, env: { B2B_REALTIME_SECRET: SECRET }, authenticate: async () => actor }),
+      );
       return startServer(app);
     };
     const anon = await make(null);

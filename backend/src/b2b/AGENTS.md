@@ -17,13 +17,14 @@ B2B_ENABLED=true npm run dev   # existing backend with /api/v1 switched on
 npm run b2b:worker             # jobs, reconciler, invariants, event relay
 npm run b2b:realtime           # Socket.IO (needs B2B_REALTIME_SECRET)
 npm run b2b:migrate            # indexes, validators, capped collections (new prefixes only)
+npm run lint:b2b               # ESLint + Prettier check (format:b2b fixes formatting)
 npm run typecheck:b2b          # JSDoc type check of src/b2b, tests/b2b, scripts/b2b
 npm run test:b2b               # unit + integration (standalone in-memory MongoDB 8.0)
 npm run b2b:guards             # zero-impact checks against origin/main
 npm run b2b:progress           # regenerate docs/progress/STATUS.md counts (-- --check in CI)
 ```
 
-Done = `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -- --check` all pass.
+Done = `lint:b2b`, `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -- --check` all pass.
 
 ## How to work
 
@@ -82,7 +83,7 @@ Done = `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -- --check` a
 - Backend: JavaScript ESM with JSDoc types and `// @ts-check` (checked by `npm run typecheck:b2b`). Frontend: TypeScript strict. No `any`, no `@ts-ignore`, no default exports, no enums (use `as const`).
 - Inject `Clock`; no `new Date()`/`Date.now()` outside it. Stay dates are `'YYYY-MM-DD'` strings; deadlines in hotel time zone.
 - Public references via `newReference('MBH')`; no sequential ids except GST invoice series (≤ 16 chars).
-- Typed errors from `@core/errors`; never swallow errors.
+- Typed errors from `core/errors.js`; never swallow errors.
 - Controllers: parse → service → map. No business logic.
 - Mongoose schemas: `strict: 'throw'`, timestamps, indexes declared; created via migrations in prod.
 - Events: `module.entity.pastVerb` + `version`; payload types in `events.js`.
@@ -90,7 +91,7 @@ Done = `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -- --check` a
 
 ## Tests
 
-- Unit for domain; property tests (fast-check) for money, GST, pricing, availability, ledger.
+- Unit for domain; randomised property checks (many generated cases in a loop) for money, GST, pricing, availability, ledger.
 - Integration on **standalone** `MongoMemoryServer` (same as production) for flows, tenant guard, inventory races; **crash-injection tests** for every multi-step flow.
 - Always test failure paths, permissions and tenant isolation. No tests that only assert mocks were called.
 
@@ -98,7 +99,7 @@ Done = `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -- --check` a
 
 - Start every session by reading `docs/progress/STATUS.md`, the current `docs/progress/stages/stage-NN.md` and the last 3 entries of `docs/progress/SESSION-LOG.md`.
 - Work on one task ID (`SNN-Txx`) at a time; set it `DOING` when you start.
-- In the same PR as the code: update the task status, then run `npm run progress`.
+- In the same PR as the code: update the task status, then run `npm run b2b:progress`.
 - Never skip something the plan asks for silently: add a `DEF-…` row to `DEFERRED.md` and mark the task `DEFERRED`.
 - End every session with a `SESSION-LOG.md` entry (goal, done, not done and why, PR, tests run, next step).
 - Never mark a stage `DONE` yourself — a human confirms it.

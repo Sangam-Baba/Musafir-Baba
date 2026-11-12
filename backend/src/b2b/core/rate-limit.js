@@ -85,7 +85,11 @@ export function rateLimit(limiter, keyOf) {
     limiter
       .consume(keyOf(req, res))
       .then((r) => {
-        res.set({ 'RateLimit-Limit': String(r.limit), 'RateLimit-Remaining': String(r.remaining), 'RateLimit-Reset': String(r.retryAfterSeconds) });
+        res.set({
+          'RateLimit-Limit': String(r.limit),
+          'RateLimit-Remaining': String(r.remaining),
+          'RateLimit-Reset': String(r.retryAfterSeconds),
+        });
         next(r.allowed ? undefined : new RateLimitError(r.retryAfterSeconds));
       })
       .catch(next);

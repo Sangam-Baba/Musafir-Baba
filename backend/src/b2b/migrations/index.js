@@ -28,12 +28,24 @@ export const MIGRATIONS = [
     up: async (ctx) => {
       await ctx.createCollection(JOBS_COLLECTION);
       await ctx.createIndex(JOBS_COLLECTION, { queue: 1, status: 1, runAt: 1 }, { name: 'claim' });
-      await ctx.createIndex(JOBS_COLLECTION, { queue: 1, dedupeKey: 1 }, {
-        name: 'dedupe_unique', unique: true, partialFilterExpression: { dedupeKey: { $exists: true } },
-      });
-      await ctx.createIndex(JOBS_COLLECTION, { finishedAt: 1 }, {
-        name: 'done_ttl', expireAfterSeconds: 7 * 24 * 60 * 60, partialFilterExpression: { status: 'DONE' },
-      });
+      await ctx.createIndex(
+        JOBS_COLLECTION,
+        { queue: 1, dedupeKey: 1 },
+        {
+          name: 'dedupe_unique',
+          unique: true,
+          partialFilterExpression: { dedupeKey: { $exists: true } },
+        },
+      );
+      await ctx.createIndex(
+        JOBS_COLLECTION,
+        { finishedAt: 1 },
+        {
+          name: 'done_ttl',
+          expireAfterSeconds: 7 * 24 * 60 * 60,
+          partialFilterExpression: { status: 'DONE' },
+        },
+      );
       await ctx.createCollection(SCHEDULES_COLLECTION);
     },
   },

@@ -21,11 +21,13 @@ export async function startServer(app) {
   return {
     get: async (path) => toResult(await fetch(base + path)),
     post: async (path, body, headers = {}) =>
-      toResult(await fetch(base + path, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', ...headers },
-        body: typeof body === 'string' ? body : JSON.stringify(body),
-      })),
+      toResult(
+        await fetch(base + path, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', ...headers },
+          body: typeof body === 'string' ? body : JSON.stringify(body),
+        }),
+      ),
     close: () => new Promise((resolve) => server.close(() => resolve())),
   };
 }

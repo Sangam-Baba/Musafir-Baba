@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T06 lint/format, S00-T18 module generator
+
+- **Goal:** finish Stage 00.
+- **Done:** S00-T06 → DONE: `npm run lint:b2b` (ESLint 9 + `eslint-plugin-jsdoc` + Prettier check; config in `scripts/b2b/`; B2B folders only), `npm run format:b2b`; CI runs lint; secret scan added to `b2b:guards` (MongoDB URIs with passwords, AWS keys, private keys, Resend keys, secrets in env-style lines); all B2B files formatted; scheduler split into smaller functions. S00-T18 → DONE: `npm run b2b:gen-module` with templates (index, permissions, events, domain, tenant model, repository, service, validators, routes, README with migration, integration test); sample `example` module generated and tested (not mounted). Progress counter now shows `AWAITING_SIGN_OFF` when all tasks are done — only a human sets a stage `DONE` (by filling in Finished).
+- **Not done / why:** git pre-commit hooks deferred (DEF-022) — they would change every developer's commit flow repo-wide.
+- **Files / PR:** `backend/scripts/b2b/{eslint.config.js,prettier.json,gen-module*.js,guards*.js,progress-lib.js}`, `backend/src/b2b/modules/example/*`, `tests/b2b/{gen-module,modules/example}.test.js`, `.github/workflows/b2b-guards.yml`, `docs/progress/*`, AGENTS template + copy; `package.json`: dev deps `eslint` 9.39.1, `@eslint/js`, `eslint-plugin-jsdoc` 50.6.17, `prettier` 3.6.2 (dev only; no existing package changed) and scripts `lint:b2b`, `format:b2b`, `b2b:gen-module`.
+- **Tests run:** `npm run test:b2b` ✅ 213/213; `lint:b2b` ✅; `tsc` ✅; `b2b:guards` ✅; `b2b:progress -- --check` ✅.
+- **Decisions / deferrals:** DEF-022 (git hooks).
+- **Next step:** owner reviews Stage 00 Definition of Done and fills in the Finished date; then Stage 01.
+
+
 ## 2026-11-12 — AI (Claude) — S00-T12, T16, T17, T19, T20, T21
 
 - **Goal:** finish Stage 00's support tasks.

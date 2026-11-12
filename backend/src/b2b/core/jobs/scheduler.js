@@ -28,6 +28,59 @@ export const ScheduleRecord = defineModel('ScheduleRecord', schema, SCHEDULES_CO
 
 /** @typedef {{ name: string, everyMs: number, run: () => Promise<void>, leaseMs?: number }} Schedule */
 
+/** @typedef {{ workerId: string, clock: import('../clock.js').Clock, logger: import('../logger.js').Logger }} SchedulerDeps */
+
+/**
+ * Claims the schedule if it is due (one findOneAndUpdate), runs it, records the outcome.
+ * @param {Schedule} s
+ * @param {SchedulerDeps} deps
+ * @returns {Promise<boolean>} true if it ran here
+ */
+async function runIfDue(s, deps) {
+  const now = deps.clock.now();
+  try {
+    await ScheduleRecord.updateOne({ _id: s.name }, { $setOnInsert: { nextRunAt: now }, $set: { everyMs: s.everyMs } }, { upsert: true });
+  } catch (error) {
+    if (/** @type {{ code?: number }} */ (error).code !== 11000) throw error; // another worker created it at the same moment
+  }
+  const claimed = await ScheduleRecord.findOneAndUpdate(
+    { _id: s.name, nextRunAt: { $lte: now }, $or: [{ lockedUntil: { $exists: false } }, { lockedUntil: { $lt: now } }] },
+    { $set: { lockedBy: deps.workerId, lockedUntil: new Date(now.getTime() + (s.leaseMs ?? Math.max(s.everyMs, 60_000))) } },
+  );
+  if (!claimed) return false;
+  const started = deps.clock.now();
+  const lastError = await runSafely(s, deps.logger);
+  const finished = deps.clock.now();
+  await ScheduleRecord.updateOne(
+    { _id: s.name, lockedBy: deps.workerId },
+    {
+      $set: {
+        lastRunAt: started,
+        lastDurationMs: finished.getTime() - started.getTime(),
+        nextRunAt: new Date(started.getTime() + s.everyMs),
+        ...(lastError ? { lastError } : {}),
+      },
+      $unset: { lockedBy: '', lockedUntil: '', ...(lastError ? {} : { lastError: '' }) },
+    },
+  );
+  return true;
+}
+
+/**
+ * @param {Schedule} s
+ * @param {import('../logger.js').Logger} logger
+ * @returns {Promise<string | undefined>} the error message, if the run failed
+ */
+async function runSafely(s, logger) {
+  try {
+    await s.run();
+    return undefined;
+  } catch (error) {
+    logger.error({ schedule: s.name, err: error }, 'scheduled run failed');
+    return (error instanceof Error ? error.message : String(error)).slice(0, 1000);
+  }
+}
+
 /**
  * @param {{ workerId: string, clock: import('../clock.js').Clock, logger: import('../logger.js').Logger, tickMs?: number }} options
  */
@@ -40,45 +93,12 @@ export function createScheduler(options) {
   let current = Promise.resolve();
   let busy = false;
 
-  /** @param {Schedule} s */
-  async function runIfDue(s) {
-    const now = options.clock.now();
-    try {
-      await ScheduleRecord.updateOne({ _id: s.name }, { $setOnInsert: { nextRunAt: now }, $set: { everyMs: s.everyMs } }, { upsert: true });
-    } catch (error) {
-      if (/** @type {{ code?: number }} */ (error).code !== 11000) throw error; // another worker created it at the same moment
-    }
-    const claimed = await ScheduleRecord.findOneAndUpdate(
-      { _id: s.name, nextRunAt: { $lte: now }, $or: [{ lockedUntil: { $exists: false } }, { lockedUntil: { $lt: now } }] },
-      { $set: { lockedBy: options.workerId, lockedUntil: new Date(now.getTime() + (s.leaseMs ?? Math.max(s.everyMs, 60_000))) } },
-    );
-    if (!claimed) return false;
-    const started = options.clock.now();
-    /** @type {string | undefined} */
-    let lastError;
-    try {
-      await s.run();
-    } catch (error) {
-      lastError = (error instanceof Error ? error.message : String(error)).slice(0, 1000);
-      options.logger.error({ schedule: s.name, err: error }, 'scheduled run failed');
-    }
-    const finished = options.clock.now();
-    await ScheduleRecord.updateOne(
-      { _id: s.name, lockedBy: options.workerId },
-      {
-        $set: { lastRunAt: started, lastDurationMs: finished.getTime() - started.getTime(), nextRunAt: new Date(started.getTime() + s.everyMs), ...(lastError ? { lastError } : {}) },
-        $unset: { lockedBy: '', lockedUntil: '', ...(lastError ? {} : { lastError: '' }) },
-      },
-    );
-    return true;
-  }
-
   /** @returns {Promise<string[]>} names that ran in this tick */
   async function tick() {
     const ran = [];
     for (const s of schedules.values()) {
       try {
-        if (await runIfDue(s)) ran.push(s.name);
+        if (await runIfDue(s, options)) ran.push(s.name);
       } catch (error) {
         options.logger.error({ schedule: s.name, err: error }, 'scheduler tick failed');
       }
@@ -99,7 +119,11 @@ export function createScheduler(options) {
       timer = setInterval(() => {
         if (busy) return; // previous tick still running — skip instead of piling up
         busy = true;
-        current = tick().then(() => undefined).finally(() => { busy = false; });
+        current = tick()
+          .then(() => undefined)
+          .finally(() => {
+            busy = false;
+          });
       }, options.tickMs ?? 1000);
     },
     async stop() {

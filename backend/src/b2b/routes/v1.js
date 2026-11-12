@@ -37,7 +37,9 @@ export function createB2BRouter(options = {}) {
   router.use(requestTimeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS));
   router.use(requestId);
   router.use(express.json({ limit: BODY_LIMIT }));
-  router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, ...(options.authenticate ? { authenticate: options.authenticate } : {}) }));
+  router.use(
+    contextMiddleware({ channel: 'WEBSITE', logger: log, ...(options.authenticate ? { authenticate: options.authenticate } : {}) }),
+  );
 
   router.get('/health', publicRoute(), (_req, res, next) => {
     checkHealth(contextOf(res).clock)

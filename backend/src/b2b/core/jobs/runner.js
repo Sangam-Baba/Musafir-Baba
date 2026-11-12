@@ -55,7 +55,10 @@ export function createJobRunner(options) {
       }
       await new Promise((resolve) => {
         const t = setTimeout(resolve, idle);
-        wake = () => { clearTimeout(t); resolve(undefined); };
+        wake = () => {
+          clearTimeout(t);
+          resolve(undefined);
+        };
       });
       idle = Math.min(idle * 2, maxIdle);
     }
