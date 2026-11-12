@@ -1,8 +1,10 @@
 // @ts-check
 /**
  * All B2B migrations, in run order. Each module adds its own here as it is built
- * (e.g. `0003-htl-properties`). Ids are never renamed or reused.
+ * (e.g. `0004-htl-properties`). Modules that store events also add a
+ * partial index `{ hasPendingEvents: 1 }` (where hasPendingEvents exists) for the relay. Ids are never renamed or reused.
  */
+import { INBOX_COLLECTION, OUTBOX_COLLECTION } from '../core/db/events-relay.js';
 import { IDEMPOTENCY_COLLECTION } from '../core/db/idempotency.js';
 import { JOBS_COLLECTION } from '../core/jobs/queue.js';
 import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
@@ -31,6 +33,18 @@ export const MIGRATIONS = [
         name: 'done_ttl', expireAfterSeconds: 7 * 24 * 60 * 60, partialFilterExpression: { status: 'DONE' },
       });
       await ctx.createCollection(SCHEDULES_COLLECTION);
+    },
+  },
+  {
+    id: '0003-core-outbox-inbox',
+    description: 'Relayed events (outbox) and processed-event records per consumer (inbox), kept 90 days',
+    up: async (ctx) => {
+      const ninetyDays = 90 * 24 * 60 * 60;
+      await ctx.createCollection(OUTBOX_COLLECTION);
+      await ctx.createIndex(OUTBOX_COLLECTION, { type: 1, occurredAt: 1 }, { name: 'type_time' });
+      await ctx.createIndex(OUTBOX_COLLECTION, { relayedAt: 1 }, { name: 'relayed_ttl', expireAfterSeconds: ninetyDays });
+      await ctx.createCollection(INBOX_COLLECTION);
+      await ctx.createIndex(INBOX_COLLECTION, { processedAt: 1 }, { name: 'processed_ttl', expireAfterSeconds: ninetyDays });
     },
   },
 ];

@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T11 event relay
+
+- **Goal:** deliver stored events (booking confirmed, KYC approved …) to their consumers exactly once, without transactions.
+- **Done:** S00-T11 → DONE. `core/db/events-relay.js`: `relayOnce` (event → `core_outbox` with `_id = eventId` → `enqueue` per consumer with `dedupeKey` → `$pull` from the document → clear the flag only if no new event arrived), `createEventBus` (`subscribe`), `consumerJobHandlers` (`core_inbox` dedupe), `createEventRelay` (500 ms loop, skips overlapping passes). Worker runs it; registry `background.js` gains `eventBus` and `eventSources`. Scheduler also skips overlapping ticks. Routine background reads (`systemScope(reason, { routine: true })`) log at debug. Migration `0003-core-outbox-inbox` (90-day TTL).
+- **Not done / why:** —
+- **Files / PR:** `backend/src/b2b/core/db/events-relay.js`, `tenant-plugin.js`, `model.js`, `jobs/{reconciler,scheduler}.js`, `background.js`, `worker.js`, `migrations/index.js`, `tests/b2b/events-relay.test.js`.
+- **Tests run:** `npm run test:b2b` ✅ 183/183 (repeat relay / crash before clearing → no duplicates; 3 relays at once → each event once; late event not lost; end-to-end state change → relay → jobs → each handler once; job run twice → handler once); `tsc` ✅; guards ✅; migration `0003` applied on dev; live worker start/stop ✅.
+- **Decisions / deferrals:** —
+- **Next step:** S00-T14b — rate limiter (MongoDB store) + in-process cache.
+
+
 ## 2026-11-12 — AI (Claude) — S00-T03 job queue + scheduler, S00-T14 worker wiring
 
 - **Goal:** background work on MongoDB (no Redis) that is safe with several worker containers.

@@ -11,7 +11,7 @@
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 00 — Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) |
-| **Current task(s)** | S00-T11 — events relay (pendingEvents → outbox → jobs) (next) |
+| **Current task(s)** | S00-T14b — rate limiter + in-process cache (next) |
 | **Next up** | S00-T02 `backend/src/b2b/` skeleton + flagged mount · S00-T04 zero-impact guards · S00-T03 MongoDB job queue + scheduler (D22: no Redis) |
 | **Blockers** | B1 — owner checks O1–O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | CA engaged before Stage 05 (Q1–Q7) |
@@ -21,7 +21,7 @@
 <!-- progress:start -->
 | # | Stage | Phase | Status | Done / Total | Deferred | Progress | Started | Finished | Details |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | IN_PROGRESS | 11 / 22 | 0 | 50 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
+| 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | IN_PROGRESS | 12 / 22 | 0 | 55 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
 | 01 | Organisations, users, roles & permissions | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 11 of 22 tasks done (50 %) · deferred on purpose: 0 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 12 of 22 tasks done (55 %) · deferred on purpose: 0 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

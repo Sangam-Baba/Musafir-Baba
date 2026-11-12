@@ -38,6 +38,7 @@ export function createScheduler(options) {
   let timer = null;
   /** @type {Promise<void>} */
   let current = Promise.resolve();
+  let busy = false;
 
   /** @param {Schedule} s */
   async function runIfDue(s) {
@@ -95,7 +96,11 @@ export function createScheduler(options) {
     tick,
     start() {
       if (timer) return;
-      timer = setInterval(() => { current = current.then(() => tick().then(() => undefined)); }, options.tickMs ?? 1000);
+      timer = setInterval(() => {
+        if (busy) return; // previous tick still running — skip instead of piling up
+        busy = true;
+        current = tick().then(() => undefined).finally(() => { busy = false; });
+      }, options.tickMs ?? 1000);
     },
     async stop() {
       if (timer) clearInterval(timer);

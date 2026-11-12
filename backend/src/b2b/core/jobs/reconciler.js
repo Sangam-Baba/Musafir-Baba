@@ -48,7 +48,7 @@ export function createReconciler() {
  */
 async function runRule(rule, deps) {
   const cutoff = new Date(deps.clock.now().getTime() - rule.olderThanMs);
-  const scope = systemScope(`reconciler:${rule.name}`);
+  const scope = systemScope(`reconciler:${rule.name}`, { routine: true });
   const stuck = await rule.model
     .find({ status: rule.stuckStatus, statusChangedAt: { $lt: cutoff } })
     .setOptions(scope)

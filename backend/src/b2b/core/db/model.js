@@ -37,7 +37,7 @@ export function defineModel(name, schema, collection) {
 export function defineTenantModel(name, schema, collection, ownershipFields) {
   schema.plugin(tenantPlugin, {
     fields: ownershipFields,
-    onSystemAccess: (info) => logger.info(info, 'tenant guard: system access'),
+    onSystemAccess: (info) => (info.routine ? logger.debug : logger.info)(info, 'tenant guard: system access'),
   });
   return defineModel(name, schema, collection);
 }

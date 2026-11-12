@@ -5,13 +5,14 @@
  * must be scoped by one of the model's ownership fields (e.g. `orgId`, or for multi-party
  * documents `clientOrgId` / `customerId` / `hotelOrgId`) — otherwise it THROWS.
  * Cross-org work (booking engine, ledger, jobs) must opt out explicitly with a reason:
- *   Model.find(filter).setOptions(systemScope('hold-sweeper'))     — logged every time.
+ *   Model.find(filter).setOptions(systemScope('hold-sweeper'))     — logged every time
+ *   (routine background polling: systemScope('event-relay', { routine: true }) — logged at debug level).
  * New documents must carry at least one ownership field.
  */
 import { AppError } from '../errors.js';
 
-/** @typedef {{ tenantScope?: 'SYSTEM', tenantReason?: string }} TenantOptions */
-/** @typedef {{ fields: readonly string[], onSystemAccess?: (info: { model: string, op: string, reason: string }) => void }} TenantPluginOptions */
+/** @typedef {{ tenantScope?: 'SYSTEM', tenantReason?: string, tenantRoutine?: boolean }} TenantOptions */
+/** @typedef {{ fields: readonly string[], onSystemAccess?: (info: { model: string, op: string, reason: string, routine: boolean }) => void }} TenantPluginOptions */
 
 export class TenantScopeError extends AppError {
   /** @param {string} model @param {string} op */
@@ -21,10 +22,14 @@ export class TenantScopeError extends AppError {
   }
 }
 
-/** @param {string} reason @returns {TenantOptions} */
-export function systemScope(reason) {
+/**
+ * @param {string} reason
+ * @param {{ routine?: boolean }} [options] routine = frequent background polling (logged at debug)
+ * @returns {TenantOptions}
+ */
+export function systemScope(reason, options = {}) {
   if (!reason || !reason.trim()) throw new Error('[b2b] systemScope needs a reason');
-  return { tenantScope: 'SYSTEM', tenantReason: reason };
+  return { tenantScope: 'SYSTEM', tenantReason: reason, ...(options.routine ? { tenantRoutine: true } : {}) };
 }
 
 const QUERY_OPS = [
@@ -69,7 +74,7 @@ export function tenantPlugin(schema, options) {
   /** @param {string} model @param {string} op @param {TenantOptions} opts @param {() => boolean} scoped */
   const check = (model, op, opts, scoped) => {
     if (opts.tenantScope === 'SYSTEM' && opts.tenantReason) {
-      onSystemAccess?.({ model, op, reason: opts.tenantReason });
+      onSystemAccess?.({ model, op, reason: opts.tenantReason, routine: opts.tenantRoutine === true });
       return;
     }
     if (op === 'estimatedDocumentCount' || !scoped()) throw new TenantScopeError(model, op);
