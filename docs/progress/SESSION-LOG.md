@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T09 tenant guard, S00-T10 idempotency
+
+- **Goal:** no org can reach another org's data; repeated requests never run twice.
+- **Done:** S00-T09 → DONE: `tenantPlugin` / `defineTenantModel` — every query/update/delete/count/distinct/aggregate/bulkWrite on a tenant model must be scoped by an ownership field (concrete value, `$eq`, non-empty `$in`, `$and`, or `$or` with all branches scoped); `estimatedDocumentCount` always refused; new documents need an owner (create, insertMany, bulkWrite insert); cross-org work via `systemScope(reason)`, logged. S00-T10 → DONE: `withIdempotency` (claim → run → store response; replay; 422 `IDEMPOTENCY_KEY_REUSED`; 409 `IDEMPOTENCY_IN_PROGRESS`; lease takeover after a crash; record removed on failure so retries work), `hashRequest` (key-order independent), `idempotencyScope` per actor; migration `0001-core-idempotency-keys`.
+- **Not done / why:** —
+- **Files / PR:** `backend/src/b2b/core/db/{tenant-plugin,idempotency,model}.js`, `migrations/index.js`, tests.
+- **Tests run:** `npm run test:b2b` ✅ 148/148 (incl. 15 unscoped-access attempts, 10 parallel double-clicks → 1 run); `tsc` ✅; `npm run b2b:guards` ✅; `npm run b2b:migrate` on dev ✅ (applied once, second run no-op).
+- **Decisions / deferrals:** verified Mongoose 8.17.1 supports `bulkWrite` middleware and custom query options.
+- **Next step:** S00-T08 — consistency kit (`transition()`, owned counters, reconciler registry).
+
+
 ## 2026-11-12 — AI (Claude) — S00-T13 HTTP layer
 
 - **Goal:** safe request handling for every /api/v1 route.

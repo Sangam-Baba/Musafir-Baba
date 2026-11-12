@@ -6,7 +6,9 @@
  * - Applies safe schema defaults: strict writes, strict queries, no auto-indexing.
  */
 import { b2bMongoose } from './connection.js';
+import { logger } from '../logger.js';
 import { assertAllowedCollection } from './prefixes.js';
+import { tenantPlugin } from './tenant-plugin.js';
 
 /**
  * @template {import('mongoose').Schema} S
@@ -21,6 +23,23 @@ export function defineModel(name, schema, collection) {
   schema.set('autoIndex', false);
   schema.set('autoCreate', false);
   return b2bMongoose.model(name, schema, collection);
+}
+
+/**
+ * Like defineModel, for data owned by an organisation / customer: adds the tenant guard
+ * (every query must be scoped by one of `ownershipFields`; system access is logged).
+ * @template {import('mongoose').Schema} S
+ * @param {string} name
+ * @param {S} schema
+ * @param {string} collection
+ * @param {readonly string[]} ownershipFields e.g. ['orgId'] or ['clientOrgId', 'customerId', 'hotelOrgId']
+ */
+export function defineTenantModel(name, schema, collection, ownershipFields) {
+  schema.plugin(tenantPlugin, {
+    fields: ownershipFields,
+    onSystemAccess: (info) => logger.info(info, 'tenant guard: system access'),
+  });
+  return defineModel(name, schema, collection);
 }
 
 /**
