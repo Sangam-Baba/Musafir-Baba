@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T13 HTTP layer
+
+- **Goal:** safe request handling for every /api/v1 route.
+- **Done:** S00-T13 → DONE. `core/http/validate.js` (forbidden keys `$…`, `a.b`, `__proto__`/`constructor`/`prototype` refused at any depth before zod; parsed input on `res.locals.input`), `context-middleware.js` (RequestContext per request, pluggable `authenticate`, anonymous until Stage 01), `permissions.js` (`publicRoute`, `requireCustomer`, `requirePermission` → 401/403), `protection.js` (API security headers, 15 s request timeout, UUID `Idempotency-Key` reader). Wired into `/api/v1`.
+- **Not done / why:** real authenticators (business login, existing token verification, API keys) — Stage 01/14 as planned.
+- **Files / PR:** `backend/src/b2b/core/http/*`, `routes/v1.js`, `tests/b2b/http-layer.test.js`, test helper `post()`.
+- **Tests run:** `npm run test:b2b` ✅ 118/118 (incl. 5 injection payloads over HTTP); `tsc` ✅; `npm run b2b:guards` ✅.
+- **Decisions / deferrals:** own security headers instead of `helmet` (no new runtime package).
+- **Next step:** S00-T09 tenant plugin and S00-T10 idempotency helper.
+
+
 ## 2026-11-12 — AI (Claude) — S00-T07 core kernel
 
 - **Goal:** shared building blocks for all B2B modules.

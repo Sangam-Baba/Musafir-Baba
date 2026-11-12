@@ -7,7 +7,10 @@
 
 /**
  * @param {import('express').Express} app
- * @returns {Promise<{ get: (path: string) => Promise<{ status: number, body: any }>, close: () => Promise<void> }>}
+ * @returns {Promise<{
+ *   get: (path: string) => Promise<{ status: number, body: any, headers: Headers }>,
+ *   post: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
+ *   close: () => Promise<void> }>}
  */
 export async function startServer(app) {
   const server = await new Promise((resolve) => {
@@ -16,13 +19,21 @@ export async function startServer(app) {
   const address = /** @type {import('node:net').AddressInfo} */ (server.address());
   const base = `http://127.0.0.1:${address.port}`;
   return {
-    get: async (path) => {
-      const res = await fetch(base + path);
-      const text = await res.text();
-      return { status: res.status, body: text ? safeJson(text) : null };
-    },
+    get: async (path) => toResult(await fetch(base + path)),
+    post: async (path, body, headers = {}) =>
+      toResult(await fetch(base + path, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...headers },
+        body: typeof body === 'string' ? body : JSON.stringify(body),
+      })),
     close: () => new Promise((resolve) => server.close(() => resolve())),
   };
+}
+
+/** @param {Response} res */
+async function toResult(res) {
+  const text = await res.text();
+  return { status: res.status, body: text ? safeJson(text) : null, headers: res.headers };
 }
 
 /** @param {string} text */

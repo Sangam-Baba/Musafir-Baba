@@ -9,14 +9,19 @@ import express from 'express';
 import { loadConfig } from '../core/config.js';
 import { connectB2BDatabase, databaseState } from '../core/db/connection.js';
 import { assertRegisteredModelsAllowed } from '../core/db/model.js';
+import { contextMiddleware } from '../core/http/context-middleware.js';
+import { publicRoute } from '../core/http/permissions.js';
 import { notFoundHandler, problemHandler } from '../core/http/problem.js';
+import { requestTimeout, securityHeaders } from '../core/http/protection.js';
 import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
 
 const BODY_LIMIT = '1mb';
+const REQUEST_TIMEOUT_MS = 15_000;
 
 /**
- * @param {{ env?: NodeJS.ProcessEnv, connect?: boolean, logger?: import('../core/logger.js').Logger }} [options]
+ * @param {{ env?: NodeJS.ProcessEnv, connect?: boolean, logger?: import('../core/logger.js').Logger,
+ *   authenticate?: import('../core/http/context-middleware.js').Authenticator, timeoutMs?: number }} [options]
  * @returns {import('express').Router}
  */
 export function createB2BRouter(options = {}) {
@@ -26,14 +31,17 @@ export function createB2BRouter(options = {}) {
   if (options.connect !== false) startDatabase(env, log);
 
   const router = express.Router();
+  router.use(securityHeaders());
+  router.use(requestTimeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS));
   router.use(requestId);
   router.use(express.json({ limit: BODY_LIMIT }));
+  router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, ...(options.authenticate ? { authenticate: options.authenticate } : {}) }));
 
-  router.get('/health', (_req, res) => {
+  router.get('/health', publicRoute(), (_req, res) => {
     res.json({ status: 'ok', database: databaseState() });
   });
 
-  router.get('/meta/version', (_req, res) => {
+  router.get('/meta/version', publicRoute(), (_req, res) => {
     res.json({ name: 'musafirbaba-b2b', version: process.env.B2B_VERSION ?? 'dev' });
   });
 

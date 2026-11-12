@@ -28,7 +28,7 @@
 | S00-T10 | Idempotency helper (`core_idempotency_keys`) | §3.3 | TODO | | | | |
 | S00-T11 | Outbox + inbox: relay from `pendingEvents` → `core_outbox` → `core_jobs` | §3.4 | TODO | | | | |
 | S00-T12 | Progress tracking: copy `docs/plan/templates/progress/` → `docs/progress/`; build `npm run progress` (+ `--check` in CI) | §3.10 | TODO | | | | |
-| S00-T13 | HTTP layer: request id, context builder, `requirePermission`, zod `validate()` with `$`/`.` key rejection, error middleware, helmet, body limits | §3.3 | TODO | | | | No global `sanitizeFilter` |
+| S00-T13 | HTTP layer: request id, context builder, `requirePermission`, zod `validate()` with `$`/`.` key rejection, error middleware, helmet, body limits | §3.3 | DONE | AI (Claude) | | 118 ✅ | `validate()` (zod + forbidden `$`/`.`/prototype keys at any depth → `res.locals.input`), `contextMiddleware` (pluggable authenticator, anonymous until Stage 01), `requirePermission`/`requireCustomer`/`publicRoute`, own security headers + 15 s request timeout (no `helmet`), `readIdempotencyKey`. No global `sanitizeFilter` |
 | S00-T14 | Rate limiter (Mongo store) + in-process cache with `cache:evict` | §3.5 | TODO | | | | |
 | S00-T15 | Self-hosted realtime: realtime container `node src/b2b/realtime.js` (Socket.IO tailing capped `rt_signals`), `/api/v1/realtime/token`, `realtime.publish()`, new Cloudflare hostname | §3.5 | TODO | | | | No third-party service; don't touch existing Ably/Expo code |
 | S00-T16 | Test harness: Vitest + **standalone** `MongoMemoryServer` + supertest + fast-check + factories + fixed clock + crash-injection helper | §3.6 | TODO | | | | |
