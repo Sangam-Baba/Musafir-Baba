@@ -101,7 +101,8 @@ Business users (B2B clients, hotels) get the **new** login system (Stage 01), no
 | --- | --- |
 | Backend container | `musafirbaba-backend` on the 3mongoose server, plus `musafirbaba-mongo` |
 | Tunnel | `cloudflared` (systemd) on the server |
-| `BACKEND_URL` in `backend/.env` | points to an `onrender.com` host — **🟡 OWNER CHECK:** which backend actually serves production traffic today (the server container or Render)? The new containers must run next to the database the live site uses |
+| Production deploy | `.github/workflows/deploy-musafirbabaserver.yml`: on every push to `main` that changes `backend/**`, the self-hosted runner `musafirbabaserver` resets `~/server/docker/musafirbaba-backend` to `origin/main` and runs `docker compose up -d --build`. **So merging B2B work into `main` redeploys the backend** — safe while `B2B_ENABLED` is unset (the B2B code stays switched off). Not changed by B2B work |
+| `BACKEND_URL` in `backend/.env` | points to an `onrender.com` host (local file). Production is the server container above (O3 answered); confirm Render is no longer serving traffic |
 | Frontend hosting | **🟡 OWNER CHECK:** Vercel? (the runbook says Vercel/Render are not touched) — needed to add the `NEXT_PUBLIC_*` variables for E4 |
 | Host capacity | **🟡 OWNER CHECK:** the `free -h; nproc; df -h` output from §2 — two new containers (worker, realtime) need roughly 0.5 GB RAM in total at pilot scale |
 
@@ -117,6 +118,6 @@ Business users (B2B clients, hotels) get the **new** login system (Stage 01), no
 | --- | --- | --- |
 | O1 | Production DB: standalone, no prefix clash, no `hotels`/`business` CMS slugs, connections, host capacity | Stage 00 DoD |
 | O2 | PayU dashboard: merchant webhook URL (record only) | Stage 07 |
-| O3 | Which backend serves production (server vs Render) | Deploying the new containers |
+| O3 | ~~Which backend serves production~~ — the server container, deployed from `main` (see §7); just confirm Render is idle | — |
 | O4 | Frontend hosting and how env vars are set | Edit E4 |
 | O5 | Which customer bookings page is live: `(user)/bookings` or `user/bookings` | Edit E2 |

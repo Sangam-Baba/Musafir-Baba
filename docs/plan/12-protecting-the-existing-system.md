@@ -84,6 +84,8 @@ Anything not on this list needs a new row here, approved by the owner, before co
 
 ## 6. Guardrails that make this enforceable (Stage 00)
 
+**Implemented (S00-T05):** `npm run b2b:guards` in `backend/` (scripts in `backend/scripts/b2b/`, no extra packages) checks items 1–4 below against `origin/main`; `.github/workflows/b2b-guards.yml` runs it plus type check and tests on every `b2b/*` branch and PR — on GitHub-hosted machines only, never the production runner, with read-only permissions. Run it locally before every commit.
+
 1. **Lockfile guard in CI**: fails if any package already in `backend/package-lock.json` changes version or disappears; only additions are allowed.
 2. **Protected-paths check in CI.** A PR fails if it changes anything in `backend/` outside `backend/src/b2b/**` and `backend/tests/b2b/**`, or anything in `mobile/`, `mobile_user/` or existing frontend files, **except** the approved edits B1–B5 and E1–E4 — and those need the label `touches-existing` plus owner approval.
 3. **Start-up and migration guards**: D1–D3 above (prefix guard, read-only legacy access, own Mongoose instance with `autoIndex`/`autoCreate` off).

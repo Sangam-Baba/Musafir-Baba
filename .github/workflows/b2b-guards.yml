@@ -1,0 +1,55 @@
+name: B2B guards
+
+# Checks B2B + hotel work (branches named b2b/...) so it can never change existing
+# working code: zero-impact guards, type check, tests. See
+# docs/plan/12-protecting-the-existing-system.md §6.
+#
+# - Runs ONLY for b2b/* branches — other work is never affected.
+# - Runs on GitHub-hosted machines, NEVER on the production self-hosted runner
+#   (musafirbabaserver). It deploys nothing and has read-only permissions.
+# - Independent of deploy-musafirbabaserver.yml, which is not changed.
+
+on:
+  push:
+    branches: ['b2b/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: b2b-guards-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guards:
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'b2b/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install (exactly as locked)
+        run: npm ci
+
+      - name: Zero-impact guards (paths, app.js, package.json, lockfile, code rules)
+        env:
+          B2B_GUARD_BASE: origin/${{ github.base_ref || 'main' }}
+        run: npm run b2b:guards
+
+      - name: Type check (new code only)
+        run: npm run typecheck:b2b
+
+      - name: Tests (new code, real app.js isolation, in-memory MongoDB)
+        run: npm run test:b2b

@@ -11,7 +11,7 @@
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 00 — Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) |
-| **Current task(s)** | S00-T05 — protected-paths + lockfile CI checks, lint bans (next) |
+| **Current task(s)** | S00-T07 — core kernel: money, dates, ids, errors, logger (next) |
 | **Next up** | S00-T02 `backend/src/b2b/` skeleton + flagged mount · S00-T04 zero-impact guards · S00-T03 MongoDB job queue + scheduler (D22: no Redis) |
 | **Blockers** | B1 — owner checks O1–O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | CA engaged before Stage 05 (Q1–Q7) |
@@ -21,7 +21,7 @@
 <!-- progress:start -->
 | # | Stage | Phase | Status | Done / Total | Deferred | Progress | Started | Finished | Details |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | IN_PROGRESS | 3 / 21 | 0 | 14 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
+| 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | IN_PROGRESS | 4 / 21 | 0 | 19 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
 | 01 | Organisations, users, roles & permissions | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 3 of 21 tasks done (14 %) · deferred on purpose: 0 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 4 of 21 tasks done (19 %) · deferred on purpose: 0 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).
@@ -50,7 +50,7 @@ Task totals are 0 until a stage starts and its task list is written (rule 2).
 
 | ID | Blocker | Blocks (tasks/stages) | Owner | Since | Next action |
 | --- | --- | --- | --- | --- | --- |
-| B1 | Owner checks O1–O5 (`docs/existing-system-map.md` §9): production DB read-only checks, PayU webhook setting, which backend serves production, frontend hosting, live bookings page | Stage 00 DoD, first deploy, edits E2/E4 | Owner | 2026-11-12 | Owner runs the read-only commands and answers |
+| B1 | Owner checks O1, O2, O4, O5 (`docs/existing-system-map.md` §9): production DB read-only checks, PayU webhook setting, frontend hosting, live bookings page (O3 answered) | Stage 00 DoD, first deploy, edits E2/E4 | Owner | 2026-11-12 | Owner runs the read-only commands and answers |
 
 ## Open decisions affecting the next two stages
 

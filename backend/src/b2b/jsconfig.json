@@ -15,6 +15,6 @@
     "useUnknownInCatchVariables": true,
     "skipLibCheck": true
   },
-  "include": ["./**/*.js", "../../tests/b2b/**/*.js"],
+  "include": ["./**/*.js", "../../tests/b2b/**/*.js", "../../scripts/b2b/**/*.js"],
   "exclude": ["../../tests/b2b/real-app-*.test.js"]
 }
