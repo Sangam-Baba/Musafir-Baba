@@ -9,7 +9,11 @@
     "dev": "nodemon src/server.js",
     "backup": "node db_backup.js",
     "restore": "node db_restore.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:b2b": "vitest run --root tests/b2b",
+    "typecheck:b2b": "tsc -p src/b2b/jsconfig.json",
+    "b2b:worker": "node src/b2b/worker.js",
+    "b2b:realtime": "node src/b2b/realtime.js"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +46,9 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@types/express": "5.0.6",
+    "nodemon": "^3.1.14",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
   }
 }

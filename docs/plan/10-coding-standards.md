@@ -1,7 +1,7 @@
 # 10 — Coding Standards (how the code must look)
 
 > `02-engineering-standards.md` says **what** the system must do (architecture, MongoDB rules, security, layering). This file says **how every line of new code is written** — backend and frontend — with do/don't examples.
-> Applies to **all new code** for the B2B platform and hotel booking (`b2b-backend/src/core`, `b2b-backend/src/modules/*`, the business area and new pages in the Next.js app). Every PR is reviewed against it; tooling enforces what it can.
+> Applies to **all new code** for the B2B platform and hotel booking (`backend/src/b2b/core`, `backend/src/b2b/modules/*`, the business area and new pages in the Next.js app). Every PR is reviewed against it; tooling enforces what it can.
 
 ---
 
@@ -31,7 +31,25 @@
 8. **No dead code, no speculative code.** Build what the task asks; nothing "for later".
 9. **Every change ships with tests** (§11) and a progress update (`docs/progress/`).
 
-## 3. TypeScript
+## 3. Types (JavaScript + JSDoc in the backend, TypeScript in the frontend)
+
+New backend code lives inside the existing JavaScript backend (`backend/src/b2b/`, no build step — D2). It is written as **ES modules with JSDoc types** and `// @ts-check` at the top of every file, checked by `tsc --noEmit` using `backend/src/b2b/jsconfig.json` (`checkJs`, `strict`). The rules below apply through JSDoc — `@typedef`, `@param`, `@returns`, `/** @type {…} */`, `/** @satisfies {…} */`, `@template`; the examples are in TypeScript syntax for readability and translate one-to-one. New **frontend** code is real TypeScript (the Next.js app already is).
+
+```js
+// @ts-check
+/** @typedef {typeof BOOKING_STATUS[number]} BookingStatus */
+export const BOOKING_STATUS = /** @type {const} */ (['HELD', 'CONFIRMED']);
+
+/** @param {BookingStatus} status @returns {string} */
+export function bookingLabel(status) {
+  switch (status) {
+    case 'HELD': return 'Waiting for payment';
+    case 'CONFIRMED': return 'Confirmed';
+    default: return assertNever(status);
+  }
+}
+```
+
 
 | Rule | Do | Don't |
 | --- | --- | --- |
@@ -56,7 +74,7 @@ export function bookingLabel(status: BookingStatus): string {
 }
 ```
 
-Import order (auto-fixed): Node built-ins → packages → `@core/*` → `@modules/*` (only their `index.ts`) → relative. Blank line between groups.
+Import order (auto-fixed): Node built-ins → packages → `../core/*` → other modules (only their `index.js`) → same-module relative. Blank line between groups. Backend imports use relative paths with the `.js` extension (no path aliases — no build step).
 
 ## 4. Backend: file layout and roles
 
@@ -64,14 +82,14 @@ Each module follows `01-architecture.md` §4.1. One file = one role:
 
 | File | Contains | Must not contain |
 | --- | --- | --- |
-| `routes.ts` | Route list: path, `requirePermission`, rate limit, controller | Logic |
-| `controller.ts` | Parse with zod → call service → map to DTO → `res.json` | DB calls, business rules |
-| `<verb>-<noun>.ts` or `*.service.ts` | One use case per method: load → authorise → domain → save → events | Express `req`/`res`, raw Mongo |
-| `domain/*.ts` | Pure rules, state machines, calculations | Mongoose, Express, `fetch`, `Date.now()` |
-| `repository.ts` | All DB access, tenant-scoped, returns domain objects/DTOs | Business rules |
-| `models/*.ts` | Mongoose schema + indexes | Methods with business logic |
-| `validators.ts` | zod request schemas | — |
-| `events.ts` / `permissions.ts` / `jobs.ts` | Event types / permission codes / worker jobs | — |
+| `routes.js` | Route list: path, `requirePermission`, rate limit, controller | Logic |
+| `controller.js` | Parse with zod → call service → map to DTO → `res.json` | DB calls, business rules |
+| `<verb>-<noun>.js` or `*.service.js` | One use case per method: load → authorise → domain → save → events | Express `req`/`res`, raw Mongo |
+| `domain/*.js` | Pure rules, state machines, calculations | Mongoose, Express, `fetch`, `Date.now()` |
+| `repository.js` | All DB access, tenant-scoped, returns domain objects/DTOs | Business rules |
+| `models/*.js` | Mongoose schema + indexes | Methods with business logic |
+| `validators.js` | zod request schemas | — |
+| `events.js` / `permissions.js` / `jobs.js` | Event types / permission codes / worker jobs | — |
 
 ### 4.1 Controller
 
@@ -258,7 +276,7 @@ const res = await fetch('/api/v1/bookings?x=' + q, { headers: { Authorization: l
 
 ## 7. Events and jobs
 
-- Event names `module.entity.pastVerb` + `version`; payload types in `events.ts`; payload = ids + essentials.
+- Event names `module.entity.pastVerb` + `version`; payload types in `events.js`; payload = ids + essentials.
 - Consumers and jobs are idempotent (check `core_inbox` / job key) and log start, result and duration.
 - Jobs never assume order; they reload state before acting.
 
@@ -281,7 +299,7 @@ New package only with justification in the PR (maintained, licence, size, CVEs).
 
 | Rule | Detail |
 | --- | --- |
-| Location | `__tests__/` next to the module (`*.test.ts`; integration `*.int.test.ts`) |
+| Location | `__tests__/` next to the module (`*.test.js`; integration `*.int.test.js`) — backend tests live in `backend/tests/b2b/` |
 | Names | Behaviour sentences: `it('returns SOLD_OUT when the last room is taken by another booking')` |
 | Shape | Arrange → Act → Assert; one behaviour per test |
 | Data | Factories (`aClientOrg()`, `aHotelWithRooms({ rooms: 10 })`); no shared mutable fixtures |
@@ -299,28 +317,27 @@ New package only with justification in the PR (maintained, licence, size, CVEs).
 
 ## 13. Tooling configuration (set up in Stage 00)
 
-**`b2b-backend/tsconfig.json`** (key options)
+**`backend/src/b2b/jsconfig.json`** (type-checks the new JavaScript; nothing is compiled)
 
 ```jsonc
 {
   "compilerOptions": {
     "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext",
-    "outDir": "dist",
-    "strict": true, "noUncheckedIndexedAccess": true, "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true, "noFallthroughCasesInSwitch": true, "useUnknownInCatchVariables": true,
-    "paths": { "@core/*": ["./src/core/*"], "@modules/*": ["./src/modules/*"] }
+    "checkJs": true, "allowJs": true, "noEmit": true,
+    "strict": true, "noUncheckedIndexedAccess": true, "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true, "useUnknownInCatchVariables": true, "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["./**/*.js", "../../tests/b2b/**/*.js"]
 }
 ```
 
-**`b2b-backend/eslint.config.js`** (applies to new folders only)
+**`backend/eslint.b2b.config.js`** (applies to `src/b2b/**` and `tests/b2b/**` only)
 
 ```js
 export default [
   {
-    files: ['src/core/**/*.ts', 'src/modules/**/*.ts'],
-    extends: [tseslint.configs.strictTypeChecked],
+    files: ['src/b2b/**/*.js', 'tests/b2b/**/*.js'],
+    // + eslint-plugin-jsdoc (require types on exported functions)
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
@@ -338,14 +355,14 @@ export default [
         { selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']", message: 'Use clock.now()' },
         { selector: 'TSEnumDeclaration', message: 'Use as-const unions' }],
       'no-restricted-imports': ['error', { patterns: [
-        { group: ['**/modules/*/!(index)*', '**/modules/*/*/**'], message: 'Import other modules only via their index.ts' },
+        { group: ['**/modules/*/!(index)*', '**/modules/*/*/**'], message: 'Import other modules only via their index.js' },
         { group: ['**/models/partner/**', '**/controllers/partner/**'], message: 'Vehicle-partner code is unrelated' },
         { group: ['**/services/notification/**', '**/utils/notifications*', '**/models/Notification*', '**/config/ably*',
                   'ably', 'expo-server-sdk', 'firebase-admin', 'twilio'],
           message: 'New system uses its own self-hosted notifications (11-notifications-and-realtime.md); existing app notification code must not be touched' }] }],
     },
   },
-  { files: ['src/modules/*/domain/**/*.ts'],
+  { files: ['src/b2b/modules/*/domain/**/*.js'],
     rules: { 'no-restricted-imports': ['error', { patterns: ['mongoose', 'express', 'ably'] }] } },
 ];
 ```
@@ -365,7 +382,7 @@ export default [
 - [ ] zod `strictObject` with limits; no client amounts trusted
 - [ ] Money/dates/ids/errors/logging via `@core`
 - [ ] Atomic conditional updates for counters with the owner id recorded; no read-modify-write; no `startSession`/`withTransaction`/`watch`; every middle status has a reconciler rule; crash-injection test added
-- [ ] Only new prefixed collections written; existing data only via `legacy-read`; no files changed outside `b2b-backend/` and new frontend folders (except approved E1–E4) — `12-protecting-the-existing-system.md`
+- [ ] Only new prefixed collections written; existing data only via `legacy-read`; no files changed outside `backend/src/b2b/` and new frontend folders (except approved E1–E4) — `12-protecting-the-existing-system.md`
 - [ ] Notifications/realtime only via the new notifications module and self-hosted Socket.IO; existing app notification code untouched
 - [ ] Frontend: React Query + generated client; RHF + zod; loading/empty/error states; accessible; no tokens in storage
 - [ ] Tests follow §11; progress files updated

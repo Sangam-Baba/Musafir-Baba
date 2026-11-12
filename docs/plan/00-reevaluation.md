@@ -218,3 +218,12 @@ The owner decided: **one database (the existing one)**, the database server is *
 - New file `12-protecting-the-existing-system.md`: shared-database rules (new prefixes only, read-only `users`/`staffs`, `autoIndex` off, pool caps), PayU with own callbacks/prefixes and unchanged dashboard settings, business area as `/business` path (no `proxy.ts` change), only four flagged frontend edits (E1–E4), protected-paths CI, kill switches, rehearsal with before/after checksums.
 - Effort +2 weeks (Stages 00, 04, 07, 08, 11); Pilot 1 ~week 23–28, Pilot 2 ~31–37, launch ~36–44. New decision D28; D2, D14, D23 updated; risks K1, K6, K11, K18; DEF-021 = database upgrade after launch.
 
+### 6.10 Inside the existing backend, isolated (12 Nov 2026)
+
+The owner does not want a second Node.js app: the new code must live **inside the existing backend**, isolated. §6.9's separate `b2b-backend/` service is withdrawn. Now:
+- New code in **`backend/src/b2b/`** (tests in `backend/tests/b2b/`), **JavaScript ESM + JSDoc + `// @ts-check`** (no build step; D2).
+- API at **`/api/v1`** in the existing process, mounted by a **two-line edit to `app.js`** (B1) only when `B2B_ENABLED=true`, placed before the existing body parsers/cookie parser/audit interceptor; the rest of the new code is loaded with a **guarded dynamic import** so a failure can't stop the existing app.
+- **Own Mongoose instance** — the existing global audit plugin (`config/mongoosePluginInit.js`) would otherwise attach to every new model and write to the existing audit log.
+- Worker and realtime as **two extra containers from the same image** (`node src/b2b/worker.js`, `node src/b2b/realtime.js`); existing container command and Dockerfile unchanged.
+- Allowed edits to existing backend files: **B1–B5** (`12-protecting-the-existing-system.md` §2). D2, D28 updated.
+

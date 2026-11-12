@@ -24,7 +24,7 @@ The MBConnect and MBGO apps already have working notifications. **None of these 
 | `mobile/`, `mobile_user/` apps | — | **Do not touch** |
 | Resend email calls in existing controllers (OTP, contact, invoices, newsletter) | Website, admin, apps | **Do not touch** |
 
-The new system lives entirely in new code: `b2b-backend/src/modules/notifications/`, a new `b2b-realtime` process, new `ntf_*` collections and new frontend files. A lint rule blocks new modules from importing any of the files above.
+The new system lives entirely in new code: `backend/src/b2b/modules/notifications/`, a new realtime process (`node src/b2b/realtime.js`, own container), new `ntf_*` collections and new frontend files. A lint rule blocks new modules from importing any of the files above.
 
 ## 3. What we build (all self-hosted)
 
@@ -59,7 +59,7 @@ The new system lives entirely in new code: `b2b-backend/src/modules/notification
 ```
 
 **Why a separate `realtime` process:**
-- **Zero change to the existing Express server** (`server.js` keeps running exactly as today; the new system is a separate service — `12-protecting-the-existing-system.md`).
+- **Zero change to the existing Express server** (`server.js` keeps running exactly as today; no Socket.IO is attached to it; realtime runs as its own process — `12-protecting-the-existing-system.md`).
 - A realtime problem can't slow or crash the existing website, admin or app APIs, and vice versa.
 - Served on its own hostname (e.g. `realtime.musafirbaba.com`) through the existing Cloudflare tunnel, which supports WebSockets.
 - Scales independently; several instances each tail the same capped collection, so no adapter (and no Redis) is needed.
@@ -106,7 +106,7 @@ Email is the only way to reach someone who is **not** looking at the dashboard, 
 | C. No email from the new system | No | Not workable: invitations, password reset and KYC results need email |
 
 **Decision: A.** Implementation rules:
-- New adapter `modules/notifications/infra/resend-email.adapter.ts` implementing `EmailPort` with its own client instance; it reads the existing `RESEND_API_KEY` but **does not import or change** the existing `services/email.service.js` or any existing controller.
+- New adapter `modules/notifications/infra/resend-email.adapter.js` implementing `EmailPort` with its own client instance; it reads the existing `RESEND_API_KEY` but **does not import or change** the existing `services/email.service.js` or any existing controller.
 - Separate sender identity for the new system (e.g. `notifications@` / `business@` on a verified subdomain) with SPF/DKIM set up in Stage 02 week 1, so business mail doesn't affect the website's existing emails.
 - All sends go through the worker with retries, delivery log (`ntf_email_messages` / `ntf_email_attempts`) and an ops alert on repeated failure.
 - Because email goes through `EmailPort`, switching to a self-hosted mail server later is one new adapter.

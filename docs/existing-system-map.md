@@ -1,6 +1,6 @@
 # Existing System Map (Stage 00 · S00-T01)
 
-> Read-only map of today's MusafirBaba system, written for the new B2B + hotel service (`b2b-backend/`).
+> Read-only map of today's MusafirBaba system, written for the new B2B + hotel service (`backend/src/b2b/`).
 > Produced 12 Nov 2026 by reading the repository. **Nothing was changed.** Items marked **🟡 OWNER CHECK** can only be answered on the server or in a dashboard; the read-only commands are given.
 > Rules this map serves: `docs/plan/12-protecting-the-existing-system.md`.
 
@@ -47,7 +47,7 @@ Expected: `STANDALONE`, `prefix clash: []`, `webpage slugs clash: []`. Note the 
 | How the browser sends it | `Authorization: Bearer <access>` (frontend stores it in memory — `store/useAuthStore.ts`, not persisted; refreshes through the existing `/auth/refresh`) | Same pattern (`store/useAdminAuthStore.ts`) |
 | Session check | `middleware/session.middleware.js` looks up `Session` by `sessionId` and rejects `logout`/`revoked` | Same `sessions` collection |
 
-**Conclusion for the new API (`b2b-api`):** accept `Authorization: Bearer` tokens from the existing logins by verifying them with a **copy** of `JWT_ACCESS_SECRET` — works across hostnames, no cookie needed, no existing code changed. Because customers and staff share one secret, the new API must:
+**Conclusion for the new API (`/api/v1`, same backend host):** accept `Authorization: Bearer` tokens from the existing logins by verifying them with the existing `JWT_ACCESS_SECRET` — no cookie needed, no existing code changed. Because customers and staff share one secret, the new API must:
 1. decide customer vs staff from the `role` claim and check that the `sub` exists in `users` or `staffs` respectively (read-only);
 2. check the `sessions` entry (read-only) so logged-out or revoked sessions are refused, like the existing middleware does;
 3. leave refreshing to the existing backend (the frontend already does this).
@@ -103,7 +103,7 @@ Business users (B2B clients, hotels) get the **new** login system (Stage 01), no
 | Tunnel | `cloudflared` (systemd) on the server |
 | `BACKEND_URL` in `backend/.env` | points to an `onrender.com` host — **🟡 OWNER CHECK:** which backend actually serves production traffic today (the server container or Render)? The new containers must run next to the database the live site uses |
 | Frontend hosting | **🟡 OWNER CHECK:** Vercel? (the runbook says Vercel/Render are not touched) — needed to add the `NEXT_PUBLIC_*` variables for E4 |
-| Host capacity | **🟡 OWNER CHECK:** the `free -h; nproc; df -h` output from §2 — three new containers need roughly 0.5–1 GB RAM in total at pilot scale |
+| Host capacity | **🟡 OWNER CHECK:** the `free -h; nproc; df -h` output from §2 — two new containers (worker, realtime) need roughly 0.5 GB RAM in total at pilot scale |
 
 ## 8. Plan updates triggered by this map
 

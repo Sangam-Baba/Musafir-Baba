@@ -90,7 +90,7 @@ Statuses: `PLACING → ACTIVE → CONFIRMING → CONFIRMED`, or `PLACING/ACTIVE 
 ### 5.1 Hold all nights
 
 ```ts
-// modules/hotel-inventory/inventory.service.ts
+// modules/hotel-inventory/inventory.service.js
 async holdRooms(ctx: SystemContext, req: HoldRequest): Promise<Hold> {
   const hold = await this.holds.createPlacing(req);              // status PLACING, expiresAt = now + 15 min
   const steps = nightsOf(req.lines);                             // sorted: roomTypeId, then date

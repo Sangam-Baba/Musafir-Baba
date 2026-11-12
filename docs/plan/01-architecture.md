@@ -8,14 +8,14 @@
 
 | Decision | Why |
 | --- | --- |
-| **Same repo, same database, separate service** — new folder `b2b-backend/` with its own containers (`b2b-api`, `b2b-worker`, `b2b-realtime`); the existing `backend/` is not changed (D28, `12-protecting-the-existing-system.md`) | One database and one PayU account, but a bug or crash in the new system can't affect today's website, admin or apps; existing code, Dockerfile and routes stay exactly as they are |
+| **Inside the existing backend, isolated** — new folder `backend/src/b2b/`, API mounted at `/api/v1` behind `B2B_ENABLED` (two-line edit in `app.js`), own Mongoose instance, worker and realtime as two extra containers from the same image (D28, `12-protecting-the-existing-system.md`) | One app, one database, one PayU account; existing routes, models, middleware, crons and Dockerfile are not changed, and a failure in the new code can't stop the existing app (guarded load) |
 | **The existing MongoDB, as it is** — production: self-hosted MongoDB 8.0 (`musafirbaba-mongo`), **standalone, not reconfigured until after launch** (D23, D28); local dev: Atlas M0 | No multi-document transactions and no change streams → the new code uses single-document atomic steps, state documents, idempotent undo and a reconciler (§8); signals via a capped collection. Correct on standalone, and still correct if a replica set is enabled later (DEF-021) |
 | **Modular monolith** — each module owns its collections, exposes a service interface, emits events | Fast to build; any module can become a separate service later |
 | **One booking engine, one API for every channel** | Website, B2B dashboard and B2B API all call the same code → one source of truth for inventory |
 | **No Redis for now** (D22) — MongoDB does the work | Background jobs, schedules, rate limits, usage counters, short caches and realtime signals all run on the existing MongoDB plus in-process memory (§8.2). Redis can be added later behind the same interfaces if load requires it (DEF-020) |
 | **PayU** (existing gateway, D17) | Website payments, wallet top-ups, plan payments — no second gateway |
-| **Self-hosted realtime: Socket.IO** in a new `b2b-realtime` process, fed by a capped MongoDB collection (`rt_signals`, tailable cursor) (D21, D26) | Live notifications (bell) and "availability changed" signals with **no third-party service**. The existing app notifications (Ably/Expo, `services/notification/*`) are **not touched or reused**. Contract: `11-notifications-and-realtime.md` |
-| **TypeScript for all new backend code** (in `b2b-backend/`, which has its own build) — fallback: JS + JSDoc types + zod | Types catch money/date/tenant mistakes early; AI editors produce better TS. The existing backend keeps its no-build setup untouched |
+| **Self-hosted realtime: Socket.IO** in a new realtime process (`node src/b2b/realtime.js`), fed by a capped MongoDB collection (`rt_signals`, tailable cursor) (D21, D26) | Live notifications (bell) and "availability changed" signals with **no third-party service**. The existing app notifications (Ably/Expo, `services/notification/*`) are **not touched or reused**. Contract: `11-notifications-and-realtime.md` |
+| **JavaScript (ESM) + JSDoc types + `// @ts-check`** for new backend code, like the existing backend — checked by `tsc --noEmit` in dev/CI (D2); frontend code in TypeScript | No build step added, so the existing deployment stays exactly as it is |
 | **No new search cluster** — MongoDB indexes (2dsphere, text/collation) (production is self-hosted, so no Atlas Search) | One less system to run at your scale |
 
 ## 2. System context
@@ -26,54 +26,57 @@
         │                          │                               │                          │
         └──────────────┬───────────┴───────────────┬───────────────┘                          │
                        ▼                           ▼                                          ▼
-              ┌──────────── Existing Express backend ────────────┐   ┌──────── NEW: b2b-backend/ (own containers) ────────┐
-              │  existing routes (website, CMS, apps…)           │   │  b2b-api: /api/v1 gateway → modules (identity,     │
-              │  — NOT CHANGED                                   │   │  orgs, kyc, hotel-*, pricing, orders, wallet, …)   │
-              └───────────────────────┬──────────────────────────┘   │  b2b-worker: jobs, reconciler, relay, sweeper      │
-                                      │                              │  b2b-realtime: Socket.IO                           │
-                                      │                              └───────┬───────────────────────────┬────────────┘
-                                      ▼                                      ▼                           ▼
+              ┌──────────────────── Existing backend (backend/, same process & image) ─────────────────────┐
+              │  /api/...  existing routes, middleware, crons — NOT CHANGED                                 │
+              │  /api/v1   NEW: src/b2b (mounted only if B2B_ENABLED, before existing middleware;          │
+              │            own Mongoose instance) → modules (identity, orgs, kyc, hotel-*, orders, wallet…) │
+              └──────────────────────────────────────┬──────────────────────────────────────────────────────┘
+              extra containers, same image:          │        node src/b2b/worker.js   (jobs, reconciler, relay, sweeper)
+                                                     │        node src/b2b/realtime.js (Socket.IO)
+                                                     ▼
               ┌──────────── Existing MongoDB (standalone, unchanged settings) ──────────────┐   External: PayU (own
-              │  existing collections (new system: read-only users/staffs only)             │   callbacks + txn prefixes),
-              │  NEW prefixed collections: org_ … hbk_ wal_ … core_jobs, rt_signals (capped)│   Resend via EmailPort, R2
+              │  existing collections (new code: read-only users/staffs/sessions only)      │   callbacks + B2B* txn
+              │  NEW prefixed collections: org_ … hbk_ wal_ … core_jobs, rt_signals (capped)│   prefixes), Resend, R2
               └──────────────────────────────────────────────────────────────────────────────┘
-                      rt_signals ──(tailable cursor)──► b2b-realtime (Socket.IO, self-hosted) ──► open pages
+                      rt_signals ──(tailable cursor)──► realtime process (Socket.IO, self-hosted) ──► open pages
 ```
 
 ## 3. Deployables
 
 | Deployable | What | Notes |
 | --- | --- | --- |
-| `backend` (existing Express app) | Existing routes only | **Not changed** — no new routes, dependencies or build step (`12-…`) |
-| `b2b-api` (new, `b2b-backend/`) | The `/api/v1` HTTP API for website hotel pages, business area, admin sections and (Stage 14) client API keys | Own container and hostname via a new Cloudflare route; stateless; pool capped (`12-…` D5) |
-| `b2b-worker` (new, same image) | Job runner on `core_jobs` + lease-locked schedules: event relay, **reconciler** (§8), hold sweeper, PayU status poller, derived account balances, notifications (inbox, email, escalations), PDFs, usage persistence, billing runs, webhooks | Same image, different start command; lease locks make two instances safe |
-| `b2b-realtime` (new, same image) | Self-hosted **Socket.IO** server: verifies realtime tokens, joins users to their rooms, reads `rt_signals` with a tailable cursor and emits | Own hostname via a new Cloudflare route; existing hostnames unchanged |
-| `website` (existing Next.js) | **New** hotel search/detail/checkout pages calling `b2b-api`; a flagged "Hotels" tab on the existing customer bookings page (edit E2 in `12-…` §5) | Website customers keep their existing account and dashboard |
+| `backend` (existing Express app) | Existing routes **plus** the new `/api/v1` from `src/b2b/` (only when `B2B_ENABLED=true`) | Same container, command and Dockerfile; the only edit is the two-line mount in `app.js` (B1) |
+| (no separate API container) | The `/api/v1` API runs inside the existing backend process | Pool capped, timeouts, rate limits; heavy work goes to the worker (`12-…` D5) |
+| `b2b-worker` (new container, same image, `node src/b2b/worker.js`) | Job runner on `core_jobs` + lease-locked schedules: event relay, **reconciler** (§8), hold sweeper, PayU status poller, derived account balances, notifications (inbox, email, escalations), PDFs, usage persistence, billing runs, webhooks | Lease locks make two instances safe; the existing container's crons are untouched |
+| `b2b-realtime` (new container, same image, `node src/b2b/realtime.js`) | Self-hosted **Socket.IO** server: verifies realtime tokens, joins users to their rooms, reads `rt_signals` with a tailable cursor and emits | Own hostname via a **new** Cloudflare route (WebSockets); existing routes unchanged |
+| `website` (existing Next.js) | **New** hotel search/detail/checkout pages calling `/api/v1` on the existing backend host; a flagged "Hotels" tab on the existing customer bookings page (edit E2 in `12-…` §5) | Website customers keep their existing account and dashboard |
 | Business area (new route group in the **existing** Next.js app) | `/business/client/*` workspace for B2B clients, `/business/hotel/*` workspace for hotels; shared login and UI kit | Served as a **path** (`/business`) — no subdomain, so `proxy.ts` is untouched; its **own login**, separate from website customers and admin; split into its own app later only if needed (D14) |
 | `admin` (existing `/admin` in the same Next.js app) | **New** pages under `/admin/b2b/*`: clients, hotels, KYC, bookings, finance, plans, usage | Existing `Staff` login token verified read-only (D1); sidebar links via flagged edit E3 |
 
-## 4. Folder layout — new `b2b-backend/` folder (existing `backend/` untouched)
+## 4. Folder layout — one isolated folder inside the existing backend
 
 ```
-b2b-backend/                  # own package.json, lockfile, tsconfig, Dockerfile
-  src/
-    core/                     # shared kernel
-      money.ts  dates.ts  ids.ts  errors.ts  context.ts  clock.ts
+backend/src/b2b/              # nothing outside this folder imports from it except app.js → mount.js
+  mount.js                    # mountB2B(app): flag check + guarded dynamic import
+  jsconfig.json               # type checking for the new JavaScript
+  core/                       # shared kernel
+      money.js  dates.js  ids.js  errors.js  context.js  clock.js
       db/ (connection with autoIndex/autoCreate off, prefix guard, tenant plugin, idempotency,
           events-in-document relay, state-transition helper, migration runner)
       jobs/ (job queue, scheduler, reconciler registry)  realtime/ (publish to rt_signals)
       http/ (error handler, validation, request context, permission guard)
       events/ (event bus, envelope types)
-      logger.ts  config.ts
+      logger.js  config.js
     modules/
       identity/       organizations/   access/        kyc/          files/
       notifications/  audit/           wallet/        payments/     orders/
       subscriptions/  metering/        billing/       api-access/   webhooks/
       documents/      reporting/
       hotel-catalog/  hotel-inventory/ pricing/       hotel-search/ hotel-booking/
-    legacy-read/              # READ-ONLY access to existing users/staffs (find methods only)
-    routes/v1.ts              # mounts each module's router under /api/v1
-    api.ts  worker.ts  realtime.ts   # the three entry points
+    legacy-read/              # READ-ONLY access to existing users/staffs/sessions (find methods only)
+    routes/v1.js              # the /api/v1 router (own body parser, errors, 404)
+    worker.js  realtime.js    # entry points for the two extra containers
+backend/tests/b2b/            # tests for the new code
   tests/ (shared test utils)
 ```
 
@@ -81,27 +84,27 @@ b2b-backend/                  # own package.json, lockfile, tsconfig, Dockerfile
 
 ```
 modules/hotel-booking/
-  index.ts                 # PUBLIC: exports the service interface, types, event types — nothing else
-  hotel-booking.service.ts # use cases (application layer)
+  index.js                 # PUBLIC: exports the service interface, types, event types — nothing else
+  hotel-booking.service.js # use cases (application layer)
   domain/                  # pure business rules: entities, state machine, calculations (no Express, no Mongoose)
   models/                  # Mongoose schemas (collections prefixed `hbk_`)
-  repository.ts            # all DB access for this module (tenant-guarded)
-  routes.ts  controller.ts # HTTP layer (thin)
-  validators.ts            # zod schemas for requests
-  events.ts                # event names + payload types
-  permissions.ts           # permission codes this module declares
-  jobs.ts                  # worker jobs owned by the module
+  repository.js            # all DB access for this module (tenant-guarded)
+  routes.js  controller.js # HTTP layer (thin)
+  validators.js            # zod schemas for requests
+  events.js                # event names + payload types
+  permissions.js           # permission codes this module declares
+  jobs.js                  # worker jobs owned by the module
   __tests__/
   README.md
 ```
 
 **Boundary rules (enforced by ESLint `no-restricted-imports` / `dependency-cruiser`):**
 
-1. A module imports another module **only through its `index.ts`**.
+1. A module imports another module **only through its `index.js`**.
 2. A module **never reads or writes another module's collections**. Need data? Call its service or listen to its events.
 3. `domain/` imports only `core/` pure helpers — no Express, no Mongoose, no network.
 4. Shared modules (`orders`, `payments`, `wallet`, `pricing`, `documents`, `metering`…) **never import hotel modules**. Hotels plug into orders through a handler interface (§7).
-5. Nothing imports from the existing `backend/` folder. Existing data is read only through `src/legacy-read/` (read-only, `12-…` D2).
+5. Nothing in `src/b2b/` imports from the rest of `backend/src/`, and nothing there imports from `src/b2b/` except `app.js` → `b2b/mount.js`. Existing data is read only through `src/b2b/legacy-read/` (read-only, `12-…` D2).
 
 ### 4.2 Collection prefixes (like schemas)
 
@@ -247,7 +250,7 @@ Redis is **not set up and not planned for now**. Everything it would have done r
 
 ## 12. Moving a module out later
 
-Because modules talk through `index.ts` services and events and own their collections, extracting one (e.g. `hotel-search`, `webhooks`) means: replace the in-process service with an HTTP client implementing the same interface, move its collections, point the event bus to a shared broker. No other module changes.
+Because modules talk through `index.js` services and events and own their collections, extracting one (e.g. `hotel-search`, `webhooks`) means: replace the in-process service with an HTTP client implementing the same interface, move its collections, point the event bus to a shared broker. No other module changes.
 
 ## 13. Environments
 
@@ -255,7 +258,7 @@ Because modules talk through `index.ts` services and events and own their collec
 | --- | --- | --- |
 | local | Each developer's **Atlas M0 free tier** cluster via `MONGO_URI`, for running the app by hand. Atlas is a replica set, but the new code never uses transactions or change streams, so it behaves the same as production. Automated tests run on a **standalone** `MongoMemoryServer`. MinIO (or S3 dev bucket), Mailpit | Seed script; never production data |
 | staging | Production-like; client test keys; PayU test mode | Synthetic only |
-| production | Existing **self-hosted MongoDB 8.0** container `musafirbaba-mongo`, **unchanged** (standalone) until after launch + three new containers (`b2b-api`, `b2b-worker`, `b2b-realtime`) next to the existing backend | Real; new collections also dumped hourly (read-only) from Stage 09 |
+| production | Existing **self-hosted MongoDB 8.0** container `musafirbaba-mongo`, **unchanged** (standalone) until after launch + the existing backend container (now also serving `/api/v1` when enabled) + two new containers (`b2b-worker`, `b2b-realtime`) from the same image | Real; new collections also dumped hourly (read-only) from Stage 09 |
 
 No production personal data in staging. Ever.
 

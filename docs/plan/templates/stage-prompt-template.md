@@ -15,7 +15,7 @@ Stage <NN> §<x.y> — <one sentence>.
 SCOPE
 Build: <bullets>
 Do NOT build: <exclusions>
-Allowed to change: b2b-backend/src/modules/<a>/**, <new ui folder>/** (never backend/ or existing frontend files — 12-protecting-the-existing-system.md)
+Allowed to change: backend/src/b2b/modules/<a>/**, backend/tests/b2b/**, <new ui folder>/** (never other backend or frontend files — 12-protecting-the-existing-system.md)
 Must not change: other modules' internals, src/core, existing legacy code, ADRs.
 
 DATA

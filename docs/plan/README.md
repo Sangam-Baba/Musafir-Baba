@@ -14,7 +14,7 @@ Version 1 = hotels only. Flights, packages, transfers, activities and visa plug 
 | # | File | Why |
 | --- | --- | --- |
 | 1 | [`00-reevaluation.md`](00-reevaluation.md) | What was wrong with v1, what changed, requirement coverage |
-| 2 | [`01-architecture.md`](01-architecture.md) | Separate `b2b-backend/` service on the shared database; modules; tenancy; consistency without transactions (§8) |
+| 2 | [`01-architecture.md`](01-architecture.md) | New code isolated in `backend/src/b2b/` inside the existing backend; modules; tenancy; consistency without transactions (§8) |
 | 3 | [`02-engineering-standards.md`](02-engineering-standards.md) | How code is written and reviewed |
 | 4 | [`03-security-baseline.md`](03-security-baseline.md) | Non-negotiable security controls |
 | 5 | [`04-domain-model.md`](04-domain-model.md) | Collections, state machines, pricing/GST/cancellation algorithms |
@@ -25,7 +25,7 @@ Version 1 = hotels only. Flights, packages, transfers, activities and visa plug 
 | 10 | [`09-decisions-and-risks.md`](09-decisions-and-risks.md) | Open decisions, plain-language questions for a CA and a lawyer, risks |
 | 11 | [`10-coding-standards.md`](10-coding-standards.md) | **How every line of new code is written** — backend and frontend rules with do/don't examples, tooling config |
 | 12 | [`11-notifications-and-realtime.md`](11-notifications-and-realtime.md) | **Notifications and live updates (self-hosted)** — in-app bell, Socket.IO on our servers, signalled through MongoDB (no Redis), escalation, email (D25); existing app notifications untouched |
-| 13 | [`12-protecting-the-existing-system.md`](12-protecting-the-existing-system.md) | **Zero impact on what works today** — separate service, shared database rules, the only allowed frontend edits, guardrails, touch-point register |
+| 13 | [`12-protecting-the-existing-system.md`](12-protecting-the-existing-system.md) | **Zero impact on what works today** — isolated `backend/src/b2b/` folder, shared database rules, the only allowed backend edits, the only allowed frontend edits, guardrails, touch-point register |
 | — | [`stages/`](stages/) | One file per stage |
 | — | [`templates/`](templates/) | `AGENTS.md` rulebook, ADR, module README, task prompt, PR template |
 | — | [`templates/progress/`](templates/progress/) | **Progress tracking** — copied to `docs/progress/` in Stage 00: current stage and task, % done per stage, blockers, things left out on purpose, session log |
@@ -34,7 +34,7 @@ Version 1 = hotels only. Flights, packages, transfers, activities and visa plug 
 
 | Phase | # | Stage | Weeks | Delivers |
 | --- | --- | --- | --- | --- |
-| A | 00 | [Foundations (new `b2b-backend/`, existing system untouched)](stages/stage-00-foundations.md) | 2.5 | Separate service, zero-impact guards, consistency kit, tests, job queue, realtime, progress tracking |
+| A | 00 | [Foundations (isolated `backend/src/b2b/`, existing behaviour untouched)](stages/stage-00-foundations.md) | 2.5 | Isolated `src/b2b/` folder inside the backend, zero-impact guards, consistency kit, tests, job queue, realtime, progress tracking |
 | A | 01 | [Organisations, users, roles & permissions](stages/stage-01-orgs-users-roles.md) | 2.5 | Accounts, logins, roles for every org type; admin access |
 | A | 02 | [Hotel onboarding & KYC (+ notifications foundation)](stages/stage-02-hotel-onboarding-kyc.md) | 2.5 | Hotels register and get verified; generic KYC engine; bell + email |
 | A | 03 | [Hotel listings](stages/stage-03-hotel-listings.md) | 2 | Properties, rooms, photos, approval |
@@ -63,7 +63,7 @@ Version 1 = hotels only. Flights, packages, transfers, activities and visa plug 
 
 Hotel contracting (getting real hotels to list) must start in parallel from Stage 03 — inventory is a business task as much as a technical one.
 
-**Fixed choices (12 Nov 2026):** payments stay on **PayU** (existing gateway); the B2B/hotel **business area lives inside the existing Next.js app**; **business users and dashboards are new and separate** from website customers (whose hotel bookings appear in their existing website dashboard); the **vehicle-partner module (MBGO/MBConnect) is unrelated** and not reused; **dashboard and API usage both count** towards a client's plan; **new notification features use no third-party service** (self-hosted Socket.IO) and the **existing app notifications (Ably/Expo for MBConnect/MBGO) are not touched**; there is **no Redis for now** — background jobs, rate limits, caches, usage counters and realtime signals run on MongoDB (D22; Redis later only if needed, DEF-020). **Nothing that works today is changed** — the new system is a separate service (`b2b-backend/`) on the **same database**, which stays exactly as it is until after launch; it writes only its own collections, and the only edits to existing frontend files are four small flagged ones (D23, D28, `12-protecting-the-existing-system.md`). A **CA must be engaged before Stage 05** — plain-language questions are in `09-decisions-and-risks.md` §3.
+**Fixed choices (12 Nov 2026):** payments stay on **PayU** (existing gateway); the B2B/hotel **business area lives inside the existing Next.js app**; **business users and dashboards are new and separate** from website customers (whose hotel bookings appear in their existing website dashboard); the **vehicle-partner module (MBGO/MBConnect) is unrelated** and not reused; **dashboard and API usage both count** towards a client's plan; **new notification features use no third-party service** (self-hosted Socket.IO) and the **existing app notifications (Ably/Expo for MBConnect/MBGO) are not touched**; there is **no Redis for now** — background jobs, rate limits, caches, usage counters and realtime signals run on MongoDB (D22; Redis later only if needed, DEF-020). **Nothing that works today is changed** — the new code lives in an isolated folder of the **existing backend** (`backend/src/b2b/`, switched on by a flag) on the **same database**, which stays exactly as it is until after launch; it writes only its own collections, and the only edits to existing files are a short reviewed list (two lines in `app.js`, dependency additions, four flagged frontend edits) (D23, D28, `12-protecting-the-existing-system.md`). A **CA must be engaged before Stage 05** — plain-language questions are in `09-decisions-and-risks.md` §3.
 
 ## Rules of the road
 

@@ -18,8 +18,8 @@
 
 ## 2. Language & tooling
 
-- **TypeScript** for all new code in `b2b-backend/src/core` and `b2b-backend/src/modules`. Compile with `tsc` or run with `tsx` in dev; build to `dist/` for prod with `b2b-backend/`'s **own** Dockerfile. The existing backend (no build step, `node src/server.js`) is **not changed**.
-- `tsconfig`: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `useUnknownInCatchVariables`.
+- **JavaScript (ESM) with JSDoc types and `// @ts-check`** for all new code in `backend/src/b2b/` — the same language and runtime as the existing backend, so there is **no build step** and the existing Dockerfile and start command stay unchanged (D2). New frontend code is TypeScript.
+- Type checking via `backend/src/b2b/jsconfig.json` (`checkJs`, `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `useUnknownInCatchVariables`) — `npm run typecheck:b2b`.
 - **ESLint** (flat config): `@typescript-eslint/strict-type-checked`, `no-floating-promises`, `switch-exhaustiveness-check`, `import/no-cycle`, `no-restricted-imports` (module boundaries), `eslint-plugin-security`, `sonarjs` (cognitive complexity ≤ 15). **Prettier** for formatting.
 - **Banned:** `any` (use `unknown` + narrowing), non-null `!` outside tests, `@ts-ignore`, `console.log` in app code, `new Date()`/`Date.now()` outside the clock, floating-point money, `Model.collection` raw access outside repositories, `mongoose.set('strictQuery', false)`.
 - If the team decides to stay on JavaScript (decision D2): same rules via JSDoc `@ts-check` + zod everywhere.
@@ -29,7 +29,7 @@
 
 | Thing | Convention | Example |
 | --- | --- | --- |
-| Files | kebab-case + role | `create-order.ts`, `inventory.repository.ts` |
+| Files | kebab-case + role | `create-order.js`, `inventory.repository.js` |
 | Types / classes | PascalCase | `HotelBooking`, `Money` |
 | Functions / vars | camelCase, verb for functions | `computeCancellationCharge` |
 | Booleans | is/has/can | `isRefundable` |

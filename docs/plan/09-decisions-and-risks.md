@@ -5,7 +5,7 @@
 | ID | Decision | Recommendation | Owner | Needed by |
 | --- | --- | --- | --- | --- |
 | D1 | Admin login: reuse existing admin auth or move admins to new identity module | **Reuse existing admin login**, add the new permission layer + mandatory MFA | Tech lead | Stage 01 |
-| D2 | TypeScript for new code | **TypeScript** in the separate `b2b-backend/` service (own build; existing backend untouched) | Tech lead | Stage 00 |
+| D2 | Language for new backend code | **DECIDED (12 Nov 2026): JavaScript (ESM) + JSDoc types + `// @ts-check`**, checked by `tsc --noEmit` — same as the existing backend, so no build step or deployment change. Frontend: TypeScript | Tech lead | Stage 00 |
 | D3 | What counts as a billable query, and on which channels | **DECIDED:** every use of a paid service (today: hotel search, offers, price check, booking) = 1 query each (admin can change weights); counted on **both dashboard and API**; usage visible to client and admin. Safeguards: automatic live refreshes free; admin may set booking weight to 0 | Business | Stage 12 |
 | D4 | Do we **resell** rooms (principal) or earn a **commission** (agent)? | Ask a CA (Q1 in §3) — changes GST amount, who issues invoices, and real margin | Finance + CA | Stage 05 |
 | D5 | Who keeps cancellation charges when our deadline is earlier than the hotel's, and GST on cancellation charges | Ask a CA (Q4 in §3); engine supports both | Finance + CA | Stage 09 |
@@ -25,13 +25,13 @@
 | D19 | API keys for clients | **DECIDED:** yes, needed — built **at the end** (Stage 14) after the working system and the B2B dashboard; keys, webhooks and docs together | Business | Stage 14 |
 | D27 | Build order | **DECIDED:** foundations → hotel side + website (working system, Pilot 1) → B2B clients (Pilot 2) → API access, finance, launch | Business | — |
 | D20 | Can hotels without a GST number list? | Ask a CA (Q3 in §3). Until answered: may register, flagged high-risk, not sellable | Finance + CA | Stage 02 |
-| D21 | Realtime for the new system | **DECIDED:** self-hosted **Socket.IO** in a new `b2b-realtime` process, fed by the capped `rt_signals` collection via a tailable cursor (no Redis, no change streams); reliability from stored inbox + catch-up + escalation (`11-…`) | Business + Tech lead | Stage 00 |
+| D21 | Realtime for the new system | **DECIDED:** self-hosted **Socket.IO** in a new realtime process (`src/b2b/realtime.js`, own container), fed by the capped `rt_signals` collection via a tailable cursor (no Redis, no change streams); reliability from stored inbox + catch-up + escalation (`11-…`) | Business + Tech lead | Stage 00 |
 | D25 | Email for the new system | **DECIDED (12 Nov 2026): option A** — reuse the **existing** Resend account through a new `EmailPort` adapter in the `notifications` module (not a new service; existing Resend code and calls untouched; separate sending identity, e.g. `business@` / `notifications@`). Used for invitations, password reset, email OTP, KYC results and critical alerts | Business | Stage 02 |
 | D26 | Third-party services for new notification features | **DECIDED:** none. No WhatsApp/SMS providers, no Ably/Expo for the new system; existing app notifications are not touched. Phone numbers are collected but not OTP-verified in v1 | Business | Stage 00 |
 | D24 | Coding standards | **DECIDED:** `10-coding-standards.md` is mandatory for all new code; enforced by lint/types/CI and the PR checklist; legacy code not reformatted | Tech lead | Stage 00 |
 | D22 | Redis | **DECIDED (12 Nov 2026): no Redis for now.** Jobs, schedules, rate limits, usage counters, caches and realtime signals run on MongoDB + process memory behind swappable interfaces (`01-architecture.md` §8.2). Add Redis later only if the DEF-020 triggers are hit | Tech lead | — |
 | D23 | Database setup | **DECIDED (12 Nov 2026):** production stays the existing self-hosted **MongoDB 8.0** (`musafirbaba-mongo`), **standalone and unchanged until after launch**; local dev = Atlas M0. The new code needs no transactions or change streams (D28). Switching to a replica set later is optional (DEF-021) and needs no code change | Owner + Tech lead | — |
-| D28 | Zero impact on the existing system | **DECIDED (12 Nov 2026):** one shared database, but nothing that works today may change: new code in a separate `b2b-backend/` service (own containers); existing `backend/`, apps and database settings untouched; new collections only; existing data read-only; frontend edits limited to flagged E1–E4; no multi-document transactions (patterns P1–P5). Rules and touch-point register: `12-protecting-the-existing-system.md` | Owner | Stage 00 |
+| D28 | Zero impact on the existing system | **DECIDED (12 Nov 2026):** one database and **one backend app**, but nothing that works today may change: new code isolated in `backend/src/b2b/`, API at `/api/v1` mounted behind `B2B_ENABLED` before existing middleware with a guarded load, own Mongoose instance, worker/realtime as extra containers from the same image; edits to existing files limited to B1–B5 (backend) and E1–E4 (frontend); no database server changes; no multi-document transactions (P1–P5). Rules: `12-protecting-the-existing-system.md` | Owner | Stage 00 |
 
 ## 2. Risks
 
@@ -42,7 +42,7 @@
 | K3 | Hotels sell same rooms elsewhere | H | H | Allotment contracts, stop-sell, "cannot honour" flow, channel manager in Phase C |
 | K4 | Thin inventory at launch | H | H | Start hotel contracting from Stage 03; bedbank adapter early in the roadmap (Stage 17) or earlier if needed |
 | K5 | Cross-tenant data leak | L | Critical | Tenant guard + plugin + isolation tests |
-| K6 | New system breaks or slows something that works today | L | H | `12-protecting-the-existing-system.md`: separate service, new collections only, read-only legacy access, no server changes, protected-paths CI, pool caps/timeouts, kill switches, rehearsal on a restored production copy with before/after checksums |
+| K6 | New system breaks or slows something that works today | L | H | `12-protecting-the-existing-system.md`: isolated folder + flag + guarded load, own Mongoose instance, new collections only, read-only legacy access, no server changes, protected-paths CI, pool caps/timeouts, kill switches, rehearsal on a restored production copy with before/after checksums |
 | K7 | Wallet/ledger drift | M | H | Ledger invariants, daily reconciliation with PayU |
 | K8 | Per-query pricing rejected by clients (dashboard use counts too — one booking ≈ 4 queries) | M | M | Validate with Pilot 2 clients before billing goes live (Stage 13); plans, weights and limits are configurable |
 | K9 | AI-generated code drifting from rules | M | M | `AGENTS.md`, CI rules, human review hotspots |

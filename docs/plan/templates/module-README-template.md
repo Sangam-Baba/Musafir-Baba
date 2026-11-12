@@ -22,7 +22,7 @@ Entities, invariants, value objects, state machine (table).
 | Collection | Purpose | Ownership field(s) | Indexes | Validator |
 | --- | --- | --- | --- | --- |
 
-## Service interface (`index.ts`)
+## Service interface (`index.js`)
 
 ```ts
 export interface <Name>Service {

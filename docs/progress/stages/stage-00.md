@@ -1,4 +1,4 @@
-# Stage 00 — Foundations (new `b2b-backend/`, existing system untouched) · Progress
+# Stage 00 — Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) · Progress
 
 > Pre-filled from `docs/plan/stages/stage-00-foundations.md` so the first session can start straight away. Rules and status values: `docs/progress/README.md`.
 
@@ -17,7 +17,7 @@
 | ID | Task | Plan ref | Status | Owner | PR | Tests | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | S00-T01 | Map the existing system → `docs/existing-system-map.md` (read-only; token handling, PayU dashboard settings, URL clash check, collection names/prefixes) | §3.1 | DONE | AI (Claude) | — | — | Map in `docs/existing-system-map.md`. Owner checks O1–O5 (§9) still open — tracked as blocker B1 |
-| S00-T02 | `b2b-backend/` service: package.json, tsconfig, own Dockerfile, entry points api/worker/realtime, own env file | §3.2 | TODO | | | | Existing `backend/` must show zero diff |
+| S00-T02 | `backend/src/b2b/` skeleton: `mount.js` (flag + guarded load), `/api/v1` router with health, own Mongoose instance, worker/realtime entry points, jsconfig; B1 two-line mount in `app.js`; B2 dev tools + scripts | §3.2 | DONE | AI (Claude) | | 11 ✅ | `src/b2b/` skeleton (mount, v1 router + health, own Mongoose instance, config, worker, realtime, jsconfig); B1 in `app.js`; B2 dev deps + scripts (lockfile: additions only) |
 | S00-T03 | MongoDB job queue + scheduler (`core_jobs`, `core_schedules`, lease locks) — no Redis (D22) | §3.5 | TODO | | | | |
 | S00-T04 | Zero-impact guards: connection (`autoIndex`/`autoCreate` off, pool caps, `maxTimeMS`), prefix guard, migration runner, `legacy-read` (read-only) | §3.2 | TODO | | | | `12-protecting-the-existing-system.md` D1–D5 |
 | S00-T05 | Protected-paths CI check + lint bans (`backend/` imports, `startSession`/`withTransaction`/`watch`, existing notification/partner code) | §3.2 | TODO | | | | |
@@ -30,7 +30,7 @@
 | S00-T12 | Progress tracking: copy `docs/plan/templates/progress/` → `docs/progress/`; build `npm run progress` (+ `--check` in CI) | §3.10 | TODO | | | | |
 | S00-T13 | HTTP layer: request id, context builder, `requirePermission`, zod `validate()` with `$`/`.` key rejection, error middleware, helmet, body limits | §3.3 | TODO | | | | No global `sanitizeFilter` |
 | S00-T14 | Rate limiter (Mongo store) + in-process cache with `cache:evict` | §3.5 | TODO | | | | |
-| S00-T15 | Self-hosted realtime: `b2b-realtime` (Socket.IO tailing capped `rt_signals`), `/api/v1/realtime/token`, `realtime.publish()`, new Cloudflare hostname | §3.5 | TODO | | | | No third-party service; don't touch existing Ably/Expo code |
+| S00-T15 | Self-hosted realtime: realtime container `node src/b2b/realtime.js` (Socket.IO tailing capped `rt_signals`), `/api/v1/realtime/token`, `realtime.publish()`, new Cloudflare hostname | §3.5 | TODO | | | | No third-party service; don't touch existing Ably/Expo code |
 | S00-T16 | Test harness: Vitest + **standalone** `MongoMemoryServer` + supertest + fast-check + factories + fixed clock + crash-injection helper | §3.6 | TODO | | | | |
 | S00-T17 | CI pipeline: lint → typecheck → boundary → protected paths → tests → audit → build → progress check; existing-system smoke checks after staging deploy | §3.7 | TODO | | | | |
 | S00-T18 | Module generator `npm run gen:module` + sample `example` module | §3.8 | TODO | | | | Delete sample after Stage 01 |
@@ -41,12 +41,12 @@
 ## Definition of Done (from the stage file)
 
 - [ ] `docs/existing-system-map.md` merged (all §3.1 questions answered)
-- [ ] `b2b-backend/` image runs as `b2b-api`, `b2b-worker`, `b2b-realtime` on staging; existing `backend/` has zero diff
+- [ ] `/api/v1` live on staging behind `B2B_ENABLED`; worker/realtime containers from the same image; existing files changed only by B1–B5; crash-isolation test green
 - [ ] Guards active: prefix guard, migration runner, legacy-read, protected-paths CI, transaction/change-stream lint
 - [ ] Consistency kit (P1–P5) with crash-injection tests green on standalone MongoDB
 - [ ] Worker runs relay, reconciler, job queue and scheduler; a test event reaches a browser through Socket.IO
 - [ ] Existing-system smoke checks pass after deploy; MBConnect/MBGO notifications verified unchanged
-- [ ] Lint/Prettier/tsconfig per `10-coding-standards.md` §13 active in CI
+- [ ] Lint/Prettier/jsconfig per `10-coding-standards.md` §13 active in CI
 - [ ] ADRs 0001–0014 merged; `AGENTS.md` in repo root
 - [ ] `docs/progress/` in place; `npm run progress -- --check` runs in CI
 

@@ -12,7 +12,7 @@
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 00 — Foundations in the existing backend |
 | **Current task(s)** | S00-T01 — Map the existing system (`DOING`, owner: …) |
-| **Next up** | S00-T02 `b2b-backend/` service setup · S00-T04 zero-impact guards · S00-T03 MongoDB job queue + scheduler (D22: no Redis) |
+| **Next up** | S00-T02 `backend/src/b2b/` skeleton + flagged mount · S00-T04 zero-impact guards · S00-T03 MongoDB job queue + scheduler (D22: no Redis) |
 | **Blockers** | None |
 | **Decisions needed soon** | CA engaged before Stage 05 (Q1–Q7) |
 
@@ -21,7 +21,7 @@
 <!-- progress:start -->
 | # | Stage | Phase | Status | Done / Total | Deferred | Progress | Started | Finished | Details |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 00 | Foundations (new `b2b-backend/`, existing system untouched) | A | NOT_STARTED | 0 / 21 | 0 | 0 % | — | — | [stage-00](stages/stage-00.md) |
+| 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | NOT_STARTED | 0 / 21 | 0 | 0 % | — | — | [stage-00](stages/stage-00.md) |
 | 01 | Organisations, users, roles & permissions | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |

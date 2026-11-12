@@ -23,7 +23,7 @@ file storage (R2/Cloudinary/S3); AuditLog model + audit plugin; the existing web
 how the Next.js app serves the website and /admin (proxy.ts, catch-all route, URL clash check for /hotels and /business); how login tokens are carried; PayU dashboard settings; Dockerfile and deployment.
 Also list the existing app notification code (`services/notification/*`, Ably, Expo push, `Notification` model) as **do-not-touch** — the new system does not use it.
 Ignore the vehicle-partner module (MBGO/MBConnect) — it is unrelated to this system.
-Read only — change nothing. End with the answers Stage 00 §3.1 needs and a list of anything the new b2b-backend/ service must not touch.
+Read only — change nothing. End with the answers Stage 00 §3.1 needs and a list of anything the new backend/src/b2b/ service must not touch.
 ```
 
 ## 3. Every work session
@@ -60,7 +60,7 @@ One task ≈ one PR ≈ < 400 changed lines.
 | Money | Integer paise; `Money` used; rounding explicit; ledger lines balance |
 | Time | Stay dates as strings; hotel time zone for deadlines; `clock.now()` not `new Date()` |
 | Flows (no transactions) | No `startSession`/`withTransaction`/`watch`; each step idempotent; crash-injection test; no network calls between DB steps |
-| Zero impact | Only `b2b-backend/` and new frontend folders changed (E1–E4 only with approval); only new prefixed collections written; existing data only via `legacy-read` (`12-…`) |
+| Zero impact | Only `backend/src/b2b/` and new frontend folders changed (E1–E4 only with approval); only new prefixed collections written; existing data only via `legacy-read` (`12-…`) |
 | Coding standards | Follows `10-coding-standards.md`: right file per role, function/file size, no `any`/enum/default export, `@core` helpers, frontend React Query + RHF patterns |
 | Notifications / realtime | Only via the new `notifications` module and `realtime.publish()` (writes `rt_signals` for the self-hosted Socket.IO server); background work only via `core/jobs` (no Redis/BullMQ); inbox row before push; no imports of existing `services/notification/*`, Ably, Expo or any third-party messaging SDK |
 | Authorization | Object-level check after load; correct scope |

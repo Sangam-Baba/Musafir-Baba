@@ -11,17 +11,18 @@
 
 ## Coding standards (`10-coding-standards.md`)
 - [ ] Right file per role; controllers thin; domain pure; functions ≤ 40 lines, files ≤ 300
-- [ ] No `any` / `!` / `enum` / default exports; exhaustive switches; `z.strictObject` with limits
+- [ ] JSDoc types + `// @ts-check` (backend) / strict TS (frontend); no `any` / enums / default exports; exhaustive switches; `z.strictObject` with limits
 - [ ] Money/dates/ids/errors/logging via `@core`; frontend uses React Query + generated client + RHF/zod
 - [ ] Notifications/realtime only via the new notifications module and self-hosted Socket.IO; no third-party messaging SDK; existing app notification code untouched
 - [ ] No legacy code reformatted
+- [ ] Lockfile: no existing package changed version (additions only)
 
 ## Architecture
-- [ ] Only other modules' `index.ts` imported; only own collections touched
+- [ ] Only other modules' `index.js` imported; only own collections touched
 - [ ] Logic in the right layer; controllers thin
 - [ ] Events via outbox, versioned; consumers idempotent
 - [ ] No `startSession`/`withTransaction`/`watch`; multi-step flow has idempotent steps + reconciler rule + crash-injection test
-- [ ] **Zero impact** (`12-protecting-the-existing-system.md`): no files changed outside `b2b-backend/` and new frontend folders (E1–E4 only with owner approval); only new prefixed collections written; existing data via `legacy-read` only
+- [ ] **Zero impact** (`12-protecting-the-existing-system.md`): no files changed outside `backend/src/b2b/`, `backend/tests/b2b/` and new frontend folders (B1–B5 / E1–E4 only with owner approval); only new prefixed collections written; existing data via `legacy-read` only
 
 ## Security
 - [ ] Every new route: permission + object-level check + rate limit

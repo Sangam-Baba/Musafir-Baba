@@ -1,6 +1,6 @@
 # AGENTS.md — Rules for AI Coding Agents (and Humans)
 
-> Put in the repo root (applies to `b2b-backend/` and the new frontend folders). Also copy as `CLAUDE.md` and your editor's rules file. Keep under ~300 lines.
+> Put in `backend/src/b2b/AGENTS.md` and the new frontend folders (applies to the new B2B + hotel code only). Also copy as `CLAUDE.md` and your editor's rules file. Keep under ~300 lines.
 
 ## Project
 
@@ -13,7 +13,7 @@ Read before any task: `docs/plan/10-coding-standards.md` (how code must look), `
 npm ci
 npm run dev            # backend + worker (DB: your own Atlas M0 dev cluster via MONGO_URI — never production data)
 npm run lint && npm run typecheck
-npm test               # unit + integration for new code (standalone MongoMemoryServer)
+npm run test:b2b       # unit + integration for new code (standalone MongoMemoryServer)
 npm run test:arch      # module boundary rules
 npm run migrate        # indexes, validators, data migrations
 npm run gen:module <name>
@@ -40,10 +40,11 @@ Done = lint, typecheck, test, test:arch all pass.
 
 ## Architecture (hard rules)
 
-- **Zero impact on the existing system** (`docs/plan/12-protecting-the-existing-system.md`): new backend code only in `b2b-backend/`; new frontend code only in new folders. **Never edit `backend/`, `mobile/`, `mobile_user/` or existing frontend files** — the only exceptions are the approved flagged edits E1–E4. CI blocks anything else.
-- Write only new prefixed collections. Existing data (`users`, `staffs`) only through `src/legacy-read/` (read-only). Indexes only via the migration runner.
+- **Zero impact on the existing system** (`docs/plan/12-protecting-the-existing-system.md`): new backend code only in `backend/src/b2b/` (tests in `backend/tests/b2b/`); new frontend code only in new folders. **Never edit other files in `backend/`, `mobile/`, `mobile_user/` or existing frontend files** — the only exceptions are the approved edits B1–B5 and E1–E4. CI blocks anything else.
+- Use the **new code's own Mongoose instance** (`core/db/connection.js`) — never the default `mongoose` import (it carries the existing global audit plugin). Write only new prefixed collections. Existing data (`users`, `staffs`, `sessions`) only through `legacy-read/` (read-only). Indexes only via the migration runner.
+- Never import anything from the rest of `backend/src/`.
 - Never change the database server, PayU dashboard settings, existing env files or existing Cloudflare routes.
-- Import another module **only via its `index.ts`**. Never its models, repository, domain or controllers.
+- Import another module **only via its `index.js`**. Never its models, repository, domain or controllers.
 - A module only touches **its own collections** (prefix table in `01-architecture.md` §4.2).
 - `domain/` = pure logic: no Express, Mongoose, fetch.
 - Cross-module side effects via **events pushed into the business document in the same single-document update** (relayed to the outbox).
@@ -75,13 +76,13 @@ Done = lint, typecheck, test, test:arch all pass.
 
 ## Code
 
-- TypeScript strict (new code). No `any`, no `!`, no `@ts-ignore`, no default exports, no `enum` (use `as const`).
+- Backend: JavaScript ESM with JSDoc types and `// @ts-check` (checked by `npm run typecheck:b2b`). Frontend: TypeScript strict. No `any`, no `@ts-ignore`, no default exports, no enums (use `as const`).
 - Inject `Clock`; no `new Date()`/`Date.now()` outside it. Stay dates are `'YYYY-MM-DD'` strings; deadlines in hotel time zone.
 - Public references via `newReference('MBH')`; no sequential ids except GST invoice series (≤ 16 chars).
 - Typed errors from `@core/errors`; never swallow errors.
 - Controllers: parse → service → map. No business logic.
 - Mongoose schemas: `strict: 'throw'`, timestamps, indexes declared; created via migrations in prod.
-- Events: `module.entity.pastVerb` + `version`; payload types in `events.ts`.
+- Events: `module.entity.pastVerb` + `version`; payload types in `events.js`.
 - No new dependency without justification.
 
 ## Tests
