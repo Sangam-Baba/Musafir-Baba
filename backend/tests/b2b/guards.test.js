@@ -10,6 +10,7 @@ describe('checkPaths â€” B2B branches may only change their own folders and B1â€
       { status: 'A', path: 'backend/src/b2b/modules/hotel-catalog/index.js' },
       { status: 'A', path: 'backend/tests/b2b/x.test.js' },
       { status: 'M', path: 'docs/plan/README.md' },
+      { status: 'A', path: 'docs/adr/0001-isolated-b2b-folder.md' },
       { status: 'M', path: 'backend/src/app.js' },
       { status: 'M', path: 'backend/package.json' },
       { status: 'M', path: 'backend/package-lock.json' },

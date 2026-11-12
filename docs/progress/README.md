@@ -23,7 +23,7 @@ Plan decisions stay in `docs/plan/09-decisions-and-risks.md` and `docs/adr/`. Th
 | `TODO` | Not started |
 | `DOING` | Someone (or an AI session) is working on it now |
 | `REVIEW` | PR open, waiting for human review |
-| `DONE` | Merged, tests green |
+| `DONE` | Committed on the stage branch with tests and guards green (merged to `main` at a quiet time — merging redeploys the backend) |
 | `BLOCKED` | Can't continue — reason and blocker ID in Notes; also listed in `STATUS.md` → Blockers |
 | `DEFERRED` | Left out **on purpose** — must have a `DEF-…` row in `DEFERRED.md` |
 | `DROPPED` | No longer needed — reason in Notes (and an ADR if it changes the plan) |

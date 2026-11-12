@@ -52,8 +52,8 @@ describe('mountB2B — flag on', () => {
     server = await startServer(stack.app);
 
     const res = await server.get('/api/v1/health');
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok', database: 'down' });
+    expect(res.status).toBe(503); // answered by the B2B router (no database in this test)
+    expect(res.body).toMatchObject({ status: 'down', database: 'down' });
     expect(stack.reached.count).toBe(0);
   });
 

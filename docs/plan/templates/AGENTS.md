@@ -4,23 +4,26 @@
 
 ## Project
 
-MusafirBaba: Next.js frontend, **Node.js/Express** backend, **MongoDB (self-hosted, standalone — no multi-document transactions, no change streams)**. We are adding a **B2B platform** (clients, KYC, wallet, plans billed by usage, dashboard + API) and **hotel listing & booking** (sold on website + B2B) as new modules inside the existing backend. Payments: **PayU** (existing). Realtime for the new system: **self-hosted Socket.IO**, fed by a MongoDB change stream (no third-party services, **no Redis** — D22); the existing app notifications (Ably/Expo) are not touched. The business area (client + hotel workspaces) is a route group inside the existing Next.js app.
+MusafirBaba: Next.js frontend, **Node.js/Express** backend, **MongoDB (self-hosted, standalone — no multi-document transactions, no change streams)**. We are adding a **B2B platform** (clients, KYC, wallet, plans billed by usage, dashboard + API) and **hotel listing & booking** (sold on website + B2B) as new modules **isolated in `backend/src/b2b/`** inside the existing backend (`/api/v1`, switched on by `B2B_ENABLED`; worker and realtime run as separate processes). Payments: **PayU** (existing). Realtime for the new system: **self-hosted Socket.IO**, fed by the capped `rt_signals` collection through a tailable cursor (no third-party services, **no Redis**, no change streams — D22); the existing app notifications (Ably/Expo) are not touched. The business area (client + hotel workspaces) is a route group inside the existing Next.js app.
 Read before any task: `docs/plan/10-coding-standards.md` (how code must look), `docs/plan/01-architecture.md`, `docs/plan/02-engineering-standards.md`, `docs/plan/03-security-baseline.md`, `docs/plan/05-inventory-and-no-double-booking.md` (for anything touching rooms or bookings), the current stage file, and the module `README.md`.
 
 ## Commands
 
+All commands run in `backend/`. DB = your own Atlas M0 dev cluster via `MONGO_URI` — never production data.
+
 ```
 npm ci
-npm run dev            # backend + worker (DB: your own Atlas M0 dev cluster via MONGO_URI — never production data)
-npm run lint && npm run typecheck
-npm run test:b2b       # unit + integration for new code (standalone MongoMemoryServer)
-npm run test:arch      # module boundary rules
-npm run migrate        # indexes, validators, data migrations
-npm run gen:module <name>
-npm run openapi
+B2B_ENABLED=true npm run dev   # existing backend with /api/v1 switched on
+npm run b2b:worker             # jobs, reconciler, invariants, event relay
+npm run b2b:realtime           # Socket.IO (needs B2B_REALTIME_SECRET)
+npm run b2b:migrate            # indexes, validators, capped collections (new prefixes only)
+npm run typecheck:b2b          # JSDoc type check of src/b2b, tests/b2b, scripts/b2b
+npm run test:b2b               # unit + integration (standalone in-memory MongoDB 8.0)
+npm run b2b:guards             # zero-impact checks against origin/main
+npm run b2b:progress           # regenerate docs/progress/STATUS.md counts (-- --check in CI)
 ```
 
-Done = lint, typecheck, test, test:arch all pass.
+Done = `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -- --check` all pass.
 
 ## How to work
 

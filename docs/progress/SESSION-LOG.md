@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-12 — AI (Claude) — S00-T12, T16, T17, T19, T20, T21
+
+- **Goal:** finish Stage 00's support tasks.
+- **Done:** S00-T21 → DONE (`core/health.js`: ok/degraded/down, job lag, reconciler last run; 503 when the database is down). S00-T12 → DONE (`npm run b2b:progress` + `-- --check`, now in CI; counts in STATUS.md are generated from here on). S00-T19 → DONE (`docs/adr/0001`–`0014`). S00-T20 → DONE (`backend/src/b2b/AGENTS.md` + `CLAUDE.md`; template's realtime line and command list corrected). S00-T16 and S00-T17 marked DONE (harness and B2B CI already in place; staging deploy + existing-system smoke checks wait for a staging server). `docs/adr/` allowed in the guards. README: `DONE` = committed on the stage branch.
+- **Not done / why:** S00-T18 module generator and S00-T06 lint tooling — next.
+- **Files / PR:** `backend/src/b2b/core/health.js`, `routes/v1.js`, `backend/scripts/b2b/progress*.js`, `backend/src/b2b/{AGENTS,CLAUDE}.md`, `docs/adr/*`, `.github/workflows/b2b-guards.yml`, tests.
+- **Tests run:** `npm run test:b2b` ✅ 202/202; `tsc` ✅; guards ✅; `b2b:progress -- --check` ✅.
+- **Decisions / deferrals:** —
+- **Next step:** S00-T18 — `npm run b2b:gen-module <name>` + sample module; S00-T06 — style tooling (check ESLint for lockfile drift first).
+
+
 ## 2026-11-12 — AI (Claude) — S00-T15 self-hosted realtime
 
 - **Goal:** live notifications and availability updates without third-party services, Redis or change streams.

@@ -10,6 +10,7 @@ export const FREE_PATHS = [
   /^backend\/tests\/b2b\//,
   /^backend\/scripts\/b2b\//,
   /^docs\/plan\//,
+  /^docs\/adr\//,
   /^docs\/progress\//,
   /^docs\/existing-system-map\.md$/,
   /^\.github\/workflows\/b2b-[a-z0-9-]+\.yml$/,

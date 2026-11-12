@@ -135,7 +135,8 @@ describe('the real /api/v1 router', () => {
     app.use('/api/v1', createB2BRouter({ connect: false, logger: quiet }));
     server = await startServer(app);
     const res = await server.get('/api/v1/health');
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503); // no database in this test
+    expect(res.body.status).toBe('down');
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
   });
 });

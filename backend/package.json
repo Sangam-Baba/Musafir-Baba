@@ -15,7 +15,8 @@
     "b2b:worker": "node src/b2b/worker.js",
     "b2b:realtime": "node src/b2b/realtime.js",
     "b2b:migrate": "node src/b2b/migrate.js",
-    "b2b:guards": "node scripts/b2b/guards.js"
+    "b2b:guards": "node scripts/b2b/guards.js",
+    "b2b:progress": "node scripts/b2b/progress.js"
   },
   "keywords": [],
   "author": "",

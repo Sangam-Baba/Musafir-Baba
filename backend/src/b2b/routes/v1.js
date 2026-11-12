@@ -7,9 +7,10 @@
 import express from 'express';
 
 import { loadConfig } from '../core/config.js';
-import { connectB2BDatabase, databaseState } from '../core/db/connection.js';
+import { connectB2BDatabase } from '../core/db/connection.js';
+import { checkHealth } from '../core/health.js';
 import { assertRegisteredModelsAllowed } from '../core/db/model.js';
-import { contextMiddleware } from '../core/http/context-middleware.js';
+import { contextMiddleware, contextOf } from '../core/http/context-middleware.js';
 import { publicRoute } from '../core/http/permissions.js';
 import { notFoundHandler, problemHandler } from '../core/http/problem.js';
 import { requestTimeout, securityHeaders } from '../core/http/protection.js';
@@ -38,8 +39,10 @@ export function createB2BRouter(options = {}) {
   router.use(express.json({ limit: BODY_LIMIT }));
   router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, ...(options.authenticate ? { authenticate: options.authenticate } : {}) }));
 
-  router.get('/health', publicRoute(), (_req, res) => {
-    res.json({ status: 'ok', database: databaseState() });
+  router.get('/health', publicRoute(), (_req, res, next) => {
+    checkHealth(contextOf(res).clock)
+      .then((health) => res.status(health.status === 'down' ? 503 : 200).json(health))
+      .catch(next);
   });
 
   router.get('/meta/version', publicRoute(), (_req, res) => {
