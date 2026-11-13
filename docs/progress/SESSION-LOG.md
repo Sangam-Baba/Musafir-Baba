@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-13 — AI (Claude) — Stage 01 started: task list, S01-T01 setup
+
+- **Goal:** start Stage 01 (organisations, users, roles & permissions).
+- **Done:** `stages/stage-01.md` with 20 tasks and the stage's choices (existing `bcrypt`/`jsonwebtoken` packages, new `B2B_AUTH_SECRET`, rotating refresh tokens, existing customer/staff tokens verified read-only with preview tokens refused, TOTP on node:crypto, Resend through an `EmailPort` job, admin MFA/roles in new collections, `aud_events`). S01-T01 → DONE: modules `identity`, `organizations`, `access`, `audit` (README, permissions, events, index), `core/permissions.js`, `permission-catalogue.js`, generator template updated, sample `example` module deleted.
+- **Not done / why:** S01-T20 CAPTCHA waits for an owner decision (it needs an outside service).
+- **Files / PR:** `backend/src/b2b/{core/permissions.js,permission-catalogue.js,modules/{identity,organizations,access,audit}/*}`, `backend/scripts/b2b/gen-module*.js`, `tests/b2b/permissions-catalogue.test.js`, `docs/progress/*`.
+- **Tests run:** `test:b2b` ✅ 23 files / 217 tests; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅; `b2b:progress -- --check` ✅.
+- **Decisions / deferrals:** migrations are added per task together with each collection's indexes.
+- **Next step:** S01-T02 — seed `acl_permissions`, system roles of plan §4 as permission patterns resolved against the catalogue, matrix test.
+
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 
 - **Goal:** owner decision — exactly one backend app and one frontend app (musafirbaba.com; new pages as routes under it). No extra containers, hostnames or previews.

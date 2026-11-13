@@ -26,16 +26,18 @@ export function moduleFiles(name, prefix) {
     [`${dir}/index.js`]: `// @ts-check
 /** PUBLIC interface of the ${name} module — other modules import only from here. */
 export { EVENTS } from './events.js';
-export { PERMISSIONS } from './permissions.js';
+export { PERMISSION_CATALOGUE, PERMISSIONS } from './permissions.js';
 export { createRoutes } from './routes.js';
 export { create${P}Service } from './${name}.service.js';
 export { ITEMS_COLLECTION } from './models/item.model.js';
 `,
     [`${dir}/permissions.js`]: `// @ts-check
-/** Permission codes this module declares (seeded into roles in Stage 01). */
-export const PERMISSIONS = /** @type {const} */ ({
-  itemRead: '${name}.item.read',
-  itemCreate: '${name}.item.create',
+/** Permissions this module declares. Add PERMISSION_CATALOGUE to src/b2b/permission-catalogue.js. */
+import { definePermissions } from '../../core/permissions.js';
+
+export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePermissions('${P}', {
+  itemRead: { code: '${name}.item.read', description: 'See ${name} items', orgTypes: ['CLIENT', 'HOTEL'] },
+  itemCreate: { code: '${name}.item.create', description: 'Create ${name} items', orgTypes: ['CLIENT', 'HOTEL'] },
 });
 `,
     [`${dir}/events.js`]: `// @ts-check

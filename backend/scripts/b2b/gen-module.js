@@ -43,5 +43,6 @@ for (const [rel, content] of Object.entries(files)) {
 console.log(`
 Next steps:
   1. Add the migration printed in src/b2b/modules/${name}/README.md to src/b2b/migrations/index.js
-  2. Mount the routes in src/b2b/routes/v1.js when the module has real endpoints
-  3. npm run format:b2b && npm run lint:b2b && npm run test:b2b`);
+  2. Add PERMISSION_CATALOGUE to src/b2b/permission-catalogue.js
+  3. Mount the routes in src/b2b/routes/v1.js when the module has real endpoints
+  4. npm run format:b2b && npm run lint:b2b && npm run test:b2b`);
