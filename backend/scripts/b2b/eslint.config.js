@@ -28,6 +28,8 @@ export default [
         URL: 'readonly',
         Headers: 'readonly',
         Response: 'readonly',
+        AbortController: 'readonly',
+        TextDecoder: 'readonly',
         NodeJS: 'readonly',
       },
     },

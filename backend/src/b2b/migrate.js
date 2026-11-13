@@ -14,7 +14,7 @@ import { MIGRATIONS } from './migrations/index.js';
 
 async function main() {
   const config = loadConfig(process.env);
-  await connectB2BDatabase(config.MONGO_URI, 'worker');
+  await connectB2BDatabase(config.MONGO_URI, 'cli');
   try {
     const result = await runMigrations(MIGRATIONS, { clock: systemClock, owner: `${hostname()}:${process.pid}` });
     console.log(`[b2b:migrate] applied: ${result.applied.join(', ') || 'none'}; already done: ${result.skipped.length}`);

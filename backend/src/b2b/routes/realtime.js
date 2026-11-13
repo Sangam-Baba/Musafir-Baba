@@ -1,25 +1,57 @@
 // @ts-check
 /**
- * GET /api/v1/realtime/token — a short-lived token for the self-hosted Socket.IO server,
- * listing the personal rooms of the signed-in caller (docs/plan/11-… §5).
+ * GET /api/v1/realtime/stream — live updates as Server-Sent Events (docs/plan/11-… §5, ADR-0015).
+ * - Signed-in callers (Authorization header, so the frontend opens it with fetch) get their
+ *   personal rooms automatically. The server decides these; the browser never names them.
+ * - Anyone may add public availability rooms: `?rooms=availability:property:MBHT-1,…` (max 20).
+ *   Anonymous visitors can use plain `new EventSource(url)`.
+ * - No token in the URL: the existing request logger prints URLs.
  */
 import express from 'express';
+import { z } from 'zod';
 
-import { AppError, UnauthorizedError } from '../core/errors.js';
+import { ValidationError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
-import { roomsForActor } from '../core/realtime/rooms.js';
-import { signRealtimeToken } from '../core/realtime/token.js';
+import { publicRoute } from '../core/http/permissions.js';
+import { validate } from '../core/http/validate.js';
+import { isPublicRoom, roomsForActor } from '../core/realtime/rooms.js';
 
-/** @param {{ secret?: string | undefined }} options */
+const MAX_PUBLIC_ROOMS = 20;
+
+const StreamQuery = z.strictObject({
+  rooms: z
+    .string()
+    .max(2000)
+    .optional()
+    .transform((raw) => [...new Set((raw ?? '').split(',').map((r) => r.trim()))].filter(Boolean))
+    .pipe(
+      z
+        .array(z.string().refine(isPublicRoom, 'Only availability:property:<id> rooms can be followed'))
+        .max(MAX_PUBLIC_ROOMS, `At most ${MAX_PUBLIC_ROOMS} rooms`),
+    ),
+});
+
+/** @param {{ hub: ReturnType<typeof import('../core/realtime/stream.js').createStreamHub> }} options */
 export function realtimeRoutes(options) {
   const router = express.Router();
-  router.get('/token', (_req, res, next) => {
+  router.get('/stream', publicRoute(), validate({ query: StreamQuery }), (req, res, next) => {
     const ctx = contextOf(res);
-    if (ctx.actor.type === 'anonymous' || ctx.actor.type === 'system') return next(new UnauthorizedError());
-    if (!options.secret) return next(new AppError('REALTIME_NOT_CONFIGURED', 503, 'Live updates are not available'));
-    const rooms = roomsForActor(ctx.actor);
-    const sub = rooms[0] ?? 'unknown';
-    res.json(signRealtimeToken({ sub, rooms }, { secret: options.secret, clock: ctx.clock }));
+    const { rooms: publicRooms } = /** @type {z.infer<typeof StreamQuery>} */ (res.locals.input.query);
+    const rooms = [...roomsForActor(ctx.actor), ...publicRooms];
+    if (rooms.length === 0) {
+      return next(
+        new ValidationError({ errors: [{ path: 'query.rooms', message: 'Sign in or name at least one room', code: 'no_rooms' }] }),
+      );
+    }
+    const ip = String(req.get('cf-connecting-ip') ?? req.ip ?? 'unknown');
+    options.hub.open(req, res, { rooms, ip, lastEventId: req.get('last-event-id') }).catch((error) => {
+      if (res.headersSent) {
+        ctx.logger.warn({ err: error }, 'realtime: stream failed after it started');
+        res.end();
+        return;
+      }
+      next(error);
+    });
   });
   return router;
 }

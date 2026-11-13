@@ -6,8 +6,10 @@
  */
 import express from 'express';
 
+import { startBackground } from '../background.js';
+import { systemClock } from '../core/clock.js';
 import { loadConfig } from '../core/config.js';
-import { connectB2BDatabase } from '../core/db/connection.js';
+import { b2bMongoose, connectB2BDatabase } from '../core/db/connection.js';
 import { checkHealth } from '../core/health.js';
 import { assertRegisteredModelsAllowed } from '../core/db/model.js';
 import { contextMiddleware, contextOf } from '../core/http/context-middleware.js';
@@ -16,21 +18,31 @@ import { notFoundHandler, problemHandler } from '../core/http/problem.js';
 import { requestTimeout, securityHeaders } from '../core/http/protection.js';
 import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
+import { readSignalsSince } from '../core/realtime/signals.js';
+import { createStreamHub } from '../core/realtime/stream.js';
 import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
 const REQUEST_TIMEOUT_MS = 15_000;
 
+/** @typedef {ReturnType<typeof createStreamHub>} StreamHub */
+
 /**
  * @param {{ env?: NodeJS.ProcessEnv, connect?: boolean, logger?: import('../core/logger.js').Logger,
- *   authenticate?: import('../core/http/context-middleware.js').Authenticator, timeoutMs?: number }} [options]
+ *   authenticate?: import('../core/http/context-middleware.js').Authenticator, timeoutMs?: number,
+ *   clock?: import('../core/clock.js').Clock, hub?: StreamHub }} [options]
+ *   connect: false (tests) = no database connection and no background work.
  * @returns {import('express').Router}
  */
 export function createB2BRouter(options = {}) {
   const env = options.env ?? process.env;
   const log = options.logger ?? defaultLogger;
+  const clock = options.clock ?? systemClock;
   assertRegisteredModelsAllowed();
-  if (options.connect !== false) startDatabase(env, log);
+  const hub =
+    options.hub ??
+    createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });
+  if (options.connect !== false) startDatabase(env, log, hub);
 
   const router = express.Router();
   router.use(securityHeaders());
@@ -51,7 +63,7 @@ export function createB2BRouter(options = {}) {
     res.json({ name: 'musafirbaba-b2b', version: process.env.B2B_VERSION ?? 'dev' });
   });
 
-  router.use('/realtime', realtimeRoutes({ secret: env.B2B_REALTIME_SECRET }));
+  router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));
@@ -59,14 +71,17 @@ export function createB2BRouter(options = {}) {
 }
 
 /**
- * Connects the B2B Mongoose instance in the background. A failure only affects
- * /api/v1 (health reports `down`); the existing app has its own connection.
+ * Connects the B2B Mongoose instance, then starts the background work (../background.js).
+ * A failure only affects /api/v1 (health reports `down`); the existing app has its own connection.
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/logger.js').Logger} log
+ * @param {StreamHub} hub
  */
-function startDatabase(env, log) {
-  const { MONGO_URI } = loadConfig(env);
-  connectB2BDatabase(MONGO_URI, 'api').catch((error) => {
-    log.error({ err: error }, 'b2b database connection failed');
-  });
+function startDatabase(env, log, hub) {
+  const config = loadConfig(env);
+  connectB2BDatabase(config.MONGO_URI, 'api')
+    .then(() => startBackground({ clock: systemClock, logger: log, runJobs: config.B2B_BACKGROUND === 'true', hub }))
+    .catch((error) => {
+      log.error({ err: error }, 'b2b database connection or background start failed');
+    });
 }

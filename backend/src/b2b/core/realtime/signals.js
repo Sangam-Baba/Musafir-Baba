@@ -2,8 +2,8 @@
 /**
  * Realtime signals through MongoDB (no Redis, no change streams — D22, D28):
  * - publish(): any B2B process inserts a small document into the capped `rt_signals`.
- * - createSignalReader(): the realtime process (and API processes, for cache:evict) read
- *   new signals with a TAILABLE cursor — works on the standalone production server.
+ * - createSignalReader(): each backend process reads new signals with ONE tailable cursor
+ *   (works on the standalone production server) and hands them to its SSE streams and caches.
  *   After a restart it starts from "now − maxAge"; older signals are skipped (the stored
  *   notification inbox + catch-up cover them — 11-… §6).
  */
@@ -43,6 +43,22 @@ export function publishCacheEvict(prefix, deps) {
 }
 
 /**
+ * Signals for `rooms` written after `afterId` (oldest first) — the catch-up for a reconnecting stream.
+ * Uses the `_id` index of the capped collection, so it reads at most `limit` recent documents.
+ * @param {import('mongodb').ObjectId} afterId
+ * @param {readonly string[]} rooms
+ * @param {number} limit
+ * @returns {Promise<Signal[]>}
+ */
+export function readSignalsSince(afterId, rooms, limit) {
+  return collection()
+    .find({ _id: { $gt: afterId }, room: { $in: [...rooms] } })
+    .sort({ _id: 1 })
+    .limit(limit)
+    .toArray();
+}
+
+/**
  * @param {{ onSignal: (s: Signal) => void, clock: import('../clock.js').Clock, logger: import('../logger.js').Logger,
  *   maxAgeMs?: number, retryMs?: number }} options
  */
@@ -77,7 +93,7 @@ export function createSignalReader(options) {
       } catch (error) {
         if (running) options.logger.warn({ err: error }, 'realtime: signal cursor closed, retrying');
       }
-      if (running) await new Promise((r) => setTimeout(r, retryMs));
+      if (running) await new Promise((r) => setTimeout(r, retryMs).unref());
     }
   }
 
@@ -85,7 +101,10 @@ export function createSignalReader(options) {
     start() {
       if (running) return;
       running = true;
-      loop = run();
+      loop = run().catch((error) => {
+        running = false;
+        options.logger.error({ err: error }, 'realtime: signal reader stopped after an unexpected error');
+      });
     },
     async stop() {
       running = false;

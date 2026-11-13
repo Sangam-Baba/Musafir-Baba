@@ -8,13 +8,13 @@
 
 | Decision | Why |
 | --- | --- |
-| **Inside the existing backend, isolated** — new folder `backend/src/b2b/`, API mounted at `/api/v1` behind `B2B_ENABLED` (two-line edit in `app.js`), own Mongoose instance, worker and realtime as two extra containers from the same image (D28, `12-protecting-the-existing-system.md`) | One app, one database, one PayU account; existing routes, models, middleware, crons and Dockerfile are not changed, and a failure in the new code can't stop the existing app (guarded load) |
+| **Inside the existing backend, isolated** — new folder `backend/src/b2b/`, API mounted at `/api/v1` behind `B2B_ENABLED` (two-line edit in `app.js`), own Mongoose instance; background work and live updates run inside the same backend process — no extra containers (D28, ADR-0015, `12-protecting-the-existing-system.md`) | One app, one database, one PayU account; existing routes, models, middleware, crons and Dockerfile are not changed, and a failure in the new code can't stop the existing app (guarded load) |
 | **The existing MongoDB, as it is** — production: self-hosted MongoDB 8.0 (`musafirbaba-mongo`), **standalone, not reconfigured until after launch** (D23, D28); local dev: Atlas M0 | No multi-document transactions and no change streams → the new code uses single-document atomic steps, state documents, idempotent undo and a reconciler (§8); signals via a capped collection. Correct on standalone, and still correct if a replica set is enabled later (DEF-021) |
 | **Modular monolith** — each module owns its collections, exposes a service interface, emits events | Fast to build; any module can become a separate service later |
 | **One booking engine, one API for every channel** | Website, B2B dashboard and B2B API all call the same code → one source of truth for inventory |
 | **No Redis for now** (D22) — MongoDB does the work | Background jobs, schedules, rate limits, usage counters, short caches and realtime signals all run on the existing MongoDB plus in-process memory (§8.2). Redis can be added later behind the same interfaces if load requires it (DEF-020) |
 | **PayU** (existing gateway, D17) | Website payments, wallet top-ups, plan payments — no second gateway |
-| **Self-hosted realtime: Socket.IO** in a new realtime process (`node src/b2b/realtime.js`), fed by a capped MongoDB collection (`rt_signals`, tailable cursor) (D21, D26) | Live notifications (bell) and "availability changed" signals with **no third-party service**. The existing app notifications (Ably/Expo, `services/notification/*`) are **not touched or reused**. Contract: `11-notifications-and-realtime.md` |
+| **Self-hosted live updates: Server-Sent Events** from the existing backend (`GET /api/v1/realtime/stream`), fed by a capped MongoDB collection (`rt_signals`, tailable cursor) (D21, D26, ADR-0015) | Live notifications (bell) and "availability changed" signals with **no third-party service**. The existing app notifications (Ably/Expo, `services/notification/*`) are **not touched or reused**. Contract: `11-notifications-and-realtime.md` |
 | **JavaScript (ESM) + JSDoc types + `// @ts-check`** for new backend code, like the existing backend — checked by `tsc --noEmit` in dev/CI (D2); frontend code in TypeScript | No build step added, so the existing deployment stays exactly as it is |
 | **No new search cluster** — MongoDB indexes (2dsphere, text/collation) (production is self-hosted, so no Atlas Search) | One less system to run at your scale |
 
@@ -31,14 +31,14 @@
               │  /api/v1   NEW: src/b2b (mounted only if B2B_ENABLED, before existing middleware;          │
               │            own Mongoose instance) → modules (identity, orgs, kyc, hotel-*, orders, wallet…) │
               └──────────────────────────────────────┬──────────────────────────────────────────────────────┘
-              extra containers, same image:          │        node src/b2b/worker.js   (jobs, reconciler, relay, sweeper)
-                                                     │        node src/b2b/realtime.js (Socket.IO)
+              same process, only if B2B_ENABLED:     │        background loops (jobs, reconciler, relay, sweeper)
+                                                     │        SSE hub (live updates on /api/v1/realtime/stream)
                                                      ▼
               ┌──────────── Existing MongoDB (standalone, unchanged settings) ──────────────┐   External: PayU (own
               │  existing collections (new code: read-only users/staffs/sessions only)      │   callbacks + B2B* txn
               │  NEW prefixed collections: org_ … hbk_ wal_ … core_jobs, rt_signals (capped)│   prefixes), Resend, R2
               └──────────────────────────────────────────────────────────────────────────────┘
-                      rt_signals ──(tailable cursor)──► realtime process (Socket.IO, self-hosted) ──► open pages
+                      rt_signals ──(tailable cursor)──► SSE hub in the existing backend ──(Server-Sent Events)──► open pages
 ```
 
 ## 3. Deployables
@@ -46,9 +46,9 @@
 | Deployable | What | Notes |
 | --- | --- | --- |
 | `backend` (existing Express app) | Existing routes **plus** the new `/api/v1` from `src/b2b/` (only when `B2B_ENABLED=true`) | Same container, command and Dockerfile; the only edit is the two-line mount in `app.js` (B1) |
-| (no separate API container) | The `/api/v1` API runs inside the existing backend process | Pool capped, timeouts, rate limits; heavy work goes to the worker (`12-…` D5) |
-| `b2b-worker` (new container, same image, `node src/b2b/worker.js`) | Job runner on `core_jobs` + lease-locked schedules: event relay, **reconciler** (§8), hold sweeper, PayU status poller, derived account balances, notifications (inbox, email, escalations), PDFs, usage persistence, billing runs, webhooks | Lease locks make two instances safe; the existing container's crons are untouched |
-| `b2b-realtime` (new container, same image, `node src/b2b/realtime.js`) | Self-hosted **Socket.IO** server: verifies realtime tokens, joins users to their rooms, reads `rt_signals` with a tailable cursor and emits | Own hostname via a **new** Cloudflare route (WebSockets); existing routes unchanged |
+| (no separate API container) | The `/api/v1` API runs inside the existing backend process | Pool capped, timeouts, rate limits; heavy work goes to background jobs (`12-…` D5) |
+| (no worker container) Background work (`src/b2b/background.js`) | Runs **inside the existing backend process** when `B2B_ENABLED=true` (`B2B_BACKGROUND=false` turns the jobs off): job runner on `core_jobs` + lease-locked schedules: event relay, **reconciler** (§8), hold sweeper, PayU status poller, derived account balances, notifications (inbox, email, escalations), PDFs, usage persistence, billing runs, webhooks | Every loop catches its own errors; timers unref'd; no signal handlers; lease locks make several backend containers safe; the existing crons are untouched (ADR-0015) |
+| (no realtime container) Live updates (`core/realtime/stream.js`) | **Server-Sent Events** at `GET /api/v1/realtime/stream` on the existing backend: personal rooms from the login, public availability rooms on request; one tailable cursor on `rt_signals` per process | Same address, no new hostname or Cloudflare route, no package, `server.js` not edited (ADR-0015) |
 | `website` (existing Next.js) | **New** hotel search/detail/checkout pages calling `/api/v1` on the existing backend host; a flagged "Hotels" tab on the existing customer bookings page (edit E2 in `12-…` §5) | Website customers keep their existing account and dashboard |
 | Business area (new route group in the **existing** Next.js app) | `/business/client/*` workspace for B2B clients, `/business/hotel/*` workspace for hotels; shared login and UI kit | Served as a **path** (`/business`) — no subdomain, so `proxy.ts` is untouched; its **own login**, separate from website customers and admin; split into its own app later only if needed (D14) |
 | `admin` (existing `/admin` in the same Next.js app) | **New** pages under `/admin/b2b/*`: clients, hotels, KYC, bookings, finance, plans, usage | Existing `Staff` login token verified read-only (D1); sidebar links via flagged edit E3 |
@@ -74,8 +74,8 @@ backend/src/b2b/              # nothing outside this folder imports from it exce
       documents/      reporting/
       hotel-catalog/  hotel-inventory/ pricing/       hotel-search/ hotel-booking/
     legacy-read/              # READ-ONLY access to existing users/staffs/sessions (find methods only)
-    routes/v1.js              # the /api/v1 router (own body parser, errors, 404)
-    worker.js  realtime.js    # entry points for the two extra containers
+    routes/v1.js              # the /api/v1 router (own body parser, errors, 404); starts background work once connected
+    background.js             # registries + startBackground(): loops run inside the backend process (ADR-0015)
 backend/tests/b2b/            # tests for the new code
   tests/ (shared test utils)
 ```
@@ -191,7 +191,7 @@ Production MongoDB stays **standalone** until after launch, so there are **no mu
 | P1 | **One document = one atomic step** | Every critical change is a single-document update with a condition (`$expr` capacity check, expected status, balance floor). MongoDB makes each one all-or-nothing, even on standalone |
 | P2 | **Record the owner inside the same document** | When a step changes a shared counter (an inventory night, a wallet), the same update records who did it (`holds[]` entry with the hold id; wallet `ops[]` entry with the op id). Repeating the step does nothing (`$ne` on the id), and undoing it is exact (remove the id, reverse its amount) |
 | P3 | **State document drives every multi-step flow** | Checkout, confirm, cancel, top-up, payout and billing runs each have one document (hold, order, booking, wallet op, run) whose status records how far the flow got. Steps run in a fixed order; each is idempotent; failure → undo finished steps in reverse |
-| P4 | **Reconciler** | Every 30 s the worker finds flows stuck in a middle status for > 30 s (a crashed process) and finishes them — **forward if money was captured, backward otherwise**. Nothing waits for the crashed process to come back |
+| P4 | **Reconciler** | Every 30 s a background loop finds flows stuck in a middle status for > 30 s (a crashed process) and finishes them — **forward if money was captured, backward otherwise**. Nothing waits for the crashed process to come back |
 | P5 | **Events stored in the business document** | The update that changes the status also pushes the event into that document's `pendingEvents[]`. The relay copies it into `core_outbox` (unique `eventId`) and then removes it. An event exists if and only if the change happened |
 
 | Concern | Model |
@@ -199,9 +199,9 @@ Production MongoDB stays **standalone** until after launch, so there are **no mu
 | Inventory | **Never oversold at any moment** — each night is a P1 conditional update + validator; multi-night all-or-nothing by P2/P3 undo within seconds (P4 within ~1 min after a crash) — see `05-…` |
 | Client wallet balance | **Strong** — P1 conditional update with floor check + P2 op record |
 | Ledger journal | **Complete within seconds** — each journal entry is one balanced document (unique by reference); P4 guarantees every wallet op gets its entry; hourly check: balance = Σ journal + pending ops |
-| Platform & hotel account balances (revenue, tax, clearing, payables) | **Derived** — computed from the journal by the worker (no hot documents) |
+| Platform & hotel account balances (revenue, tax, clearing, payables) | **Derived** — computed from the journal by background jobs (no hot documents) |
 | Search results | **Advisory** — may be up to ~30 s stale; booking always re-checks |
-| Side effects (emails, PDFs, webhooks, reports) | Eventual — via P5 events + worker, retried |
+| Side effects (emails, PDFs, webhooks, reports) | Eventual — via P5 events + background jobs, retried |
 | Usage counters | Buffered in the API process, written to MongoDB every ~2 s; quota checks may lag up to ~10 s; nightly reconciliation (§8.2) |
 
 **Tests run on a standalone MongoDB** (same as production), and lint bans `startSession`, `withTransaction` and `.watch(` in new code. Crash-injection tests kill the process after every step and check the reconciler's result (`07-…`).
@@ -216,12 +216,12 @@ Redis is **not set up and not planned for now**. Everything it would have done r
 
 | Need | How it works without Redis | Notes |
 | --- | --- | --- |
-| Background jobs and retries | Own small job queue in `core_jobs`: `queue`, `payload`, `runAt`, `status` (`READY/RUNNING/DONE/DEAD`), `attempts`, `maxAttempts`, `lockedBy`, `lockedUntil`, `lastError`, `dedupeKey` (partial unique). The worker claims a job with one `findOneAndUpdate` (`READY` and `runAt ≤ now`, or `RUNNING` with an expired lock) and sets a 60 s lease, renewed for long jobs. Failure → exponential backoff; after `maxAttempts` → `DEAD` + alert + admin retry button | Index `{queue, status, runAt}`; TTL deletes `DONE` jobs after 7 days (fine here — job rows are not inventory) |
-| Scheduled jobs (hold sweeper every 30 s, PayU poller every 2 min, escalation checks, nightly checks) | `core_schedules` with a lease lock taken by `findOneAndUpdate` on `lockedUntil`, so each tick runs **once** even with two worker containers | The legacy `node-cron` usage stays as it is; new jobs don't use it |
-| Event relay | Worker reads pending events every 500 ms (§8.1) → `core_outbox` → one `core_jobs` row per consumer | Consumers dedupe with `core_inbox` |
-| Live pushes to browsers | `realtime.publish(room, event, data)` inserts into `rt_signals`, a **capped collection** (64 MB). The `b2b-realtime` process reads it with a **tailable cursor** (works on standalone — no change streams) and emits to its own sockets; after a restart it continues from the last `_id` seen. Several realtime instances each read the same collection, so **no adapter is needed** | Signals older than 2 min are skipped on restart; the stored inbox + catch-up cover the gap (`11-…` §6). Fallback if tailable cursors are unavailable (checked in Stage 00 on Atlas M0): poll `_id > last` every 500 ms |
+| Background jobs and retries | Own small job queue in `core_jobs`: `queue`, `payload`, `runAt`, `status` (`READY/RUNNING/DONE/DEAD`), `attempts`, `maxAttempts`, `lockedBy`, `lockedUntil`, `lastError`, `dedupeKey` (partial unique). A background loop claims a job with one `findOneAndUpdate` (`READY` and `runAt ≤ now`, or `RUNNING` with an expired lock) and sets a 60 s lease, renewed for long jobs. Failure → exponential backoff; after `maxAttempts` → `DEAD` + alert + admin retry button | Index `{queue, status, runAt}`; TTL deletes `DONE` jobs after 7 days (fine here — job rows are not inventory) |
+| Scheduled jobs (hold sweeper every 30 s, PayU poller every 2 min, escalation checks, nightly checks) | `core_schedules` with a lease lock taken by `findOneAndUpdate` on `lockedUntil`, so each tick runs **once** even with several backend containers | The legacy `node-cron` usage stays as it is; new jobs don't use it |
+| Event relay | Background loop reads pending events every second (§8.1) → `core_outbox` → one `core_jobs` row per consumer | Consumers dedupe with `core_inbox` |
+| Live pushes to browsers | `realtime.publish(room, event, data)` inserts into `rt_signals`, a **capped collection** (64 MB). Each backend process reads it with **one tailable cursor** (works on standalone — no change streams) and writes matching signals to its open SSE streams; after a restart it continues from "now − 2 min". Several backend containers each read the same collection, so **no adapter is needed** | Signals older than 2 min are skipped on restart; the stored inbox + catch-up cover the gap (`11-…` §6). Reconnecting browsers send `Last-Event-ID` and get missed signals (≤ 2 min / 100). Fallback if tailable cursors are unavailable: poll `_id > last` every 500 ms |
 | Rate limits | the in-house MongoDB rate limiter (`core/rate-limit.js`, `core_rate_limits`, TTL — no package) for login, OTP, booking and API keys; blocked keys are remembered in memory so callers who are already blocked cost no database writes | Per-IP search limits can use the in-memory store while there is one API container |
-| Short caches (entitlements, API-key lookups, optional search results) | In-process LRU cache (`core/cache.js`, no package) with a short TTL; each API instance also clears entries when it sees `cache:evict` signals (it tails `rt_signals` for those only) | API-key revoke is effective in < 5 s (Stage 14) |
+| Short caches (entitlements, API-key lookups, optional search results) | In-process LRU cache (`core/cache.js`, no package) with a short TTL; each backend process clears entries of its `shared` caches when its signal reader sees `cache:evict` | API-key revoke is effective in < 5 s (Stage 14) |
 | Usage counters | The API buffers billable events in memory and flushes every 2 s or 200 events: one `insertMany` into `mtr_usage_events` + `bulkWrite` `$inc` upserts into `mtr_usage_daily` / `mtr_usage_monthly`; flush on graceful shutdown | A crash can lose ≤ 2 s of counts — always in the client's favour; nightly reconciliation. Quota checks read the monthly counter through a 10 s cache, so a quota can be exceeded by a few queries (accepted) |
 
 **Extra load on MongoDB** (risk K17): jobs, rate limits and counters add small, indexed writes. Batching, `inMemoryBlockOnConsumed` and TTL indexes keep it low; MongoDB metrics (`serverStatus`, disk, CPU via the existing uptime monitoring) are watched from Stage 00. The single server must have enough CPU/RAM/disk headroom (D23).
@@ -230,19 +230,19 @@ Redis is **not set up and not planned for now**. Everything it would have done r
 
 ## 9. Real-time updates
 
-- The new system's live updates run on a **self-hosted Socket.IO** server (`realtime` process) — **no third-party service, no Redis**. The worker and API publish by inserting a row into `rt_signals` (capped collection); the realtime process reads it with a tailable cursor and emits to rooms. Full contract: **`11-notifications-and-realtime.md`**.
+- The new system's live updates are **Server-Sent Events from the existing backend** (`GET /api/v1/realtime/stream`) — **no third-party service, no Redis, no extra process or hostname** (ADR-0015). Business code publishes by inserting a row into `rt_signals` (capped collection); each backend process reads it with a tailable cursor and writes to the matching open streams. Full contract: **`11-notifications-and-realtime.md`**.
 - The existing app notifications (`services/notification/*`, Ably, Expo push, `Notification` model) keep working exactly as today and are never imported by new code.
-- Inventory-changing steps emit `inventory.changed` events (P5); the worker turns them into `cache:evict` and `availability:changed` signals for room `availability:property:{propertyId}` (debounced per property), so open hotel pages and dashboards show "availability changed — refresh price".
+- Inventory-changing steps emit `inventory.changed` events (P5); a background job turns them into `cache:evict` and `availability:changed` signals for room `availability:property:{propertyId}` (debounced per property), so open hotel pages and dashboards show "availability changed — refresh price".
 - In-app notifications are stored in `ntf_inbox` first, then emitted to `b2b:user:{id}` / `b2b:org:{id}`; browsers catch up over the API after any reconnect, so a missed push never loses a notification.
-- Browsers connect with a short-lived realtime token from `GET /api/v1/realtime/token`; the server (not the browser) decides which rooms a socket joins. `availability:*` messages carry only property id and dates — never prices or guest data.
-- Clients integrating via API get **webhooks** (Stage 14), produced from the **outbox** by the worker, once per event.
+- Signed-in pages open the stream with `fetch` and their normal `Authorization` header (no token in the URL); the server (not the browser) decides the personal rooms, and the browser may add only public availability rooms. `availability:*` messages carry only property id and dates — never prices or guest data.
+- Clients integrating via API get **webhooks** (Stage 14), produced from the **outbox** by background jobs, once per event.
 
 ## 10. Performance approach
 
 - Availability is precomputed per room type per date (`total`, `booked`, `held`); search never counts bookings.
 - Search-result cache **off at first**; if the Stage 06 load test misses its budget, add a short in-process cache (30–60 s, the in-house LRU cache) evicted by `cache:evict` signals.
 - Indexes designed with every query (listed in each stage); `explain()` checked for hot queries.
-- Heavy work (PDFs, emails, webhooks, reports, usage persistence) runs in the worker.
+- Heavy work (PDFs, emails, webhooks, reports, usage persistence) runs as background jobs, outside the request (small batches, so requests on the shared process stay fast; split out to its own process later only if load requires it).
 - Reports read from a secondary (`readPreference: secondaryPreferred`) or from pre-aggregated collections.
 
 ## 11. Observability
@@ -261,7 +261,7 @@ Because modules talk through `index.js` services and events and own their collec
 | --- | --- | --- |
 | local | Each developer's **Atlas M0 free tier** cluster via `MONGO_URI`, for running the app by hand. Atlas is a replica set, but the new code never uses transactions or change streams, so it behaves the same as production. Automated tests run on a **standalone** `MongoMemoryServer`. MinIO (or S3 dev bucket), Mailpit | Seed script; never production data |
 | staging | Production-like; client test keys; PayU test mode | Synthetic only |
-| production | Existing **self-hosted MongoDB 8.0** container `musafirbaba-mongo`, **unchanged** (standalone) until after launch + the existing backend container (now also serving `/api/v1` when enabled) + two new containers (`b2b-worker`, `b2b-realtime`) from the same image | Real; new collections also dumped hourly (read-only) from Stage 09 |
+| production | Existing **self-hosted MongoDB 8.0** container `musafirbaba-mongo`, **unchanged** (standalone) until after launch + the existing backend container (now also serving `/api/v1`, background work and live updates when enabled) — no new containers | Real; new collections also dumped hourly (read-only) from Stage 09 |
 
 No production personal data in staging. Ever.
 

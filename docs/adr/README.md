@@ -13,8 +13,9 @@ Decisions for the B2B + hotel system (Stage 00, 2026-11-12). Template: `docs/pla
 | [0007](0007-public-references.md) | Random public references with a check character |
 | [0008](0008-one-booking-engine.md) | One booking engine for all channels |
 | [0009](0009-payu-flow.md) | PayU payment flow — own callbacks and txn prefixes, verify before confirm |
-| [0010](0010-self-hosted-realtime.md) | Self-hosted Socket.IO via capped rt_signals |
+| [0010](0010-self-hosted-realtime.md) | ~~Self-hosted Socket.IO via capped rt_signals~~ — superseded by 0015 |
 | [0011](0011-business-area-path.md) | Business area as /business path; flagged frontend edits E1–E4 only |
 | [0012](0012-derived-balances.md) | Derived balances for platform and hotel accounts |
 | [0013](0013-no-global-sanitize-filter.md) | No global sanitizeFilter — key validation instead |
 | [0014](0014-zero-impact-guards.md) | Zero-impact guards |
+| [0015](0015-single-process-sse.md) | Everything inside the one backend: background work in-process, live updates over Server-Sent Events |

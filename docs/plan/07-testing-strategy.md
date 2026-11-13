@@ -50,7 +50,7 @@ Test helpers: factories (`aClientOrg()`, `aHotelWithRooms({ rooms: 10 })`, `aCal
 | Cancellation | All penalty types, buffers, hotel time zones, deadline ± 1 s | 09 |
 | Metering accuracy | N billable calls → N usage records; quota thresholds; non-billable not counted; `X-MB-Refresh` honoured only for business sessions within its limit, ignored for API keys | 12 / 13 |
 | Webhook signing & SSRF | Signature verifiable; private IPs/redirects blocked | 14 |
-| **Notifications & realtime** | Exactly one inbox row per event and recipient; catch-up works with the realtime process stopped; sockets can't receive other users'/orgs' events; escalation timings; critical categories can't be muted; existing app notification code untouched (`11-…` §15) | 02 / 08 |
+| **Notifications & realtime** | Exactly one inbox row per event and recipient; catch-up works with the signal reader stopped; streams can't receive other users'/orgs' events; escalation timings; critical categories can't be muted; existing app notification code untouched (`11-…` §15) | 02 / 08 |
 
 ## 4. Coverage floors
 

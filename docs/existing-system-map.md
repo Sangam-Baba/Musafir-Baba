@@ -78,14 +78,14 @@ Business users (B2B clients, hotels) get the **new** login system (Stage 01), no
 | Customer bookings page | `app/(user)/bookings/page.tsx` (also `app/user/bookings/page.tsx` exists — confirm which one is live) |
 | Admin layout / sidebar | `app/admin/layout.tsx` uses `components/admin/app-sidebar.tsx` |
 | Env | `NEXT_PUBLIC_BASE_URL` (existing backend `…/api`), `NEXT_PUBLIC_SITE_URL`, Cloudinary, Google Maps |
-| Realtime client | No `socket.io-client` yet (one new pinned dependency later) |
+| Realtime client | None needed — live updates are Server-Sent Events (browser `EventSource` / `fetch`), ADR-0015 |
 
 **Refined frontend edit list (replaces E1 in plan file 12):**
 - **E1a** `HeroSearchWidget.tsx`: Hotels tab → `enabled: NEXT_PUBLIC_FEATURE_HOTELS === 'true'`, `href: '/hotels'`.
 - **E1b** `QuickServiceTiles.tsx`: already links to `/hotels` → **no edit needed**; once `/hotels` exists it works. ⚠ Today this tile points at a page that doesn't exist, so it is already broken in production. Building `/hotels` fixes it; until then, decide whether the new page shows "coming soon" while the flag is off.
 - **E2** `app/(user)/bookings/page.tsx`: flagged "Hotels" tab.
 - **E3** `components/admin/app-sidebar.tsx`: flagged links to `/admin/b2b/*`.
-- **E4** env: `NEXT_PUBLIC_B2B_API_URL`, `NEXT_PUBLIC_B2B_REALTIME_URL`, `NEXT_PUBLIC_FEATURE_HOTELS`, `NEXT_PUBLIC_FEATURE_B2B`.
+- **E4** env: `NEXT_PUBLIC_B2B_API_URL`, `NEXT_PUBLIC_FEATURE_HOTELS`, `NEXT_PUBLIC_FEATURE_B2B`.
 
 ## 6. Email, files, notifications
 

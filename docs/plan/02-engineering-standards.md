@@ -176,7 +176,7 @@ REST under `/api/v1`, plural nouns, camelCase JSON, money as `{ amountPaise, cur
 - Auth: httpOnly, Secure, SameSite=Lax cookies via Next route handlers (BFF); no tokens in `localStorage`.
 - Permission-aware UI (`can('hotel.booking.cancel')`) — but the backend is the only enforcement.
 - Accessibility WCAG 2.2 AA; LCP < 2.5 s on 4G; images via `next/image`.
-- Real-time: the `useRealtime` hook (socket.io-client; token renewal, reconnect, catch-up — `11-notifications-and-realtime.md` §12) on room `availability:property:{id}` on hotel pages; shows "prices/availability updated". Automatic refreshes after a signal send `X-MB-Refresh: realtime` so they are not billed (Stage 12 §3.2).
+- Real-time: the `useRealtime` hook (built-in `EventSource` / `fetch` stream; reconnect, `Last-Event-ID`, catch-up — `11-notifications-and-realtime.md` §12) on room `availability:property:{id}` on hotel pages; shows "prices/availability updated". Automatic refreshes after a signal send `X-MB-Refresh: realtime` so they are not billed (Stage 12 §3.2).
 - The business area lives in the existing Next.js app as its own route group with its **own** login (never shared with website-customer or admin cookies); served as the `/business` path (no `proxy.ts` change).
 
 ## 13. Git & reviews

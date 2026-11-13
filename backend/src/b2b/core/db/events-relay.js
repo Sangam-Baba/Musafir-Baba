@@ -177,10 +177,13 @@ export function createEventRelay(options) {
       timer = setInterval(() => {
         if (busy) return; // previous pass still running — skip instead of piling up
         busy = true;
-        current = runAll().finally(() => {
-          busy = false;
-        });
+        current = runAll()
+          .catch((error) => options.logger.error({ err: error }, 'event relay pass crashed'))
+          .finally(() => {
+            busy = false;
+          });
       }, options.intervalMs ?? 500);
+      timer.unref(); // never keeps the backend process alive or delays its shutdown
     },
     async stop() {
       if (timer) clearInterval(timer);

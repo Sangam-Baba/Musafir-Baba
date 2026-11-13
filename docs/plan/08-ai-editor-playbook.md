@@ -62,7 +62,7 @@ One task ≈ one PR ≈ < 400 changed lines.
 | Flows (no transactions) | No `startSession`/`withTransaction`/`watch`; each step idempotent; crash-injection test; no network calls between DB steps |
 | Zero impact | Only `backend/src/b2b/` and new frontend folders changed (E1–E4 only with approval); only new prefixed collections written; existing data only via `legacy-read` (`12-…`) |
 | Coding standards | Follows `10-coding-standards.md`: right file per role, function/file size, no `any`/enum/default export, `@core` helpers, frontend React Query + RHF patterns |
-| Notifications / realtime | Only via the new `notifications` module and `realtime.publish()` (writes `rt_signals` for the self-hosted Socket.IO server); background work only via `core/jobs` (no Redis/BullMQ); inbox row before push; no imports of existing `services/notification/*`, Ably, Expo or any third-party messaging SDK |
+| Notifications / realtime | Only via the new `notifications` module and `realtime.publish()` (writes `rt_signals`; streamed over SSE by the backend); background work only via `core/jobs` (no Redis/BullMQ); inbox row before push; no imports of existing `services/notification/*`, Ably, Expo or any third-party messaging SDK |
 | Authorization | Object-level check after load; correct scope |
 | Errors | Typed; no stack/Mongo errors leaked |
 | Tests | Failure paths, permission and isolation tests exist; not just mocks asserting calls |

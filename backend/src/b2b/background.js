@@ -1,12 +1,29 @@
 // @ts-check
 /**
- * Registry of background work for the B2B worker. Modules add their job handlers,
- * reconcile rules, invariant checks, event subscriptions and event sources here as they are built (Stage 02 onwards);
- * the worker (worker.js) runs them. Nothing here runs inside the existing backend process.
+ * Background work of the B2B system. It runs INSIDE the existing backend process, only when
+ * B2B_ENABLED=true, started by routes/v1.js once the B2B database is connected (ADR-0015,
+ * docs/plan/12-… B4). There is no separate worker or realtime process.
+ *
+ * Modules register their job handlers, reconcile rules, invariant checks, event subscriptions and
+ * event sources here as they are built (Stage 02 onwards).
+ *
+ * Rules for running inside the existing process:
+ * - Nothing here may throw into the existing app. Every loop catches and logs its own errors.
+ * - Timers are unref'd, so they never keep the process alive or delay its shutdown. No signal
+ *   handlers are installed; the existing app's shutdown stays exactly as it is.
+ * - Light on the shared database. Idle polling backs off. Lease locks and repeat-safe steps keep it
+ *   correct if more than one backend container ever runs.
  */
-import { createEventBus } from './core/db/events-relay.js';
+import { hostname } from 'node:os';
+
+import { evictCachedPrefix } from './core/cache.js';
+import { consumerJobHandlers, createEventBus, createEventRelay } from './core/db/events-relay.js';
 import { createInvariantChecks } from './core/db/invariants.js';
 import { createReconciler } from './core/jobs/reconciler.js';
+import { createJobRunner } from './core/jobs/runner.js';
+import { createScheduler } from './core/jobs/scheduler.js';
+import { CACHE_EVICT_ROOM } from './core/realtime/rooms.js';
+import { createSignalReader } from './core/realtime/signals.js';
 
 /** @type {Map<string, import('./core/jobs/runner.js').JobHandler>} */
 export const jobHandlers = new Map();
@@ -20,3 +37,58 @@ export const eventSources = [];
 
 export const RECONCILE_EVERY_MS = 30_000;
 export const INVARIANTS_EVERY_MS = 10 * 60_000;
+const RELAY_EVERY_MS = 1000;
+
+/**
+ * Routes one realtime signal: `cache:evict` clears this process's caches; everything else goes to SSE streams.
+ * @param {import('./core/realtime/signals.js').Signal} signal
+ * @param {{ deliver: (s: import('./core/realtime/signals.js').Signal) => void }} hub
+ */
+export function routeSignal(signal, hub) {
+  if (signal.room === CACHE_EVICT_ROOM) {
+    const prefix = signal.data.prefix;
+    if (typeof prefix === 'string' && prefix.length > 0) evictCachedPrefix(prefix);
+    return;
+  }
+  hub.deliver(signal);
+}
+
+/**
+ * Starts the background loops. The live-update reader always runs; jobs, schedules and the event
+ * relay run unless `runJobs` is false (B2B_BACKGROUND=false).
+ * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
+ *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void } }} options
+ * @returns {{ stop: () => Promise<void> }}
+ */
+export function startBackground(options) {
+  const workerId = `${hostname()}:${process.pid}`;
+  const logger = options.logger.child({ part: 'b2b-background', workerId });
+  const deps = { clock: options.clock, logger };
+
+  const reader = createSignalReader({ onSignal: (s) => routeSignal(s, options.hub), ...deps });
+  reader.start();
+  if (!options.runJobs) {
+    logger.info({}, 'b2b background: live updates only (B2B_BACKGROUND=false)');
+    return { stop: () => reader.stop() };
+  }
+
+  const scheduler = createScheduler({ workerId, ...deps });
+  scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
+  scheduler.register({ name: 'invariants', everyMs: INVARIANTS_EVERY_MS, run: () => invariantChecks.runAll(logger).then(() => undefined) });
+  const handlers = new Map([...jobHandlers, ...consumerJobHandlers(eventBus, options.clock)]);
+  const runner = createJobRunner({ handlers, workerId, ...deps });
+  const relay = createEventRelay({ sources: eventSources, bus: eventBus, intervalMs: RELAY_EVERY_MS, ...deps });
+
+  scheduler.start();
+  relay.start();
+  runner.start();
+  logger.info(
+    { jobHandlers: handlers.size, reconcileRules: reconciler.rules().length, eventSources: eventSources.length },
+    'b2b background ready',
+  );
+  return {
+    async stop() {
+      await Promise.all([scheduler.stop(), relay.stop(), runner.stop(), reader.stop()]);
+    },
+  };
+}

@@ -6,6 +6,23 @@
  */
 import { claimNext, completeJob, failJob } from './queue.js';
 
+/**
+ * Waits `ms` (unref'd: never keeps the backend process alive) unless woken early through the function handed to `onWake`.
+ * @param {number} ms
+ * @param {(wake: () => void) => void} onWake
+ * @returns {Promise<void>}
+ */
+function idleWait(ms, onWake) {
+  return new Promise((resolve) => {
+    const t = setTimeout(resolve, ms);
+    t.unref();
+    onWake(() => {
+      clearTimeout(t);
+      resolve();
+    });
+  });
+}
+
 /** @typedef {(payload: Record<string, unknown>, job: import('./queue.js').ClaimedJob) => Promise<void>} JobHandler */
 
 /**
@@ -53,12 +70,8 @@ export function createJobRunner(options) {
         idle = minIdle;
         continue;
       }
-      await new Promise((resolve) => {
-        const t = setTimeout(resolve, idle);
-        wake = () => {
-          clearTimeout(t);
-          resolve(undefined);
-        };
+      await idleWait(idle, (w) => {
+        wake = w;
       });
       idle = Math.min(idle * 2, maxIdle);
     }
@@ -68,7 +81,10 @@ export function createJobRunner(options) {
     start() {
       if (running) return;
       running = true;
-      loop = run();
+      loop = run().catch((error) => {
+        running = false;
+        options.logger.error({ err: error }, 'job runner stopped after an unexpected error');
+      });
     },
     async stop() {
       running = false;

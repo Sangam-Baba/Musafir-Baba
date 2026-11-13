@@ -14,8 +14,6 @@
     "typecheck:b2b": "tsc -p src/b2b/jsconfig.json",
     "lint:b2b": "eslint -c scripts/b2b/eslint.config.js src/b2b tests/b2b scripts/b2b && prettier --config scripts/b2b/prettier.json --check \"src/b2b/**/*.js\" \"tests/b2b/**/*.js\" \"scripts/b2b/**/*.js\"",
     "format:b2b": "prettier --config scripts/b2b/prettier.json --write \"src/b2b/**/*.js\" \"tests/b2b/**/*.js\" \"scripts/b2b/**/*.js\"",
-    "b2b:worker": "node src/b2b/worker.js",
-    "b2b:realtime": "node src/b2b/realtime.js",
     "b2b:migrate": "node src/b2b/migrate.js",
     "b2b:guards": "node scripts/b2b/guards.js",
     "b2b:progress": "node scripts/b2b/progress.js",
@@ -45,7 +43,6 @@
     "razorpay": "^2.9.6",
     "resend": "^6.0.1",
     "slugify": "^1.6.6",
-    "socket.io": "4.8.1",
     "streamifier": "^0.1.1",
     "ua-parser-js": "^2.0.6",
     "uuid": "^13.0.0",
@@ -60,7 +57,6 @@
     "mongodb-memory-server": "10.1.4",
     "nodemon": "^3.1.14",
     "prettier": "3.6.2",
-    "socket.io-client": "4.8.1",
     "typescript": "5.9.3",
     "vitest": "3.2.7"
   }

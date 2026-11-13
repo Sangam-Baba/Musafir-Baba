@@ -209,8 +209,8 @@ logger.info(`user ${email} paid ${amount}`);
 
 ### 4.9 Notifications and realtime
 
-- Send in-app notifications and emails only through the new `notifications` module (`notify(...)`), triggered by outbox events — never call an email client or emit to Socket.IO directly from a feature module.
-- Live pushes only through the **realtime publisher** (`realtime.publish()`, writes `rt_signals`; the self-hosted Socket.IO server picks it up). See `11-notifications-and-realtime.md`.
+- Send in-app notifications and emails only through the new `notifications` module (`notify(...)`), triggered by outbox events — never call an email client or write to a live-update stream directly from a feature module.
+- Live pushes only through the **realtime publisher** (`realtime.publish()`, writes `rt_signals`; each backend process streams it to open pages over SSE). See `11-notifications-and-realtime.md`.
 - **Never import or change the existing app notification code** (`services/notification/*`, `utils/notifications.js`, `models/Notification.js`, `config/ably.js`) and never add a third-party messaging SDK (Ably, Expo, Firebase, WhatsApp/SMS providers) to new code.
 
 ## 5. Frontend (Next.js 16 — existing app)
@@ -266,7 +266,7 @@ const res = await fetch('/api/v1/bookings?x=' + q, { headers: { Authorization: l
 - **Auth**: httpOnly cookies via route handlers; never store tokens in `localStorage`/`sessionStorage`.
 - **Permissions**: `can('hotel.booking.cancel')` hides/disables actions — the backend still enforces.
 - **Money and dates**: `formatInr(paise)`, `formatStayDate('2026-12-24')`, hotel-time vs viewer-time helpers — never format by hand.
-- **Realtime**: `useRealtime(...)` hook only (socket.io-client to our own `realtime` server; it handles tokens, reconnect and catch-up) — see `11-…` §12.
+- **Realtime**: `useRealtime(...)` hook only (built-in `EventSource` / `fetch` stream to `/api/v1/realtime/stream`; it handles reconnect, `Last-Event-ID` and catch-up) — see `11-…` §12.
 
 ## 6. API contract code
 
@@ -304,7 +304,7 @@ New package only with justification in the PR (maintained, licence, size, CVEs).
 | Shape | Arrange → Act → Assert; one behaviour per test |
 | Data | Factories (`aClientOrg()`, `aHotelWithRooms({ rooms: 10 })`); no shared mutable fixtures |
 | Time | Fixed `Clock`; time-travel helpers; never `sleep` |
-| Mocks | Only at the edges (PayU, email adapter); real Socket.IO server in integration tests; real Mongo (**standalone** `MongoMemoryServer`, same as production) for repositories, flows and crash-injection tests |
+| Mocks | Only at the edges (PayU, email adapter); real SSE stream through the real router in integration tests; real Mongo (**standalone** `MongoMemoryServer`, same as production) for repositories, flows and crash-injection tests |
 | Must cover | Happy path, edge cases, failure paths, permission denied, other-tenant 404, concurrency/idempotency where relevant |
 | Don't | Tests that only assert a mock was called; snapshot tests of large objects; skipped tests without a ticket |
 
@@ -383,6 +383,6 @@ export default [
 - [ ] Money/dates/ids/errors/logging via `@core`
 - [ ] Atomic conditional updates for counters with the owner id recorded; no read-modify-write; no `startSession`/`withTransaction`/`watch`; every middle status has a reconciler rule; crash-injection test added
 - [ ] Only new prefixed collections written; existing data only via `legacy-read`; no files changed outside `backend/src/b2b/` and new frontend folders (except approved E1–E4) — `12-protecting-the-existing-system.md`
-- [ ] Notifications/realtime only via the new notifications module and self-hosted Socket.IO; existing app notification code untouched
+- [ ] Notifications/realtime only via the new notifications module and the self-hosted SSE stream; existing app notification code untouched
 - [ ] Frontend: React Query + generated client; RHF + zod; loading/empty/error states; accessible; no tokens in storage
 - [ ] Tests follow §11; progress files updated

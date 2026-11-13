@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Status** | Accepted |
+| **Status** | Superseded by [ADR-0015](0015-single-process-sse.md) (2026-11-13) — no separate realtime process; live updates are Server-Sent Events from the existing backend |
 | **Date** | 2026-11-12 |
 | **Deciders** | Owner + tech lead |
 | **Stage** | Stage 00 |

@@ -13,7 +13,7 @@
 - [ ] Right file per role; controllers thin; domain pure; functions ≤ 40 lines, files ≤ 300
 - [ ] JSDoc types + `// @ts-check` (backend) / strict TS (frontend); no `any` / enums / default exports; exhaustive switches; `z.strictObject` with limits
 - [ ] Money/dates/ids/errors/logging via `@core`; frontend uses React Query + generated client + RHF/zod
-- [ ] Notifications/realtime only via the new notifications module and self-hosted Socket.IO; no third-party messaging SDK; existing app notification code untouched
+- [ ] Notifications/realtime only via the new notifications module and the self-hosted SSE stream; no third-party messaging SDK; existing app notification code untouched
 - [ ] No legacy code reformatted
 - [ ] Lockfile: no existing package changed version (additions only)
 

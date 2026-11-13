@@ -4,7 +4,7 @@
 
 ## Project
 
-MusafirBaba: Next.js frontend, **Node.js/Express** backend, **MongoDB (self-hosted, standalone — no multi-document transactions, no change streams)**. We are adding a **B2B platform** (clients, KYC, wallet, plans billed by usage, dashboard + API) and **hotel listing & booking** (sold on website + B2B) as new modules **isolated in `backend/src/b2b/`** inside the existing backend (`/api/v1`, switched on by `B2B_ENABLED`; worker and realtime run as separate processes). Payments: **PayU** (existing). Realtime for the new system: **self-hosted Socket.IO**, fed by the capped `rt_signals` collection through a tailable cursor (no third-party services, **no Redis**, no change streams — D22); the existing app notifications (Ably/Expo) are not touched. The business area (client + hotel workspaces) is a route group inside the existing Next.js app.
+MusafirBaba: Next.js frontend, **Node.js/Express** backend, **MongoDB (self-hosted, standalone — no multi-document transactions, no change streams)**. We are adding a **B2B platform** (clients, KYC, wallet, plans billed by usage, dashboard + API) and **hotel listing & booking** (sold on website + B2B) as new modules **isolated in `backend/src/b2b/`** inside the existing backend (`/api/v1`, switched on by `B2B_ENABLED`; background work and live updates run **inside the same backend process** — no extra containers, ADR-0015). Payments: **PayU** (existing). Live updates for the new system: **Server-Sent Events** from `/api/v1/realtime/stream`, fed by the capped `rt_signals` collection through a tailable cursor (no third-party services, **no Redis**, no change streams, no package — D22); the existing app notifications (Ably/Expo) are not touched. The business area (client + hotel workspaces) is a route group inside the existing Next.js app.
 Read before any task: `docs/plan/10-coding-standards.md` (how code must look), `docs/plan/01-architecture.md`, `docs/plan/02-engineering-standards.md`, `docs/plan/03-security-baseline.md`, `docs/plan/05-inventory-and-no-double-booking.md` (for anything touching rooms or bookings), the current stage file, and the module `README.md`.
 
 ## Commands
@@ -13,9 +13,7 @@ All commands run in `backend/`. DB = your own Atlas M0 dev cluster via `MONGO_UR
 
 ```
 npm ci
-B2B_ENABLED=true npm run dev   # existing backend with /api/v1 switched on
-npm run b2b:worker             # jobs, reconciler, invariants, event relay
-npm run b2b:realtime           # Socket.IO (needs B2B_REALTIME_SECRET)
+B2B_ENABLED=true npm run dev   # existing backend with /api/v1, background work and live updates switched on
 npm run b2b:migrate            # indexes, validators, capped collections (new prefixes only)
 npm run lint:b2b               # ESLint + Prettier check (format:b2b fixes formatting)
 npm run typecheck:b2b          # JSDoc type check of src/b2b, tests/b2b, scripts/b2b
@@ -55,6 +53,7 @@ Done = `lint:b2b`, `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -
 - Shared modules (orders, wallet, payments, pricing, documents, metering…) never import hotel modules.
 - **No multi-document transactions or change streams** — never `startSession`, `withTransaction`, `.watch()`. Multi-step flows use P1–P5 (`01-architecture.md` §8): conditional single-document steps, owner ids recorded in the same document, a state document, idempotent steps with undo, and a reconciler rule for every middle status.
 - **No HTTP/PayU/email/network calls between the database steps of a flow** — drive them by events.
+- Background code (`background.js`, `core/jobs`, relay, signal reader) runs inside the existing backend process: catch every error (never throw into the existing app), `unref()` every timer, never add `process.on(...)` signal handlers, keep each job small.
 
 ## Tenancy & security (hard rules)
 
@@ -107,9 +106,9 @@ Done = `lint:b2b`, `typecheck:b2b`, `test:b2b`, `b2b:guards` and `b2b:progress -
 ## Notifications & realtime (hard rules)
 
 - In-app notifications and emails only via the new `notifications` module (`notify(...)`), triggered by outbox events.
-- Live pushes only via `realtime.publish()` (writes `rt_signals`; the self-hosted `realtime` server emits it). No Redis/BullMQ (D22): background work goes through `core/jobs`, limits through `core/rate-limit`, caches through `core/cache`. Store the `ntf_inbox` row **before** pushing; pushes carry ids/titles only, never sensitive data.
+- Live pushes only via `realtime.publish()` (writes `rt_signals`; each backend process streams it to open pages over SSE). No Redis/BullMQ (D22): background work goes through `core/jobs`, limits through `core/rate-limit`, caches through `core/cache`. Store the `ntf_inbox` row **before** pushing; pushes carry ids/titles only, never sensitive data.
 - **Never import or modify** the existing app notification code (`services/notification/*`, `utils/notifications.js`, `models/Notification.js`, `config/ably.js`) or the mobile apps. Never add a third-party messaging service or SDK (Ably, Expo, Firebase, WhatsApp/SMS providers) to new code.
-- Frontend uses the `useRealtime` hook only (socket.io-client; handles tokens, reconnect, catch-up). Contract: `docs/plan/11-notifications-and-realtime.md`.
+- Frontend uses the `useRealtime` hook only (built-in `EventSource` / `fetch` stream — no package; handles reconnect, `Last-Event-ID`, catch-up). Contract: `docs/plan/11-notifications-and-realtime.md`.
 
 ## Coding standards (hard rule)
 

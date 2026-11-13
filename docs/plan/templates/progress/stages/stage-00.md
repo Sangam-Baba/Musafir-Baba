@@ -30,7 +30,7 @@
 | S00-T12 | Progress tracking: copy `docs/plan/templates/progress/` → `docs/progress/`; build `npm run progress` (+ `--check` in CI) | §3.10 | TODO | | | | |
 | S00-T13 | HTTP layer: request id, context builder, `requirePermission`, zod `validate()` with `$`/`.` key rejection, error middleware, helmet, body limits | §3.3 | TODO | | | | No global `sanitizeFilter` |
 | S00-T14 | Rate limiter (Mongo store) + in-process cache with `cache:evict` | §3.5 | TODO | | | | |
-| S00-T15 | Self-hosted realtime: realtime container `node src/b2b/realtime.js` (Socket.IO tailing capped `rt_signals`), `/api/v1/realtime/token`, `realtime.publish()`, new Cloudflare hostname | §3.5 | TODO | | | | No third-party service; don't touch existing Ably/Expo code |
+| S00-T15 | Self-hosted realtime: SSE at `/api/v1/realtime/stream` in the existing backend (tailing capped `rt_signals`), `realtime.publish()`, background loops in-process — no new container or hostname (ADR-0015) | §3.5 | TODO | | | | No third-party service; don't touch existing Ably/Expo code |
 | S00-T16 | Test harness: Vitest + **standalone** `MongoMemoryServer` + supertest + fast-check + factories + fixed clock + crash-injection helper | §3.6 | TODO | | | | |
 | S00-T17 | CI pipeline: lint → typecheck → boundary → protected paths → tests → audit → build → progress check; existing-system smoke checks after staging deploy | §3.7 | TODO | | | | |
 | S00-T18 | Module generator `npm run gen:module` + sample `example` module | §3.8 | TODO | | | | Delete sample after Stage 01 |
@@ -41,10 +41,10 @@
 ## Definition of Done (from the stage file)
 
 - [ ] `docs/existing-system-map.md` merged (all §3.1 questions answered)
-- [ ] `/api/v1` live on staging behind `B2B_ENABLED`; worker/realtime containers from the same image; existing files changed only by B1–B5; crash-isolation test green
+- [ ] `/api/v1` live on staging behind `B2B_ENABLED`; no new containers; existing files changed only by B1–B5; crash-isolation test green
 - [ ] Guards active: prefix guard, migration runner, legacy-read, protected-paths CI, transaction/change-stream lint
 - [ ] Consistency kit (P1–P5) with crash-injection tests green on standalone MongoDB
-- [ ] Worker runs relay, reconciler, job queue and scheduler; a test event reaches a browser through Socket.IO
+- [ ] Background work (in the backend process) runs relay, reconciler, job queue and scheduler; a test event reaches a browser over SSE
 - [ ] Existing-system smoke checks pass after deploy; MBConnect/MBGO notifications verified unchanged
 - [ ] Lint/Prettier/jsconfig per `10-coding-standards.md` §13 active in CI
 - [ ] ADRs 0001–0014 merged; `AGENTS.md` in repo root

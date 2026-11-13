@@ -121,10 +121,12 @@ export function createScheduler(options) {
         busy = true;
         current = tick()
           .then(() => undefined)
+          .catch((error) => options.logger.error({ err: error }, 'scheduler tick crashed'))
           .finally(() => {
             busy = false;
           });
       }, options.tickMs ?? 1000);
+      timer.unref(); // never keeps the backend process alive or delays its shutdown
     },
     async stop() {
       if (timer) clearInterval(timer);

@@ -4,6 +4,25 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
+
+- **Goal:** owner decision — exactly one backend app and one frontend app (musafirbaba.com; new pages as routes under it). No extra containers, hostnames or previews.
+- **Done:** S00-T15 reworked (still DONE):
+  - `worker.js`, `realtime.js`, the Socket.IO server, realtime tokens and `core/lifecycle.js` were removed.
+  - `background.js` `startBackground()` now runs jobs, the scheduler (reconciler, invariants), the event relay and the signal reader **inside the backend process**, started by `routes/v1.js` after the B2B database connects. Every loop catches its own errors, all timers are unref'd, and no signal handlers are installed.
+  - Live updates are **Server-Sent Events** at `GET /api/v1/realtime/stream` (`core/realtime/stream.js`): personal rooms from the login, ≤ 20 public availability rooms, 20 streams/IP, 5,000 in total, slow readers dropped, 25 s heartbeat, `Last-Event-ID` replay, `resync`.
+  - `cache:evict` now clears shared caches (`createCache({ shared: true })`).
+  - Config: `B2B_BACKGROUND` added; `B2B_REALTIME_PORT/SECRET/ORIGINS` removed. DB roles are now `api`/`cli`/`test`.
+- **Not done / why:** —
+- **Files / PR:**
+  - Code: `backend/src/b2b/{background.js,routes/v1.js,routes/realtime.js,core/realtime/{stream,signals}.js,core/{cache,config}.js,core/db/connection.js,core/jobs/{runner,scheduler}.js,core/db/events-relay.js,migrate.js}`; `tests/b2b/realtime.test.js` rewritten.
+  - Crash-isolation test now uses `B2B_BACKGROUND=maybe`. The old `B2B_REALTIME_PORT` trigger was no longer invalid, so that test had been passing for the wrong reason.
+  - `package.json`: scripts `b2b:worker` and `b2b:realtime` removed; `socket.io` and `socket.io-client` uninstalled, so B2B now adds 0 runtime packages.
+  - Docs: ADR-0015 (supersedes 0010, amends 0001); plan 01, 02, 03, 05, 06, 07, 08, 09 (D21, D28, K14), 10, 11, 12 (B2, B4, B5, D5, kill switches), stage 00/02/06 files, PR template, AGENTS template + copy, existing-system map (E4 drops `NEXT_PUBLIC_B2B_REALTIME_URL`).
+- **Tests run:** `npm run test:b2b` ✅ 23 files / 214 tests; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅ (lockfile: 237 dev packages added, 0 runtime, none changed).
+- **Decisions / deferrals:** ADR-0015. If background load ever shows in `/api` response times, `startBackground()` can move to its own process with owner approval (no module changes).
+- **Next step:** owner signs off Stage 00; then write the Stage 01 task list (organisations, users, roles & permissions).
+
 ## 2026-11-12 — AI (Claude) — S00-T06 lint/format, S00-T18 module generator
 
 - **Goal:** finish Stage 00.

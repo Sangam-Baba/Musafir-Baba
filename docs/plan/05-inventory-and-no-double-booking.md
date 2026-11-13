@@ -198,7 +198,7 @@ The status change that matters (hold `ACTIVE`, booking `CONFIRMED`, `CANCELLED`�
 
 1. Inventory-changing steps emit `inventory.changed {propertyId, dates}` events (§7a). The worker turns them into signals in `rt_signals` (debounced to one per property per second):
    - `cache:evict` for that property (API instances clear their in-process cache, if enabled);
-   - `availability:changed {propertyId, dates}` for room `availability:property:{id}`, delivered by the self-hosted Socket.IO server (`11-notifications-and-realtime.md`) — open website pages and dashboards refresh prices (these automatic refreshes are not billed — Stage 12 §3.2).
+   - `availability:changed {propertyId, dates}` for room `availability:property:{id}`, delivered over the self-hosted SSE stream (`11-notifications-and-realtime.md`) — open website pages and dashboards refresh prices (these automatic refreshes are not billed — Stage 12 §3.2).
 2. `rt_signals` is a **capped collection** read with a tailable cursor (works on a standalone server — no change streams needed).
 3. The hotel calendar in the business area subscribes too, so hotel staff see bookings land live.
 4. Client **webhooks** (Stage 14) are produced from the **outbox** events by the worker, so each event is sent once even with several instances.

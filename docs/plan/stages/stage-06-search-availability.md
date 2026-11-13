@@ -14,7 +14,7 @@ Website visitors search the hotels we list, **fast and with live availability an
 
 ## 2. Scope
 
-**In:** destination autocomplete, city/area/near-me search, filters, sort, offers (rooms & rates with price tokens), price check, caching + invalidation, live "availability changed" (self-hosted Socket.IO), rate limiting, website search UIs, load test.
+**In:** destination autocomplete, city/area/near-me search, filters, sort, offers (rooms & rates with price tokens), price check, caching + invalidation, live "availability changed" (self-hosted SSE), rate limiting, website search UIs, load test.
 **Out:** B2B dashboard search UI and B2B prices on screen (Stage 12), usage counting for clients (Stage 12), API keys (Stage 14).
 
 ## 3. Work breakdown
@@ -25,7 +25,7 @@ Website visitors search the hotels we list, **fast and with live availability an
 3. **Offers** `POST /hotels/{ref}/offers`: all sellable room type × rate plan options with breakdown (per permission), cancellation summary and **price token** each.
 4. **Price check** `POST /hotels/offers/price-check`: verify token → re-check availability + re-price → `OK` (fresh token) | `PRICE_CHANGED` (old/new) | `SOLD_OUT`.
 5. **Cache (only if needed)**: start without a cache. If the load test (step 9) misses its budget, add an in-process LRU cache (`core/cache.js`) keyed `(propertyId, stay, occupancyHash, pricingContextHash)`, TTL 30–60 s, cleared by `cache:evict` signals (Stage 04) and pricing-version bumps; single-flight to avoid stampedes. No Redis (D22).
-6. **Real time**: website hotel page joins `availability:property:{id}` with the `useRealtime` hook (self-hosted Socket.IO); on `availability:changed` show "Availability or price updated" and refresh offers.
+6. **Real time**: website hotel page joins `availability:property:{id}` with the `useRealtime` hook (self-hosted SSE); on `availability:changed` show "Availability or price updated" and refresh offers.
 7. **Gateway middleware (built now, used by all `/api/v1` routes)**: auth → context → org active? → **rate limiter** (`core/rate-limit`, MongoDB store, per user, per org, per IP; stricter for anonymous website traffic) → permission → handler. Hooks for entitlement checks and usage recording are left as no-ops, filled in Stage 12/13.
 8. **Website UIs**: search bar, results list + map, filters, sort, hotel detail with gallery, room cards with **final price incl. GST**, cancellation summary, price check before checkout; SEO-friendly server rendering for hotel content pages; mobile-first.
 9. **Load test** to the budgets in `07-testing-strategy.md` §5.

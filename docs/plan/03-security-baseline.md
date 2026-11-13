@@ -48,7 +48,7 @@
 See `01-architecture.md` §6. Plus:
 - Cache keys always include `orgId` (or pricing context) when data differs per tenant.
 - File paths in storage namespaced by org; checked when generating signed URLs.
-- Realtime (self-hosted Socket.IO): `availability:property:*` carries only property id + dates; `b2b:user:*`/`b2b:org:*` carry only a notification id, category and short title (details fetched over the API with permission checks); connections need a short-lived realtime token and the **server** decides which rooms a socket joins (`11-notifications-and-realtime.md` §5).
+- Realtime (self-hosted Server-Sent Events, ADR-0015): `availability:property:*` carries only property id + dates; `b2b:user:*`/`b2b:org:*` carry only a notification id, category and short title (details fetched over the API with permission checks); connections need a short-lived realtime token and the **server** decides which rooms a socket joins (`11-notifications-and-realtime.md` §5).
 
 ## 5. API hardening (Express)
 

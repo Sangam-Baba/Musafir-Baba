@@ -8,11 +8,8 @@ import { z } from 'zod';
 const ConfigSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
-  B2B_REALTIME_PORT: z.coerce.number().int().min(1).max(65535).default(8101),
-  /** Signs realtime tokens; required by the realtime process and the token endpoint. */
-  B2B_REALTIME_SECRET: z.string().min(32).optional(),
-  /** Comma-separated browser origins allowed to open realtime connections. */
-  B2B_REALTIME_ORIGINS: z.string().optional(),
+  /** Background work (jobs, schedules, event relay, live-update reader) inside this backend process. "false" turns it off. */
+  B2B_BACKGROUND: z.enum(['true', 'false']).default('true'),
 });
 
 /** @typedef {z.infer<typeof ConfigSchema>} B2BConfig */

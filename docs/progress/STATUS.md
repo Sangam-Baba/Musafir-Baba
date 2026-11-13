@@ -3,7 +3,7 @@
 > The one page that says where the build is. Rules: `docs/progress/README.md`.
 > Numbers inside the generated block come from `npm run progress` — don't edit them by hand.
 
-**Last updated:** 2026-11-12 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
+**Last updated:** 2026-11-13 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
 
 ## Now
 
@@ -12,8 +12,8 @@
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 00 — Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) |
 | **Current task(s)** | Stage 00 complete — waiting for owner sign-off (Definition of Done review) |
-| **Next up** | S00-T02 `backend/src/b2b/` skeleton + flagged mount · S00-T04 zero-impact guards · S00-T03 MongoDB job queue + scheduler (D22: no Redis) |
-| **Blockers** | B1 — owner checks O1–O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
+| **Next up** | Owner signs off Stage 00 (fill in Finished in `stages/stage-00.md`) · then Stage 01 — organisations, users, roles & permissions (write its task list first) |
+| **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | CA engaged before Stage 05 (Q1–Q7) |
 
 ## Stages

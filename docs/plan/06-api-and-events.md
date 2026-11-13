@@ -76,7 +76,7 @@ Each billable call = 1 query (weights editable by admin), counted on **both dash
 
 ### 3.4a Notifications and realtime (Stage 02)
 
-`GET /realtime/token`, `GET /notifications?after=&limit=&unread=`, `GET /notifications/unread-count`, `POST /notifications/{id}/read`, `POST /notifications/read-all`, `POST /notifications/{id}/acknowledge`, `GET/PUT /notification-preferences`; admin `/admin/notifications/templates|deliveries|escalations`. Realtime itself is a self-hosted Socket.IO endpoint (`realtime.musafirbaba.com`). Contract: `11-notifications-and-realtime.md` §11.
+`GET /realtime/stream?rooms=` (SSE), `GET /notifications?after=&limit=&unread=`, `GET /notifications/unread-count`, `POST /notifications/{id}/read`, `POST /notifications/read-all`, `POST /notifications/{id}/acknowledge`, `GET/PUT /notification-preferences`; admin `/admin/notifications/templates|deliveries|escalations`. Realtime itself is a self-hosted Socket.IO endpoint (`realtime.musafirbaba.com`). Contract: `11-notifications-and-realtime.md` §11.
 
 ### 3.5 Hotel workspace (`/api/v1/hotel/...`)
 

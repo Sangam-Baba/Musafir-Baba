@@ -17,10 +17,11 @@ b2bMongoose.set('strictQuery', true);
 b2bMongoose.set('autoIndex', false);
 b2bMongoose.set('autoCreate', false);
 
-/** @typedef {'api' | 'worker' | 'realtime' | 'test'} ProcessRole */
+/** 'api' = inside the existing backend (routes + background work), 'cli' = one-off scripts such as b2b:migrate. */
+/** @typedef {'api' | 'cli' | 'test'} ProcessRole */
 
 /** @type {Record<ProcessRole, number>} */
-const POOL_SIZE = { api: 10, worker: 5, realtime: 3, test: 5 };
+const POOL_SIZE = { api: 10, cli: 2, test: 5 };
 
 /**
  * @param {string} uri

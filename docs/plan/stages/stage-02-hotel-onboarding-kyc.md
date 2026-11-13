@@ -27,7 +27,7 @@ A hotel registers itself, uploads KYC documents, and becomes active only after M
 5. **Step 3 — Status page**: timeline, rejection reasons per document, resubmit.
 6. **KYC workflow** (`kyc`, generic): reviewer takes an application from the queue (locked for 30 min), checks each document (verified / mismatch / unreadable), decides with notes; **high risk** (name mismatch, GST inactive/unregistered, duplicate GSTIN) needs a second approver.
 7. **On approval** (events): org → `ACTIVE`; owner gets a "set your password" link (never email passwords); hotel can start listing (Stage 03). Event `organizations.org.activated` is generic — Stage 10/11 add listeners for clients.
-8. **notifications foundation** (contract: `11-notifications-and-realtime.md`, all self-hosted): **in-app inbox** (`ntf_inbox`, written from outbox events, idempotent); **live push** via the self-hosted Socket.IO `realtime` server to `b2b:user:{id}` / `b2b:org:{id}` / `b2b:admin:{queue}`; catch-up API, unread count, acknowledge; preferences (critical categories locked); **bell UI** in the business area and admin with toast, sound, connection-status indicator and the `useRealtime` hook; **email** templates (versioned, variables schema), delivery log and retries through `EmailPort` (D25), admin template editor with preview/test send; escalation job framework (`ntf_escalations`). **No WhatsApp/SMS** (DEF-016). First users: hotel KYC submitted/approved/rejected and team invitations.
+8. **notifications foundation** (contract: `11-notifications-and-realtime.md`, all self-hosted): **in-app inbox** (`ntf_inbox`, written from outbox events, idempotent); **live push** via the self-hosted SSE stream (`/api/v1/realtime/stream`, ADR-0015) to `b2b:user:{id}` / `b2b:org:{id}` / `b2b:admin:{queue}`; catch-up API, unread count, acknowledge; preferences (critical categories locked); **bell UI** in the business area and admin with toast, sound, connection-status indicator and the `useRealtime` hook; **email** templates (versioned, variables schema), delivery log and retries through `EmailPort` (D25), admin template editor with preview/test send; escalation job framework (`ntf_escalations`). **No WhatsApp/SMS** (DEF-016). First users: hotel KYC submitted/approved/rejected and team invitations.
 9. **Admin**: KYC queue (filters: org type, status, age, risk), review screen (documents side by side with typed data, GSTIN/PAN cross-check highlights), decision dialog, history.
 10. **Retention jobs**: abandoned registrations reminded at 30 days, purged at 90 days (configurable).
 
@@ -68,7 +68,7 @@ Upload safety; KYC state machine (all transitions); maker–checker; idempotent 
 - [ ] Hotel registers → uploads → admin approves → owner sets password → can start a listing
 - [ ] Rejected hotel sees reasons, resubmits, gets approved
 - [ ] Sensitive fields encrypted and masked; file access logged
-- [ ] KYC notifications arrive live in the bell and by email; catch-up works with the realtime process stopped
+- [ ] KYC notifications arrive live in the bell and by email; catch-up works with the signal reader stopped
 - [ ] KYC engine accepts a second org type through configuration only (test with a dummy type)
 
 ## 11. AI editor prompt

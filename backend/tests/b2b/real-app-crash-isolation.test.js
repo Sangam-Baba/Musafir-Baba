@@ -12,7 +12,7 @@ import { startServer } from './helpers/http.js';
 let server;
 beforeAll(async () => {
   process.env.B2B_ENABLED = 'true';
-  process.env.B2B_REALTIME_PORT = 'not-a-port'; // dotenv never overrides variables that are already set
+  process.env.B2B_BACKGROUND = 'maybe'; // invalid → config error at load; dotenv never overrides variables that are already set
   const { default: app } = await import('../../src/app.js');
   server = await startServer(app);
 });

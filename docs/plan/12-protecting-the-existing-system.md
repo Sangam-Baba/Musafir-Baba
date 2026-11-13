@@ -17,12 +17,12 @@
 
 | Item | Decision |
 | --- | --- |
-| Code | One new folder **`backend/src/b2b/`** (`core/`, `modules/`, `legacy-read/`, `routes/`, `mount.js`, `worker.js`, `realtime.js`). Tests in `backend/tests/b2b/`. Nothing outside these folders is edited, except the short list B1–B5 below |
+| Code | One new folder **`backend/src/b2b/`** (`core/`, `modules/`, `legacy-read/`, `routes/`, `mount.js`, `background.js`). Tests in `backend/tests/b2b/`. Nothing outside these folders is edited, except the short list B1–B5 below |
 | Language | **JavaScript (ESM), like the existing backend**, with JSDoc types and `// @ts-check` checked by `tsc --noEmit` in development and CI (D2). The existing backend has no build step and keeps it — no Dockerfile or start-command change |
 | HTTP API | Served by the **existing backend process** under **`/api/v1`**. It is mounted **only when `B2B_ENABLED=true`** (default off) and **before** the existing body parsers, cookie parser and audit interceptor, so existing middleware never touches `/api/v1` requests and new code never sees existing `/api/...` requests. No existing route starts with `/api/v1` |
 | Crash isolation | `app.js` imports only a tiny `b2b/mount.js`. That file loads the rest of the new code with a guarded dynamic import: if the new code fails to load, the error is logged, `/api/v1` answers `503`, and **the existing app starts and runs normally** |
 | Database | The new code uses its **own Mongoose instance** (`new mongoose.Mongoose()`) with its own connection to the same database. So the existing global audit plugin (`config/mongoosePluginInit.js`), default connection settings and models are **not shared**: new models don't write to the existing audit log, and existing models are never affected |
-| Background work | `node src/b2b/worker.js` and `node src/b2b/realtime.js` run as **two extra containers from the same backend image** (the image already contains `src/`). The existing backend container keeps its command; its crons and Ably/Expo code are untouched |
+| Background work | Runs **inside the existing backend process**, only when `B2B_ENABLED=true` (`src/b2b/background.js`, ADR-0015): job runner, lease-locked schedules, event relay and the live-update signal reader. Every loop catches its own errors, timers are unref'd, no signal handlers are installed. Live updates are Server-Sent Events on `/api/v1/realtime/stream`. **No extra containers, hostnames or Cloudflare routes.** The existing crons and Ably/Expo code are untouched |
 | Config | New variables are only **added** to the backend env (`B2B_ENABLED`, `B2B_*`); existing variables (database URI, `JWT_ACCESS_SECRET`, PayU key/salt, Resend key) are read, never changed |
 
 **The complete list of edits to existing backend files** (each reviewed by the owner):
@@ -30,10 +30,10 @@
 | # | Existing file | Edit | When `B2B_ENABLED` is off |
 | --- | --- | --- | --- |
 | B1 | `backend/src/app.js` | Two lines: `import { mountB2B } from "./b2b/mount.js";` and `mountB2B(app);` placed right after the CORS block | `mountB2B` returns immediately — no route, no middleware added |
-| B2 | `backend/package.json` | New `devDependencies` (`typescript` for checking, `vitest`, `@types/express`) and scripts `test:b2b`, `typecheck:b2b`, `lint:b2b`, `format:b2b`, `b2b:*` (worker, realtime, migrate, guards, progress); later a few runtime dependencies (e.g. `socket.io`), each pinned to an exact version | Dev dependencies aren't installed in production (`npm ci --omit=dev`); new runtime packages are only loaded by new code |
+| B2 | `backend/package.json` | New `devDependencies` (`typescript` for checking, `vitest`, `@types/express`) and scripts `test:b2b`, `typecheck:b2b`, `lint:b2b`, `format:b2b`, `b2b:*` (migrate, guards, progress, gen-module); runtime dependencies only if ever needed, each pinned to an exact version (today: none — ADR-0015 removed `socket.io`) | Dev dependencies aren't installed in production (`npm ci --omit=dev`); new runtime packages are only loaded by new code |
 | B3 | `backend/package-lock.json` | Updated by the B2 installs. **Rule: no existing package may change version** — every install is checked with a lockfile diff, and a package that forces bumps is not used (e.g. `supertest` was dropped because it bumped `qs`/`form-data`; tests use built-in `fetch`) | — |
-| B4 | Server deployment | Two **new** containers (worker, realtime) from the same image; existing container unchanged | Don't start them |
-| B5 | Backend env | New `B2B_*` variables added | `B2B_ENABLED=false` |
+| B4 | Server deployment | **Nothing** — no new containers (ADR-0015). Background work and live updates run in the existing backend process when the flag is on | `B2B_ENABLED=false` (or `B2B_BACKGROUND=false` for jobs only) |
+| B5 | Backend env | New `B2B_*` variables added (`B2B_ENABLED`, `B2B_BACKGROUND`) | `B2B_ENABLED=false` |
 
 ## 3. The shared database — rules
 
@@ -43,7 +43,7 @@
 | D2 | **Existing collections are read-only** for the new system: only `users` (website customers), `staffs` (admins) and `sessions` (to respect logout/revoke) are read, and only through `src/legacy-read/` | That adapter has its own minimal schemas and exposes `find` methods only. Lint bans write methods in it, and a test proves it cannot write |
 | D3 | **Own Mongoose instance, no automatic index or collection creation**: the new code's separate Mongoose instance runs with `autoIndex: false` and `autoCreate: false`; the existing global plugins are not registered on it | Indexes and validators are created only by the migration runner, which refuses any collection without a new prefix. This stops an accidental index build on an existing collection |
 | D4 | **No server changes until after launch**: no restart, no config change, no replica set, no new database users, no server-wide settings. The new code works on the standalone server (no multi-document transactions, no change streams — `01-…` §8) | Lint bans `startSession`, `withTransaction` and `.watch(`. Integration tests run on a **standalone** in-memory MongoDB, the same mode as production |
-| D5 | **Load stays small and can be removed instantly** | New code's pool capped (`maxPoolSize: 10` in the backend process, 5 for worker, 3 for realtime); `maxTimeMS` on every query (2 s for API reads, 30 s for reports); request timeouts and rate limits on `/api/v1`; nothing CPU-heavy (PDFs, reports, imports) runs in the backend process — it goes to the worker; MongoDB CPU and latency and the existing site's response times watched. **`B2B_ENABLED=false` + stopping the two new containers removes all new load at once** |
+| D5 | **Load stays small and can be removed instantly** | New code's pool capped (`maxPoolSize: 10` in the backend process, 2 for one-off scripts); `maxTimeMS` on every query (2 s for API reads, 30 s for reports); request timeouts and rate limits on `/api/v1`; nothing CPU-heavy runs inside a request — it goes to background jobs in small batches (PDF rendering runs in its own Chromium child process); if background load ever shows in `/api` response times, `startBackground()` can move to its own process with owner approval (no module changes); MongoDB CPU and latency and the existing site's response times watched. **`B2B_ENABLED=false` removes all new load at once** |
 | D6 | **Backups**: the existing daily backup is not changed | A **separate**, read-only hourly dump of the new collections only (`--nsInclude` the new prefixes) is added once real money flows (Stage 09), stored off the server |
 
 The replica-set switch, which would allow multi-document transactions, change streams and better backups, is **optional and after launch** (DEF-021). The new code does not need it and does not change when it happens.
@@ -68,7 +68,7 @@ New UI is added **as new files**. Edits to existing files are limited to the sho
 | New pages are new folders | Website hotels: `src/app/(user)/hotels/…`. Business area: **`/business/…` as a path** (`src/app/(business)/business/…`) — **no subdomain**, so `proxy.ts` (today fully commented out) stays untouched (D14 updated). New admin pages: `src/app/admin/b2b/…`. Feature code: `src/features/b2b-*/` |
 | URL clash check | The site has a catch-all route `(user)/[...slug]`. Before adding `/hotels` and `/business`, Stage 00 checks (read-only) that no existing CMS page, slug or sitemap URL starts with those paths, so no existing page gets hidden |
 | Existing components | May be **imported and reused** (e.g. shadcn UI) but are **not edited**. If one needs a change, copy it into `src/features/b2b-*/` |
-| New dependency | One: `socket.io-client`, pinned to an exact version, in its own PR with the lockfile diff reviewed |
+| New dependency | None for live updates (browsers have `EventSource`/`fetch` built in — ADR-0015). Any later frontend dependency: pinned, own PR, lockfile diff reviewed |
 | Feature flag | `NEXT_PUBLIC_FEATURE_HOTELS` and `NEXT_PUBLIC_FEATURE_B2B` default **off**. When off, the new UI is invisible and the flagged edits below render nothing |
 
 **The complete list of edits to existing frontend files.** Each is a few lines and behind a flag:
@@ -91,7 +91,7 @@ Anything not on this list needs a new row here, approved by the owner, before co
 3. **Start-up and migration guards**: D1–D3 above (prefix guard, read-only legacy access, own Mongoose instance with `autoIndex`/`autoCreate` off).
 4. **Lint (new folders only)**: code in `backend/src/b2b/` cannot import anything from the rest of `backend/src/` (except nothing — it reads existing data only through `legacy-read`), nor existing notification or partner code, nor any transaction or change-stream API. Code outside `src/b2b/` (other than `app.js` → `b2b/mount.js`) never imports from `src/b2b/`.
 5. **Crash isolation test**: CI starts the existing app with a deliberately broken `src/b2b` module and checks that existing routes still answer and `/api/v1` returns `503`.
-6. **Kill switches**: `B2B_ENABLED=false` (API), stopping the worker/realtime containers, and the frontend flags. Nothing existing depends on the new code, so switching it off is always safe.
+6. **Kill switches**: `B2B_ENABLED=false` (API, background work, live updates), `B2B_BACKGROUND=false` (background jobs only), and the frontend flags. Nothing existing depends on the new code, so switching it off is always safe.
 7. **Rehearsal before every pilot and the launch**: restore the latest production backup into a **throwaway** container, run the backend with `B2B_ENABLED=true` against it, run the existing smoke checks (`/api/app-home` 200, website pages, admin login, MBGO/MBConnect API calls) and compare the existing collections before and after: **document counts and checksums must be unchanged**.
 8. **Monitoring from day one**: existing site latency and error rate, plus MongoDB CPU, connections and slow queries. An alert on any rise after a deploy → set `B2B_ENABLED=false` and roll back.
 
@@ -99,12 +99,12 @@ Anything not on this list needs a new row here, approved by the owner, before co
 
 | # | Touch point | Existing thing | Type | How it's kept safe | Switch off |
 | --- | --- | --- | --- | --- | --- |
-| T1 | Same database server | `musafirbaba-mongo` | Shared resource | D1–D6: own collections, read-only legacy access, own Mongoose instance, pool caps, timeouts, monitoring | Flag off + stop new containers |
+| T1 | Same database server | `musafirbaba-mongo` | Shared resource | D1–D6: own collections, read-only legacy access, own Mongoose instance, pool caps, timeouts, monitoring | Flag off |
 | T2 | Read customers/staff/sessions | `users`, `staffs`, `sessions` collections | Read-only | `legacy-read` adapter, no writes possible | Flag off |
 | T3 | Verify existing login tokens | `JWT_ACCESS_SECRET` | Read-only | Secret read from the existing env, auth code not edited | — |
-| T4 | Same backend process | `app.js`, Express app, event loop | Two-line mount (B1) | Mounted before existing middleware, only when the flag is on; guarded dynamic import; timeouts and rate limits; heavy work in the worker | `B2B_ENABLED=false` |
+| T4 | Same backend process | `app.js`, Express app, event loop | Two-line mount (B1) | Mounted before existing middleware, only when the flag is on; guarded dynamic import; timeouts and rate limits; background loops catch their own errors and never keep the process alive; heavy work as background jobs | `B2B_ENABLED=false` |
 | T5 | `package.json` / lockfile | Dependencies | Additions only (B2, B3) | Exact pins, reviewed lockfile diff; dev tools not installed in production | — |
-| T6 | Same backend image | Dockerfile (unchanged) | Two new containers (B4) | Existing container's command unchanged | Stop them |
+| T6 | Same backend image | Dockerfile (unchanged) | None (B4: no new containers) | Existing container's command unchanged | — |
 | T7 | PayU merchant account | Existing PayU setup | Shared account | Own callback URLs and `B2B*` txn prefixes; dashboard settings unchanged | Flag off |
 | T8 | Resend account | Existing key | Shared account | New adapter, separate sender subdomain | Disable adapter |
 | T9 | Frontend E1–E4 | Hotels tab, bookings page, admin sidebar, env | Flagged additive edits | Flags default off; owner review | Flags off |
@@ -114,8 +114,8 @@ Anything not on this list needs a new row here, approved by the owner, before co
 ## 8. Honest limits
 
 No change at all is impossible while the website must show the new hotels. What remains is small and controlled:
-- **Shared server capacity and process.** The new code uses the same MongoDB server and, for its API, the same Node.js process. Mitigation: D5 (caps, timeouts, rate limits, heavy work in the worker, monitoring, instant switch-off), plus load tests against a restored copy (Stage 16).
-- **Five small backend touch points (B1–B5).** A two-line mount behind a flag, dependency additions, two extra containers and new env variables — all reviewed by the owner.
+- **Shared server capacity and process.** The new code uses the same MongoDB server and, for its API, the same Node.js process. Mitigation: D5 (caps, timeouts, rate limits, heavy work as small background batches, monitoring, instant switch-off), plus load tests against a restored copy (Stage 16).
+- **Five small backend touch points (B1–B5).** A two-line mount behind a flag, dev-dependency additions, no new containers and new env variables — all reviewed by the owner.
 - **The four flagged frontend edits (E1–E4).** They are tiny, reviewed by the owner, and invisible when switched off.
 - **A shared PayU account.** Separate prefixes and callback URLs mean the two integrations never read each other's payments.
 
