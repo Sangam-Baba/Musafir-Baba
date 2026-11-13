@@ -51,7 +51,9 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
+    "@types/bcrypt": "6.0.0",
     "@types/express": "5.0.6",
+    "@types/jsonwebtoken": "9.0.10",
     "eslint": "9.39.1",
     "eslint-plugin-jsdoc": "50.6.17",
     "mongodb-memory-server": "10.1.4",

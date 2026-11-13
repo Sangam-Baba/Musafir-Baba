@@ -13,7 +13,8 @@
 - **Tests run:** `test:b2b` ✅ 23 files / 217 tests; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅; `b2b:progress -- --check` ✅.
 - **Decisions / deferrals:** migrations are added per task together with each collection's indexes.
 - **Later in the session:** S01-T02 → DONE (system roles as patterns; wildcards never grant sensitive permissions — found by the matrix test: Hotel Manager would otherwise get payout bank details; `acl_permissions` synced at background start). Tests ✅ 24 files / 257.
-- **Next step:** S01-T03 — business users `id_users` (bcrypt cost 12, password policy, email/phone normalisation, lockout counters).
+- **Later:** S01-T03 → DONE (`id_users`, password policy, lockout; dev deps `@types/bcrypt`, `@types/jsonwebtoken`). Tests ✅ 25 files / 267.
+- **Next step:** S01-T04 — sessions: access JWT (`B2B_AUTH_SECRET`), rotating refresh tokens with reuse detection, logout / log out all.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

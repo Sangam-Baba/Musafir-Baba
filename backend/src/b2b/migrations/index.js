@@ -11,6 +11,7 @@ import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
+import { USERS_COLLECTION } from '../modules/identity/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -82,6 +83,23 @@ export const MIGRATIONS = [
     description: 'Stored copy of the permission catalogue (synced when background work starts)',
     up: async (ctx) => {
       await ctx.createCollection(PERMISSIONS_COLLECTION);
+    },
+  },
+  {
+    id: '0007-id-users',
+    description: 'Business users: email and phone each unique when present',
+    up: async (ctx) => {
+      await ctx.createCollection(USERS_COLLECTION);
+      await ctx.createIndex(
+        USERS_COLLECTION,
+        { email: 1 },
+        { name: 'email_unique', unique: true, partialFilterExpression: { email: { $type: 'string' } } },
+      );
+      await ctx.createIndex(
+        USERS_COLLECTION,
+        { phone: 1 },
+        { name: 'phone_unique', unique: true, partialFilterExpression: { phone: { $type: 'string' } } },
+      );
     },
   },
 ];
