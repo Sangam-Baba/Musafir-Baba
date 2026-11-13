@@ -24,6 +24,8 @@ import { createJobRunner } from './core/jobs/runner.js';
 import { createScheduler } from './core/jobs/scheduler.js';
 import { CACHE_EVICT_ROOM } from './core/realtime/rooms.js';
 import { createSignalReader } from './core/realtime/signals.js';
+import { syncPermissionCatalogue } from './modules/access/index.js';
+import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 
 /** @type {Map<string, import('./core/jobs/runner.js').JobHandler>} */
 export const jobHandlers = new Map();
@@ -34,6 +36,14 @@ export const eventBus = createEventBus();
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
 export const eventSources = [];
+
+/**
+ * One-off tasks run when background work starts (repeat-safe: every backend process runs them).
+ * @type {{ name: string, run: (deps: { clock: import('./core/clock.js').Clock }) => Promise<unknown> }[]}
+ */
+export const startupTasks = [
+  { name: 'access: sync permission catalogue', run: (deps) => syncPermissionCatalogue(PERMISSION_CATALOGUE, deps) },
+];
 
 export const RECONCILE_EVERY_MS = 30_000;
 export const INVARIANTS_EVERY_MS = 10 * 60_000;
@@ -67,6 +77,12 @@ export function startBackground(options) {
 
   const reader = createSignalReader({ onSignal: (s) => routeSignal(s, options.hub), ...deps });
   reader.start();
+  for (const task of startupTasks) {
+    task.run(deps).then(
+      (result) => logger.info({ task: task.name, result }, 'b2b startup task done'),
+      (error) => logger.error({ task: task.name, err: error }, 'b2b startup task failed'),
+    );
+  }
   if (!options.runJobs) {
     logger.info({}, 'b2b background: live updates only (B2B_BACKGROUND=false)');
     return { stop: () => reader.stop() };

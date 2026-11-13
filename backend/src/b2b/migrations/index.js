@@ -10,6 +10,7 @@ import { JOBS_COLLECTION } from '../core/jobs/queue.js';
 import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
+import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -74,6 +75,13 @@ export const MIGRATIONS = [
     description: 'Realtime signals: capped collection (64 MB) read with a tailable cursor',
     up: async (ctx) => {
       await ctx.createCollection(SIGNALS_COLLECTION, { cappedSizeBytes: SIGNALS_CAPPED_BYTES });
+    },
+  },
+  {
+    id: '0006-acl-permissions',
+    description: 'Stored copy of the permission catalogue (synced when background work starts)',
+    up: async (ctx) => {
+      await ctx.createCollection(PERMISSIONS_COLLECTION);
     },
   },
 ];

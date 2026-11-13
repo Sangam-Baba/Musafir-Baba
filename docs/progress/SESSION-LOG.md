@@ -12,7 +12,8 @@
 - **Files / PR:** `backend/src/b2b/{core/permissions.js,permission-catalogue.js,modules/{identity,organizations,access,audit}/*}`, `backend/scripts/b2b/gen-module*.js`, `tests/b2b/permissions-catalogue.test.js`, `docs/progress/*`.
 - **Tests run:** `test:b2b` ✅ 23 files / 217 tests; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅; `b2b:progress -- --check` ✅.
 - **Decisions / deferrals:** migrations are added per task together with each collection's indexes.
-- **Next step:** S01-T02 — seed `acl_permissions`, system roles of plan §4 as permission patterns resolved against the catalogue, matrix test.
+- **Later in the session:** S01-T02 → DONE (system roles as patterns; wildcards never grant sensitive permissions — found by the matrix test: Hotel Manager would otherwise get payout bank details; `acl_permissions` synced at background start). Tests ✅ 24 files / 257.
+- **Next step:** S01-T03 — business users `id_users` (bcrypt cost 12, password policy, email/phone normalisation, lockout counters).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 
