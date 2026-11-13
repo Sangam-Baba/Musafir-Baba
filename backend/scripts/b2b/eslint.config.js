@@ -29,6 +29,7 @@ export default [
         Headers: 'readonly',
         Response: 'readonly',
         AbortController: 'readonly',
+        AbortSignal: 'readonly',
         TextDecoder: 'readonly',
         NodeJS: 'readonly',
       },

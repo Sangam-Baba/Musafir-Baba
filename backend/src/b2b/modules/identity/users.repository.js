@@ -87,6 +87,27 @@ async function insertUser(input, cost, now) {
   }
 }
 
+/**
+ * Applies the password policy, stores a new hash and clears any lock.
+ * @param {string} id @param {string} password @param {number} cost @param {Date} now
+ */
+async function updatePassword(id, password, cost, now) {
+  const doc = await UserRecord.findById(id, { email: 1 }).lean();
+  if (!doc) throw new NotFoundError('USER_NOT_FOUND');
+  assertPasswordAllowed(password, { email: doc.email ?? undefined });
+  await UserRecord.updateOne(
+    { _id: id },
+    {
+      $set: {
+        passwordHash: await bcrypt.hash(password, cost),
+        passwordChangedAt: now,
+        'failedLogins.count': 0,
+        'failedLogins.lockedUntil': null,
+      },
+    },
+  );
+}
+
 /** @param {{ bcryptCost?: number, clock: import('../../core/clock.js').Clock }} options */
 export function createUserRepository(options) {
   const cost = options.bcryptCost ?? 12;
@@ -144,23 +165,22 @@ export function createUserRepository(options) {
       return { ok: true, user: toDto(updated ?? doc) };
     },
 
-    /** @param {string} id @param {string} password */
-    async setPassword(id, password) {
-      const doc = await UserRecord.findById(id, { email: 1 }).lean();
-      if (!doc) throw new NotFoundError('USER_NOT_FOUND');
-      assertPasswordAllowed(password, { email: doc.email ?? undefined });
-      const now = options.clock.now();
-      await UserRecord.updateOne(
-        { _id: id },
-        {
-          $set: {
-            passwordHash: await bcrypt.hash(password, cost),
-            passwordChangedAt: now,
-            'failedLogins.count': 0,
-            'failedLogins.lockedUntil': null,
-          },
-        },
-      );
+    /**
+     * Minimal record for one-time codes (status and lock only).
+     * @param {string} email normalised
+     * @returns {Promise<{ id: string, status: string, lockedUntil: Date | null } | null>}
+     */
+    async findForCode(email) {
+      const doc = await UserRecord.findOne({ email }, { status: 1, failedLogins: 1 }).lean();
+      return doc ? { id: String(doc._id), status: doc.status, lockedUntil: doc.failedLogins?.lockedUntil ?? null } : null;
     },
+
+    /** @param {string} id */
+    async markEmailVerified(id) {
+      await UserRecord.updateOne({ _id: id, emailVerifiedAt: { $exists: false } }, { $set: { emailVerifiedAt: options.clock.now() } });
+    },
+
+    /** @param {string} id @param {string} password */
+    setPassword: (id, password) => updatePassword(id, password, cost, options.clock.now()),
   };
 }

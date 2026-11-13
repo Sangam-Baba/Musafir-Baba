@@ -9,5 +9,8 @@ export { createSessionService } from './sessions.service.js';
 export { verifyAccessToken } from './access-token.js';
 export { createLoginService, LOGIN_LIMITS, failureDelayMs } from './login.service.js';
 export { loginRoutes } from './login-routes.js';
+export { createOtpService, OTP_LIMITS } from './otp.service.js';
+export { otpRoutes } from './otp-routes.js';
+export { OTP_COLLECTION } from './models/otp.model.js';
 export { sessionRoutes, sendTokens, REFRESH_COOKIE, REFRESH_COOKIE_PATH } from './session-routes.js';
 export { normaliseEmail, normalisePhone, parseLoginIdentifier, assertPasswordAllowed, isLocked, lockDurationMs } from './domain/user.js';

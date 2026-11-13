@@ -17,6 +17,7 @@
 import { hostname } from 'node:os';
 
 import { evictCachedPrefix } from './core/cache.js';
+import { EMAIL_JOB, emailJobHandler } from './core/email.js';
 import { consumerJobHandlers, createEventBus, createEventRelay } from './core/db/events-relay.js';
 import { createInvariantChecks } from './core/db/invariants.js';
 import { createReconciler } from './core/jobs/reconciler.js';
@@ -68,7 +69,8 @@ export function routeSignal(signal, hub) {
  * Starts the background loops. The live-update reader always runs; jobs, schedules and the event
  * relay run unless `runJobs` is false (B2B_BACKGROUND=false).
  * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
- *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void } }} options
+ *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void },
+ *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null }} options
  * @returns {{ stop: () => Promise<void> }}
  */
 export function startBackground(options) {
@@ -93,6 +95,7 @@ export function startBackground(options) {
   scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
   scheduler.register({ name: 'invariants', everyMs: INVARIANTS_EVERY_MS, run: () => invariantChecks.runAll(logger).then(() => undefined) });
   const handlers = new Map([...jobHandlers, ...consumerJobHandlers(eventBus, options.clock)]);
+  if (options.email) handlers.set(EMAIL_JOB, emailJobHandler(options.email));
   const runner = createJobRunner({ handlers, workerId, ...deps });
   const relay = createEventRelay({ sources: eventSources, bus: eventBus, intervalMs: RELAY_EVERY_MS, ...deps });
 

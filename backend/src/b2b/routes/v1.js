@@ -9,6 +9,7 @@ import express from 'express';
 import { startBackground } from '../background.js';
 import { systemClock } from '../core/clock.js';
 import { loadConfig } from '../core/config.js';
+import { emailSenderFromConfig } from '../core/email.js';
 import { b2bMongoose, connectB2BDatabase } from '../core/db/connection.js';
 import { checkHealth } from '../core/health.js';
 import { assertRegisteredModelsAllowed } from '../core/db/model.js';
@@ -23,10 +24,13 @@ import { createStreamHub } from '../core/realtime/stream.js';
 import { createRateLimiter } from '../core/rate-limit.js';
 import {
   createLoginService,
+  createOtpService,
   createSessionService,
   createUserRepository,
   LOGIN_LIMITS,
   loginRoutes,
+  OTP_LIMITS,
+  otpRoutes,
   sessionRoutes,
 } from '../modules/identity/index.js';
 import { realtimeRoutes } from './realtime.js';
@@ -95,8 +99,21 @@ function authRoutes(env, clock) {
     account: createRateLimiter({ name: 'login-account', points: LOGIN_LIMITS.perAccount, ...window }),
     failures: createRateLimiter({ name: 'login-failures', points: 1000, ...window }),
   };
+  const hour = 60 * 60_000;
+  const otp = createOtpService({
+    users,
+    secret: env.B2B_AUTH_SECRET,
+    clock,
+    limiters: {
+      cooldown: createRateLimiter({ name: 'otp-cooldown', points: 1, windowMs: OTP_LIMITS.cooldownMs, clock }),
+      daily: createRateLimiter({ name: 'otp-daily', points: OTP_LIMITS.perDay, windowMs: 24 * hour, clock }),
+      ip: createRateLimiter({ name: 'otp-ip', points: OTP_LIMITS.perIpPerHour, windowMs: hour, clock }),
+      verifyIp: createRateLimiter({ name: 'otp-verify-ip', points: OTP_LIMITS.verifyPerIp, windowMs: OTP_LIMITS.verifyWindowMs, clock }),
+    },
+  });
   const router = express.Router();
   router.use(loginRoutes({ login: createLoginService({ users, sessions, limiters, clock }), secureCookies }));
+  router.use(otpRoutes({ otp, sessions, users, secureCookies }));
   router.use(sessionRoutes({ sessions, secureCookies }));
   return router;
 }
@@ -110,8 +127,9 @@ function authRoutes(env, clock) {
  */
 function startDatabase(env, log, hub) {
   const config = loadConfig(env);
+  const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   connectB2BDatabase(config.MONGO_URI, 'api')
-    .then(() => startBackground({ clock: systemClock, logger: log, runJobs: config.B2B_BACKGROUND === 'true', hub }))
+    .then(() => startBackground({ clock: systemClock, logger: log, runJobs: config.B2B_BACKGROUND === 'true', hub, email }))
     .catch((error) => {
       log.error({ err: error }, 'b2b database connection or background start failed');
     });

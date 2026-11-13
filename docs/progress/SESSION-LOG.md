@@ -16,7 +16,8 @@
 - **Later:** S01-T03 → DONE (`id_users`, password policy, lockout; dev deps `@types/bcrypt`, `@types/jsonwebtoken`). Tests ✅ 25 files / 267.
 - **Later:** S01-T04 → DONE (sessions, rotating refresh tokens with reuse detection, refresh/logout/logout-all endpoints). Tests ✅ 26 files / 279.
 - **Later:** S01-T05 → DONE (`POST /auth/login`, limits per IP/account, growing delay, lock event). Tests ✅ 27 files / 290.
-- **Next step:** S01-T06 — email OTP login + forgot/reset password, `EmailPort` (Resend via background job; log adapter in dev/test).
+- **Later:** S01-T06 → DONE (email codes, forgot/reset, sealed email jobs, Resend/log senders). Tests ✅ 28 files / 304.
+- **Next step:** S01-T07 — TOTP MFA (node:crypto) + recovery codes + step-up.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

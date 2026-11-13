@@ -12,6 +12,12 @@ const ConfigSchema = z.object({
   B2B_BACKGROUND: z.enum(['true', 'false']).default('true'),
   /** Signs business-user tokens. Separate from the existing JWT secrets on purpose. Business login is unavailable until set. */
   B2B_AUTH_SECRET: z.string().min(32, 'B2B_AUTH_SECRET must be at least 32 characters').optional(),
+  /** 'log' (default) writes emails to the log; 'resend' really sends them (production only). */
+  B2B_EMAIL_MODE: z.enum(['log', 'resend']).default('log'),
+  /** Sender address for B2B emails, e.g. "MusafirBaba Business <business@musafirbaba.com>". */
+  B2B_EMAIL_FROM: z.string().min(3).optional(),
+  /** Existing variable, read only — the existing Resend account (D25). */
+  RESEND_API_KEY: z.string().optional(),
 });
 
 /** @typedef {z.infer<typeof ConfigSchema>} B2BConfig */
