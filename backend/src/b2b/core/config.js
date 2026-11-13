@@ -10,6 +10,8 @@ const ConfigSchema = z.object({
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
   /** Background work (jobs, schedules, event relay, live-update reader) inside this backend process. "false" turns it off. */
   B2B_BACKGROUND: z.enum(['true', 'false']).default('true'),
+  /** Signs business-user tokens. Separate from the existing JWT secrets on purpose. Business login is unavailable until set. */
+  B2B_AUTH_SECRET: z.string().min(32, 'B2B_AUTH_SECRET must be at least 32 characters').optional(),
 });
 
 /** @typedef {z.infer<typeof ConfigSchema>} B2BConfig */

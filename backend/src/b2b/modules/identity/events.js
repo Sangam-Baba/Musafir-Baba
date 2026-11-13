@@ -3,7 +3,8 @@
 export const EVENTS = /** @type {const} */ ({
   userCreated: 'identity.user.created',
   userLocked: 'identity.user.locked',
-  sessionsRevoked: 'identity.session.revokedAll',
-  viewAsStarted: 'identity.viewAs.started',
-  viewAsEnded: 'identity.viewAs.ended',
+  sessionRevoked: 'identity.session.revoked',
+  refreshReused: 'identity.session.reused',
+  viewAsStarted: 'identity.view-as.started',
+  viewAsEnded: 'identity.view-as.ended',
 });

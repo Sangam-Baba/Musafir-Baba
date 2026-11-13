@@ -48,3 +48,16 @@ describe('the B2B permission catalogue', () => {
     }
   });
 });
+
+describe('event names of the Stage 01 modules', () => {
+  it('all follow module.entity.pastVerb (lower case) so newEvent() accepts them', async () => {
+    const { newEvent } = await import('../../src/b2b/core/db/events.js');
+    const mods = await Promise.all(
+      ['identity', 'organizations', 'access', 'audit'].map((m) => import(`../../src/b2b/modules/${m}/index.js`)),
+    );
+    for (const mod of mods) {
+      for (const type of Object.values(mod.EVENTS))
+        expect(() => newEvent(String(type), {}, { clock: { now: () => new Date() } })).not.toThrow();
+    }
+  });
+});

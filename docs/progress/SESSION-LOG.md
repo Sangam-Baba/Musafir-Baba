@@ -14,7 +14,8 @@
 - **Decisions / deferrals:** migrations are added per task together with each collection's indexes.
 - **Later in the session:** S01-T02 → DONE (system roles as patterns; wildcards never grant sensitive permissions — found by the matrix test: Hotel Manager would otherwise get payout bank details; `acl_permissions` synced at background start). Tests ✅ 24 files / 257.
 - **Later:** S01-T03 → DONE (`id_users`, password policy, lockout; dev deps `@types/bcrypt`, `@types/jsonwebtoken`). Tests ✅ 25 files / 267.
-- **Next step:** S01-T04 — sessions: access JWT (`B2B_AUTH_SECRET`), rotating refresh tokens with reuse detection, logout / log out all.
+- **Later:** S01-T04 → DONE (sessions, rotating refresh tokens with reuse detection, refresh/logout/logout-all endpoints). Tests ✅ 26 files / 279.
+- **Next step:** S01-T05 — `POST /auth/login` (email or phone + password), rate limits per IP and per account, progressive delay, NoSQL-injection tests.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

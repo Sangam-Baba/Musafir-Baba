@@ -11,7 +11,7 @@ import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
-import { USERS_COLLECTION } from '../modules/identity/index.js';
+import { SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -99,6 +99,21 @@ export const MIGRATIONS = [
         USERS_COLLECTION,
         { phone: 1 },
         { name: 'phone_unique', unique: true, partialFilterExpression: { phone: { $type: 'string' } } },
+      );
+    },
+  },
+  {
+    id: '0008-id-sessions',
+    description: 'Business-user sessions: open sessions per user, relay index, expired sessions removed after 30 days',
+    up: async (ctx) => {
+      const thirtyDays = 30 * 24 * 60 * 60;
+      await ctx.createCollection(SESSIONS_COLLECTION);
+      await ctx.createIndex(SESSIONS_COLLECTION, { userId: 1, revokedAt: 1 }, { name: 'user_open' });
+      await ctx.createIndex(SESSIONS_COLLECTION, { expiresAt: 1 }, { name: 'expired_ttl', expireAfterSeconds: thirtyDays });
+      await ctx.createIndex(
+        SESSIONS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
     },
   },

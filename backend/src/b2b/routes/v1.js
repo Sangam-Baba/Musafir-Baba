@@ -20,6 +20,7 @@ import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
+import { createSessionService, sessionRoutes } from '../modules/identity/index.js';
 import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
@@ -63,6 +64,8 @@ export function createB2BRouter(options = {}) {
     res.json({ name: 'musafirbaba-b2b', version: process.env.B2B_VERSION ?? 'dev' });
   });
 
+  const sessions = createSessionService({ secret: env.B2B_AUTH_SECRET, clock });
+  router.use('/auth', sessionRoutes({ sessions, secureCookies: env.NODE_ENV === 'production' }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
