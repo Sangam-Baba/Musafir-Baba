@@ -20,7 +20,15 @@ import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
-import { createSessionService, sessionRoutes } from '../modules/identity/index.js';
+import { createRateLimiter } from '../core/rate-limit.js';
+import {
+  createLoginService,
+  createSessionService,
+  createUserRepository,
+  LOGIN_LIMITS,
+  loginRoutes,
+  sessionRoutes,
+} from '../modules/identity/index.js';
 import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
@@ -64,12 +72,32 @@ export function createB2BRouter(options = {}) {
     res.json({ name: 'musafirbaba-b2b', version: process.env.B2B_VERSION ?? 'dev' });
   });
 
-  const sessions = createSessionService({ secret: env.B2B_AUTH_SECRET, clock });
-  router.use('/auth', sessionRoutes({ sessions, secureCookies: env.NODE_ENV === 'production' }));
+  router.use('/auth', authRoutes(env, clock));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));
+  return router;
+}
+
+/**
+ * Business-user login and sessions under /api/v1/auth.
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ */
+function authRoutes(env, clock) {
+  const secureCookies = env.NODE_ENV === 'production';
+  const sessions = createSessionService({ secret: env.B2B_AUTH_SECRET, clock });
+  const users = createUserRepository({ clock });
+  const window = { windowMs: LOGIN_LIMITS.windowMs, clock };
+  const limiters = {
+    ip: createRateLimiter({ name: 'login-ip', points: LOGIN_LIMITS.perIp, ...window }),
+    account: createRateLimiter({ name: 'login-account', points: LOGIN_LIMITS.perAccount, ...window }),
+    failures: createRateLimiter({ name: 'login-failures', points: 1000, ...window }),
+  };
+  const router = express.Router();
+  router.use(loginRoutes({ login: createLoginService({ users, sessions, limiters, clock }), secureCookies }));
+  router.use(sessionRoutes({ sessions, secureCookies }));
   return router;
 }
 

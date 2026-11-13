@@ -14,8 +14,8 @@ import { publicRoute } from '../../core/http/permissions.js';
 export const REFRESH_COOKIE = 'b2b_refresh';
 export const REFRESH_COOKIE_PATH = '/api/v1/auth';
 
-/** @type {import('express').RequestHandler} */
-const requireAuthHeader = (req, _res, next) =>
+/** Business auth endpoints need `X-B2B-Auth: 1` (a cross-site form can't send it). @type {import('express').RequestHandler} */
+export const requireAuthHeader = (req, _res, next) =>
   req.get('x-b2b-auth') === '1' ? next() : next(new UnauthorizedError('AUTH_HEADER_MISSING'));
 
 /**

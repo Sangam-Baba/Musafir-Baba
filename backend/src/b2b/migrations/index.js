@@ -117,4 +117,15 @@ export const MIGRATIONS = [
       );
     },
   },
+  {
+    id: '0009-id-users-events',
+    description: 'Business users carry events (account locked): relay index',
+    up: async (ctx) => {
+      await ctx.createIndex(
+        USERS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
 ];

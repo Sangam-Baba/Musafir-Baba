@@ -6,8 +6,10 @@
  */
 import bcrypt from 'bcrypt';
 
+import { newEvent } from '../../core/db/events.js';
 import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { assertPasswordAllowed, isLocked, lockDurationMs, normaliseEmail, normalisePhone, parseLoginIdentifier } from './domain/user.js';
+import { EVENTS } from './events.js';
 import { UserRecord } from './models/user.model.js';
 
 /**
@@ -52,7 +54,11 @@ async function recordFailedLogin(id, clock) {
   const ms = lockDurationMs(count);
   if (ms === 0) return null;
   const lockedUntil = new Date(clock.now().getTime() + ms);
-  await UserRecord.updateOne({ _id: id, 'failedLogins.count': count }, { $set: { 'failedLogins.lockedUntil': lockedUntil } });
+  const event = newEvent(EVENTS.userLocked, { userId: String(id), failedLogins: count, lockedUntil: lockedUntil.toISOString() }, { clock });
+  await UserRecord.updateOne(
+    { _id: id, 'failedLogins.count': count },
+    { $set: { 'failedLogins.lockedUntil': lockedUntil, hasPendingEvents: true }, $push: { pendingEvents: event } },
+  );
   return lockedUntil;
 }
 

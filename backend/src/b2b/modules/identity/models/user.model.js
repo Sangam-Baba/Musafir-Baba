@@ -5,6 +5,7 @@
  * Website customers (`users`) and admins (`staffs`) are NOT here — they stay in the existing app.
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
+import { eventFields } from '../../../core/db/events.js';
 import { defineModel } from '../../../core/db/model.js';
 
 export const USERS_COLLECTION = 'id_users';
@@ -25,6 +26,7 @@ const schema = new b2bMongoose.Schema(
       lockedUntil: { type: Date, default: null },
     },
     lastLoginAt: { type: Date, default: undefined },
+    ...eventFields(b2bMongoose),
   },
   { timestamps: true, versionKey: false },
 );
