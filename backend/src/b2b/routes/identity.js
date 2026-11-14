@@ -7,6 +7,10 @@
 import express from 'express';
 
 import { createRateLimiter } from '../core/rate-limit.js';
+import { resolveSystemRole, systemRole } from '../modules/access/index.js';
+import { createOrganizationsService } from '../modules/organizations/index.js';
+import { PERMISSION_CATALOGUE } from '../permission-catalogue.js';
+import { accountRoutes } from './account.js';
 import {
   createBusinessAuthenticator,
   createLoginService,
@@ -22,6 +26,7 @@ import {
   OTP_LIMITS,
   otpRoutes,
   sessionRoutes,
+  signAccessToken,
 } from '../modules/identity/index.js';
 
 const HOUR = 60 * 60_000;
@@ -39,7 +44,9 @@ export function createIdentity(env, clock) {
   const sessions = createSessionService({ secret, clock });
   const users = createUserRepository({ clock });
   const mfa = createMfaService({ secret, clock });
-  const { finish } = createSignIn({ sessions, mfa, secret, clock });
+  const orgs = createOrganizationsService({ clock });
+  const defaultOrgFor = (/** @type {string} */ userId) => orgs.defaultOrgFor(userId);
+  const { finish } = createSignIn({ sessions, mfa, secret, clock, defaultOrgFor });
   const login = createLoginService({
     users,
     sessions,
@@ -62,7 +69,16 @@ export function createIdentity(env, clock) {
       verifyIp: limiter('otp-verify-ip', OTP_LIMITS.verifyPerIp, OTP_LIMITS.verifyWindowMs),
     },
   });
-  const mfaDeps = { mfa, sessions, users, secret, clock, secureCookies, verifyLimiter: limiter('mfa-verify', 10, 15 * 60_000) };
+  const mfaDeps = {
+    mfa,
+    sessions,
+    users,
+    secret,
+    clock,
+    secureCookies,
+    defaultOrgFor,
+    verifyLimiter: limiter('mfa-verify', 10, 15 * 60_000),
+  };
 
   const auth = express.Router();
   auth.use(loginRoutes({ login, secureCookies }));
@@ -70,5 +86,39 @@ export function createIdentity(env, clock) {
   auth.use(mfaAuthRoutes(mfaDeps));
   auth.use(sessionRoutes({ sessions, secureCookies }));
 
-  return { authenticate: createBusinessAuthenticator({ secret, clock, sessions }), auth, me: mfaMeRoutes(mfaDeps) };
+  const sign = (/** @type {import('../modules/identity/access-token.js').AccessClaims} */ claims) => {
+    if (!secret) throw new Error('[b2b] B2B_AUTH_SECRET missing');
+    return signAccessToken(claims, { secret, clock });
+  };
+  const resolveMember = (/** @type {string} */ orgId, /** @type {string} */ userId) => resolveMemberActor(orgs, orgId, userId);
+  return {
+    authenticate: createBusinessAuthenticator({ secret, clock, sessions, resolveMember }),
+    auth,
+    me: mfaMeRoutes(mfaDeps),
+    account: accountRoutes({ users, mfa, sessions, orgs, sign }),
+    orgs,
+  };
+}
+
+/**
+ * A member's permissions in the selected org: the union of their system roles of that org type
+ * (custom roles join in S01-T10; a 60 s cache in S01-T11).
+ * @param {ReturnType<typeof createOrganizationsService>} orgs @param {string} orgId @param {string} userId
+ */
+async function resolveMemberActor(orgs, orgId, userId) {
+  const m = await orgs.usableMembership(orgId, userId);
+  if (!m) return null;
+  const permissions = new Set();
+  for (const key of m.roles) {
+    const role = systemRole(key);
+    if (role && role.orgType === m.orgType) for (const code of resolveSystemRole(role, PERMISSION_CATALOGUE)) permissions.add(code);
+  }
+  return {
+    orgId,
+    orgType: m.orgType,
+    permissions: [...permissions].sort(),
+    branchIds: m.branchIds,
+    propertyIds: m.propertyIds,
+    ownOnly: m.ownOnly,
+  };
 }

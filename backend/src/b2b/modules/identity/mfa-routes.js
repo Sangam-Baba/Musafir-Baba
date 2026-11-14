@@ -35,7 +35,8 @@ const StepUp = z
  *   sessions: ReturnType<typeof import('./sessions.service.js').createSessionService>,
  *   users: ReturnType<typeof import('./users.repository.js').createUserRepository>,
  *   verifyLimiter: ReturnType<typeof import('../../core/rate-limit.js').createRateLimiter>,
- *   secret: string | undefined, clock: import('../../core/clock.js').Clock, secureCookies: boolean }} MfaRouteDeps
+ *   secret: string | undefined, clock: import('../../core/clock.js').Clock, secureCookies: boolean,
+ *   defaultOrgFor?: (userId: string) => Promise<string | null> }} MfaRouteDeps
  */
 
 /** @param {MfaRouteDeps} deps */
@@ -50,7 +51,14 @@ export function mfaAuthRoutes(deps) {
       if (!limit.allowed) throw new RateLimitError(limit.retryAfterSeconds);
       const method = await deps.mfa.verify(challenge.userId, { code: body.code, recoveryCode: body.recoveryCode });
       const methods = /** @type {import('./sessions.service.js').LoginMethod[]} */ ([...challenge.methods, method]);
-      return deps.sessions.create({ userId: challenge.userId, methods, ip: clientIp(req), userAgent: req.get('user-agent') ?? null });
+      const orgId = (await deps.defaultOrgFor?.(challenge.userId)) ?? null;
+      return deps.sessions.create({
+        userId: challenge.userId,
+        orgId,
+        methods,
+        ip: clientIp(req),
+        userAgent: req.get('user-agent') ?? null,
+      });
     })().then((tokens) => sendTokens(res, tokens, deps.secureCookies), next);
   });
   return router;

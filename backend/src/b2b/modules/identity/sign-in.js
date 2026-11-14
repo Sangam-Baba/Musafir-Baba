@@ -13,7 +13,7 @@ import { MFA_CHALLENGE_TTL_SECONDS, signMfaChallenge } from './mfa-challenge.js'
 /**
  * @param {{ sessions: ReturnType<typeof import('./sessions.service.js').createSessionService>,
  *   mfa: ReturnType<typeof import('./mfa.service.js').createMfaService>, secret: string | undefined,
- *   clock: import('../../core/clock.js').Clock }} deps
+ *   clock: import('../../core/clock.js').Clock, defaultOrgFor?: (userId: string) => Promise<string | null> }} deps
  */
 export function createSignIn(deps) {
   return {
@@ -24,7 +24,8 @@ export function createSignIn(deps) {
      * @returns {Promise<SignInResult>}
      */
     async finish(userId, methods, client) {
-      if (!(await deps.mfa.isEnabled(userId))) return deps.sessions.create({ userId, methods, ...client });
+      if (!(await deps.mfa.isEnabled(userId)))
+        return deps.sessions.create({ userId, methods, orgId: (await deps.defaultOrgFor?.(userId)) ?? null, ...client });
       if (!deps.secret) throw new ServiceUnavailableError('BUSINESS_LOGIN_NOT_CONFIGURED');
       return {
         mfaRequired: true,

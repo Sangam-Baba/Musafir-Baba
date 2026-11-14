@@ -92,6 +92,20 @@ function createSessionEndings(secret, now) {
     },
 
     /**
+     * Opens another org on this session (the org switcher). The caller has checked the membership.
+     * Returns a new access token; the refresh token stays the same.
+     * @param {string} sessionId
+     * @param {string} userId
+     * @param {string} orgId
+     * @param {(claims: import('./access-token.js').AccessClaims) => { accessToken: string, expiresIn: number }} sign
+     */
+    async switchOrg(sessionId, userId, orgId, sign) {
+      const done = await SessionRecord.updateOne({ _id: sessionId, userId, revokedAt: null }, { $set: { orgId } });
+      if (done.matchedCount !== 1) throw new UnauthorizedError('SESSION_REVOKED');
+      return sign({ userId, sessionId, orgId });
+    },
+
+    /**
      * Records that the user just proved it is them again (step-up) on this session.
      * @param {string} sessionId @param {string} userId
      * @returns {Promise<Date>} step-up valid until

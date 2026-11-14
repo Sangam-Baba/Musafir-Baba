@@ -10,6 +10,7 @@
  * @returns {Promise<{
  *   get: (path: string, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   post: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
+ *   patch: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   close: () => Promise<void> }>}
  */
 export async function startServer(app) {
@@ -18,16 +19,19 @@ export async function startServer(app) {
   });
   const address = /** @type {import('node:net').AddressInfo} */ (server.address());
   const base = `http://127.0.0.1:${address.port}`;
+  /** @param {string} method @param {string} path @param {unknown} body @param {Record<string, string>} headers */
+  const send = async (method, path, body, headers) =>
+    toResult(
+      await fetch(base + path, {
+        method,
+        headers: { 'content-type': 'application/json', ...headers },
+        body: typeof body === 'string' ? body : JSON.stringify(body),
+      }),
+    );
   return {
     get: async (path, headers = {}) => toResult(await fetch(base + path, { headers })),
-    post: async (path, body, headers = {}) =>
-      toResult(
-        await fetch(base + path, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', ...headers },
-          body: typeof body === 'string' ? body : JSON.stringify(body),
-        }),
-      ),
+    post: (path, body, headers = {}) => send('POST', path, body, headers),
+    patch: (path, body, headers = {}) => send('PATCH', path, body, headers),
     close: () => new Promise((resolve) => server.close(() => resolve())),
   };
 }

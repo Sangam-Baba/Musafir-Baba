@@ -21,6 +21,7 @@ import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
+import { organizationRoutes } from '../modules/organizations/index.js';
 import { createIdentity } from './identity.js';
 import { realtimeRoutes } from './realtime.js';
 
@@ -66,6 +67,8 @@ export function createB2BRouter(options = {}) {
 
   router.use('/auth', identity.auth);
   router.use('/me', identity.me);
+  router.use(identity.account);
+  router.use(organizationRoutes(identity.orgs));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

@@ -27,6 +27,7 @@ import { CACHE_EVICT_ROOM } from './core/realtime/rooms.js';
 import { createSignalReader } from './core/realtime/signals.js';
 import { syncPermissionCatalogue } from './modules/access/index.js';
 import { SessionRecord, UserRecord } from './modules/identity/index.js';
+import { MemberRecord, OrganizationRecord } from './modules/organizations/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 
 /** @type {Map<string, import('./core/jobs/runner.js').JobHandler>} */
@@ -37,7 +38,7 @@ export const invariantChecks = createInvariantChecks();
 export const eventBus = createEventBus();
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
-export const eventSources = [SessionRecord, UserRecord];
+export const eventSources = [SessionRecord, UserRecord, OrganizationRecord, MemberRecord];
 
 /**
  * One-off tasks run when background work starts (repeat-safe: every backend process runs them).

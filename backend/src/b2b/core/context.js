@@ -13,7 +13,8 @@ import { systemClock } from './clock.js';
  *   | { type: 'customer', customerId: string }
  *   | { type: 'staff', staffId: string, permissions: readonly string[] }
  *   | { type: 'user', userId: string, sessionId: string }
- *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[], sessionId?: string }
+ *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[], sessionId?: string,
+ *       orgType?: 'PLATFORM' | 'CLIENT' | 'HOTEL', branchIds?: readonly string[], propertyIds?: readonly string[], ownOnly?: boolean }
  *   | { type: 'system', reason: string }} Actor
  */
 

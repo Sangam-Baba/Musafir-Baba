@@ -12,6 +12,7 @@ import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
+import { BRANCHES_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -143,6 +144,23 @@ export const MIGRATIONS = [
     up: async (ctx) => {
       await ctx.createCollection(MFA_COLLECTION);
       await ctx.createIndex(MFA_COLLECTION, { userId: 1 }, { name: 'user_unique', unique: true });
+    },
+  },
+  {
+    id: '0012-org-organizations-members-branches',
+    description: 'Organisations (unique reference), members (one per org and user), branches; relay indexes',
+    up: async (ctx) => {
+      const pending = { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } };
+      await ctx.createCollection(ORGS_COLLECTION);
+      await ctx.createIndex(ORGS_COLLECTION, { reference: 1 }, { name: 'reference_unique', unique: true });
+      await ctx.createIndex(ORGS_COLLECTION, { type: 1, status: 1 }, { name: 'type_status' });
+      await ctx.createIndex(ORGS_COLLECTION, { hasPendingEvents: 1 }, pending);
+      await ctx.createCollection(MEMBERS_COLLECTION);
+      await ctx.createIndex(MEMBERS_COLLECTION, { orgId: 1, userId: 1 }, { name: 'org_user_unique', unique: true });
+      await ctx.createIndex(MEMBERS_COLLECTION, { userId: 1, status: 1 }, { name: 'user_status' });
+      await ctx.createIndex(MEMBERS_COLLECTION, { hasPendingEvents: 1 }, pending);
+      await ctx.createCollection(BRANCHES_COLLECTION);
+      await ctx.createIndex(BRANCHES_COLLECTION, { orgId: 1, name: 1 }, { name: 'org_name' });
     },
   },
 ];

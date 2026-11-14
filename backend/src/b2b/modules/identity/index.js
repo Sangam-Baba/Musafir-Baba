@@ -6,7 +6,7 @@ export { USERS_COLLECTION, UserRecord } from './models/user.model.js';
 export { SESSIONS_COLLECTION, SessionRecord } from './models/session.model.js';
 export { createUserRepository } from './users.repository.js';
 export { createSessionService } from './sessions.service.js';
-export { verifyAccessToken } from './access-token.js';
+export { verifyAccessToken, signAccessToken } from './access-token.js';
 export { createLoginService, LOGIN_LIMITS, failureDelayMs } from './login.service.js';
 export { loginRoutes } from './login-routes.js';
 export { createOtpService, OTP_LIMITS } from './otp.service.js';

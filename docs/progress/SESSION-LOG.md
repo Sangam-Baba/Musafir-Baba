@@ -26,7 +26,8 @@
 - **Files / PR:** `backend/src/b2b/modules/identity/{domain/totp.js,models/mfa.model.js,mfa.service.js,mfa-challenge.js,mfa-routes.js,sign-in.js,business-auth.js}`, `routes/identity.js` (identity wiring moved out of `v1.js`), `core/{context,http/permissions,realtime/rooms,realtime/stream,db/idempotency}.js`, tests.
 - **Tests run:** `test:b2b` ✅ 29 files / 318 (full suite twice); `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅ (existing backend diff vs `origin/main` still only `app.js` +5).
 - **Decisions / deferrals:** event-free (two-step changes will be audited in T13 from session methods).
-- **Next step:** S01-T08 — organisations, branches, members, `/me`, org switcher.
+- **Later:** S01-T08 → DONE (organisations, members, branches, `/me`, org switcher, member permissions from system roles). Test helper gained `patch`. Tests ✅ 30 files / 325.
+- **Next step:** S01-T09 — invitations (signed single-use links, 7 days), accept as new or existing user, remove member, last-Owner rule.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 
