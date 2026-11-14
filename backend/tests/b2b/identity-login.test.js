@@ -170,7 +170,7 @@ describe('POST /api/v1/auth/login (real router)', () => {
     const res = await srv.post('/api/v1/auth/login', { identifier: 'asha@example.com', password: PASSWORD }, H);
     expect(res.status).toBe(200);
     expect(Object.keys(res.body).sort()).toEqual(['accessToken', 'expiresIn', 'tokenType']);
-    expect(res.headers.get('set-cookie')).toMatch(/^b2b_refresh=.+HttpOnly; SameSite=Strict$/);
+    expect(res.headers.get('set-cookie')).toMatch(/^b2b_refresh=.+HttpOnly; SameSite=Lax$/); // local; production: SameSite=None; Secure;
   });
 
   it('refuses NoSQL injection shapes, extra keys and missing header before touching the database', async () => {

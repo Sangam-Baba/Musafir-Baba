@@ -174,7 +174,7 @@ describe('session service (id_sessions)', () => {
       expect(set).toMatch(/^b2b_refresh=/);
       expect(set).toContain('Path=/api/v1/auth');
       expect(set).toContain('HttpOnly');
-      expect(set).toContain('SameSite=Strict');
+      expect(set).toContain('SameSite=None'); // production: website and API are on different domains
       expect(set).toContain('Secure');
       expect(JSON.stringify(res.body)).not.toContain(first.refreshToken.split('.')[2]);
     });

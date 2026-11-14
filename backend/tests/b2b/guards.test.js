@@ -5,6 +5,24 @@ import { checkB2BSource, checkExistingSource } from '../../scripts/b2b/code-rule
 import { checkAppJs, checkLockfile, checkPackageJson, checkPaths, checkSecrets } from '../../scripts/b2b/guards-lib.js';
 
 describe('checkPaths — B2B branches may only change their own folders and B1–B3', () => {
+  it('allows the three new frontend folders only — existing frontend files stay blocked', () => {
+    expect(
+      checkPaths([
+        { status: 'A', path: 'frontend/src/app/business/login/page.tsx' },
+        { status: 'A', path: 'frontend/src/app/admin/b2b/page.tsx' },
+        { status: 'A', path: 'frontend/src/b2b/api.ts' },
+      ]),
+    ).toEqual([]);
+    for (const path of [
+      'frontend/src/app/admin/layout.tsx',
+      'frontend/src/components/admin/app-sidebar.tsx',
+      'frontend/src/app/layout.tsx',
+      'frontend/package.json',
+    ]) {
+      expect(checkPaths([{ status: 'M', path }])).toHaveLength(1);
+    }
+  });
+
   it('accepts new B2B files, docs and the approved edits', () => {
     expect(
       checkPaths([

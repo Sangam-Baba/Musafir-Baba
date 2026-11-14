@@ -36,7 +36,9 @@
 - **Later:** S01-T13 → DONE (activity log from events, sign-in event, org and admin reads). Tests ✅ 36 files / 388.
 - **Open:** one full-suite run (of ~12 today) had 1 failing test that could not be captured (no repeat in the next 7 runs). Every suite run now saves its full output so the next occurrence is identified and fixed at the cause.
 - **Later:** S01-T14 → DONE (B2B admin pass with two-step login and a 7-day setup window, platform roles, admin orgs/users/staff API, suspend ends org sessions, grant-admin command). Tests ✅ 37 files / 397 (3× green).
-- **Next step:** S01-T15 — view as client/hotel (reason required, 30 min, read-only unless `admin.viewAs.write` + step-up, banner flag, audited, owner emailed).
+- **Order changed (owner):** nothing was visible yet (server only), so the screens come first: T16 → T17 → T18, then T15.
+- **Later:** S01-T16 → DONE (business sign-in pages, home, security; refresh cookie policy matched to the existing logins for production). Backend tests ✅ 398 (2× green); 6 new pages load on the dev server.
+- **Next step:** S01-T17 — Team page (members, invitations, roles editor, branches) + activity page.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 
