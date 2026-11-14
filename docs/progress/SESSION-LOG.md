@@ -33,7 +33,9 @@
 - **Later:** S01-T11 → DONE (authorizer, list scoping, 60 s member-permission cache cleared on changes). Tests ✅ 33 files / 360.
 - **Later:** S01-T12 → DONE (existing logins read-only, blocked orgs on /me, every route guarded — checked by a test). Tests ✅ 35 files / 383.
 - **Fix:** live-updates catch-up could still repeat a signal when the live feed delivered it *during* the catch-up read (seen once in a full run: 3, 2, 3). Live signals are now held while a stream catches up and released in order without repeats (deterministic test added). The S01-T12 commit had been made while that flaky test failed — my command chain didn't stop on it; fixed in the next commit and the suite was then run 4× green.
-- **Next step:** S01-T13 — `aud_events` written from events (auth, members, roles, view-as, org status) + admin audit API.
+- **Later:** S01-T13 → DONE (activity log from events, sign-in event, org and admin reads). Tests ✅ 36 files / 388.
+- **Open:** one full-suite run (of ~12 today) had 1 failing test that could not be captured (no repeat in the next 7 runs). Every suite run now saves its full output so the next occurrence is identified and fixed at the cause.
+- **Next step:** S01-T14 — admin access (D1): staff MFA, platform roles (`acl_staff_roles`), `npm run b2b:grant-admin`, admin orgs/users API, suspend/reactivate (sessions revoked).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

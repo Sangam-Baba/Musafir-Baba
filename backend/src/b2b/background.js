@@ -17,6 +17,7 @@
 import { hostname } from 'node:os';
 
 import { evictCachedPrefix } from './core/cache.js';
+import { systemClock } from './core/clock.js';
 import { EMAIL_JOB, emailJobHandler } from './core/email.js';
 import { consumerJobHandlers, createEventBus, createEventRelay } from './core/db/events-relay.js';
 import { createInvariantChecks } from './core/db/invariants.js';
@@ -25,9 +26,10 @@ import { createJobRunner } from './core/jobs/runner.js';
 import { createScheduler } from './core/jobs/scheduler.js';
 import { CACHE_EVICT_ROOM } from './core/realtime/rooms.js';
 import { createSignalReader } from './core/realtime/signals.js';
-import { RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
-import { SessionRecord, UserRecord } from './modules/identity/index.js';
-import { InvitationRecord, MemberRecord, OrganizationRecord } from './modules/organizations/index.js';
+import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
+import { createAuditService } from './modules/audit/index.js';
+import { EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord } from './modules/identity/index.js';
+import { EVENTS as ORG_EVENTS, InvitationRecord, MemberRecord, OrganizationRecord } from './modules/organizations/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 
 /** @type {Map<string, import('./core/jobs/runner.js').JobHandler>} */
@@ -36,6 +38,14 @@ export const reconciler = createReconciler();
 export const invariantChecks = createInvariantChecks();
 /** Event subscriptions (consumers) — e.g. notifications subscribe to 'hotel-booking.booking.confirmed'. */
 export const eventBus = createEventBus();
+
+/** The activity log records every Stage 01 event (sign-ins, lockouts, stolen tokens, orgs, members, invitations, roles). */
+const audit = createAuditService({ clock: systemClock });
+eventBus.subscribe({
+  consumer: 'audit',
+  types: [...Object.values(IDENTITY_EVENTS), ...Object.values(ORG_EVENTS), ...Object.values(ACCESS_EVENTS)],
+  handler: (event) => audit.record(event),
+});
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
 export const eventSources = [SessionRecord, UserRecord, OrganizationRecord, MemberRecord, InvitationRecord, RoleRecord];

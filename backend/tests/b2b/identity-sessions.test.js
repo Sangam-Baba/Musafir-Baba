@@ -99,7 +99,7 @@ describe('session service (id_sessions)', () => {
     await expect(sessions.refresh(second.refreshToken)).rejects.toMatchObject({ code: 'SESSION_REVOKED' }); // the thief's copy and the user's both die
     const doc = await SessionRecord.findOne({ _id: first.sessionId, userId: 'u1' }).lean();
     expect(doc?.revokeReason).toBe('REFRESH_REUSED');
-    expect(doc?.pendingEvents?.map((e) => e.type)).toEqual(['identity.session.reused']);
+    expect(doc?.pendingEvents?.map((e) => e.type)).toEqual(['identity.session.created', 'identity.session.reused']); // sign-in, then theft
   });
 
   it('two tabs refreshing at once: one wins, the other gets REFRESH_IN_PROGRESS — no false theft alarm', async () => {

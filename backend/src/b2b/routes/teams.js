@@ -8,6 +8,7 @@ import express from 'express';
 
 import { queueEmail } from '../core/email.js';
 import { createRolesService, roleRoutes } from '../modules/access/index.js';
+import { auditRoutes, createAuditService } from '../modules/audit/index.js';
 import { createInvitationsService, createMemberRolesService, isRoleInUse, organizationRoutes } from '../modules/organizations/index.js';
 import { PERMISSION_CATALOGUE } from '../permission-catalogue.js';
 import { invitationRoutes } from './invitations.js';
@@ -37,5 +38,6 @@ export function createTeamRoutes(wiring) {
   router.use(invitationRoutes({ invitations, users: identity.users, sessions: identity.sessions, secureCookies: identity.secureCookies }));
   router.use(organizationRoutes(identity.orgs, invitations, createMemberRolesService(deps)));
   router.use(roleRoutes(roles));
+  router.use(auditRoutes(createAuditService({ clock })));
   return router;
 }

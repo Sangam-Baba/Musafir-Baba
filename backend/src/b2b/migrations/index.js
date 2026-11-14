@@ -11,6 +11,7 @@ import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION, ROLES_COLLECTION } from '../modules/access/index.js';
+import { AUDIT_COLLECTION } from '../modules/audit/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
@@ -192,6 +193,16 @@ export const MIGRATIONS = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0015-aud-events',
+    description: 'Activity log: newest first per org, per user and overall',
+    up: async (ctx) => {
+      await ctx.createCollection(AUDIT_COLLECTION);
+      await ctx.createIndex(AUDIT_COLLECTION, { orgId: 1, occurredAt: -1, _id: -1 }, { name: 'org_recent' });
+      await ctx.createIndex(AUDIT_COLLECTION, { userId: 1, occurredAt: -1, _id: -1 }, { name: 'user_recent' });
+      await ctx.createIndex(AUDIT_COLLECTION, { occurredAt: -1, _id: -1 }, { name: 'recent' });
     },
   },
 ];

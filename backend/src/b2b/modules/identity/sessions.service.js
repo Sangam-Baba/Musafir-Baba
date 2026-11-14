@@ -132,6 +132,38 @@ function createSessionEndings(secret, now) {
   };
 }
 
+/**
+ * One `id_sessions` document per sign-in; the sign-in event goes into the same insert (P5).
+ * @param {{ userId: string, orgId?: string | null, methods: LoginMethod[] } & ClientInfo} input
+ * @param {string} secret
+ * @param {import('../../core/clock.js').Clock} clock
+ */
+async function insertSession(input, secret, clock) {
+  const at = clock.now();
+  const id = new SessionRecord()._id;
+  const refreshToken = buildRefreshToken(String(id), 1, secret);
+  const event = newEvent(
+    EVENTS.sessionCreated,
+    { userId: input.userId, sessionId: String(id), orgId: input.orgId ?? null, methods: input.methods, ip: input.ip ?? null },
+    { clock },
+  );
+  const doc = await SessionRecord.create({
+    _id: id,
+    userId: input.userId,
+    orgId: input.orgId ?? null,
+    methods: input.methods,
+    generation: 1,
+    refreshHash: hashToken(refreshToken),
+    expiresAt: new Date(at.getTime() + REFRESH_TTL_MS),
+    lastUsedAt: at,
+    ip: input.ip ?? null,
+    userAgent: input.userAgent?.slice(0, 300) ?? null,
+    pendingEvents: [event],
+    hasPendingEvents: true,
+  });
+  return { doc, refreshToken };
+}
+
 /** @param {{ secret: string | undefined, clock: import('../../core/clock.js').Clock }} options */
 export function createSessionService(options) {
   const secret = () => {
@@ -154,23 +186,8 @@ export function createSessionService(options) {
      * @returns {Promise<IssuedTokens>}
      */
     async create(input) {
-      const at = now();
-      const id = new SessionRecord()._id;
-      const refreshToken = buildRefreshToken(String(id), 1, secret());
-      const expiresAt = new Date(at.getTime() + REFRESH_TTL_MS);
-      const doc = await SessionRecord.create({
-        _id: id,
-        userId: input.userId,
-        orgId: input.orgId ?? null,
-        methods: input.methods,
-        generation: 1,
-        refreshHash: hashToken(refreshToken),
-        expiresAt,
-        lastUsedAt: at,
-        ip: input.ip ?? null,
-        userAgent: input.userAgent?.slice(0, 300) ?? null,
-      });
-      return issue(doc, refreshToken, expiresAt);
+      const { doc, refreshToken } = await insertSession(input, secret(), options.clock);
+      return issue(doc, refreshToken, doc.expiresAt);
     },
 
     /**
