@@ -232,6 +232,32 @@ describe('staff roles and users', () => {
     expect((await srv.get(`/api/v1/admin/staff/${STAFF.super2}/roles`, auth(pass))).body.roles).toEqual(['platform.superAdmin']);
   });
 
+  it('Super Admins find staff by their admin email and see everyone with B2B access', async () => {
+    await staffRoles.setRoles(STAFF.super1, ['platform.superAdmin'], 'cli');
+    await staffRoles.setRoles(STAFF.support, ['platform.support'], 'cli');
+    const pass = await adminPass(STAFF.super1);
+    expect((await srv.get('/api/v1/admin/staff/lookup?email=OPS@musafirbaba.com', auth(pass))).body).toEqual({
+      staffId: STAFF.ops,
+      name: 'ops',
+      email: 'ops@musafirbaba.com',
+      isActive: true,
+      roles: [],
+    });
+    expect((await srv.get('/api/v1/admin/staff/lookup?email=nobody@musafirbaba.com', auth(pass))).body.code).toBe('STAFF_NOT_FOUND');
+    await srv.put(`/api/v1/admin/staff/${STAFF.ops}/roles`, { roles: ['platform.operations'] }, auth(pass));
+    const list = (await srv.get('/api/v1/admin/staff', auth(pass))).body.data;
+    expect(list.map((/** @type {any} */ x) => [x.email, x.roles])).toEqual(
+      expect.arrayContaining([
+        ['super1@musafirbaba.com', ['platform.superAdmin']],
+        ['support@musafirbaba.com', ['platform.support']],
+        ['ops@musafirbaba.com', ['platform.operations']],
+      ]),
+    );
+    const support = await adminPass(STAFF.support);
+    expect((await srv.get('/api/v1/admin/staff', auth(support))).status).toBe(403); // only staff managers
+    expect((await mongo.db.collection('staffs').findOne({ _id: new ObjectId(STAFF.ops) }))?.roles).toBeUndefined(); // existing account untouched
+  });
+
   it('search business users and see their memberships', async () => {
     await staffRoles.setRoles(STAFF.support, ['platform.support'], 'cli');
     const pass = await adminPass(STAFF.support);

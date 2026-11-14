@@ -40,6 +40,7 @@ const MESSAGES: Record<string, string> = {
   ORG_NOT_ACTIVE: "This organisation is not active.",
   ORG_NOT_SUSPENDED: "This organisation is not suspended.",
   SUPER_ADMIN_LIMIT: "There can be at most 2 Super Admins.",
+  STAFF_NOT_FOUND: "No admin account with that email.",
   BUSINESS_LOGIN_NOT_CONFIGURED: "Business login isn't switched on on this server yet (B2B_AUTH_SECRET).",
   VALIDATION_FAILED: "Please check the highlighted fields.",
 };

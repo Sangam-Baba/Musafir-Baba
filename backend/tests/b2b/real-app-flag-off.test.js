@@ -1,5 +1,5 @@
 // @ts-check
-/** The real existing app with B2B_ENABLED unset: /api/v1 is not served by B2B code (behaviour as today). */
+/** The real existing app with B2B switched off: /api/v1 is not served by B2B code (behaviour as today). */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { startServer } from './helpers/http.js';
@@ -7,7 +7,8 @@ import { startServer } from './helpers/http.js';
 /** @type {Awaited<ReturnType<typeof startServer>>} */
 let server;
 beforeAll(async () => {
-  delete process.env.B2B_ENABLED;
+  // set explicitly: a developer's .env may switch B2B on, and dotenv never overrides a value already set
+  process.env.B2B_ENABLED = 'false';
   const { default: app } = await import('../../src/app.js');
   server = await startServer(app);
 });

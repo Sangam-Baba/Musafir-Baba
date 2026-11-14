@@ -22,6 +22,12 @@ export function createStaffRolesService(deps) {
       return doc && doc.roles.length > 0 ? { roles: doc.roles, firstGrantedAt: doc.firstGrantedAt } : null;
     },
 
+    /** Everyone with B2B admin access. @returns {Promise<{ staffId: string, roles: string[], firstGrantedAt: Date }[]>} */
+    async list() {
+      const docs = await StaffRoleRecord.find({}).sort({ createdAt: 1 }).lean();
+      return docs.map((d) => ({ staffId: String(d._id), roles: d.roles, firstGrantedAt: d.firstGrantedAt }));
+    },
+
     /** @param {readonly string[]} roles @returns {string[]} */
     permissionsOf(roles) {
       const out = new Set();

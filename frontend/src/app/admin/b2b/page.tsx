@@ -5,12 +5,14 @@ import { useState } from "react";
 
 import { AdminPassGate } from "@/b2b/components/admin/AdminPassGate";
 import { OrgsTab } from "@/b2b/components/admin/OrgsTab";
+import { StaffTab } from "@/b2b/components/admin/StaffTab";
 import { ActivityTab, UsersTab } from "@/b2b/components/admin/UsersAndActivity";
 
 const TABS = [
   { key: "orgs", label: "Organisations" },
   { key: "users", label: "Users" },
   { key: "activity", label: "Activity" },
+  { key: "staff", label: "Staff access" },
 ] as const;
 
 export default function B2BAdminPage() {
@@ -33,6 +35,7 @@ export default function B2BAdminPage() {
           {tab === "orgs" && <OrgsTab token={token} />}
           {tab === "users" && <UsersTab token={token} />}
           {tab === "activity" && <ActivityTab token={token} />}
+          {tab === "staff" && <StaffTab token={token} />}
         </div>
       )}
     </AdminPassGate>

@@ -4,7 +4,8 @@
  * B2B admin pass (routes/admin-auth.js) — the platform permissions below are only ever held by staff.
  * GET  /admin/orgs · GET /admin/orgs/:id · POST /admin/orgs · POST /admin/orgs/:id/suspend · POST /admin/orgs/:id/reactivate
  * GET  /admin/users · GET /admin/users/:id
- * GET  /admin/staff/:staffId/roles · PUT /admin/staff/:staffId/roles
+ * GET  /admin/staff · GET /admin/staff/lookup?email= · GET /admin/staff/:staffId/roles · PUT /admin/staff/:staffId/roles
+ *   (staff are read from the existing admin accounts through legacy-read — never written)
  */
 import express from 'express';
 import { z } from 'zod';
@@ -16,6 +17,7 @@ import { validate } from '../core/http/validate.js';
 import { PERMISSIONS as ACCESS } from '../modules/access/index.js';
 import { PERMISSIONS as IDENTITY } from '../modules/identity/index.js';
 import { PERMISSIONS as ORGS } from '../modules/organizations/index.js';
+import { findStaffByEmail, findStaffById } from '../legacy-read/index.js';
 
 const Id = z.string().regex(/^[a-f0-9]{24}$/);
 const OrgList = z.strictObject({
@@ -108,6 +110,45 @@ function userAndStaffRoutes(deps) {
       const user = await deps.users.findById(res.locals.input.params.id);
       if (!user) throw new NotFoundError('USER_NOT_FOUND');
       res.json({ user, memberships: await deps.orgAdmin.membershipsForAdmin(user.id) });
+    }),
+  );
+  router.use(staffRoutes(deps));
+  return router;
+}
+
+/** Who has B2B admin access, and giving it (Super Admins). @param {Parameters<typeof adminRoutes>[0]} deps */
+function staffRoutes(deps) {
+  const router = express.Router();
+  router.get(
+    '/admin/staff',
+    requirePermission(ACCESS.platformStaffManage),
+    run(async (_req, res) => {
+      const list = await deps.staffRoles.list();
+      const people = await Promise.all(list.map((s) => findStaffById(s.staffId)));
+      res.json({
+        data: list.map((s, i) => ({
+          ...s,
+          name: people[i]?.name ?? null,
+          email: people[i]?.email ?? null,
+          isActive: people[i]?.isActive ?? false,
+        })),
+      });
+    }),
+  );
+  router.get(
+    '/admin/staff/lookup',
+    requirePermission(ACCESS.platformStaffManage),
+    validate({ query: z.strictObject({ email: z.string().trim().min(3).max(254) }) }),
+    run(async (_req, res) => {
+      const staff = await findStaffByEmail(res.locals.input.query.email);
+      if (!staff) throw new NotFoundError('STAFF_NOT_FOUND');
+      res.json({
+        staffId: staff.id,
+        name: staff.name,
+        email: staff.email,
+        isActive: staff.isActive,
+        roles: (await deps.staffRoles.get(staff.id))?.roles ?? [],
+      });
     }),
   );
   router.get(
