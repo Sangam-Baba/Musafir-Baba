@@ -12,6 +12,7 @@ import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
 import { newReference } from '../../core/ids.js';
+import { authz } from '../access/index.js';
 import { EVENTS } from './events.js';
 import { BranchRecord } from './models/branch.model.js';
 import { MemberRecord } from './models/member.model.js';
@@ -169,10 +170,13 @@ function branchFunctions() {
     /** @param {import('../../core/context.js').RequestContext} ctx */
     async listBranches(ctx) {
       return (
-        await BranchRecord.find({ orgId: orgOf(ctx) })
-          .sort({ name: 1 })
-          .lean()
-      ).map(branchDto);
+        // branch-limited members see only their own branches (the branch's own id is its branch)
+        (
+          await BranchRecord.find(authz.scopeFilter(ctx, { branchField: '_id' }))
+            .sort({ name: 1 })
+            .lean()
+        ).map(branchDto)
+      );
     },
     /** @param {import('../../core/context.js').RequestContext} ctx @param {{ name: string, city?: string | undefined, stateCode?: string | undefined }} input */
     async createBranch(ctx, input) {
@@ -191,6 +195,7 @@ function branchFunctions() {
      */
     async updateBranch(ctx, id, input) {
       if (!ID.test(id)) throw new NotFoundError('BRANCH_NOT_FOUND');
+      authz.assert(ctx, null, { orgId: orgOf(ctx), branchId: id }); // outside the member's branches → looks missing
       const set = Object.fromEntries(Object.entries(input).filter(([, v]) => v !== undefined));
       const doc = await BranchRecord.findOneAndUpdate({ _id: id, orgId: orgOf(ctx) }, { $set: set }, { new: true }).lean();
       if (!doc) throw new NotFoundError('BRANCH_NOT_FOUND'); // other orgs' branches look like missing ones

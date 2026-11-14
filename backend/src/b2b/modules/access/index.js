@@ -9,4 +9,5 @@ export { matchesPattern, allowedPermissions, resolvePatterns } from './domain/pa
 export { SYSTEM_ROLES, systemRole, systemRolesFor, resolveSystemRole } from './domain/system-roles.js';
 export { isCustomRoleRef, customRoleRef } from './domain/custom-roles.js';
 export { createRolesService } from './roles.service.js';
+export { authz } from './domain/authorizer.js';
 export { roleRoutes } from './routes.js';

@@ -12,16 +12,16 @@ import { createInvitationsService, createMemberRolesService, isRoleInUse, organi
 import { PERMISSION_CATALOGUE } from '../permission-catalogue.js';
 import { invitationRoutes } from './invitations.js';
 
-/** @param {import('../core/clock.js').Clock} clock */
-export const createRoles = (clock) => createRolesService({ clock, catalogue: PERMISSION_CATALOGUE, isRoleInUse });
+/** @param {import('../core/clock.js').Clock} clock @param {(orgId: string, userId?: string) => void} accessChanged */
+export const createRoles = (clock, accessChanged) =>
+  createRolesService({ clock, catalogue: PERMISSION_CATALOGUE, isRoleInUse, accessChanged });
 
 /**
- * @param {NodeJS.ProcessEnv} env
- * @param {import('../core/clock.js').Clock} clock
- * @param {ReturnType<typeof createRoles>} roles
- * @param {ReturnType<typeof import('./identity.js').createIdentity>} identity
+ * @param {{ env: NodeJS.ProcessEnv, clock: import('../core/clock.js').Clock, roles: ReturnType<typeof createRoles>,
+ *   identity: ReturnType<typeof import('./identity.js').createIdentity>, accessChanged: (orgId: string, userId?: string) => void }} wiring
  */
-export function createTeamRoutes(env, clock, roles, identity) {
+export function createTeamRoutes(wiring) {
+  const { env, clock, roles, identity } = wiring;
   const deps = {
     clock,
     secret: env.B2B_AUTH_SECRET,
@@ -30,6 +30,7 @@ export function createTeamRoutes(env, clock, roles, identity) {
     isKnownRole: roles.isKnownRole,
     sendEmail: (/** @type {import('../core/email.js').EmailMessage} */ message) =>
       queueEmail(message, { secret: String(env.B2B_AUTH_SECRET), clock }),
+    accessChanged: wiring.accessChanged,
   };
   const invitations = createInvitationsService(deps);
   const router = express.Router();

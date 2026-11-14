@@ -57,7 +57,11 @@ export function createMemberRolesService(deps) {
         { $set: { ...change, hasPendingEvents: true }, $push: { pendingEvents: event } },
       );
       if (done.modifiedCount !== 1) throw new ConflictError('MEMBER_CHANGED_MEANWHILE'); // someone else changed the roles first — reload and retry
-      if (includesOwner(target.roles) && !includesOwner(roles)) await keepAnOwner(target, me.orgId, event.eventId);
+      try {
+        if (includesOwner(target.roles) && !includesOwner(roles)) await keepAnOwner(target, me.orgId, event.eventId);
+      } finally {
+        deps.accessChanged?.(me.orgId, userId);
+      }
       return { userId, ...change };
     },
   };

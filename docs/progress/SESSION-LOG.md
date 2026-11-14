@@ -30,7 +30,8 @@
 - **Later:** urgent live-site change on its own branch from `main` (rentals admin: vehicle page preview + author dropdown, frontend only, 4 files) → owner merged it as PR #219; merged `main` back into `b2b/stage-00` so the guards compare like with like.
 - **Later:** S01-T09 → DONE (invitations, accept as new/existing user, remove member, Owner-only rule, last-Owner rule). Test helper gained `del`. Tests ✅ 31 files / 331.
 - **Later:** S01-T10 → DONE (custom roles, role assignment with limits). Tests ✅ 32 files / 337.
-- **Next step:** S01-T11 — `authz.assert(ctx, permission, ownership)` + member-permission cache (60 s, cleared by role/member change events).
+- **Later:** S01-T11 → DONE (authorizer, list scoping, 60 s member-permission cache cleared on changes). Tests ✅ 33 files / 360.
+- **Next step:** S01-T12 — existing customer/staff tokens verified read-only (preview tokens refused), org status check, CI test that every `/api/v1` route declares a permission.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

@@ -34,6 +34,7 @@ const BY_LINK = systemScope('organizations: invitation lookup by emailed link', 
  *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<string[]>,
  *   isKnownRole: (role: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<boolean>,
  *   sendEmail: (message: import('../../core/email.js').EmailMessage) => Promise<unknown>,
+ *   accessChanged?: (orgId: string, userId?: string) => void,
  * }} InvitationDeps
  */
 
@@ -227,7 +228,11 @@ export function createInvitationsService(deps) {
       if (includesOwner(target.roles) && !me.isOwner) throw new ForbiddenError('CANNOT_REMOVE_MORE_POWERFUL_MEMBER');
       if ((await deps.permissionsOf(target.roles, me.orgType, me.orgId)).some((p) => !me.permissions.has(p)))
         throw new ForbiddenError('CANNOT_REMOVE_MORE_POWERFUL_MEMBER');
-      await removeKeepingAnOwner(target, me, deps);
+      try {
+        await removeKeepingAnOwner(target, me, deps);
+      } finally {
+        deps.accessChanged?.(me.orgId, userId); // cached permissions of the removed member go now
+      }
     },
   };
 }

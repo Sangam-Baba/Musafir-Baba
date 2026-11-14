@@ -8,6 +8,7 @@ import express from 'express';
 
 import { createRateLimiter } from '../core/rate-limit.js';
 import { createOrganizationsService } from '../modules/organizations/index.js';
+import { memberCacheKey } from './access-cache.js';
 import { accountRoutes } from './account.js';
 import {
   createBusinessAuthenticator,
@@ -35,8 +36,9 @@ const HOUR = 60 * 60_000;
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/clock.js').Clock} clock
  * @param {PermissionsOf} permissionsOf what a member's roles allow (system + custom roles)
+ * @param {ReturnType<typeof import('./access-cache.js').createMemberCache>} memberCache
  */
-export function createIdentity(env, clock, permissionsOf) {
+export function createIdentity(env, clock, permissionsOf, memberCache) {
   const secret = env.B2B_AUTH_SECRET;
   const secureCookies = env.NODE_ENV === 'production';
   /** @param {string} name @param {number} points @param {number} windowMs */
@@ -78,8 +80,14 @@ export function createIdentity(env, clock, permissionsOf) {
   auth.use(sessionRoutes({ sessions, secureCookies }));
 
   const sign = signer(secret, clock);
-  const resolveMember = (/** @type {string} */ orgId, /** @type {string} */ userId) =>
-    resolveMemberActor(orgs, permissionsOf, orgId, userId);
+  const resolveMember = async (/** @type {string} */ orgId, /** @type {string} */ userId) => {
+    const key = memberCacheKey(orgId, userId);
+    const cached = memberCache.get(key);
+    if (cached) return cached;
+    const member = await resolveMemberActor(orgs, permissionsOf, orgId, userId);
+    if (member) memberCache.set(key, member); // misses are not cached
+    return member;
+  };
   return {
     authenticate: createBusinessAuthenticator({ secret, clock, sessions, resolveMember }),
     auth,

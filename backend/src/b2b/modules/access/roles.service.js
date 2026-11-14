@@ -34,7 +34,7 @@ const customDto = (r) => ({
 
 /**
  * @typedef {{ clock: import('../../core/clock.js').Clock, catalogue: readonly import('../../core/permissions.js').PermissionDef[],
- *   isRoleInUse: (orgId: string, roleRef: string) => Promise<boolean> }} RolesDeps
+ *   isRoleInUse: (orgId: string, roleRef: string) => Promise<boolean>, accessChanged?: (orgId: string, userId?: string) => void }} RolesDeps
  */
 
 /**
@@ -128,6 +128,7 @@ async function updateCustomRole(deps, ctx, id, input) {
       throw nameTaken(error);
     });
   if (!doc) throw new NotFoundError('ROLE_NOT_FOUND');
+  deps.accessChanged?.(me.orgId); // everyone holding the role
   return customDto(doc);
 }
 
@@ -142,6 +143,7 @@ async function deleteCustomRole(deps, ctx, id) {
     { $set: { status: 'DELETED', nameKey: `deleted:${id}`, hasPendingEvents: true }, $push: { pendingEvents: event } },
   );
   if (done.modifiedCount !== 1) throw new NotFoundError('ROLE_NOT_FOUND');
+  deps.accessChanged?.(me.orgId);
 }
 
 /** @param {RolesDeps} deps */

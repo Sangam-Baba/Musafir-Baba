@@ -22,6 +22,7 @@ import { logger as defaultLogger } from '../core/logger.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
 import { createIdentity } from './identity.js';
+import { createAccessChangeNotifier, createMemberCache } from './access-cache.js';
 import { createRoles, createTeamRoutes } from './teams.js';
 import { realtimeRoutes } from './realtime.js';
 
@@ -47,8 +48,9 @@ export function createB2BRouter(options = {}) {
     createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });
   if (options.connect !== false) startDatabase(env, log, hub);
 
-  const roles = createRoles(clock);
-  const identity = createIdentity(env, clock, roles.permissionsOf);
+  const accessChanged = createAccessChangeNotifier({ clock, logger: log });
+  const roles = createRoles(clock, accessChanged);
+  const identity = createIdentity(env, clock, roles.permissionsOf, createMemberCache(clock));
   const router = express.Router();
   router.use(securityHeaders());
   router.use(requestTimeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS));
@@ -69,7 +71,7 @@ export function createB2BRouter(options = {}) {
   router.use('/auth', identity.auth);
   router.use('/me', identity.me);
   router.use(identity.account);
-  router.use(createTeamRoutes(env, clock, roles, identity));
+  router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
