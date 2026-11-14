@@ -81,6 +81,21 @@ function createSessionEndings(secret, now) {
     },
 
     /**
+     * Ends every open session opened in an org (the org was suspended). Sessions of the same users in
+     * other orgs are not touched.
+     * @param {string} orgId
+     * @param {string} reason
+     * @returns {Promise<number>}
+     */
+    async revokeForOrg(orgId, reason) {
+      const result = await SessionRecord.updateMany(
+        { orgId, revokedAt: null },
+        { $set: { revokedAt: now(), revokeReason: reason } },
+      ).setOptions(systemScope('identity: end the sessions of a suspended org'));
+      return result.modifiedCount;
+    },
+
+    /**
      * Ends every open session of a user ("log out everywhere", suspension, password reset).
      * @param {string} userId
      * @param {string} reason e.g. 'LOGOUT_ALL', 'PASSWORD_RESET', 'ORG_SUSPENDED'

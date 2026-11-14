@@ -17,7 +17,8 @@
     "b2b:migrate": "node src/b2b/migrate.js",
     "b2b:guards": "node scripts/b2b/guards.js",
     "b2b:progress": "node scripts/b2b/progress.js",
-    "b2b:gen-module": "node scripts/b2b/gen-module.js"
+    "b2b:gen-module": "node scripts/b2b/gen-module.js",
+    "b2b:grant-admin": "node scripts/b2b/grant-admin.js"
   },
   "keywords": [],
   "author": "",

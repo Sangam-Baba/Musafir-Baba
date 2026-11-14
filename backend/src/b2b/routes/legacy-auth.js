@@ -47,7 +47,8 @@ export function createLegacyAuthenticator(deps) {
     if (!claims) return null;
     const session = await findSessionById(claims.sessionId);
     if (!session || session.userId !== claims.sub || session.status !== 'active' || session.revoked) return null;
-    return actorFor(claims, deps);
+    const actor = await actorFor(claims, deps);
+    return actor?.type === 'staff' ? { ...actor, legacySessionId: claims.sessionId } : actor;
   };
 }
 

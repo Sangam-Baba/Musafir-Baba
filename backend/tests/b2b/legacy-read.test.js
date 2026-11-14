@@ -37,7 +37,7 @@ afterAll(async () => mongo.stop());
 describe('legacy-read (read-only access to existing data)', () => {
   it('exposes read functions only — nothing that can write', () => {
     const names = Object.keys(legacyRead).filter((k) => typeof (/** @type {any} */ (legacyRead)[k]) === 'function');
-    expect(names.sort()).toEqual(['findCustomerById', 'findSessionById', 'findStaffById']);
+    expect(names.sort()).toEqual(['findCustomerById', 'findSessionById', 'findStaffByEmail', 'findStaffById']); // each one reviewed: read-only
     expect(legacyRead.LEGACY_READ_COLLECTIONS).toEqual(['users', 'staffs', 'sessions']);
   });
 
@@ -69,6 +69,13 @@ describe('legacy-read (read-only access to existing data)', () => {
     expect(await legacyRead.findCustomerById('not-an-id')).toBeNull();
     expect(await legacyRead.findCustomerById(new ObjectId().toHexString())).toBeNull();
     expect(await legacyRead.findSessionById(/** @type {any} */ ({ $ne: null }))).toBeNull();
+  });
+
+  it('finds staff by email (for the one-time grant-admin command), read-only', async () => {
+    expect((await legacyRead.findStaffByEmail(' Ravi@Example.com '))?.id).toBe(staffId.toHexString());
+    expect(await legacyRead.findStaffByEmail('nobody@example.com')).toBeNull();
+    expect(await legacyRead.findStaffByEmail(/** @type {any} */ ({ $ne: null }))).toBeNull();
+    expect(await legacyRead.findStaffByEmail('not-an-email')).toBeNull();
   });
 
   it('leaves the existing documents exactly as they were', async () => {

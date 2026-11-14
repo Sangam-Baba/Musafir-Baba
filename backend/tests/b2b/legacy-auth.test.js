@@ -64,8 +64,8 @@ describe('existing logins (read-only check)', () => {
     expect(await authenticate(req(customerToken()))).toEqual({ type: 'customer', customerId: CUSTOMER });
   });
 
-  it('an admin with an active session → staff (no B2B permissions until platform roles, S01-T14)', async () => {
-    expect(await authenticate(req(staffToken()))).toEqual({ type: 'staff', staffId: STAFF, permissions: [] });
+  it('an admin with an active session → staff with NO B2B permissions (those need the B2B admin pass)', async () => {
+    expect(await authenticate(req(staffToken()))).toEqual({ type: 'staff', staffId: STAFF, permissions: [], legacySessionId: 'sess-a1' });
   });
 
   it.each([

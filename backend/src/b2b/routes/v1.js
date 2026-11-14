@@ -24,6 +24,9 @@ import { createStreamHub } from '../core/realtime/stream.js';
 import { createIdentity } from './identity.js';
 import { createAccessChangeNotifier, createMemberCache } from './access-cache.js';
 import { createRoles, createTeamRoutes } from './teams.js';
+import { createAdminAuthenticator } from './admin-auth.js';
+import { firstMatch } from './legacy-auth.js';
+import { createStaffRoles } from './admin-wiring.js';
 import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
@@ -51,12 +54,19 @@ export function createB2BRouter(options = {}) {
   const accessChanged = createAccessChangeNotifier({ clock, logger: log });
   const roles = createRoles(clock, accessChanged);
   const identity = createIdentity(env, clock, roles.permissionsOf, createMemberCache(clock));
+  const staffRoles = createStaffRoles(clock);
+  // business tokens, then the B2B admin pass, then existing customer/admin logins (read-only)
+  const authenticate = firstMatch(
+    identity.businessAuthenticate,
+    createAdminAuthenticator({ secret: env.B2B_AUTH_SECRET, clock, staffRoles }),
+    identity.legacyAuthenticate,
+  );
   const router = express.Router();
   router.use(securityHeaders());
   router.use(requestTimeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS));
   router.use(requestId);
   router.use(express.json({ limit: BODY_LIMIT }));
-  router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, authenticate: options.authenticate ?? identity.authenticate }));
+  router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, authenticate: options.authenticate ?? authenticate }));
 
   router.get('/health', publicRoute(), (_req, res, next) => {
     checkHealth(contextOf(res).clock)
@@ -71,7 +81,7 @@ export function createB2BRouter(options = {}) {
   router.use('/auth', identity.auth);
   router.use('/me', identity.me);
   router.use(identity.account);
-  router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged }));
+  router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

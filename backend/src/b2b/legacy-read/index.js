@@ -100,3 +100,14 @@ export async function findSessionById(sessionId) {
     revoked: doc.revoked === true,
   };
 }
+
+/**
+ * For the one-time `npm run b2b:grant-admin` command: find a staff member by email (read-only).
+ * @param {string} email
+ * @returns {Promise<LegacyStaff | null>}
+ */
+export async function findStaffByEmail(email) {
+  if (typeof email !== 'string' || email.length > 254 || !email.includes('@')) return null;
+  const doc = await readOne('staffs', { email: email.trim().toLowerCase() }, { _id: 1 });
+  return doc ? findStaffById(String(doc._id)) : null;
+}

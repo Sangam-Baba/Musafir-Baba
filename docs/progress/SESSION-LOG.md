@@ -35,7 +35,8 @@
 - **Fix:** live-updates catch-up could still repeat a signal when the live feed delivered it *during* the catch-up read (seen once in a full run: 3, 2, 3). Live signals are now held while a stream catches up and released in order without repeats (deterministic test added). The S01-T12 commit had been made while that flaky test failed — my command chain didn't stop on it; fixed in the next commit and the suite was then run 4× green.
 - **Later:** S01-T13 → DONE (activity log from events, sign-in event, org and admin reads). Tests ✅ 36 files / 388.
 - **Open:** one full-suite run (of ~12 today) had 1 failing test that could not be captured (no repeat in the next 7 runs). Every suite run now saves its full output so the next occurrence is identified and fixed at the cause.
-- **Next step:** S01-T14 — admin access (D1): staff MFA, platform roles (`acl_staff_roles`), `npm run b2b:grant-admin`, admin orgs/users API, suspend/reactivate (sessions revoked).
+- **Later:** S01-T14 → DONE (B2B admin pass with two-step login and a 7-day setup window, platform roles, admin orgs/users/staff API, suspend ends org sessions, grant-admin command). Tests ✅ 37 files / 397 (3× green).
+- **Next step:** S01-T15 — view as client/hotel (reason required, 30 min, read-only unless `admin.viewAs.write` + step-up, banner flag, audited, owner emailed).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

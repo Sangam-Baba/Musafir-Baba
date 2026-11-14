@@ -10,7 +10,7 @@ import { JOBS_COLLECTION } from '../core/jobs/queue.js';
 import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
-import { PERMISSIONS_COLLECTION, ROLES_COLLECTION } from '../modules/access/index.js';
+import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from '../modules/access/index.js';
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
@@ -203,6 +203,14 @@ export const MIGRATIONS = [
       await ctx.createIndex(AUDIT_COLLECTION, { orgId: 1, occurredAt: -1, _id: -1 }, { name: 'org_recent' });
       await ctx.createIndex(AUDIT_COLLECTION, { userId: 1, occurredAt: -1, _id: -1 }, { name: 'user_recent' });
       await ctx.createIndex(AUDIT_COLLECTION, { occurredAt: -1, _id: -1 }, { name: 'recent' });
+    },
+  },
+  {
+    id: '0016-acl-staff-roles',
+    description: 'Platform roles of MusafirBaba staff (keyed by the existing staff id); Super Admin count',
+    up: async (ctx) => {
+      await ctx.createCollection(STAFF_ROLES_COLLECTION);
+      await ctx.createIndex(STAFF_ROLES_COLLECTION, { roles: 1 }, { name: 'roles' });
     },
   },
 ];

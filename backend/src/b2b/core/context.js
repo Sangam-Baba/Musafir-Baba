@@ -11,7 +11,7 @@ import { systemClock } from './clock.js';
 /**
  * @typedef {{ type: 'anonymous' }
  *   | { type: 'customer', customerId: string }
- *   | { type: 'staff', staffId: string, permissions: readonly string[] }
+ *   | { type: 'staff', staffId: string, permissions: readonly string[], legacySessionId?: string, viaAdminToken?: boolean }
  *   | { type: 'user', userId: string, sessionId: string }
  *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[], sessionId?: string,
  *       orgType?: 'PLATFORM' | 'CLIENT' | 'HOTEL', roles?: readonly string[], branchIds?: readonly string[], propertyIds?: readonly string[], ownOnly?: boolean }

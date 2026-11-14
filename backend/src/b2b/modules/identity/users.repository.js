@@ -122,6 +122,20 @@ export function createUserRepository(options) {
      */
     create: (input) => insertUser(input, cost, options.clock.now()),
 
+    /**
+     * Admin search by email, phone or name (case-insensitive, contains). Newest first, max 50.
+     * @param {string} q
+     * @returns {Promise<UserDto[]>}
+     */
+    async search(q) {
+      const re = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const docs = await UserRecord.find({ $or: [{ email: re }, { phone: re }, { name: re }] })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean();
+      return docs.map(toDto);
+    },
+
     /** @param {string} id @returns {Promise<UserDto | null>} */
     async findById(id) {
       if (!/^[a-f0-9]{24}$/.test(id)) return null;

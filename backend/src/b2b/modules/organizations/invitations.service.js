@@ -97,13 +97,11 @@ async function findByLink(kit, token) {
 
 /**
  * @param {Kit} kit
- * @param {import('../../core/context.js').RequestContext} ctx
+ * @param {{ orgId: string, userId: string }} me the inviter, already checked by the caller
  * @param {{ email: string, roles: string[], branchIds?: string[], propertyIds?: string[] }} input
  */
-async function createInvitation(kit, ctx, input) {
+async function createInvitation(kit, me, input) {
   const { deps } = kit;
-  const me = memberOf(ctx);
-  await assertCanGrant(deps, me, input.roles);
   const branchIds = input.branchIds ?? [];
   const activeBranches =
     branchIds.length === 0 ? 0 : await BranchRecord.countDocuments({ orgId: me.orgId, _id: { $in: branchIds }, status: 'ACTIVE' });
@@ -183,11 +181,25 @@ export function createInvitationsService(deps) {
   };
   return {
     /** @param {import('../../core/context.js').RequestContext} ctx @param {Parameters<typeof createInvitation>[2]} input */
-    invite: (ctx, input) => createInvitation(kit, ctx, input),
+    invite: async (ctx, input) => {
+      const me = memberOf(ctx);
+      await assertCanGrant(deps, me, input.roles);
+      return createInvitation(kit, me, input);
+    },
     /** @param {unknown} token @param {string} userId @param {string} userEmail */
     accept: (token, userId, userEmail) => acceptInvitation(kit, token, userId, userEmail),
     /** The invited email for a link (to pre-fill the sign-up form). @param {unknown} token */
     emailFor: async (token) => (await findByLink(kit, token))?.email ?? null,
+
+    /**
+     * A MusafirBaba admin invites the first Owner of an org they created (the route checks
+     * `platform.org.manage`; there is no member yet whose permissions could be compared).
+     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL', email: string, staffId: string }} input
+     */
+    async inviteOwnerAsAdmin(input) {
+      const ownerRole = input.orgType === 'CLIENT' ? 'client.owner' : 'hotel.owner';
+      return createInvitation(kit, { orgId: input.orgId, userId: `staff:${input.staffId}` }, { email: input.email, roles: [ownerRole] });
+    },
 
     /** @param {import('../../core/context.js').RequestContext} ctx */
     async list(ctx) {

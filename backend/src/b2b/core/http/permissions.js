@@ -51,6 +51,20 @@ export function requireBusinessUser() {
 }
 
 /**
+ * A MusafirBaba staff member signed in with their existing admin login (used to obtain the B2B admin
+ * pass). B2B admin actions themselves need `requirePermission(...)`.
+ * @returns {import('express').RequestHandler}
+ */
+export function requireStaff() {
+  return label((_req, res, next) => {
+    const { actor } = contextOf(res);
+    if (actor.type === 'anonymous') return next(new UnauthorizedError());
+    if (actor.type !== 'staff') return next(new ForbiddenError());
+    next();
+  }, 'staff');
+}
+
+/**
  * Staff (admin) and business members need the permission code, e.g. 'hotel.property.approve'.
  * @param {string} permission
  * @returns {import('express').RequestHandler}
