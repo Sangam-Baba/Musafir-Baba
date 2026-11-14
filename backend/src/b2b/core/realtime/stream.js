@@ -20,7 +20,11 @@ const OBJECT_ID = /^[0-9a-f]{24}$/;
 const RESYNC = 'event: resync\ndata: {}\n\n';
 
 /** @typedef {import('./signals.js').Signal} Signal */
-/** @typedef {{ res: import('express').Response, rooms: ReadonlySet<string>, ip: string, seenUpTo: string | null }} StreamClient */
+/**
+ * held: live signals that arrive while the client is still catching up (null when not catching up);
+ * they are sent after the catch-up, skipping any the catch-up already sent.
+ * @typedef {{ res: import('express').Response, rooms: ReadonlySet<string>, ip: string, seenUpTo: string | null, held: Signal[] | null }} StreamClient
+ */
 /** @typedef {(client: StreamClient, frame: string) => void} Write */
 
 /** @param {Signal} signal */
@@ -121,6 +125,13 @@ export function createStreamHub(options) {
   }, options.heartbeatMs ?? 25_000);
   heartbeat.unref(); // never keeps the backend process alive or delays its shutdown
 
+  /** @param {StreamClient} client @param {Signal} signal */
+  function sendLive(client, signal) {
+    const id = String(signal._id ?? '');
+    if (client.seenUpTo !== null && id <= client.seenUpTo) return; // already sent during the catch-up (ids sort by time)
+    write(client, frameOf(signal));
+  }
+
   return {
     /**
      * Starts a stream. Throws (before any byte is written) when a limit is reached.
@@ -136,7 +147,7 @@ export function createStreamHub(options) {
         .set({ 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' });
       res.flushHeaders();
       /** @type {StreamClient} */
-      const client = { res, rooms: new Set(input.rooms), ip: input.ip, seenUpTo: null };
+      const client = { res, rooms: new Set(input.rooms), ip: input.ip, seenUpTo: null, held: input.lastEventId ? [] : null };
       registry.add(client);
       req.on('close', () => registry.remove(client));
       write(client, `retry: 3000\nevent: ready\ndata: ${JSON.stringify({ rooms: [...client.rooms] })}\n\n`);
@@ -144,17 +155,22 @@ export function createStreamHub(options) {
         options.logger.warn({ err: error }, 'realtime: catch-up failed, asking the browser to reload');
         write(client, RESYNC);
       });
+      // release live signals held during the catch-up, in order, without repeating any
+      const held = (client.held ?? []).sort((x, y) => (String(x._id) < String(y._id) ? -1 : 1));
+      client.held = null;
+      for (const signal of held) sendLive(client, signal);
     },
     /** @param {Signal} signal */
     deliver(signal) {
       if (signal.room === CACHE_EVICT_ROOM) return; // for server caches, never browsers
       const clients = registry.inRoom(signal.room);
       if (clients.length === 0) return;
-      const frame = frameOf(signal);
-      const id = String(signal._id ?? '');
       for (const client of clients) {
-        if (client.seenUpTo !== null && id <= client.seenUpTo) continue; // already sent during catch-up (ids sort by time)
-        write(client, frame);
+        if (client.held) {
+          if (client.held.length < 200) client.held.push(signal); // still catching up — sent right after it
+          continue;
+        }
+        sendLive(client, signal);
       }
     },
     /** @returns {{ connections: number, rooms: number }} */

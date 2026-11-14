@@ -14,6 +14,7 @@ import { createStreamHub } from '../../src/b2b/core/realtime/stream.js';
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { createB2BRouter } from '../../src/b2b/routes/v1.js';
 import { startMongo } from './helpers/mongo.js';
+import { openStream } from './helpers/sse.js';
 
 const clock = { now: () => new Date() };
 const quiet = createLogger({ write: () => {} });
@@ -72,81 +73,6 @@ async function serve(opts = {}) {
         server.closeAllConnections();
         server.close(() => resolve(undefined));
       }),
-  };
-}
-
-/** @typedef {{ id: string, event: string, data: any }} SseEvent */
-
-/**
- * Minimal SSE client on fetch (what the frontend hook does for signed-in users).
- * @param {string} url @param {Record<string, string>} [headers]
- */
-async function openStream(url, headers = {}) {
-  const abort = new AbortController();
-  const res = await fetch(url, { headers, signal: abort.signal });
-  /** @type {SseEvent[]} */
-  const events = [];
-  /** @type {(() => void)[]} */
-  let waiters = [];
-  if (res.ok && res.body) {
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    void (async () => {
-      try {
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let cut;
-          while ((cut = buffer.indexOf('\n\n')) !== -1) {
-            const block = buffer.slice(0, cut);
-            buffer = buffer.slice(cut + 2);
-            /** @type {SseEvent} */
-            const ev = { id: '', event: 'message', data: null };
-            let isEvent = false;
-            for (const line of block.split('\n')) {
-              const [field, ...rest] = line.split(': ');
-              const value = rest.join(': ');
-              if (field === 'id') ev.id = value;
-              if (field === 'event') ev.event = value;
-              if (field === 'data') {
-                ev.data = JSON.parse(value);
-                isEvent = true;
-              }
-            }
-            if (isEvent) events.push(ev);
-          }
-          const w = waiters;
-          waiters = [];
-          w.forEach((f) => f());
-        }
-      } catch {
-        // aborted
-      }
-    })();
-  }
-  /** @param {string} event @param {number} [ms] @returns {Promise<SseEvent>} */
-  const next = (event, ms = 4000) =>
-    new Promise((resolve, reject) => {
-      const started = events.length;
-      const t = setTimeout(() => reject(new Error(`no "${event}" within ${ms} ms`)), ms);
-      const check = () => {
-        const found = events.slice(0).find((e, i) => e.event === event && (event === 'ready' || i >= started));
-        if (found) {
-          clearTimeout(t);
-          resolve(found);
-        } else waiters.push(check);
-      };
-      check();
-    });
-  return {
-    status: res.status,
-    headers: res.headers,
-    body: /** @type {any} */ (res.ok ? null : await res.json()),
-    events,
-    next,
-    close: () => abort.abort(),
   };
 }
 
@@ -261,6 +187,44 @@ describe('live updates over Server-Sent Events (same backend, same address)', ()
       await expect
         .poll(() => s.events.filter((e) => e.event === 'availability:changed').map((e) => e.data.data.n), { timeout: 4000 })
         .toEqual([1, 2, 3]);
+    } finally {
+      s.close();
+      own.close();
+      await srv.close();
+    }
+  });
+
+  it('a live signal arriving DURING the catch-up is held and sent once, in order', async () => {
+    const id = (/** @type {number} */ n) => b2bMongoose.Types.ObjectId.createFromTime(Math.floor(Date.now() / 1000) - 60 + n);
+    /** @param {number} n @returns {import('../../src/b2b/core/realtime/signals.js').Signal} */
+    const sig = (n) => ({ _id: id(n), room: AVAIL, event: 'availability:changed', data: { n }, at: new Date() });
+    /** @type {(v: any[]) => void} */
+    let finishReplay = () => {};
+    let replayStarted = () => {};
+    const started = new Promise((r) => {
+      replayStarted = () => r(undefined);
+    });
+    const own = newHub({
+      readSince: () => {
+        replayStarted();
+        return new Promise((resolve) => {
+          finishReplay = resolve;
+        });
+      },
+    });
+    const srv = await serve({ hub: own });
+    const s = await openStream(`${srv.base}/api/v1/realtime/stream?rooms=${AVAIL}`, { 'Last-Event-ID': id(1).toHexString() });
+    try {
+      await started;
+      own.deliver(sig(3)); // the live feed is faster than the catch-up read
+      finishReplay([sig(2), sig(3)]);
+      await expect
+        .poll(() => s.events.filter((e) => e.event === 'availability:changed').map((e) => e.data.data.n), { timeout: 4000 })
+        .toEqual([2, 3]);
+      own.deliver(sig(4));
+      await expect
+        .poll(() => s.events.filter((e) => e.event === 'availability:changed').map((e) => e.data.data.n), { timeout: 4000 })
+        .toEqual([2, 3, 4]);
     } finally {
       s.close();
       own.close();
