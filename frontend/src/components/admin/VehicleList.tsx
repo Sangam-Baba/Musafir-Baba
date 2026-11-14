@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Car, Copy, Edit, MapPin, Trash2 } from "lucide-react";
+import { Car, Copy, Edit, Eye, MapPin, Trash2 } from "lucide-react";
 import { FleetEmptyState, fleetTh } from "@/components/admin/fleet/FleetUI";
 import { RentalStatusPill } from "@/components/admin/rental/RentalAdminUI";
 
@@ -36,6 +36,8 @@ interface UsersTableProps {
   onDelete: (id: string) => void;
   // Optional "Duplicate to another city" action
   onDuplicate?: (id: string) => void;
+  // Optional "Preview page" action (same as the packages list)
+  onPreview?: (id: string) => void;
 }
 
 const inr = (n?: number) => (typeof n === "number" ? `₹${n.toLocaleString("en-IN")}` : "—");
@@ -47,6 +49,7 @@ export default function VehiclesList({
   onStatusChange,
   onDelete,
   onDuplicate,
+  onPreview,
 }: UsersTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -63,6 +66,19 @@ export default function VehiclesList({
 
   const actions = (v: IVehicleList, withLabels = false) => (
     <div className="flex items-center justify-end gap-1.5">
+      {onPreview && (
+        <Button
+          variant="outline"
+          size={withLabels ? "sm" : "icon"}
+          title="Preview page"
+          aria-label="Preview page"
+          className={withLabels ? labelBtn : iconBtn}
+          onClick={() => onPreview(v._id)}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          {withLabels && "Preview"}
+        </Button>
+      )}
       {onDuplicate && (
         <Button
           variant="outline"

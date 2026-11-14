@@ -8,6 +8,7 @@ import UsersList from "@/components/admin/UsersList";
 import CreateEditStaff from "@/components/auth/CreateEditStaff";
 import { Button } from "@/components/ui/button";
 import VehiclesList from "@/components/admin/VehicleList";
+import VehiclePreviewDrawer from "@/components/admin/VehiclePreviewDrawer";
 import { Input } from "@/components/ui/input";
 import { FleetKpiStrip, FleetPage, FleetPanel, fleetSelectClass } from "@/components/admin/fleet/FleetUI";
 import { RentalPageHeader, rPrimaryBtn } from "@/components/admin/rental/RentalAdminUI";
@@ -129,6 +130,8 @@ function VehiclePage() {
 
   // "Duplicate to another city" dialog
   const [duplicateId, setDuplicateId] = useState<string | null>(null);
+  // Vehicle page preview (drawer, like the packages list)
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [duplicateTo, setDuplicateTo] = useState("");
   const [duplicating, setDuplicating] = useState(false);
   const duplicateSource = vehicles.find((v) => v._id === duplicateId);
@@ -291,6 +294,7 @@ function VehiclePage() {
             }}
             onDelete={handleDelete}
             onDuplicate={(id) => setDuplicateId(id)}
+            onPreview={(id) => setPreviewId(id)}
           />
         )}
       </FleetPanel>
@@ -343,6 +347,7 @@ function VehiclePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <VehiclePreviewDrawer id={previewId} isOpen={!!previewId} onClose={() => setPreviewId(null)} />
     </FleetPage>
   );
 }
