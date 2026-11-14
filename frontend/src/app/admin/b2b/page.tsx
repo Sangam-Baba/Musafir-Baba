@@ -1,43 +1,56 @@
 "use client";
-// B2B admin (MusafirBaba staff): organisations, business users and the activity log.
-// Lives inside the existing admin panel and its login; nothing existing is changed.
-import { useState } from "react";
+// B2B admin (MusafirBaba staff): organisations, business users, activity and staff access.
+// Lives inside the existing admin panel and its login, built from the admin's own UI kit.
+import { useQuery } from "@tanstack/react-query";
+import { Activity, Ban, Building2, Hotel, ShieldCheck, Users } from "lucide-react";
 
-import { AdminPassGate } from "@/b2b/components/admin/AdminPassGate";
-import { OrgsTab } from "@/b2b/components/admin/OrgsTab";
+import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
+import { AdminPageHeader, AdminTabsList, FleetKpiStrip, FleetPage, SECTION, Tabs, TabsContent } from "@/b2b/components/admin/kit";
+import { OrgsTab, type AdminOrg } from "@/b2b/components/admin/OrgsTab";
 import { StaffTab } from "@/b2b/components/admin/StaffTab";
 import { ActivityTab, UsersTab } from "@/b2b/components/admin/UsersAndActivity";
 
 const TABS = [
-  { key: "orgs", label: "Organisations" },
-  { key: "users", label: "Users" },
-  { key: "activity", label: "Activity" },
-  { key: "staff", label: "Staff access" },
-] as const;
+  { value: "orgs", label: "Organisations", icon: Building2, title: "Organisations", description: "Client and hotel organisations." },
+  { value: "users", label: "Users", icon: Users, title: "Business users", description: "People who sign in to the business area." },
+  { value: "activity", label: "Activity", icon: Activity, title: "Activity", description: "Sign-ins and changes in every organisation." },
+  { value: "staff", label: "Staff access", icon: ShieldCheck, title: "Staff access", description: "Which MusafirBaba staff can use B2B admin." },
+];
 
 export default function B2BAdminPage() {
-  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("orgs");
+  return <AdminPassGate>{(token) => <B2BAdmin token={token} />}</AdminPassGate>;
+}
+
+function B2BAdmin({ token }: { token: string }) {
+  const all = useQuery({ queryKey: ["b2b-admin", "orgs", "kpi"], queryFn: () => adminCall<{ data: AdminOrg[] }>("/admin/orgs?limit=200", token) });
+  const orgs = all.data?.data ?? [];
+  const count = (f: (o: AdminOrg) => boolean) => (all.data ? orgs.filter(f).length : "—");
   return (
-    <AdminPassGate>
-      {(token) => (
-        <div className="space-y-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">B2B &amp; hotels</h1>
-            <p className="text-sm text-slate-500">Client and hotel organisations, their users and activity.</p>
-          </div>
-          <div className="flex gap-1 border-b border-slate-200">
-            {TABS.map((t) => (
-              <button key={t.key} onClick={() => setTab(t.key)} className={`-mb-px border-b-2 px-4 py-2 text-sm ${tab === t.key ? "border-[#FE5300] font-medium text-[#FE5300]" : "border-transparent text-slate-600"}`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-          {tab === "orgs" && <OrgsTab token={token} />}
-          {tab === "users" && <UsersTab token={token} />}
-          {tab === "activity" && <ActivityTab token={token} />}
-          {tab === "staff" && <StaffTab token={token} />}
-        </div>
-      )}
-    </AdminPassGate>
+    <FleetPage>
+      <AdminPageHeader section={SECTION} icon={Building2} title="B2B admin" description="Client and hotel organisations, business users, activity and staff access." />
+      <FleetKpiStrip
+        items={[
+          { label: "Organisations", value: all.data ? orgs.length : "—", icon: Building2, tone: "slate" },
+          { label: "Hotels", value: count((o) => o.type === "HOTEL"), icon: Hotel, tone: "sky" },
+          { label: "B2B clients", value: count((o) => o.type === "CLIENT"), icon: Users, tone: "orange" },
+          { label: "Suspended", value: count((o) => o.status === "SUSPENDED"), icon: Ban, tone: "red" },
+        ]}
+      />
+      <Tabs defaultValue="orgs" className="flex flex-col gap-4">
+        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-4" />
+        <TabsContent value="orgs" className="mt-0">
+          <OrgsTab token={token} />
+        </TabsContent>
+        <TabsContent value="users" className="mt-0">
+          <UsersTab token={token} />
+        </TabsContent>
+        <TabsContent value="activity" className="mt-0">
+          <ActivityTab token={token} />
+        </TabsContent>
+        <TabsContent value="staff" className="mt-0">
+          <StaffTab token={token} />
+        </TabsContent>
+      </Tabs>
+    </FleetPage>
   );
 }
