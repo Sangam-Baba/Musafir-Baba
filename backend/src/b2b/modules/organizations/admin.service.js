@@ -36,7 +36,8 @@ const orgDto = (o) => ({
  *   orgs: ReturnType<typeof import('./organizations.service.js').createOrganizationsService>,
  *   invitations: ReturnType<typeof import('./invitations.service.js').createInvitationsService>,
  *   endOrgSessions: (orgId: string, reason: string) => Promise<number>,
- *   accessChanged?: (orgId: string, userId?: string) => void }} OrgAdminDeps
+ *   accessChanged?: (orgId: string, userId?: string) => void,
+ *   describeUsers?: (ids: readonly string[]) => Promise<{ id: string, name: string, email: string | null }[]> }} OrgAdminDeps
  */
 
 /**
@@ -103,13 +104,7 @@ async function membershipsOfUser(userId) {
   }));
 }
 
-/**
- * @param {{ clock: import('../../core/clock.js').Clock,
- *   orgs: ReturnType<typeof import('./organizations.service.js').createOrganizationsService>,
- *   invitations: ReturnType<typeof import('./invitations.service.js').createInvitationsService>,
- *   endOrgSessions: (orgId: string, reason: string) => Promise<number>,
- *   accessChanged?: (orgId: string, userId?: string) => void }} deps
- */
+/** @param {OrgAdminDeps} deps */
 export function createOrgAdminService(deps) {
   return {
     /** @param {Parameters<typeof listOrgs>[0]} f */
@@ -121,10 +116,13 @@ export function createOrgAdminService(deps) {
       const org = await OrganizationRecord.findOne({ _id: orgId }).lean();
       if (!org) throw new NotFoundError('ORG_NOT_FOUND');
       const members = await MemberRecord.find({ orgId }).sort({ joinedAt: 1 }).lean();
+      const people = new Map((await (deps.describeUsers?.(members.map((m) => m.userId)) ?? [])).map((p) => [p.id, p]));
       return {
         ...orgDto(org),
         members: members.map((m) => ({
           userId: m.userId,
+          name: people.get(m.userId)?.name ?? null,
+          email: people.get(m.userId)?.email ?? null,
           status: m.status,
           roles: m.roles,
           branchIds: m.branchIds,

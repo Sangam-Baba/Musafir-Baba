@@ -55,6 +55,7 @@ export function createTeamRoutes(wiring) {
     invitations,
     endOrgSessions: identity.sessions.revokeForOrg,
     accessChanged: wiring.accessChanged,
+    describeUsers: identity.users.describe,
   });
   const verifyLimiter = createRateLimiter({ name: 'admin-mfa', points: 10, windowMs: 15 * 60_000, clock });
   router.use(adminAuthRoutes({ secret: env.B2B_AUTH_SECRET, clock, staffRoles: wiring.staffRoles, mfa: identity.mfa, verifyLimiter }));
