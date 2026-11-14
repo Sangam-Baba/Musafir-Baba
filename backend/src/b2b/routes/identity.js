@@ -7,10 +7,9 @@
 import express from 'express';
 
 import { createRateLimiter } from '../core/rate-limit.js';
-import { resolveSystemRole, systemRole } from '../modules/access/index.js';
 import { createOrganizationsService } from '../modules/organizations/index.js';
-import { PERMISSION_CATALOGUE } from '../permission-catalogue.js';
 import { accountRoutes } from './account.js';
+import { permissionsOfRoles } from './role-permissions.js';
 import {
   createBusinessAuthenticator,
   createLoginService,
@@ -86,10 +85,7 @@ export function createIdentity(env, clock) {
   auth.use(mfaAuthRoutes(mfaDeps));
   auth.use(sessionRoutes({ sessions, secureCookies }));
 
-  const sign = (/** @type {import('../modules/identity/access-token.js').AccessClaims} */ claims) => {
-    if (!secret) throw new Error('[b2b] B2B_AUTH_SECRET missing');
-    return signAccessToken(claims, { secret, clock });
-  };
+  const sign = signer(secret, clock);
   const resolveMember = (/** @type {string} */ orgId, /** @type {string} */ userId) => resolveMemberActor(orgs, orgId, userId);
   return {
     authenticate: createBusinessAuthenticator({ secret, clock, sessions, resolveMember }),
@@ -97,26 +93,33 @@ export function createIdentity(env, clock) {
     me: mfaMeRoutes(mfaDeps),
     account: accountRoutes({ users, mfa, sessions, orgs, sign }),
     orgs,
+    users,
+    sessions,
+    secureCookies,
   };
 }
 
 /**
- * A member's permissions in the selected org: the union of their system roles of that org type
- * (custom roles join in S01-T10; a 60 s cache in S01-T11).
+ * Signs access tokens for the org switcher.
+ * @param {string | undefined} secret @param {import('../core/clock.js').Clock} clock
+ */
+const signer = (secret, clock) => (/** @type {import('../modules/identity/access-token.js').AccessClaims} */ claims) => {
+  if (!secret) throw new Error('[b2b] B2B_AUTH_SECRET missing');
+  return signAccessToken(claims, { secret, clock });
+};
+
+/**
+ * A member's permissions in the selected org (custom roles join in S01-T10; a 60 s cache in S01-T11).
  * @param {ReturnType<typeof createOrganizationsService>} orgs @param {string} orgId @param {string} userId
  */
 async function resolveMemberActor(orgs, orgId, userId) {
   const m = await orgs.usableMembership(orgId, userId);
   if (!m) return null;
-  const permissions = new Set();
-  for (const key of m.roles) {
-    const role = systemRole(key);
-    if (role && role.orgType === m.orgType) for (const code of resolveSystemRole(role, PERMISSION_CATALOGUE)) permissions.add(code);
-  }
   return {
     orgId,
     orgType: m.orgType,
-    permissions: [...permissions].sort(),
+    roles: m.roles,
+    permissions: permissionsOfRoles(m.roles, m.orgType),
     branchIds: m.branchIds,
     propertyIds: m.propertyIds,
     ownOnly: m.ownOnly,

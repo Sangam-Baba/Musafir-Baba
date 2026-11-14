@@ -1,7 +1,8 @@
 // @ts-check
 /**
  * Organisation endpoints for the selected org (the org always comes from the session, never the body):
- * GET /members · GET /branches · POST /branches · PATCH /branches/:id
+ * GET /members · DELETE /members/:userId · GET /branches · POST /branches · PATCH /branches/:id
+ * · GET /invitations · POST /invitations · DELETE /invitations/:id
  */
 import express from 'express';
 import { z } from 'zod';
@@ -22,10 +23,20 @@ const BranchBody = z.strictObject({
 const BranchPatch = BranchBody.partial()
   .extend({ status: z.enum(['ACTIVE', 'CLOSED']).optional() })
   .strict();
-const BranchParams = z.strictObject({ id: z.string().regex(/^[a-f0-9]{24}$/) });
+const Id = z.string().regex(/^[a-f0-9]{24}$/);
+const BranchParams = z.strictObject({ id: Id });
+const InviteBody = z.strictObject({
+  email: z.string().trim().min(3).max(254),
+  roles: z.array(z.string().min(3).max(60)).min(1).max(5),
+  branchIds: z.array(Id).max(50).optional(),
+  propertyIds: z.array(Id).max(200).optional(),
+});
 
-/** @param {ReturnType<typeof import('./organizations.service.js').createOrganizationsService>} service */
-export function organizationRoutes(service) {
+/**
+ * @param {ReturnType<typeof import('./organizations.service.js').createOrganizationsService>} service
+ * @param {ReturnType<typeof import('./invitations.service.js').createInvitationsService>} invitations
+ */
+export function organizationRoutes(service, invitations) {
   const router = express.Router();
   router.get('/members', requirePermission(PERMISSIONS.memberRead), (_req, res, next) => {
     service.listMembers(contextOf(res)).then((data) => res.json({ data }), next);
@@ -44,5 +55,22 @@ export function organizationRoutes(service) {
       service.updateBranch(contextOf(res), res.locals.input.params.id, res.locals.input.body).then((b) => res.json(b), next);
     },
   );
+  router.delete(
+    '/members/:userId',
+    requirePermission(PERMISSIONS.memberRemove),
+    validate({ params: z.strictObject({ userId: Id }) }),
+    (_req, res, next) => {
+      invitations.removeMember(contextOf(res), res.locals.input.params.userId).then(() => res.status(204).end(), next);
+    },
+  );
+  router.get('/invitations', requirePermission(PERMISSIONS.memberRead), (_req, res, next) => {
+    invitations.list(contextOf(res)).then((data) => res.json({ data }), next);
+  });
+  router.post('/invitations', requirePermission(PERMISSIONS.memberInvite), validate({ body: InviteBody }), (_req, res, next) => {
+    invitations.invite(contextOf(res), res.locals.input.body).then((i) => res.status(201).json(i), next);
+  });
+  router.delete('/invitations/:id', requirePermission(PERMISSIONS.memberInvite), validate({ params: BranchParams }), (_req, res, next) => {
+    invitations.revoke(contextOf(res), res.locals.input.params.id).then(() => res.status(204).end(), next);
+  });
   return router;
 }

@@ -12,7 +12,7 @@ import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
-import { BRANCHES_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
+import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -161,6 +161,24 @@ export const MIGRATIONS = [
       await ctx.createIndex(MEMBERS_COLLECTION, { hasPendingEvents: 1 }, pending);
       await ctx.createCollection(BRANCHES_COLLECTION);
       await ctx.createIndex(BRANCHES_COLLECTION, { orgId: 1, name: 1 }, { name: 'org_name' });
+    },
+  },
+  {
+    id: '0013-org-invitations',
+    description: 'Invitations: one open invitation per org and email; pending list per org; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(INVITATIONS_COLLECTION);
+      await ctx.createIndex(
+        INVITATIONS_COLLECTION,
+        { orgId: 1, email: 1 },
+        { name: 'org_email_pending_unique', unique: true, partialFilterExpression: { status: 'PENDING' } },
+      );
+      await ctx.createIndex(INVITATIONS_COLLECTION, { orgId: 1, status: 1, createdAt: -1 }, { name: 'org_status_recent' });
+      await ctx.createIndex(
+        INVITATIONS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];

@@ -27,7 +27,9 @@
 - **Tests run:** `test:b2b` ✅ 29 files / 318 (full suite twice); `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅ (existing backend diff vs `origin/main` still only `app.js` +5).
 - **Decisions / deferrals:** event-free (two-step changes will be audited in T13 from session methods).
 - **Later:** S01-T08 → DONE (organisations, members, branches, `/me`, org switcher, member permissions from system roles). Test helper gained `patch`. Tests ✅ 30 files / 325.
-- **Next step:** S01-T09 — invitations (signed single-use links, 7 days), accept as new or existing user, remove member, last-Owner rule.
+- **Later:** urgent live-site change on its own branch from `main` (rentals admin: vehicle page preview + author dropdown, frontend only, 4 files) → owner merged it as PR #219; merged `main` back into `b2b/stage-00` so the guards compare like with like.
+- **Later:** S01-T09 → DONE (invitations, accept as new/existing user, remove member, Owner-only rule, last-Owner rule). Test helper gained `del`. Tests ✅ 31 files / 331.
+- **Next step:** S01-T10 — custom roles (allowed list per org type, sensitive locked) + role assignment with scopes; events `access.role.*`.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

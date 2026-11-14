@@ -6,4 +6,6 @@ export { ORGS_COLLECTION, OrganizationRecord } from './models/organization.model
 export { BRANCHES_COLLECTION } from './models/branch.model.js';
 export { MEMBERS_COLLECTION, MemberRecord } from './models/member.model.js';
 export { createOrganizationsService } from './organizations.service.js';
+export { createInvitationsService } from './invitations.service.js';
+export { INVITATIONS_COLLECTION, InvitationRecord } from './models/invitation.model.js';
 export { organizationRoutes } from './routes.js';

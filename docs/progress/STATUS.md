@@ -3,7 +3,7 @@
 > The one page that says where the build is. Rules: `docs/progress/README.md`.
 > Numbers inside the generated block come from `npm run progress` — don't edit them by hand.
 
-**Last updated:** 2026-11-13 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
+**Last updated:** 2026-11-14 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
 
 ## Now
 
@@ -11,8 +11,8 @@
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 01 — Organisations, users, roles & permissions (Stage 00 awaiting owner sign-off) |
-| **Current task(s)** | S01-T09 invitations, joining, removing members, last-Owner rule |
-| **Next up** | S01-T10 custom roles + scopes · S01-T11 authorizer + cache · owner: sign off Stage 00 (fill in Finished in `stages/stage-00.md`) |
+| **Current task(s)** | S01-T10 custom roles + role assignment with scopes |
+| **Next up** | S01-T11 authorizer + cache · S01-T12 request pipeline · owner: sign off Stage 00 (fill in Finished in `stages/stage-00.md`) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | CAPTCHA provider for login (S01-T20, outside service) · CA engaged before Stage 05 (Q1–Q7) |
 
@@ -22,7 +22,7 @@
 | # | Stage | Phase | Status | Done / Total | Deferred | Progress | Started | Finished | Details |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | AWAITING_SIGN_OFF | 22 / 22 | 0 | 100 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
-| 01 | Organisations, users, roles & permissions | A | IN_PROGRESS | 8 / 20 | 0 | 40 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
+| 01 | Organisations, users, roles & permissions | A | IN_PROGRESS | 9 / 20 | 0 | 45 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 04 | Inventory & rates calendar | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 30 of 42 tasks done (71 %) · deferred on purpose: 0 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 31 of 42 tasks done (74 %) · deferred on purpose: 0 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

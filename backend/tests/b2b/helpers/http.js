@@ -11,6 +11,7 @@
  *   get: (path: string, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   post: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   patch: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
+ *   del: (path: string, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   close: () => Promise<void> }>}
  */
 export async function startServer(app) {
@@ -32,6 +33,7 @@ export async function startServer(app) {
     get: async (path, headers = {}) => toResult(await fetch(base + path, { headers })),
     post: (path, body, headers = {}) => send('POST', path, body, headers),
     patch: (path, body, headers = {}) => send('PATCH', path, body, headers),
+    del: async (path, headers = {}) => toResult(await fetch(base + path, { method: 'DELETE', headers })),
     close: () => new Promise((resolve) => server.close(() => resolve())),
   };
 }

@@ -16,6 +16,8 @@ const ConfigSchema = z.object({
   B2B_EMAIL_MODE: z.enum(['log', 'resend']).default('log'),
   /** Sender address for B2B emails, e.g. "MusafirBaba Business <business@musafirbaba.com>". */
   B2B_EMAIL_FROM: z.string().min(3).optional(),
+  /** Public address of the website, used in emailed links (e.g. https://musafirbaba.com). */
+  B2B_PUBLIC_URL: z.string().url().default('https://musafirbaba.com'),
   /** Existing variable, read only — the existing Resend account (D25). */
   RESEND_API_KEY: z.string().optional(),
 });
