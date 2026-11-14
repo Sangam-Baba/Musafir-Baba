@@ -48,7 +48,7 @@ export function createIdentity(env, clock, permissionsOf, memberCache) {
   const sessions = createSessionService({ secret, clock });
   const users = createUserRepository({ clock });
   const mfa = createMfaService({ secret, clock });
-  const orgs = createOrganizationsService({ clock });
+  const orgs = createOrganizationsService({ clock, describeUsers: (ids) => users.describe(ids) });
   const defaultOrgFor = (/** @type {string} */ userId) => orgs.defaultOrgFor(userId);
   const { finish } = createSignIn({ sessions, mfa, secret, clock, defaultOrgFor });
   const login = createLoginService({

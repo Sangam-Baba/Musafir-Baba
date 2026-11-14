@@ -35,7 +35,11 @@ function orgOf(ctx) {
 /** @param {any} b */
 const branchDto = (b) => ({ id: String(b._id), name: b.name, city: b.city, stateCode: b.stateCode, status: b.status });
 
-/** @param {{ clock: import('../../core/clock.js').Clock }} deps */
+/**
+ * @param {{ clock: import('../../core/clock.js').Clock,
+ *   describeUsers?: (ids: readonly string[]) => Promise<{ id: string, name: string, email: string | null, phone: string | null }[]> }} deps
+ *   describeUsers: names/emails for the team page (passed in — this module doesn't read user accounts)
+ */
 export function createOrganizationsService(deps) {
   return {
     /**
@@ -96,13 +100,16 @@ export function createOrganizationsService(deps) {
       });
     },
 
-    ...memberFunctions(),
+    ...memberFunctions(deps),
     ...branchFunctions(),
   };
 }
 
-/** Membership reads used by sign-in, the authenticator and the team page. */
-function memberFunctions() {
+/**
+ * Membership reads used by sign-in, the authenticator and the team page.
+ * @param {Parameters<typeof createOrganizationsService>[0]} deps
+ */
+function memberFunctions(deps) {
   /** @param {string} userId @returns {Promise<MembershipSummary[]>} orgs the user can sign in to, oldest membership first */
   async function membershipsOf(userId) {
     const members = await MemberRecord.find({ userId, status: 'ACTIVE' }).sort({ joinedAt: 1 }).lean();
@@ -162,8 +169,11 @@ function memberFunctions() {
       const members = await MemberRecord.find({ orgId: orgOf(ctx), status: 'ACTIVE' })
         .sort({ joinedAt: 1 })
         .lean();
+      const people = new Map((await (deps.describeUsers?.(members.map((m) => m.userId)) ?? [])).map((p) => [p.id, p]));
       return members.map((m) => ({
         userId: m.userId,
+        name: people.get(m.userId)?.name ?? null,
+        email: people.get(m.userId)?.email ?? null,
         roles: m.roles,
         branchIds: m.branchIds,
         propertyIds: m.propertyIds,

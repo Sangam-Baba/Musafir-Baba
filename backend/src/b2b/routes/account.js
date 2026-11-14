@@ -42,7 +42,9 @@ export function accountRoutes(deps) {
         deps.orgs.blockedMembershipsOf(userId),
       ]);
       if (!user) throw new UnauthorizedError();
-      res.json({ user, mfa, memberships, blockedOrgs, currentOrgId: orgId });
+      const { actor } = contextOf(res);
+      const permissions = actor.type === 'member' ? [...actor.permissions] : [];
+      res.json({ user, mfa, memberships, blockedOrgs, currentOrgId: orgId, permissions }); // permissions: to show only usable buttons — the server still checks
     })().catch(next);
   });
 

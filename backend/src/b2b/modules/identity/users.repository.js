@@ -108,6 +108,32 @@ async function updatePassword(id, password, cost, now) {
   );
 }
 
+/**
+ * Admin search by email, phone or name (case-insensitive, contains). Newest first, max 50.
+ * @param {string} q
+ * @returns {Promise<UserDto[]>}
+ */
+async function searchUsers(q) {
+  const re = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const docs = await UserRecord.find({ $or: [{ email: re }, { phone: re }, { name: re }] })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .lean();
+  return docs.map(toDto);
+}
+
+/**
+ * Names and contact details for a list of user ids (team pages). Unknown ids are skipped.
+ * @param {readonly string[]} ids
+ * @returns {Promise<{ id: string, name: string, email: string | null, phone: string | null }[]>}
+ */
+async function describeUsers(ids) {
+  const valid = ids.filter((id) => /^[a-f0-9]{24}$/.test(id));
+  if (valid.length === 0) return [];
+  const docs = await UserRecord.find({ _id: { $in: valid } }, { name: 1, email: 1, phone: 1 }).lean();
+  return docs.map((d) => ({ id: String(d._id), name: d.name, email: d.email ?? null, phone: d.phone ?? null }));
+}
+
 /** @param {{ bcryptCost?: number, clock: import('../../core/clock.js').Clock }} options */
 export function createUserRepository(options) {
   const cost = options.bcryptCost ?? 12;
@@ -122,19 +148,10 @@ export function createUserRepository(options) {
      */
     create: (input) => insertUser(input, cost, options.clock.now()),
 
-    /**
-     * Admin search by email, phone or name (case-insensitive, contains). Newest first, max 50.
-     * @param {string} q
-     * @returns {Promise<UserDto[]>}
-     */
-    async search(q) {
-      const re = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-      const docs = await UserRecord.find({ $or: [{ email: re }, { phone: re }, { name: re }] })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .lean();
-      return docs.map(toDto);
-    },
+    /** @param {string} q */
+    search: (q) => searchUsers(q),
+    /** @param {readonly string[]} ids */
+    describe: (ids) => describeUsers(ids),
 
     /** @param {string} id @returns {Promise<UserDto | null>} */
     async findById(id) {

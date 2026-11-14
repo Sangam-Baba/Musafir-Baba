@@ -38,7 +38,8 @@
 - **Later:** S01-T14 → DONE (B2B admin pass with two-step login and a 7-day setup window, platform roles, admin orgs/users/staff API, suspend ends org sessions, grant-admin command). Tests ✅ 37 files / 397 (3× green).
 - **Order changed (owner):** nothing was visible yet (server only), so the screens come first: T16 → T17 → T18, then T15.
 - **Later:** S01-T16 → DONE (business sign-in pages, home, security; refresh cookie policy matched to the existing logins for production). Backend tests ✅ 398 (2× green); 6 new pages load on the dev server.
-- **Next step:** S01-T17 — Team page (members, invitations, roles editor, branches) + activity page.
+- **Later:** S01-T17 → DONE (Team page with four tabs, Activity page; member names and current permissions from the API). Note: the long-running local dev server once missed a new folder (404) — re-saving the file fixed it.
+- **Next step:** S01-T18 — admin pages under `/admin/b2b` (B2B admin pass gate, organisations, users, activity, staff roles).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 
