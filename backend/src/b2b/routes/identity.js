@@ -10,6 +10,7 @@ import { createRateLimiter } from '../core/rate-limit.js';
 import { createOrganizationsService } from '../modules/organizations/index.js';
 import { memberCacheKey } from './access-cache.js';
 import { accountRoutes } from './account.js';
+import { createLegacyAuthenticator, firstMatch } from './legacy-auth.js';
 import {
   createBusinessAuthenticator,
   createLoginService,
@@ -89,7 +90,10 @@ export function createIdentity(env, clock, permissionsOf, memberCache) {
     return member;
   };
   return {
-    authenticate: createBusinessAuthenticator({ secret, clock, sessions, resolveMember }),
+    authenticate: firstMatch(
+      createBusinessAuthenticator({ secret, clock, sessions, resolveMember }),
+      createLegacyAuthenticator({ secret: env.JWT_ACCESS_SECRET }),
+    ),
     auth,
     me: mfaMeRoutes(mfaDeps),
     account: accountRoutes({ users, mfa, sessions, orgs, sign }),

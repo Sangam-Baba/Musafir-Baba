@@ -31,7 +31,8 @@
 - **Later:** S01-T09 → DONE (invitations, accept as new/existing user, remove member, Owner-only rule, last-Owner rule). Test helper gained `del`. Tests ✅ 31 files / 331.
 - **Later:** S01-T10 → DONE (custom roles, role assignment with limits). Tests ✅ 32 files / 337.
 - **Later:** S01-T11 → DONE (authorizer, list scoping, 60 s member-permission cache cleared on changes). Tests ✅ 33 files / 360.
-- **Next step:** S01-T12 — existing customer/staff tokens verified read-only (preview tokens refused), org status check, CI test that every `/api/v1` route declares a permission.
+- **Later:** S01-T12 → DONE (existing logins read-only, blocked orgs on /me, every route guarded — checked by a test). Tests ✅ 35 files / 383.
+- **Next step:** S01-T13 — `aud_events` written from events (auth, members, roles, view-as, org status) + admin audit API.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

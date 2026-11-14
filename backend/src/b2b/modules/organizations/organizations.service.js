@@ -120,6 +120,23 @@ function memberFunctions() {
   }
   return {
     membershipsOf,
+
+    /**
+     * Orgs the user belongs to that are suspended or closed, with the reason — so sign-in can explain
+     * why they can't be opened (plan §7 "login shows reason").
+     * @param {string} userId
+     */
+    async blockedMembershipsOf(userId) {
+      const members = await MemberRecord.find({ userId, status: 'ACTIVE' }, { orgId: 1 }).lean();
+      if (members.length === 0) return [];
+      const orgs = await OrganizationRecord.find(
+        { _id: { $in: members.map((m) => m.orgId) }, status: { $nin: USABLE_ORG_STATUSES } },
+        { displayName: 1, status: 1, statusReason: 1 },
+      )
+        .setOptions(BY_MEMBER_ORGS)
+        .lean();
+      return orgs.map((o) => ({ orgId: String(o._id), displayName: o.displayName, status: o.status, reason: o.statusReason ?? null }));
+    },
     /** @param {string} userId @returns {Promise<string | null>} the org to open at sign-in when there is exactly one */
     async defaultOrgFor(userId) {
       const list = await membershipsOf(userId);

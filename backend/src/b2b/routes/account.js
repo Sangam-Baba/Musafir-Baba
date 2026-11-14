@@ -35,13 +35,14 @@ export function accountRoutes(deps) {
   router.get('/me', requireBusinessUser(), (_req, res, next) => {
     (async () => {
       const { userId, orgId } = who(res);
-      const [user, mfa, memberships] = await Promise.all([
+      const [user, mfa, memberships, blockedOrgs] = await Promise.all([
         deps.users.findById(userId),
         deps.mfa.status(userId),
         deps.orgs.membershipsOf(userId),
+        deps.orgs.blockedMembershipsOf(userId),
       ]);
       if (!user) throw new UnauthorizedError();
-      res.json({ user, mfa, memberships, currentOrgId: orgId });
+      res.json({ user, mfa, memberships, blockedOrgs, currentOrgId: orgId });
     })().catch(next);
   });
 
