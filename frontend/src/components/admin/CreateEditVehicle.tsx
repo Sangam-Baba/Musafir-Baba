@@ -31,6 +31,7 @@ import { AdminSaveBar } from "@/components/admin/AdminFormUI";
 import { RentalPageHeader, VehicleTabPanel, VehicleTabsList, rPrimaryBtn, rSecondaryBtn } from "@/components/admin/rental/RentalAdminUI";
 import VehicleTabsEditor from "@/components/admin/VehicleTabsEditor";
 import { VehicleTabConfigItem, resolveVehicleTabsConfig, toSavedVehicleTabsConfig } from "@/lib/vehicleTabs";
+import { getAllAuthors } from "@/app/admin/webpage/new/page";
 
 const fetchMasterData = async (accessToken: string, endpoint: string) => {
   const res = await fetch(
@@ -138,6 +139,8 @@ export const vehicleSchema = z.object({
   howBookingWorks: z.string().optional(),
   pricingType: z.enum(["single", "multiple"]).default("single"),
   status: z.enum(["draft", "published"]).default("published"),
+  // Author shown on the rental page; empty = the page shows the default author (Abhishek Rai), same as packages
+  author: z.string().optional(),
 });
 
 type FormData = z.infer<typeof vehicleSchema>;
@@ -240,6 +243,7 @@ export const CreateEditVehicle = ({
       howBookingWorks: "",
       pricingType: "single",
       status: "draft",
+      author: "",
     },
   });
 
@@ -276,6 +280,11 @@ export const CreateEditVehicle = ({
   const { data: masterTransmissions } = useQuery({
     queryKey: ["master-data", "transmission"],
     queryFn: () => fetchMasterData(accessToken, "transmission"),
+  });
+
+  const { data: allAuthors } = useQuery({
+    queryKey: ["authors"],
+    queryFn: getAllAuthors,
   });
 
   const vehicle = data?.data;
@@ -372,6 +381,7 @@ export const CreateEditVehicle = ({
         howBookingWorks: vehicle.howBookingWorks || "",
         pricingType: vehicle.pricingType || "single",
         status: vehicle.status,
+        author: vehicle.author?._id?.toString() || vehicle.author || "",
       });
     }
   }, [id, vehicle, form, masterFuelTypes, masterTransmissions, masterTypes, masterBrands]);
@@ -402,6 +412,8 @@ export const CreateEditVehicle = ({
       inclusions: values.inclusions?.map((i) => i.value).filter(Boolean),
       exclusions: values.exclusions?.map((e) => e.value).filter(Boolean),
       ...(tabsTouched && { tabsConfig: toSavedVehicleTabsConfig(tabsConfig) }),
+      // "No author" is sent as null (an empty string can't be stored as an author id)
+      author: values.author ? values.author : null,
     };
     console.log(finalValues);
     mutation.mutate(finalValues as any);
@@ -832,6 +844,29 @@ export const CreateEditVehicle = ({
                           <option value="" disabled>Select Transmission</option>
                           {masterTransmissions?.data?.map((t: any) => (
                             <option key={t._id} value={t.name}>{t.name}</option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="author"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Author</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="w-full rounded-md border border-gray-300 p-2 text-sm"
+                        >
+                          <option value="">No author selected (shows Abhishek Rai)</option>
+                          {allAuthors?.map((author: any) => (
+                            <option key={author._id} value={author._id}>{author.name}</option>
                           ))}
                         </select>
                       </FormControl>
