@@ -10,7 +10,7 @@ import { JOBS_COLLECTION } from '../core/jobs/queue.js';
 import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
-import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
+import { PERMISSIONS_COLLECTION, ROLES_COLLECTION } from '../modules/access/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
@@ -176,6 +176,19 @@ export const MIGRATIONS = [
       await ctx.createIndex(INVITATIONS_COLLECTION, { orgId: 1, status: 1, createdAt: -1 }, { name: 'org_status_recent' });
       await ctx.createIndex(
         INVITATIONS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0014-acl-roles',
+    description: 'Custom roles: name unique per org among active roles; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(ROLES_COLLECTION);
+      await ctx.createIndex(ROLES_COLLECTION, { orgId: 1, nameKey: 1 }, { name: 'org_name_unique', unique: true });
+      await ctx.createIndex(
+        ROLES_COLLECTION,
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );

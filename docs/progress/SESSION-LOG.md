@@ -29,7 +29,8 @@
 - **Later:** S01-T08 → DONE (organisations, members, branches, `/me`, org switcher, member permissions from system roles). Test helper gained `patch`. Tests ✅ 30 files / 325.
 - **Later:** urgent live-site change on its own branch from `main` (rentals admin: vehicle page preview + author dropdown, frontend only, 4 files) → owner merged it as PR #219; merged `main` back into `b2b/stage-00` so the guards compare like with like.
 - **Later:** S01-T09 → DONE (invitations, accept as new/existing user, remove member, Owner-only rule, last-Owner rule). Test helper gained `del`. Tests ✅ 31 files / 331.
-- **Next step:** S01-T10 — custom roles (allowed list per org type, sensitive locked) + role assignment with scopes; events `access.role.*`.
+- **Later:** S01-T10 → DONE (custom roles, role assignment with limits). Tests ✅ 32 files / 337.
+- **Next step:** S01-T11 — `authz.assert(ctx, permission, ownership)` + member-permission cache (60 s, cleared by role/member change events).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

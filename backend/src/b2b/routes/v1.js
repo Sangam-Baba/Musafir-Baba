@@ -21,11 +21,8 @@ import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
-import { queueEmail } from '../core/email.js';
-import { createInvitationsService, organizationRoutes } from '../modules/organizations/index.js';
-import { invitationRoutes } from './invitations.js';
-import { isKnownRole, permissionsOfRoles } from './role-permissions.js';
 import { createIdentity } from './identity.js';
+import { createRoles, createTeamRoutes } from './teams.js';
 import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
@@ -50,7 +47,8 @@ export function createB2BRouter(options = {}) {
     createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });
   if (options.connect !== false) startDatabase(env, log, hub);
 
-  const identity = createIdentity(env, clock);
+  const roles = createRoles(clock);
+  const identity = createIdentity(env, clock, roles.permissionsOf);
   const router = express.Router();
   router.use(securityHeaders());
   router.use(requestTimeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS));
@@ -71,16 +69,7 @@ export function createB2BRouter(options = {}) {
   router.use('/auth', identity.auth);
   router.use('/me', identity.me);
   router.use(identity.account);
-  const invitations = createInvitationsService({
-    clock,
-    secret: env.B2B_AUTH_SECRET,
-    publicUrl: env.B2B_PUBLIC_URL || 'https://musafirbaba.com',
-    permissionsOf: permissionsOfRoles,
-    isKnownRole,
-    sendEmail: (message) => queueEmail(message, { secret: String(env.B2B_AUTH_SECRET), clock }),
-  });
-  router.use(invitationRoutes({ invitations, users: identity.users, sessions: identity.sessions, secureCookies: identity.secureCookies }));
-  router.use(organizationRoutes(identity.orgs, invitations));
+  router.use(createTeamRoutes(env, clock, roles, identity));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

@@ -7,4 +7,5 @@ export const EVENTS = /** @type {const} */ ({
   memberInvited: 'organizations.member.invited',
   memberJoined: 'organizations.member.joined',
   memberRemoved: 'organizations.member.removed',
+  memberRolesChanged: 'organizations.member.roles-changed',
 });

@@ -23,7 +23,7 @@ import { MemberRecord } from './models/member.model.js';
 import { OrganizationRecord } from './models/organization.model.js';
 
 const ID = /^[a-f0-9]{24}$/;
-const OWNER_ROLES = ['client.owner', 'hotel.owner'];
+export const OWNER_ROLES = ['client.owner', 'hotel.owner'];
 const BY_LINK = systemScope('organizations: invitation lookup by emailed link', { routine: true });
 
 /**
@@ -31,17 +31,17 @@ const BY_LINK = systemScope('organizations: invitation lookup by emailed link', 
  *   clock: import('../../core/clock.js').Clock,
  *   secret: string | undefined,
  *   publicUrl: string,
- *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL') => string[],
- *   isKnownRole: (role: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL') => boolean,
+ *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<string[]>,
+ *   isKnownRole: (role: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<boolean>,
  *   sendEmail: (message: import('../../core/email.js').EmailMessage) => Promise<unknown>,
  * }} InvitationDeps
  */
 
 /** @param {readonly string[]} roles */
-const includesOwner = (roles) => roles.some((r) => OWNER_ROLES.includes(r));
+export const includesOwner = (roles) => roles.some((r) => OWNER_ROLES.includes(r));
 
 /** @param {import('../../core/context.js').RequestContext} ctx */
-function memberOf(ctx) {
+export function memberOf(ctx) {
   if (ctx.actor.type !== 'member' || !ctx.actor.orgType) throw new ForbiddenError('ORG_NOT_SELECTED');
   const roles = ctx.actor.roles ?? [];
   return {
@@ -71,12 +71,12 @@ const invitationDto = (i) => ({
  * The actor must hold every permission the roles would grant.
  * @param {InvitationDeps} deps @param {ReturnType<typeof memberOf>} me @param {readonly string[]} roles
  */
-function assertCanGrant(deps, me, roles) {
+export async function assertCanGrant(deps, me, roles) {
   if (roles.length === 0) throw new DomainError('ROLE_REQUIRED');
-  for (const role of roles) if (!deps.isKnownRole(role, me.orgType)) throw new DomainError('ROLE_UNKNOWN', { role });
+  for (const role of roles) if (!(await deps.isKnownRole(role, me.orgType, me.orgId))) throw new DomainError('ROLE_UNKNOWN', { role });
   // only an Owner can make an Owner: the Owner role stays above every other role even while others hold the same permissions
   if (includesOwner(roles) && !me.isOwner) throw new ForbiddenError('CANNOT_GRANT_MORE_THAN_YOU_HAVE');
-  if (deps.permissionsOf(roles, me.orgType).some((p) => !me.permissions.has(p)))
+  if ((await deps.permissionsOf(roles, me.orgType, me.orgId)).some((p) => !me.permissions.has(p)))
     throw new ForbiddenError('CANNOT_GRANT_MORE_THAN_YOU_HAVE');
 }
 
@@ -102,7 +102,7 @@ async function findByLink(kit, token) {
 async function createInvitation(kit, ctx, input) {
   const { deps } = kit;
   const me = memberOf(ctx);
-  assertCanGrant(deps, me, input.roles);
+  await assertCanGrant(deps, me, input.roles);
   const branchIds = input.branchIds ?? [];
   const activeBranches =
     branchIds.length === 0 ? 0 : await BranchRecord.countDocuments({ orgId: me.orgId, _id: { $in: branchIds }, status: 'ACTIVE' });
@@ -225,7 +225,7 @@ export function createInvitationsService(deps) {
       const target = await MemberRecord.findOne({ orgId: me.orgId, userId, status: 'ACTIVE' }).lean();
       if (!target) throw new NotFoundError('MEMBER_NOT_FOUND');
       if (includesOwner(target.roles) && !me.isOwner) throw new ForbiddenError('CANNOT_REMOVE_MORE_POWERFUL_MEMBER');
-      if (deps.permissionsOf(target.roles, me.orgType).some((p) => !me.permissions.has(p)))
+      if ((await deps.permissionsOf(target.roles, me.orgType, me.orgId)).some((p) => !me.permissions.has(p)))
         throw new ForbiddenError('CANNOT_REMOVE_MORE_POWERFUL_MEMBER');
       await removeKeepingAnOwner(target, me, deps);
     },
