@@ -8,7 +8,7 @@
 /**
  * @param {import('express').Express} app
  * @returns {Promise<{
- *   get: (path: string) => Promise<{ status: number, body: any, headers: Headers }>,
+ *   get: (path: string, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   post: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   close: () => Promise<void> }>}
  */
@@ -19,7 +19,7 @@ export async function startServer(app) {
   const address = /** @type {import('node:net').AddressInfo} */ (server.address());
   const base = `http://127.0.0.1:${address.port}`;
   return {
-    get: async (path) => toResult(await fetch(base + path)),
+    get: async (path, headers = {}) => toResult(await fetch(base + path, { headers })),
     post: async (path, body, headers = {}) =>
       toResult(
         await fetch(base + path, {

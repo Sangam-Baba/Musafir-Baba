@@ -247,6 +247,27 @@ describe('live updates over Server-Sent Events (same backend, same address)', ()
     }
   });
 
+  it('signals replayed on reconnect are not sent again when the live feed catches up', async () => {
+    const id = (/** @type {number} */ n) => b2bMongoose.Types.ObjectId.createFromTime(Math.floor(Date.now() / 1000) - 60 + n);
+    /** @type {import('../../src/b2b/core/realtime/signals.js').Signal[]} */
+    const stored = [1, 2].map((n) => ({ _id: id(n), room: AVAIL, event: 'availability:changed', data: { n }, at: new Date() }));
+    const own = newHub({ readSince: async () => stored });
+    const srv = await serve({ hub: own });
+    const s = await openStream(`${srv.base}/api/v1/realtime/stream?rooms=${AVAIL}`, { 'Last-Event-ID': id(0).toHexString() });
+    try {
+      await expect.poll(() => s.events.filter((e) => e.event === 'availability:changed').length, { timeout: 4000 }).toBe(2);
+      for (const signal of stored) own.deliver(signal); // the slow live feed delivers the same two
+      own.deliver({ _id: id(3), room: AVAIL, event: 'availability:changed', data: { n: 3 }, at: new Date() });
+      await expect
+        .poll(() => s.events.filter((e) => e.event === 'availability:changed').map((e) => e.data.data.n), { timeout: 4000 })
+        .toEqual([1, 2, 3]);
+    } finally {
+      s.close();
+      own.close();
+      await srv.close();
+    }
+  });
+
   it('limits live connections per IP', async () => {
     const small = newHub({ maxPerIp: 2 });
     const srv = await serve({ hub: small });

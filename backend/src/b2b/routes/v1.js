@@ -21,18 +21,7 @@ import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
-import { createRateLimiter } from '../core/rate-limit.js';
-import {
-  createLoginService,
-  createOtpService,
-  createSessionService,
-  createUserRepository,
-  LOGIN_LIMITS,
-  loginRoutes,
-  OTP_LIMITS,
-  otpRoutes,
-  sessionRoutes,
-} from '../modules/identity/index.js';
+import { createIdentity } from './identity.js';
 import { realtimeRoutes } from './realtime.js';
 
 const BODY_LIMIT = '1mb';
@@ -57,14 +46,13 @@ export function createB2BRouter(options = {}) {
     createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });
   if (options.connect !== false) startDatabase(env, log, hub);
 
+  const identity = createIdentity(env, clock);
   const router = express.Router();
   router.use(securityHeaders());
   router.use(requestTimeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS));
   router.use(requestId);
   router.use(express.json({ limit: BODY_LIMIT }));
-  router.use(
-    contextMiddleware({ channel: 'WEBSITE', logger: log, ...(options.authenticate ? { authenticate: options.authenticate } : {}) }),
-  );
+  router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, authenticate: options.authenticate ?? identity.authenticate }));
 
   router.get('/health', publicRoute(), (_req, res, next) => {
     checkHealth(contextOf(res).clock)
@@ -76,45 +64,12 @@ export function createB2BRouter(options = {}) {
     res.json({ name: 'musafirbaba-b2b', version: process.env.B2B_VERSION ?? 'dev' });
   });
 
-  router.use('/auth', authRoutes(env, clock));
+  router.use('/auth', identity.auth);
+  router.use('/me', identity.me);
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));
-  return router;
-}
-
-/**
- * Business-user login and sessions under /api/v1/auth.
- * @param {NodeJS.ProcessEnv} env
- * @param {import('../core/clock.js').Clock} clock
- */
-function authRoutes(env, clock) {
-  const secureCookies = env.NODE_ENV === 'production';
-  const sessions = createSessionService({ secret: env.B2B_AUTH_SECRET, clock });
-  const users = createUserRepository({ clock });
-  const window = { windowMs: LOGIN_LIMITS.windowMs, clock };
-  const limiters = {
-    ip: createRateLimiter({ name: 'login-ip', points: LOGIN_LIMITS.perIp, ...window }),
-    account: createRateLimiter({ name: 'login-account', points: LOGIN_LIMITS.perAccount, ...window }),
-    failures: createRateLimiter({ name: 'login-failures', points: 1000, ...window }),
-  };
-  const hour = 60 * 60_000;
-  const otp = createOtpService({
-    users,
-    secret: env.B2B_AUTH_SECRET,
-    clock,
-    limiters: {
-      cooldown: createRateLimiter({ name: 'otp-cooldown', points: 1, windowMs: OTP_LIMITS.cooldownMs, clock }),
-      daily: createRateLimiter({ name: 'otp-daily', points: OTP_LIMITS.perDay, windowMs: 24 * hour, clock }),
-      ip: createRateLimiter({ name: 'otp-ip', points: OTP_LIMITS.perIpPerHour, windowMs: hour, clock }),
-      verifyIp: createRateLimiter({ name: 'otp-verify-ip', points: OTP_LIMITS.verifyPerIp, windowMs: OTP_LIMITS.verifyWindowMs, clock }),
-    },
-  });
-  const router = express.Router();
-  router.use(loginRoutes({ login: createLoginService({ users, sessions, limiters, clock }), secureCookies }));
-  router.use(otpRoutes({ otp, sessions, users, secureCookies }));
-  router.use(sessionRoutes({ sessions, secureCookies }));
   return router;
 }
 

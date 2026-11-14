@@ -17,7 +17,16 @@
 - **Later:** S01-T04 → DONE (sessions, rotating refresh tokens with reuse detection, refresh/logout/logout-all endpoints). Tests ✅ 26 files / 279.
 - **Later:** S01-T05 → DONE (`POST /auth/login`, limits per IP/account, growing delay, lock event). Tests ✅ 27 files / 290.
 - **Later:** S01-T06 → DONE (email codes, forgot/reset, sealed email jobs, Resend/log senders). Tests ✅ 28 files / 304.
-- **Next step:** S01-T07 — TOTP MFA (node:crypto) + recovery codes + step-up.
+
+## 2026-11-14 — AI (Claude) — S01-T07 two-step login
+
+- **Goal:** authenticator-app two-step login, recovery codes, step-up — without affecting anything existing (owner's instruction).
+- **Done:** S01-T07 → DONE (see stage file). Business-token authenticator brought forward from T12. Two fixes found on the way: the test GET helper silently dropped headers (one check had passed vacuously); SSE reconnect could deliver a replayed signal twice when the live feed lagged (now skipped per stream, with a test).
+- **Not done / why:** —
+- **Files / PR:** `backend/src/b2b/modules/identity/{domain/totp.js,models/mfa.model.js,mfa.service.js,mfa-challenge.js,mfa-routes.js,sign-in.js,business-auth.js}`, `routes/identity.js` (identity wiring moved out of `v1.js`), `core/{context,http/permissions,realtime/rooms,realtime/stream,db/idempotency}.js`, tests.
+- **Tests run:** `test:b2b` ✅ 29 files / 318 (full suite twice); `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅ (existing backend diff vs `origin/main` still only `app.js` +5).
+- **Decisions / deferrals:** event-free (two-step changes will be audited in T13 from session methods).
+- **Next step:** S01-T08 — organisations, branches, members, `/me`, org switcher.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

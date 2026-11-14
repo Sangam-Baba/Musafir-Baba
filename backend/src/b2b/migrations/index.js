@@ -11,7 +11,7 @@ import { SCHEDULES_COLLECTION } from '../core/jobs/scheduler.js';
 import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION } from '../modules/access/index.js';
-import { OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
+import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -135,6 +135,14 @@ export const MIGRATIONS = [
       await ctx.createCollection(OTP_COLLECTION);
       await ctx.createIndex(OTP_COLLECTION, { userId: 1, purpose: 1, consumedAt: 1, createdAt: -1 }, { name: 'user_purpose_active' });
       await ctx.createIndex(OTP_COLLECTION, { expiresAt: 1 }, { name: 'expired_ttl', expireAfterSeconds: 3600 });
+    },
+  },
+  {
+    id: '0011-id-mfa',
+    description: 'Authenticator-app setup: one document per business user',
+    up: async (ctx) => {
+      await ctx.createCollection(MFA_COLLECTION);
+      await ctx.createIndex(MFA_COLLECTION, { userId: 1 }, { name: 'user_unique', unique: true });
     },
   },
 ];

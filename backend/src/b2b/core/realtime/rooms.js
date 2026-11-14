@@ -29,6 +29,8 @@ export function roomsForActor(actor) {
   switch (actor.type) {
     case 'customer':
       return [`b2b:customer:${actor.customerId}`];
+    case 'user':
+      return [`b2b:user:${actor.userId}`];
     case 'member':
       return [`b2b:user:${actor.userId}`, `b2b:org:${actor.orgId}`];
     case 'staff':

@@ -21,10 +21,14 @@ export const requireAuthHeader = (req, _res, next) =>
 /**
  * Sends new tokens: access token in the body, refresh token in the cookie.
  * @param {import('express').Response} res
- * @param {import('./sessions.service.js').IssuedTokens} tokens
+ * @param {import('./sign-in.js').SignInResult} tokens either new tokens or the two-step challenge
  * @param {boolean} secure
  */
 export function sendTokens(res, tokens, secure) {
+  if ('mfaRequired' in tokens) {
+    res.json({ mfaRequired: true, mfaToken: tokens.mfaToken, expiresIn: tokens.expiresIn });
+    return;
+  }
   setCookie(res, REFRESH_COOKIE, tokens.refreshToken, { path: REFRESH_COOKIE_PATH, expires: tokens.refreshExpiresAt, secure });
   res.json({ accessToken: tokens.accessToken, expiresIn: tokens.expiresIn, tokenType: 'Bearer' });
 }

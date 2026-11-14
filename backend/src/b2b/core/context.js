@@ -12,7 +12,8 @@ import { systemClock } from './clock.js';
  * @typedef {{ type: 'anonymous' }
  *   | { type: 'customer', customerId: string }
  *   | { type: 'staff', staffId: string, permissions: readonly string[] }
- *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[] }
+ *   | { type: 'user', userId: string, sessionId: string }
+ *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[], sessionId?: string }
  *   | { type: 'system', reason: string }} Actor
  */
 

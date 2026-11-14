@@ -23,7 +23,8 @@ const Reset = z.strictObject({ email: z.string().trim().min(3).max(254), code: C
 /**
  * @param {{ otp: ReturnType<typeof import('./otp.service.js').createOtpService>,
  *   sessions: ReturnType<typeof import('./sessions.service.js').createSessionService>,
- *   users: ReturnType<typeof import('./users.repository.js').createUserRepository>, secureCookies: boolean }} options
+ *   users: ReturnType<typeof import('./users.repository.js').createUserRepository>, secureCookies: boolean,
+ *   finish: ReturnType<typeof import('./sign-in.js').createSignIn>['finish'] }} options
  */
 export function otpRoutes(options) {
   const router = express.Router();

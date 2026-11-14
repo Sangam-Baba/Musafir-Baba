@@ -28,6 +28,20 @@ export function requireCustomer() {
 }
 
 /**
+ * A signed-in business user acting on their OWN account (password, two-step login, sessions, org list).
+ * No permission code: it is their own data. Website customers and staff are refused.
+ * @returns {import('express').RequestHandler}
+ */
+export function requireBusinessUser() {
+  return (_req, res, next) => {
+    const { actor } = contextOf(res);
+    if (actor.type === 'anonymous') return next(new UnauthorizedError());
+    if (actor.type !== 'user' && actor.type !== 'member') return next(new ForbiddenError());
+    next();
+  };
+}
+
+/**
  * Staff (admin) and business members need the permission code, e.g. 'hotel.property.approve'.
  * @param {string} permission
  * @returns {import('express').RequestHandler}

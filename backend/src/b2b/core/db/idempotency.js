@@ -66,6 +66,8 @@ export function idempotencyScope(ctx) {
   switch (a.type) {
     case 'customer':
       return `customer:${a.customerId}`;
+    case 'user':
+      return `user:${a.userId}`;
     case 'member':
       return `org:${a.orgId}`;
     case 'staff':

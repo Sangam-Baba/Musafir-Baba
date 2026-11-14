@@ -75,8 +75,9 @@ describe('failure delay', () => {
 describe('login service', () => {
   it('right password → session for the user (by email or phone)', async () => {
     const { login } = makeLogin();
-    const byEmail = await login.login({ identifier: 'ASHA@example.com', password: PASSWORD, ip: '1.1.1.1' });
-    const byPhone = await login.login({ identifier: '+91 98765 43210', password: PASSWORD, ip: '1.1.1.1' });
+    /** @typedef {import('../../src/b2b/modules/identity/sessions.service.js').IssuedTokens} Tokens */
+    const byEmail = /** @type {Tokens} */ (await login.login({ identifier: 'ASHA@example.com', password: PASSWORD, ip: '1.1.1.1' }));
+    const byPhone = /** @type {Tokens} */ (await login.login({ identifier: '+91 98765 43210', password: PASSWORD, ip: '1.1.1.1' }));
     const claims = verifyAccessToken(byEmail.accessToken, { secret: SECRET, clock });
     expect(claims?.userId).toBe(verifyAccessToken(byPhone.accessToken, { secret: SECRET, clock })?.userId);
     expect((await SessionRecord.findOne({ _id: byEmail.sessionId, userId: claims?.userId }).lean())?.methods).toEqual(['password']);

@@ -27,6 +27,7 @@ const accountKey = (value) => createHash('sha256').update(value).digest('base64u
  * @param {{
  *   users: ReturnType<typeof import('./users.repository.js').createUserRepository>,
  *   sessions: ReturnType<typeof import('./sessions.service.js').createSessionService>,
+ *   finish?: ReturnType<typeof import('./sign-in.js').createSignIn>['finish'],
  *   limiters: { ip: RateLimiter, account: RateLimiter, failures: RateLimiter },
  *   clock: import('../../core/clock.js').Clock,
  *   sleep?: (ms: number) => Promise<void>,
@@ -45,7 +46,7 @@ export function createLoginService(deps) {
   return {
     /**
      * @param {{ identifier: string, password: string, ip: string, userAgent?: string | null }} input
-     * @returns {Promise<import('./sessions.service.js').IssuedTokens>}
+     * @returns {Promise<import('./sign-in.js').SignInResult>}
      */
     async login(input) {
       const { value } = parseLoginIdentifier(input.identifier);
@@ -66,7 +67,9 @@ export function createLoginService(deps) {
         }
         throw new UnauthorizedError('LOGIN_FAILED');
       }
-      return deps.sessions.create({ userId: check.user.id, methods: ['password'], ip: input.ip, userAgent: input.userAgent ?? null });
+      const client = { ip: input.ip, userAgent: input.userAgent ?? null };
+      if (deps.finish) return deps.finish(check.user.id, ['password'], client);
+      return deps.sessions.create({ userId: check.user.id, methods: ['password'], ...client });
     },
   };
 }

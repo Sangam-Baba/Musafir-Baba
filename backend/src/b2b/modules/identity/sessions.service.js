@@ -19,6 +19,8 @@ import { SessionRecord } from './models/session.model.js';
 
 export const REFRESH_TTL_MS = 30 * 24 * 60 * 60_000;
 export const ROTATION_GRACE_MS = 10_000;
+/** How long a step-up (re-entering a code or password) counts for sensitive actions. */
+export const STEP_UP_TTL_MS = 10 * 60_000;
 const BY_SESSION_ID = systemScope('identity: session lookup by refresh token', { routine: true });
 
 /** @typedef {{ accessToken: string, expiresIn: number, refreshToken: string, refreshExpiresAt: Date, sessionId: string }} IssuedTokens */
@@ -90,6 +92,18 @@ function createSessionEndings(secret, now) {
     },
 
     /**
+     * Records that the user just proved it is them again (step-up) on this session.
+     * @param {string} sessionId @param {string} userId
+     * @returns {Promise<Date>} step-up valid until
+     */
+    async markStepUp(sessionId, userId) {
+      const at = now();
+      const done = await SessionRecord.updateOne({ _id: sessionId, userId, revokedAt: null }, { $set: { stepUpAt: at } });
+      if (done.modifiedCount !== 1) throw new UnauthorizedError('SESSION_REVOKED');
+      return new Date(at.getTime() + STEP_UP_TTL_MS);
+    },
+
+    /**
      * The session behind an access token, if it is still open (checked on every request — S01-T12).
      * @param {string} sessionId
      * @param {string} userId
@@ -97,7 +111,9 @@ function createSessionEndings(secret, now) {
     async findActive(sessionId, userId) {
       if (!/^[a-f0-9]{24}$/.test(sessionId)) return null;
       const doc = await SessionRecord.findOne({ _id: sessionId, userId, revokedAt: null, expiresAt: { $gt: now() } }).lean();
-      return doc ? { sessionId: String(doc._id), userId: doc.userId, orgId: doc.orgId, methods: doc.methods } : null;
+      return doc
+        ? { sessionId: String(doc._id), userId: doc.userId, orgId: doc.orgId, methods: doc.methods, stepUpAt: doc.stepUpAt ?? null }
+        : null;
     },
   };
 }

@@ -20,7 +20,7 @@ const OBJECT_ID = /^[0-9a-f]{24}$/;
 const RESYNC = 'event: resync\ndata: {}\n\n';
 
 /** @typedef {import('./signals.js').Signal} Signal */
-/** @typedef {{ res: import('express').Response, rooms: ReadonlySet<string>, ip: string }} StreamClient */
+/** @typedef {{ res: import('express').Response, rooms: ReadonlySet<string>, ip: string, seenUpTo: string | null }} StreamClient */
 /** @typedef {(client: StreamClient, frame: string) => void} Write */
 
 /** @param {Signal} signal */
@@ -96,7 +96,10 @@ async function replay(client, lastEventId, deps) {
   const afterId = deps.objectIdFrom(lastEventId);
   if (deps.clock.now().getTime() - afterId.getTimestamp().getTime() > deps.maxAgeMs) return deps.write(client, RESYNC);
   const missed = await deps.readSince(afterId, [...client.rooms], deps.limit);
-  for (const signal of missed) deps.write(client, frameOf(signal));
+  for (const signal of missed) {
+    deps.write(client, frameOf(signal));
+    client.seenUpTo = String(signal._id); // the live feed may deliver these again moments later — skipped in deliver()
+  }
   if (missed.length === deps.limit) deps.write(client, RESYNC);
 }
 
@@ -133,7 +136,7 @@ export function createStreamHub(options) {
         .set({ 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' });
       res.flushHeaders();
       /** @type {StreamClient} */
-      const client = { res, rooms: new Set(input.rooms), ip: input.ip };
+      const client = { res, rooms: new Set(input.rooms), ip: input.ip, seenUpTo: null };
       registry.add(client);
       req.on('close', () => registry.remove(client));
       write(client, `retry: 3000\nevent: ready\ndata: ${JSON.stringify({ rooms: [...client.rooms] })}\n\n`);
@@ -148,7 +151,11 @@ export function createStreamHub(options) {
       const clients = registry.inRoom(signal.room);
       if (clients.length === 0) return;
       const frame = frameOf(signal);
-      for (const client of clients) write(client, frame);
+      const id = String(signal._id ?? '');
+      for (const client of clients) {
+        if (client.seenUpTo !== null && id <= client.seenUpTo) continue; // already sent during catch-up (ids sort by time)
+        write(client, frame);
+      }
     },
     /** @returns {{ connections: number, rooms: number }} */
     stats: () => ({ connections: registry.clients.size, rooms: registry.roomCount() }),

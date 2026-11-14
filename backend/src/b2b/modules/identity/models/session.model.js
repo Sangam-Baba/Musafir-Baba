@@ -24,6 +24,7 @@ const schema = new b2bMongoose.Schema(
     lastUsedAt: { type: Date, required: true },
     ip: { type: String, default: null },
     userAgent: { type: String, default: null, maxlength: 300 },
+    stepUpAt: { type: Date, default: null },
     revokedAt: { type: Date, default: null },
     revokeReason: { type: String, default: null },
     ...eventFields(b2bMongoose),
