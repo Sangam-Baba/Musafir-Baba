@@ -18,5 +18,7 @@ export { createMfaService } from './mfa.service.js';
 export { createSignIn, isMfaChallenge } from './sign-in.js';
 export { mfaAuthRoutes, mfaMeRoutes } from './mfa-routes.js';
 export { createBusinessAuthenticator } from './business-auth.js';
+export { createViewAsService } from './view-as.service.js';
+export { VIEW_AS_COLLECTION, VIEW_AS_TTL_MS, ViewAsRecord } from './models/view-as.model.js';
 export { sessionRoutes, sendTokens, REFRESH_COOKIE, REFRESH_COOKIE_PATH } from './session-routes.js';
 export { normaliseEmail, normalisePhone, parseLoginIdentifier, assertPasswordAllowed, isLocked, lockDurationMs } from './domain/user.js';

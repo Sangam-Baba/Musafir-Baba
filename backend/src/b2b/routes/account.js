@@ -14,6 +14,36 @@ import { requireBusinessUser } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 
 /**
+ * `/me` while a MusafirBaba admin views an org: the org's Owner view, and who is looking.
+ * @param {import('express').Response} res
+ * @param {{ orgs: ReturnType<typeof import('../modules/organizations/index.js').createOrganizationsService> }} deps
+ */
+function viewAsMe(res, deps) {
+  const { actor } = contextOf(res);
+  if (actor.type !== 'member' || !actor.viewAs) return null;
+  const { viewAs, orgId, roles = [], permissions } = actor;
+  return deps.orgs.basicInfo(orgId).then((org) => ({
+    user: {
+      id: actor.userId,
+      name: 'MusafirBaba support (view as)',
+      email: null,
+      phone: null,
+      status: 'ACTIVE',
+      emailVerified: false,
+      phoneVerified: false,
+      hasPassword: false,
+      lastLoginAt: null,
+    },
+    mfa: { totp: 'off', recoveryCodesLeft: 0 },
+    memberships: org ? [{ orgId, reference: '', displayName: org.displayName, type: org.type, status: org.status, roles: [...roles] }] : [],
+    blockedOrgs: [],
+    currentOrgId: orgId,
+    permissions: [...permissions],
+    viewAs: { mode: viewAs.mode, expiresAt: viewAs.expiresAt, reason: viewAs.reason },
+  }));
+}
+
+/**
  * @param {{
  *   users: ReturnType<typeof import('../modules/identity/index.js').createUserRepository>,
  *   mfa: ReturnType<typeof import('../modules/identity/index.js').createMfaService>,
@@ -34,6 +64,8 @@ export function accountRoutes(deps) {
 
   router.get('/me', requireBusinessUser(), (_req, res, next) => {
     (async () => {
+      const viewing = viewAsMe(res, deps);
+      if (viewing) return res.json(await viewing);
       const { userId, orgId } = who(res);
       const [user, mfa, memberships, blockedOrgs] = await Promise.all([
         deps.users.findById(userId),

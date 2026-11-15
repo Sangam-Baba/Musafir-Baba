@@ -13,6 +13,8 @@ const LABELS: Record<string, string> = {
   "organizations.member.removed": "Member removed",
   "organizations.member.roles-changed": "Member's role changed",
   "access.role.changed": "Custom role changed",
+  "identity.view-as.started": "MusafirBaba support started viewing",
+  "identity.view-as.ended": "MusafirBaba support stopped viewing",
 };
 
 export function describeEntry(e: AuditEntry): string {

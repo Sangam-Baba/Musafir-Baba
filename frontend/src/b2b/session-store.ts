@@ -4,12 +4,17 @@ import { create } from "zustand";
 
 interface BusinessSessionState {
   accessToken: string | null;
+  /** true while a MusafirBaba admin views an org: never fall back to this browser's own sign-in */
+  viewAs: boolean;
   setAccessToken: (token: string | null) => void;
+  startViewAs: (token: string) => void;
 }
 
 export const useBusinessSession = create<BusinessSessionState>()((set) => ({
   accessToken: null,
+  viewAs: false,
   setAccessToken: (token) => set({ accessToken: token }),
+  startViewAs: (token) => set({ accessToken: token, viewAs: true }),
 }));
 
 // MusafirBaba admins: the short-lived B2B admin pass (memory only; asked again after a reload).

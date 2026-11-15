@@ -12,7 +12,7 @@ import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from '../modules/access/index.js';
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
-import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION } from '../modules/identity/index.js';
+import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, VIEW_AS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
@@ -211,6 +211,19 @@ export const MIGRATIONS = [
     up: async (ctx) => {
       await ctx.createCollection(STAFF_ROLES_COLLECTION);
       await ctx.createIndex(STAFF_ROLES_COLLECTION, { roles: 1 }, { name: 'roles' });
+    },
+  },
+  {
+    id: '0017-id-view-as',
+    description: 'View-as sessions of MusafirBaba admins (per org, newest first); relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(VIEW_AS_COLLECTION);
+      await ctx.createIndex(VIEW_AS_COLLECTION, { orgId: 1, createdAt: -1 }, { name: 'org_recent' });
+      await ctx.createIndex(
+        VIEW_AS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];

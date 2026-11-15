@@ -26,6 +26,8 @@ import { createAccessChangeNotifier, createMemberCache } from './access-cache.js
 import { createRoles, createTeamRoutes } from './teams.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
+import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
+import { createViewAsService } from '../modules/identity/index.js';
 import { createStaffRoles } from './admin-wiring.js';
 import { realtimeRoutes } from './realtime.js';
 
@@ -55,9 +57,19 @@ export function createB2BRouter(options = {}) {
   const roles = createRoles(clock, accessChanged);
   const identity = createIdentity(env, clock, roles.permissionsOf, createMemberCache(clock));
   const staffRoles = createStaffRoles(clock);
-  // business tokens, then the B2B admin pass, then existing customer/admin logins (read-only)
+  const viewAsDeps = {
+    viewAs: createViewAsService({ secret: env.B2B_AUTH_SECRET, clock }),
+    orgs: identity.orgs,
+    users: identity.users,
+    mfa: identity.mfa,
+    permissionsOf: roles.permissionsOf,
+    secret: env.B2B_AUTH_SECRET,
+    clock,
+  };
+  // business tokens, view-as passes, the B2B admin pass, then existing customer/admin logins (read-only)
   const authenticate = firstMatch(
     identity.businessAuthenticate,
+    createViewAsAuthenticator(viewAsDeps),
     createAdminAuthenticator({ secret: env.B2B_AUTH_SECRET, clock, staffRoles }),
     identity.legacyAuthenticate,
   );
@@ -67,6 +79,7 @@ export function createB2BRouter(options = {}) {
   router.use(requestId);
   router.use(express.json({ limit: BODY_LIMIT }));
   router.use(contextMiddleware({ channel: 'WEBSITE', logger: log, authenticate: options.authenticate ?? authenticate }));
+  router.use(viewAsReadOnly);
 
   router.get('/health', publicRoute(), (_req, res, next) => {
     checkHealth(contextOf(res).clock)
@@ -82,6 +95,7 @@ export function createB2BRouter(options = {}) {
   router.use('/me', identity.me);
   router.use(identity.account);
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
+  router.use(viewAsRoutes(viewAsDeps));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

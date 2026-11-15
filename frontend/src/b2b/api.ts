@@ -63,7 +63,8 @@ export async function b2b<T>(path: string, opts: Omit<Options, "token"> = {}): P
   try {
     return await send<T>(path, { ...opts, token });
   } catch (error) {
-    if (error instanceof B2BError && error.status === 401 && opts.retry !== false && !path.startsWith("/auth/")) {
+    const viewing = useBusinessSession.getState().viewAs; // a view-as pass is never renewed from this browser's own cookie
+    if (error instanceof B2BError && error.status === 401 && opts.retry !== false && !path.startsWith("/auth/") && !viewing) {
       const fresh = await refreshBusinessSession();
       if (fresh) return send<T>(path, { ...opts, token: fresh });
     }

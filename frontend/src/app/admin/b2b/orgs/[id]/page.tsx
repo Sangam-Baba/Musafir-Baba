@@ -1,7 +1,7 @@
 "use client";
 // One organisation (MusafirBaba admin): details, status (suspend with a reason / reactivate), members, activity.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Building2, Loader2, RotateCcw, Users } from "lucide-react";
+import { ArrowLeft, Ban, Building2, Eye, Loader2, RotateCcw, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -13,6 +13,7 @@ import {
   FleetEmptyState,
   FleetPage,
   FleetPanel,
+  fleetSelectClass,
   fleetTh,
   Input,
   inputSm,
@@ -112,6 +113,7 @@ function OrgDetailView({ id, token }: { id: string; token: string }) {
           </form>
         )}
       </FleetPanel>
+      <ViewAsPanel orgId={id} token={token} />
       <FleetPanel title="Members" description={`${o.members.length} member(s)`} icon={Users}>
         {o.members.length === 0 ? (
           <FleetEmptyState icon={Users} title="No members yet" hint="The owner's invitation may still be pending." />
@@ -143,5 +145,46 @@ function OrgDetailView({ id, token }: { id: string; token: string }) {
       </FleetPanel>
       <ActivityTab token={token} orgId={id} />
     </FleetPage>
+  );
+}
+
+/** Open the org's business area as MusafirBaba support (30 min, reason required, owners emailed). */
+function ViewAsPanel({ orgId, token }: { orgId: string; token: string }) {
+  const [reason, setReason] = useState("");
+  const [mode, setMode] = useState<"READ" | "WRITE">("READ");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function start(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const body = { orgId, reason: reason.trim(), mode, ...(mode === "WRITE" ? { code: code.trim() } : {}) };
+      const r = await adminCall<{ viewAsToken: string }>("/admin/view-as", token, { method: "POST", body });
+      window.open(`/business#viewAs=${encodeURIComponent(r.viewAsToken)}`, "_blank", "noopener");
+      toast.success("Opened in a new tab — the owners have been told");
+      setReason("");
+      setCode("");
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <FleetPanel title="View as this organisation" description="See their business area exactly as they do, for 30 minutes. Owners are emailed and it is recorded in their activity log." icon={Eye} bodyClassName="p-4">
+      <form onSubmit={start} className="flex flex-wrap gap-2">
+        <Input className={`${inputSm} min-w-64 flex-1`} placeholder="Reason, e.g. hotel asked for help with their team page" value={reason} onChange={(e) => setReason(e.target.value)} minLength={10} required />
+        <select aria-label="Mode" className={fleetSelectClass} value={mode} onChange={(e) => setMode(e.target.value as "READ" | "WRITE")}>
+          <option value="READ">Read-only</option>
+          <option value="WRITE">With changes (needs app code)</option>
+        </select>
+        {mode === "WRITE" && <Input className={`${inputSm} w-36`} placeholder="App code" value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" required />}
+        <PrimaryBtn type="submit" disabled={busy}>
+          <Eye className="h-3.5 w-3.5" /> View as
+        </PrimaryBtn>
+      </form>
+    </FleetPanel>
   );
 }

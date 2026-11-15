@@ -30,6 +30,8 @@ export interface Me {
   currentOrgId: string | null;
   /** what the signed-in member may do in the current org (to hide buttons; the server always checks) */
   permissions: string[];
+  /** set while a MusafirBaba admin is viewing this org */
+  viewAs?: { mode: "READ" | "WRITE"; expiresAt: string; reason: string };
 }
 
 export interface Tokens {

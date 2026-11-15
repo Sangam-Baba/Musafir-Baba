@@ -30,16 +30,34 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
   const queryClient = useQueryClient();
   const token = useBusinessSession((s) => s.accessToken);
   const setToken = useBusinessSession((s) => s.setAccessToken);
+  const startViewAs = useBusinessSession((s) => s.startViewAs);
+  const viewing = useBusinessSession((s) => s.viewAs);
   const [checked, setChecked] = useState(Boolean(token));
+  const [ended, setEnded] = useState(false);
   const me = useMe();
 
   useEffect(() => {
+    // MusafirBaba admin "view as": the pass arrives in the address fragment (never sent to any server)
+    const match = /^#viewAs=(.+)$/.exec(window.location.hash);
+    if (match) {
+      startViewAs(decodeURIComponent(match[1] ?? ""));
+      window.history.replaceState(null, "", window.location.pathname);
+      return setChecked(true);
+    }
     if (token) return setChecked(true);
+    if (viewing) return setEnded(true);
     refreshBusinessSession().then((t) => {
       if (!t) router.replace("/business/login");
       else setChecked(true);
     });
-  }, [token, router]);
+  }, [token, router, startViewAs, viewing]);
+
+  async function endViewAs() {
+    await b2b("/view-as/end", { method: "POST" }).catch(() => undefined);
+    setToken(null);
+    queryClient.removeQueries({ queryKey: ["b2b"] });
+    setEnded(true);
+  }
 
   async function switchOrg(orgId: string) {
     try {
@@ -59,6 +77,9 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
     router.replace("/business/login");
   }
 
+  if (ended) {
+    return <div className="flex min-h-screen items-center justify-center text-sm text-slate-600">The view-as session has ended. You can close this tab.</div>;
+  }
   if (!checked || me.isLoading || !me.data) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">{me.error ? errorMessage(me.error) : "Loading…"}</div>;
   }
@@ -78,7 +99,7 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
               </Link>
             ))}
           </nav>
-          {data.memberships.length > 0 && (
+          {!data.viewAs && data.memberships.length > 0 && (
             <select aria-label="Organisation" value={data.currentOrgId ?? ""} onChange={(e) => e.target.value && switchOrg(e.target.value)} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
               <option value="" disabled>
                 Choose organisation…
@@ -91,11 +112,23 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
             </select>
           )}
           <span className="text-sm text-slate-500">{data.user.name}</span>
-          <button onClick={logout} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
-            Log out
-          </button>
+          {!data.viewAs && (
+            <button onClick={logout} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+              Log out
+            </button>
+          )}
         </div>
       </header>
+      {data.viewAs && (
+        <div className="flex flex-wrap items-center justify-center gap-3 border-b border-violet-200 bg-violet-50 px-4 py-2 text-sm text-violet-900">
+          <span>
+            Viewing as MusafirBaba support · {data.viewAs.mode === "READ" ? "read-only" : "changes allowed"} · ends at {new Date(data.viewAs.expiresAt).toLocaleTimeString()} · reason: {data.viewAs.reason}
+          </span>
+          <button onClick={endViewAs} className="rounded-md border border-violet-300 bg-white px-3 py-1 text-xs font-medium hover:bg-violet-100">
+            End view
+          </button>
+        </div>
+      )}
       {data.blockedOrgs.map((b) => (
         <div key={b.orgId} className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-sm text-amber-800">
           {b.displayName} is {b.status.toLowerCase()}

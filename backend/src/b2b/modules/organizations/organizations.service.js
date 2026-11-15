@@ -101,6 +101,7 @@ export function createOrganizationsService(deps) {
     },
 
     ...memberFunctions(deps),
+    ...orgInfoFunctions(),
     ...branchFunctions(),
   };
 }
@@ -180,6 +181,27 @@ function memberFunctions(deps) {
         ownOnly: m.ownOnly,
         joinedAt: m.joinedAt,
       }));
+    },
+  };
+}
+
+/** Small org look-ups for admin tools (view-as, notifications). */
+function orgInfoFunctions() {
+  return {
+    /** Type and name of an org, any status (admin tools). @param {string} orgId */
+    async basicInfo(orgId) {
+      if (!ID.test(orgId)) return null;
+      const o = await OrganizationRecord.findOne({ _id: orgId }, { type: 1, displayName: 1, status: 1 }).lean();
+      return o ? { orgId, type: o.type, displayName: o.displayName, status: o.status } : null;
+    },
+
+    /** User ids of the org's active Owners (to notify them). @param {string} orgId */
+    async ownerUserIds(orgId) {
+      const owners = await MemberRecord.find(
+        { orgId, status: 'ACTIVE', roles: { $in: ['client.owner', 'hotel.owner'] } },
+        { userId: 1 },
+      ).lean();
+      return owners.map((m) => m.userId);
     },
   };
 }

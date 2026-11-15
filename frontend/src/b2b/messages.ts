@@ -41,6 +41,8 @@ const MESSAGES: Record<string, string> = {
   ORG_NOT_SUSPENDED: "This organisation is not suspended.",
   SUPER_ADMIN_LIMIT: "There can be at most 2 Super Admins.",
   STAFF_NOT_FOUND: "No admin account with that email.",
+  VIEW_AS_READ_ONLY: "You are viewing as MusafirBaba support in read-only mode — changes are not allowed.",
+  STEP_UP_REQUIRED: "Making changes while viewing needs two-step login and a fresh code.",
   BUSINESS_LOGIN_NOT_CONFIGURED: "Business login isn't switched on on this server yet (B2B_AUTH_SECRET).",
   VALIDATION_FAILED: "Please check the highlighted fields.",
 };
