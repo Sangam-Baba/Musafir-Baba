@@ -10,9 +10,9 @@
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stages 00, 01, 02 awaiting owner sign-off · next: Stage 03 — Hotel listings |
-| **Current task(s)** | — (Stage 02 complete; Stage 03 task list next) |
-| **Next up** | Stage 03 — hotel listings · owner: try hotel onboarding in the browser, then sign off Stages 00–02 (fill in Finished in each `stages/stage-NN.md`) |
+| **Current stage(s)** | Stage 03 — Hotel listings (Stages 00, 01, 02 awaiting owner sign-off) |
+| **Current task(s)** | Stage 03 — S03-T02 masters (cities, amenities, property / bed types, meal plans) |
+| **Next up** | Stage 03 tasks · owner: try hotel onboarding in the browser, then sign off Stages 00–02 (fill in Finished in each `stages/stage-NN.md`) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00, 01 + 02 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
@@ -24,7 +24,7 @@
 | 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | AWAITING_SIGN_OFF | 22 / 22 | 0 | 100 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
 | 01 | Organisations, users, roles & permissions | A | AWAITING_SIGN_OFF | 19 / 20 | 1 | 100 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | AWAITING_SIGN_OFF | 15 / 15 | 0 | 100 % | 2026-11-15 | — | [stage-02](stages/stage-02.md) |
-| 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
+| 03 | Hotel listings | A | IN_PROGRESS | 1 / 13 | 0 | 8 % | 2026-11-15 | — | [stage-03](stages/stage-03.md) |
 | 04 | Inventory & rates calendar | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 05 | Pricing & GST | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 06 | Search & availability (website first) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 56 of 56 tasks done (100 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 57 of 69 tasks done (83 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

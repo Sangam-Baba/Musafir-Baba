@@ -117,6 +117,18 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['hotel.owner', 'kyc.application.submit', true],
     ['hotel.manager', 'kyc.application.submit', false],
     ['hotel.manager', 'kyc.application.read', false], // KYC documents (PAN, cheque) stay with the Owner (plan §4: Manager = listings, rates, bookings)
+    // Stage 03: hotel listings
+    ['hotel.owner', 'hotel-catalog.property.manage', true],
+    ['hotel.manager', 'hotel-catalog.property.manage', true], // limited to assigned properties by scope
+    ['hotel.frontDesk', 'hotel-catalog.property.read', false],
+    ['client.owner', 'hotel-catalog.property.read', false], // clients see listings only through the public content
+    ['platform.hotels', 'hotel-catalog.listing.review', true],
+    ['platform.hotels', 'hotel-catalog.master.manage', true],
+    ['platform.operations', 'hotel-catalog.listing.read', true],
+    ['platform.operations', 'hotel-catalog.listing.review', false],
+    ['platform.support', 'hotel-catalog.listing.read', true],
+    ['platform.support', 'hotel-catalog.listing.review', false],
+    ['platform.superAdmin', 'hotel-catalog.listing.review', true],
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);

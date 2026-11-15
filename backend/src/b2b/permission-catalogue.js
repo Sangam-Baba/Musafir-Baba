@@ -9,8 +9,9 @@ import { PERMISSION_CATALOGUE as access } from './modules/access/index.js';
 import { PERMISSION_CATALOGUE as audit } from './modules/audit/index.js';
 import { PERMISSION_CATALOGUE as identity } from './modules/identity/index.js';
 import { PERMISSION_CATALOGUE as files } from './modules/files/index.js';
+import { PERMISSION_CATALOGUE as hotelCatalog } from './modules/hotel-catalog/index.js';
 import { PERMISSION_CATALOGUE as kyc } from './modules/kyc/index.js';
 import { PERMISSION_CATALOGUE as notifications } from './modules/notifications/index.js';
 import { PERMISSION_CATALOGUE as organizations } from './modules/organizations/index.js';
 
-export const PERMISSION_CATALOGUE = mergeCatalogues([identity, organizations, access, audit, files, kyc, notifications]);
+export const PERMISSION_CATALOGUE = mergeCatalogues([identity, organizations, access, audit, files, kyc, notifications, hotelCatalog]);
