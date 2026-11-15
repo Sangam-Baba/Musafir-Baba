@@ -40,7 +40,17 @@
 - **Later:** S01-T16 → DONE (business sign-in pages, home, security; refresh cookie policy matched to the existing logins for production). Backend tests ✅ 398 (2× green); 6 new pages load on the dev server.
 - **Later:** S01-T17 → DONE (Team page with four tabs, Activity page; member names and current permissions from the API). Note: the long-running local dev server once missed a new folder (404) — re-saving the file fixed it.
 - **Later:** S01-T18 → DONE (admin gate, organisations, users, activity, organisation page with suspend/reactivate). Backend ✅ 398 (2× green); admin pages load on the dev server.
-- **Next step:** owner tries it locally (dev Atlas only), then S01-T15 view-as, S01-T19 test suite, S01-T20 CAPTCHA decision.
+- **Later (owner):** couldn't open /admin/b2b — B2B roles are separate from the existing admin role by design; ran `b2b:migrate` + `b2b:grant-admin` for admin1@musafirbaba.com on **dev Atlas only**; added the Staff access tab; restyled the B2B admin pages with the existing admin UI kit (owner: "ui is not aligned"); local `.env` files given the B2B settings at the owner's request.
+
+## 2026-11-15 — AI (Claude) — S01-T15 view-as, S01-T19 test suite, S01-T20 deferred
+
+- **Goal:** finish Stage 01.
+- **Done:** S01-T15 → DONE (view as client/hotel, read-only by default, 30 min, reason, owners emailed, banner + End view). S01-T19 → DONE (tenant isolation sweep over every Stage 01 collection; the other mandatory tests already existed). S01-T20 → DEFERRED (DEF-023, CAPTCHA needs an outside service — owner decision).
+- **Not done / why:** Stage 01 sign-off is the owner's (fill in Finished).
+- **Files / PR:** `backend/src/b2b/modules/identity/{view-as.service.js,models/view-as.model.js}`, `routes/{view-as,account,v1}.js`, migration `0017` (also applied on dev Atlas), `tests/b2b/{view-as,stage-01-tenant-isolation}.test.js`, frontend admin org page + business shell.
+- **Tests run:** backend ✅ 39 files / 423 (2× green); typecheck ✅; lint ✅; guards ✅; pages load on the dev server.
+- **Decisions / deferrals:** DEF-023.
+- **Next step:** owner signs off Stages 00 and 01; Stage 02 after 3 decisions (KYC document storage, upload scanning without an extra container, unregistered hotels).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

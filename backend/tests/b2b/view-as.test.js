@@ -52,15 +52,13 @@ beforeAll(async () => {
   mongo = await startMongo();
   await runMigrations(MIGRATIONS, { clock, owner: 'test' });
   for (const id of [SUPPORT, SUPER])
-    await mongo.db
-      .collection('staffs')
-      .insertOne({
-        _id: new ObjectId(id),
-        name: id === SUPPORT ? 'support' : 'super',
-        email: `${id}@musafirbaba.com`,
-        role: 'admin',
-        isActive: true,
-      });
+    await mongo.db.collection('staffs').insertOne({
+      _id: new ObjectId(id),
+      name: id === SUPPORT ? 'support' : 'super',
+      email: `${id}@musafirbaba.com`,
+      role: 'admin',
+      isActive: true,
+    });
   const app = express();
   app.use(
     '/api/v1',

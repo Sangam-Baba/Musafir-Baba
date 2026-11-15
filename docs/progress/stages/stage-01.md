@@ -50,8 +50,8 @@
 | S01-T16 | Business area (frontend, new `/business` route group in the existing Next.js app, new folders only): login, OTP login, reset, MFA setup, org switcher | §3.9 | DONE | AI (Claude) | | 6 pages load ✅ | New folders only (`frontend/src/app/business/`, `frontend/src/b2b/`; guards now allow exactly these plus `frontend/src/app/admin/b2b/`). Pages: `/business/login` (password → app-code step), `/business/login/code` (email code), `/business/forgot`, `/business/invite?token=` (new account or signed-in accept; Suspense boundary so the production build passes), `/business` (home), `/business/security` (two-step setup: key + tap-to-add link, recovery codes shown once). `BusinessShell`: renews the session from the refresh cookie after reload, org switcher, nav, log out, banner for suspended orgs. API client: memory-only access token, one silent renewal on 401, plain-language error messages. Backend: refresh cookie now `SameSite=None; Secure` in production (website and API are on different domains, same as the existing logins), `Lax` locally; CSRF protection stays (required `X-B2B-Auth` header + CORS allow-list). Local tip: `NEXT_PUBLIC_B2B_API_URL=http://localhost:8000/api/v1` keeps sign-in across reloads |
 | S01-T17 | Business area Team page: members, invitations, roles editor (grouped permissions with descriptions), branches | §3.9 | DONE | AI (Claude) | | pages load ✅ · backend 398 ✅ | `/business/team`: Members (names/emails, roles, branch limits; change role with roles + branches + own-only; remove), Invitations (invite with role and branch, list, cancel), Roles (built-in + custom; create a custom role by ticking grouped permissions, locked ones greyed out; delete), Branches (clients: add, close, reopen). `/business/activity`: the org's log, newest first, load more. Tabs and buttons show only what the member may do (`/me` now returns the current org's `permissions`; the server still checks every call). Backend: member list includes names/emails (`describeUsers` passed into organizations from identity — modules don't import each other) |
 | S01-T18 | Admin pages (frontend, new folders under `/admin/b2b`): orgs list/detail, user search, audit viewer, view-as button | §3.10 | DONE | AI (Claude) | | pages load ✅ · backend 398 ✅ | New folder `frontend/src/app/admin/b2b/` inside the existing admin panel and its login (no existing file edited; sidebar link = flagged edit E3, still to approve — open `/admin/b2b` directly). `AdminPassGate`: gets the B2B admin pass (app code, or first-time two-step setup; 7-day window banner), memory only, back to the gate when it expires. `/admin/b2b`: Organisations (filter, search, create + owner invitation), Users (search, memberships), Activity (all orgs). `/admin/b2b/orgs/[id]`: details, status (suspend with reason → sessions ended / reactivate), members with names, the org's activity |
-| S01-T19 | Mandatory test suite: authorization matrix (system roles × scopes), permission coverage, tenant isolation for every new collection, token rotation, OTP caps, view-as read-only | §9 | TODO | | | | |
-| S01-T20 | CAPTCHA on login / OTP after repeated failures | §8 | TODO | | | | Needs an outside service (e.g. Cloudflare Turnstile) — owner decision pending; rate limits + lockout cover it until then |
+| S01-T19 | Mandatory test suite: authorization matrix (system roles × scopes), permission coverage, tenant isolation for every new collection, token rotation, OTP caps, view-as read-only | §9 | DONE | AI (Claude) | | 20 ✅ | New `stage-01-tenant-isolation.test.js`: every owned Stage 01 collection refuses unscoped find / count / update / delete and a scoped query sees only that owner; every B2B collection must be classified owned or platform-wide (so a new one can't slip in unguarded). The other mandatory tests: `access-system-roles` (matrix), `route-permissions` (coverage), `identity-sessions` (token rotation), `identity-otp` (OTP caps), `view-as` (read-only) |
+| S01-T20 | CAPTCHA on login / OTP after repeated failures | §8 | DEFERRED | AI (Claude) | | — | DEF-023 — needs an outside service; owner decision pending. Rate limits, growing delays and lockout cover sign-in meanwhile |
 
 ## Definition of Done (from the stage file)
 
@@ -62,9 +62,9 @@
 
 ## Mandatory tests (from the stage file)
 
-- [ ] Authorization matrix (system roles × scopes)
-- [ ] Permission coverage (every route declares one)
-- [ ] Tenant isolation for every new collection
-- [ ] Token rotation (reuse of an old refresh token revokes the family)
-- [ ] OTP caps
-- [ ] View-as read-only enforcement
+- [x] Authorization matrix (system roles × scopes)
+- [x] Permission coverage (every route declares one)
+- [x] Tenant isolation for every new collection
+- [x] Token rotation (reuse of an old refresh token revokes the family)
+- [x] OTP caps
+- [x] View-as read-only enforcement
