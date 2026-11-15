@@ -37,6 +37,32 @@ export const applicationDto = (a) => ({
   updatedAt: a.updatedAt,
 });
 
+/**
+ * What the hotel sees after a rejection (S02-T09): MusafirBaba's note and each document's problem.
+ * A reason is `resolved` once the hotel has attached a new file for it. Reviewer names are not shown.
+ * @param {any} a
+ */
+function rejectionOf(a) {
+  if (a.status !== 'REJECTED') return null;
+  const current = new Map(a.documents.map((/** @type {any} */ d) => [d.key, d.fileId]));
+  const reasons = (a.review?.verdicts ?? [])
+    .filter((/** @type {any} */ v) => v.verdict !== 'VERIFIED')
+    .map((/** @type {any} */ v) => ({ key: v.key, verdict: v.verdict, note: v.note ?? null, resolved: current.get(v.key) !== v.fileId }));
+  return { note: a.review?.decisionNote ?? null, decidedAt: a.decidedAt, reasons };
+}
+
+/** The application as the hotel sees it: document list, what is missing, whether it can change it, why it was rejected @param {any} doc */
+function hotelView(doc) {
+  const documentSet = documentSetOf(doc);
+  return {
+    ...applicationDto(doc),
+    documentSet,
+    missingDocuments: missingDocuments(documentSet, doc.documents),
+    editable: isEditable(doc.status),
+    rejection: rejectionOf(doc),
+  };
+}
+
 /** The documents this application needs (from configuration: org type + GST registration) @param {any} a */
 const documentSetOf = (a) => requiredDocuments(a.orgType, { gstRegistered: a.gstRegistered ?? true });
 
@@ -225,14 +251,7 @@ export function createKycService(deps) {
 
     /** The selected org's application, with its document list and what is still missing. @param {import('../../core/context.js').RequestContext} ctx */
     async mine(ctx) {
-      const doc = await loadApplication(orgOf(ctx).orgId);
-      const documentSet = documentSetOf(doc);
-      return {
-        ...applicationDto(doc),
-        documentSet,
-        missingDocuments: missingDocuments(documentSet, doc.documents),
-        editable: isEditable(doc.status),
-      };
+      return hotelView(await loadApplication(orgOf(ctx).orgId));
     },
 
     ...hotelEdits(deps, gstinUsedElsewhere),

@@ -255,7 +255,7 @@ async function approve(deps, { who, doc, note }) {
     },
     $push: {
       history: historyEntry('approve', status, { by, at: now, note }),
-      pendingEvents: eventFor(doc, EVENTS.applicationApproved, { approvedBy }, deps),
+      pendingEvents: eventFor(doc, EVENTS.applicationApproved, { approvedBy, legalName: doc.details?.legalName ?? null }, deps),
     },
   });
 }

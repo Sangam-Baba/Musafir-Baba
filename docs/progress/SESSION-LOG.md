@@ -58,6 +58,7 @@
 - **Later:** S02-T06 → DONE (KYC application: edit details, attach/remove documents, submit/resubmit — repeat-safe, revision-checked; state machine table; resend verification link). Tests ✅ 44 files / 477, 2× green.
 - **Later:** S02-T07 → DONE (PAN and bank account number sealed per field, bound to the org; last 4 shown; reviewer reveal recorded as an event; bank details required to submit). Tests ✅ 45 files / 480, 2× green.
 - **Later:** S02-T08 → DONE (admin KYC review: queue, 30-minute lock, verdicts per document file, approve/reject, second approver for high risk, never your own org, full PAN/bank view recorded). Tests ✅ 46 files / 487, 2× green.
+- **Later:** S02-T09 → DONE (approval activates the hotel in the background with the verified legal name; the hotel sees rejection reasons per document, marked resolved when replaced; owner emails/bell move to S02-T10). Tests ✅ 46 files / 490, 2× green.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)

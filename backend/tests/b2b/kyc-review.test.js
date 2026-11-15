@@ -11,13 +11,17 @@ import path from 'node:path';
 import { ObjectId } from 'mongodb';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { eventBus } from '../../src/b2b/background.js';
+import { consumerJobHandlers, relayOnce } from '../../src/b2b/core/db/events-relay.js';
 import { runMigrations } from '../../src/b2b/core/db/migrations.js';
+import { EMAIL_JOB } from '../../src/b2b/core/email.js';
 import { JobRecord } from '../../src/b2b/core/jobs/queue.js';
+import { createJobRunner } from '../../src/b2b/core/jobs/runner.js';
 import { createLogger } from '../../src/b2b/core/logger.js';
 import { RATE_LIMITS_COLLECTION } from '../../src/b2b/core/rate-limit.js';
 import { createUserRepository, UserRecord } from '../../src/b2b/modules/identity/index.js';
 import { ApplicationRecord } from '../../src/b2b/modules/kyc/index.js';
-import { MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
+import { createOrganizationsService, MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { createB2BRouter } from '../../src/b2b/routes/v1.js';
 import { startServer } from './helpers/http.js';
@@ -260,5 +264,77 @@ describe('decisions', () => {
     expect((await admin.post(`${base}/${id}/sensitive`, {}, as(A))).body).toEqual({ pan: 'AAPFU0939F', accountNumber: '50100123456789' });
     expect(await eventsOf(orgId)).toContain('kyc.application.sensitive-viewed');
     expect((await admin.get(`${base}/64b000000000000000000000`, as(A))).status).toBe(404);
+  });
+});
+
+/** Runs the background steps once: relay the application's events, then every consumer job. */
+async function runBackground() {
+  await JobRecord.deleteMany({ name: EMAIL_JOB }); // emails are not part of these checks
+  await relayOnce(ApplicationRecord, eventBus, clock);
+  const runner = createJobRunner({
+    handlers: consumerJobHandlers(eventBus, clock),
+    workerId: 'test',
+    clock,
+    logger: createLogger({ write: () => {} }),
+  });
+  while (await runner.processOne()) {
+    /* drain */
+  }
+}
+
+/** @param {string} orgId */
+const orgOf = async (orgId) => /** @type {any} */ (await OrganizationRecord.findOne({ _id: orgId }).lean());
+
+describe('after the decision (S02-T09)', () => {
+  /** @param {string} id */
+  async function approveAll(id) {
+    await admin.post(`${base}/${id}/assign`, {}, as(A));
+    await verifyAll(A, id, REGISTERED_SET);
+    expect((await admin.post(`${base}/${id}/decision`, { decision: 'APPROVE' }, as(A))).body.status).toBe('APPROVED');
+  }
+
+  it('approved → the hotel becomes ACTIVE with the verified legal name, once', async () => {
+    const { id, orgId } = await submittedHotel();
+    await OrganizationRecord.updateOne({ _id: orgId }, { $set: { legalName: 'Typed At Sign-up' } });
+    await approveAll(id);
+    expect((await orgOf(orgId)).status).toBe('ONBOARDING'); // nothing until the background step runs
+    await runBackground();
+    const org = await orgOf(orgId);
+    expect([org.status, org.legalName]).toEqual(['ACTIVE', 'Sea View Hotels Private Limited']);
+    expect(org.pendingEvents.filter((/** @type {any} */ e) => e.type === 'organizations.org.activated')).toHaveLength(1);
+
+    await ApplicationRecord.updateOne({ orgId }, { $set: { hasPendingEvents: true } }); // a repeat delivery
+    await runBackground();
+    expect(await createOrganizationsService({ clock }).activate({ orgId, activatedBy: 'again' })).toEqual({ activated: false });
+    expect((await orgOf(orgId)).pendingEvents.filter((/** @type {any} */ e) => e.type === 'organizations.org.activated')).toHaveLength(1);
+  });
+
+  it('a hotel suspended meanwhile is not activated by the approval', async () => {
+    const { id, orgId } = await submittedHotel();
+    await approveAll(id);
+    await OrganizationRecord.updateOne({ _id: orgId }, { $set: { status: 'SUSPENDED' } });
+    await runBackground();
+    expect((await orgOf(orgId)).status).toBe('SUSPENDED');
+  });
+
+  it('rejected → the hotel sees the note and each problem; a replaced document shows as resolved; the hotel stays onboarding', async () => {
+    const { id, orgId, token } = await submittedHotel();
+    await admin.post(`${base}/${id}/assign`, {}, as(A));
+    await admin.put(`${base}/${id}/documents/cancelled_cheque`, { verdict: 'UNREADABLE', note: 'Blurry photo' }, as(A));
+    await admin.post(`${base}/${id}/decision`, { decision: 'REJECT', note: 'Please send a clear cheque' }, as(A));
+    await runBackground();
+    expect((await orgOf(orgId)).status).toBe('ONBOARDING');
+
+    const seen = (await srv.get('/api/v1/kyc', auth(token))).body;
+    expect(seen.rejection).toEqual({
+      note: 'Please send a clear cheque',
+      decidedAt: '2026-11-15T10:00:00.000Z',
+      reasons: [{ key: 'cancelled_cheque', verdict: 'UNREADABLE', note: 'Blurry photo', resolved: false }],
+    });
+    expect(JSON.stringify(seen)).not.toContain('staff:'); // reviewer not shown to the hotel
+    await attach(token, 'cancelled_cheque');
+    expect((await srv.get('/api/v1/kyc', auth(token))).body.rejection.reasons[0].resolved).toBe(true);
+    await srv.post('/api/v1/kyc/submit', {}, auth(token));
+    expect((await srv.get('/api/v1/kyc', auth(token))).body.rejection).toBeNull();
   });
 });

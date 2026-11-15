@@ -42,6 +42,9 @@ const branchDto = (b) => ({ id: String(b._id), name: b.name, city: b.city, state
  */
 export function createOrganizationsService(deps) {
   return {
+    /** @param {Parameters<typeof activateOrganization>[1]} input */
+    activate: (input) => activateOrganization(deps, input),
+
     /**
      * @param {{ type: BusinessOrgType, legalName: string, displayName?: string, ownerUserId?: string, status?: 'ONBOARDING' | 'ACTIVE', createdBy: string }} input
      * @returns {Promise<{ id: string, reference: string }>}
@@ -183,6 +186,29 @@ function memberFunctions(deps) {
       }));
     },
   };
+}
+
+/**
+ * After verification (S02-T09, driven by `kyc.application.approved`): ONBOARDING → ACTIVE with
+ * `organizations.org.activated`, and the legal name the reviewer verified. Repeat-safe: an org that is
+ * already active (or was suspended meanwhile) is left alone.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @param {{ orgId: string, legalName?: string | null, activatedBy: string }} input
+ * @returns {Promise<{ activated: boolean }>}
+ */
+async function activateOrganization(deps, input) {
+  if (!ID.test(input.orgId)) return { activated: false };
+  const org = await OrganizationRecord.findOne({ _id: input.orgId }, { type: 1, status: 1 }).lean();
+  if (!org || org.status !== 'ONBOARDING') return { activated: false };
+  const event = newEvent(EVENTS.orgActivated, { orgId: input.orgId, type: org.type, activatedBy: input.activatedBy }, deps);
+  const res = await OrganizationRecord.updateOne(
+    { _id: input.orgId, status: 'ONBOARDING' },
+    {
+      $set: { status: 'ACTIVE', ...(input.legalName ? { legalName: input.legalName.trim() } : {}), hasPendingEvents: true },
+      $push: { pendingEvents: event },
+    },
+  );
+  return { activated: res.modifiedCount === 1 };
 }
 
 /** Small org look-ups for admin tools (view-as, notifications). */

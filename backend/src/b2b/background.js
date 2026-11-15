@@ -25,13 +25,21 @@ import { createReconciler } from './core/jobs/reconciler.js';
 import { createJobRunner } from './core/jobs/runner.js';
 import { createScheduler } from './core/jobs/scheduler.js';
 import { CACHE_EVICT_ROOM } from './core/realtime/rooms.js';
+import { logger as defaultLogger } from './core/logger.js';
 import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
 import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
 import { EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
-import { EVENTS as ORG_EVENTS, InvitationRecord, MemberRecord, OrganizationRecord } from './modules/organizations/index.js';
+import {
+  createOrganizationsService,
+  EVENTS as ORG_EVENTS,
+  InvitationRecord,
+  MemberRecord,
+  OrganizationRecord,
+} from './modules/organizations/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
+import { createAccessChangeNotifier } from './routes/access-cache.js';
 
 /** @type {Map<string, import('./core/jobs/runner.js').JobHandler>} */
 export const jobHandlers = new Map();
@@ -47,6 +55,26 @@ eventBus.subscribe({
   types: [...Object.values(IDENTITY_EVENTS), ...Object.values(ORG_EVENTS), ...Object.values(ACCESS_EVENTS), ...Object.values(KYC_EVENTS)],
   handler: (event) => audit.record(event),
 });
+
+/**
+ * A verified hotel becomes active (S02-T09): `kyc.application.approved` → the org goes ONBOARDING → ACTIVE
+ * with the verified legal name and `organizations.org.activated`; cached access is cleared so members see
+ * it on their next request. Repeat-safe (the inbox skips repeats; an already-active org is left alone), and
+ * the job is retried until it succeeds, so an approved application always ends with an active org.
+ */
+const orgs = createOrganizationsService({ clock: systemClock });
+const accessChanged = createAccessChangeNotifier({ clock: systemClock, logger: defaultLogger });
+eventBus.subscribe({
+  consumer: 'organizations-kyc-approved',
+  types: [KYC_EVENTS.applicationApproved],
+  handler: async (event) => {
+    const orgId = String(event.payload.orgId);
+    const legalName = typeof event.payload.legalName === 'string' ? event.payload.legalName : null;
+    const result = await orgs.activate({ orgId, legalName, activatedBy: `kyc:${String(event.payload.applicationId)}` });
+    if (result.activated) accessChanged(orgId);
+  },
+});
+
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
 export const eventSources = [
