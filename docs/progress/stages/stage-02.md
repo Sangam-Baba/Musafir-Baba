@@ -29,7 +29,7 @@
 | S02-T01 | Stage setup: `files`, `kyc`, `notifications` module skeletons (permissions, events, README) | §3 | DONE | AI (Claude) | | matrix ✅ | `files`, `kyc`, `notifications` modules (README, permissions, events, index) in the catalogue. KYC permissions: `kyc.application.read`, `kyc.application.submit` (**sensitive** — bank details: Owner only by default), `platform.kyc.read / review / approve` (Operations gets all three; Support sees the queue only). New event `organizations.org.activated`. Matrix test extended |
 | S02-T02 | `files`: storage port (local disk / existing R2 private folder), encryption at rest, upload through the backend with content checks (type, size, PDF safety) | §3.4, D29, D30 | DONE | AI (Claude) | | 14 ✅ | `file_files` (migration `0018`). Content checks: type from magic bytes (PDF/PNG/JPEG), 10 MB, empty refused, PDFs with JavaScript / launch / embedded files / rich media / XFA / form submission refused. Each file encrypted with its own AES-256-GCM key, sealed with `B2B_FILE_KEY` (falls back to `B2B_AUTH_SECRET`); random 48-hex storage names; sha256 checked on read. Stores: local disk (`~/.musafirbaba-b2b-files`, dev default) or the existing R2 bucket under `b2b-private/` via the existing `@aws-sdk/client-s3` (tested with a stand-in client — the real bucket is untouched). `POST /files?purpose=kyc-document` (raw body ≤ 10 MB, `kyc.application.submit`) |
 | S02-T03 | `files`: signed 60-second download for authorised staff/owners, `file_access_log`, delete | §3.4 | DONE | AI (Claude) | | 4 ✅ | 60-second signed links (HMAC with the master key, own purpose — can't be forged, edited or reused later): `POST /files/:id/link` (org members with `kyc.application.read`), `POST /admin/files/:id/link {orgId}` (`platform.kyc.read`), `GET /files/download?t=` (the link is the permission; always `attachment`, `nosniff`, CSP `sandbox`). `file_access_log` (migration `0019`) records every link issued and every download (who, IP, when); `GET /admin/files/:id/access`. Deleting a document is done through KYC (S02-T06), which knows whether it is attached to a submitted application |
-| S02-T04 | `kyc` domain: document sets per org type (configuration), GSTIN checksum + state code, PAN format, PAN inside GSTIN, PIN, unregistered-hotel path, risk flags | §3.2, §3.3, D31 | TODO | | | | |
+| S02-T04 | `kyc` domain: document sets per org type (configuration), GSTIN checksum + state code, PAN format, PAN inside GSTIN, PIN, unregistered-hotel path, risk flags | §3.2, §3.3, D31 | DONE | AI (Claude) | | 11 ✅ | Pure rules in `kyc/domain/`: GSTIN shape + state code + mod-36 check character (verified against 3 real published GSTINs; one-character typos caught), PAN format + holder type, PAN inside GSTIN = PAN, GSTIN state = address state, PIN, mobile/email; all problems reported at once (`KYC_DETAILS_INVALID`). Document sets are configuration per org type (`DOCUMENT_SETS`; hotels without GST give a below-threshold declaration instead of the GST certificate — D31); a dummy second org type works through configuration only (Definition of Done item). Risk flags → second approver: `GST_UNREGISTERED`, `DUPLICATE_GSTIN`, `PERSONAL_PAN_FOR_BUSINESS` |
 | S02-T05 | Hotel registration: `POST /registrations/hotel` (user + org ONBOARDING + KYC application), email verification link, duplicate GSTIN flag | §3.1 | TODO | | | | |
 | S02-T06 | KYC application: save details, attach documents, submit (idempotent), state machine Pending → Under review → Approved / Rejected → Resubmitted | §3.5, §3.6 | TODO | | | | |
 | S02-T07 | Sensitive fields encrypted per field (PAN, bank account) and masked (last 4) | §3.3 | TODO | | | | |
@@ -48,7 +48,7 @@
 - [ ] Rejected hotel sees reasons, resubmits, gets approved
 - [ ] Sensitive fields encrypted and masked; file access logged
 - [ ] KYC notifications arrive live in the bell and by email; catch-up works with the signal reader stopped
-- [ ] KYC engine accepts a second org type through configuration only (test with a dummy type)
+- [x] KYC engine accepts a second org type through configuration only (test with a dummy type)
 
 ## Mandatory tests (from the stage file)
 
@@ -56,6 +56,6 @@
 - [ ] KYC state machine (all transitions)
 - [ ] Maker–checker
 - [ ] Idempotent submit
-- [ ] Document set per org type
+- [x] Document set per org type
 - [ ] Notifications suite (inbox idempotency, catch-up, room security)
 - [ ] Isolation tests

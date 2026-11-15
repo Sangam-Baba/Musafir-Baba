@@ -53,7 +53,8 @@
 - **Next step:** owner signs off Stages 00 and 01; Stage 02 after 3 decisions (KYC document storage, upload scanning without an extra container, unregistered hotels).
 - **Later:** owner decided D29 (existing R2 bucket, private folder — so every file is encrypted before upload), D30 (strict checks, no scanner), D31 (unregistered hotels allowed with PAN + declaration). Stage 02 task list written. S02-T01 → DONE, S02-T02 → DONE. Tests ✅ 447 (2× green).
 - **Later:** S02-T03 → DONE (signed 60-second links, downloads, access log).
-- **Next step:** S02-T04 — KYC rules: GSTIN checksum + state, PAN, PAN-in-GSTIN, PIN, document sets per org type, unregistered-hotel path, risk flags.
+- **Later:** S02-T04 → DONE (KYC rules, document sets as configuration, risk flags). Tests ✅ 2× green.
+- **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 
