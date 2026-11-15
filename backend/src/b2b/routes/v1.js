@@ -26,10 +26,12 @@ import { createAccessChangeNotifier, createMemberCache } from './access-cache.js
 import { createRoles, createTeamRoutes } from './teams.js';
 import { createFiles, fileRoutes } from './files.js';
 import { kycAdminRoutes, ownOrgCheck } from './kyc-admin.js';
+import { masterRoutes } from './hotel-masters.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
+import { createMastersService } from '../modules/hotel-catalog/index.js';
 import { createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
@@ -105,6 +107,7 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
+  router.use(masterRoutes({ masters: createMastersService() }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

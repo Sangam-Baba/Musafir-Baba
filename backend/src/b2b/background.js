@@ -29,6 +29,7 @@ import { logger as defaultLogger } from './core/logger.js';
 import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
+import { seedMasters } from './modules/hotel-catalog/index.js';
 import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
 import { createUserRepository, EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
 import { ADMIN_QUEUES, createDelivery, EVENT_CATEGORIES } from './modules/notifications/index.js';
@@ -125,6 +126,7 @@ export const eventSources = [
  */
 export const startupTasks = [
   { name: 'access: sync permission catalogue', run: (deps) => syncPermissionCatalogue(PERMISSION_CATALOGUE, deps) },
+  { name: 'hotel-catalog: starter master lists (adds only what is missing)', run: () => seedMasters() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;

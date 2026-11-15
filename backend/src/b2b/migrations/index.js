@@ -13,6 +13,13 @@ import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signa
 import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from '../modules/access/index.js';
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
 import { FILE_ACCESS_COLLECTION, FILES_COLLECTION } from '../modules/files/index.js';
+import {
+  AMENITIES_COLLECTION,
+  BED_TYPES_COLLECTION,
+  CITIES_COLLECTION,
+  MEAL_PLANS_COLLECTION,
+  PROPERTY_TYPES_COLLECTION,
+} from '../modules/hotel-catalog/index.js';
 import { APPLICATIONS_COLLECTION } from '../modules/kyc/index.js';
 import { INBOX_COLLECTION as NTF_INBOX, PREFERENCES_COLLECTION as NTF_PREFERENCES } from '../modules/notifications/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, VIEW_AS_COLLECTION } from '../modules/identity/index.js';
@@ -274,6 +281,19 @@ export const MIGRATIONS = [
       await ctx.createIndex(NTF_INBOX, { recipientId: 1, _id: -1 }, { name: 'recipient_newest' });
       await ctx.createCollection(NTF_PREFERENCES);
       await ctx.createIndex(NTF_PREFERENCES, { userId: 1, category: 1 }, { name: 'user_category_unique', unique: true });
+    },
+  },
+  {
+    id: '0022-hotel-masters',
+    description: 'Hotel master lists: cities (unique slug, map index), amenities, property types, bed types, meal plans (unique key)',
+    up: async (ctx) => {
+      await ctx.createCollection(CITIES_COLLECTION);
+      await ctx.createIndex(CITIES_COLLECTION, { slug: 1 }, { name: 'slug_unique', unique: true });
+      await ctx.createIndex(CITIES_COLLECTION, { location: '2dsphere' }, { name: 'location_geo' });
+      for (const name of [AMENITIES_COLLECTION, PROPERTY_TYPES_COLLECTION, BED_TYPES_COLLECTION, MEAL_PLANS_COLLECTION]) {
+        await ctx.createCollection(name);
+        await ctx.createIndex(name, { key: 1 }, { name: 'key_unique', unique: true });
+      }
     },
   },
 ];

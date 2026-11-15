@@ -70,6 +70,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'POST /password/forgot',
         'POST /password/reset',
         'POST /refresh',
+        'GET /catalog/masters',
         'POST /registrations/hotel',
         'POST /registrations/verify-email',
       ].sort(),
