@@ -13,6 +13,7 @@ import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signa
 import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from '../modules/access/index.js';
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
 import { FILE_ACCESS_COLLECTION, FILES_COLLECTION } from '../modules/files/index.js';
+import { APPLICATIONS_COLLECTION } from '../modules/kyc/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, VIEW_AS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
@@ -242,6 +243,25 @@ export const MIGRATIONS = [
     up: async (ctx) => {
       await ctx.createCollection(FILE_ACCESS_COLLECTION);
       await ctx.createIndex(FILE_ACCESS_COLLECTION, { orgId: 1, fileId: 1, at: -1 }, { name: 'org_file_recent' });
+    },
+  },
+  {
+    id: '0020-kyc-applications',
+    description: 'KYC applications: one per org; GSTIN lookup for duplicates; review queue by status; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(APPLICATIONS_COLLECTION);
+      await ctx.createIndex(APPLICATIONS_COLLECTION, { orgId: 1 }, { name: 'org_unique', unique: true });
+      await ctx.createIndex(
+        APPLICATIONS_COLLECTION,
+        { gstin: 1 },
+        { name: 'gstin', partialFilterExpression: { gstin: { $type: 'string' } } },
+      );
+      await ctx.createIndex(APPLICATIONS_COLLECTION, { status: 1, submittedAt: 1 }, { name: 'queue' });
+      await ctx.createIndex(
+        APPLICATIONS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];

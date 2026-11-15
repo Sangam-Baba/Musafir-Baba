@@ -28,6 +28,7 @@ import { CACHE_EVICT_ROOM } from './core/realtime/rooms.js';
 import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
+import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
 import { EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
 import { EVENTS as ORG_EVENTS, InvitationRecord, MemberRecord, OrganizationRecord } from './modules/organizations/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
@@ -43,12 +44,21 @@ export const eventBus = createEventBus();
 const audit = createAuditService({ clock: systemClock });
 eventBus.subscribe({
   consumer: 'audit',
-  types: [...Object.values(IDENTITY_EVENTS), ...Object.values(ORG_EVENTS), ...Object.values(ACCESS_EVENTS)],
+  types: [...Object.values(IDENTITY_EVENTS), ...Object.values(ORG_EVENTS), ...Object.values(ACCESS_EVENTS), ...Object.values(KYC_EVENTS)],
   handler: (event) => audit.record(event),
 });
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
-export const eventSources = [SessionRecord, UserRecord, OrganizationRecord, MemberRecord, InvitationRecord, RoleRecord, ViewAsRecord];
+export const eventSources = [
+  SessionRecord,
+  UserRecord,
+  OrganizationRecord,
+  MemberRecord,
+  InvitationRecord,
+  RoleRecord,
+  ViewAsRecord,
+  ApplicationRecord,
+];
 
 /**
  * One-off tasks run when background work starts (repeat-safe: every backend process runs them).

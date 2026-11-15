@@ -9,7 +9,7 @@ import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 
 export const SESSIONS_COLLECTION = 'id_sessions';
-export const LOGIN_METHODS = /** @type {const} */ (['password', 'email-otp', 'totp', 'recovery-code', 'invitation']);
+export const LOGIN_METHODS = /** @type {const} */ (['password', 'email-otp', 'totp', 'recovery-code', 'invitation', 'registration']);
 
 const schema = new b2bMongoose.Schema(
   {

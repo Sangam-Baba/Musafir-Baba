@@ -25,6 +25,8 @@ import { createIdentity } from './identity.js';
 import { createAccessChangeNotifier, createMemberCache } from './access-cache.js';
 import { createRoles, createTeamRoutes } from './teams.js';
 import { createFiles, fileRoutes } from './files.js';
+import { registrationRoutes } from './registrations.js';
+import { createKycService } from '../modules/kyc/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -98,11 +100,31 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   router.use(fileRoutes(createFiles(env, clock)));
+  router.use(registrationRoutes(registrationDeps(env, clock, identity)));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));
   return router;
+}
+
+/**
+ * Hotel self-registration wiring (S02-T05).
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof createIdentity>} identity
+ */
+function registrationDeps(env, clock, identity) {
+  return {
+    users: identity.users,
+    sessions: identity.sessions,
+    orgs: identity.orgs,
+    kyc: createKycService({ clock }),
+    secret: env.B2B_AUTH_SECRET,
+    publicUrl: env.B2B_PUBLIC_URL || 'https://musafirbaba.com',
+    secureCookies: identity.secureCookies,
+    clock,
+  };
 }
 
 /**
