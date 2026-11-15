@@ -65,6 +65,33 @@ const schema = new b2bMongoose.Schema(
       ],
       default: [],
     },
+    // MusafirBaba review (S02-T08): who holds it (30-minute lock), a verdict per document file, first approval of a high-risk one
+    review: {
+      reviewerId: { type: String, default: null },
+      lockedUntil: { type: Date, default: null },
+      verdicts: {
+        type: [
+          {
+            _id: false,
+            key: { type: String, required: true },
+            fileId: { type: String, required: true },
+            verdict: { type: String, enum: ['VERIFIED', 'MISMATCH', 'UNREADABLE'], required: true },
+            note: { type: String, default: null },
+            by: { type: String, required: true },
+            at: { type: Date, required: true },
+          },
+        ],
+        default: [],
+      },
+      firstApproval: {
+        type: new b2bMongoose.Schema(
+          { by: { type: String, required: true }, at: { type: Date, required: true }, note: { type: String, default: null } },
+          { _id: false },
+        ),
+        default: null,
+      },
+      decisionNote: { type: String, default: null },
+    },
     submittedAt: { type: Date, default: null },
     decidedAt: { type: Date, default: null },
     createdBy: { type: String, required: true },

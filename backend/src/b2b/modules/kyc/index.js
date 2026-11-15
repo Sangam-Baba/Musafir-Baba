@@ -9,3 +9,4 @@ export { validateBankDetails, lastFour } from './domain/bank-details.js';
 export { TRANSITIONS, EDITABLE_STATUSES, isEditable, transition } from './domain/workflow.js';
 export { APPLICATIONS_COLLECTION, APPLICATION_STATUSES, ApplicationRecord } from './models/application.model.js';
 export { createKycService, applicationDto } from './kyc.service.js';
+export { createKycReviewService, REVIEW_LOCK_MS } from './review.service.js';

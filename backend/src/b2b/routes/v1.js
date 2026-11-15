@@ -25,9 +25,10 @@ import { createIdentity } from './identity.js';
 import { createAccessChangeNotifier, createMemberCache } from './access-cache.js';
 import { createRoles, createTeamRoutes } from './teams.js';
 import { createFiles, fileRoutes } from './files.js';
+import { kycAdminRoutes, ownOrgCheck } from './kyc-admin.js';
 import { kycRoutes } from './kyc.js';
 import { registrationRoutes } from './registrations.js';
-import { createKycService } from '../modules/kyc/index.js';
+import { createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -105,6 +106,8 @@ export function createB2BRouter(options = {}) {
   router.use(fileRoutes(files));
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   router.use(kycRoutes({ kyc, users: identity.users }));
+  const review = createKycReviewService({ clock, isOwnOrg: ownOrgCheck(identity) });
+  router.use(kycAdminRoutes({ review, kyc }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
