@@ -5,6 +5,7 @@ export const EVENTS = /** @type {const} */ ({
   orgActivated: 'organizations.org.activated',
   orgSuspended: 'organizations.org.suspended',
   orgReactivated: 'organizations.org.reactivated',
+  orgClosed: 'organizations.org.closed',
   memberInvited: 'organizations.member.invited',
   memberJoined: 'organizations.member.joined',
   memberRemoved: 'organizations.member.removed',

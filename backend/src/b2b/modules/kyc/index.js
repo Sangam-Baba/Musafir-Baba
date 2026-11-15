@@ -10,3 +10,4 @@ export { TRANSITIONS, EDITABLE_STATUSES, isEditable, transition } from './domain
 export { APPLICATIONS_COLLECTION, APPLICATION_STATUSES, ApplicationRecord } from './models/application.model.js';
 export { createKycService, applicationDto } from './kyc.service.js';
 export { createKycReviewService, REVIEW_LOCK_MS } from './review.service.js';
+export { createKycHousekeeping } from './housekeeping.js';

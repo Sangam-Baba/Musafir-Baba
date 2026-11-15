@@ -150,7 +150,8 @@ export function routeSignal(signal, hub) {
  * relay run unless `runJobs` is false (B2B_BACKGROUND=false).
  * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
  *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void },
- *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, publicUrl?: string }} options
+ *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, publicUrl?: string,
+ *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[] }} options
  * @returns {{ stop: () => Promise<void> }}
  */
 export function startBackground(options) {
@@ -174,6 +175,8 @@ export function startBackground(options) {
 
   const scheduler = createScheduler({ workerId, ...deps });
   scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
+  for (const s of options.schedules ?? [])
+    scheduler.register({ name: s.name, everyMs: s.everyMs, run: () => s.run().then(() => undefined) });
   scheduler.register({ name: 'invariants', everyMs: INVARIANTS_EVERY_MS, run: () => invariantChecks.runAll(logger).then(() => undefined) });
   const handlers = new Map([...jobHandlers, ...consumerJobHandlers(eventBus, options.clock)]);
   if (options.email) handlers.set(EMAIL_JOB, emailJobHandler(options.email));

@@ -60,6 +60,7 @@
 - **Later:** S02-T08 → DONE (admin KYC review: queue, 30-minute lock, verdicts per document file, approve/reject, second approver for high risk, never your own org, full PAN/bank view recorded). Tests ✅ 46 files / 487, 2× green.
 - **Later:** S02-T09 → DONE (approval activates the hotel in the background with the verified legal name; the hotel sees rejection reasons per document, marked resolved when replaced; owner emails/bell move to S02-T10). Tests ✅ 46 files / 490, 2× green.
 - **Later:** S02-T10 → DONE (notifications: bell inbox from events — once per event and recipient, live push with ids/titles only, emails from versioned templates, catch-up, permission filter, preferences with critical lock, admin queue pushes; migration 0021). Escalations → DEF-024, delivery log + template editor → DEF-025. Tests ✅ 47 files / 497, 2× green.
+- **Later:** S02-T11 → DONE (unfinished registrations: one reminder after 30 days, removal after 90 — org closed, memberships/sessions ended, documents and draft deleted; repeat-safe; days configurable). Tests ✅ 48 files / 501, 2× green.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)

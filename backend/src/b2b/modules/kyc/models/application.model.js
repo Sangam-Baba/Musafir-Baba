@@ -92,6 +92,7 @@ const schema = new b2bMongoose.Schema(
       },
       decisionNote: { type: String, default: null },
     },
+    remindedAt: { type: Date, default: null }, // S02-T11: unfinished-registration reminder sent
     submittedAt: { type: Date, default: null },
     decidedAt: { type: Date, default: null },
     createdBy: { type: String, required: true },

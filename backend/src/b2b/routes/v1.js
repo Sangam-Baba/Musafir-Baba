@@ -29,6 +29,7 @@ import { kycAdminRoutes, ownOrgCheck } from './kyc-admin.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
+import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
@@ -150,6 +151,24 @@ function registrationDeps(env, clock, identity, kyc) {
 }
 
 /**
+ * Unfinished registrations: reminder, then removal (S02-T11).
+ * @param {NodeJS.ProcessEnv} env
+ * @param {ReturnType<typeof loadConfig>} config
+ * @param {import('../core/logger.js').Logger} log
+ */
+function retentionSchedule(env, config, log) {
+  const retention = createKycRetention({
+    clock: systemClock,
+    logger: log,
+    files: createFiles(env, systemClock),
+    secret: config.B2B_AUTH_SECRET,
+    remindAfterDays: config.B2B_KYC_REMIND_DAYS,
+    purgeAfterDays: config.B2B_KYC_PURGE_DAYS,
+  });
+  return { name: 'kyc-retention', everyMs: RETENTION_EVERY_MS, run: () => retention.runOnce() };
+}
+
+/**
  * Connects the B2B Mongoose instance, then starts the background work (../background.js).
  * A failure only affects /api/v1 (health reports `down`); the existing app has its own connection.
  * @param {NodeJS.ProcessEnv} env
@@ -168,6 +187,7 @@ function startDatabase(env, log, hub) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
+        schedules: [retentionSchedule(env, config, log)],
       }),
     )
     .catch((error) => {

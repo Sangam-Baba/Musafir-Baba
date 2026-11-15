@@ -35,6 +35,14 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your verification needs changes — MusafirBaba Business',
     text: 'Hello,\n\nWe could not verify {{orgName}} yet. Please open your application to see what needs to change, then submit it again.\n\n{{link}}\n\nMusafirBaba Business',
   },
+  'kyc.reminder': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Finish your verification',
+    body: 'The registration of {{orgName}} is not finished yet. Add the missing details and documents, then submit.',
+    subject: 'Finish registering your business — MusafirBaba Business',
+    text: 'Hello,\n\nYou started registering {{orgName}} on MusafirBaba Business but have not submitted it yet. Add the missing details and documents, then submit:\n\n{{link}}\n\nIf it stays unfinished, we will remove the registration and its documents.\n\nMusafirBaba Business',
+  },
   'team.role-changed': {
     version: 1,
     vars: ['orgName', 'link'],

@@ -42,7 +42,7 @@ describe('templates and catalogue', () => {
   });
 
   it('org categories follow permissions', () => {
-    expect(visibleOrgCategories(['kyc.application.read'])).toEqual(['kyc.submitted', 'kyc.approved', 'kyc.rejected']);
+    expect(visibleOrgCategories(['kyc.application.read'])).toEqual(['kyc.submitted', 'kyc.approved', 'kyc.rejected', 'kyc.reminder']);
     expect(visibleOrgCategories([])).toEqual([]);
   });
 });

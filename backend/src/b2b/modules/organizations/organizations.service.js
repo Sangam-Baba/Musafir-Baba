@@ -44,6 +44,8 @@ export function createOrganizationsService(deps) {
   return {
     /** @param {Parameters<typeof activateOrganization>[1]} input */
     activate: (input) => activateOrganization(deps, input),
+    /** @param {Parameters<typeof closeUnfinished>[1]} input */
+    closeUnfinished: (input) => closeUnfinished(deps, input),
 
     /**
      * @param {{ type: BusinessOrgType, legalName: string, displayName?: string, ownerUserId?: string, status?: 'ONBOARDING' | 'ACTIVE', createdBy: string }} input
@@ -209,6 +211,30 @@ async function activateOrganization(deps, input) {
     },
   );
   return { activated: res.modifiedCount === 1 };
+}
+
+/**
+ * An unfinished registration is removed (S02-T11): ONBOARDING → CLOSED with `organizations.org.closed`,
+ * and every membership ends. Repeat-safe: an org already closed still gets its memberships ended; any
+ * other status is left alone.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @param {{ orgId: string, reason: string }} input
+ * @returns {Promise<{ closed: boolean }>}
+ */
+async function closeUnfinished(deps, input) {
+  if (!ID.test(input.orgId)) return { closed: false };
+  const org = await OrganizationRecord.findOne({ _id: input.orgId }, { status: 1 }).lean();
+  if (!org || (org.status !== 'ONBOARDING' && org.status !== 'CLOSED')) return { closed: false };
+  if (org.status === 'ONBOARDING') {
+    const event = newEvent(EVENTS.orgClosed, { orgId: input.orgId, reason: input.reason }, deps);
+    const res = await OrganizationRecord.updateOne(
+      { _id: input.orgId, status: 'ONBOARDING' },
+      { $set: { status: 'CLOSED', statusReason: input.reason, hasPendingEvents: true }, $push: { pendingEvents: event } },
+    );
+    if (res.modifiedCount !== 1) return { closed: false }; // changed meanwhile (e.g. activated) — leave it
+  }
+  await MemberRecord.updateMany({ orgId: input.orgId, status: 'ACTIVE' }, { $set: { status: 'REMOVED', removedAt: deps.clock.now() } });
+  return { closed: true };
 }
 
 /** Small org look-ups for admin tools (view-as, notifications). */

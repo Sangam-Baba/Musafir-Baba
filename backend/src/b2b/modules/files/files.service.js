@@ -144,6 +144,16 @@ export function createFilesService(deps) {
       if (!doc) throw new NotFoundError('FILE_NOT_FOUND');
       await deps.store.remove(doc.storageKey);
     },
+
+    /** Removes every file of an org (unfinished registration purge, S02-T11). Repeat-safe. @param {string} orgId */
+    async removeAll(orgId) {
+      const docs = await FileRecord.find({ orgId, status: 'ACTIVE' }, { _id: 1 }).lean();
+      for (const d of docs)
+        await base.remove(orgId, String(d._id)).catch((/** @type {any} */ e) => {
+          if (e?.code !== 'FILE_NOT_FOUND') throw e; // removed meanwhile
+        });
+      return docs.length;
+    },
   };
   return { ...base, ...linkFunctions(deps, master, base) };
 }

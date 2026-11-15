@@ -37,6 +37,14 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/verification',
   },
+  'kyc.reminder': {
+    audience: 'ORG',
+    permission: 'kyc.application.read',
+    critical: false,
+    label: 'Finish your verification',
+    emailTo: 'OWNERS',
+    link: '/business/verification',
+  },
   'team.role-changed': {
     audience: 'USER',
     permission: null,
@@ -55,6 +63,7 @@ export const EVENT_CATEGORIES = Object.freeze({
   'kyc.application.resubmitted': 'kyc.submitted',
   'kyc.application.approved': 'kyc.approved',
   'kyc.application.rejected': 'kyc.rejected',
+  'kyc.application.reminded': 'kyc.reminder',
   'organizations.member.roles-changed': 'team.role-changed',
 });
 

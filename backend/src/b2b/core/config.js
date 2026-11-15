@@ -18,6 +18,9 @@ const ConfigSchema = z.object({
   B2B_EMAIL_FROM: z.string().min(3).optional(),
   /** Public address of the website, used in emailed links (e.g. https://musafirbaba.com). */
   B2B_PUBLIC_URL: z.string().url().default('https://musafirbaba.com'),
+  /** Unfinished hotel registrations: reminder after this many days, removal (with documents) after this many (S02-T11). */
+  B2B_KYC_REMIND_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+  B2B_KYC_PURGE_DAYS: z.coerce.number().int().min(2).max(730).default(90),
   /** Where encrypted documents are kept: 'local' (development, a folder on disk) or 'r2' (existing bucket, private folder) — D29. */
   B2B_FILE_STORAGE: z.enum(['local', 'r2']).default('local'),
   /** Master key that locks each document's own key (≥ 32 characters). Falls back to B2B_AUTH_SECRET when unset. */
