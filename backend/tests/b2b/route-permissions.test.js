@@ -55,6 +55,7 @@ describe('every /api/v1 route declares who may use it', () => {
     const publicPaths = [...new Set(routes.filter((r) => r.access === 'public').map((r) => r.route.replace(/ \(.*\)$/, '')))].sort();
     expect(publicPaths).toEqual(
       [
+        'GET /files/download',
         'GET /health',
         'GET /invitations/lookup',
         'GET /meta/version',

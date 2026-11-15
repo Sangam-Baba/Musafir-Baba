@@ -3,14 +3,20 @@
  * POST /api/v1/files?purpose=kyc-document — upload one document for the selected org.
  * The body is the raw file (≤ 10 MB); the name comes in the `X-File-Name` header. The type is decided
  * from the content, the file is stored encrypted (D29, D30). Uploading needs `kyc.application.submit`
- * (KYC is the only purpose so far); reading documents back is S02-T03.
+ * (KYC is the only purpose so far).
+ * Reading back (S02-T03): ask for a 60-second link, then GET /files/download?t=… (the link is the
+ * permission; every link and download is logged):
+ * - POST /files/:id/link — the org's own members with `kyc.application.read`;
+ * - POST /admin/files/:id/link {orgId} — MusafirBaba reviewers with `platform.kyc.read`;
+ * - GET /admin/files/:id/access?orgId= — who opened a document.
  */
 import express from 'express';
 import { z } from 'zod';
 
 import { DomainError, ForbiddenError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
-import { requirePermission } from '../core/http/permissions.js';
+import { publicRoute, requirePermission } from '../core/http/permissions.js';
+import { clientIp } from '../core/rate-limit.js';
 import { validate } from '../core/http/validate.js';
 import { createFilesService, fileStoreFromConfig, MAX_FILE_BYTES } from '../modules/files/index.js';
 import { PERMISSIONS as KYC } from '../modules/kyc/index.js';
@@ -55,6 +61,65 @@ export function fileRoutes(files) {
         });
         res.status(201).json(stored);
       })().catch(next);
+    },
+  );
+  router.use(readRoutes(files));
+  return router;
+}
+
+const FileParams = z.strictObject({ id: z.string().regex(/^[a-f0-9]{24}$/) });
+const OrgId = z.string().regex(/^[a-f0-9]{24}$/);
+
+/** @param {ReturnType<typeof createFilesService>} files */
+function readRoutes(files) {
+  const router = express.Router();
+  router.post('/files/:id/link', requirePermission(KYC.applicationRead), validate({ params: FileParams }), (req, res, next) => {
+    const { actor } = contextOf(res);
+    if (actor.type !== 'member') return next(new ForbiddenError('ORG_NOT_SELECTED'));
+    files
+      .issueLink({ orgId: actor.orgId, fileId: res.locals.input.params.id, viewer: `user:${actor.userId}`, ip: clientIp(req) })
+      .then((l) => res.json(l), next);
+  });
+  router.post(
+    '/admin/files/:id/link',
+    requirePermission(KYC.platformRead),
+    validate({ params: FileParams, body: z.strictObject({ orgId: OrgId }) }),
+    (req, res, next) => {
+      const { actor } = contextOf(res);
+      if (actor.type !== 'staff') return next(new ForbiddenError());
+      files
+        .issueLink({
+          orgId: res.locals.input.body.orgId,
+          fileId: res.locals.input.params.id,
+          viewer: `staff:${actor.staffId}`,
+          ip: clientIp(req),
+        })
+        .then((l) => res.json(l), next);
+    },
+  );
+  router.get(
+    '/admin/files/:id/access',
+    requirePermission(KYC.platformRead),
+    validate({ params: FileParams, query: z.strictObject({ orgId: OrgId }) }),
+    (_req, res, next) => {
+      files.accessLog(res.locals.input.query.orgId, res.locals.input.params.id).then((data) => res.json({ data }), next);
+    },
+  );
+  // the signed 60-second link is the permission; the response is always a download, never a page
+  router.get(
+    '/files/download',
+    publicRoute(),
+    validate({ query: z.strictObject({ t: z.string().min(20).max(600) }) }),
+    (req, res, next) => {
+      files.download(res.locals.input.query.t, clientIp(req)).then((file) => {
+        res.set({
+          'Content-Type': file.contentType,
+          'Content-Disposition': `attachment; filename="${file.originalName.replace(/"/g, '')}"`,
+          'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': "default-src 'none'; sandbox",
+        });
+        res.send(file.bytes);
+      }, next);
     },
   );
   return router;

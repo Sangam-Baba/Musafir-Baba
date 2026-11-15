@@ -12,7 +12,7 @@ import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from '../modules/access/index.js';
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
-import { FILES_COLLECTION } from '../modules/files/index.js';
+import { FILE_ACCESS_COLLECTION, FILES_COLLECTION } from '../modules/files/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, VIEW_AS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
@@ -234,6 +234,14 @@ export const MIGRATIONS = [
       await ctx.createCollection(FILES_COLLECTION);
       await ctx.createIndex(FILES_COLLECTION, { orgId: 1, createdAt: -1 }, { name: 'org_recent' });
       await ctx.createIndex(FILES_COLLECTION, { storageKey: 1 }, { name: 'storage_key_unique', unique: true });
+    },
+  },
+  {
+    id: '0019-file-access-log',
+    description: 'Who opened which document: per org and file, newest first',
+    up: async (ctx) => {
+      await ctx.createCollection(FILE_ACCESS_COLLECTION);
+      await ctx.createIndex(FILE_ACCESS_COLLECTION, { orgId: 1, fileId: 1, at: -1 }, { name: 'org_file_recent' });
     },
   },
 ];

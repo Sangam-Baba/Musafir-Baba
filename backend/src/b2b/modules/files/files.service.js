@@ -11,6 +11,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import { decryptBytes, encryptBytes, newDataKey, seal, unseal } from '../../core/crypto.js';
 import { NotFoundError, ServiceUnavailableError } from '../../core/errors.js';
 import { checkUpload, safeFileName } from './domain/content-check.js';
+import { signLink, verifyLink } from './download-links.js';
+import { FileAccessRecord } from './models/access-log.model.js';
 import { FileRecord } from './models/file.model.js';
 
 const KEY_PURPOSE = 'file-key';
@@ -29,6 +31,58 @@ const toDto = (f) => ({
 });
 
 /**
+ * Download links, downloads and the access log — built on the basic describe/read.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @param {() => string} master
+ * @param {{ describe: (orgId: string, fileId: string) => Promise<FileDto | null>, read: (orgId: string, fileId: string) => Promise<{ bytes: Buffer, contentType: string, originalName: string }> }} base
+ */
+function linkFunctions(deps, master, base) {
+  return {
+    /**
+     * A 60-second download link for someone the caller has allowed (logged).
+     * @param {{ orgId: string, fileId: string, viewer: string, ip?: string | null }} input viewer e.g. 'user:<id>' or 'staff:<id>'
+     */
+    async issueLink(input) {
+      if (!(await base.describe(input.orgId, input.fileId))) throw new NotFoundError('FILE_NOT_FOUND');
+      await FileAccessRecord.create({
+        orgId: input.orgId,
+        fileId: input.fileId,
+        action: 'link-issued',
+        viewer: input.viewer,
+        ip: input.ip ?? null,
+        at: deps.clock.now(),
+      });
+      return signLink({ fileId: input.fileId, orgId: input.orgId, viewer: input.viewer }, { secret: master(), clock: deps.clock });
+    },
+
+    /**
+     * Follows a download link: checks it, logs the download, returns the original bytes.
+     * @param {unknown} token @param {string | null} [ip]
+     */
+    async download(token, ip = null) {
+      const claims = verifyLink(token, { secret: master(), clock: deps.clock });
+      if (!claims) throw new NotFoundError('LINK_INVALID'); // forged, edited or expired
+      const file = await base.read(claims.orgId, claims.fileId);
+      await FileAccessRecord.create({
+        orgId: claims.orgId,
+        fileId: claims.fileId,
+        action: 'downloaded',
+        viewer: claims.viewer,
+        ip,
+        at: deps.clock.now(),
+      });
+      return file;
+    },
+
+    /** Who opened a document, newest first. @param {string} orgId @param {string} fileId */
+    async accessLog(orgId, fileId) {
+      const docs = await FileAccessRecord.find({ orgId, fileId }).sort({ at: -1, _id: -1 }).limit(200).lean(); // _id breaks ties within the same instant
+      return docs.map((d) => ({ action: d.action, viewer: d.viewer, ip: d.ip, at: d.at }));
+    },
+  };
+}
+
+/**
  * @param {{ store: import('./storage.js').FileStore, masterKey: string | undefined, clock: import('../../core/clock.js').Clock }} deps
  */
 export function createFilesService(deps) {
@@ -37,7 +91,7 @@ export function createFilesService(deps) {
     return deps.masterKey;
   };
 
-  return {
+  const base = {
     /**
      * @param {{ orgId: string, purpose: string, uploadedBy: string, originalName?: string | undefined, bytes: Buffer,
      *   allowed?: readonly import('./domain/content-check.js').DocumentType[], maxBytes?: number }} input
@@ -91,4 +145,5 @@ export function createFilesService(deps) {
       await deps.store.remove(doc.storageKey);
     },
   };
+  return { ...base, ...linkFunctions(deps, master, base) };
 }
