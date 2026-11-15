@@ -7,7 +7,7 @@ import { B2BError, b2b } from "../../api";
 import { fieldErrors, TERMS_VERSION, type HotelDetailsInput, type KycApplication, type StoredDetails } from "../../kyc";
 import { errorMessage } from "../../messages";
 import { Panel, SmallButton } from "../team/ui";
-import { HotelDetailsFields, toRequest } from "./HotelDetailsFields";
+import { emptyDetails, HotelDetailsFields, toRequest } from "./HotelDetailsFields";
 
 const fromStored = (d: StoredDetails): HotelDetailsInput => ({
   legalName: d.legalName,
@@ -24,12 +24,12 @@ const fromStored = (d: StoredDetails): HotelDetailsInput => ({
 });
 
 export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication; canEdit: boolean; onSaved: () => void }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState<HotelDetailsInput | null>(null);
+  // an empty draft (registration interrupted, or a hotel created by MusafirBaba) starts with the form open
+  const [editing, setEditing] = useState(!app.details && canEdit);
+  const [value, setValue] = useState<HotelDetailsInput | null>(app.details ? null : emptyDetails());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const d = app.details;
-  if (!d) return null;
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -51,22 +51,26 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
 
   const action =
     canEdit && !editing ? (
-      <SmallButton onClick={() => (setValue(fromStored(d)), setEditing(true))}>Edit</SmallButton>
+      <SmallButton onClick={() => (setValue(d ? fromStored(d) : emptyDetails()), setEditing(true))}>{d ? "Edit" : "Fill in"}</SmallButton>
     ) : undefined;
   return (
     <Panel title="1. Business details" action={action}>
       {editing && value ? (
         <form onSubmit={save} className="space-y-4">
-          <HotelDetailsFields value={value} onChange={setValue} errors={errors} panHint={`On file: ••••••${d.panLast4}. Type the PAN again to save changes.`} />
+          <HotelDetailsFields value={value} onChange={setValue} errors={errors} panHint={d ? `On file: ••••••${d.panLast4}. Type the PAN again to save changes.` : undefined} />
           <div className="flex gap-2">
             <SmallButton tone="primary" type="submit" disabled={busy}>
               {busy ? "Saving…" : "Save details"}
             </SmallButton>
-            <SmallButton type="button" onClick={() => setEditing(false)}>
-              Cancel
-            </SmallButton>
+            {d && (
+              <SmallButton type="button" onClick={() => setEditing(false)}>
+                Cancel
+              </SmallButton>
+            )}
           </div>
         </form>
+      ) : !d ? (
+        <p className="text-sm text-slate-500">Not filled in yet.</p>
       ) : (
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <Row k="Legal name" v={d.legalName} />

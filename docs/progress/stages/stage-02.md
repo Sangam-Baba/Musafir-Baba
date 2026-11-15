@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | NOT_STARTED |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | A · hotels |
 | **Owner(s)** | |
 | **Started** | 2026-11-15 |
@@ -40,22 +40,22 @@
 | S02-T12 | Business area: hotel registration wizard (details → documents → submit) and status page | §3.1, §3.5 | DONE | AI (Claude) | | tsc ✅ | New pages only (`frontend/src/app/business/…`, `frontend/src/b2b/…`): `/business/register` (owner name + password unless already signed in, business details with GST yes/no, GSTIN, PAN, address with GST state list, properties, terms; server field problems shown under each field) → signed in → `/business/verification`: status banner, "what to fix" with reasons per document (marked when a new file is added), timeline, details (view / edit — PAN shown as last 4 and typed again to save), bank account (last 4 only), documents from the server's list (upload through the backend, replace, remove, open with a 60-second link), email-confirmation banner with "send a new link", submit bar listing what is still missing. `/business/verify-email#token=…` confirms the email. Verification tab (only with `kyc.application.read`), "Finish your verification" card on the home page for onboarding orgs, "Register your hotel" link on sign-in. Read-only while under review or viewing as support |
 | S02-T13 | Admin pages: KYC queue and review screen (documents beside typed data, GSTIN/PAN cross-check highlights) | §3.9 | DONE | AI (Claude) | | tsc ✅ | Inside the existing admin panel with its UI kit: new first tab **Verification** on `/admin/b2b` (queue — oldest first, status and risk filters, who is reviewing, "needs second approval", refreshes every 30 s) and a "Waiting for review" KPI. `/admin/b2b/kyc/[id]`: lock bar (take for review / keep 30 more minutes / let go; shows when someone else has it), business details beside the documents with cross-checks highlighted (GSTIN checksum + state, PAN inside GSTIN once the full PAN is shown, bank holder vs legal name, risk flags), "Show full PAN & account" (recorded), each document opened through a 60-second link with Verified / Mismatch / Unreadable + note, decision (approve only when every required document is verified; high risk: first then final approval; send back needs a note), timeline. Backend: review responses carry `you {staffId, canReview, canSecondApprove}` |
 | S02-T14 | Notification bell in the business area and B2B admin | §3.8 | DONE | AI (Claude) | | tsc ✅ | `frontend/src/b2b/realtime.ts` — `useRealtime`: opens `/api/v1/realtime/stream` with fetch (normal `Authorization` header, no token in the URL), parses SSE (heartbeats, split chunks), reconnects with `Last-Event-ID` and backoff (3 s → 30 s, server `retry`), reloads on `ready` / `resync`, renews an expired business token, reports live / reconnecting / offline. Business bell in the header: unread badge, list (newest first), open = mark read + go to the link, mark all read, pop-up on `notification:new`, connection dot; polls every 60 s when not live; read-only during view-as. B2B admin bell (admin page + review page): verification applications waiting, live on `queue:changed`, pop-up when a new one arrives. No sound yet — it belongs to the new-booking alert (Stage 06) |
-| S02-T15 | Mandatory test suite: upload safety, KYC state machine, maker–checker, idempotent submit, document set per org type, notifications, isolation | §9 | TODO | | | | |
+| S02-T15 | Mandatory test suite: upload safety, KYC state machine, maker–checker, idempotent submit, document set per org type, notifications, isolation | §9 | DONE | AI (Claude) | | 14 ✅ | `stage-02-mandatory.test.js`: tenant isolation for `file_files`, `file_access_log`, `kyc_applications`, `ntf_inbox`, `ntf_preferences` (unscoped reads/writes refused, scoped reads see only their owner; every `file_/kyc_/ntf_` collection must be classified) + crash injection for registration. **Gap found and fixed:** an onboarding hotel whose registration stopped after the org was created had no way to get its application — `GET /kyc` now starts an empty draft for onboarding hotels only (never for active orgs, so they are never reminded or removed); the details form opens empty for such a draft. The file header maps every other mandatory test to where it lives |
 
 ## Definition of Done (from the stage file)
 
-- [ ] Hotel registers → uploads → admin approves → owner sets password → can start a listing
-- [ ] Rejected hotel sees reasons, resubmits, gets approved
-- [ ] Sensitive fields encrypted and masked; file access logged
-- [ ] KYC notifications arrive live in the bell and by email; catch-up works with the signal reader stopped
+- [ ] Hotel registers → uploads → admin approves → owner sets password → can start a listing — everything up to "approved → org active" is built and tested; self-registered owners already have a password; **listing comes with Stage 03**. Owner to try the flow in the browser
+- [x] Rejected hotel sees reasons, resubmits, gets approved (kyc-review.test.js; screens in S02-T12 / T13)
+- [x] Sensitive fields encrypted and masked; file access logged (kyc-sensitive, files-access)
+- [x] KYC notifications arrive live in the bell and by email; catch-up works with the signal reader stopped (notifications.test.js: inbox + push + email, `after` catch-up needs no live connection; bell in S02-T14)
 - [x] KYC engine accepts a second org type through configuration only (test with a dummy type)
 
 ## Mandatory tests (from the stage file)
 
-- [ ] Upload safety
-- [ ] KYC state machine (all transitions)
-- [ ] Maker–checker
-- [ ] Idempotent submit
+- [x] Upload safety (files.test.js, files-access.test.js)
+- [x] KYC state machine (all transitions) (kyc-application.test.js)
+- [x] Maker–checker (kyc-review.test.js — second, different approver with the approve permission; own organisation refused)
+- [x] Idempotent submit (kyc-application.test.js — 5 at once → one event)
 - [x] Document set per org type
-- [ ] Notifications suite (inbox idempotency, catch-up, room security)
-- [ ] Isolation tests
+- [x] Notifications suite (inbox idempotency, catch-up, room security) (notifications.test.js, realtime.test.js)
+- [x] Isolation tests (stage-02-mandatory.test.js — every `file_` / `kyc_` / `ntf_` collection; plus crash injection for registration)

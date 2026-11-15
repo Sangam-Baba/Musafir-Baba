@@ -124,7 +124,7 @@ function stage02Routes(env, clock, identity) {
   const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
-  router.use(kycRoutes({ kyc, users: identity.users }));
+  router.use(kycRoutes({ kyc, users: identity.users, orgs: identity.orgs }));
   router.use(kycAdminRoutes({ review: createKycReviewService({ clock, isOwnOrg: ownOrgCheck(identity) }), kyc }));
   router.use(notificationRoutes({ notifications: createNotificationsService({ clock }) }));
   return router;

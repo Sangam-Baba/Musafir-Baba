@@ -5,8 +5,9 @@
  * POST /registrations/hotel (header `X-B2B-Auth: 1`, 10 per hour per IP):
  *   details are checked (GSTIN/PAN/PIN rules) → the owner account (or the signed-in user) → the hotel org
  *   (ONBOARDING) → the draft KYC application with risk flags → email verification link → signed in.
- *   Several steps without a transaction: each is repeat-safe, and an org without an application gets
- *   one the next time it is opened (`kyc.ensureApplication`).
+ *   Several steps without a transaction: each is repeat-safe; an onboarding hotel without an application
+ *   gets an empty draft the next time it opens GET /kyc (routes/kyc.js), and an account created without
+ *   its hotel signs in and registers again (the signed-in path).
  * POST /registrations/verify-email {token} — marks the email verified.
  * POST /registrations/resend-verification — a new link for the signed-in user (3 per hour).
  */
