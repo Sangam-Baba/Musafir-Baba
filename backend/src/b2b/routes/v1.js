@@ -25,6 +25,7 @@ import { createIdentity } from './identity.js';
 import { createAccessChangeNotifier, createMemberCache } from './access-cache.js';
 import { createRoles, createTeamRoutes } from './teams.js';
 import { createFiles, fileRoutes } from './files.js';
+import { kycRoutes } from './kyc.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycService } from '../modules/kyc/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
@@ -99,8 +100,11 @@ export function createB2BRouter(options = {}) {
   router.use(identity.account);
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
-  router.use(fileRoutes(createFiles(env, clock)));
-  router.use(registrationRoutes(registrationDeps(env, clock, identity)));
+  const files = createFiles(env, clock);
+  const kyc = createKycService({ clock, files });
+  router.use(fileRoutes(files));
+  router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
+  router.use(kycRoutes({ kyc, users: identity.users }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
@@ -113,13 +117,14 @@ export function createB2BRouter(options = {}) {
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/clock.js').Clock} clock
  * @param {ReturnType<typeof createIdentity>} identity
+ * @param {ReturnType<typeof createKycService>} kyc
  */
-function registrationDeps(env, clock, identity) {
+function registrationDeps(env, clock, identity, kyc) {
   return {
     users: identity.users,
     sessions: identity.sessions,
     orgs: identity.orgs,
-    kyc: createKycService({ clock }),
+    kyc,
     secret: env.B2B_AUTH_SECRET,
     publicUrl: env.B2B_PUBLIC_URL || 'https://musafirbaba.com',
     secureCookies: identity.secureCookies,

@@ -8,7 +8,7 @@
  *   Several steps without a transaction: each is repeat-safe, and an org without an application gets
  *   one the next time it is opened (`kyc.ensureApplication`).
  * POST /registrations/verify-email {token} — marks the email verified.
- * GET  /kyc — the selected org's application (`kyc.application.read`).
+ * POST /registrations/resend-verification — a new link for the signed-in user (3 per hour).
  */
 import express from 'express';
 import { z } from 'zod';
@@ -16,34 +16,35 @@ import { z } from 'zod';
 import { queueEmail } from '../core/email.js';
 import { ConflictError, ForbiddenError, NotFoundError, RateLimitError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
-import { publicRoute, requirePermission } from '../core/http/permissions.js';
+import { publicRoute, requireBusinessUser } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import { clientIp, createRateLimiter } from '../core/rate-limit.js';
 import { assertPasswordAllowed, signEmailVerification, verifyEmailVerification } from '../modules/identity/index.js';
 import { requireAuthHeader, sendTokens } from '../modules/identity/session-routes.js';
-import { PERMISSIONS as KYC, validateHotelDetails } from '../modules/kyc/index.js';
+import { validateHotelDetails } from '../modules/kyc/index.js';
 
 const text = (max = 200) => z.string().trim().min(1).max(max);
-export const HotelRegistrationBody = z.strictObject({
-  details: z.strictObject({
-    legalName: text(200),
-    contactName: text(120),
-    mobile: text(20),
-    email: text(254),
-    gstRegistered: z.boolean(),
-    gstin: z.string().trim().max(20).optional(),
-    pan: text(12),
-    address: z.strictObject({
-      line1: text(200),
-      line2: z.string().trim().max(200).optional(),
-      city: text(80),
-      stateCode: z.string().regex(/^\d{2}$/),
-      pin: z.string().trim().max(10),
-    }),
-    propertyCount: z.number().int().min(1).max(500),
-    termsAccepted: z.boolean(),
-    termsVersion: text(20),
+export const HotelDetailsBody = z.strictObject({
+  legalName: text(200),
+  contactName: text(120),
+  mobile: text(20),
+  email: text(254),
+  gstRegistered: z.boolean(),
+  gstin: z.string().trim().max(20).optional(),
+  pan: text(12),
+  address: z.strictObject({
+    line1: text(200),
+    line2: z.string().trim().max(200).optional(),
+    city: text(80),
+    stateCode: z.string().regex(/^\d{2}$/),
+    pin: z.string().trim().max(10),
   }),
+  propertyCount: z.number().int().min(1).max(500),
+  termsAccepted: z.boolean(),
+  termsVersion: text(20),
+});
+export const HotelRegistrationBody = z.strictObject({
+  details: HotelDetailsBody,
   owner: z.strictObject({ name: text(120), password: z.string().min(1).max(200) }).optional(),
 });
 
@@ -61,6 +62,7 @@ export const HotelRegistrationBody = z.strictObject({
 export function registrationRoutes(deps) {
   const router = express.Router();
   const limiter = createRateLimiter({ name: 'registration-ip', points: 10, windowMs: 60 * 60_000, clock: deps.clock });
+  const resendLimiter = createRateLimiter({ name: 'verification-resend', points: 3, windowMs: 60 * 60_000, clock: deps.clock });
 
   router.post('/registrations/hotel', publicRoute(), requireAuthHeader, validate({ body: HotelRegistrationBody }), (req, res, next) => {
     (async () => {
@@ -106,8 +108,16 @@ export function registrationRoutes(deps) {
     },
   );
 
-  router.get('/kyc', requirePermission(KYC.applicationRead), (_req, res, next) => {
-    deps.kyc.mine(contextOf(res)).then((a) => res.json(a), next);
+  router.post('/registrations/resend-verification', requireBusinessUser(), (_req, res, next) => {
+    (async () => {
+      const { actor } = contextOf(res);
+      const userId = actor.type === 'user' || actor.type === 'member' ? actor.userId : '';
+      const limit = await resendLimiter.consume(userId);
+      if (!limit.allowed) throw new RateLimitError(limit.retryAfterSeconds);
+      const user = await deps.users.findById(userId);
+      if (user?.email && !user.emailVerified) await sendVerification(deps, user.id, user.email);
+      res.status(204).end();
+    })().catch(next);
   });
   return router;
 }

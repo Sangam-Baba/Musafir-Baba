@@ -1,7 +1,8 @@
 // @ts-check
 /**
  * `kyc_applications`: one verification application per organisation (plan Stage 02 §3.5–3.7).
- * Status: DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED | REJECTED (→ edited → SUBMITTED again).
+ * Status: DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED | REJECTED (→ edited → SUBMITTED again) — table in
+ * domain/workflow.js. `history` is the timeline the hotel's status page shows.
  * `details` are the validated business details; PAN and bank numbers get field-level encryption in
  * S02-T07. `gstin` is kept at the top level (public business data) to flag duplicates. Owned by the org.
  */
@@ -32,6 +33,22 @@ const schema = new b2bMongoose.Schema(
       default: [],
     },
     risk: { flags: { type: [String], default: [] }, highRisk: { type: Boolean, default: false } },
+    // every change by the hotel bumps it; submit only goes through on the revision it checked
+    revision: { type: Number, default: 0 },
+    round: { type: Number, default: 0 }, // how many times it was submitted
+    history: {
+      type: [
+        {
+          _id: false,
+          at: { type: Date, required: true },
+          action: { type: String, required: true },
+          status: { type: String, required: true },
+          by: { type: String, required: true },
+          note: { type: String, default: null },
+        },
+      ],
+      default: [],
+    },
     submittedAt: { type: Date, default: null },
     decidedAt: { type: Date, default: null },
     createdBy: { type: String, required: true },

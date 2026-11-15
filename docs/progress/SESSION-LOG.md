@@ -55,6 +55,7 @@
 - **Later:** S02-T03 → DONE (signed 60-second links, downloads, access log).
 - **Later:** S02-T04 → DONE (KYC rules, document sets as configuration, risk flags). Tests ✅ 2× green.
 - **Later:** S02-T05 → DONE (hotel self-registration: owner + hotel org ONBOARDING + draft KYC application with risk flags + 48h email verification link + signed in; migration 0020). Tests ✅ 43 files / 469, 2× green.
+- **Later:** S02-T06 → DONE (KYC application: edit details, attach/remove documents, submit/resubmit — repeat-safe, revision-checked; state machine table; resend verification link). Tests ✅ 44 files / 477, 2× green.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
