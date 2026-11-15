@@ -27,8 +27,10 @@ import { createRoles, createTeamRoutes } from './teams.js';
 import { createFiles, fileRoutes } from './files.js';
 import { kycAdminRoutes, ownOrgCheck } from './kyc-admin.js';
 import { kycRoutes } from './kyc.js';
+import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycReviewService, createKycService } from '../modules/kyc/index.js';
+import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -101,17 +103,29 @@ export function createB2BRouter(options = {}) {
   router.use(identity.account);
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
+  router.use(stage02Routes(env, clock, identity));
+  router.use('/realtime', realtimeRoutes({ hub }));
+
+  router.use(notFoundHandler());
+  router.use(problemHandler(log));
+  return router;
+}
+
+/**
+ * Stage 02: documents, hotel registration, KYC (hotel and admin side), the bell.
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof createIdentity>} identity
+ */
+function stage02Routes(env, clock, identity) {
+  const router = express.Router();
   const files = createFiles(env, clock);
   const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   router.use(kycRoutes({ kyc, users: identity.users }));
-  const review = createKycReviewService({ clock, isOwnOrg: ownOrgCheck(identity) });
-  router.use(kycAdminRoutes({ review, kyc }));
-  router.use('/realtime', realtimeRoutes({ hub }));
-
-  router.use(notFoundHandler());
-  router.use(problemHandler(log));
+  router.use(kycAdminRoutes({ review: createKycReviewService({ clock, isOwnOrg: ownOrgCheck(identity) }), kyc }));
+  router.use(notificationRoutes({ notifications: createNotificationsService({ clock }) }));
   return router;
 }
 
@@ -146,7 +160,16 @@ function startDatabase(env, log, hub) {
   const config = loadConfig(env);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   connectB2BDatabase(config.MONGO_URI, 'api')
-    .then(() => startBackground({ clock: systemClock, logger: log, runJobs: config.B2B_BACKGROUND === 'true', hub, email }))
+    .then(() =>
+      startBackground({
+        clock: systemClock,
+        logger: log,
+        runJobs: config.B2B_BACKGROUND === 'true',
+        hub,
+        email,
+        publicUrl: config.B2B_PUBLIC_URL,
+      }),
+    )
     .catch((error) => {
       log.error({ err: error }, 'b2b database connection or background start failed');
     });

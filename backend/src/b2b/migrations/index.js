@@ -14,6 +14,7 @@ import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
 import { FILE_ACCESS_COLLECTION, FILES_COLLECTION } from '../modules/files/index.js';
 import { APPLICATIONS_COLLECTION } from '../modules/kyc/index.js';
+import { INBOX_COLLECTION as NTF_INBOX, PREFERENCES_COLLECTION as NTF_PREFERENCES } from '../modules/notifications/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, VIEW_AS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
@@ -262,6 +263,17 @@ export const MIGRATIONS = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0021-notifications',
+    description: 'Bell inbox (one row per event and recipient; newest first per recipient) and preferences per user and category',
+    up: async (ctx) => {
+      await ctx.createCollection(NTF_INBOX);
+      await ctx.createIndex(NTF_INBOX, { eventId: 1, recipientId: 1 }, { name: 'event_recipient_unique', unique: true });
+      await ctx.createIndex(NTF_INBOX, { recipientId: 1, _id: -1 }, { name: 'recipient_newest' });
+      await ctx.createCollection(NTF_PREFERENCES);
+      await ctx.createIndex(NTF_PREFERENCES, { userId: 1, category: 1 }, { name: 'user_category_unique', unique: true });
     },
   },
 ];

@@ -18,7 +18,7 @@ import { hostname } from 'node:os';
 
 import { evictCachedPrefix } from './core/cache.js';
 import { systemClock } from './core/clock.js';
-import { EMAIL_JOB, emailJobHandler } from './core/email.js';
+import { EMAIL_JOB, emailJobHandler, queueEmail } from './core/email.js';
 import { consumerJobHandlers, createEventBus, createEventRelay } from './core/db/events-relay.js';
 import { createInvariantChecks } from './core/db/invariants.js';
 import { createReconciler } from './core/jobs/reconciler.js';
@@ -30,7 +30,8 @@ import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
 import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
-import { EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
+import { createUserRepository, EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
+import { ADMIN_QUEUES, createDelivery, EVENT_CATEGORIES } from './modules/notifications/index.js';
 import {
   createOrganizationsService,
   EVENTS as ORG_EVENTS,
@@ -72,6 +73,36 @@ eventBus.subscribe({
     const legalName = typeof event.payload.legalName === 'string' ? event.payload.legalName : null;
     const result = await orgs.activate({ orgId, legalName, activatedBy: `kyc:${String(event.payload.applicationId)}` });
     if (result.activated) accessChanged(orgId);
+  },
+});
+
+/**
+ * Notifications (S02-T10): events → bell row, live push, emails from templates; admin queue pushes.
+ * The public address and the email secret come from the settings when background work starts.
+ */
+const notificationSettings = { publicUrl: 'https://musafirbaba.com', secret: /** @type {string | null} */ (null) };
+/** @param {{ publicUrl?: string | undefined, secret?: string | null | undefined }} settings */
+export function configureNotifications(settings) {
+  notificationSettings.publicUrl = settings.publicUrl || 'https://musafirbaba.com';
+  notificationSettings.secret = settings.secret ?? null;
+}
+const users = createUserRepository({ clock: systemClock });
+/** @param {readonly string[]} ids */
+const contactsOf = async (ids) => (await users.describe(ids)).map((u) => ({ userId: u.id, email: u.email }));
+eventBus.subscribe({
+  consumer: 'notifications',
+  types: [...new Set([...Object.keys(EVENT_CATEGORIES), ...Object.keys(ADMIN_QUEUES)])],
+  handler: (event) => {
+    const { publicUrl, secret } = notificationSettings;
+    return createDelivery({
+      clock: systemClock,
+      logger: defaultLogger,
+      publicUrl,
+      orgName: async (orgId) => (await orgs.basicInfo(orgId))?.displayName ?? null,
+      ownerContacts: async (orgId) => contactsOf(await orgs.ownerUserIds(orgId)),
+      userContact: async (userId) => (await contactsOf([userId]))[0] ?? null,
+      queueEmail: secret ? (message) => queueEmail(message, { secret, clock: systemClock }) : null,
+    })(event);
   },
 });
 
@@ -119,13 +150,14 @@ export function routeSignal(signal, hub) {
  * relay run unless `runJobs` is false (B2B_BACKGROUND=false).
  * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
  *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void },
- *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null }} options
+ *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, publicUrl?: string }} options
  * @returns {{ stop: () => Promise<void> }}
  */
 export function startBackground(options) {
   const workerId = `${hostname()}:${process.pid}`;
   const logger = options.logger.child({ part: 'b2b-background', workerId });
   const deps = { clock: options.clock, logger };
+  configureNotifications({ publicUrl: options.publicUrl, secret: options.email?.secret ?? null });
 
   const reader = createSignalReader({ onSignal: (s) => routeSignal(s, options.hub), ...deps });
   reader.start();

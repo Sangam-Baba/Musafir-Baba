@@ -21,6 +21,7 @@ import { createLogger } from '../../src/b2b/core/logger.js';
 import { RATE_LIMITS_COLLECTION } from '../../src/b2b/core/rate-limit.js';
 import { createUserRepository, UserRecord } from '../../src/b2b/modules/identity/index.js';
 import { ApplicationRecord } from '../../src/b2b/modules/kyc/index.js';
+import { InboxRecord } from '../../src/b2b/modules/notifications/index.js';
 import { createOrganizationsService, MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { createB2BRouter } from '../../src/b2b/routes/v1.js';
@@ -301,6 +302,7 @@ describe('after the decision (S02-T09)', () => {
     await runBackground();
     const org = await orgOf(orgId);
     expect([org.status, org.legalName]).toEqual(['ACTIVE', 'Sea View Hotels Private Limited']);
+    expect(await InboxRecord.countDocuments({ recipientId: orgId, category: 'kyc.approved' })).toBe(1); // in the hotel's bell
     expect(org.pendingEvents.filter((/** @type {any} */ e) => e.type === 'organizations.org.activated')).toHaveLength(1);
 
     await ApplicationRecord.updateOne({ orgId }, { $set: { hasPendingEvents: true } }); // a repeat delivery
