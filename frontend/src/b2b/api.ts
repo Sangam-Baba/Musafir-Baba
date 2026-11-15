@@ -76,3 +76,27 @@ export async function b2b<T>(path: string, opts: Omit<Options, "token"> = {}): P
 export function b2bWithToken<T>(path: string, token: string | null, opts: Omit<Options, "token"> = {}): Promise<T> {
   return send<T>(path, { ...opts, token });
 }
+
+/** Header values must be plain ASCII: other characters become _ (the server cleans the name further). */
+const asciiName = (name: string) => Array.from(name, (ch) => (ch >= " " && ch <= "~" ? ch : "_")).join("").slice(0, 200);
+
+/** Uploads a file as the raw request body (KYC documents). Renews the token once on 401. */
+export async function b2bUpload<T>(path: string, file: File): Promise<T> {
+  const attempt = async (token: string | null) => {
+    const headers: Record<string, string> = { "Content-Type": "application/octet-stream", "X-File-Name": asciiName(file.name) };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${B2B_API}${path}`, { method: "POST", headers, credentials: "include", body: file });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new B2BError(res.status, typeof data?.code === "string" ? data.code : `HTTP_${res.status}`, data?.title ?? "Upload failed", data ?? {});
+    return data as T;
+  };
+  try {
+    return await attempt(useBusinessSession.getState().accessToken);
+  } catch (error) {
+    if (error instanceof B2BError && error.status === 401 && !useBusinessSession.getState().viewAs) {
+      const fresh = await refreshBusinessSession();
+      if (fresh) return attempt(fresh);
+    }
+    throw error;
+  }
+}

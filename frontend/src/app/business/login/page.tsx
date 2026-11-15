@@ -55,6 +55,9 @@ export default function BusinessLoginPage() {
       footer={
         <>
           Prefer a code by email? <Link href="/business/login/code" className="text-[#FE5300] hover:underline">Sign in with a code</Link>
+          <span className="mt-2 block">
+            New hotel on MusafirBaba? <Link href="/business/register" className="text-[#FE5300] hover:underline">Register your hotel</Link>
+          </span>
         </>
       }
     >

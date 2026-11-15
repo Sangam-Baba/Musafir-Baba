@@ -27,8 +27,24 @@ export default function BusinessHome() {
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">
-                {me.memberships.length === 0 ? "You're not part of any organisation yet. Ask your organisation's owner for an invitation." : "Choose an organisation at the top to start."}
+                {me.memberships.length === 0 ? (
+                  <>
+                    You&apos;re not part of any organisation yet. Ask your organisation&apos;s owner for an invitation, or{" "}
+                    <Link href="/business/register" className="text-[#FE5300] hover:underline">
+                      register your hotel
+                    </Link>
+                    .
+                  </>
+                ) : (
+                  "Choose an organisation at the top to start."
+                )}
               </div>
+            )}
+            {current?.status === "ONBOARDING" && me.permissions.includes("kyc.application.read") && (
+              <Link href="/business/verification" className="block rounded-xl border border-orange-200 bg-orange-50 p-5 transition hover:shadow-sm">
+                <p className="font-semibold text-[#FE5300]">Finish your verification</p>
+                <p className="mt-1 text-sm text-slate-600">Add your bank account and documents and submit them. Once MusafirBaba verifies your business, you can start listing.</p>
+              </Link>
             )}
             <div className="grid gap-4 sm:grid-cols-3">
               <Card href="/business/team" title="Team" text="Members, invitations, roles and branches." />
