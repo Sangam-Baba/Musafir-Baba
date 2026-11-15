@@ -101,7 +101,7 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   const files = createFiles(env, clock);
-  const kyc = createKycService({ clock, files });
+  const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   router.use(kycRoutes({ kyc, users: identity.users }));

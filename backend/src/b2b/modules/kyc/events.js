@@ -6,4 +6,5 @@ export const EVENTS = /** @type {const} */ ({
   applicationAssigned: 'kyc.application.assigned',
   applicationApproved: 'kyc.application.approved',
   applicationRejected: 'kyc.application.rejected',
+  sensitiveViewed: 'kyc.application.sensitive-viewed',
 });

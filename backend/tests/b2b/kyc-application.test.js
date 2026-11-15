@@ -114,6 +114,10 @@ async function attachAll(token, keys) {
   }
 }
 
+const BANK = { holderName: 'Sea View Hotels Pvt Ltd', accountNumber: '50100123456789', ifsc: 'HDFC0001234' };
+/** @param {string} token */
+const saveBank = async (token) => expect((await srv.put('/api/v1/kyc/bank', BANK, auth(token))).status).toBe(200);
+
 /** @param {string} orgId */
 const eventsOf = async (orgId) =>
   ((await ApplicationRecord.findOne({ orgId }).lean())?.pendingEvents ?? []).map((/** @type {any} */ e) => e.type);
@@ -145,6 +149,8 @@ describe('the hotel completes and submits its application', () => {
 
     expect((await srv.post('/api/v1/kyc/submit', {}, auth(token))).body.code).toBe('EMAIL_NOT_VERIFIED');
     await users.markEmailVerified(userId);
+    expect((await srv.post('/api/v1/kyc/submit', {}, auth(token))).body.code).toBe('KYC_BANK_DETAILS_MISSING');
+    await saveBank(token);
     const missing = await srv.post('/api/v1/kyc/submit', {}, auth(token));
     expect([missing.status, missing.body.code, missing.body.missing]).toEqual([422, 'KYC_DOCUMENTS_MISSING', REGISTERED_SET]);
   });
@@ -167,6 +173,7 @@ describe('the hotel completes and submits its application', () => {
 
   it('submit: moves to SUBMITTED with one event; repeating it (even all at once) changes nothing; then edits are refused', async () => {
     const { token, orgId } = await registerHotel();
+    await saveBank(token);
     await attachAll(token, REGISTERED_SET);
     const results = await Promise.all([1, 2, 3, 4, 5].map(() => srv.post('/api/v1/kyc/submit', {}, auth(token))));
     for (const r of results) expect([r.status, r.body.status, r.body.round]).toEqual([200, 'SUBMITTED', 1]);
@@ -205,6 +212,7 @@ describe('the hotel completes and submits its application', () => {
 
   it('after a rejection the hotel edits and resubmits (round 2, its own event)', async () => {
     const { token, orgId } = await registerHotel();
+    await saveBank(token);
     await attachAll(token, REGISTERED_SET);
     await srv.post('/api/v1/kyc/submit', {}, auth(token));
     await ApplicationRecord.updateOne({ orgId }, { $set: { status: 'REJECTED' } }); // the reviewer's decision comes in S02-T08

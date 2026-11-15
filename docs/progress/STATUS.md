@@ -11,7 +11,7 @@
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 01 — Organisations, users, roles & permissions (Stage 00 awaiting owner sign-off) |
-| **Current task(s)** | Stage 02 — S02-T07 field encryption (PAN, bank account) |
+| **Current task(s)** | Stage 02 — S02-T08 admin KYC review (queue, lock, verdicts, second approver) |
 | **Next up** | Stage 02 — hotel onboarding & KYC (+ notifications) · owner: sign off Stage 00 (fill in Finished in `stages/stage-00.md`) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00 + 01 · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
@@ -23,7 +23,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | AWAITING_SIGN_OFF | 22 / 22 | 0 | 100 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
 | 01 | Organisations, users, roles & permissions | A | AWAITING_SIGN_OFF | 19 / 20 | 1 | 100 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
-| 02 | Hotel onboarding & KYC (+ notifications) | A | IN_PROGRESS | 6 / 15 | 0 | 40 % | 2026-11-15 | — | [stage-02](stages/stage-02.md) |
+| 02 | Hotel onboarding & KYC (+ notifications) | A | IN_PROGRESS | 7 / 15 | 0 | 47 % | 2026-11-15 | — | [stage-02](stages/stage-02.md) |
 | 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 04 | Inventory & rates calendar | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 05 | Pricing & GST | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 47 of 56 tasks done (84 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 48 of 56 tasks done (86 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

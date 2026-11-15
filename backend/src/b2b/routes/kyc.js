@@ -4,6 +4,7 @@
  * so it is wired in the routes layer.
  * GET    /kyc                  — the application, its document list and what is missing (`kyc.application.read`)
  * PUT    /kyc                  — change the business details (`kyc.application.submit`; DRAFT or REJECTED only)
+ * PUT    /kyc/bank             — the payout bank account {holderName, accountNumber, ifsc}; the number is stored encrypted
  * PUT    /kyc/documents/:key   — attach an uploaded file {fileId} as one document (replaces an earlier one)
  * DELETE /kyc/documents/:key   — remove a document
  * POST   /kyc/submit           — submit / resubmit; repeat-safe; needs a verified email and every required document
@@ -14,9 +15,14 @@ import { z } from 'zod';
 import { contextOf } from '../core/http/context-middleware.js';
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { PERMISSIONS as KYC, validateHotelDetails } from '../modules/kyc/index.js';
+import { PERMISSIONS as KYC, validateBankDetails, validateHotelDetails } from '../modules/kyc/index.js';
 import { HotelDetailsBody } from './registrations.js';
 
+const BankBody = z.strictObject({
+  holderName: z.string().max(200),
+  accountNumber: z.string().max(40),
+  ifsc: z.string().max(20),
+});
 const DocumentKey = z.strictObject({ key: z.string().regex(/^[a-z][a-z0-9_]{1,40}$/) });
 
 /**
@@ -34,6 +40,11 @@ export function kycRoutes(deps) {
   router.put('/kyc', submit, validate({ body: z.strictObject({ details: HotelDetailsBody }) }), (_req, res, next) => {
     const details = validateHotelDetails(res.locals.input.body.details);
     deps.kyc.saveDetails(contextOf(res), details).then((a) => res.json(a), next);
+  });
+
+  router.put('/kyc/bank', submit, validate({ body: BankBody }), (_req, res, next) => {
+    const bank = validateBankDetails(res.locals.input.body);
+    deps.kyc.saveBank(contextOf(res), bank).then((a) => res.json(a), next);
   });
 
   router.put(

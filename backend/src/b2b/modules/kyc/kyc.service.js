@@ -14,6 +14,7 @@ import { assessRisk } from './domain/hotel-details.js';
 import { EDITABLE_STATUSES, isEditable, submitActionFor, transition } from './domain/workflow.js';
 import { EVENTS } from './events.js';
 import { ApplicationRecord } from './models/application.model.js';
+import { protectBank, protectDetails, revealSealed } from './sensitive.js';
 
 const DUPLICATE_CHECK = systemScope('kyc: is this GSTIN already used by another organisation');
 const KYC_FILE_PURPOSE = 'kyc-document';
@@ -27,6 +28,7 @@ export const applicationDto = (a) => ({
   details: a.details,
   documents: a.documents.map((/** @type {any} */ d) => ({ key: d.key, fileId: d.fileId, attachedAt: d.attachedAt })),
   risk: { flags: a.risk?.flags ?? [], highRisk: a.risk?.highRisk ?? false },
+  bank: a.bank ? { holderName: a.bank.holderName, ifsc: a.bank.ifsc, accountLast4: a.bank.accountLast4 } : null,
   revision: a.revision ?? 0,
   round: a.round ?? 0,
   history: (a.history ?? []).map((/** @type {any} */ h) => ({ at: h.at, action: h.action, status: h.status, note: h.note ?? null })),
@@ -39,7 +41,7 @@ export const applicationDto = (a) => ({
 const documentSetOf = (a) => requiredDocuments(a.orgType, { gstRegistered: a.gstRegistered ?? true });
 
 /**
- * @typedef {{ clock: import('../../core/clock.js').Clock,
+ * @typedef {{ clock: import('../../core/clock.js').Clock, fieldKey?: string,
  *   files?: { describe: (orgId: string, fileId: string) => Promise<{ purpose: string } | null> } }} KycDeps
  */
 
@@ -80,6 +82,7 @@ async function saveEdit(doc, set) {
 function assertReadyToSubmit(doc, emailVerified) {
   if (!emailVerified) throw new DomainError('EMAIL_NOT_VERIFIED');
   if (!doc.details) throw new DomainError('KYC_DETAILS_MISSING');
+  if (!doc.bank) throw new DomainError('KYC_BANK_DETAILS_MISSING');
   const missing = missingDocuments(documentSetOf(doc), doc.documents);
   if (missing.length > 0) throw new DomainError('KYC_DOCUMENTS_MISSING', { missing });
 }
@@ -128,11 +131,13 @@ function hotelEdits(deps, gstinUsedElsewhere) {
      */
     async saveDetails(ctx, details) {
       const { orgId } = orgOf(ctx);
-      const doc = await loadEditable(await loadApplication(orgId));
+      const doc = loadEditable(await loadApplication(orgId));
       const risk = assessRisk(details, { duplicateGstin: await gstinUsedElsewhere(details.gstin, orgId) });
       const allowed = new Set(documentSetOf({ ...doc, gstRegistered: details.gstRegistered }).map((d) => d.key));
+      const stored = protectDetails(details, { orgId, key: deps.fieldKey });
       return saveEdit(doc, {
-        details,
+        details: stored.details,
+        'sensitive.panSealed': stored.panSealed,
         gstRegistered: details.gstRegistered,
         gstin: details.gstin,
         risk,
@@ -147,7 +152,7 @@ function hotelEdits(deps, gstinUsedElsewhere) {
      */
     async attachDocument(ctx, input) {
       const { orgId } = orgOf(ctx);
-      const doc = await loadEditable(await loadApplication(orgId));
+      const doc = loadEditable(await loadApplication(orgId));
       if (!documentSetOf(doc).some((d) => d.key === input.key)) throw new DomainError('KYC_DOCUMENT_KEY_UNKNOWN', { key: input.key });
       const file = deps.files ? await deps.files.describe(orgId, input.fileId) : null;
       if (!file || file.purpose !== KYC_FILE_PURPOSE) throw new NotFoundError('FILE_NOT_FOUND');
@@ -155,9 +160,21 @@ function hotelEdits(deps, gstinUsedElsewhere) {
       return saveEdit(doc, { documents: [...others, { key: input.key, fileId: input.fileId, attachedAt: deps.clock.now() }] });
     },
 
+    /**
+     * The payout bank account (already checked by `validateBankDetails`); the number is stored sealed.
+     * @param {import('../../core/context.js').RequestContext} ctx
+     * @param {import('./domain/bank-details.js').BankDetails} bank
+     */
+    async saveBank(ctx, bank) {
+      const { orgId } = orgOf(ctx);
+      const doc = loadEditable(await loadApplication(orgId));
+      const stored = protectBank(bank, { orgId, key: deps.fieldKey });
+      return saveEdit(doc, { bank: stored.bank, 'sensitive.accountSealed': stored.accountSealed });
+    },
+
     /** @param {import('../../core/context.js').RequestContext} ctx @param {string} key */
     async detachDocument(ctx, key) {
-      const doc = await loadEditable(await loadApplication(orgOf(ctx).orgId));
+      const doc = loadEditable(await loadApplication(orgOf(ctx).orgId));
       if (!doc.documents.some((/** @type {any} */ d) => d.key === key)) throw new NotFoundError('KYC_DOCUMENT_NOT_ATTACHED');
       return saveEdit(doc, { documents: doc.documents.filter((/** @type {any} */ d) => d.key !== key) });
     },
@@ -183,6 +200,7 @@ export function createKycService(deps) {
       const existing = await ApplicationRecord.findOne({ orgId: input.orgId }).lean();
       if (existing) return applicationDto(existing);
       const details = input.details ?? null;
+      const stored = details ? protectDetails(details, { orgId: input.orgId, key: deps.fieldKey }) : null;
       const risk = details
         ? assessRisk(details, { duplicateGstin: await gstinUsedElsewhere(details.gstin, input.orgId) })
         : { flags: [], highRisk: false };
@@ -190,7 +208,8 @@ export function createKycService(deps) {
         const doc = await ApplicationRecord.create({
           orgId: input.orgId,
           orgType: input.orgType,
-          details,
+          details: stored?.details ?? null,
+          sensitive: { panSealed: stored?.panSealed ?? null, accountSealed: null },
           gstRegistered: details?.gstRegistered ?? null,
           gstin: details?.gstin ?? null,
           risk,
@@ -217,6 +236,20 @@ export function createKycService(deps) {
     },
 
     ...hotelEdits(deps, gstinUsedElsewhere),
+
+    /**
+     * The full PAN and bank account number, for a MusafirBaba reviewer comparing them with the documents.
+     * The caller checks the permission; every view is recorded (event → audit log).
+     * @param {string} orgId
+     * @param {string} viewer e.g. `staff:<id>`
+     */
+    async revealSensitive(orgId, viewer) {
+      const doc = await loadApplication(orgId);
+      const values = revealSealed(doc.sensitive ?? {}, { orgId, key: deps.fieldKey });
+      const event = newEvent(EVENTS.sensitiveViewed, { orgId, applicationId: String(doc._id), viewer }, deps);
+      await ApplicationRecord.updateOne({ orgId }, { $set: { hasPendingEvents: true }, $push: { pendingEvents: event } });
+      return values;
+    },
 
     /**
      * Submit (first time) or resubmit (after a rejection). Repeat-safe: an application that is already

@@ -5,6 +5,7 @@ export { PERMISSION_CATALOGUE, PERMISSIONS } from './permissions.js';
 export { GST_STATES, isValidGstin, isValidPan, isValidPin, gstinCheckChar, panOfGstin, normaliseTaxId } from './domain/tax-ids.js';
 export { DOCUMENT_SETS, requiredDocuments, missingDocuments } from './domain/document-sets.js';
 export { validateHotelDetails, assessRisk } from './domain/hotel-details.js';
+export { validateBankDetails, lastFour } from './domain/bank-details.js';
 export { TRANSITIONS, EDITABLE_STATUSES, isEditable, transition } from './domain/workflow.js';
 export { APPLICATIONS_COLLECTION, APPLICATION_STATUSES, ApplicationRecord } from './models/application.model.js';
 export { createKycService, applicationDto } from './kyc.service.js';

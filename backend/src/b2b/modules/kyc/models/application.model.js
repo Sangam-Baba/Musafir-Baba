@@ -3,8 +3,8 @@
  * `kyc_applications`: one verification application per organisation (plan Stage 02 §3.5–3.7).
  * Status: DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED | REJECTED (→ edited → SUBMITTED again) — table in
  * domain/workflow.js. `history` is the timeline the hotel's status page shows.
- * `details` are the validated business details; PAN and bank numbers get field-level encryption in
- * S02-T07. `gstin` is kept at the top level (public business data) to flag duplicates. Owned by the org.
+ * `details` are the validated business details without the PAN; the PAN and the bank account number are
+ * sealed in `sensitive` (S02-T07, ../sensitive.js). `gstin` is kept at the top level (public business data) to flag duplicates. Owned by the org.
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
 import { eventFields } from '../../../core/db/events.js';
@@ -21,6 +21,22 @@ const schema = new b2bMongoose.Schema(
     details: { type: b2bMongoose.Schema.Types.Mixed, default: null },
     gstRegistered: { type: Boolean, default: null },
     gstin: { type: String, default: null },
+    // S02-T07: sealed values (never returned by the API); `details.panLast4` / `bank.accountLast4` are what people see
+    sensitive: {
+      panSealed: { type: String, default: null },
+      accountSealed: { type: String, default: null },
+    },
+    bank: {
+      type: new b2bMongoose.Schema(
+        {
+          holderName: { type: String, required: true },
+          ifsc: { type: String, required: true },
+          accountLast4: { type: String, required: true },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     documents: {
       type: [
         {
