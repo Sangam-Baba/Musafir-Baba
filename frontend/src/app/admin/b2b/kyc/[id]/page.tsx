@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { lockState, type ReviewDetail } from "@/b2b/admin-kyc";
+import { AdminBell } from "@/b2b/components/admin/AdminBell";
 import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { AdminPageHeader, FleetPage, FleetPanel, Notice, PrimaryBtn, SecondaryBtn, SECTION } from "@/b2b/components/admin/kit";
 import { ReviewDecision } from "@/b2b/components/admin/kyc/ReviewDecision";
@@ -47,7 +48,7 @@ function Review({ id, token }: { id: string; token: string }) {
       <Link href="/admin/b2b" className="flex items-center gap-1 text-[13px] text-slate-500 hover:text-slate-800">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to B2B admin
       </Link>
-      <AdminPageHeader section={SECTION} icon={FileCheck2} title={app.details?.legalName ?? "Verification"} description={`${STATUS_TEXT[app.status].label} · round ${app.round}`} />
+      <AdminPageHeader section={SECTION} icon={FileCheck2} title={app.details?.legalName ?? "Verification"} description={`${STATUS_TEXT[app.status].label} · round ${app.round}`} actions={<AdminBell token={token} />} />
       <FleetPanel bodyClassName="flex flex-wrap items-center gap-3 p-4">
         <Lock className="h-4 w-4 text-slate-400" />
         <p className="flex-1 text-[13px] text-slate-700">

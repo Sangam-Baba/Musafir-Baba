@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, Building2, FileCheck2, Hotel, ShieldCheck, Users } from "lucide-react";
 
 import type { QueueItem } from "@/b2b/admin-kyc";
+import { AdminBell } from "@/b2b/components/admin/AdminBell";
 import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { KycQueueTab } from "@/b2b/components/admin/KycQueueTab";
 import { AdminPageHeader, AdminTabsList, FleetKpiStrip, FleetPage, SECTION, Tabs, TabsContent } from "@/b2b/components/admin/kit";
@@ -31,7 +32,7 @@ function B2BAdmin({ token }: { token: string }) {
   const count = (f: (o: AdminOrg) => boolean) => (all.data ? orgs.filter(f).length : "—");
   return (
     <FleetPage>
-      <AdminPageHeader section={SECTION} icon={Building2} title="B2B admin" description="Hotel verification, client and hotel organisations, business users, activity and staff access." />
+      <AdminPageHeader section={SECTION} icon={Building2} title="B2B admin" description="Hotel verification, client and hotel organisations, business users, activity and staff access." actions={<AdminBell token={token} />} />
       <FleetKpiStrip
         items={[
           { label: "Organisations", value: all.data ? orgs.length : "—", icon: Building2, tone: "slate" },

@@ -11,6 +11,7 @@ import { b2b, refreshBusinessSession } from "../api";
 import { errorMessage } from "../messages";
 import { useBusinessSession } from "../session-store";
 import type { Me } from "../types";
+import { Bell } from "./Bell";
 
 const NAV: { href: string; label: string; permission?: string }[] = [
   { href: "/business", label: "Home" },
@@ -112,6 +113,7 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
               ))}
             </select>
           )}
+          <Bell orgId={data.currentOrgId} />
           <span className="text-sm text-slate-500">{data.user.name}</span>
           {!data.viewAs && (
             <button onClick={logout} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600">
