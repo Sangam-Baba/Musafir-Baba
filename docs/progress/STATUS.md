@@ -11,10 +11,10 @@
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 01 — Organisations, users, roles & permissions (Stage 00 awaiting owner sign-off) |
-| **Current task(s)** | Stage 01 complete — waiting for owner sign-off · Stage 02 needs 3 owner decisions (document storage, upload scanning, unregistered hotels) |
+| **Current task(s)** | Stage 02 — task list written, decisions D29–D31 recorded; next S02-T01 |
 | **Next up** | Stage 02 — hotel onboarding & KYC (+ notifications) · owner: sign off Stage 00 (fill in Finished in `stages/stage-00.md`) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
-| **Decisions needed soon** | CAPTCHA provider for login (S01-T20, outside service) · CA engaged before Stage 05 (Q1–Q7) |
+| **Decisions needed soon** | Owner sign-off of Stages 00 + 01 · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
 ## Stages
 
@@ -23,7 +23,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 00 | Foundations (isolated `backend/src/b2b/`, existing behaviour untouched) | A | AWAITING_SIGN_OFF | 22 / 22 | 0 | 100 % | 2026-11-12 | — | [stage-00](stages/stage-00.md) |
 | 01 | Organisations, users, roles & permissions | A | AWAITING_SIGN_OFF | 19 / 20 | 1 | 100 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
-| 02 | Hotel onboarding & KYC (+ notifications) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
+| 02 | Hotel onboarding & KYC (+ notifications) | A | NOT_STARTED | 0 / 15 | 0 | 0 % | — | — | [stage-02](stages/stage-02.md) |
 | 03 | Hotel listings | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 04 | Inventory & rates calendar | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 05 | Pricing & GST | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 41 of 41 tasks done (100 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 41 of 56 tasks done (73 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).
