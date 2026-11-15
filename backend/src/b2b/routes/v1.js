@@ -24,6 +24,7 @@ import { createStreamHub } from '../core/realtime/stream.js';
 import { createIdentity } from './identity.js';
 import { createAccessChangeNotifier, createMemberCache } from './access-cache.js';
 import { createRoles, createTeamRoutes } from './teams.js';
+import { createFiles, fileRoutes } from './files.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -96,6 +97,7 @@ export function createB2BRouter(options = {}) {
   router.use(identity.account);
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
+  router.use(fileRoutes(createFiles(env, clock)));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

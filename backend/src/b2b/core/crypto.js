@@ -33,3 +33,31 @@ export function unseal(sealed, options) {
   decipher.setAuthTag(raw.subarray(12, 28));
   return JSON.parse(Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString('utf8'));
 }
+
+/** A new random 256-bit key (e.g. one per stored file). @returns {Buffer} */
+export const newDataKey = () => randomBytes(32);
+
+/**
+ * Encrypts bytes with AES-256-GCM. Output: iv (12) | tag (16) | ciphertext.
+ * @param {Buffer} plain
+ * @param {Buffer} key 32 bytes
+ * @returns {Buffer}
+ */
+export function encryptBytes(plain, key) {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  const data = Buffer.concat([cipher.update(plain), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), data]);
+}
+
+/**
+ * @param {Buffer} blob iv | tag | ciphertext
+ * @param {Buffer} key 32 bytes
+ * @returns {Buffer} throws if tampered or the wrong key
+ */
+export function decryptBytes(blob, key) {
+  if (blob.length < 28) throw new Error('[b2b] encrypted blob too short');
+  const decipher = createDecipheriv('aes-256-gcm', key, blob.subarray(0, 12));
+  decipher.setAuthTag(blob.subarray(12, 28));
+  return Buffer.concat([decipher.update(blob.subarray(28)), decipher.final()]);
+}

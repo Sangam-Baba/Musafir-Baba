@@ -12,6 +12,7 @@ import { RATE_LIMITS_COLLECTION } from '../core/rate-limit.js';
 import { SIGNALS_CAPPED_BYTES, SIGNALS_COLLECTION } from '../core/realtime/signals.js';
 import { PERMISSIONS_COLLECTION, ROLES_COLLECTION, STAFF_ROLES_COLLECTION } from '../modules/access/index.js';
 import { AUDIT_COLLECTION } from '../modules/audit/index.js';
+import { FILES_COLLECTION } from '../modules/files/index.js';
 import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, VIEW_AS_COLLECTION } from '../modules/identity/index.js';
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
@@ -224,6 +225,15 @@ export const MIGRATIONS = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0018-file-files',
+    description: 'Stored documents (encrypted bytes live in the file store): per org, newest first; storage key unique',
+    up: async (ctx) => {
+      await ctx.createCollection(FILES_COLLECTION);
+      await ctx.createIndex(FILES_COLLECTION, { orgId: 1, createdAt: -1 }, { name: 'org_recent' });
+      await ctx.createIndex(FILES_COLLECTION, { storageKey: 1 }, { name: 'storage_key_unique', unique: true });
     },
   },
 ];

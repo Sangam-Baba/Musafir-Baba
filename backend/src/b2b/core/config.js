@@ -18,6 +18,17 @@ const ConfigSchema = z.object({
   B2B_EMAIL_FROM: z.string().min(3).optional(),
   /** Public address of the website, used in emailed links (e.g. https://musafirbaba.com). */
   B2B_PUBLIC_URL: z.string().url().default('https://musafirbaba.com'),
+  /** Where encrypted documents are kept: 'local' (development, a folder on disk) or 'r2' (existing bucket, private folder) — D29. */
+  B2B_FILE_STORAGE: z.enum(['local', 'r2']).default('local'),
+  /** Master key that locks each document's own key (≥ 32 characters). Falls back to B2B_AUTH_SECRET when unset. */
+  B2B_FILE_KEY: z.string().min(32).optional(),
+  /** Folder for 'local' file storage (default: ~/.musafirbaba-b2b-files, outside the repository). */
+  B2B_FILE_DIR: z.string().optional(),
+  /** Existing variables, read only — the existing R2 bucket (used only when B2B_FILE_STORAGE=r2). */
+  R2_ENDPOINT: z.string().optional(),
+  R2_ACCESS_KEY: z.string().optional(),
+  R2_SECRET_KEY: z.string().optional(),
+  R2_BUCKET: z.string().optional(),
   /** Existing variable, read only — verifies existing customer/admin logins on /api/v1 (never used to sign). */
   JWT_ACCESS_SECRET: z.string().optional(),
   /** Existing variable, read only — the existing Resend account (D25). */

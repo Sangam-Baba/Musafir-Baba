@@ -2,6 +2,7 @@
 /** Event types (module.entity.pastVerb) this module emits. Payloads: ids + essentials only. */
 export const EVENTS = /** @type {const} */ ({
   orgCreated: 'organizations.org.created',
+  orgActivated: 'organizations.org.activated',
   orgSuspended: 'organizations.org.suspended',
   orgReactivated: 'organizations.org.reactivated',
   memberInvited: 'organizations.member.invited',

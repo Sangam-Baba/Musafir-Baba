@@ -7,7 +7,7 @@
 | **Status** | NOT_STARTED |
 | **Phase · Track** | A · hotels |
 | **Owner(s)** | |
-| **Started** | — |
+| **Started** | 2026-11-15 |
 | **Finished** | — |
 | **Plan file** | `docs/plan/stages/stage-02-hotel-onboarding-kyc.md` |
 | **Depends on** | Stage 01 (awaiting owner sign-off) |
@@ -26,8 +26,8 @@
 
 | ID | Task | Plan ref | Status | Owner | PR | Tests | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| S02-T01 | Stage setup: `files`, `kyc`, `notifications` module skeletons (permissions, events, README) | §3 | TODO | | | | |
-| S02-T02 | `files`: storage port (local disk / existing R2 private folder), encryption at rest, upload through the backend with content checks (type, size, PDF safety) | §3.4, D29, D30 | TODO | | | | |
+| S02-T01 | Stage setup: `files`, `kyc`, `notifications` module skeletons (permissions, events, README) | §3 | DONE | AI (Claude) | | matrix ✅ | `files`, `kyc`, `notifications` modules (README, permissions, events, index) in the catalogue. KYC permissions: `kyc.application.read`, `kyc.application.submit` (**sensitive** — bank details: Owner only by default), `platform.kyc.read / review / approve` (Operations gets all three; Support sees the queue only). New event `organizations.org.activated`. Matrix test extended |
+| S02-T02 | `files`: storage port (local disk / existing R2 private folder), encryption at rest, upload through the backend with content checks (type, size, PDF safety) | §3.4, D29, D30 | DONE | AI (Claude) | | 14 ✅ | `file_files` (migration `0018`). Content checks: type from magic bytes (PDF/PNG/JPEG), 10 MB, empty refused, PDFs with JavaScript / launch / embedded files / rich media / XFA / form submission refused. Each file encrypted with its own AES-256-GCM key, sealed with `B2B_FILE_KEY` (falls back to `B2B_AUTH_SECRET`); random 48-hex storage names; sha256 checked on read. Stores: local disk (`~/.musafirbaba-b2b-files`, dev default) or the existing R2 bucket under `b2b-private/` via the existing `@aws-sdk/client-s3` (tested with a stand-in client — the real bucket is untouched). `POST /files?purpose=kyc-document` (raw body ≤ 10 MB, `kyc.application.submit`) |
 | S02-T03 | `files`: signed 60-second download for authorised staff/owners, `file_access_log`, delete | §3.4 | TODO | | | | |
 | S02-T04 | `kyc` domain: document sets per org type (configuration), GSTIN checksum + state code, PAN format, PAN inside GSTIN, PIN, unregistered-hotel path, risk flags | §3.2, §3.3, D31 | TODO | | | | |
 | S02-T05 | Hotel registration: `POST /registrations/hotel` (user + org ONBOARDING + KYC application), email verification link, duplicate GSTIN flag | §3.1 | TODO | | | | |

@@ -107,6 +107,16 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['platform.support', 'admin.viewAs.read', true],
     ['platform.support', 'admin.viewAs.write', false],
     ['platform.support', 'platform.user.manage', false],
+    ['platform.operations', 'platform.kyc.review', true],
+    ['platform.operations', 'platform.kyc.approve', true],
+    ['platform.support', 'platform.kyc.read', true],
+    ['platform.support', 'platform.kyc.review', false],
+    ['platform.finance', 'platform.kyc.review', false],
+    ['client.owner', 'kyc.application.submit', true],
+    ['client.admin', 'kyc.application.submit', false], // sensitive (bank details): Owner only by default
+    ['hotel.owner', 'kyc.application.submit', true],
+    ['hotel.manager', 'kyc.application.submit', false],
+    ['hotel.manager', 'kyc.application.read', false], // KYC documents (PAN, cheque) stay with the Owner (plan §4: Manager = listings, rates, bookings)
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);

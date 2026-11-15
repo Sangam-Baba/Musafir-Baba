@@ -51,6 +51,8 @@
 - **Tests run:** backend ✅ 39 files / 423 (2× green); typecheck ✅; lint ✅; guards ✅; pages load on the dev server.
 - **Decisions / deferrals:** DEF-023.
 - **Next step:** owner signs off Stages 00 and 01; Stage 02 after 3 decisions (KYC document storage, upload scanning without an extra container, unregistered hotels).
+- **Later:** owner decided D29 (existing R2 bucket, private folder — so every file is encrypted before upload), D30 (strict checks, no scanner), D31 (unregistered hotels allowed with PAN + declaration). Stage 02 task list written. S02-T01 → DONE, S02-T02 → DONE. Tests ✅ 447 (2× green).
+- **Next step:** S02-T03 — signed 60-second downloads and the file access log.
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
 

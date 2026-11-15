@@ -13,6 +13,7 @@
  *   patch: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   put: (path: string, body: unknown, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
  *   del: (path: string, headers?: Record<string, string>) => Promise<{ status: number, body: any, headers: Headers }>,
+ *   base: string,
  *   close: () => Promise<void> }>}
  */
 export async function startServer(app) {
@@ -31,6 +32,7 @@ export async function startServer(app) {
       }),
     );
   return {
+    base,
     get: async (path, headers = {}) => toResult(await fetch(base + path, { headers })),
     post: (path, body, headers = {}) => send('POST', path, body, headers),
     patch: (path, body, headers = {}) => send('PATCH', path, body, headers),
