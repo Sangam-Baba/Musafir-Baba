@@ -165,6 +165,7 @@ describe('queue and lock', () => {
 
     const taken = await admin.post(`${base}/${id}/assign`, {}, as(A));
     expect(taken.body).toMatchObject({ status: 'UNDER_REVIEW', review: { reviewerId: 'a1', lockedUntil: '2026-11-15T10:30:00.000Z' } });
+    expect(taken.body.you).toEqual({ staffId: 'a1', canReview: true, canSecondApprove: false });
     expect(await eventsOf(orgId)).toContain('kyc.application.assigned');
     expect((await admin.post(`${base}/${id}/assign`, {}, as(B))).body.code).toBe('KYC_LOCKED_BY_ANOTHER_REVIEWER');
     expect((await admin.put(`${base}/${id}/documents/pan_card`, { verdict: 'VERIFIED' }, as(B))).body.code).toBe('KYC_NOT_ASSIGNED_TO_YOU');

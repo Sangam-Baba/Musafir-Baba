@@ -58,6 +58,25 @@ const handle = (fn) => (_req, res, next) => {
     .then((body) => res.json(body), next);
 };
 
+/**
+ * Adds who is looking (so the screen knows whether you hold the lock and which buttons to offer).
+ * @template T
+ * @param {import('express').Response} res
+ * @param {Promise<T>} detail
+ */
+async function withYou(res, detail) {
+  const { actor } = contextOf(res);
+  const permissions = actor.type === 'staff' ? (actor.permissions ?? []) : [];
+  return {
+    ...(await detail),
+    you: {
+      staffId: actor.type === 'staff' ? actor.staffId : null,
+      canReview: permissions.includes(KYC.platformReview),
+      canSecondApprove: permissions.includes(KYC.platformSecondApproval),
+    },
+  };
+}
+
 /** @typedef {Parameters<typeof kycAdminRoutes>[0]} KycAdminDeps */
 
 /**
@@ -83,19 +102,19 @@ export function kycAdminRoutes(deps) {
     '/admin/kyc-applications/:id',
     read,
     validate({ params: Params }),
-    handle((res) => deps.review.get(res.locals.input.params.id)),
+    handle((res) => withYou(res, deps.review.get(res.locals.input.params.id))),
   );
   router.post(
     '/admin/kyc-applications/:id/assign',
     review,
     validate({ params: Params }),
-    handle((res) => deps.review.take(reviewerOf(res), res.locals.input.params.id)),
+    handle((res) => withYou(res, deps.review.take(reviewerOf(res), res.locals.input.params.id))),
   );
   router.post(
     '/admin/kyc-applications/:id/release',
     review,
     validate({ params: Params }),
-    handle((res) => deps.review.release(reviewerOf(res), res.locals.input.params.id)),
+    handle((res) => withYou(res, deps.review.release(reviewerOf(res), res.locals.input.params.id))),
   );
   router.put(
     '/admin/kyc-applications/:id/documents/:key',
@@ -103,7 +122,10 @@ export function kycAdminRoutes(deps) {
     validate({ params: DocParams, body: z.strictObject({ verdict: z.enum(['VERIFIED', 'MISMATCH', 'UNREADABLE']), note: Note }) }),
     handle((res) => {
       const { params, body } = res.locals.input;
-      return deps.review.setVerdict(reviewerOf(res), params.id, { key: params.key, verdict: body.verdict, note: body.note ?? null });
+      return withYou(
+        res,
+        deps.review.setVerdict(reviewerOf(res), params.id, { key: params.key, verdict: body.verdict, note: body.note ?? null }),
+      );
     }),
   );
   router.post(
@@ -112,7 +134,7 @@ export function kycAdminRoutes(deps) {
     validate({ params: Params, body: z.strictObject({ decision: z.enum(['APPROVE', 'REJECT']), note: Note }) }),
     handle((res) => {
       const { params, body } = res.locals.input;
-      return deps.review.decide(reviewerOf(res), params.id, { decision: body.decision, note: body.note ?? null });
+      return withYou(res, deps.review.decide(reviewerOf(res), params.id, { decision: body.decision, note: body.note ?? null }));
     }),
   );
   router.use(sensitiveRoute(deps));

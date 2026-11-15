@@ -9,7 +9,7 @@ import { rPrimaryBtn, rSecondaryBtn } from "@/components/admin/rental/RentalAdmi
 import { FleetPill, fleetTone } from "@/components/admin/fleet/FleetUI";
 
 export { AdminPageHeader, AdminTabsList } from "@/components/admin/AdminFormUI";
-export { FleetEmptyState, FleetKpiStrip, FleetPage, FleetPanel, fleetSelectClass, fleetTh, fleetTone } from "@/components/admin/fleet/FleetUI";
+export { FleetEmptyState, FleetKpiStrip, FleetPage, FleetPanel, FleetPill, fleetSelectClass, fleetTh, fleetTone } from "@/components/admin/fleet/FleetUI";
 export { Input } from "@/components/ui/input";
 export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 export { Tabs, TabsContent } from "@/components/ui/tabs";

@@ -65,6 +65,16 @@ const MESSAGES: Record<string, string> = {
   FILE_NOT_FOUND: "That file wasn't found. Upload it again.",
   KYC_ENCRYPTION_NOT_CONFIGURED: "Document storage isn't set up on this server yet.",
   FILE_STORAGE_NOT_CONFIGURED: "Document storage isn't set up on this server yet.",
+  KYC_APPLICATION_NOT_FOUND: "That application wasn't found.",
+  KYC_LOCKED_BY_ANOTHER_REVIEWER: "Another reviewer is working on this application right now.",
+  KYC_NOT_ASSIGNED_TO_YOU: "Take the application for review first (or your 30 minutes ran out).",
+  KYC_NOT_UNDER_REVIEW: "This application isn't under review.",
+  KYC_NOT_IN_QUEUE: "This application has already been decided.",
+  KYC_DOCUMENTS_NOT_VERIFIED: "Mark every required document as verified before approving.",
+  KYC_REJECTION_NOTE_REQUIRED: "Write a note for the hotel before sending it back.",
+  KYC_SECOND_APPROVER_MUST_DIFFER: "High-risk applications need a second, different reviewer for the final approval.",
+  KYC_SECOND_APPROVER_REQUIRED: "The final approval needs the “second approval” permission.",
+  KYC_OWN_ORGANISATION: "You can't decide an application of an organisation you belong to.",
 };
 
 export function errorMessage(error: unknown): string {
