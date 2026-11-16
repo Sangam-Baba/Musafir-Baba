@@ -102,6 +102,7 @@ const identity = (p) => ({
   decidedAt: p.decidedAt ?? null,
   publishedAt: p.publishedAt ?? null,
   pendingRevision: p.pendingRevision ? revisionDto(p.pendingRevision) : null,
+  review: p.review ? { comments: p.review.comments ?? [], note: p.review.note ?? null, at: p.review.at } : null,
   history: (p.history ?? []).map((/** @type {any} */ h) => ({ at: h.at, action: h.action, status: h.status, note: h.note ?? null })),
   updatedAt: p.updatedAt,
 });
@@ -225,6 +226,41 @@ async function saveSection(deps, ctx, input) {
   );
 }
 
+/**
+ * MusafirBaba edits a section directly (full edit rights, plan §3.7): no revision, even on a live listing
+ * (then `property.updated`); recorded in the history. Only on the version the screen loaded.
+ * @param {PropertyDeps} deps
+ * @param {{ staffId: string }} who
+ * @param {{ id: string, section: import('./domain/property.js').Section, data: Record<string, any>, version: number }} input
+ */
+async function adminSaveSection(deps, who, input) {
+  const { raw: p } = await viewPropertyById(deps, input.id);
+  if (p.status === 'ARCHIVED') throw new DomainError('PROPERTY_NOT_EDITABLE', { status: p.status });
+  const set = await prepareSection(input.section, input.data);
+  const by = `staff:${who.staffId}`;
+  const live = /** @type {readonly string[]} */ (LIVE_STATUSES).includes(p.status);
+  const event = live
+    ? newEvent(
+        EVENTS.propertyUpdated,
+        { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef, fields: Object.keys(set) },
+        deps,
+      )
+    : null;
+  const res = await PropertyRecord.updateOne(
+    { _id: p._id, hotelOrgId: p.hotelOrgId, version: input.version },
+    {
+      $set: { ...set, updatedBy: by, ...(event ? { hasPendingEvents: true } : {}) },
+      $inc: { version: 1 },
+      $push: {
+        history: { at: deps.clock.now(), action: `admin-edit:${input.section}`, status: p.status, by, note: null },
+        ...(event ? { pendingEvents: event } : {}),
+      },
+    },
+  ).setOptions(systemScope('hotel-catalog: MusafirBaba edits a listing'));
+  if (res.modifiedCount !== 1) throw new AppError('VERSION_CONFLICT', 412, 'The property was changed meanwhile — reload and try again');
+  return (await viewPropertyById(deps, input.id)).view;
+}
+
 /** @param {PropertyDeps} deps @param {string} id */
 async function viewPropertyById(deps, id) {
   const p = ID.test(id)
@@ -255,6 +291,8 @@ export function createPropertyService(deps) {
 
     /** Any property by id, for MusafirBaba admin tools (system scope, logged). @param {string} id */
     viewById: (id) => viewPropertyById(deps, id),
+    /** @param {{ staffId: string }} who @param {Parameters<typeof adminSaveSection>[2]} input */
+    adminSaveSection: (who, input) => adminSaveSection(deps, who, input),
 
     /** @param {import('../../core/context.js').RequestContext} ctx */
     async list(ctx) {

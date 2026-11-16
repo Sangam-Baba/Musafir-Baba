@@ -101,6 +101,22 @@ const schema = new b2bMongoose.Schema(
       ),
       default: null,
     },
+    // S03-T08: MusafirBaba's latest decision — comments per section when changes are requested, or why it was suspended / archived
+    review: {
+      type: new b2bMongoose.Schema(
+        {
+          comments: {
+            type: [{ _id: false, section: { type: String, required: true }, note: { type: String, required: true } }],
+            default: [],
+          },
+          note: { type: String, default: null },
+          by: { type: String, required: true },
+          at: { type: Date, required: true },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     // S03-T06: listing workflow (status table in domain/listing-workflow.js)
     round: { type: Number, default: 0 },
     submittedAt: { type: Date, default: null },

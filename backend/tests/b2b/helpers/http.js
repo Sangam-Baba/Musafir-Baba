@@ -5,6 +5,8 @@
  * app's packages are not touched.)
  */
 
+import http from 'node:http';
+
 /**
  * @param {import('express').Express} app
  * @returns {Promise<{
@@ -17,8 +19,14 @@
  *   close: () => Promise<void> }>}
  */
 export async function startServer(app) {
+  // Every response says `Connection: close`, so fetch never keeps a connection to reuse later: a test file's
+  // requests can't land on another file's old server that happened to use the same port.
   const server = await new Promise((resolve) => {
-    const s = app.listen(0, () => resolve(s));
+    const s = http.createServer((req, res) => {
+      res.setHeader('Connection', 'close');
+      app(req, res);
+    });
+    s.listen(0, '127.0.0.1', () => resolve(s));
   });
   const address = /** @type {import('node:net').AddressInfo} */ (server.address());
   const base = `http://127.0.0.1:${address.port}`;
@@ -38,7 +46,13 @@ export async function startServer(app) {
     patch: (path, body, headers = {}) => send('PATCH', path, body, headers),
     put: (path, body, headers = {}) => send('PUT', path, body, headers),
     del: async (path, headers = {}) => toResult(await fetch(base + path, { method: 'DELETE', headers })),
-    close: () => new Promise((resolve) => server.close(() => resolve())),
+    // Also end open keep-alive connections: otherwise fetch's connection pool can reuse one to this closed server
+    // after another test file's server gets the same port — requests then reach the wrong app (rare 404s / empty bodies).
+    close: () =>
+      new Promise((resolve) => {
+        server.close(() => resolve());
+        server.closeAllConnections();
+      }),
   };
 }
 

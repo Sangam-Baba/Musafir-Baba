@@ -28,3 +28,5 @@ export { createListingService } from './listing.service.js';
 export { LISTING_TRANSITIONS, listingTransition, submitBlockers, MIN_PROPERTY_PHOTOS, MIN_ROOM_PHOTOS } from './domain/listing-workflow.js';
 export { createRevisionService } from './revision.service.js';
 export { SENSITIVE_FIELDS, splitChanges, LIVE_STATUSES } from './domain/revisions.js';
+export { createAdminListingService } from './admin-listing.service.js';
+export { namesSimilar, nameTokens, DUPLICATE_RADIUS_M } from './domain/duplicates.js';

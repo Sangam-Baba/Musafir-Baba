@@ -38,6 +38,7 @@ import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import {
+  createAdminListingService,
   createListingService,
   createMastersService,
   createPhotoService,
@@ -164,9 +165,16 @@ function stage03Routes(env, clock, identity) {
   router.use(roomTypeRoutes({ roomTypes: createRoomTypeService({ clock, properties }) }));
   router.use(photoRoutes({ photos: createPhotoService({ properties, store, clock }), properties, store }));
   const orgStatus = async (/** @type {string} */ orgId) => (await identity.orgs.basicInfo(orgId))?.status ?? null;
-  const revisions = createRevisionService({ clock, properties });
+  const revisions = createRevisionService({ clock, properties, isOwnOrg: ownOrgCheck(identity) });
   router.use(listingRoutes({ listing: createListingService({ clock, properties, orgStatus }), revisions }));
-  router.use(hotelAdminRoutes({ revisions }));
+  const adminListing = createAdminListingService({
+    clock,
+    properties,
+    orgInfo: (orgId) => identity.orgs.basicInfo(orgId),
+    isOwnOrg: ownOrgCheck(identity),
+    mediaUrl: store.url,
+  });
+  router.use(hotelAdminRoutes({ revisions, adminListing, properties }));
   return router;
 }
 

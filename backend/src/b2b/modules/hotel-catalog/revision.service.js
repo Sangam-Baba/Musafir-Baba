@@ -7,7 +7,7 @@
  */
 import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
-import { AppError, ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
+import { AppError, ConflictError, DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
 import { EVENTS } from './events.js';
 import { PropertyRecord } from './models/property.model.js';
 import { PERMISSIONS } from './permissions.js';
@@ -16,7 +16,8 @@ const ADMIN = systemScope('hotel-catalog: listing revision decision');
 
 /**
  * @typedef {{ clock: import('../../core/clock.js').Clock,
- *   properties: ReturnType<typeof import('./property.service.js').createPropertyService> }} RevisionDeps
+ *   properties: ReturnType<typeof import('./property.service.js').createPropertyService>,
+ *   isOwnOrg?: (staffId: string, orgId: string) => Promise<boolean> }} RevisionDeps
  */
 
 /** @param {RevisionDeps} deps */
@@ -47,6 +48,7 @@ export function createRevisionService(deps) {
     async decide(who, propertyId, input) {
       const { raw: p } = await deps.properties.viewById(propertyId);
       if (!p.pendingRevision) throw new NotFoundError('REVISION_NOT_FOUND');
+      if (deps.isOwnOrg && (await deps.isOwnOrg(who.staffId, p.hotelOrgId))) throw new ForbiddenError('LISTING_OWN_ORGANISATION');
       if (p.pendingRevision.revisionId !== input.revisionId) throw new ConflictError('REVISION_CHANGED'); // more edits arrived — look again
       if (input.decision === 'REJECT' && !input.note) throw new DomainError('REVISION_NOTE_REQUIRED');
       const by = `staff:${who.staffId}`;

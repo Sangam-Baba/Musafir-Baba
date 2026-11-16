@@ -1,4 +1,6 @@
 // @ts-check
+import http from 'node:http';
+
 import express from 'express';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -63,7 +65,12 @@ async function serve(opts = {}) {
   );
   /** @type {import('node:http').Server} */
   const server = await new Promise((resolve) => {
-    const s = app.listen(0, () => resolve(s));
+    // `Connection: close` + loopback only, like helpers/http.js: no reused connection can reach another file's old server
+    const s = http.createServer((req, res) => {
+      res.setHeader('Connection', 'close');
+      app(req, res);
+    });
+    s.listen(0, '127.0.0.1', () => resolve(s));
   });
   const base = `http://127.0.0.1:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}`;
   return {
