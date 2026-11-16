@@ -119,7 +119,7 @@ export function AdminPassGate({ children }: { children: (adminToken: string) => 
 }
 
 /** Admin calls with the pass; an expired pass sends the admin back to the gate. */
-export async function adminCall<T>(path: string, token: string, opts: { method?: string; body?: unknown } = {}): Promise<T> {
+export async function adminCall<T>(path: string, token: string, opts: { method?: string; body?: unknown; headers?: Record<string, string> } = {}): Promise<T> {
   try {
     return await b2bWithToken<T>(path, token, opts);
   } catch (e) {

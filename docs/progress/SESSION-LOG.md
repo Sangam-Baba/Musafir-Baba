@@ -83,7 +83,8 @@
 - **Later:** S03-T09 → DONE (visibility + public content `GET /hotels/:ref`). Tests ✅ 58 files / 572, 2× green.
 - **Later:** S03-T10 → DONE (listing notifications + admin queue pushes; property-limited members only see their properties' notifications). Tests ✅ 59 files / 576, 2× green.
 - **Later:** S03-T11 → DONE (business-area listing screens; frontend tsc ✅; pages load; live 401 / 404 checks). Not clicked through in a browser.
-- **Next step:** S03-T12 admin listing screens and masters.
+- **Later:** S03-T12 → DONE (admin listing screens, masters screens, admin bell counts listings). Frontend tsc ✅; pages load; live 401 check.
+- **Next step:** S03-T13 Stage 03 mandatory test suite.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
