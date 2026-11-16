@@ -75,7 +75,8 @@
 - **Tests run:** `test:b2b` ✅ 51 files / 537, 2× green; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅; frontend tsc ✅; pages load.
 - **Later:** S03-T03 → DONE (properties: wizard sections, version check 412/428, pin inside city, GSTIN per state, property limits; migration 0024 on dev Atlas). Found while testing: Node's time-zone list names India "Asia/Calcutta", so the check now asks the runtime instead of the list. Tests ✅ 52 files / 542, 2× green.
 - **Later:** S03-T04 → DONE (room types; migration 0025 on dev Atlas). Tests: first pair of full runs had **one failure in an unrelated, older test** (`realtime.test.js` — "a live signal arriving DURING the catch-up…": the stream answered with a non-OK status and an empty body, so the real status was not captured). Passed 5× on its own; the SSE test helper now records status and raw body, and the test asserts the stream opened, so a repeat will show the cause. Then ✅ 53 files / 546, 2× green before committing.
-- **Next step:** S03-T05 photos.
+- **Later:** S03-T05 → DONE (photos: built-in multipart parsing instead of `multer` — typecheck can't check multer and adding its types would be a new package; header-level WebP / JPEG checks incl. camera / GPS data refusal; public folder on R2 / local disk). Tests ✅ 54 files / 552, 2× green.
+- **Next step:** S03-T06 listing state machine and submit checks.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)

@@ -10,6 +10,17 @@ import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 
 export const PROPERTIES_COLLECTION = 'htl_properties';
+export const PHOTO_CATEGORIES = /** @type {const} */ ([
+  'EXTERIOR',
+  'LOBBY',
+  'ROOM',
+  'BATHROOM',
+  'RESTAURANT',
+  'POOL',
+  'AMENITIES',
+  'VIEW',
+  'OTHER',
+]);
 export const PROPERTY_STATUSES = /** @type {const} */ (['DRAFT', 'SUBMITTED', 'CHANGES_REQUESTED', 'LIVE', 'SUSPENDED', 'ARCHIVED']);
 
 const schema = new b2bMongoose.Schema(
@@ -57,6 +68,26 @@ const schema = new b2bMongoose.Schema(
       default: null,
     },
     amenities: { type: [String], default: [] },
+    // S03-T05: photos of the property (roomTypeId null) and of its room types; sizes made by the browser, checked by the server
+    photos: {
+      type: [
+        new b2bMongoose.Schema(
+          {
+            roomTypeId: { type: String, default: null },
+            category: { type: String, enum: PHOTO_CATEGORIES, required: true },
+            caption: { type: String, default: null, maxlength: 140 },
+            order: { type: Number, default: 100 },
+            isCover: { type: Boolean, default: false },
+            variants: { type: b2bMongoose.Schema.Types.Mixed, required: true }, // { thumb: { key, width, height, type }, card, gallery, hero? }
+            placeholder: { type: String, required: true },
+            uploadedBy: { type: String, required: true },
+            uploadedAt: { type: Date, required: true },
+          },
+          { _id: true },
+        ),
+      ],
+      default: [],
+    },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
     ...eventFields(b2bMongoose),

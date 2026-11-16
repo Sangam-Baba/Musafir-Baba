@@ -58,6 +58,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /files/download',
         'GET /health',
         'GET /invitations/lookup',
+        'GET /media/*key', // local development: public hotel photos from disk (fixed key format, public folder only)
         'GET /meta/version',
         'GET /stream',
         'POST /invitations/accept',

@@ -19,7 +19,8 @@ const ID = /^[a-f0-9]{24}$/;
 
 /**
  * @typedef {{ clock: import('../../core/clock.js').Clock,
- *   gstStatus?: (orgId: string) => Promise<{ registered: boolean, verified: { stateCode: string, gstin: string }[] }> }} PropertyDeps
+ *   gstStatus?: (orgId: string) => Promise<{ registered: boolean, verified: { stateCode: string, gstin: string }[] }>,
+ *   mediaUrl?: (key: string) => string }} PropertyDeps
  */
 
 /** @param {import('../../core/context.js').RequestContext} ctx */
@@ -29,14 +30,45 @@ function memberOf(ctx) {
 }
 
 /**
+ * Photos with their public addresses, in display order, and how many there are (property / per room type).
+ * @param {any} p
+ * @param {(key: string) => string} url
+ */
+export function photosOf(p, url) {
+  const photos = [...(p.photos ?? [])]
+    .sort((a, b) => a.order - b.order)
+    .map((x) => ({
+      id: String(x._id),
+      roomTypeId: x.roomTypeId,
+      category: x.category,
+      caption: x.caption,
+      order: x.order,
+      isCover: x.isCover,
+      placeholder: x.placeholder,
+      sizes: Object.fromEntries(
+        Object.entries(x.variants).map(([name, v]) => [
+          name,
+          { url: url(/** @type {any} */ (v).key), width: /** @type {any} */ (v).width, height: /** @type {any} */ (v).height },
+        ]),
+      ),
+    }));
+  /** @type {Record<string, number>} */
+  const perRoomType = {};
+  for (const x of photos) if (x.roomTypeId) perRoomType[x.roomTypeId] = (perRoomType[x.roomTypeId] ?? 0) + 1;
+  return { photos, photoCounts: { property: photos.filter((x) => !x.roomTypeId).length, perRoomType } };
+}
+
+/**
  * @param {any} p
  * @param {{ registered: boolean, verified: { stateCode: string, gstin: string }[] }} gst
+ * @param {(key: string) => string} [url]
  */
-function toDto(p, gst) {
+function toDto(p, gst, url = (k) => k) {
   const gstin = p.stateCode ? (gst.verified.find((g) => g.stateCode === p.stateCode)?.gstin ?? null) : null;
   return {
     ...identity(p),
     ...content(p),
+    ...photosOf(p, url),
     gstin,
     gstinMissing: Boolean(gst.registered && p.stateCode && !gstin),
     sections: sectionsDone(p),
@@ -143,13 +175,13 @@ export function createPropertyService(deps) {
         .sort({ createdAt: -1 })
         .lean();
       const gst = await gstOf(a.orgId);
-      return docs.map((p) => toDto(p, gst));
+      return docs.map((p) => toDto(p, gst, deps.mediaUrl));
     },
 
     /** @param {import('../../core/context.js').RequestContext} ctx @param {string} id */
     async get(ctx, id) {
       const p = await load(ctx, id, PERMISSIONS.propertyRead);
-      return toDto(p, await gstOf(p.hotelOrgId));
+      return toDto(p, await gstOf(p.hotelOrgId), deps.mediaUrl);
     },
 
     /** @param {import('../../core/context.js').RequestContext} ctx @param {{ name: string, propertyTypeKey: string }} input */
@@ -170,7 +202,7 @@ export function createPropertyService(deps) {
         createdBy: by,
         updatedBy: by,
       });
-      return toDto(doc.toObject(), await gstOf(a.orgId));
+      return toDto(doc.toObject(), await gstOf(a.orgId), deps.mediaUrl);
     },
 
     /**
@@ -188,7 +220,7 @@ export function createPropertyService(deps) {
         { $set: { ...set, updatedBy: `user:${memberOf(ctx).userId}` }, $inc: { version: 1 } },
       );
       if (res.modifiedCount !== 1) throw new AppError('VERSION_CONFLICT', 412, 'The property was changed meanwhile — reload and try again');
-      return toDto(await PropertyRecord.findOne({ _id: p._id, hotelOrgId: p.hotelOrgId }).lean(), await gstOf(p.hotelOrgId));
+      return toDto(await PropertyRecord.findOne({ _id: p._id, hotelOrgId: p.hotelOrgId }).lean(), await gstOf(p.hotelOrgId), deps.mediaUrl);
     },
   };
 }

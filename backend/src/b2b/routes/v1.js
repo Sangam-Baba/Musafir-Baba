@@ -29,11 +29,13 @@ import { kycAdminRoutes, ownOrgCheck } from './kyc-admin.js';
 import { masterRoutes } from './hotel-masters.js';
 import { hotelPropertyRoutes } from './hotel-properties.js';
 import { roomTypeRoutes } from './hotel-room-types.js';
+import { photoRoutes } from './hotel-photos.js';
+import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
-import { createMastersService, createPropertyService, createRoomTypeService } from '../modules/hotel-catalog/index.js';
+import { createMastersService, createPhotoService, createPropertyService, createRoomTypeService } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
@@ -146,9 +148,11 @@ function stage03Routes(env, clock) {
   const router = express.Router();
   const gst = createGstRegistrations({ clock, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(masterRoutes({ masters: createMastersService() }));
-  const properties = createPropertyService({ clock, gstStatus: gst.gstStatus });
+  const store = publicStoreFromEnv(env);
+  const properties = createPropertyService({ clock, gstStatus: gst.gstStatus, mediaUrl: store.url });
   router.use(hotelPropertyRoutes({ properties }));
   router.use(roomTypeRoutes({ roomTypes: createRoomTypeService({ properties }) }));
+  router.use(photoRoutes({ photos: createPhotoService({ properties, store, clock }), properties, store }));
   return router;
 }
 
