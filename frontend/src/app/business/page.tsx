@@ -47,6 +47,7 @@ export default function BusinessHome() {
               </Link>
             )}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {me.permissions.includes("hotel-catalog.property.read") && <Card href="/business/properties" title="Properties" text="Your listings: details, rooms, photos and approval." />}
               <Card href="/business/team" title="Team" text="Members, invitations, roles and branches." />
               <Card href="/business/activity" title="Activity" text="Sign-ins and changes in your organisation." />
               <Card href="/business/security" title="Security" text={me.mfa.totp === "on" ? "Two-step login is on." : "Turn on two-step login."} />

@@ -16,6 +16,7 @@ import { Bell } from "./Bell";
 const NAV: { href: string; label: string; permission?: string }[] = [
   { href: "/business", label: "Home" },
   { href: "/business/verification", label: "Verification", permission: "kyc.application.read" },
+  { href: "/business/properties", label: "Properties", permission: "hotel-catalog.property.read" },
   { href: "/business/team", label: "Team" },
   { href: "/business/activity", label: "Activity" },
   { href: "/business/security", label: "Security" },
@@ -96,7 +97,7 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
           </Link>
           <nav className="flex flex-1 flex-wrap gap-1">
             {NAV.filter((n) => !n.permission || data.permissions.includes(n.permission)).map((n) => (
-              <Link key={n.href} href={n.href} className={`rounded-md px-3 py-1.5 text-sm ${pathname === n.href ? "bg-orange-50 font-medium text-[#FE5300]" : "text-slate-600 hover:bg-slate-100"}`}>
+              <Link key={n.href} href={n.href} className={`rounded-md px-3 py-1.5 text-sm ${pathname === n.href || (n.href !== "/business" && pathname.startsWith(`${n.href}/`)) ? "bg-orange-50 font-medium text-[#FE5300]" : "text-slate-600 hover:bg-slate-100"}`}>
                 {n.label}
               </Link>
             ))}
