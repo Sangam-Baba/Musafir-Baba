@@ -27,11 +27,12 @@ import { createRoles, createTeamRoutes } from './teams.js';
 import { createFiles, fileRoutes } from './files.js';
 import { kycAdminRoutes, ownOrgCheck } from './kyc-admin.js';
 import { masterRoutes } from './hotel-masters.js';
+import { hotelPropertyRoutes } from './hotel-properties.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
-import { createMastersService } from '../modules/hotel-catalog/index.js';
+import { createMastersService, createPropertyService } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
@@ -107,7 +108,7 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
-  router.use(masterRoutes({ masters: createMastersService() }));
+  router.use(stage03Routes(env, clock));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
@@ -132,6 +133,19 @@ function stage02Routes(env, clock, identity) {
   router.use(kycRoutes({ kyc, users: identity.users, orgs: identity.orgs, gst }));
   router.use(kycAdminRoutes({ review: createKycReviewService({ clock, isOwnOrg }), kyc, gst }));
   router.use(notificationRoutes({ notifications: createNotificationsService({ clock }) }));
+  return router;
+}
+
+/**
+ * Stage 03: hotel master lists and properties.
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ */
+function stage03Routes(env, clock) {
+  const router = express.Router();
+  const gst = createGstRegistrations({ clock, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
+  router.use(masterRoutes({ masters: createMastersService() }));
+  router.use(hotelPropertyRoutes({ properties: createPropertyService({ clock, gstStatus: gst.gstStatus }) }));
   return router;
 }
 

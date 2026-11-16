@@ -8,6 +8,7 @@ import {
   MEAL_PLANS_COLLECTION,
   PROPERTY_TYPES_COLLECTION,
 } from '../modules/hotel-catalog/index.js';
+import { PROPERTIES_COLLECTION } from '../modules/hotel-catalog/index.js';
 import { APPLICATIONS_COLLECTION } from '../modules/kyc/index.js';
 import { INBOX_COLLECTION as NTF_INBOX, PREFERENCES_COLLECTION as NTF_PREFERENCES } from '../modules/notifications/index.js';
 
@@ -82,6 +83,23 @@ export const STAGE_02_AND_LATER = [
         APPLICATIONS_COLLECTION,
         { 'gstRegistrations.status': 1 },
         { name: 'gst_registrations_pending', partialFilterExpression: { 'gstRegistrations.status': 'PENDING' } },
+      );
+    },
+  },
+  {
+    id: '0024-htl-properties',
+    description: 'Hotel properties: by org, by status and city, map index, unique slug and public reference, relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(PROPERTIES_COLLECTION);
+      await ctx.createIndex(PROPERTIES_COLLECTION, { hotelOrgId: 1, createdAt: -1 }, { name: 'org' });
+      await ctx.createIndex(PROPERTIES_COLLECTION, { status: 1, cityId: 1 }, { name: 'status_city' });
+      await ctx.createIndex(PROPERTIES_COLLECTION, { location: '2dsphere' }, { name: 'location_geo' });
+      await ctx.createIndex(PROPERTIES_COLLECTION, { slug: 1 }, { name: 'slug_unique', unique: true });
+      await ctx.createIndex(PROPERTIES_COLLECTION, { publicRef: 1 }, { name: 'ref_unique', unique: true });
+      await ctx.createIndex(
+        PROPERTIES_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
     },
   },

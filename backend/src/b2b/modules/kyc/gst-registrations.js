@@ -111,6 +111,16 @@ async function verifiedGstins(orgId) {
   return [...main, ...extra.map((/** @type {any} */ g) => ({ stateCode: g.stateCode, gstin: g.gstin }))];
 }
 
+/**
+ * For properties: is the business GST-registered, and which GSTINs (per state) are verified.
+ * @param {string} orgId
+ * @returns {Promise<{ registered: boolean, verified: { stateCode: string, gstin: string }[] }>}
+ */
+async function gstStatus(orgId) {
+  const doc = /** @type {any} */ (await ApplicationRecord.findOne({ orgId }, { details: 1 }).lean());
+  return { registered: Boolean(doc?.details?.gstRegistered), verified: await verifiedGstins(orgId) };
+}
+
 /** @param {GstDeps} deps */
 export function createGstRegistrations(deps) {
   return {
@@ -164,5 +174,6 @@ export function createGstRegistrations(deps) {
     decide: (who, applicationId, registrationId, input) => decideRegistration(deps, { who, applicationId, registrationId, input }),
 
     verifiedGstins,
+    gstStatus,
   };
 }

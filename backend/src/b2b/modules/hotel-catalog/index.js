@@ -17,3 +17,6 @@ export {
 } from './models/masters.model.js';
 export { createMastersService, seedMasters, KEYED_MASTERS } from './masters.service.js';
 export { slugify, isInIndia } from './domain/slug.js';
+export { PROPERTIES_COLLECTION, PROPERTY_STATUSES, PropertyRecord } from './models/property.model.js';
+export { createPropertyService } from './property.service.js';
+export { SECTIONS, DEFAULT_TIME_ZONE, distanceKm, isTime, isTimeZone, plainText, sectionsDone } from './domain/property.js';

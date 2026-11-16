@@ -73,7 +73,8 @@
 - **Goal:** owner raised: some hotel groups have different GSTINs (and sometimes PANs) per hotel.
 - **Done:** D33 decided with the owner — one org = one PAN; same PAN in several states → further GSTINs per state, each verified; different PAN → separate org under the same login. S03-T03a → DONE (backend, screens, migration 0023 on dev Atlas). A test caught that a verified GSTIN could be removed — fixed (condition moved into the filter).
 - **Tests run:** `test:b2b` ✅ 51 files / 537, 2× green; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅; frontend tsc ✅; pages load.
-- **Next step:** S03-T03 property — links each property to the verified GSTIN of its state.
+- **Later:** S03-T03 → DONE (properties: wizard sections, version check 412/428, pin inside city, GSTIN per state, property limits; migration 0024 on dev Atlas). Found while testing: Node's time-zone list names India "Asia/Calcutta", so the check now asks the runtime instead of the list. Tests ✅ 52 files / 542, 2× green.
+- **Next step:** S03-T04 room types.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
