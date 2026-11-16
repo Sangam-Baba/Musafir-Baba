@@ -214,6 +214,7 @@ describe('live updates over Server-Sent Events (same backend, same address)', ()
     });
     const srv = await serve({ hub: own });
     const s = await openStream(`${srv.base}/api/v1/realtime/stream?rooms=${AVAIL}`, { 'Last-Event-ID': id(1).toHexString() });
+    expect({ status: s.status, body: s.body }).toEqual({ status: 200, body: null }); // shows the refusal if this ever flakes again
     try {
       await started;
       own.deliver(sig(3)); // the live feed is faster than the catch-up read

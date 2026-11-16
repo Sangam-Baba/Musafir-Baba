@@ -133,6 +133,9 @@ export function createPropertyService(deps) {
   }
 
   return {
+    /** The stored property after the access checks (for room types, photos). */
+    loadOwned: load,
+
     /** @param {import('../../core/context.js').RequestContext} ctx */
     async list(ctx) {
       const a = memberOf(ctx);

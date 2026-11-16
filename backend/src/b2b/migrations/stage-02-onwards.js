@@ -8,7 +8,7 @@ import {
   MEAL_PLANS_COLLECTION,
   PROPERTY_TYPES_COLLECTION,
 } from '../modules/hotel-catalog/index.js';
-import { PROPERTIES_COLLECTION } from '../modules/hotel-catalog/index.js';
+import { PROPERTIES_COLLECTION, ROOM_TYPES_COLLECTION } from '../modules/hotel-catalog/index.js';
 import { APPLICATIONS_COLLECTION } from '../modules/kyc/index.js';
 import { INBOX_COLLECTION as NTF_INBOX, PREFERENCES_COLLECTION as NTF_PREFERENCES } from '../modules/notifications/index.js';
 
@@ -100,6 +100,19 @@ export const STAGE_02_AND_LATER = [
         PROPERTIES_COLLECTION,
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0025-htl-room-types',
+    description: 'Room types: by property in display order; a name only once per property (active ones)',
+    up: async (ctx) => {
+      await ctx.createCollection(ROOM_TYPES_COLLECTION);
+      await ctx.createIndex(ROOM_TYPES_COLLECTION, { hotelOrgId: 1, propertyId: 1, order: 1 }, { name: 'property' });
+      await ctx.createIndex(
+        ROOM_TYPES_COLLECTION,
+        { propertyId: 1, nameKey: 1 },
+        { name: 'property_name_unique', unique: true, partialFilterExpression: { status: 'ACTIVE' } },
       );
     },
   },

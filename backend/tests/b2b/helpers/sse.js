@@ -69,9 +69,23 @@ export async function openStream(url, headers = {}) {
   return {
     status: res.status,
     headers: res.headers,
-    body: /** @type {any} */ (res.ok ? null : await res.json()),
+    body: /** @type {any} */ (res.ok ? null : await problemBody(res)),
     events,
     next,
     close: () => abort.abort(),
   };
+}
+
+/**
+ * The error body of a refused stream. Keeps the status and raw text when the body is not JSON (e.g. empty), so a
+ * rare failure says what actually happened instead of "Unexpected end of JSON input".
+ * @param {Response} res
+ */
+async function problemBody(res) {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { status: res.status, rawBody: text, contentType: res.headers.get('content-type') };
+  }
 }

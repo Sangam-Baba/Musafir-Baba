@@ -20,3 +20,5 @@ export { slugify, isInIndia } from './domain/slug.js';
 export { PROPERTIES_COLLECTION, PROPERTY_STATUSES, PropertyRecord } from './models/property.model.js';
 export { createPropertyService } from './property.service.js';
 export { SECTIONS, DEFAULT_TIME_ZONE, distanceKm, isTime, isTimeZone, plainText, sectionsDone } from './domain/property.js';
+export { ROOM_TYPES_COLLECTION, RoomTypeRecord } from './models/room-type.model.js';
+export { createRoomTypeService } from './room-type.service.js';
