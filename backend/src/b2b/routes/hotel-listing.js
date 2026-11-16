@@ -4,6 +4,7 @@
  * GET  /hotel/properties/:id/readiness  — what still stops a submit (empty list = ready)
  * POST /hotel/properties/:id/submit     — submit / resubmit; header `If-Match: <version>` (428 / 412); 422 PROPERTY_NOT_READY lists everything missing
  * POST /hotel/properties/:id/withdraw   — back to draft before MusafirBaba decides; `If-Match` required
+ * DELETE /hotel/properties/:id/revision — take back pending changes to a live listing; `If-Match` required
  */
 import express from 'express';
 import { z } from 'zod';
@@ -25,8 +26,11 @@ function versionOf(req) {
   return Number(raw);
 }
 
-/** @param {{ listing: ReturnType<typeof import('../modules/hotel-catalog/index.js').createListingService> }} deps */
-export function listingRoutes({ listing }) {
+/**
+ * @param {{ listing: ReturnType<typeof import('../modules/hotel-catalog/index.js').createListingService>,
+ *   revisions: ReturnType<typeof import('../modules/hotel-catalog/index.js').createRevisionService> }} deps
+ */
+export function listingRoutes({ listing, revisions }) {
   const router = express.Router();
   const manage = requirePermission(CATALOG.propertyManage);
   router.get(
@@ -45,5 +49,11 @@ export function listingRoutes({ listing }) {
       })().catch(next);
     });
   }
+  router.delete('/hotel/properties/:id/revision', manage, validate({ params: Params }), (req, res, next) => {
+    (async () => {
+      const p = await revisions.cancel(contextOf(res), res.locals.input.params.id, versionOf(req));
+      res.set('ETag', `"${p.version}"`).json(p);
+    })().catch(next);
+  });
   return router;
 }

@@ -88,6 +88,19 @@ const schema = new b2bMongoose.Schema(
       ],
       default: [],
     },
+    // S03-T07: sensitive edits to a live listing wait here (the live values stay until MusafirBaba approves)
+    pendingRevision: {
+      type: new b2bMongoose.Schema(
+        {
+          revisionId: { type: String, required: true }, // changes whenever more edits are added — approval names the one it saw
+          changes: { type: b2bMongoose.Schema.Types.Mixed, required: true },
+          submittedAt: { type: Date, required: true },
+          submittedBy: { type: String, required: true },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     // S03-T06: listing workflow (status table in domain/listing-workflow.js)
     round: { type: Number, default: 0 },
     submittedAt: { type: Date, default: null },

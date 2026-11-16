@@ -23,7 +23,7 @@ import { createOrganizationsService, MemberRecord, OrganizationRecord } from '..
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { createB2BRouter } from '../../src/b2b/routes/v1.js';
 import { startServer } from './helpers/http.js';
-import { uploadPhoto } from './helpers/images.js';
+import { completeProperty } from './helpers/hotel-listing.js';
 import { startMongo } from './helpers/mongo.js';
 
 const SECRET = ['b2b', 'listing', 'test', 'secret', 'long-enough-1234'].join('-');
@@ -31,7 +31,6 @@ const PASSWORD = 'correct-horse-battery';
 const clock = { now: () => new Date('2026-11-16T10:00:00Z') };
 const SYSTEM = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'test' };
 const H = { 'x-b2b-auth': '1' };
-const LONG = 'A calm sea-facing hotel on Marine Drive with rooms that look over the bay and a rooftop restaurant.';
 
 describe('state table', () => {
   it('allows exactly the listed moves; everything else is refused', () => {
@@ -102,51 +101,8 @@ describe('submitting', () => {
     const property = (await srv.post('/api/v1/hotel/properties', { name: 'Sea View', propertyTypeKey: 'hotel' }, auth(token))).body;
     return { token, orgId, id: property.id };
   }
-  /** Fills every section, one room type, 5 property photos and 2 room photos. @param {string} token @param {string} id @param {any} [city] */
-  async function complete(token, id, city = cities.mumbai) {
-    const sections = {
-      basic: { name: 'Sea View', propertyTypeKey: 'hotel', starRating: 3, description: LONG },
-      location: { cityId: city.id, line1: '12 Marine Drive', pin: '400020', lat: city.lat + 0.01, lng: city.lng },
-      contacts: { email: 'stay@seaview.in', phone: '9876543210' },
-      times: { checkInTime: '14:00', checkOutTime: '11:00', timeZone: 'Asia/Kolkata' },
-      policies: {
-        childrenAllowed: true,
-        childFreeUntilAge: 5,
-        extraBeds: false,
-        petsAllowed: false,
-        coupleFriendly: true,
-        localIdAccepted: true,
-        smoking: 'NO',
-        idProofs: ['AADHAAR'],
-      },
-      amenities: { amenities: ['wifi'] },
-    };
-    let v = (await srv.get(`/api/v1/hotel/properties/${id}`, auth(token))).body.version;
-    for (const [section, body] of Object.entries(sections))
-      v = (await srv.put(`/api/v1/hotel/properties/${id}/sections/${section}`, body, { ...auth(token), 'if-match': `"${v}"` })).body
-        .version;
-    const room = (
-      await srv.post(
-        `/api/v1/hotel/properties/${id}/room-types`,
-        {
-          name: 'Deluxe',
-          description: '',
-          sizeSqm: 30,
-          beds: [{ bedTypeKey: 'king', count: 1 }],
-          maxAdults: 2,
-          maxChildren: 1,
-          maxOccupancy: 3,
-          extraBeds: { allowed: false, max: 0 },
-          amenities: [],
-        },
-        auth(token),
-      )
-    ).body;
-    for (let i = 0; i < 5; i += 1) expect((await uploadPhoto(srv.base, auth(token), id)).status).toBe(201);
-    for (let i = 0; i < 2; i += 1)
-      expect((await uploadPhoto(srv.base, auth(token), id, { fields: { category: 'ROOM', roomTypeId: room.id } })).status).toBe(201);
-    return { version: v, roomId: room.id };
-  }
+  /** @param {string} token @param {string} id @param {any} [city] */
+  const complete = (token, id, city = cities.mumbai) => completeProperty(srv, auth(token), id, city);
   /** @param {string} token @param {string} id */
   const version = async (token, id) => (await srv.get(`/api/v1/hotel/properties/${id}`, auth(token))).body.version;
   /** @param {string} token @param {string} id @param {'submit' | 'withdraw'} action @param {number | null} v */

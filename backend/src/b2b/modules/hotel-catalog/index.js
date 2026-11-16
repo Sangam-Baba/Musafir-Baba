@@ -26,3 +26,5 @@ export { createPhotoService, MAX_PROPERTY_PHOTOS, MAX_ROOM_PHOTOS } from './phot
 export { VARIANTS, imageInfo, checkVariant, checkPhoto, checkPlaceholder } from './domain/photo-check.js';
 export { createListingService } from './listing.service.js';
 export { LISTING_TRANSITIONS, listingTransition, submitBlockers, MIN_PROPERTY_PHOTOS, MIN_ROOM_PHOTOS } from './domain/listing-workflow.js';
+export { createRevisionService } from './revision.service.js';
+export { SENSITIVE_FIELDS, splitChanges, LIVE_STATUSES } from './domain/revisions.js';

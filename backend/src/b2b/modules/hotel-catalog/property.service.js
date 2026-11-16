@@ -6,11 +6,16 @@
  * only on the version the screen loaded (412 VERSION_CONFLICT otherwise). The property's GSTIN is the
  * business's verified GSTIN for the property's state (D33); a GST-registered business without one is told.
  */
+import { b2bMongoose } from '../../core/db/connection.js';
+import { newEvent } from '../../core/db/events.js';
 import { AppError, DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
 import { newReference } from '../../core/ids.js';
+import { systemScope } from '../../core/db/tenant-plugin.js';
 import { authz } from '../access/index.js';
 import { assertPinInCity, EDITABLE_STATUSES, sectionsDone } from './domain/property.js';
+import { LIVE_STATUSES, splitChanges } from './domain/revisions.js';
 import { slugify } from './domain/slug.js';
+import { EVENTS } from './events.js';
 import { AmenityRecord, CityRecord, PropertyTypeRecord } from './models/masters.model.js';
 import { PropertyRecord } from './models/property.model.js';
 import { PERMISSIONS } from './permissions.js';
@@ -75,6 +80,16 @@ function toDto(p, gst, url = (k) => k) {
   };
 }
 
+/** A pending revision in the same shape as the property (location as lat / lng). @param {any} r */
+function revisionDto(r) {
+  const { location, ...rest } = r.changes ?? {};
+  return {
+    revisionId: r.revisionId,
+    submittedAt: r.submittedAt,
+    changes: { ...rest, ...(location ? { lat: location.coordinates[1], lng: location.coordinates[0] } : {}) },
+  };
+}
+
 /** @param {any} p */
 const identity = (p) => ({
   id: String(p._id),
@@ -86,6 +101,7 @@ const identity = (p) => ({
   submittedAt: p.submittedAt ?? null,
   decidedAt: p.decidedAt ?? null,
   publishedAt: p.publishedAt ?? null,
+  pendingRevision: p.pendingRevision ? revisionDto(p.pendingRevision) : null,
   history: (p.history ?? []).map((/** @type {any} */ h) => ({ at: h.at, action: h.action, status: h.status, note: h.note ?? null })),
   updatedAt: p.updatedAt,
 });
@@ -155,6 +171,70 @@ async function prepareLocation(data) {
   };
 }
 
+/**
+ * A save on a live (or suspended) listing: changed ordinary fields are published now (`property.updated`),
+ * changed sensitive fields join the pending revision (`revision.submitted`); the live values stay. One update.
+ * @param {PropertyDeps} deps
+ * @param {{ p: any, section: string, set: Record<string, unknown>, by: string }} input
+ */
+function liveUpdate(deps, { p, section, set, by }) {
+  const { direct, sensitive } = splitChanges(section, set, p);
+  const base = { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef };
+  /** @type {Record<string, unknown>} */
+  const $set = { ...direct, updatedBy: by };
+  const events = [];
+  if (Object.keys(direct).length > 0) events.push(newEvent(EVENTS.propertyUpdated, { ...base, fields: Object.keys(direct) }, deps));
+  if (Object.keys(sensitive).length > 0) {
+    const revision = { revisionId: new b2bMongoose.Types.ObjectId().toHexString(), submittedAt: deps.clock.now(), submittedBy: by };
+    if (p.pendingRevision) {
+      for (const [field, value] of Object.entries(sensitive)) $set[`pendingRevision.changes.${field}`] = value;
+      Object.assign($set, {
+        'pendingRevision.revisionId': revision.revisionId,
+        'pendingRevision.submittedAt': revision.submittedAt,
+        'pendingRevision.submittedBy': by,
+      });
+    } else $set.pendingRevision = { ...revision, changes: sensitive };
+    events.push(newEvent(EVENTS.revisionSubmitted, { ...base, fields: Object.keys(sensitive) }, deps));
+  }
+  if (events.length === 0) return { $set, $inc: { version: 1 } };
+  return { $set: { ...$set, hasPendingEvents: true }, $inc: { version: 1 }, $push: { pendingEvents: { $each: events } } };
+}
+
+/**
+ * Saves one wizard section, only on the version the screen loaded (a live listing splits it, see liveUpdate).
+ * @param {PropertyDeps} deps
+ * @param {import('../../core/context.js').RequestContext} ctx
+ * @param {{ p: any, section: import('./domain/property.js').Section, data: Record<string, any>, version: number }} input
+ */
+async function saveSection(deps, ctx, input) {
+  const { p } = input;
+  const live = /** @type {readonly string[]} */ (LIVE_STATUSES).includes(p.status);
+  if (!live && !(/** @type {readonly string[]} */ (EDITABLE_STATUSES).includes(p.status)))
+    throw new DomainError('PROPERTY_NOT_EDITABLE', { status: p.status });
+  const set = await prepareSection(input.section, input.data);
+  const by = `user:${memberOf(ctx).userId}`;
+  const update = live
+    ? liveUpdate(deps, { p, section: input.section, set, by })
+    : { $set: { ...set, updatedBy: by }, $inc: { version: 1 } };
+  const res = await PropertyRecord.updateOne({ _id: p._id, hotelOrgId: p.hotelOrgId, version: input.version, status: p.status }, update);
+  if (res.modifiedCount !== 1) throw new AppError('VERSION_CONFLICT', 412, 'The property was changed meanwhile — reload and try again');
+  return toDto(
+    await PropertyRecord.findOne({ _id: p._id, hotelOrgId: p.hotelOrgId }).lean(),
+    deps.gstStatus ? await deps.gstStatus(p.hotelOrgId) : { registered: false, verified: [] },
+    deps.mediaUrl,
+  );
+}
+
+/** @param {PropertyDeps} deps @param {string} id */
+async function viewPropertyById(deps, id) {
+  const p = ID.test(id)
+    ? await PropertyRecord.findOne({ _id: id }).setOptions(systemScope('hotel-catalog: MusafirBaba admin view')).lean()
+    : null;
+  if (!p) throw new NotFoundError('PROPERTY_NOT_FOUND');
+  const gst = deps.gstStatus ? await deps.gstStatus(p.hotelOrgId) : { registered: false, verified: [] };
+  return { raw: /** @type {any} */ (p), view: toDto(p, gst, deps.mediaUrl) };
+}
+
 /** @param {PropertyDeps} deps */
 export function createPropertyService(deps) {
   /** @param {string} orgId */
@@ -172,6 +252,9 @@ export function createPropertyService(deps) {
   return {
     /** The stored property after the access checks (for room types, photos). */
     loadOwned: load,
+
+    /** Any property by id, for MusafirBaba admin tools (system scope, logged). @param {string} id */
+    viewById: (id) => viewPropertyById(deps, id),
 
     /** @param {import('../../core/context.js').RequestContext} ctx */
     async list(ctx) {
@@ -215,17 +298,6 @@ export function createPropertyService(deps) {
      * @param {import('../../core/context.js').RequestContext} ctx
      * @param {{ id: string, section: import('./domain/property.js').Section, data: Record<string, any>, version: number }} input
      */
-    async saveSection(ctx, input) {
-      const p = await load(ctx, input.id, PERMISSIONS.propertyManage);
-      if (!(/** @type {readonly string[]} */ (EDITABLE_STATUSES).includes(p.status)))
-        throw new DomainError('PROPERTY_NOT_EDITABLE', { status: p.status });
-      const set = await prepareSection(input.section, input.data);
-      const res = await PropertyRecord.updateOne(
-        { _id: p._id, hotelOrgId: p.hotelOrgId, version: input.version, status: { $in: EDITABLE_STATUSES } },
-        { $set: { ...set, updatedBy: `user:${memberOf(ctx).userId}` }, $inc: { version: 1 } },
-      );
-      if (res.modifiedCount !== 1) throw new AppError('VERSION_CONFLICT', 412, 'The property was changed meanwhile — reload and try again');
-      return toDto(await PropertyRecord.findOne({ _id: p._id, hotelOrgId: p.hotelOrgId }).lean(), await gstOf(p.hotelOrgId), deps.mediaUrl);
-    },
+    saveSection: async (ctx, input) => saveSection(deps, ctx, { ...input, p: await load(ctx, input.id, PERMISSIONS.propertyManage) }),
   };
 }

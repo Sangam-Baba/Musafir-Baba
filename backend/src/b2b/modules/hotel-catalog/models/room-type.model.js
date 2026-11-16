@@ -5,6 +5,7 @@
  * with a version check like the property. Photos come with S03-T05.
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
+import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 
 export const ROOM_TYPES_COLLECTION = 'htl_room_types';
@@ -31,6 +32,7 @@ const schema = new b2bMongoose.Schema(
     version: { type: Number, default: 1 },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
+    ...eventFields(b2bMongoose), // a change to a live property's room type tells search (hotel-catalog.property.updated)
   },
   { timestamps: true, versionKey: false },
 );

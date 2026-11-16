@@ -31,6 +31,7 @@ import { hotelPropertyRoutes } from './hotel-properties.js';
 import { roomTypeRoutes } from './hotel-room-types.js';
 import { photoRoutes } from './hotel-photos.js';
 import { listingRoutes } from './hotel-listing.js';
+import { hotelAdminRoutes } from './hotel-admin.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -41,6 +42,7 @@ import {
   createMastersService,
   createPhotoService,
   createPropertyService,
+  createRevisionService,
   createRoomTypeService,
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
@@ -159,10 +161,12 @@ function stage03Routes(env, clock, identity) {
   const store = publicStoreFromEnv(env);
   const properties = createPropertyService({ clock, gstStatus: gst.gstStatus, mediaUrl: store.url });
   router.use(hotelPropertyRoutes({ properties }));
-  router.use(roomTypeRoutes({ roomTypes: createRoomTypeService({ properties }) }));
+  router.use(roomTypeRoutes({ roomTypes: createRoomTypeService({ clock, properties }) }));
   router.use(photoRoutes({ photos: createPhotoService({ properties, store, clock }), properties, store }));
   const orgStatus = async (/** @type {string} */ orgId) => (await identity.orgs.basicInfo(orgId))?.status ?? null;
-  router.use(listingRoutes({ listing: createListingService({ clock, properties, orgStatus }) }));
+  const revisions = createRevisionService({ clock, properties });
+  router.use(listingRoutes({ listing: createListingService({ clock, properties, orgStatus }), revisions }));
+  router.use(hotelAdminRoutes({ revisions }));
   return router;
 }
 

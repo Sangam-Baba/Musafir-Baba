@@ -116,4 +116,15 @@ export const STAGE_02_AND_LATER = [
       );
     },
   },
+  {
+    id: '0026-htl-room-types-events',
+    description: 'Room types carry events (a live listing change tells search): relay index',
+    up: async (ctx) => {
+      await ctx.createIndex(
+        ROOM_TYPES_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
 ];

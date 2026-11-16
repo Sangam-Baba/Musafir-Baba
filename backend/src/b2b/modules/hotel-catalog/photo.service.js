@@ -8,9 +8,13 @@
  * becomes the cover. Changes only while the property is editable (live edits: S03-T07).
  */
 import { b2bMongoose } from '../../core/db/connection.js';
+import { newEvent } from '../../core/db/events.js';
 import { DomainError, NotFoundError } from '../../core/errors.js';
 import { checkPhoto, checkPlaceholder } from './domain/photo-check.js';
+import { MIN_PROPERTY_PHOTOS, MIN_ROOM_PHOTOS } from './domain/listing-workflow.js';
 import { EDITABLE_STATUSES } from './domain/property.js';
+import { LIVE_STATUSES } from './domain/revisions.js';
+import { EVENTS } from './events.js';
 import { PropertyRecord } from './models/property.model.js';
 import { RoomTypeRecord } from './models/room-type.model.js';
 import { PERMISSIONS } from './permissions.js';
@@ -30,9 +34,38 @@ const ID = /^[a-f0-9]{24}$/;
  */
 
 /** @param {any} p */
+const ALLOWED = [...EDITABLE_STATUSES, ...LIVE_STATUSES];
+
+/** @param {any} p */
 function assertEditable(p) {
-  if (!(/** @type {readonly string[]} */ (EDITABLE_STATUSES).includes(p.status)))
+  if (!(/** @type {readonly string[]} */ (ALLOWED).includes(p.status)))
     throw new DomainError('PROPERTY_NOT_EDITABLE', { status: p.status });
+}
+
+/** @param {any} p */
+const isLive = (p) => /** @type {readonly string[]} */ (LIVE_STATUSES).includes(p.status);
+
+/**
+ * On a live listing a photo change is published at once (`property.updated` in the same update).
+ * @param {PhotoDeps} deps
+ * @param {any} p
+ * @returns {{ $set?: Record<string, unknown>, $push?: Record<string, unknown> }}
+ */
+function liveEvent(deps, p) {
+  if (!isLive(p)) return {};
+  const event = newEvent(
+    EVENTS.propertyUpdated,
+    { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef, fields: ['photos'] },
+    deps,
+  );
+  return { $set: { hasPendingEvents: true }, $push: { pendingEvents: event } };
+}
+
+/** A live listing never drops below the photos it needed to go live. @param {any} p @param {any} photo */
+function assertKeepsMinimum(p, photo) {
+  if (!isLive(p)) return;
+  const left = (p.photos ?? []).filter((/** @type {any} */ x) => x.roomTypeId === photo.roomTypeId).length - 1;
+  if (left < (photo.roomTypeId ? MIN_ROOM_PHOTOS : MIN_PROPERTY_PHOTOS)) throw new DomainError('PHOTOS_BELOW_MINIMUM');
 }
 
 /** @param {PhotoDeps} deps @param {string[]} keys */
@@ -90,9 +123,10 @@ async function addPhoto(deps, ctx, p, input) {
     uploadedBy: ctx.actor.type === 'member' ? `user:${ctx.actor.userId}` : 'system',
     uploadedAt: deps.clock.now(),
   };
+  const live = liveEvent(deps, p);
   const res = await PropertyRecord.updateOne(
-    { _id: p._id, hotelOrgId: p.hotelOrgId, status: { $in: EDITABLE_STATUSES } },
-    { $push: { photos: photo } },
+    { _id: p._id, hotelOrgId: p.hotelOrgId, status: { $in: ALLOWED } },
+    { ...(live.$set ? { $set: live.$set } : {}), $push: { photos: photo, ...(live.$push ?? {}) } },
   );
   if (res.modifiedCount !== 1) {
     await removeFiles(
@@ -139,7 +173,12 @@ export function createPhotoService(deps) {
         );
         set['photos.$.isCover'] = true;
       }
-      if (Object.keys(set).length > 0) await PropertyRecord.updateOne({ ...filter, 'photos._id': photo._id }, { $set: set });
+      const live = liveEvent(deps, p);
+      if (Object.keys(set).length > 0)
+        await PropertyRecord.updateOne(
+          { ...filter, 'photos._id': photo._id },
+          { $set: { ...set, ...(live.$set ?? {}) }, ...(live.$push ? { $push: live.$push } : {}) },
+        );
     },
 
     /** @param {import('../../core/context.js').RequestContext} ctx @param {string} propertyId @param {string} photoId */
@@ -147,7 +186,9 @@ export function createPhotoService(deps) {
       const p = await editable(ctx, propertyId);
       const photo = (p.photos ?? []).find((/** @type {any} */ x) => String(x._id) === photoId);
       if (!photo) throw new NotFoundError('PHOTO_NOT_FOUND');
-      await PropertyRecord.updateOne({ _id: p._id, hotelOrgId: p.hotelOrgId }, { $pull: { photos: { _id: photo._id } } });
+      assertKeepsMinimum(p, photo);
+      const live = liveEvent(deps, p);
+      await PropertyRecord.updateOne({ _id: p._id, hotelOrgId: p.hotelOrgId }, { $pull: { photos: { _id: photo._id } }, ...live });
       await removeFiles(
         deps,
         Object.values(photo.variants).map((/** @type {any} */ v) => v.key),

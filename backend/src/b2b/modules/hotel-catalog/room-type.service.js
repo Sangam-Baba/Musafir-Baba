@@ -5,9 +5,12 @@
  * edited (draft or changes requested; live edits come with S03-T07), each on the version the screen loaded.
  * A room type can be deleted while the property is still being prepared (nothing refers to it yet).
  */
+import { newEvent } from '../../core/db/events.js';
 import { AppError, ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { EDITABLE_STATUSES } from './domain/property.js';
+import { LIVE_STATUSES } from './domain/revisions.js';
 import { assertOccupancy, MAX_ROOM_TYPES_PER_PROPERTY, nameKey } from './domain/room-type.js';
+import { EVENTS } from './events.js';
 import { AmenityRecord, BedTypeRecord } from './models/masters.model.js';
 import { RoomTypeRecord } from './models/room-type.model.js';
 import { PERMISSIONS } from './permissions.js';
@@ -58,12 +61,47 @@ const nameTaken = (error) => {
 
 /** @param {any} property */
 function assertEditable(property) {
-  if (!(/** @type {readonly string[]} */ (EDITABLE_STATUSES).includes(property.status)))
+  const ok = [...EDITABLE_STATUSES, ...LIVE_STATUSES];
+  if (!(/** @type {readonly string[]} */ (ok).includes(property.status)))
     throw new DomainError('PROPERTY_NOT_EDITABLE', { status: property.status });
 }
 
 /**
- * @param {{ properties: { loadOwned: (ctx: import('../../core/context.js').RequestContext, id: string, permission: string) => Promise<any> } }} deps
+ * On a live listing a room type change is published at once: `property.updated` stored with the change.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @param {any} p
+ * @returns {Record<string, unknown>}
+ */
+function liveEventFields(deps, p) {
+  if (!(/** @type {readonly string[]} */ (LIVE_STATUSES).includes(p.status))) return {};
+  const event = newEvent(
+    EVENTS.propertyUpdated,
+    { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef, fields: ['roomTypes'] },
+    deps,
+  );
+  return { hasPendingEvents: true, pendingEvents: [event] };
+}
+
+/**
+ * Deleted while the property was never published; archived afterwards — never the last one of a live listing.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @param {any} p
+ * @param {any} r
+ */
+async function removeRoomType(deps, p, r) {
+  if (!p.publishedAt) return void (await RoomTypeRecord.deleteOne({ _id: r._id, hotelOrgId: p.hotelOrgId }));
+  if ((await RoomTypeRecord.countDocuments({ hotelOrgId: p.hotelOrgId, propertyId: String(p._id), status: 'ACTIVE' })) <= 1)
+    throw new DomainError('LAST_ROOM_TYPE');
+  const { pendingEvents, ...flags } = liveEventFields(deps, p);
+  await RoomTypeRecord.updateOne(
+    { _id: r._id, hotelOrgId: p.hotelOrgId, status: 'ACTIVE' },
+    { $set: { status: 'ARCHIVED', ...flags }, ...(pendingEvents ? { $push: { pendingEvents: { $each: pendingEvents } } } : {}) },
+  );
+}
+
+/**
+ * @param {{ clock: import('../../core/clock.js').Clock,
+ *   properties: { loadOwned: (ctx: import('../../core/context.js').RequestContext, id: string, permission: string) => Promise<any> } }} deps
  */
 export function createRoomTypeService(deps) {
   /** @param {import('../../core/context.js').RequestContext} ctx @param {string} propertyId @param {string} id */
@@ -97,6 +135,7 @@ export function createRoomTypeService(deps) {
         propertyId,
         createdBy: by,
         updatedBy: by,
+        ...liveEventFields(deps, p),
       }).catch(nameTaken);
       return toDto(doc.toObject());
     },
@@ -109,9 +148,14 @@ export function createRoomTypeService(deps) {
       const { p, r } = await loadOne(ctx, input.propertyId, input.id);
       assertEditable(p);
       const set = { ...(await checkInput(input.data)), updatedBy: ctx.actor.type === 'member' ? `user:${ctx.actor.userId}` : 'system' };
+      const { pendingEvents, ...flags } = liveEventFields(deps, p);
       const res = await RoomTypeRecord.updateOne(
         { _id: r._id, hotelOrgId: p.hotelOrgId, version: input.version },
-        { $set: set, $inc: { version: 1 } },
+        {
+          $set: { ...set, ...flags },
+          $inc: { version: 1 },
+          ...(pendingEvents ? { $push: { pendingEvents: { $each: pendingEvents } } } : {}),
+        },
       ).catch(nameTaken);
       if (res.modifiedCount !== 1)
         throw new AppError('VERSION_CONFLICT', 412, 'The room type was changed meanwhile — reload and try again');
@@ -119,10 +163,11 @@ export function createRoomTypeService(deps) {
     },
 
     /** @param {import('../../core/context.js').RequestContext} ctx @param {string} propertyId @param {string} id */
+    /** @param {import('../../core/context.js').RequestContext} ctx @param {string} propertyId @param {string} id */
     async remove(ctx, propertyId, id) {
       const { p, r } = await loadOne(ctx, propertyId, id);
       assertEditable(p);
-      await RoomTypeRecord.deleteOne({ _id: r._id, hotelOrgId: p.hotelOrgId });
+      await removeRoomType(deps, p, r);
     },
   };
 }
