@@ -32,6 +32,7 @@ import { roomTypeRoutes } from './hotel-room-types.js';
 import { photoRoutes } from './hotel-photos.js';
 import { listingRoutes } from './hotel-listing.js';
 import { hotelAdminRoutes } from './hotel-admin.js';
+import { hotelContentRoutes } from './hotel-content.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -39,6 +40,8 @@ import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import {
   createAdminListingService,
+  createContentService,
+  createVisibilityService,
   createListingService,
   createMastersService,
   createPhotoService,
@@ -175,6 +178,12 @@ function stage03Routes(env, clock, identity) {
     mediaUrl: store.url,
   });
   router.use(hotelAdminRoutes({ revisions, adminListing, properties }));
+  router.use(
+    hotelContentRoutes({
+      content: createContentService({ clock, mediaUrl: store.url }),
+      visibility: createVisibilityService({ clock, properties }),
+    }),
+  );
   return router;
 }
 

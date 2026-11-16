@@ -101,6 +101,13 @@ const schema = new b2bMongoose.Schema(
       ),
       default: null,
     },
+    // S03-T09: where it is sold — website / B2B, optional client categories (empty = all clients), not before `sellFrom`
+    visibility: {
+      website: { type: Boolean, default: true },
+      b2b: { type: Boolean, default: true },
+      clientCategories: { type: [String], default: [] },
+      sellFrom: { type: String, default: null }, // 'YYYY-MM-DD', the hotel's own date
+    },
     // S03-T08: MusafirBaba's latest decision — comments per section when changes are requested, or why it was suspended / archived
     review: {
       type: new b2bMongoose.Schema(

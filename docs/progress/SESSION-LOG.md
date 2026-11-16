@@ -80,7 +80,8 @@
 - **Later:** S03-T07 → DONE (live edits: sensitive → pending revision, rest direct; admin approve / reject with `revisionId`; hotel cancel; room types / photos on live listings; migration 0026 on dev Atlas). Shared test helper `helpers/hotel-listing.js` (complete property). Tests ✅ 56 files / 562, 2× green.
 - **Later:** S03-T08 → DONE (admin listing tools: list / queue, detail with checklist and duplicates within 200 m, approve / request changes / suspend / reactivate / archive, direct edits, own-organisation guard).
 - **Rare test failures — cause found and fixed (test helpers only):** run 2 had sign-in tests getting 404 / 401 from the *wrong* server. Node's `fetch` keeps connections open; a test file's closed server keeps already-open connections alive, and when the next file's server gets the same port, `fetch` reuses the old connection and talks to the old app. This also explains the earlier `realtime.test.js` flake (S03-T04) and the unidentified one from Stage 01. Fix: test servers (helpers/http.js and realtime.test.js) answer every request with `Connection: close`, listen on 127.0.0.1 only, and end all connections on close. No app code changed. Then ✅ 57 files / 568 — 3 + 2 clean full runs.
-- **Next step:** S03-T09 visibility (website / B2B) and the public content read model.
+- **Later:** S03-T09 → DONE (visibility + public content `GET /hotels/:ref`). Tests ✅ 58 files / 572, 2× green.
+- **Next step:** S03-T10 listing notifications.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)

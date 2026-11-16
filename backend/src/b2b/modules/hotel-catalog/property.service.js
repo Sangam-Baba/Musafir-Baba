@@ -126,8 +126,17 @@ function content(p) {
     timeZone: p.timeZone,
     policies: p.policies ?? null,
     amenities: p.amenities ?? [],
+    visibility: visibilityDto(p.visibility),
   };
 }
+
+/** @param {any} v */
+const visibilityDto = (v) => ({
+  website: v?.website ?? true,
+  b2b: v?.b2b ?? true,
+  clientCategories: v?.clientCategories ?? [],
+  sellFrom: v?.sellFrom ?? null,
+});
 
 /** @param {any} p */
 const ownership = (p) => ({ orgId: p.hotelOrgId, propertyId: String(p._id) });

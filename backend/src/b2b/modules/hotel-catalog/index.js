@@ -30,3 +30,6 @@ export { createRevisionService } from './revision.service.js';
 export { SENSITIVE_FIELDS, splitChanges, LIVE_STATUSES } from './domain/revisions.js';
 export { createAdminListingService } from './admin-listing.service.js';
 export { namesSimilar, nameTokens, DUPLICATE_RADIUS_M } from './domain/duplicates.js';
+export { createContentService } from './content.service.js';
+export { createVisibilityService } from './visibility.service.js';
+export { isVisible, CHANNELS } from './domain/visibility.js';
