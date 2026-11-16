@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | IN_PROGRESS |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | A · hotels |
 | **Owner(s)** | |
 | **Started** | 2026-11-15 |
@@ -38,24 +38,24 @@
 | S03-T10 | Notifications: listing submitted / approved / changes requested (catalogue + templates), admin queue push | §3.5 | DONE | AI (Claude) | | 4 ✅ | Categories (shown to members with `hotel-catalog.property.read` — Owner, Manager — emailed to Owners): `listing.published` (approved or reactivated), `listing.changes-requested` (critical), `listing.suspended` (critical, with the reason), `listing.revision-decided` (approved / not approved); versioned templates with the listing name; link `/business/properties/{propertyId}` filled from the event. Property events now carry the listing `name`. Submissions, new revisions and decisions push `queue:changed {queue: 'listings'}` to staff. Inbox rows carry `propertyId`, so a member limited to some properties only sees notifications about theirs (tested). End-to-end tested: admin approval → relay → bell of Owner and Manager |
 | S03-T11 | Business area: property wizard (autosave), room types, photos (browser makes the sizes), submit and status | §3.2–3.5 | DONE | AI (Claude) | | tsc ✅ | New pages only: `/business/properties` (cards with cover, status, pending changes; new draft = name + type) and `/business/properties/[id]` (steps with ✓: Status & submit — readiness list, submit / submit again / withdraw, MusafirBaba's comments per section, pending changes with "take back", timeline; Basic; Location — city / area, address, PIN, **map pin** with the website's existing Google Maps key, lat / lng fallback; Contacts; Check-in & check-out; Policies; Amenities; Room types — add / edit / remove; Photos — the browser decodes upright, makes WebP sizes (JPEG fallback) + blurred placeholder, refuses < 1200 px; cover, category, caption, remove; per room type counts; Where it's sold — website / B2B / sell-from). Every save sends the version (`If-Match`) and explains 412. "Properties" tab (with `hotel-catalog.property.read`) and Home card. No new package (Google Maps types declared locally). Not clicked through in a browser by me — owner to try |
 | S03-T12 | Admin pages: properties tab, review screen (checklist, duplicates, section comments, revision diff), masters screens | §3.1, §3.7 | DONE | AI (Claude) | | tsc ✅ | In the existing admin panel with its UI kit: B2B admin gets **Listings** (approval queue / all properties, status filter, search, cover thumbnail, "changes to review", waiting time) and **Masters** tabs (cities with areas, amenities, property / bed types, meal plans — add, rename, reorder, switch off / on; areas as chips). `/admin/b2b/properties/[id]`: checklist (blockers + possible duplicates within 200 m with links), decision (approve / request changes with comments per section / suspend / reactivate / archive — reason required where the hotel sees it), pending changes as "now → proposed" with approve / reject, where it's sold incl. B2B client categories, details (map link, GSTIN, contacts), room types, photos opening full size. Admin bell also counts listings to review and refreshes live on `queue:changed {queue: 'listings'}`. Not clicked through in a browser by me |
-| S03-T13 | Mandatory test suite: state machine, revision rules, visibility per channel, photo checks, isolation | §8 | TODO | | | | |
+| S03-T13 | Mandatory test suite: state machine, revision rules, visibility per channel, photo checks, isolation | §8 | DONE | AI (Claude) | | 7 ✅ | `stage-03-mandatory.test.js`: tenant isolation for `htl_properties` and `htl_room_types` (unscoped reads / writes refused; scoped reads see only their owner), every `htl_` collection classified (master lists platform-wide on purpose); description "XSS payload" stored and served exactly as typed (data, rendered as text); crash injection for photo uploads (listing archived while the files are being stored → record refused, files removed, no photo recorded). The file header maps every other mandatory test to its file |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 
 ## Definition of Done (copied from the stage file)
 
-- [ ] Hotel completes wizard with 2 room types and photos, submits
+- [x] Hotel completes wizard with 2 room types and photos, submits (server: hotel-listing / hotel-room-types / hotel-photos tests; screens in S03-T11 — owner to try in the browser)
 - [x] Admin approves; property LIVE; publish event emitted (hotel-admin-listing.test.js)
 - [x] Website and dashboard can fetch the property content (visibility respected) (hotel-content.test.js)
 - [x] Sensitive edit on LIVE property waits for approval without taking it offline (hotel-revisions.test.js)
 
 ## Mandatory tests (copied from the stage file)
 
-- [ ] Listing state machine
-- [ ] Revision rules (sensitive vs direct)
-- [ ] Visibility filter on public endpoint per channel
-- [ ] Photo variants + EXIF strip
-- [ ] Isolation
+- [x] Listing state machine (hotel-listing.test.js — every status × action)
+- [x] Revision rules (sensitive vs direct) (hotel-revisions.test.js)
+- [x] Visibility filter on public endpoint per channel (hotel-content.test.js)
+- [x] Photo variants + EXIF strip (hotel-photos.test.js — sizes checked from the bytes; camera / GPS data refused; the browser's canvas re-encode removes it)
+- [x] Isolation (stage-03-mandatory.test.js + property limits in each hotel test)
 
 ## Left out on purpose in this stage
 

@@ -84,7 +84,8 @@
 - **Later:** S03-T10 → DONE (listing notifications + admin queue pushes; property-limited members only see their properties' notifications). Tests ✅ 59 files / 576, 2× green.
 - **Later:** S03-T11 → DONE (business-area listing screens; frontend tsc ✅; pages load; live 401 / 404 checks). Not clicked through in a browser.
 - **Later:** S03-T12 → DONE (admin listing screens, masters screens, admin bell counts listings). Frontend tsc ✅; pages load; live 401 check.
-- **Next step:** S03-T13 Stage 03 mandatory test suite.
+- **Later:** S03-T13 → DONE (isolation for htl_ owned collections, master lists classified, XSS payload test, photo-upload crash injection). Tests ✅ 60 files / 583, 2× green. **Stage 03 → AWAITING_SIGN_OFF** (owner to try the listing flow in the browser and sign off).
+- **Next step:** Stage 04 — inventory & rates calendar (task list).
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
