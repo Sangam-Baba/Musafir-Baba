@@ -80,6 +80,7 @@ export function KycQueueTab({ token }: { token: string }) {
                   <TableCell>
                     <FleetPill className={a.status === "APPROVED" ? fleetTone.emerald : a.status === "REJECTED" ? fleetTone.amber : fleetTone.sky}>{STATUS_TEXT[a.status].label}</FleetPill>
                     {a.awaitingSecondApproval && <p className="mt-1 text-[11px] font-medium text-violet-700">Needs second approval</p>}
+                    {a.pendingGstRegistrations > 0 && <p className="mt-1 text-[11px] font-medium text-sky-700">{a.pendingGstRegistrations} GSTIN to check</p>}
                   </TableCell>
                   <TableCell>
                     {a.risk.highRisk ? (

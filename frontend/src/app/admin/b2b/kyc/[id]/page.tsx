@@ -14,6 +14,7 @@ import { AdminPageHeader, FleetPage, FleetPanel, Notice, PrimaryBtn, SecondaryBt
 import { ReviewDecision } from "@/b2b/components/admin/kyc/ReviewDecision";
 import { ReviewDocuments } from "@/b2b/components/admin/kyc/ReviewDocuments";
 import { ReviewFacts } from "@/b2b/components/admin/kyc/ReviewFacts";
+import { ReviewGstRegistrations } from "@/b2b/components/admin/kyc/ReviewGstRegistrations";
 import { HISTORY_TEXT, STATUS_TEXT } from "@/b2b/kyc";
 import { errorMessage } from "@/b2b/messages";
 
@@ -69,6 +70,7 @@ function Review({ id, token }: { id: string; token: string }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
           <ReviewFacts app={app} token={token} />
+          <ReviewGstRegistrations app={app} token={token} onChanged={update} />
           {lock.mine && <ReviewDecision app={app} token={token} onChanged={update} />}
         </div>
         <div className="flex flex-col gap-4">

@@ -74,6 +74,8 @@ export const ADMIN_QUEUES = Object.freeze({
   'kyc.application.assigned': 'kyc',
   'kyc.application.approved': 'kyc',
   'kyc.application.rejected': 'kyc',
+  'kyc.gst-registration.added': 'kyc',
+  'kyc.gst-registration.decided': 'kyc',
 });
 
 /** @param {string} key @returns {Category | null} */

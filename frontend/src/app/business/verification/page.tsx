@@ -9,6 +9,7 @@ import { BusinessShell } from "@/b2b/components/BusinessShell";
 import { BankSection } from "@/b2b/components/kyc/BankSection";
 import { DetailsSection } from "@/b2b/components/kyc/DetailsSection";
 import { DocumentsSection } from "@/b2b/components/kyc/DocumentsSection";
+import { GstRegistrationsSection } from "@/b2b/components/kyc/GstRegistrationsSection";
 import { StatusPanel } from "@/b2b/components/kyc/StatusPanel";
 import { KYC_PERMISSION_READ, KYC_PERMISSION_SUBMIT, type KycApplication } from "@/b2b/kyc";
 import { errorMessage } from "@/b2b/messages";
@@ -37,6 +38,7 @@ function Verification({ me }: { me: Me }) {
       {!me.user.emailVerified && <EmailBanner email={me.user.email} />}
       <StatusPanel app={a} />
       <DetailsSection app={a} canEdit={canEdit} onSaved={refresh} />
+      <GstRegistrationsSection app={a} canEdit={me.permissions.includes(KYC_PERMISSION_SUBMIT) && !me.viewAs} onChanged={refresh} />
       <BankSection key={`bank-${a.revision}`} app={a} canEdit={canEdit} onSaved={refresh} />
       <DocumentsSection app={a} canEdit={canEdit} onChanged={refresh} />
       {canEdit && <SubmitBar app={a} emailVerified={me.user.emailVerified} onDone={refresh} />}

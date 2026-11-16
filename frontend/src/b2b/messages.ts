@@ -75,6 +75,12 @@ const MESSAGES: Record<string, string> = {
   KYC_SECOND_APPROVER_MUST_DIFFER: "High-risk applications need a second, different reviewer for the final approval.",
   KYC_SECOND_APPROVER_REQUIRED: "The final approval needs the “second approval” permission.",
   KYC_OWN_ORGANISATION: "You can't decide an application of an organisation you belong to.",
+  KYC_NOT_GST_REGISTERED: "Your business is registered as below the GST threshold, so there are no GSTINs to add.",
+  GST_STATE_ALREADY_ADDED: "There is already a GSTIN for that state.",
+  GSTIN_INVALID: "This GSTIN isn't valid — check for a typo.",
+  PAN_NOT_IN_GSTIN: "This GSTIN belongs to a different PAN. A business with another PAN must be registered separately (Add another business).",
+  GST_REGISTRATION_NOT_FOUND: "That GST registration wasn't found (verified ones can't be removed).",
+  GST_REGISTRATION_ALREADY_DECIDED: "This GST registration has already been decided.",
 };
 
 export function errorMessage(error: unknown): string {

@@ -67,6 +67,13 @@
 - **Later:** S02-T15 → DONE (Stage 02 mandatory tests: isolation for every Stage 02 collection, registration crash injection; gap fixed — empty draft for an onboarding hotel without an application). Tests ✅ 49 files / 515, 2× green. **Stage 02 → AWAITING_SIGN_OFF** (owner to try the flow in the browser and sign off; listing is Stage 03).
 - **Later:** Stage 03 started — `stages/stage-03.md` (13 tasks); owner decision D32 (photos: "use the existing setup" → existing R2 bucket served at cdn.musafirbaba.com, browser makes the WebP sizes, backend checks them, no new package). S03-T01 → DONE (`hotel-catalog` module, permissions, events). Tests ✅ 49 files / 526, 2× green.
 - **Later:** S03-T02 → DONE (master lists + starter data + admin API; migration 0022 applied on dev Atlas — target verified cluster0.laeqxcp). Tests ✅ 50 files / 531, 2× green.
+
+## 2026-11-16 — AI (Claude) — S03-T03a several GSTINs per business (D33)
+
+- **Goal:** owner raised: some hotel groups have different GSTINs (and sometimes PANs) per hotel.
+- **Done:** D33 decided with the owner — one org = one PAN; same PAN in several states → further GSTINs per state, each verified; different PAN → separate org under the same login. S03-T03a → DONE (backend, screens, migration 0023 on dev Atlas). A test caught that a verified GSTIN could be removed — fixed (condition moved into the filter).
+- **Tests run:** `test:b2b` ✅ 51 files / 537, 2× green; `typecheck:b2b` ✅; `lint:b2b` ✅; `b2b:guards` ✅; frontend tsc ✅; pages load.
+- **Next step:** S03-T03 property — links each property to the verified GSTIN of its state.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)

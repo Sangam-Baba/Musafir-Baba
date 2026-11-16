@@ -102,7 +102,12 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
             ))}
           </nav>
           {!data.viewAs && data.memberships.length > 0 && (
-            <select aria-label="Organisation" value={data.currentOrgId ?? ""} onChange={(e) => e.target.value && switchOrg(e.target.value)} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+            <select
+              aria-label="Organisation"
+              value={data.currentOrgId ?? ""}
+              onChange={(e) => (e.target.value === "__add" ? router.push("/business/register") : e.target.value && switchOrg(e.target.value))}
+              className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            >
               <option value="" disabled>
                 Choose organisation…
               </option>
@@ -111,6 +116,7 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
                   {m.displayName} · {m.type === "HOTEL" ? "Hotel" : "Client"}
                 </option>
               ))}
+              <option value="__add">+ Add another business</option>
             </select>
           )}
           <Bell orgId={data.currentOrgId} />

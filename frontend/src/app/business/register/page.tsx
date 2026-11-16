@@ -75,7 +75,12 @@ export default function HotelRegisterPage() {
               />
             </div>
           )}
-          {token && <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">You're signed in — this hotel will be added to your account.</p>}
+          {token && (
+            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              You&apos;re signed in — this business will be added to your account, and you can switch between your businesses at the top. Use this for a hotel
+              company with its own PAN. Same PAN in another state? Add that GSTIN on your Verification page instead.
+            </p>
+          )}
           <HotelDetailsFields value={details} onChange={setDetails} errors={errors} />
           <FormError message={error} />
           <PrimaryButton type="submit" busy={busy}>

@@ -11,3 +11,4 @@ export { APPLICATIONS_COLLECTION, APPLICATION_STATUSES, ApplicationRecord } from
 export { createKycService, applicationDto } from './kyc.service.js';
 export { createKycReviewService, REVIEW_LOCK_MS } from './review.service.js';
 export { createKycHousekeeping } from './housekeeping.js';
+export { createGstRegistrations } from './gst-registrations.js';

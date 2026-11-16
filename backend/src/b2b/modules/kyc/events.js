@@ -7,5 +7,7 @@ export const EVENTS = /** @type {const} */ ({
   applicationApproved: 'kyc.application.approved',
   applicationRejected: 'kyc.application.rejected',
   applicationReminded: 'kyc.application.reminded',
+  gstRegistrationAdded: 'kyc.gst-registration.added',
+  gstRegistrationDecided: 'kyc.gst-registration.decided',
   sensitiveViewed: 'kyc.application.sensitive-viewed',
 });

@@ -37,6 +37,21 @@ export interface DocumentRequirement {
   required: boolean;
 }
 
+/** A further GSTIN of the same business (same PAN, another state), verified on its own. */
+export interface GstRegistration {
+  id: string;
+  stateCode: string;
+  gstin: string;
+  fileId: string;
+  status: "PENDING" | "VERIFIED" | "REJECTED";
+  duplicate: boolean;
+  note: string | null;
+  addedAt: string;
+  decidedAt: string | null;
+}
+
+export const stateName = (code: string) => GST_STATES.find(([c]) => c === code)?.[1] ?? code;
+
 export interface KycApplication {
   id: string;
   orgId: string;
@@ -46,6 +61,7 @@ export interface KycApplication {
   documents: { key: string; fileId: string; attachedAt: string }[];
   risk: { flags: string[]; highRisk: boolean };
   bank: { holderName: string; ifsc: string; accountLast4: string } | null;
+  gstRegistrations: GstRegistration[];
   revision: number;
   round: number;
   history: { at: string; action: string; status: KycStatus; note: string | null }[];

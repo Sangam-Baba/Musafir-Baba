@@ -1,5 +1,5 @@
 // MusafirBaba's KYC review — shapes from /api/v1/admin/kyc-applications (backend/src/b2b/modules/kyc/review.service.js).
-import type { DocumentRequirement, KycStatus, StoredDetails } from "./kyc";
+import type { DocumentRequirement, GstRegistration, KycStatus, StoredDetails } from "./kyc";
 
 export interface QueueItem {
   id: string;
@@ -13,6 +13,7 @@ export interface QueueItem {
   reviewerId: string | null;
   lockedUntil: string | null;
   awaitingSecondApproval: boolean;
+  pendingGstRegistrations: number;
 }
 
 export type Verdict = "VERIFIED" | "MISMATCH" | "UNREADABLE";
@@ -26,6 +27,7 @@ export interface ReviewDetail {
   documents: { key: string; fileId: string; attachedAt: string }[];
   risk: { flags: string[]; highRisk: boolean };
   bank: { holderName: string; ifsc: string; accountLast4: string } | null;
+  gstRegistrations: GstRegistration[];
   round: number;
   history: { at: string; action: string; status: KycStatus; note: string | null }[];
   submittedAt: string | null;

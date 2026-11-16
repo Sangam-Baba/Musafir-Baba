@@ -46,10 +46,11 @@ export default function BusinessHome() {
                 <p className="mt-1 text-sm text-slate-600">Add your bank account and documents and submit them. Once MusafirBaba verifies your business, you can start listing.</p>
               </Link>
             )}
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card href="/business/team" title="Team" text="Members, invitations, roles and branches." />
               <Card href="/business/activity" title="Activity" text="Sign-ins and changes in your organisation." />
               <Card href="/business/security" title="Security" text={me.mfa.totp === "on" ? "Two-step login is on." : "Turn on two-step login."} />
+              <Card href="/business/register" title="Add another business" text="A hotel company with a different PAN? Register it under this same login." />
             </div>
             <p className="text-xs text-slate-400">Hotel listings, rooms, rates and bookings arrive in the next stages.</p>
           </div>

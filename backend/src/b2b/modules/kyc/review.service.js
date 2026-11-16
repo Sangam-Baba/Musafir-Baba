@@ -63,6 +63,7 @@ const queueItem = (a) => ({
   reviewerId: a.review?.reviewerId ?? null,
   lockedUntil: a.review?.lockedUntil ?? null,
   awaitingSecondApproval: Boolean(a.review?.firstApproval),
+  pendingGstRegistrations: (a.gstRegistrations ?? []).filter((/** @type {any} */ g) => g.status === 'PENDING').length,
 });
 
 /** @param {string} id */
@@ -274,7 +275,10 @@ export function createKycReviewService(deps) {
     /** @param {{ status?: string[], orgType?: string, highRisk?: boolean, limit?: number }} f */
     async queue(f) {
       /** @type {Record<string, unknown>} */
-      const filter = { status: { $in: f.status ?? ['SUBMITTED', 'UNDER_REVIEW'] } };
+      // default: waiting or in review, plus any business (e.g. already verified) with a new GSTIN to check
+      const filter = f.status
+        ? { status: { $in: f.status } }
+        : { $or: [{ status: { $in: ['SUBMITTED', 'UNDER_REVIEW'] } }, { 'gstRegistrations.status': 'PENDING' }] };
       if (f.orgType) filter.orgType = f.orgType;
       if (f.highRisk !== undefined) filter['risk.highRisk'] = f.highRisk;
       const docs = await ApplicationRecord.find(filter)

@@ -9,6 +9,7 @@
  * POST /admin/kyc-applications/:id/release
  * PUT  /admin/kyc-applications/:id/documents/:key    — {verdict, note}
  * POST /admin/kyc-applications/:id/decision          — {decision: APPROVE | REJECT, note}
+ * POST /admin/kyc-applications/:id/gst-registrations/:regId/decision — {decision: VERIFY | REJECT, note}
  * POST /admin/kyc-applications/:id/sensitive         — full PAN and account number (every view recorded)
  */
 import express from 'express';
@@ -81,7 +82,8 @@ async function withYou(res, detail) {
 
 /**
  * @param {{ review: ReturnType<typeof import('../modules/kyc/index.js').createKycReviewService>,
- *   kyc: ReturnType<typeof import('../modules/kyc/index.js').createKycService> }} deps
+ *   kyc: ReturnType<typeof import('../modules/kyc/index.js').createKycService>,
+ *   gst?: ReturnType<typeof import('../modules/kyc/index.js').createGstRegistrations> }} deps
  */
 export function kycAdminRoutes(deps) {
   const router = express.Router();
@@ -137,6 +139,7 @@ export function kycAdminRoutes(deps) {
       return withYou(res, deps.review.decide(reviewerOf(res), params.id, { decision: body.decision, note: body.note ?? null }));
     }),
   );
+  router.use(gstDecisionRoute(deps));
   router.use(sensitiveRoute(deps));
   return router;
 }
@@ -152,6 +155,26 @@ function sensitiveRoute(deps) {
       const who = reviewerOf(res);
       const application = await deps.review.get(res.locals.input.params.id);
       return deps.kyc.revealSensitive(application.orgId, `staff:${who.staffId}`);
+    }),
+  );
+  return router;
+}
+
+/** @param {KycAdminDeps} deps */
+function gstDecisionRoute(deps) {
+  const router = express.Router();
+  router.post(
+    '/admin/kyc-applications/:id/gst-registrations/:regId/decision',
+    requirePermission(KYC.platformReview),
+    validate({
+      params: z.strictObject({ id: z.string().regex(/^[a-f0-9]{24}$/), regId: z.string().regex(/^[a-f0-9]{24}$/) }),
+      body: z.strictObject({ decision: z.enum(['VERIFY', 'REJECT']), note: Note }),
+    }),
+    handle(async (res) => {
+      const { params, body } = res.locals.input;
+      if (!deps.gst) throw new Error('[b2b] GST registrations not wired');
+      await deps.gst.decide(reviewerOf(res), params.id, params.regId, { decision: body.decision, note: body.note ?? null });
+      return withYou(res, deps.review.get(params.id));
     }),
   );
   return router;

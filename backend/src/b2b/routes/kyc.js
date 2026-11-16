@@ -8,6 +8,8 @@
  * PUT    /kyc/bank             — the payout bank account {holderName, accountNumber, ifsc}; the number is stored encrypted
  * PUT    /kyc/documents/:key   — attach an uploaded file {fileId} as one document (replaces an earlier one)
  * DELETE /kyc/documents/:key   — remove a document
+ * POST   /kyc/gst-registrations — a further GSTIN of the same business (another state) {gstin, fileId: its certificate}
+ * DELETE /kyc/gst-registrations/:id — remove one not verified yet
  * POST   /kyc/submit           — submit / resubmit; repeat-safe; needs a verified email and every required document
  */
 import express from 'express';
@@ -29,7 +31,8 @@ const DocumentKey = z.strictObject({ key: z.string().regex(/^[a-z][a-z0-9_]{1,40
 /**
  * @typedef {{ kyc: ReturnType<typeof import('../modules/kyc/index.js').createKycService>,
  *   users: ReturnType<typeof import('../modules/identity/index.js').createUserRepository>,
- *   orgs?: { basicInfo: (orgId: string) => Promise<{ type: string, status: string } | null> } }} KycRouteDeps
+ *   orgs?: { basicInfo: (orgId: string) => Promise<{ type: string, status: string } | null> },
+ *   gst?: ReturnType<typeof import('../modules/kyc/index.js').createGstRegistrations> }} KycRouteDeps
  */
 
 /**
@@ -84,6 +87,27 @@ export function kycRoutes(deps) {
   router.delete('/kyc/documents/:key', submit, validate({ params: DocumentKey }), (_req, res, next) => {
     deps.kyc.detachDocument(contextOf(res), res.locals.input.params.key).then((a) => res.json(a), next);
   });
+
+  router.post(
+    '/kyc/gst-registrations',
+    submit,
+    validate({ body: z.strictObject({ gstin: z.string().trim().min(15).max(20), fileId: z.string().min(1).max(64) }) }),
+    (_req, res, next) => {
+      const gst = deps.gst;
+      if (!gst) return next(new Error('[b2b] GST registrations not wired'));
+      gst.add(contextOf(res), res.locals.input.body).then(() => deps.kyc.mine(contextOf(res)).then((a) => res.status(201).json(a)), next);
+    },
+  );
+  router.delete(
+    '/kyc/gst-registrations/:id',
+    submit,
+    validate({ params: z.strictObject({ id: z.string().regex(/^[a-f0-9]{24}$/) }) }),
+    (_req, res, next) => {
+      const gst = deps.gst;
+      if (!gst) return next(new Error('[b2b] GST registrations not wired'));
+      gst.remove(contextOf(res), res.locals.input.params.id).then(() => deps.kyc.mine(contextOf(res)).then((a) => res.json(a)), next);
+    },
+  );
 
   router.post('/kyc/submit', submit, validate({ body: z.strictObject({}) }), (_req, res, next) => {
     (async () => {

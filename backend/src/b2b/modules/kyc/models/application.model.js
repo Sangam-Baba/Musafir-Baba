@@ -92,6 +92,27 @@ const schema = new b2bMongoose.Schema(
       },
       decisionNote: { type: String, default: null },
     },
+    // S03-T03a: further GSTINs of the same business (same PAN), one per state; each verified on its own
+    gstRegistrations: {
+      type: [
+        new b2bMongoose.Schema(
+          {
+            stateCode: { type: String, required: true },
+            gstin: { type: String, required: true },
+            fileId: { type: String, required: true }, // its GST certificate
+            status: { type: String, enum: ['PENDING', 'VERIFIED', 'REJECTED'], default: 'PENDING' },
+            duplicate: { type: Boolean, default: false }, // the GSTIN is also on another organisation's application
+            note: { type: String, default: null },
+            addedBy: { type: String, required: true },
+            addedAt: { type: Date, required: true },
+            decidedBy: { type: String, default: null },
+            decidedAt: { type: Date, default: null },
+          },
+          { _id: true },
+        ),
+      ],
+      default: [],
+    },
     remindedAt: { type: Date, default: null }, // S02-T11: unfinished-registration reminder sent
     submittedAt: { type: Date, default: null },
     decidedAt: { type: Date, default: null },

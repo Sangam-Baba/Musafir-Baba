@@ -32,7 +32,7 @@ import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { createMastersService } from '../modules/hotel-catalog/index.js';
-import { createKycReviewService, createKycService } from '../modules/kyc/index.js';
+import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
@@ -127,8 +127,10 @@ function stage02Routes(env, clock, identity) {
   const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
-  router.use(kycRoutes({ kyc, users: identity.users, orgs: identity.orgs }));
-  router.use(kycAdminRoutes({ review: createKycReviewService({ clock, isOwnOrg: ownOrgCheck(identity) }), kyc }));
+  const isOwnOrg = ownOrgCheck(identity);
+  const gst = createGstRegistrations({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET, isOwnOrg });
+  router.use(kycRoutes({ kyc, users: identity.users, orgs: identity.orgs, gst }));
+  router.use(kycAdminRoutes({ review: createKycReviewService({ clock, isOwnOrg }), kyc, gst }));
   router.use(notificationRoutes({ notifications: createNotificationsService({ clock }) }));
   return router;
 }
