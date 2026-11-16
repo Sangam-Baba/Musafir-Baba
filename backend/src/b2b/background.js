@@ -29,7 +29,7 @@ import { logger as defaultLogger } from './core/logger.js';
 import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
-import { seedMasters } from './modules/hotel-catalog/index.js';
+import { EVENTS as CATALOG_EVENTS, PropertyRecord, seedMasters } from './modules/hotel-catalog/index.js';
 import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
 import { createUserRepository, EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
 import { ADMIN_QUEUES, createDelivery, EVENT_CATEGORIES } from './modules/notifications/index.js';
@@ -54,7 +54,13 @@ export const eventBus = createEventBus();
 const audit = createAuditService({ clock: systemClock });
 eventBus.subscribe({
   consumer: 'audit',
-  types: [...Object.values(IDENTITY_EVENTS), ...Object.values(ORG_EVENTS), ...Object.values(ACCESS_EVENTS), ...Object.values(KYC_EVENTS)],
+  types: [
+    ...Object.values(IDENTITY_EVENTS),
+    ...Object.values(ORG_EVENTS),
+    ...Object.values(ACCESS_EVENTS),
+    ...Object.values(KYC_EVENTS),
+    ...Object.values(CATALOG_EVENTS),
+  ],
   handler: (event) => audit.record(event),
 });
 
@@ -118,6 +124,7 @@ export const eventSources = [
   RoleRecord,
   ViewAsRecord,
   ApplicationRecord,
+  PropertyRecord,
 ];
 
 /**

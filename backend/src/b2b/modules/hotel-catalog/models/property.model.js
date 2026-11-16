@@ -88,6 +88,24 @@ const schema = new b2bMongoose.Schema(
       ],
       default: [],
     },
+    // S03-T06: listing workflow (status table in domain/listing-workflow.js)
+    round: { type: Number, default: 0 },
+    submittedAt: { type: Date, default: null },
+    decidedAt: { type: Date, default: null },
+    publishedAt: { type: Date, default: null },
+    history: {
+      type: [
+        {
+          _id: false,
+          at: { type: Date, required: true },
+          action: { type: String, required: true },
+          status: { type: String, required: true },
+          by: { type: String, required: true },
+          note: { type: String, default: null },
+        },
+      ],
+      default: [],
+    },
     createdBy: { type: String, required: true },
     updatedBy: { type: String, required: true },
     ...eventFields(b2bMongoose),

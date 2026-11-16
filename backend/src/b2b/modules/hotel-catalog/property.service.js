@@ -82,6 +82,11 @@ const identity = (p) => ({
   slug: p.slug,
   status: p.status,
   version: p.version,
+  round: p.round ?? 0,
+  submittedAt: p.submittedAt ?? null,
+  decidedAt: p.decidedAt ?? null,
+  publishedAt: p.publishedAt ?? null,
+  history: (p.history ?? []).map((/** @type {any} */ h) => ({ at: h.at, action: h.action, status: h.status, note: h.note ?? null })),
   updatedAt: p.updatedAt,
 });
 

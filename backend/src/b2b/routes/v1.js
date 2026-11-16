@@ -30,12 +30,19 @@ import { masterRoutes } from './hotel-masters.js';
 import { hotelPropertyRoutes } from './hotel-properties.js';
 import { roomTypeRoutes } from './hotel-room-types.js';
 import { photoRoutes } from './hotel-photos.js';
+import { listingRoutes } from './hotel-listing.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
-import { createMastersService, createPhotoService, createPropertyService, createRoomTypeService } from '../modules/hotel-catalog/index.js';
+import {
+  createListingService,
+  createMastersService,
+  createPhotoService,
+  createPropertyService,
+  createRoomTypeService,
+} from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
@@ -111,7 +118,7 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
-  router.use(stage03Routes(env, clock));
+  router.use(stage03Routes(env, clock, identity));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
@@ -143,8 +150,9 @@ function stage02Routes(env, clock, identity) {
  * Stage 03: hotel master lists and properties.
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof createIdentity>} identity
  */
-function stage03Routes(env, clock) {
+function stage03Routes(env, clock, identity) {
   const router = express.Router();
   const gst = createGstRegistrations({ clock, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(masterRoutes({ masters: createMastersService() }));
@@ -153,6 +161,8 @@ function stage03Routes(env, clock) {
   router.use(hotelPropertyRoutes({ properties }));
   router.use(roomTypeRoutes({ roomTypes: createRoomTypeService({ properties }) }));
   router.use(photoRoutes({ photos: createPhotoService({ properties, store, clock }), properties, store }));
+  const orgStatus = async (/** @type {string} */ orgId) => (await identity.orgs.basicInfo(orgId))?.status ?? null;
+  router.use(listingRoutes({ listing: createListingService({ clock, properties, orgStatus }) }));
   return router;
 }
 
