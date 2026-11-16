@@ -54,7 +54,7 @@ export function createRevisionService(deps) {
       const by = `staff:${who.staffId}`;
       const now = deps.clock.now();
       const fields = Object.keys(p.pendingRevision.changes);
-      const base = { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef, fields };
+      const base = { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef, name: p.name, fields };
       const approve = input.decision === 'APPROVE';
       const events = [newEvent(EVENTS.revisionDecided, { ...base, decision: approve ? 'APPROVED' : 'REJECTED' }, deps)];
       if (approve) events.push(newEvent(EVENTS.propertyUpdated, base, deps));

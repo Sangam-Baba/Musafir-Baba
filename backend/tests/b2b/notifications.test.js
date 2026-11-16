@@ -186,9 +186,21 @@ describe('delivery and the bell', () => {
   it('preferences: critical categories are locked; switching a category off hides it and stops its email', async () => {
     const manager = await login('manager@seaview.in');
     const prefs = (await srv.get('/api/v1/notification-preferences', auth(manager))).body.data;
-    expect(prefs).toEqual([
-      { category: 'team.role-changed', label: 'Your role changed', critical: false, locked: false, inApp: true, email: true },
-    ]);
+    expect(prefs.map((/** @type {any} */ p) => [p.category, p.locked])).toEqual([
+      ['listing.published', false],
+      ['listing.changes-requested', true],
+      ['listing.suspended', true],
+      ['listing.revision-decided', false],
+      ['team.role-changed', false],
+    ]); // a Manager sees listings, not the KYC categories
+    expect(prefs.at(-1)).toEqual({
+      category: 'team.role-changed',
+      label: 'Your role changed',
+      critical: false,
+      locked: false,
+      inApp: true,
+      email: true,
+    });
     const owner = await login('owner@seaview.in');
     const locked = await srv.put('/api/v1/notification-preferences', { category: 'kyc.approved', inApp: false, email: false }, auth(owner));
     expect([locked.status, locked.body.code]).toEqual([422, 'CATEGORY_LOCKED']);

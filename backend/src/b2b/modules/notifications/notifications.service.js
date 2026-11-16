@@ -15,8 +15,9 @@ const ID = /^[a-f0-9]{24}$/;
 /** @param {import('../../core/context.js').RequestContext} ctx */
 function viewerOf(ctx) {
   const a = ctx.actor;
-  if (a.type === 'member') return { userId: a.userId, orgId: a.orgId, permissions: a.permissions };
-  if (a.type === 'user') return { userId: a.userId, orgId: null, permissions: /** @type {string[]} */ ([]) };
+  if (a.type === 'member') return { userId: a.userId, orgId: a.orgId, permissions: a.permissions, propertyIds: a.propertyIds ?? [] };
+  if (a.type === 'user')
+    return { userId: a.userId, orgId: null, permissions: /** @type {string[]} */ ([]), propertyIds: /** @type {string[]} */ ([]) };
   throw new ForbiddenError('BUSINESS_LOGIN_REQUIRED');
 }
 
@@ -35,7 +36,11 @@ function visibleFilter(v, hidden) {
   const or = [{ recipientType: 'USER', recipientId: v.userId, category: { $in: userCats } }];
   if (v.orgId) {
     const orgCats = visibleOrgCategories(v.permissions).filter((c) => !hidden.has(c));
-    or.push({ recipientType: 'ORG', recipientId: v.orgId, category: { $in: orgCats } });
+    /** @type {Record<string, unknown>} */
+    const orgBranch = { recipientType: 'ORG', recipientId: v.orgId, category: { $in: orgCats } };
+    // members limited to some properties: notifications about other properties are not theirs
+    if (v.propertyIds.length > 0) orgBranch.propertyId = { $in: [null, ...v.propertyIds] };
+    or.push(orgBranch);
   }
   return { $or: or };
 }

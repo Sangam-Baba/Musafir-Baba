@@ -45,6 +45,38 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/verification',
   },
+  'listing.published': {
+    audience: 'ORG',
+    permission: 'hotel-catalog.property.read',
+    critical: false,
+    label: 'Listing is live',
+    emailTo: 'OWNERS',
+    link: '/business/properties/{propertyId}',
+  },
+  'listing.changes-requested': {
+    audience: 'ORG',
+    permission: 'hotel-catalog.property.read',
+    critical: true,
+    label: 'Listing needs changes',
+    emailTo: 'OWNERS',
+    link: '/business/properties/{propertyId}',
+  },
+  'listing.suspended': {
+    audience: 'ORG',
+    permission: 'hotel-catalog.property.read',
+    critical: true,
+    label: 'Listing suspended',
+    emailTo: 'OWNERS',
+    link: '/business/properties/{propertyId}',
+  },
+  'listing.revision-decided': {
+    audience: 'ORG',
+    permission: 'hotel-catalog.property.read',
+    critical: false,
+    label: 'Listing changes reviewed',
+    emailTo: 'OWNERS',
+    link: '/business/properties/{propertyId}',
+  },
   'team.role-changed': {
     audience: 'USER',
     permission: null,
@@ -64,6 +96,10 @@ export const EVENT_CATEGORIES = Object.freeze({
   'kyc.application.approved': 'kyc.approved',
   'kyc.application.rejected': 'kyc.rejected',
   'kyc.application.reminded': 'kyc.reminder',
+  'hotel-catalog.property.published': 'listing.published',
+  'hotel-catalog.property.changes-requested': 'listing.changes-requested',
+  'hotel-catalog.property.suspended': 'listing.suspended',
+  'hotel-catalog.revision.decided': 'listing.revision-decided',
   'organizations.member.roles-changed': 'team.role-changed',
 });
 
@@ -76,6 +112,11 @@ export const ADMIN_QUEUES = Object.freeze({
   'kyc.application.rejected': 'kyc',
   'kyc.gst-registration.added': 'kyc',
   'kyc.gst-registration.decided': 'kyc',
+  'hotel-catalog.property.submitted': 'listings',
+  'hotel-catalog.revision.submitted': 'listings',
+  'hotel-catalog.property.published': 'listings',
+  'hotel-catalog.property.changes-requested': 'listings',
+  'hotel-catalog.revision.decided': 'listings',
 });
 
 /** @param {string} key @returns {Category | null} */

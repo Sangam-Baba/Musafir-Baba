@@ -79,6 +79,19 @@ async function sendEmails(deps, row, msg) {
 /** @param {unknown} v */
 const stringOrNull = (v) => (typeof v === 'string' ? v : null);
 
+/** The link with the event's ids filled in (e.g. /business/properties/{propertyId}). @param {string} link @param {Record<string, unknown>} payload */
+const linkFor = (link, payload) => link.replace('{propertyId}', encodeURIComponent(stringOrNull(payload.propertyId) ?? ''));
+
+/**
+ * Template variables an event can give (each template uses only those in its schema; values are cleaned there).
+ * @param {Record<string, unknown>} payload
+ */
+const varsFrom = (payload) => ({
+  propertyName: stringOrNull(payload.name) ?? 'your listing',
+  decision: payload.decision === 'APPROVED' ? 'approved' : 'not approved',
+  reason: stringOrNull(payload.reason) ?? 'see your listing for details',
+});
+
 /**
  * Org notifications go to the org; personal ones to `payload.userId`.
  * @param {import('./domain/catalogue.js').Category} category
@@ -105,7 +118,8 @@ export function createDelivery(deps) {
     const { orgId, userId, recipientId } = recipientOf(category, event.payload);
     if (!recipientId) return;
     const orgName = (orgId ? await deps.orgName(orgId) : null) ?? 'your organisation';
-    const msg = renderTemplate(key, { orgName, link: `${deps.publicUrl.replace(/\/$/, '')}${category.link}` });
+    const path = linkFor(category.link, event.payload);
+    const msg = renderTemplate(key, { ...varsFrom(event.payload), orgName, link: `${deps.publicUrl.replace(/\/$/, '')}${path}` });
     const { row, created } = await insertOnce({
       eventId: event.eventId,
       recipientType: category.audience,
@@ -114,9 +128,10 @@ export function createDelivery(deps) {
       category: key,
       title: msg.title,
       body: msg.body,
-      link: category.link,
+      link: path,
       entityType: event.type.split('.').slice(0, 2).join('.'),
-      entityId: stringOrNull(event.payload.applicationId),
+      entityId: stringOrNull(event.payload.applicationId) ?? stringOrNull(event.payload.propertyId),
+      propertyId: stringOrNull(event.payload.propertyId),
       critical: category.critical,
       templateVersion: msg.version,
       emailState: category.emailTo === 'NONE' || !deps.queueEmail ? 'NONE' : 'PENDING',

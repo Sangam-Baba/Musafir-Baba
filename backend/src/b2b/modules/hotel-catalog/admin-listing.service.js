@@ -80,7 +80,7 @@ async function decide(deps, { who, p, action, note, comments }) {
   const status = listingTransition(p.status, action);
   const now = deps.clock.now();
   const by = `staff:${who.staffId}`;
-  const base = { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef };
+  const base = { orgId: p.hotelOrgId, propertyId: String(p._id), publicRef: p.publicRef, name: p.name };
   const eventType = {
     approve: EVENTS.propertyPublished,
     reactivate: EVENTS.propertyPublished,

@@ -22,6 +22,7 @@ const schema = new b2bMongoose.Schema(
     link: { type: String, default: null },
     entityType: { type: String, default: null },
     entityId: { type: String, default: null },
+    propertyId: { type: String, default: null }, // listing notifications: members limited to some properties only see theirs
     critical: { type: Boolean, default: false },
     templateVersion: { type: Number, default: 1 },
     readBy: { type: [{ _id: false, userId: { type: String, required: true }, at: { type: Date, required: true } }], default: [] },
