@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { b2b } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { BankSection } from "@/b2b/components/kyc/BankSection";
 import { DetailsSection } from "@/b2b/components/kyc/DetailsSection";
 import { DocumentsSection } from "@/b2b/components/kyc/DocumentsSection";
@@ -34,7 +35,7 @@ function Verification({ me }: { me: Me }) {
   const canEdit = a.editable && me.permissions.includes(KYC_PERMISSION_SUBMIT) && !me.viewAs;
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Verification</h1>
+      <PageHeader crumb="Verification" title="Business" highlight="Verification" subtitle="Complete verification to activate your MusafirBaba Business account and start listing." />
       {!me.user.emailVerified && <EmailBanner email={me.user.email} />}
       <StatusPanel app={a} />
       <DetailsSection app={a} canEdit={canEdit} onSaved={refresh} />

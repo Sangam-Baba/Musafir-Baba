@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { b2b } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { LocationForm } from "@/b2b/components/listing/LocationForm";
 import { PhotosPanel } from "@/b2b/components/listing/PhotosPanel";
 import { RoomTypesPanel } from "@/b2b/components/listing/RoomTypesPanel";
@@ -53,10 +54,16 @@ function PropertyEditor({ id, me }: { id: string; me: Me }) {
 
   return (
     <div className="space-y-4">
-      <Link href="/business/properties" className="text-sm text-slate-500 hover:text-[#FE5300]">
-        ← All properties
-      </Link>
-      <h1 className="text-2xl font-semibold text-slate-900">{p.name}</h1>
+      <PageHeader
+        crumb="My Properties"
+        title={p.name}
+        subtitle={`${p.publicRef} · edit each step, then submit for approval.`}
+        actions={
+          <Link href="/business/properties" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-[#FE5300]">
+            ← All properties
+          </Link>
+        }
+      />
       <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
         <nav className="flex gap-1 overflow-x-auto lg:flex-col">
           {STEPS.map((s) => (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { roleName } from "@/b2b/roles";
 
 
@@ -13,10 +14,7 @@ export default function BusinessHome() {
         const current = me.memberships.find((m) => m.orgId === me.currentOrgId);
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">Welcome, {me.user.name}</h1>
-              <p className="text-sm text-slate-500">{me.user.email ?? me.user.phone}</p>
-            </div>
+            <PageHeader title="Welcome," highlight={`${me.user.name.split(" ")[0]}!`} subtitle="Your MusafirBaba Business workspace" />
             {current ? (
               <div className="rounded-xl border border-slate-200 bg-white p-5">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Working in</p>

@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { b2b } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { BranchesSection } from "@/b2b/components/team/BranchesSection";
 import { InvitationsSection } from "@/b2b/components/team/InvitationsSection";
 import { MembersSection } from "@/b2b/components/team/MembersSection";
@@ -37,7 +38,7 @@ function Team({ me }: { me: Me }) {
   if (tabs.length === 0) return <p className="text-sm text-slate-600">Your role doesn&apos;t include team management.</p>;
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-900">Team</h1>
+      <PageHeader crumb="Team & Access" title="Team & Access" highlight="Management" subtitle="Add team members, give them roles and manage their access." />
       <div className="flex gap-1 border-b border-slate-200">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)} className={`-mb-px border-b-2 px-4 py-2 text-sm ${tab === t.key ? "border-[#FE5300] font-medium text-[#FE5300]" : "border-transparent text-slate-600 hover:text-slate-900"}`}>

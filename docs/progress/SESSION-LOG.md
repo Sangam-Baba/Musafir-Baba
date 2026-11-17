@@ -86,6 +86,14 @@
 - **Later:** S03-T12 → DONE (admin listing screens, masters screens, admin bell counts listings). Frontend tsc ✅; pages load; live 401 check.
 - **Later:** S03-T13 → DONE (isolation for htl_ owned collections, master lists classified, XSS payload test, photo-upload crash injection). Tests ✅ 60 files / 583, 2× green. **Stage 03 → AWAITING_SIGN_OFF** (owner to try the listing flow in the browser and sign off).
 - **Next step:** Stage 04 — inventory & rates calendar (task list).
+
+## 2026-11-17 — AI (Claude) — Business portal UI refresh (owner's design screens), UI-1 shell
+
+- **Goal:** owner shared 13 design screens (`screenui-desgine/`, not committed) as inspiration for the business portal; show only what works (hotels).
+- **Decisions (owner):** hide services that aren't built (only Hotels & Resorts); add the design's extra business fields as optional (trade name, entity type, year, designation, alternate number); build a public landing page at `/business`; reuse the website's own logo and photos.
+- **Plan:** UI-1 shell · UI-2 overview · UI-3 five-step sign-up wizard (+ optional fields, backend B2B only) · UI-4 verification · UI-5 team / settings / properties / business profile · UI-6 landing. Bookings, finance, reports, enquiries are not shown until built. Admin panel unchanged.
+- **Done:** UI-1 — dark sidebar with the white logo (only working pages, permission-filtered), top bar (business switcher, bell, account menu with name + role, log out), mobile drawer, page banner (breadcrumb, orange highlight word, website photo `Heroimg.jpg`), summary card / panel / tabs / pill pieces, Help & Support page (website care contact in `b2b/support.ts`). All existing shell behaviour kept (session renewal, view-as banner and end, business switch, blocked-business notices). Frontend tsc ✅; all business pages load.
+- **Next step:** UI-2 overview.
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)

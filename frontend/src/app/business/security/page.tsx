@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { b2b } from "@/b2b/api";
 import { FormError } from "@/b2b/components/AuthCard";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { Field } from "@/b2b/components/Field";
 import { errorMessage } from "@/b2b/messages";
 
@@ -32,8 +33,8 @@ function TwoStep({ status, left }: { status: "off" | "pending" | "on"; left: num
   }
 
   return (
-    <div className="max-w-xl space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-900">Security</h1>
+    <div className="space-y-4">
+      <PageHeader crumb="Settings & Security" title="Settings &" highlight="Security" subtitle="Two-step login and where you're signed in." />
       <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
         <div>
           <p className="font-semibold text-slate-900">Two-step login</p>

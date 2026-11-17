@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { describeEntry } from "@/b2b/activity";
 import { b2b } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { errorMessage } from "@/b2b/messages";
 import type { AuditEntry, Me } from "@/b2b/types";
 
@@ -26,7 +27,7 @@ function Activity({ me }: { me: Me }) {
   const entries = log.data?.pages.flatMap((p) => p.data) ?? [];
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-slate-900">Activity</h1>
+      <PageHeader crumb="Activity" title="Activity" highlight="Log" subtitle="Sign-ins and changes in your business." />
       {log.error && <p className="text-sm text-red-600">{errorMessage(log.error)}</p>}
       <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
         {entries.length === 0 && !log.isLoading && <li className="p-5 text-sm text-slate-500">Nothing yet.</li>}

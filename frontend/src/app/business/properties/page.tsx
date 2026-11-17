@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { b2b } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PageHeader } from "@/b2b/components/portal/ui";
 import { inputCls } from "@/b2b/components/listing/ui";
 import { STATUS, type Masters, type Property } from "@/b2b/listing";
 import { errorMessage } from "@/b2b/messages";
@@ -45,7 +46,7 @@ function Properties({ me }: { me: Me }) {
   const items = list.data?.data ?? [];
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Properties</h1>
+      <PageHeader crumb="My Properties" title="My" highlight="Properties" subtitle="Your hotel listings: details, rooms, photos and approval." />
       {canManage && (
         <form onSubmit={create} className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4">
           <label className="min-w-64 flex-1">
