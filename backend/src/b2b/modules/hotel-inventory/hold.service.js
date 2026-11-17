@@ -60,16 +60,16 @@ export const holdDto = (h) => ({
 });
 
 /** Conditional status change. @param {string} id @param {string | string[]} from @param {Record<string, unknown>} set @param {Date} now */
-async function move(id, from, set, now) {
+export async function move(id, from, set, now) {
   const res = await HoldRecord.updateOne(
     { _id: id, status: Array.isArray(from) ? { $in: from } : from },
-    { $set: { ...set, statusAt: now } },
+    { $set: { ...set, statusChangedAt: now } },
   ).setOptions(SCOPE);
   return res.modifiedCount === 1;
 }
 
 /** Gives back every night of a hold (by hold id — only where it is still recorded). @param {any} hold */
-async function giveBackAll(hold) {
+export async function giveBackAll(hold) {
   for (const s of stepsOf(hold.lines)) await releaseNight(s, String(hold._id));
 }
 
@@ -103,7 +103,7 @@ async function holdRooms(deps, req) {
   const hold = await HoldRecord.create({
     ...req,
     status: 'PLACING',
-    statusAt: at,
+    statusChangedAt: at,
     expiresAt: new Date(at.getTime() + HOLD_MINUTES * MIN),
   }).catch((e) => {
     if (e?.code === 11000) throw new ConflictError('HOLD_IN_PROGRESS');

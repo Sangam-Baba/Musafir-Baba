@@ -99,4 +99,11 @@ export const STAGE_04 = [
       );
     },
   },
+  {
+    id: '0033-inv-holds-state-time',
+    description: 'Checkout holds: by status and the standard status-change time (reconciler)',
+    up: async (ctx) => {
+      await ctx.createIndex(HOLDS_COLLECTION, { status: 1, statusChangedAt: 1 }, { name: 'status_changed' });
+    },
+  },
 ];

@@ -60,6 +60,8 @@ import {
   createCancellationPolicyService,
   createRatePlanService,
   extendCalendarWindow,
+  SWEEP_EVERY_MS,
+  sweepHolds,
 } from '../modules/hotel-inventory/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
@@ -292,7 +294,11 @@ function startDatabase(env, log, hub) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
-        schedules: [retentionSchedule(env, config, log), CALENDAR_WINDOW_SCHEDULE],
+        schedules: [
+          retentionSchedule(env, config, log),
+          CALENDAR_WINDOW_SCHEDULE,
+          { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+        ],
       }),
     )
     .catch((error) => {

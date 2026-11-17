@@ -30,6 +30,7 @@ import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
 import { EVENTS as CATALOG_EVENTS, PropertyRecord, RoomTypeRecord, seedMasters } from './modules/hotel-catalog/index.js';
+import { holdReconcileRules, inventoryInvariants } from './modules/hotel-inventory/index.js';
 import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
 import { createUserRepository, EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
 import { ADMIN_QUEUES, createDelivery, EVENT_CATEGORIES } from './modules/notifications/index.js';
@@ -47,6 +48,9 @@ import { createAccessChangeNotifier } from './routes/access-cache.js';
 export const jobHandlers = new Map();
 export const reconciler = createReconciler();
 export const invariantChecks = createInvariantChecks();
+/** Stage 04: the rooms safety net — holds stuck half way (reconciler) and night counts vs their owners (invariants). */
+for (const rule of holdReconcileRules({ clock: systemClock, logger: defaultLogger })) reconciler.register(rule);
+for (const inv of inventoryInvariants({ clock: systemClock })) invariantChecks.register(inv);
 /** Event subscriptions (consumers) — e.g. notifications subscribe to 'hotel-booking.booking.confirmed'. */
 export const eventBus = createEventBus();
 

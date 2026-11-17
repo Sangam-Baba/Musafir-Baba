@@ -32,3 +32,12 @@ export { createAvailabilityService } from './availability.service.js';
 export { HOLDS_COLLECTION, HOLD_STATUSES, HoldRecord } from './models/hold.model.js';
 export { createHoldService, HOLD_MINUTES, EXTEND_MINUTES, holdDto } from './hold.service.js';
 export { stepsOf } from './night-steps.js';
+export {
+  holdReconcileRules,
+  sweepHolds,
+  inventoryInvariants,
+  SWEEP_EVERY_MS,
+  STUCK_AFTER_MS,
+  ORPHAN_AFTER_MS,
+  OVERDUE_ALERT_MS,
+} from './safety-net.js';
