@@ -81,6 +81,27 @@ const MESSAGES: Record<string, string> = {
   PAN_NOT_IN_GSTIN: "This GSTIN belongs to a different PAN. A business with another PAN must be registered separately (Add another business).",
   GST_REGISTRATION_NOT_FOUND: "That GST registration wasn't found (verified ones can't be removed).",
   GST_REGISTRATION_ALREADY_DECIDED: "This GST registration has already been decided.",
+  // Stage 04: rooms, prices and rules
+  POLICY_INVALID: "The cancellation policy has problems — see the highlighted rules.",
+  POLICY_NAME_TAKEN: "A cancellation policy with this name already exists for this property.",
+  POLICY_IN_USE: "A rate plan still uses this policy. Change those plans first.",
+  RATE_PLAN_INVALID: "The rate plan has problems — see the list below the form.",
+  RATE_PLAN_NAME_TAKEN: "A rate plan with this name already exists for this property.",
+  RATE_PLAN_HAS_DERIVED: "Other plans follow this plan's prices. Archive or change them first.",
+  CALENDAR_EDIT_INVALID: "Some of the changes don't fit this property — see the list.",
+  CALENDAR_EDIT_TOO_BIG: "That change is too big for one go. Pick fewer nights or fewer room types.",
+  CALENDAR_EDIT_IN_PROGRESS: "This change is still being saved. Wait a moment and reload.",
+  BIG_PRICE_CHANGE: "Some prices change by more than 50 %. Check them and confirm.",
+  NOTHING_TO_UNDO: "There is no change to undo.",
+  UNDO_NOT_LATEST: "Only the latest change can be undone.",
+  DATE_RANGE_EMPTY: "The end date must be after the start date.",
+  DATE_RANGE_TOO_LONG: "That range is too long.",
+  DATE_INVALID: "That is not a real date.",
+  PROPERTY_ARCHIVED: "This property is archived.",
+  IMPORT_EMPTY: "The file has no rows.",
+  IMPORT_TOO_MANY_ROWS: "The file has too many rows (at most 50 000).",
+  IMPORT_CSV_UNCLOSED_QUOTE: "The file has a quote (\") that is never closed.",
+  IMPORT_REQUEST_ID_REQUIRED: "Please check the file again before applying it.",
 };
 
 export function errorMessage(error: unknown): string {

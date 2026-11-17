@@ -17,6 +17,8 @@ type Options = {
   onMessage: (m: RealtimeMessage) => void;
   /** after (re)connecting or a `resync`: reload what the page shows (catch-up) */
   onSync?: () => void;
+  /** extra public rooms to follow, e.g. `availability:property:<id>` (optional; none = personal rooms only, as before) */
+  rooms?: string[];
 };
 
 /** Splits an SSE text buffer into complete frames; returns the frames and the unfinished rest. */
@@ -42,8 +44,9 @@ function frames(buffer: string): { complete: { id?: string; event: string; data:
   return { complete, rest };
 }
 
-export function useRealtime({ getToken, enabled = true, onMessage, onSync }: Options): RealtimeStatus {
+export function useRealtime({ getToken, enabled = true, onMessage, onSync, rooms }: Options): RealtimeStatus {
   const [status, setStatus] = useState<RealtimeStatus>("connecting");
+  const roomList = rooms && rooms.length > 0 ? rooms.join(",") : "";
   const handlers = useRef({ getToken, onMessage, onSync });
   handlers.current = { getToken, onMessage, onSync };
 
@@ -81,7 +84,8 @@ export function useRealtime({ getToken, enabled = true, onMessage, onSync }: Opt
       const headers: Record<string, string> = { Authorization: `Bearer ${token}`, Accept: "text/event-stream" };
       if (lastId) headers["Last-Event-ID"] = lastId;
       try {
-        const res = await fetch(`${B2B_API}/realtime/stream`, { headers, signal: abort.signal, credentials: "include", cache: "no-store" });
+        const query = roomList ? `?rooms=${encodeURIComponent(roomList)}` : "";
+        const res = await fetch(`${B2B_API}/realtime/stream${query}`, { headers, signal: abort.signal, credentials: "include", cache: "no-store" });
         if (res.status === 401) expired = true;
         if (!res.ok || !res.body) throw new Error(`stream ${res.status}`);
         const reader = res.body.getReader();
@@ -110,7 +114,7 @@ export function useRealtime({ getToken, enabled = true, onMessage, onSync }: Opt
       abort.abort();
       if (timer) clearTimeout(timer);
     };
-  }, [enabled]);
+  }, [enabled, roomList]);
 
   return status;
 }

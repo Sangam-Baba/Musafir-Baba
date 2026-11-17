@@ -59,9 +59,16 @@ function PropertyEditor({ id, me }: { id: string; me: Me }) {
         title={p.name}
         subtitle={`${p.publicRef} · edit each step, then submit for approval.`}
         actions={
-          <Link href="/business/properties" className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] px-3 py-1.5 text-[13px] text-slate-700 hover:border-[#FE5300]">
-            ← All properties
-          </Link>
+          <span className="flex flex-wrap gap-2">
+            {me.permissions.includes("hotel-inventory.calendar.read") && (
+              <Link href={`/business/properties/${p.id}/rates`} className="rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white shadow-sm hover:bg-[#e54b00]">
+                Rooms &amp; rates
+              </Link>
+            )}
+            <Link href="/business/properties" className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] px-3 py-1.5 text-[13px] text-slate-700 hover:border-[#FE5300]">
+              ← All properties
+            </Link>
+          </span>
         }
       />
       <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
