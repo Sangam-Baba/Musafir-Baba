@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { namesMatch, RISK_TEXT, type ReviewDetail } from "../../../admin-kyc";
-import { GST_STATES } from "../../../kyc";
+import { ENTITY_TYPES, GST_STATES } from "../../../kyc";
 import { errorMessage } from "../../../messages";
 import { adminCall } from "../AdminPassGate";
 import { FleetPanel, FleetPill, fleetTone, SecondaryBtn } from "../kit";
@@ -68,8 +68,17 @@ export function ReviewFacts({ app, token }: { app: ReviewDetail; token: string }
       )}
       <dl>
         <Row k="Legal name">{d.legalName}</Row>
+        {d.tradeName && <Row k="Trade / brand name">{d.tradeName}</Row>}
+        {(d.entityType || d.yearEstablished) && (
+          <Row k="Business type">
+            {d.entityType ? ENTITY_TYPES[d.entityType] : "—"}
+            {d.yearEstablished ? ` · established ${d.yearEstablished}` : ""}
+          </Row>
+        )}
         <Row k="Contact">
-          {d.contactName} · {d.mobile} · {d.email}
+          {d.contactName}
+          {d.contactDesignation ? ` (${d.contactDesignation})` : ""} · {d.mobile}
+          {d.alternateMobile ? ` / ${d.alternateMobile}` : ""} · {d.email}
         </Row>
         <Row k="GST">
           {d.gstRegistered ? (

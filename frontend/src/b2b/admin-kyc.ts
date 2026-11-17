@@ -48,6 +48,7 @@ export const RISK_TEXT: Record<string, string> = {
   GST_UNREGISTERED: "Not registered for GST",
   DUPLICATE_GSTIN: "GSTIN already used by another organisation",
   PERSONAL_PAN_FOR_BUSINESS: "Personal PAN for a business",
+  PAN_DOES_NOT_MATCH_ENTITY_TYPE: "PAN type doesn't match the business type",
 };
 
 export const lockState = (d: { review: { reviewerId: string | null; lockedUntil: string | null } }, me: string | null) => {

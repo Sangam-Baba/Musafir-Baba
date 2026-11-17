@@ -4,10 +4,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { B2BError, b2b } from "../../api";
-import { fieldErrors, TERMS_VERSION, type HotelDetailsInput, type KycApplication, type StoredDetails } from "../../kyc";
+import { ENTITY_TYPES, fieldErrors, TERMS_VERSION, type HotelDetailsInput, type KycApplication, type StoredDetails } from "../../kyc";
 import { errorMessage } from "../../messages";
 import { Panel, SmallButton } from "../team/ui";
-import { emptyDetails, HotelDetailsFields, toRequest } from "./HotelDetailsFields";
+import { BusinessDetailsForm, emptyDetails, toRequest } from "./BusinessDetailsForm";
 
 const fromStored = (d: StoredDetails): HotelDetailsInput => ({
   legalName: d.legalName,
@@ -21,6 +21,11 @@ const fromStored = (d: StoredDetails): HotelDetailsInput => ({
   propertyCount: d.propertyCount,
   termsAccepted: true,
   termsVersion: d.termsVersion,
+  tradeName: d.tradeName ?? "",
+  entityType: d.entityType ?? "",
+  yearEstablished: d.yearEstablished ?? null,
+  contactDesignation: d.contactDesignation ?? "",
+  alternateMobile: d.alternateMobile ?? "",
 });
 
 export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication; canEdit: boolean; onSaved: () => void }) {
@@ -57,7 +62,7 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
     <Panel title="1. Business details" action={action}>
       {editing && value ? (
         <form onSubmit={save} className="space-y-4">
-          <HotelDetailsFields value={value} onChange={setValue} errors={errors} panHint={d ? `On file: ••••••${d.panLast4}. Type the PAN again to save changes.` : undefined} />
+          <BusinessDetailsForm value={value} onChange={setValue} errors={errors} panHint={d ? `On file: ••••••${d.panLast4}. Type the PAN again to save changes.` : undefined} />
           <div className="flex gap-2">
             <SmallButton tone="primary" type="submit" disabled={busy}>
               {busy ? "Saving…" : "Save details"}
@@ -80,6 +85,11 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
           <Row k="PAN" v={`••••••${d.panLast4}`} />
           <Row k="Address" v={[d.address.line1, d.address.line2, d.address.city, d.address.pin].filter(Boolean).join(", ")} />
           <Row k="Properties" v={String(d.propertyCount)} />
+          {d.tradeName && <Row k="Trade / brand name" v={d.tradeName} />}
+          {d.entityType && <Row k="Entity type" v={ENTITY_TYPES[d.entityType] ?? d.entityType} />}
+          {d.yearEstablished && <Row k="Established" v={String(d.yearEstablished)} />}
+          {d.contactDesignation && <Row k="Contact designation" v={d.contactDesignation} />}
+          {d.alternateMobile && <Row k="Alternate number" v={d.alternateMobile} />}
         </dl>
       )}
     </Panel>

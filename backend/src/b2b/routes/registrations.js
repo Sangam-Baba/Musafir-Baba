@@ -41,6 +41,14 @@ export const HotelDetailsBody = z.strictObject({
     pin: z.string().trim().max(10),
   }),
   propertyCount: z.number().int().min(1).max(500),
+  // optional business details (UI-3): checked in validateHotelDetails
+  tradeName: z.string().trim().max(120).optional(),
+  entityType: z
+    .enum(['PROPRIETORSHIP', 'PARTNERSHIP', 'LLP', 'PRIVATE_LIMITED', 'PUBLIC_LIMITED', 'HUF', 'TRUST_SOCIETY', 'OTHER'])
+    .optional(),
+  yearEstablished: z.number().int().min(1800).max(2100).optional(),
+  contactDesignation: z.string().trim().max(80).optional(),
+  alternateMobile: z.string().trim().max(20).optional(),
   termsAccepted: z.boolean(),
   termsVersion: text(20),
 });

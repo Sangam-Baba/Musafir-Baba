@@ -104,6 +104,29 @@ describe('hotel self-registration', () => {
     });
   });
 
+  it('keeps the optional business details from the sign-up wizard', async () => {
+    const res = await register({
+      details: {
+        ...details,
+        tradeName: 'Sea View',
+        entityType: 'PARTNERSHIP',
+        yearEstablished: 2018,
+        contactDesignation: 'Director',
+        alternateMobile: '9123456789',
+      },
+      owner,
+    });
+    const kyc = (await srv.get('/api/v1/kyc', auth(res.body.accessToken))).body;
+    expect(kyc.details).toMatchObject({
+      tradeName: 'Sea View',
+      entityType: 'PARTNERSHIP',
+      yearEstablished: 2018,
+      contactDesignation: 'Director',
+      alternateMobile: '+919123456789',
+    });
+    expect((await register({ details: { ...details, email: 'x@y.in', entityType: 'CASTLE' }, owner })).status).toBe(400);
+  });
+
   it('emails a verification link that marks the email verified (once the link is valid)', async () => {
     await register({ details, owner });
     const job = await JobRecord.findOne({ name: EMAIL_JOB }).lean();

@@ -3,6 +3,18 @@ export const TERMS_VERSION = "2026-11";
 
 export type KycStatus = "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "APPROVED" | "REJECTED";
 
+export const ENTITY_TYPES = {
+  PROPRIETORSHIP: "Proprietorship",
+  PARTNERSHIP: "Partnership firm",
+  LLP: "LLP",
+  PRIVATE_LIMITED: "Private Limited Company",
+  PUBLIC_LIMITED: "Public Limited Company",
+  HUF: "Hindu Undivided Family (HUF)",
+  TRUST_SOCIETY: "Trust / Society",
+  OTHER: "Other",
+} as const;
+export type EntityType = keyof typeof ENTITY_TYPES;
+
 export interface HotelDetailsInput {
   legalName: string;
   contactName: string;
@@ -15,6 +27,11 @@ export interface HotelDetailsInput {
   propertyCount: number;
   termsAccepted: boolean;
   termsVersion: string;
+  tradeName?: string;
+  entityType?: EntityType | "";
+  yearEstablished?: number | null;
+  contactDesignation?: string;
+  alternateMobile?: string;
 }
 
 /** Details as stored: no PAN, only its last 4 characters. */
@@ -29,6 +46,11 @@ export interface StoredDetails {
   address: { line1: string; line2: string | null; city: string; stateCode: string; pin: string };
   propertyCount: number;
   termsVersion: string;
+  tradeName?: string | null;
+  entityType?: EntityType | null;
+  yearEstablished?: number | null;
+  contactDesignation?: string | null;
+  alternateMobile?: string | null;
 }
 
 export interface DocumentRequirement {
@@ -122,6 +144,9 @@ export const FIELD_ERROR_TEXT: Record<string, string> = {
   MOBILE_INVALID: "Enter a valid mobile number.",
   EMAIL_INVALID: "Enter a valid email address.",
   HOLDER_NAME_INVALID: "Enter the account holder's name.",
+  ENTITY_TYPE_INVALID: "Choose the type of business.",
+  YEAR_INVALID: "Enter a year like 2018.",
+  ALTERNATE_MOBILE_INVALID: "Enter a valid mobile number.",
   ACCOUNT_NUMBER_INVALID: "Enter 9 to 18 digits.",
   IFSC_INVALID: "Enter an 11-character IFSC, e.g. HDFC0001234.",
 };
@@ -129,5 +154,7 @@ export const FIELD_ERROR_TEXT: Record<string, string> = {
 /** path → message, from a B2BError's details. */
 export function fieldErrors(details: Record<string, unknown>): Record<string, string> {
   const list = Array.isArray(details.errors) ? (details.errors as { path?: string; code?: string }[]) : [];
-  return Object.fromEntries(list.filter((e) => e.path && e.code).map((e) => [e.path as string, FIELD_ERROR_TEXT[e.code as string] ?? "Please check this field."]));
+  // business rules give "pan"; input checks give "body.details.pan" — both become "pan"
+  const key = (path: string) => path.replace(/^body\.(details\.)?/, "");
+  return Object.fromEntries(list.filter((e) => e.path && e.code).map((e) => [key(e.path as string), FIELD_ERROR_TEXT[e.code as string] ?? "Please check this field."]));
 }

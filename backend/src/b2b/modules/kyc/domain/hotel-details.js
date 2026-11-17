@@ -10,10 +10,59 @@ import { isStateCode, isValidGstin, isValidPan, isValidPin, normaliseTaxId, panH
 /**
  * @typedef {{ legalName: string, contactName: string, mobile: string, email: string, gstRegistered: boolean, gstin: string | null,
  *   pan: string, address: { line1: string, line2: string | null, city: string, stateCode: string, pin: string },
- *   propertyCount: number, termsVersion: string }} HotelDetails
+ *   propertyCount: number, termsVersion: string,
+ *   tradeName: string | null, entityType: EntityType | null, yearEstablished: number | null,
+ *   contactDesignation: string | null, alternateMobile: string | null }} HotelDetails
  */
 
 /** @typedef {{ path: string, code: string }} FieldError */
+
+/** Kinds of business, and the PAN holder type (4th character) each one normally has. */
+export const ENTITY_TYPES = Object.freeze({
+  PROPRIETORSHIP: ['P'],
+  PARTNERSHIP: ['F'],
+  LLP: ['F'],
+  PRIVATE_LIMITED: ['C'],
+  PUBLIC_LIMITED: ['C'],
+  HUF: ['H'],
+  TRUST_SOCIETY: ['T', 'A'],
+  OTHER: [],
+});
+/** @typedef {keyof typeof ENTITY_TYPES} EntityType */
+
+/** @param {unknown} v @param {number} max */
+const optionalText = (v, max) => {
+  const t = typeof v === 'string' ? v.trim().replace(/\s+/g, ' ').slice(0, max) : '';
+  return t || null;
+};
+
+/**
+ * The optional business fields (trade name, entity type, year, designation, alternate mobile).
+ * @param {Record<string, any>} input
+ * @param {FieldError[]} errors
+ */
+function optionalDetails(input, errors) {
+  const entityType = input.entityType ? String(input.entityType) : null;
+  if (entityType && !Object.hasOwn(ENTITY_TYPES, entityType)) errors.push({ path: 'entityType', code: 'ENTITY_TYPE_INVALID' });
+  const year = input.yearEstablished === undefined || input.yearEstablished === null ? null : Number(input.yearEstablished);
+  if (year !== null && (!Number.isInteger(year) || year < 1800 || year > 2100))
+    errors.push({ path: 'yearEstablished', code: 'YEAR_INVALID' });
+  let alternateMobile = null;
+  if (input.alternateMobile) {
+    try {
+      alternateMobile = normalisePhone(String(input.alternateMobile));
+    } catch {
+      errors.push({ path: 'alternateMobile', code: 'ALTERNATE_MOBILE_INVALID' });
+    }
+  }
+  return {
+    tradeName: optionalText(input.tradeName, 120),
+    entityType: /** @type {EntityType | null} */ (entityType),
+    yearEstablished: year,
+    contactDesignation: optionalText(input.contactDesignation, 80),
+    alternateMobile,
+  };
+}
 
 /**
  * PAN format; for GST-registered hotels the GSTIN checksum, its state = the address state, and the
@@ -57,6 +106,7 @@ export function validateHotelDetails(input) {
   if (input.termsAccepted !== true) errors.push({ path: 'termsAccepted', code: 'TERMS_NOT_ACCEPTED' });
   const mobile = tryNormalise('mobile', () => normalisePhone(String(input.mobile ?? '')));
   const email = tryNormalise('email', () => normaliseEmail(String(input.email ?? '')));
+  const extra = optionalDetails(input, errors);
   if (errors.length > 0) throw new DomainError('KYC_DETAILS_INVALID', { errors });
 
   return {
@@ -76,10 +126,11 @@ export function validateHotelDetails(input) {
     },
     propertyCount: Number(input.propertyCount),
     termsVersion: String(input.termsVersion),
+    ...extra,
   };
 }
 
-/** @typedef {'GST_UNREGISTERED' | 'DUPLICATE_GSTIN' | 'PERSONAL_PAN_FOR_BUSINESS'} RiskFlag */
+/** @typedef {'GST_UNREGISTERED' | 'DUPLICATE_GSTIN' | 'PERSONAL_PAN_FOR_BUSINESS' | 'PAN_DOES_NOT_MATCH_ENTITY_TYPE'} RiskFlag */
 
 /**
  * Reasons an application needs a second approver (maker–checker, plan §3.6).
@@ -100,5 +151,7 @@ export function assessRisk(details, facts) {
   ) {
     flags.push('PERSONAL_PAN_FOR_BUSINESS');
   }
+  const expected = details.entityType ? ENTITY_TYPES[details.entityType] : [];
+  if (expected.length > 0 && !expected.includes(panHolderType(details.pan))) flags.push('PAN_DOES_NOT_MATCH_ENTITY_TYPE');
   return { flags, highRisk: flags.length > 0 };
 }

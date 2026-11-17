@@ -125,3 +125,45 @@ describe('risk (second approver)', () => {
     expect(assessRisk(personal, { duplicateGstin: false }).flags).toEqual(['PERSONAL_PAN_FOR_BUSINESS']);
   });
 });
+
+describe('optional business details (UI-3)', () => {
+  it('trade name, entity type, year, designation and alternate mobile are kept tidy; leaving them out is fine', () => {
+    expect(validateHotelDetails(good)).toMatchObject({
+      tradeName: null,
+      entityType: null,
+      yearEstablished: null,
+      contactDesignation: null,
+      alternateMobile: null,
+    });
+    const d = validateHotelDetails({
+      ...good,
+      tradeName: '  Sea  View Hotels ',
+      entityType: 'PARTNERSHIP',
+      yearEstablished: 2018,
+      contactDesignation: ' Director ',
+      alternateMobile: '91234 56789',
+    });
+    expect(d).toMatchObject({
+      tradeName: 'Sea View Hotels',
+      entityType: 'PARTNERSHIP',
+      yearEstablished: 2018,
+      contactDesignation: 'Director',
+      alternateMobile: '+919123456789',
+    });
+    expect(codesFor({ entityType: 'CASTLE', yearEstablished: 1700, alternateMobile: '12' }).sort()).toEqual([
+      'ALTERNATE_MOBILE_INVALID',
+      'ENTITY_TYPE_INVALID',
+      'YEAR_INVALID',
+    ]);
+  });
+
+  it('a PAN that does not fit the entity type is flagged for a second approver', () => {
+    // AAPFU0939F: the 4th character F = firm / LLP
+    expect(assessRisk(validateHotelDetails({ ...good, entityType: 'PARTNERSHIP' }), { duplicateGstin: false }).flags).toEqual([]);
+    expect(assessRisk(validateHotelDetails({ ...good, entityType: 'PRIVATE_LIMITED' }), { duplicateGstin: false })).toEqual({
+      flags: ['PAN_DOES_NOT_MATCH_ENTITY_TYPE'],
+      highRisk: true,
+    });
+    expect(assessRisk(validateHotelDetails({ ...good, entityType: 'OTHER' }), { duplicateGstin: false }).flags).toEqual([]);
+  });
+});
