@@ -87,7 +87,7 @@ export async function applyRooms(o, rooms, dates) {
 }
 
 /** The pipeline that merges one change into a stored night. @param {Owner} o @param {RateChange} c @param {string} date */
-function ratePipeline(o, c, date) {
+export function ratePipeline(o, c, date) {
   /** @type {Record<string, unknown>} */
   const set = { hotelOrgId: o.hotelOrgId, propertyId: o.propertyId, ratePlanId: c.ratePlanId, roomTypeId: c.roomTypeId, date };
   if (c.prices && c.prices.length > 0) {

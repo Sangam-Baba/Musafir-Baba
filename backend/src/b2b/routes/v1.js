@@ -36,6 +36,7 @@ import { hotelContentRoutes } from './hotel-content.js';
 import { cancellationPolicyRoutes } from './hotel-cancellation-policies.js';
 import { ratePlanRoutes } from './hotel-rate-plans.js';
 import { calendarRoutes } from './hotel-calendar.js';
+import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -56,6 +57,7 @@ import { createGstRegistrations, createKycReviewService, createKycService } from
 import { createNotificationsService } from '../modules/notifications/index.js';
 import {
   createCalendarEditService,
+  createCalendarImportService,
   createCalendarService,
   createCancellationPolicyService,
   createRatePlanService,
@@ -227,6 +229,7 @@ function stage04Routes(clock) {
       clock,
     }),
   );
+  router.use(calendarImportRoutes({ imports: createCalendarImportService({ properties, roomTypesOf, clock }), clock }));
   return router;
 }
 

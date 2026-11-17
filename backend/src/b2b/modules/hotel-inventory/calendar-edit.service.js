@@ -68,8 +68,8 @@ function priceWarnings(rates, before) {
   );
 }
 
-/** @param {EditDeps} deps @param {Ctx} ctx @param {string} propertyId */
-async function context(deps, ctx, propertyId) {
+/** The property (manage permission, not archived), its date and the window — shared with the file import. @param {EditDeps} deps @param {Ctx} ctx @param {string} propertyId */
+export async function context(deps, ctx, propertyId) {
   const p = await deps.properties.loadOwned(ctx, propertyId, PERMISSIONS.calendarManage);
   if (p.status === 'ARCHIVED') throw new DomainError('PROPERTY_ARCHIVED');
   const today = todayIn(p.timeZone || DEFAULT_TIME_ZONE, deps.clock.now());
