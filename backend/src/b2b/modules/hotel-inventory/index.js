@@ -46,3 +46,5 @@ export { createAvailabilitySignals, SIGNAL_EVERY_MS } from './availability-signa
 export { parseCsv, toCsv } from './domain/csv.js';
 export { MAX_IMPORT_ROWS, MAX_IMPORT_ERRORS, rupeesToPaise, readHeader, readRows } from './domain/import-rows.js';
 export { createCalendarImportService } from './calendar-import.service.js';
+export { createAdminCalendarService } from './admin-calendar.service.js';
+export { calendarOf } from './calendar.service.js';

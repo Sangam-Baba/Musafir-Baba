@@ -76,22 +76,41 @@ export async function context(deps, ctx, propertyId) {
   return { p, owner: { hotelOrgId: p.hotelOrgId, propertyId }, today, windowEnd: addDays(today, CALENDAR_WINDOW_DAYS) };
 }
 
+/**
+ * Who is changing which property: the hotel member (through `context`) or a MusafirBaba admin (override).
+ * @typedef {{ p: any, owner: { hotelOrgId: string, propertyId: string }, today: string, windowEnd: string,
+ *   roomTypes: { id: string, maxOccupancy: number }[], by: string, kind: 'EDIT' | 'OVERRIDE', reason: string | null }} Subject
+ */
+
 /** @param {EditDeps} deps @param {Ctx} ctx @param {string} propertyId @param {EditRequest} req */
 async function edit(deps, ctx, propertyId, req) {
-  const { p, owner, today, windowEnd } = await context(deps, ctx, propertyId);
+  const c = await context(deps, ctx, propertyId);
+  const roomTypes = await deps.roomTypesOf(ctx, propertyId);
+  return editWith(deps, { ...c, roomTypes, by: actorOf(ctx), kind: 'EDIT', reason: null }, req);
+}
+
+/** The bulk change itself (members and admin overrides). @param {{ clock: import('../../core/clock.js').Clock }} deps @param {Subject} s @param {EditRequest} req */
+export async function editWith(deps, s, req) {
+  const { p, owner } = s;
   const repeat = await ChangeLogRecord.findOne({
     hotelOrgId: p.hotelOrgId,
-    propertyId,
+    propertyId: owner.propertyId,
     requestId: req.requestId,
     status: 'APPLIED',
   }).lean();
   if (repeat) return /** @type {any} */ (repeat).result;
-  const sel = selectDates(nights(req.from, req.to, MAX_EDIT_NIGHTS), { weekdays: req.weekdays, today, windowEnd, weekdayOf: weekday });
-  const [roomTypes, planDocs] = await Promise.all([
-    deps.roomTypesOf(ctx, propertyId),
-    RatePlanRecord.find({ hotelOrgId: p.hotelOrgId, propertyId, status: { $in: ['ACTIVE', 'INACTIVE'] } }).lean(),
-  ]);
-  checkChanges(req, roomTypes, planDocs.map(ratePlanDto));
+  const sel = selectDates(nights(req.from, req.to, MAX_EDIT_NIGHTS), {
+    weekdays: req.weekdays,
+    today: s.today,
+    windowEnd: s.windowEnd,
+    weekdayOf: weekday,
+  });
+  const planDocs = await RatePlanRecord.find({
+    hotelOrgId: p.hotelOrgId,
+    propertyId: owner.propertyId,
+    status: { $in: ['ACTIVE', 'INACTIVE'] },
+  }).lean();
+  checkChanges(req, s.roomTypes, planDocs.map(ratePlanDto));
   if (sel.dates.length * (req.rooms.length + req.rates.length) > MAX_EDIT_CELLS)
     throw new DomainError('CALENDAR_EDIT_TOO_BIG', { maxCells: MAX_EDIT_CELLS });
   await ensureNights({ ...owner, roomTypeIds: [...new Set(req.rooms.map((r) => r.roomTypeId))], dates: sel.dates });
@@ -105,18 +124,20 @@ async function edit(deps, ctx, propertyId, req) {
   if (req.preview || sel.dates.length === 0) return { preview: true, ...outcome };
   if (outcome.warnings.length > 0 && !req.confirmBigChange)
     throw new ConflictError('BIG_PRICE_CHANGE', { warnings: outcome.warnings.slice(0, 50) });
-  return apply(ctx, owner, req, { dates: sel.dates, before, outcome, at: deps.clock.now() });
+  return apply(s, req, { dates: sel.dates, before, outcome, at: deps.clock.now() });
 }
 
-/** @param {Ctx} ctx @param {{ hotelOrgId: string, propertyId: string }} owner @param {EditRequest} req @param {{ dates: string[], before: any, outcome: any, at: Date }} x */
-async function apply(ctx, owner, req, x) {
+/** @param {Subject} s @param {EditRequest} req @param {{ dates: string[], before: any, outcome: any, at: Date }} x */
+async function apply(s, req, x) {
+  const { owner } = s;
   const at = x.at;
   const log = await ChangeLogRecord.create({
     ...owner,
     requestId: req.requestId,
-    kind: 'EDIT',
+    kind: s.kind,
     status: 'APPLYING',
-    by: actorOf(ctx),
+    by: s.by,
+    reason: s.reason,
     month: at.toISOString().slice(0, 7),
     from: req.from,
     to: req.to,

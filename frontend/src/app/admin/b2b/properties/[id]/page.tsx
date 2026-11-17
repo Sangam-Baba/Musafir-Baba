@@ -10,6 +10,7 @@ import type { ListingDetail } from "@/b2b/admin-listing";
 import { AdminBell } from "@/b2b/components/admin/AdminBell";
 import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { AdminPageHeader, FleetPage, Notice, SECTION } from "@/b2b/components/admin/kit";
+import { AdminCalendar } from "@/b2b/components/admin/listing/AdminCalendar";
 import { AdminVisibility } from "@/b2b/components/admin/listing/AdminVisibility";
 import { ListingDecision } from "@/b2b/components/admin/listing/ListingDecision";
 import { ListingChecklist, ListingFacts } from "@/b2b/components/admin/listing/ListingFacts";
@@ -60,6 +61,7 @@ function Review({ id, token }: { id: string; token: string }) {
           <ListingFacts detail={d} masters={masters.data} />
         </div>
       </div>
+      <AdminCalendar propertyId={id} token={token} />
     </FleetPage>
   );
 }

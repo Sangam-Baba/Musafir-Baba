@@ -1,7 +1,8 @@
 // @ts-check
 /**
  * Shared setup for the Stage 04 (rooms, prices, rules) integration tests: an in-memory standalone MongoDB, the
- * B2B router, and helpers to make a hotel with its Owner signed in, a property, staff with limits.
+ * B2B router, and helpers to make a hotel with its Owner signed in, a property, staff with limits. A second server
+ * (`admin`) takes stand-in MusafirBaba staff from the `x-staff: <id>:<perm>,<perm>` header (`asStaff`).
  * Call `useInventoryApp(...)` once at the top of a test file; it registers beforeAll / afterAll / beforeEach.
  */
 import express from 'express';
@@ -37,12 +38,15 @@ export const DELUXE = {
 /** @param {string} t */
 export const auth = (t) => ({ authorization: `Bearer ${t}` });
 
+/** A stand-in MusafirBaba staff member on the `admin` server. @param {string} who e.g. 'a1:hotel-inventory.admin.read' */
+export const asStaff = (who) => ({ 'x-staff': who });
+
 /**
  * @param {{ clock: import('../../../src/b2b/core/clock.js').Clock, models?: import('mongoose').Model<any>[] }} options
  *   `models`: the test's own collections, emptied before each test (with the ones every test needs)
  */
 export function useInventoryApp(options) {
-  /** @type {{ mongo: Awaited<ReturnType<typeof startMongo>>, srv: Awaited<ReturnType<typeof startServer>> }} */
+  /** @type {{ mongo: Awaited<ReturnType<typeof startMongo>>, srv: Awaited<ReturnType<typeof startServer>>, admin: Awaited<ReturnType<typeof startServer>> }} */
   const env = /** @type {any} */ ({});
   const users = createUserRepository({ bcryptCost: 4, clock: options.clock });
   const orgs = createOrganizationsService({ clock: options.clock });
@@ -63,9 +67,25 @@ export function useInventoryApp(options) {
       }),
     );
     env.srv = await startServer(app);
+    const staffApp = express();
+    staffApp.use(
+      '/api/v1',
+      createB2BRouter({
+        connect: false,
+        logger: createLogger({ write: () => {} }),
+        clock: options.clock,
+        env: { B2B_AUTH_SECRET: secret },
+        authenticate: async (req) => {
+          const [staffId, perms] = String(req.get('x-staff') ?? '').split(':');
+          return staffId ? { type: 'staff', staffId, permissions: (perms ?? '').split(',') } : null;
+        },
+      }),
+    );
+    env.admin = await startServer(staffApp);
   });
   afterAll(async () => {
     await env.srv.close();
+    await env.admin.close();
     await env.mongo.stop();
   });
   beforeEach(async () => {
@@ -121,6 +141,9 @@ export function useInventoryApp(options) {
     },
     get mongo() {
       return env.mongo;
+    },
+    get admin() {
+      return env.admin;
     },
     users,
     orgs,

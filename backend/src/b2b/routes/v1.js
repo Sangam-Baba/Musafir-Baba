@@ -37,6 +37,7 @@ import { cancellationPolicyRoutes } from './hotel-cancellation-policies.js';
 import { ratePlanRoutes } from './hotel-rate-plans.js';
 import { calendarRoutes } from './hotel-calendar.js';
 import { calendarImportRoutes } from './hotel-calendar-import.js';
+import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -56,6 +57,7 @@ import {
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import {
+  createAdminCalendarService,
   createCalendarEditService,
   createCalendarImportService,
   createCalendarService,
@@ -139,7 +141,7 @@ export function createB2BRouter(options = {}) {
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
   router.use(stage03Routes(env, clock, identity));
-  router.use(stage04Routes(clock));
+  router.use(stage04Routes(clock, identity));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
@@ -206,8 +208,9 @@ function stage03Routes(env, clock, identity) {
  * Stage 04: rooms, prices and rules per night. Properties are read through hotel-catalog's own service
  * (`loadOwned` — same access checks and property limits as Stage 03).
  * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof createIdentity>} identity
  */
-function stage04Routes(clock) {
+function stage04Routes(clock, identity) {
   const router = express.Router();
   const properties = createPropertyService({ clock });
   const roomTypes = createRoomTypeService({ clock, properties });
@@ -230,7 +233,35 @@ function stage04Routes(clock) {
     }),
   );
   router.use(calendarImportRoutes({ imports: createCalendarImportService({ properties, roomTypesOf, clock }), clock }));
+  router.use(adminCalendarRoutes({ adminCalendar: adminCalendarService(clock, identity, properties) }));
   return router;
+}
+
+/**
+ * Admin calendars: the property and its active room types through hotel-catalog's own admin read.
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof createIdentity>} identity
+ * @param {ReturnType<typeof createPropertyService>} properties
+ */
+function adminCalendarService(clock, identity, properties) {
+  const listing = createAdminListingService({
+    clock,
+    properties,
+    orgInfo: (orgId) => identity.orgs.basicInfo(orgId),
+    isOwnOrg: ownOrgCheck(identity),
+  });
+  return createAdminCalendarService({
+    clock,
+    isOwnOrg: ownOrgCheck(identity),
+    adminProperty: async (id) => {
+      const detail = await listing.detail(id);
+      const { raw } = await properties.viewById(id);
+      const roomTypes = detail.roomTypes
+        .filter((r) => r.status === 'ACTIVE')
+        .map((r) => ({ id: r.id, name: r.name, maxOccupancy: r.maxOccupancy }));
+      return { raw, roomTypes };
+    },
+  });
 }
 
 /**
