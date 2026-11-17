@@ -93,7 +93,8 @@
 - **Decisions (owner):** hide services that aren't built (only Hotels & Resorts); add the design's extra business fields as optional (trade name, entity type, year, designation, alternate number); build a public landing page at `/business`; reuse the website's own logo and photos.
 - **Plan:** UI-1 shell · UI-2 overview · UI-3 five-step sign-up wizard (+ optional fields, backend B2B only) · UI-4 verification · UI-5 team / settings / properties / business profile · UI-6 landing. Bookings, finance, reports, enquiries are not shown until built. Admin panel unchanged.
 - **Done:** UI-1 — dark sidebar with the white logo (only working pages, permission-filtered), top bar (business switcher, bell, account menu with name + role, log out), mobile drawer, page banner (breadcrumb, orange highlight word, website photo `Heroimg.jpg`), summary card / panel / tabs / pill pieces, Help & Support page (website care contact in `b2b/support.ts`). All existing shell behaviour kept (session renewal, view-as banner and end, business switch, blocked-business notices). Frontend tsc ✅; all business pages load.
-- **Next step:** UI-2 overview.
+- **Later:** UI-2 → done (Overview: verification progress card with ring + steps from real data — details, email, bank, documents, submitted, verified; after verification the "first live listing" card; real counts — properties, live listings, team, unread; onboarding checklist with action buttons; help card; quick links). Frontend tsc ✅; page loads.
+- **Next step:** UI-3 five-step sign-up wizard (+ optional business fields).
 - **Next step:** S02-T05 — hotel self-registration (`POST /registrations/hotel`: user + org ONBOARDING + KYC application, email verification, duplicate GSTIN flag).
 
 ## 2026-11-13 — AI (Claude) — S00-T15 revised: everything inside the one backend (ADR-0015)
