@@ -38,6 +38,8 @@ function MapPin({ lat, lng, onChange }: { lat: number; lng: number; onChange: (l
 
   useEffect(() => {
     if (!key || !box.current || map.current) return;
+    // Google calls this when it refuses the key (e.g. not allowed on this address): show the lat / lng fallback
+    (window as unknown as { gm_authFailure?: () => void }).gm_authFailure = () => setFailed(true);
     new Loader({ apiKey: key, version: "weekly" })
       .load()
       .then(() => {
