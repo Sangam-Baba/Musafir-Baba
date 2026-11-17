@@ -8,3 +8,6 @@ export { createCancellationPolicyService } from './cancellation-policy.service.j
 export { PRICING_MODELS, ADJUST_TYPES, RATE_PLAN_STATUSES, checkRatePlan, derivedPrice } from './domain/rate-plan.js';
 export { RATE_PLANS_COLLECTION, RatePlanRecord } from './models/rate-plan.model.js';
 export { createRatePlanService } from './rate-plan.service.js';
+export { DATE, CALENDAR_WINDOW_DAYS, isDate, addDays, daysBetween, weekday, nights, todayIn } from './domain/dates.js';
+export { INVENTORY_DAYS_COLLECTION, INVENTORY_DAY_VALIDATOR, InventoryDayRecord } from './models/inventory-day.model.js';
+export { ensureNights, extendCalendarWindow } from './inventory-days.js';

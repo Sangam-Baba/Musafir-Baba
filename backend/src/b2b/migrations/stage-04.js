@@ -1,6 +1,11 @@
 // @ts-check
 /** Migrations of Stage 04 (rooms, prices and rules per night). Run after 0001–0026; ids never renamed or reused. */
-import { CANCELLATION_POLICIES_COLLECTION, RATE_PLANS_COLLECTION } from '../modules/hotel-inventory/index.js';
+import {
+  CANCELLATION_POLICIES_COLLECTION,
+  INVENTORY_DAY_VALIDATOR,
+  INVENTORY_DAYS_COLLECTION,
+  RATE_PLANS_COLLECTION,
+} from '../modules/hotel-inventory/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_04 = [
@@ -35,6 +40,22 @@ export const STAGE_04 = [
         { name: 'parent', partialFilterExpression: { 'derived.parentRatePlanId': { $exists: true } } },
       );
       await ctx.createIndex(RATE_PLANS_COLLECTION, { cancellationPolicyId: 1, status: 1 }, { name: 'policy' });
+    },
+  },
+  {
+    id: '0029-inv-inventory-days',
+    description:
+      'Nights per room type: the database rule (booked + held never above total, no negatives, counts match their owners); one night per room type and date; by property and date; holds by expiry',
+    up: async (ctx) => {
+      await ctx.createCollection(INVENTORY_DAYS_COLLECTION, { validator: INVENTORY_DAY_VALIDATOR });
+      await ctx.createIndex(INVENTORY_DAYS_COLLECTION, { roomTypeId: 1, date: 1 }, { name: 'room_type_date_unique', unique: true });
+      await ctx.createIndex(INVENTORY_DAYS_COLLECTION, { hotelOrgId: 1, propertyId: 1, date: 1 }, { name: 'property_date' });
+      await ctx.createIndex(INVENTORY_DAYS_COLLECTION, { propertyId: 1, date: 1 }, { name: 'availability' });
+      await ctx.createIndex(
+        INVENTORY_DAYS_COLLECTION,
+        { 'holds.expiresAt': 1 },
+        { name: 'hold_expiry', partialFilterExpression: { 'holds.0': { $exists: true } } },
+      );
     },
   },
 ];

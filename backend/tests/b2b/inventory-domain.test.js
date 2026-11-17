@@ -1,8 +1,9 @@
 // @ts-check
-/** Pure rules of the hotel-inventory module (Stage 04): cancellation policies, rate plans. */
+/** Pure rules of the hotel-inventory module (Stage 04): cancellation policies, rate plans, stay dates. */
 import { describe, expect, it } from 'vitest';
 
 import { normalisePolicy, penaltyAt, summarise } from '../../src/b2b/modules/hotel-inventory/domain/cancellation.js';
+import { addDays, daysBetween, isDate, nights, todayIn, weekday } from '../../src/b2b/modules/hotel-inventory/domain/dates.js';
 import { checkRatePlan, derivedPrice } from '../../src/b2b/modules/hotel-inventory/domain/rate-plan.js';
 
 /** @typedef {import('../../src/b2b/modules/hotel-inventory/domain/cancellation.js').PolicyInput} PolicyInput */
@@ -175,5 +176,33 @@ describe('rate plans', () => {
     expect(derivedPrice(333, { type: 'PERCENT', value: 15 })).toBe(383);
     expect(derivedPrice(20000, { type: 'AMOUNT', value: -50000 })).toBe(100);
     expect(derivedPrice(null, { type: 'AMOUNT', value: 100 })).toBeNull();
+  });
+});
+
+describe('stay dates', () => {
+  it('real calendar dates only', () => {
+    expect(['2026-12-24', '2028-02-29'].map(isDate)).toEqual([true, true]);
+    expect(['2026-02-29', '2026-13-01', '24-12-2026', '2026-12-24T00:00', 20261224].map(isDate)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+  });
+
+  it('nights are [from, to): to excluded; across months and leap days; wrong way round / too long refused', () => {
+    expect(nights('2026-12-30', '2027-01-02')).toEqual(['2026-12-30', '2026-12-31', '2027-01-01']);
+    expect(nights('2028-02-28', '2028-03-01')).toEqual(['2028-02-28', '2028-02-29']);
+    expect(() => nights('2026-12-02', '2026-12-02')).toThrow(expect.objectContaining({ code: 'DATE_RANGE_EMPTY' }));
+    expect(() => nights('2026-01-01', '2026-03-01', 30)).toThrow(expect.objectContaining({ code: 'DATE_RANGE_TOO_LONG' }));
+    expect(() => nights('2026-02-30', '2026-03-01')).toThrow(expect.objectContaining({ code: 'DATE_INVALID' }));
+    expect([addDays('2026-12-31', 1), daysBetween('2026-11-17', '2027-11-17'), weekday('2026-12-25')]).toEqual(['2027-01-01', 365, 5]);
+  });
+
+  it("today is the property's own date", () => {
+    const lateEvening = new Date('2026-11-17T20:00:00Z'); // 01:30 on the 18th in India
+    expect(todayIn('Asia/Kolkata', lateEvening)).toBe('2026-11-18');
+    expect(todayIn('America/New_York', lateEvening)).toBe('2026-11-17');
   });
 });

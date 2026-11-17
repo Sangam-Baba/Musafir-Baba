@@ -53,7 +53,7 @@ import {
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
-import { createCancellationPolicyService, createRatePlanService } from '../modules/hotel-inventory/index.js';
+import { createCancellationPolicyService, createRatePlanService, extendCalendarWindow } from '../modules/hotel-inventory/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -249,6 +249,13 @@ function retentionSchedule(env, config, log) {
   return { name: 'kyc-retention', everyMs: RETENTION_EVERY_MS, run: () => retention.runOnce() };
 }
 
+/** Stage 04: keep every known room type's calendar 365 days ahead (new nights start with 0 rooms). */
+const CALENDAR_WINDOW_SCHEDULE = {
+  name: 'inventory-calendar-window',
+  everyMs: 6 * 60 * 60_000,
+  run: () => extendCalendarWindow({ clock: systemClock }),
+};
+
 /**
  * Connects the B2B Mongoose instance, then starts the background work (../background.js).
  * A failure only affects /api/v1 (health reports `down`); the existing app has its own connection.
@@ -268,7 +275,7 @@ function startDatabase(env, log, hub) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
-        schedules: [retentionSchedule(env, config, log)],
+        schedules: [retentionSchedule(env, config, log), CALENDAR_WINDOW_SCHEDULE],
       }),
     )
     .catch((error) => {
