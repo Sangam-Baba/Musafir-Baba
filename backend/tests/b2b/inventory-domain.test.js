@@ -1,8 +1,9 @@
 // @ts-check
-/** Pure rules of the hotel-inventory module (Stage 04): cancellation policies. */
+/** Pure rules of the hotel-inventory module (Stage 04): cancellation policies, rate plans. */
 import { describe, expect, it } from 'vitest';
 
 import { normalisePolicy, penaltyAt, summarise } from '../../src/b2b/modules/hotel-inventory/domain/cancellation.js';
+import { checkRatePlan, derivedPrice } from '../../src/b2b/modules/hotel-inventory/domain/rate-plan.js';
 
 /** @typedef {import('../../src/b2b/modules/hotel-inventory/domain/cancellation.js').PolicyInput} PolicyInput */
 
@@ -88,3 +89,91 @@ describe('cancellation policies', () => {
   });
 });
 
+describe('rate plans', () => {
+  /** @type {import('../../src/b2b/modules/hotel-inventory/domain/rate-plan.js').RatePlanInput} */
+  const ep = {
+    name: ' Room only ',
+    roomTypeIds: ['r1', 'r2', 'r1'],
+    mealPlanKey: 'ep',
+    cancellationPolicyId: 'p1',
+    pricingModel: 'PER_OCCUPANCY',
+    minAdvanceDays: 0,
+    maxAdvanceDays: 365,
+    derived: null,
+  };
+  const facts = {
+    roomTypeIds: ['r1', 'r2', 'r3'],
+    mealPlanKeys: ['ep', 'cp'],
+    policyIds: ['p1'],
+    parent: null,
+    selfId: null,
+    childRoomTypeIds: null,
+    childPricingModel: null,
+  };
+  const parent = { id: 'ep1', status: 'ACTIVE', pricingModel: 'PER_OCCUPANCY', roomTypeIds: ['r1', 'r2'], derived: null };
+  /** @param {() => unknown} fn */
+  const codes = (fn) => {
+    try {
+      fn();
+    } catch (e) {
+      return /** @type {any} */ (e).details.errors.map((/** @type {any} */ x) => x.code);
+    }
+    return [];
+  };
+
+  it('a valid plan: name trimmed, room types once each', () => {
+    expect(checkRatePlan(ep, facts)).toMatchObject({ name: 'Room only', roomTypeIds: ['r1', 'r2'] });
+  });
+
+  it('refuses unknown room types, meal plans, policies and a booking window the wrong way round — all at once', () => {
+    expect(
+      codes(() =>
+        checkRatePlan(
+          { ...ep, roomTypeIds: ['r9'], mealPlanKey: 'xx', cancellationPolicyId: 'p9', minAdvanceDays: 10, maxAdvanceDays: 5 },
+          facts,
+        ),
+      ),
+    ).toEqual(['ROOM_TYPE_UNKNOWN', 'MEAL_PLAN_UNKNOWN', 'POLICY_UNKNOWN', 'ADVANCE_DAYS_ORDER']);
+    expect(codes(() => checkRatePlan({ ...ep, roomTypeIds: [] }, facts))).toEqual(['ROOM_TYPE_REQUIRED']);
+  });
+
+  it("derived plans: one level, same pricing model, only the parent's room types, a sensible adjustment", () => {
+    const cp = {
+      ...ep,
+      mealPlanKey: 'cp',
+      derived: { parentRatePlanId: 'ep1', adjust: /** @type {const} */ ({ type: 'AMOUNT', value: 50000 }) },
+    };
+    expect(checkRatePlan(cp, { ...facts, parent }).derived).toEqual(cp.derived);
+    expect(codes(() => checkRatePlan({ ...cp, roomTypeIds: ['r3'], pricingModel: 'PER_ROOM' }, { ...facts, parent }))).toEqual([
+      'PARENT_PRICING_MODEL_DIFFERS',
+      'ROOM_TYPE_NOT_IN_PARENT',
+    ]);
+    expect(codes(() => checkRatePlan(cp, { ...facts, parent: { ...parent, derived: { x: 1 } } }))).toEqual(['PARENT_IS_DERIVED']);
+    expect(codes(() => checkRatePlan(cp, { ...facts, parent: { ...parent, status: 'ARCHIVED' } }))).toEqual(['PARENT_UNKNOWN']);
+    expect(codes(() => checkRatePlan(cp, { ...facts, parent, selfId: 'ep1' }))).toEqual(['PARENT_IS_SELF']);
+    expect(
+      codes(() =>
+        checkRatePlan({ ...cp, derived: { parentRatePlanId: 'ep1', adjust: { type: 'PERCENT', value: -95 } } }, { ...facts, parent }),
+      ),
+    ).toEqual(['ADJUST_OUT_OF_RANGE']);
+    expect(codes(() => checkRatePlan(cp, { ...facts, parent, childRoomTypeIds: ['r1'], childPricingModel: 'PER_OCCUPANCY' }))).toEqual([
+      'PLANS_DERIVED_FROM_IT',
+    ]);
+  });
+
+  it('a plan others follow keeps what they need', () => {
+    const f = { ...facts, childRoomTypeIds: ['r2'], childPricingModel: 'PER_OCCUPANCY' };
+    expect(codes(() => checkRatePlan({ ...ep, roomTypeIds: ['r1'], pricingModel: 'PER_ROOM' }, f))).toEqual([
+      'DERIVED_PLANS_NEED_PRICING_MODEL',
+      'DERIVED_PLANS_NEED_ROOM_TYPE',
+    ]);
+  });
+
+  it('derived price: amount or percent of the parent, never below ₹1, nothing without a parent price', () => {
+    expect(derivedPrice(300000, { type: 'AMOUNT', value: 50000 })).toBe(350000);
+    expect(derivedPrice(300000, { type: 'PERCENT', value: -10 })).toBe(270000);
+    expect(derivedPrice(333, { type: 'PERCENT', value: 15 })).toBe(383);
+    expect(derivedPrice(20000, { type: 'AMOUNT', value: -50000 })).toBe(100);
+    expect(derivedPrice(null, { type: 'AMOUNT', value: 100 })).toBeNull();
+  });
+});

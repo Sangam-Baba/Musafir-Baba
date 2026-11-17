@@ -34,6 +34,7 @@ import { listingRoutes } from './hotel-listing.js';
 import { hotelAdminRoutes } from './hotel-admin.js';
 import { hotelContentRoutes } from './hotel-content.js';
 import { cancellationPolicyRoutes } from './hotel-cancellation-policies.js';
+import { ratePlanRoutes } from './hotel-rate-plans.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -52,7 +53,7 @@ import {
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
-import { createCancellationPolicyService } from '../modules/hotel-inventory/index.js';
+import { createCancellationPolicyService, createRatePlanService } from '../modules/hotel-inventory/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -198,7 +199,15 @@ function stage03Routes(env, clock, identity) {
 function stage04Routes(clock) {
   const router = express.Router();
   const properties = createPropertyService({ clock });
+  const roomTypes = createRoomTypeService({ clock, properties });
+  const masters = createMastersService();
   router.use(cancellationPolicyRoutes({ policies: createCancellationPolicyService({ properties }) }));
+  const ratePlans = createRatePlanService({
+    properties,
+    roomTypesOf: async (ctx, propertyId) => (await roomTypes.list(ctx, propertyId)).map((r) => r.id),
+    mealPlanKeys: async () => (await masters.list()).mealPlans.map((/** @type {{ key: string }} */ m) => m.key),
+  });
+  router.use(ratePlanRoutes({ ratePlans }));
   return router;
 }
 

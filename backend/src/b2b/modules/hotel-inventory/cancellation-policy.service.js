@@ -3,11 +3,12 @@
  * Cancellation policies of a property (plan Stage 04 §3.2). Every call goes through the property first
  * (hotel-catalog `loadOwned`), so the same limits apply: another org's or an unassigned property → 404.
  * Changes on the version the screen loaded (412 otherwise); never on an archived property. Archived, never
- * deleted. A policy still used by an active rate plan can't be archived (checked once rate plans exist, S04-T03).
+ * deleted. A policy still used by a rate plan (not archived) can't be archived.
  */
 import { AppError, ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { MAX_POLICIES_PER_PROPERTY, normalisePolicy, summarise } from './domain/cancellation.js';
 import { CancellationPolicyRecord } from './models/cancellation-policy.model.js';
+import { RatePlanRecord } from './models/rate-plan.model.js';
 import { PERMISSIONS } from './permissions.js';
 
 const ID = /^[a-f0-9]{24}$/;
@@ -47,22 +48,27 @@ function prepared(input) {
   return { ...p, nameKey: nameKey(p.name), summary: summarise(p) };
 }
 
-/** @param {{ properties: Properties, inUse?: (propertyId: string, policyId: string) => Promise<boolean> }} deps */
+/** @param {{ properties: Properties }} deps @param {Ctx} ctx @param {string} propertyId */
+async function editableProperty(deps, ctx, propertyId) {
+  const p = await deps.properties.loadOwned(ctx, propertyId, PERMISSIONS.calendarManage);
+  if (p.status === 'ARCHIVED') throw new DomainError('PROPERTY_ARCHIVED');
+  return p;
+}
+
+/** @param {any} p @param {string} id */
+async function onePolicy(p, id) {
+  const doc = ID.test(id)
+    ? await CancellationPolicyRecord.findOne({ _id: id, hotelOrgId: p.hotelOrgId, propertyId: String(p._id) }).lean()
+    : null;
+  if (!doc) throw new NotFoundError('POLICY_NOT_FOUND');
+  return doc;
+}
+
+/** @param {{ properties: Properties }} deps */
 export function createCancellationPolicyService(deps) {
   /** @param {Ctx} ctx @param {string} propertyId */
-  async function editable(ctx, propertyId) {
-    const p = await deps.properties.loadOwned(ctx, propertyId, PERMISSIONS.calendarManage);
-    if (p.status === 'ARCHIVED') throw new DomainError('PROPERTY_ARCHIVED');
-    return p;
-  }
-  /** @param {any} p @param {string} id */
-  async function one(p, id) {
-    const doc = ID.test(id)
-      ? await CancellationPolicyRecord.findOne({ _id: id, hotelOrgId: p.hotelOrgId, propertyId: String(p._id) }).lean()
-      : null;
-    if (!doc) throw new NotFoundError('POLICY_NOT_FOUND');
-    return doc;
-  }
+  const editable = (ctx, propertyId) => editableProperty(deps, ctx, propertyId);
+  const one = onePolicy;
 
   return {
     /** @param {Ctx} ctx @param {string} propertyId */
@@ -109,7 +115,13 @@ export function createCancellationPolicyService(deps) {
     async archive(ctx, propertyId, id) {
       const p = await editable(ctx, propertyId);
       const current = await one(p, id);
-      if (deps.inUse && (await deps.inUse(propertyId, id))) throw new ConflictError('POLICY_IN_USE');
+      const used = await RatePlanRecord.exists({
+        hotelOrgId: p.hotelOrgId,
+        propertyId,
+        cancellationPolicyId: id,
+        status: { $in: ['ACTIVE', 'INACTIVE'] },
+      });
+      if (used) throw new ConflictError('POLICY_IN_USE');
       await CancellationPolicyRecord.updateOne(
         { _id: current._id, hotelOrgId: p.hotelOrgId, status: 'ACTIVE' },
         { $set: { status: 'ARCHIVED', updatedBy: actorOf(ctx) }, $inc: { version: 1 } },
