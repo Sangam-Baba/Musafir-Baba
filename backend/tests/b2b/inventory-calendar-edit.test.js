@@ -60,6 +60,13 @@ describe('changing the calendar in bulk', () => {
     expect((await s.read('2026-11-20', '2026-11-21')).nights[0].total).toBe(0);
     const done = await s.put(change);
     expect(done.body).toMatchObject({ preview: false, nights: 4, changeId: expect.any(String) });
+    const log = /** @type {any} */ (await ChangeLogRecord.findById(done.body.changeId).setOptions(SYSTEM).lean());
+    expect(log.pendingEvents.map((/** @type {any} */ e) => [e.type, e.payload])).toEqual([
+      [
+        'hotel-inventory.inventory.changed',
+        { orgId: s.orgId, propertyId: s.propertyId, roomTypeIds: [s.room], dateFrom: '2026-11-20', dateTo: '2026-11-29' },
+      ],
+    ]); // stored with the change → relayed → live availability:changed (inventory-signals.test.js)
     const nights = (await s.read('2026-11-17', '2026-11-29')).nights;
     expect(nights.filter((/** @type {any} */ x) => x.total === 5).map((/** @type {any} */ x) => x.date)).toEqual([
       '2026-11-20',

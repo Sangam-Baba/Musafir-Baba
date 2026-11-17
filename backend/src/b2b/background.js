@@ -30,7 +30,14 @@ import { createSignalReader } from './core/realtime/signals.js';
 import { EVENTS as ACCESS_EVENTS, RoleRecord, syncPermissionCatalogue } from './modules/access/index.js';
 import { createAuditService } from './modules/audit/index.js';
 import { EVENTS as CATALOG_EVENTS, PropertyRecord, RoomTypeRecord, seedMasters } from './modules/hotel-catalog/index.js';
-import { holdReconcileRules, inventoryInvariants } from './modules/hotel-inventory/index.js';
+import {
+  ChangeLogRecord,
+  createAvailabilitySignals,
+  EVENTS as INVENTORY_EVENTS,
+  HoldRecord,
+  holdReconcileRules,
+  inventoryInvariants,
+} from './modules/hotel-inventory/index.js';
 import { ApplicationRecord, EVENTS as KYC_EVENTS } from './modules/kyc/index.js';
 import { createUserRepository, EVENTS as IDENTITY_EVENTS, SessionRecord, UserRecord, ViewAsRecord } from './modules/identity/index.js';
 import { ADMIN_QUEUES, createDelivery, EVENT_CATEGORIES } from './modules/notifications/index.js';
@@ -117,6 +124,14 @@ eventBus.subscribe({
   },
 });
 
+/** Stage 04: rooms / prices / rules changed → live `availability:changed` for that property (≤ 1 per second). */
+const availabilitySignals = createAvailabilitySignals({ clock: systemClock, logger: defaultLogger });
+eventBus.subscribe({
+  consumer: 'inventory-availability-signals',
+  types: [INVENTORY_EVENTS.inventoryChanged],
+  handler: (event) => availabilitySignals.handle(event),
+});
+
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
 export const eventSources = [
@@ -130,6 +145,8 @@ export const eventSources = [
   ApplicationRecord,
   PropertyRecord,
   RoomTypeRecord,
+  HoldRecord,
+  ChangeLogRecord,
 ];
 
 /**

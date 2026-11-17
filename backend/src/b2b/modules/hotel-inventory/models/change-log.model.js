@@ -5,6 +5,7 @@
  * groups entries for archiving. `requestId` makes a repeated request return the first result.
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
+import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 
 export const CHANGE_LOG_COLLECTION = 'inv_change_log';
@@ -27,6 +28,7 @@ const schema = new b2bMongoose.Schema(
     result: { type: b2bMongoose.Schema.Types.Mixed, default: null },
     undoOf: { type: String, default: null },
     undoneAt: { type: Date, default: null },
+    ...eventFields(b2bMongoose), // inventory.changed for the nights the change touched
   },
   { timestamps: true, versionKey: false },
 );

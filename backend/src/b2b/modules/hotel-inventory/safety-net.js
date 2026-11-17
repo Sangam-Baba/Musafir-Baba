@@ -40,7 +40,7 @@ export function holdReconcileRules(deps) {
       olderThanMs: STUCK_AFTER_MS,
       resume: async (h) => {
         await giveBackAll(h);
-        await move(String(h._id), 'PLACING', { status: 'FAILED', failure: { code: 'ABANDONED' } }, deps.clock.now());
+        await move(String(h._id), 'PLACING', { status: 'FAILED', failure: { code: 'ABANDONED' } }, { now: deps.clock.now(), changed: h });
       },
     },
     {
@@ -50,7 +50,7 @@ export function holdReconcileRules(deps) {
       olderThanMs: STUCK_AFTER_MS,
       resume: async (h) => {
         await giveBackAll(h);
-        await move(String(h._id), 'RELEASING', { status: 'RELEASED' }, deps.clock.now());
+        await move(String(h._id), 'RELEASING', { status: 'RELEASED' }, { now: deps.clock.now(), changed: h });
       },
     },
     {
@@ -88,7 +88,7 @@ async function releaseExpired(deps) {
     ).setOptions(SCOPE);
     if (claimed.modifiedCount !== 1) continue;
     await giveBackAll(h);
-    if (await move(String(h._id), 'RELEASING', { status: 'RELEASED' }, deps.clock.now())) released += 1;
+    if (await move(String(h._id), 'RELEASING', { status: 'RELEASED' }, { now: deps.clock.now(), changed: h })) released += 1;
   }
   return released;
 }

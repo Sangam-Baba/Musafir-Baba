@@ -106,4 +106,15 @@ export const STAGE_04 = [
       await ctx.createIndex(HOLDS_COLLECTION, { status: 1, statusChangedAt: 1 }, { name: 'status_changed' });
     },
   },
+  {
+    id: '0034-inv-change-log-events',
+    description: 'Calendar change log carries events (inventory.changed): relay index',
+    up: async (ctx) => {
+      await ctx.createIndex(
+        CHANGE_LOG_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
 ];

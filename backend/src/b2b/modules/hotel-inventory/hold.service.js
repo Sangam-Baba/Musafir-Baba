@@ -14,6 +14,7 @@
 import { ConflictError, DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { isDate } from './domain/dates.js';
+import { holdChangedEvent } from './inventory-events.js';
 import { HoldRecord } from './models/hold.model.js';
 import { confirmNight, extendNights, releaseNight, returnNight, stepsOf, takeNight } from './night-steps.js';
 
@@ -59,11 +60,23 @@ export const holdDto = (h) => ({
   failure: h.failure,
 });
 
-/** Conditional status change. @param {string} id @param {string | string[]} from @param {Record<string, unknown>} set @param {Date} now */
-export async function move(id, from, set, now) {
+/**
+ * Conditional status change (also used by the sweeper / reconciler). With `{ now, changed: hold }` the same update
+ * stores the `inventory.changed` event for the hold's nights (`05-…` §7a).
+ * @param {string} id
+ * @param {string | string[]} from
+ * @param {Record<string, unknown>} set
+ * @param {Date | { now: Date, changed: any }} at
+ */
+export async function move(id, from, set, at) {
+  const now = at instanceof Date ? at : at.now;
+  const event = at instanceof Date ? null : holdChangedEvent(at.changed, now);
   const res = await HoldRecord.updateOne(
     { _id: id, status: Array.isArray(from) ? { $in: from } : from },
-    { $set: { ...set, statusChangedAt: now } },
+    {
+      $set: { ...set, statusChangedAt: now, ...(event ? { hasPendingEvents: true } : {}) },
+      ...(event ? { $push: { pendingEvents: event } } : {}),
+    },
   ).setOptions(SCOPE);
   return res.modifiedCount === 1;
 }
@@ -117,7 +130,7 @@ async function holdRooms(deps, req) {
     await move(id, 'PLACING', { status: 'FAILED', failure }, deps.clock.now());
     throw new ConflictError('SOLD_OUT', failure);
   }
-  if (!(await move(id, 'PLACING', { status: 'ACTIVE' }, deps.clock.now()))) {
+  if (!(await move(id, 'PLACING', { status: 'ACTIVE' }, { now: deps.clock.now(), changed: hold }))) {
     await giveBackAll(hold); // the reconciler gave up on it meanwhile
     throw new ConflictError('HOLD_LOST');
   }
@@ -133,10 +146,15 @@ async function finishConfirm(deps, h) {
   if (lost.length > 0) {
     await giveBackBooking(h);
     await giveBackAll(h);
-    await move(String(h._id), 'CONFIRMING', { status: 'FAILED', failure: { code: 'NIGHT_LOST', nights: lost } }, deps.clock.now());
+    await move(
+      String(h._id),
+      'CONFIRMING',
+      { status: 'FAILED', failure: { code: 'NIGHT_LOST', nights: lost } },
+      { now: deps.clock.now(), changed: h },
+    );
     throw new ConflictError('NIGHT_LOST', { nights: lost });
   }
-  await move(String(h._id), 'CONFIRMING', { status: 'CONFIRMED' }, deps.clock.now());
+  await move(String(h._id), 'CONFIRMING', { status: 'CONFIRMED' }, { now: deps.clock.now(), changed: h });
   return holdDto(await load(String(h._id)));
 }
 
@@ -157,7 +175,7 @@ async function releaseHold(deps, holdId) {
   const started = (await move(holdId, ['PLACING', 'ACTIVE'], { status: 'RELEASING' }, deps.clock.now())) || h.status === 'RELEASING';
   if (!started) return { released: false, status: h.status };
   await giveBackAll(h);
-  await move(holdId, 'RELEASING', { status: 'RELEASED' }, deps.clock.now());
+  await move(holdId, 'RELEASING', { status: 'RELEASED' }, { now: deps.clock.now(), changed: h });
   return { released: true, status: 'RELEASED' };
 }
 

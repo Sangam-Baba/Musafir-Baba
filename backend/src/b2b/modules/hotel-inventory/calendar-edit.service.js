@@ -14,6 +14,7 @@ import { DEFAULT_TIME_ZONE } from '../hotel-catalog/index.js';
 import { applyRates, applyRooms, refusedReductions, restore, snapshot } from './calendar-writes.js';
 import { bigChanges, MAX_EDIT_CELLS, MAX_EDIT_NIGHTS, rateChangeProblems, selectDates } from './domain/bulk-edit.js';
 import { addDays, CALENDAR_WINDOW_DAYS, nights, todayIn, weekday } from './domain/dates.js';
+import { inventoryChangedEvent } from './inventory-events.js';
 import { ensureNights } from './inventory-days.js';
 import { ChangeLogRecord } from './models/change-log.model.js';
 import { RatePlanRecord } from './models/rate-plan.model.js';
@@ -126,8 +127,30 @@ async function apply(ctx, owner, req, x) {
   await applyRooms(owner, req.rooms, x.dates);
   await applyRates(owner, req.rates, x.dates);
   const result = { changeId: String(log._id), preview: false, ...x.outcome };
-  await ChangeLogRecord.updateOne({ _id: log._id, hotelOrgId: owner.hotelOrgId }, { $set: { status: 'APPLIED', result } });
+  const event = inventoryChangedEvent(
+    {
+      orgId: owner.hotelOrgId,
+      propertyId: owner.propertyId,
+      roomTypeIds: [...req.rooms, ...req.rates].map((c) => c.roomTypeId),
+      dates: x.dates,
+    },
+    at,
+  );
+  await ChangeLogRecord.updateOne(
+    { _id: log._id, hotelOrgId: owner.hotelOrgId },
+    { $set: { status: 'APPLIED', result, hasPendingEvents: true }, $push: { pendingEvents: event } },
+  );
   return result;
+}
+
+/** The nights an undone change touched. @param {{ hotelOrgId: string, propertyId: string }} owner @param {any} latest @param {Date} at */
+function undoEvent(owner, latest, at) {
+  const before = latest.before ?? { nights: [], rates: [] };
+  const cells = [...(before.nights ?? []), ...(before.rates ?? [])];
+  return inventoryChangedEvent(
+    { orgId: owner.hotelOrgId, propertyId: owner.propertyId, roomTypeIds: cells.map((c) => c.roomTypeId), dates: cells.map((c) => c.date) },
+    at,
+  );
 }
 
 /** Undo the property's latest change (only that one). @param {EditDeps} deps @param {Ctx} ctx @param {string} propertyId @param {string} changeId */
@@ -164,6 +187,8 @@ async function undo(deps, ctx, propertyId, changeId) {
     before: {},
     result: { refused },
     undoOf: changeId,
+    hasPendingEvents: true,
+    pendingEvents: [undoEvent(owner, latest, at)],
   });
   return { undone: changeId, refused };
 }

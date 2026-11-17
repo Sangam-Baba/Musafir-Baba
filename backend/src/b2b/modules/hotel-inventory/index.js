@@ -41,3 +41,5 @@ export {
   ORPHAN_AFTER_MS,
   OVERDUE_ALERT_MS,
 } from './safety-net.js';
+export { inventoryChangedEvent, holdChangedEvent } from './inventory-events.js';
+export { createAvailabilitySignals, SIGNAL_EVERY_MS } from './availability-signals.js';
