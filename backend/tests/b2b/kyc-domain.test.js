@@ -1,6 +1,8 @@
 // @ts-check
 import { describe, expect, it } from 'vitest';
 
+import { approvalStep } from '../../src/b2b/modules/kyc/domain/approval.js';
+
 import {
   assessRisk,
   DOCUMENT_SETS,
@@ -165,5 +167,24 @@ describe('optional business details (UI-3)', () => {
       highRisk: true,
     });
     expect(assessRisk(validateHotelDetails({ ...good, entityType: 'OTHER' }), { duplicateGstin: false }).flags).toEqual([]);
+  });
+});
+
+describe('who may verify (D34)', () => {
+  const step = (/** @type {Partial<Parameters<typeof approvalStep>[0]>} */ a) =>
+    approvalStep({ highRisk: false, firstBy: null, by: 'staff:x', authority: false, ...a });
+  it('the approve permission verifies on its own, at any risk, even after a first approval', () => {
+    expect(step({ authority: true })).toBe('FINAL');
+    expect(step({ authority: true, highRisk: true })).toBe('FINAL');
+    expect(step({ authority: true, highRisk: true, firstBy: 'staff:x' })).toBe('FINAL');
+    expect(step({ authority: true, highRisk: true, firstBy: 'staff:y' })).toBe('FINAL');
+  });
+  it('without it: normal → verified; high risk → first approval; then only someone with the permission', () => {
+    expect(step({})).toBe('FINAL');
+    expect(step({ highRisk: true })).toBe('FIRST');
+    expect(() => step({ highRisk: true, firstBy: 'staff:x' })).toThrow(
+      expect.objectContaining({ code: 'KYC_SECOND_APPROVER_MUST_DIFFER' }),
+    );
+    expect(() => step({ highRisk: true, firstBy: 'staff:y' })).toThrow(expect.objectContaining({ code: 'KYC_SECOND_APPROVER_REQUIRED' }));
   });
 });

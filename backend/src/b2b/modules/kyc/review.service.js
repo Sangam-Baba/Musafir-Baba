@@ -7,14 +7,14 @@
  * - a verdict per document file (VERIFIED / MISMATCH / UNREADABLE) — tied to the file, so a resubmitted
  *   document needs a new verdict while unchanged ones keep theirs;
  * - decision: reject (with a note; the reasons are the documents not verified) or approve (every required
- *   document verified). High risk needs two people: the first approval is recorded and the lock let go;
- *   a second reviewer with `platform.kyc.approve` — never the same person — gives the final approval;
+ *   document verified). Who may verify on their own and when a first approval is needed: domain/approval.js (D34);
  * - a reviewer can never decide an application of an organisation they belong to themselves.
  * Every step is one conditional update that only goes through while the reviewer still holds the lock.
  */
 import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { ConflictError, DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
+import { approvalStep } from './domain/approval.js';
 import { missingDocuments, requiredDocuments } from './domain/document-sets.js';
 import { transition } from './domain/workflow.js';
 import { EVENTS } from './events.js';
@@ -235,16 +235,15 @@ async function approve(deps, { who, doc, note }) {
   const unverified = notVerified(doc);
   if (unverified.length > 0) throw new DomainError('KYC_DOCUMENTS_NOT_VERIFIED', { keys: unverified });
   const first = doc.review?.firstApproval;
-  if (doc.risk?.highRisk && !first) {
+  const authority = who.permissions.includes(PERMISSIONS.platformSecondApproval);
+  if (approvalStep({ highRisk: Boolean(doc.risk?.highRisk), firstBy: first?.by ?? null, by, authority }) === 'FIRST') {
     return apply(doc, heldBy(doc, who.staffId, now), {
       $set: { 'review.firstApproval': { by, at: now, note }, 'review.reviewerId': null, 'review.lockedUntil': null },
       $push: { history: historyEntry('first-approval', 'UNDER_REVIEW', { by, at: now, note }) },
     });
   }
-  if (first && first.by === by) throw new ForbiddenError('KYC_SECOND_APPROVER_MUST_DIFFER');
-  if (first && !who.permissions.includes(PERMISSIONS.platformSecondApproval)) throw new ForbiddenError('KYC_SECOND_APPROVER_REQUIRED');
   const status = transition('UNDER_REVIEW', 'approve');
-  const approvedBy = first ? [first.by, by] : [by];
+  const approvedBy = first && first.by !== by ? [first.by, by] : [by];
   return apply(doc, heldBy(doc, who.staffId, now), {
     $set: {
       status,

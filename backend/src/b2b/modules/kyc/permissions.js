@@ -29,7 +29,7 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
   },
   platformSecondApproval: {
     code: 'platform.kyc.approve',
-    description: 'MusafirBaba admin: give the second approval on high-risk applications',
+    description: 'MusafirBaba admin: approve any application on their own, including high-risk ones',
     orgTypes: ['PLATFORM'],
     sensitive: true,
   },

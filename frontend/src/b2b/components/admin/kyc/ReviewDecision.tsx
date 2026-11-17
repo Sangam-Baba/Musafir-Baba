@@ -1,6 +1,7 @@
 "use client";
-// The decision: approve when every required document is verified (high risk: first approval, then a
-// different reviewer with the approve permission), or reject with a note the hotel will see.
+// The decision: approve when every required document is verified, or reject with a note the hotel will see.
+// Someone with the approve permission verifies on their own (any risk); a reviewer without it gives only the
+// first approval on a high-risk application, and someone with the permission finishes it.
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -14,7 +15,7 @@ export function ReviewDecision({ app, token, onChanged }: { app: ReviewDetail; t
   const [busy, setBusy] = useState(false);
   const first = app.review.firstApproval;
   const label = (key: string) => app.documentSet.find((d) => d.key === key)?.label ?? key;
-  const approveText = app.risk.highRisk && !first ? "Give first approval" : first ? "Give final approval" : "Approve";
+  const approveText = app.you.canSecondApprove ? "Approve" : app.risk.highRisk && !first ? "Give first approval" : "Approve";
 
   async function decide(decision: "APPROVE" | "REJECT") {
     setBusy(true);
@@ -34,11 +35,12 @@ export function ReviewDecision({ app, token, onChanged }: { app: ReviewDetail; t
     <FleetPanel title="Decision" bodyClassName="space-y-3 p-4">
       {app.risk.highRisk && (
         <Notice>
-          High risk: two different people must approve.{" "}
+          High risk — check the flags above carefully.{" "}
+          {app.you.canSecondApprove ? "You can approve it on your own." : "Your approval is the first of two; someone with the approve permission finishes it."}{" "}
           {first ? `First approval by ${first.by} on ${new Date(first.at).toLocaleString()}${first.note ? ` — “${first.note}”` : ""}.` : ""}
         </Notice>
       )}
-      {first && !app.you.canSecondApprove && <Notice tone="red">The final approval needs the “second approval” permission.</Notice>}
+      {first && !app.you.canSecondApprove && <Notice tone="red">The final approval needs the approve permission.</Notice>}
       {app.notVerified.length > 0 && <p className="text-[12px] text-slate-600">Still to verify: {app.notVerified.map(label).join(", ")}.</p>}
       <textarea
         className="min-h-20 w-full rounded-md border border-slate-200 px-3 py-2 text-[13px] outline-none focus:border-orange-300"

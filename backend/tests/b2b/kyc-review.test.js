@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * MusafirBaba's KYC review (S02-T08): queue, 30-minute lock, verdicts per document, decision, second
- * approver for high risk, never your own organisation. Staff are stand-ins (header → staff actor); the
- * `staffs` record for the own-organisation check is SHAPED like the existing app's — never real data.
+ * MusafirBaba's KYC review (S02-T08): queue, 30-minute lock, verdicts per document, decision, never your own
+ * organisation. Who may verify (approve permission, first approval on high risk): kyc-review-approval.test.js.
+ * Staff are stand-ins (header → staff actor); the `staffs` record for the own-organisation check is SHAPED like the existing app's — never real data.
  */
 import express from 'express';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -38,7 +38,6 @@ const UNREGISTERED_SET = ['gst_declaration', 'pan_card', 'registration_proof', '
 const REVIEW = 'platform.kyc.read,platform.kyc.review';
 const A = `a1:${REVIEW}`;
 const B = `b2:${REVIEW}`;
-const C = `c3:${REVIEW},platform.kyc.approve`;
 const SUPPORT = 's4:platform.kyc.read';
 
 const details = {
@@ -226,27 +225,6 @@ describe('decisions', () => {
     expect((await srv.post('/api/v1/kyc/submit', {}, auth(token))).body).toMatchObject({ status: 'SUBMITTED', round: 2 });
     const again = await admin.post(`${base}/${id}/assign`, {}, as(B));
     expect(again.body.notVerified).toEqual(['cancelled_cheque']); // only the new file needs a look
-  });
-
-  it('high risk needs a second, different approver with the approve permission', async () => {
-    const { id, orgId } = await submittedHotel({ gstRegistered: false, gstin: undefined });
-    await admin.post(`${base}/${id}/assign`, {}, as(A));
-    await verifyAll(A, id, UNREGISTERED_SET);
-    const first = await admin.post(`${base}/${id}/decision`, { decision: 'APPROVE', note: 'Documents fine' }, as(A));
-    expect(first.body).toMatchObject({ status: 'UNDER_REVIEW', review: { reviewerId: null, firstApproval: { by: 'staff:a1' } } });
-    expect((await admin.get(base, as(SUPPORT))).body.data[0].awaitingSecondApproval).toBe(true);
-
-    await admin.post(`${base}/${id}/assign`, {}, as(A));
-    expect((await admin.post(`${base}/${id}/decision`, { decision: 'APPROVE' }, as(A))).body.code).toBe('KYC_SECOND_APPROVER_MUST_DIFFER');
-    await admin.post(`${base}/${id}/release`, {}, as(A));
-    await admin.post(`${base}/${id}/assign`, {}, as(B));
-    expect((await admin.post(`${base}/${id}/decision`, { decision: 'APPROVE' }, as(B))).body.code).toBe('KYC_SECOND_APPROVER_REQUIRED');
-    await admin.post(`${base}/${id}/release`, {}, as(B));
-    await admin.post(`${base}/${id}/assign`, {}, as(C));
-    const final = await admin.post(`${base}/${id}/decision`, { decision: 'APPROVE' }, as(C));
-    expect(final.body.status).toBe('APPROVED');
-    const event = (await ApplicationRecord.findOne({ orgId }).lean())?.pendingEvents?.find((e) => e.type === 'kyc.application.approved');
-    expect(event?.payload.approvedBy).toEqual(['staff:a1', 'staff:c3']);
   });
 
   it("a reviewer can never decide their own organisation's application", async () => {

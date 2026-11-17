@@ -73,7 +73,7 @@ const MESSAGES: Record<string, string> = {
   KYC_DOCUMENTS_NOT_VERIFIED: "Mark every required document as verified before approving.",
   KYC_REJECTION_NOTE_REQUIRED: "Write a note for the hotel before sending it back.",
   KYC_SECOND_APPROVER_MUST_DIFFER: "High-risk applications need a second, different reviewer for the final approval.",
-  KYC_SECOND_APPROVER_REQUIRED: "The final approval needs the “second approval” permission.",
+  KYC_SECOND_APPROVER_REQUIRED: "The final approval needs the approve permission.",
   KYC_OWN_ORGANISATION: "You can't decide an application of an organisation you belong to.",
   KYC_NOT_GST_REGISTERED: "Your business is registered as below the GST threshold, so there are no GSTINs to add.",
   GST_STATE_ALREADY_ADDED: "There is already a GSTIN for that state.",
