@@ -1,0 +1,13 @@
+// @ts-check
+/** Event types (module.entity.pastVerb) this module emits. Payloads: ids + essentials only. */
+export const EVENTS = /** @type {const} */ ({
+  orgCreated: 'organizations.org.created',
+  orgActivated: 'organizations.org.activated',
+  orgSuspended: 'organizations.org.suspended',
+  orgReactivated: 'organizations.org.reactivated',
+  orgClosed: 'organizations.org.closed',
+  memberInvited: 'organizations.member.invited',
+  memberJoined: 'organizations.member.joined',
+  memberRemoved: 'organizations.member.removed',
+  memberRolesChanged: 'organizations.member.roles-changed',
+});

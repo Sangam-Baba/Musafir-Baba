@@ -4,6 +4,7 @@ import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import requestLogger from "./middleware/requestLogger.middleware.js";
 import { auditInterceptor } from "./middleware/auditInterceptor.js";
+import { mountB2B } from "./b2b/mount.js";
 //import errorHandler from "./middleware/errorHandler.js"
 
 const app = express();
@@ -28,6 +29,10 @@ app.use(
     credentials: true,
   })
 );
+
+// B2B + hotels (/api/v1): isolated in src/b2b, off unless B2B_ENABLED=true — docs/plan/12-protecting-the-existing-system.md
+mountB2B(app);
+
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
