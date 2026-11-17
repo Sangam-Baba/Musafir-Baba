@@ -4,9 +4,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bell, BookOpen, Building2, CheckCircle2, Headphones, Hotel, ListChecks, Plus, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import { b2b } from "@/b2b/api";
+import { b2b, refreshBusinessSession } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { Landing } from "@/b2b/components/landing/Landing";
 import { Checklist, ProgressCard } from "@/b2b/components/portal/overview";
 import { PageHeader, StatCard } from "@/b2b/components/portal/ui";
 import type { KycApplication } from "@/b2b/kyc";
@@ -17,6 +19,21 @@ import { SUPPORT } from "@/b2b/support";
 import type { Me } from "@/b2b/types";
 
 export default function BusinessHome() {
+  // Signed in (or a session that can be renewed, or a MusafirBaba "view as" link) → the Overview as before;
+  // otherwise the public landing page instead of the redirect to sign-in.
+  const token = useBusinessSession((s) => s.accessToken);
+  const viewing = useBusinessSession((s) => s.viewAs);
+  const [visitor, setVisitor] = useState<boolean | null>(token ? false : null);
+  useEffect(() => {
+    if (token || viewing || window.location.hash.startsWith("#viewAs=")) return setVisitor(false);
+    let live = true;
+    refreshBusinessSession().then((t) => live && setVisitor(!t));
+    return () => {
+      live = false;
+    };
+  }, [token, viewing]);
+  if (visitor === null) return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading…</div>;
+  if (visitor) return <Landing />;
   return <BusinessShell>{(me) => <Overview me={me} />}</BusinessShell>;
 }
 
