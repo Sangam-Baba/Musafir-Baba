@@ -1,6 +1,7 @@
 "use client";
 // The hotel's properties: list with status, and a new draft (name + type).
 import { useQuery } from "@tanstack/react-query";
+import { CheckCircle2, Clock, FilePen, Hotel } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 
 import { b2b } from "@/b2b/api";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
-import { PageHeader } from "@/b2b/components/portal/ui";
+import { PageHeader, StatCard } from "@/b2b/components/portal/ui";
 import { inputCls } from "@/b2b/components/listing/ui";
 import { STATUS, type Masters, type Property } from "@/b2b/listing";
 import { errorMessage } from "@/b2b/messages";
@@ -44,9 +45,17 @@ function Properties({ me }: { me: Me }) {
 
   if (!canRead) return <p className="text-sm text-slate-600">You don&apos;t have access to the properties of this organisation.</p>;
   const items = list.data?.data ?? [];
+  const n = (v: number) => (list.isLoading ? "…" : v);
+  const countOf = (...s: Property["status"][]) => items.filter((p) => s.includes(p.status)).length;
   return (
     <div className="space-y-6">
       <PageHeader crumb="My Properties" title="My" highlight="Properties" subtitle="Your hotel listings: details, rooms, photos and approval." />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard icon={Hotel} label="Properties" value={n(items.length)} />
+        <StatCard icon={CheckCircle2} tone="green" label="Live" value={n(countOf("LIVE"))} />
+        <StatCard icon={Clock} tone="blue" label="Waiting for approval" value={n(countOf("SUBMITTED"))} />
+        <StatCard icon={FilePen} tone="amber" label="Drafts / needs changes" value={n(countOf("DRAFT", "CHANGES_REQUESTED"))} />
+      </div>
       {canManage && (
         <form onSubmit={create} className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4">
           <label className="min-w-64 flex-1">
