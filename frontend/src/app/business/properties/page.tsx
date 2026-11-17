@@ -50,7 +50,7 @@ function Properties({ me }: { me: Me }) {
   return (
     <div className="space-y-6">
       <PageHeader crumb="My Properties" title="My" highlight="Properties" subtitle="Your hotel listings: details, rooms, photos and approval." />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard icon={Hotel} label="Properties" value={n(items.length)} />
         <StatCard icon={CheckCircle2} tone="green" label="Live" value={n(countOf("LIVE"))} />
         <StatCard icon={Clock} tone="blue" label="Waiting for approval" value={n(countOf("SUBMITTED"))} />

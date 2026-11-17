@@ -103,8 +103,8 @@ function AccountMenu({ data, onLogout }: { data: Me; onLogout: () => void }) {
     return () => document.removeEventListener("mousedown", close);
   }, [open]);
   return (
-    <div ref={box} className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-3 rounded-lg px-2 py-1 hover:bg-slate-50">
+    <div ref={box} className="relative shrink-0">
+      <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-slate-50 sm:px-2">
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FE5300] text-sm font-semibold text-white">{initials || "?"}</span>
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-semibold text-slate-900">{data.user.name}</span>
@@ -131,17 +131,17 @@ function AccountMenu({ data, onLogout }: { data: Me; onLogout: () => void }) {
 export function TopBar({ data, onMenu, onSwitch, onLogout }: { data: Me; onMenu: () => void; onSwitch: (orgId: string) => void; onLogout: () => void }) {
   const router = useRouter();
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
-      <button aria-label="Open menu" onClick={onMenu} className="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden">
+    <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:gap-3 sm:px-6">
+      <button aria-label="Open menu" onClick={onMenu} className="shrink-0 rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden">
         <Menu className="h-5 w-5" />
       </button>
-      <span className="flex-1" />
+      <span className="hidden flex-1 sm:block" />
       {!data.viewAs && data.memberships.length > 0 && (
         <select
           aria-label="Business"
           value={data.currentOrgId ?? ""}
           onChange={(e) => (e.target.value === "__add" ? router.push("/business/register") : e.target.value && onSwitch(e.target.value))}
-          className="max-w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 sm:max-w-72"
+          className="w-0 min-w-0 flex-1 truncate rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-800 sm:w-auto sm:max-w-72 sm:flex-none sm:px-3"
         >
           <option value="" disabled>
             Choose business…

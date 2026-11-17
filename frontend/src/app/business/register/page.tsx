@@ -56,7 +56,10 @@ export default function RegisterWizard() {
   useEffect(() => {
     if (checked && token && !created) setSignedInAtStart(true);
   }, [checked, token, created]);
-  useEffect(() => window.scrollTo({ top: 0, behavior: "smooth" }), [step]);
+  useEffect(() => {
+    // braces on purpose: newer browsers return a Promise from a smooth scroll, and React must not get it back
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   async function createBusiness() {
     setBusy(true);

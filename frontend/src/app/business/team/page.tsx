@@ -58,7 +58,7 @@ function Team({ me }: { me: Me }) {
           </Link>
         }
       />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {can("organizations.member.read") && <StatCard icon={Users} label="Team members" value={n(members.isLoading, members.data?.data.length ?? 0)} />}
         {can("organizations.member.read") && <StatCard icon={Mail} tone="blue" label="Pending invitations" value={n(invitations.isLoading, pending)} />}
         {can("access.role.read") && <StatCard icon={KeyRound} tone="violet" label="Roles" value={n(roles.isLoading, roleList.length)} />}

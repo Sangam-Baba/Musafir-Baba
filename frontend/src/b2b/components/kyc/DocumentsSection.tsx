@@ -13,9 +13,9 @@ export function DocumentsSection({ app, canEdit, onChanged }: { app: KycApplicat
   return (
     <Panel title="Submitted documents">
       <p className="mb-3 text-xs text-slate-500">PDF, JPG or PNG, up to 10 MB each. Scans must be clear and show the full page.</p>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[40rem] text-sm">
-          <thead>
+      <div className="sm:overflow-x-auto">
+        <table className="block w-full text-sm sm:table sm:min-w-[40rem]">
+          <thead className="hidden sm:table-header-group">
             <tr className="bg-slate-50 text-left text-xs font-semibold text-slate-600">
               <th className="rounded-l-lg px-3 py-2">Document</th>
               <th className="px-3 py-2">Requirement</th>
@@ -24,7 +24,7 @@ export function DocumentsSection({ app, canEdit, onChanged }: { app: KycApplicat
               <th className="rounded-r-lg px-3 py-2 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="block divide-y divide-slate-100 sm:table-row-group">
             {app.documentSet.map((doc) => (
               <DocumentRow key={doc.key} doc={doc} app={app} canEdit={canEdit} onChanged={onChanged} />
             ))}
@@ -87,16 +87,16 @@ function DocumentRow({ doc, app, canEdit, onChanged }: { doc: DocumentRequiremen
 
   const status = statusOf(app, Boolean(attached), doc.required, problem);
   return (
-    <tr className="align-middle">
-      <td className="px-3 py-3 font-medium text-slate-800">{doc.label}</td>
-      <td className="px-3 py-3 text-xs text-slate-500">{doc.required ? "Mandatory" : "Optional"}</td>
-      <td className="px-3 py-3 text-xs text-slate-600">{attached ? `Uploaded ${new Date(attached.attachedAt).toLocaleDateString()}` : "—"}</td>
-      <td className="px-3 py-3">
+    <tr className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3 align-middle sm:table-row sm:py-0">
+      <td className="font-medium text-slate-800 sm:px-3 sm:py-3">{doc.label}</td>
+      <td className="text-xs text-slate-500 sm:px-3 sm:py-3">{doc.required ? "Mandatory" : "Optional"}</td>
+      <td className={`basis-full text-xs text-slate-600 sm:px-3 sm:py-3 ${attached ? "" : "hidden sm:table-cell"}`}>{attached ? `Uploaded ${new Date(attached.attachedAt).toLocaleDateString()}` : "—"}</td>
+      <td className="sm:px-3 sm:py-3">
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.tone}`}>{status.label}</span>
         {status.note && <span className="mt-1 block text-xs text-slate-500">{status.note}</span>}
       </td>
-      <td className="px-3 py-3">
-        <div className="flex justify-end gap-2">
+      <td className="basis-full pt-1 sm:px-3 sm:py-3">
+        <div className="flex flex-wrap gap-2 sm:justify-end">
           {attached && <SmallButton onClick={open}>View</SmallButton>}
           {canEdit && (
             <>

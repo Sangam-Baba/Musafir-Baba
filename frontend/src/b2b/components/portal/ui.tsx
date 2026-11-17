@@ -14,7 +14,7 @@ export function PageHeader({ crumb, title, highlight, subtitle, actions }: { cru
     <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <Image src={BANNER_IMAGE} alt="" fill priority sizes="(min-width: 1024px) 70vw, 100vw" className="object-cover object-[center_75%]" />
       <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/20" />
-      <div className="relative flex flex-wrap items-end gap-4 px-6 py-6 sm:px-8 sm:py-7">
+      <div className="relative flex flex-wrap items-end gap-4 px-5 py-5 sm:px-8 sm:py-7">
         <div className="min-w-0 flex-1">
           <p className="text-xs text-slate-500">
             <Link href="/business" className="hover:text-[#FE5300]">
@@ -46,13 +46,13 @@ export type Tone = keyof typeof TONES;
 /** A number with its label (counts only from real data). */
 export function StatCard({ icon: Icon, label, value, hint, tone = "orange", href }: { icon: LucideIcon; label: string; value: ReactNode; hint?: string; tone?: Tone; href?: string }) {
   const body = (
-    <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 transition hover:shadow-sm">
-      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${TONES[tone]}`}>
-        <Icon className="h-6 w-6" />
+    <div className="flex h-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 transition hover:shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-12 sm:w-12 sm:rounded-xl ${TONES[tone]}`}>
+        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-medium text-slate-600">{label}</p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
+        <p className="text-xs font-medium text-slate-600 sm:text-sm">{label}</p>
+        <p className="truncate text-xl font-bold text-slate-900 sm:text-2xl">{value}</p>
         {hint && <p className="truncate text-xs text-slate-500">{hint}</p>}
       </div>
     </div>
@@ -64,9 +64,9 @@ export function StatCard({ icon: Icon, label, value, hint, tone = "orange", href
 export function Panel({ icon: Icon, title, subtitle, action, children, tone = "orange", className = "" }: { icon?: LucideIcon; title: string; subtitle?: string; action?: ReactNode; children: ReactNode; tone?: Tone; className?: string }) {
   return (
     <section className={`rounded-xl border border-slate-200 bg-white ${className}`}>
-      <header className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-4">
+      <header className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3 sm:px-5 sm:py-4">
         {Icon && (
-          <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${TONES[tone]}`}>
+          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${TONES[tone]}`}>
             <Icon className="h-5 w-5" />
           </span>
         )}
@@ -76,7 +76,7 @@ export function Panel({ icon: Icon, title, subtitle, action, children, tone = "o
         </div>
         {action}
       </header>
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5">{children}</div>
     </section>
   );
 }
@@ -84,12 +84,12 @@ export function Panel({ icon: Icon, title, subtitle, action, children, tone = "o
 /** Underlined tabs (orange for the open one). */
 export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { value: T; label: string; icon?: LucideIcon }[]; value: T; onChange: (v: T) => void }) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
+    <div className="-mx-4 flex gap-1 overflow-x-auto border-b border-slate-200 px-4 sm:mx-0 sm:px-0">
       {tabs.map((t) => (
         <button
           key={t.value}
           onClick={() => onChange(t.value)}
-          className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2.5 text-sm ${value === t.value ? "border-[#FE5300] font-medium text-[#FE5300]" : "border-transparent text-slate-600 hover:text-slate-900"}`}
+          className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm sm:px-4 ${value === t.value ? "border-[#FE5300] font-medium text-[#FE5300]" : "border-transparent text-slate-600 hover:text-slate-900"}`}
         >
           {t.icon && <t.icon className="h-4 w-4" />}
           {t.label}

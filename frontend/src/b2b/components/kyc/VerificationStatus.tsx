@@ -37,17 +37,17 @@ function Timeline({ steps }: { steps: Step[] }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5">
       <h2 className="font-semibold text-slate-900">Verification timeline</h2>
-      <ol className="mt-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <ol className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
         {steps.map((st, i) => {
           const isCurrent = i === current;
           const ring = st.problem ? "bg-amber-500 text-white" : st.done ? "bg-emerald-500 text-white" : isCurrent ? "bg-[#FE5300] text-white" : "border-2 border-slate-300 bg-white text-slate-400";
           return (
-            <li key={st.label} className="relative flex flex-col items-center text-center">
+            <li key={st.label} className="relative flex items-center gap-3 sm:flex-col sm:gap-0 sm:text-center">
               {i < steps.length - 1 && <span className={`absolute left-1/2 top-4 hidden h-0.5 w-full lg:block ${st.done ? "bg-emerald-400" : "bg-slate-200"}`} />}
               <span className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${ring}`}>
                 {st.problem ? <X className="h-4 w-4" /> : st.done ? <Check className="h-4 w-4" /> : isCurrent ? <Clock className="h-4 w-4" /> : null}
               </span>
-              <span className={`mt-2 text-sm font-medium ${st.problem ? "text-amber-700" : isCurrent ? "text-[#FE5300]" : "text-slate-800"}`}>{st.label}</span>
+              <span className={`flex-1 text-sm font-medium sm:mt-2 sm:flex-none ${st.problem ? "text-amber-700" : isCurrent ? "text-[#FE5300]" : "text-slate-800"}`}>{st.label}</span>
               <span className="text-xs text-slate-500">{fmt(st.date) ?? (st.done ? "Done" : isCurrent ? "Current step" : "Upcoming")}</span>
             </li>
           );
@@ -71,11 +71,11 @@ export function VerificationStatus({ app, orgActive }: { app: KycApplication; or
   const label = (key: string) => app.documentSet.find((d) => d.key === key)?.label ?? key;
   return (
     <div className="space-y-4">
-      <section className={`flex flex-wrap items-center gap-5 rounded-2xl border p-5 ${b.tone}`}>
+      <section className={`flex flex-wrap items-center gap-4 rounded-2xl border p-4 sm:gap-5 sm:p-5 ${b.tone}`}>
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-[#FE5300] shadow-sm">
           <b.icon className="h-8 w-8" />
         </span>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[12rem] flex-1">
           <h2 className="text-lg font-bold text-slate-900">{b.title}</h2>
           <p className="text-sm text-slate-600">{b.text}</p>
           {app.submittedAt && <p className="mt-1 text-xs text-slate-500">Submitted on {fmt(app.submittedAt)}{app.round > 1 ? ` · round ${app.round}` : ""}</p>}

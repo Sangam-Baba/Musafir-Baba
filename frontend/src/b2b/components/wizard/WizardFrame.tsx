@@ -76,20 +76,26 @@ export function WizardFrame({
         </div>
       </section>
       <div className="relative mx-auto -mt-16 grid max-w-7xl gap-6 px-4 pb-12 sm:px-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="font-semibold text-slate-900">Your registration progress</p>
-          <ol className="mt-4 space-y-1">
+        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:p-5">
+          <p className="hidden font-semibold text-slate-900 lg:block">Your registration progress</p>
+          <ol className="flex items-center justify-between lg:mt-4 lg:block lg:space-y-1">
             {WIZARD_STEPS.map((s, i) => {
               const n = i + 1;
               return (
-                <li key={s.title} className={`flex items-start gap-3 rounded-lg p-2 ${n === step ? "bg-orange-50" : ""}`}>
-                  <Dot n={n} step={step} />
-                  <span className="min-w-0 flex-1">
+                <li key={s.title} className={`flex items-start gap-3 rounded-lg lg:p-2 ${n === step ? "lg:bg-orange-50" : ""}`}>
+                  {n < step && canEdit(n) ? (
+                    <button aria-label={`Back to ${s.title}`} onClick={() => onEdit(n)} className="rounded-full">
+                      <Dot n={n} step={step} />
+                    </button>
+                  ) : (
+                    <Dot n={n} step={step} />
+                  )}
+                  <span className="hidden min-w-0 flex-1 lg:block">
                     <span className={`block text-sm font-semibold ${n === step ? "text-[#FE5300]" : "text-slate-900"}`}>{s.title}</span>
                     <span className="block text-xs text-slate-500">{s.hint}</span>
                   </span>
                   {n < step && canEdit(n) && (
-                    <button aria-label={`Edit ${s.title}`} onClick={() => onEdit(n)} className="p-1 text-slate-400 hover:text-[#FE5300]">
+                    <button aria-label={`Edit ${s.title}`} onClick={() => onEdit(n)} className="hidden p-1 text-slate-400 hover:text-[#FE5300] lg:block">
                       <Pencil className="h-4 w-4" />
                     </button>
                   )}
@@ -97,6 +103,9 @@ export function WizardFrame({
               );
             })}
           </ol>
+          <p className="mt-3 text-sm font-semibold text-[#FE5300] lg:hidden">
+            Step {step} of {WIZARD_STEPS.length}: {WIZARD_STEPS[step - 1]?.title}
+          </p>
         </aside>
         <main className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">{children}</main>
       </div>

@@ -126,7 +126,7 @@ function Overview({ me }: { me: Me }) {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {can("hotel-catalog.property.read") && <StatCard icon={Hotel} label="Properties" value={count(props, properties.length)} href="/business/properties" />}
         {can("hotel-catalog.property.read") && <StatCard icon={ListChecks} tone="green" label="Live listings" value={count(props, live)} href="/business/properties" />}
         {can("organizations.member.read") && <StatCard icon={Users} tone="violet" label="Team members" value={count(members, members.data?.data.length)} href="/business/team" />}
