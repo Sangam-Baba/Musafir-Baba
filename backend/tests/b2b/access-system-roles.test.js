@@ -129,6 +129,16 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['platform.support', 'hotel-catalog.listing.read', true],
     ['platform.support', 'hotel-catalog.listing.review', false],
     ['platform.superAdmin', 'hotel-catalog.listing.review', true],
+    // Stage 04: rooms, prices and rules per night
+    ['hotel.owner', 'hotel-inventory.calendar.manage', true],
+    ['hotel.manager', 'hotel-inventory.calendar.manage', true], // limited to assigned properties by scope
+    ['hotel.frontDesk', 'hotel-inventory.calendar.read', false],
+    ['client.owner', 'hotel-inventory.calendar.read', false],
+    ['platform.hotels', 'hotel-inventory.admin.read', true],
+    ['platform.hotels', 'hotel-inventory.admin.override', false],
+    ['platform.support', 'hotel-inventory.admin.read', true],
+    ['platform.support', 'hotel-inventory.admin.override', false],
+    ['platform.superAdmin', 'hotel-inventory.admin.override', true],
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);

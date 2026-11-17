@@ -1,0 +1,64 @@
+# Stage 04 — Inventory & rates calendar · Progress
+
+> Task list from `docs/plan/stages/stage-04-inventory-rates.md` §3, split so each task fits one reviewable change. Rules and status values: `docs/progress/README.md`. Contract: `docs/plan/05-inventory-and-no-double-booking.md`.
+
+| | |
+| --- | --- |
+| **Status** | IN_PROGRESS |
+| **Phase · Track** | A · hotels |
+| **Owner(s)** | |
+| **Started** | 2026-11-17 |
+| **Finished** | — |
+| **Plan file** | `docs/plan/stages/stage-04-inventory-rates.md` |
+| **Depends on** | Stage 03 (awaiting owner sign-off) |
+| **Modules** | `hotel-inventory` (new) · reads `hotel-catalog` (properties, room types, meal plans) through its public interface |
+
+## Defaults used for this stage (owner can change any of them)
+
+| Topic | Default |
+| --- | --- |
+| Allotment model (D12) | **Allotment**: per night the hotel gives MusafirBaba a number of rooms (`total`) to sell; it must not sell those elsewhere (contract — L4). Channel managers later (Phase C) |
+| Calendar window | 365 days ahead, extended nightly. A new night starts with **0 rooms**, so nothing is sellable until the hotel sets its rooms |
+| Prices | Rupees in the screens, stored as integer paise, **tax-exclusive** (GST comes in Stage 05) |
+| Timers | Hold 15 min, one extension of +10 min, sweeper every 30 s (plan `05-…` §6) |
+| Changes to existing code | None to Stage 00–03 behaviour: inventory reads properties / room types through `hotel-catalog`'s public interface; nights are created by the inventory module itself (when the calendar is opened or edited, and by the nightly job) — no new event in `hotel-catalog` |
+| CSV import, calendar grid | No new package (own CSV reader; own windowed grid) |
+
+## Tasks
+
+| ID | Task | Plan ref | Status | Owner | PR | Tests | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| S04-T01 | Stage setup: `hotel-inventory` module skeleton (permissions, events, README), permission catalogue + role matrix, D12 recorded | §3 | DONE | AI (Claude) | | matrix ✅ | Module from the generator with the sample removed. Permissions: hotel `hotel-inventory.calendar.read / manage` (Owner; Manager limited to assigned properties; not Front Desk, not clients); MusafirBaba `hotel-inventory.admin.read` (`**.read` roles: Hotels team, Support), `hotel-inventory.admin.override` (Super Admin; sensitive). Events `inventory.changed`, `hold.expired`. Matrix test extended. D12 (allotment) recorded |
+| S04-T02 | Cancellation policies (`inv_cancellation_policies`): reusable rules (hours before check-in → % / nights / fixed), no-show penalty, non-refundable; summary text | §3.2 | TODO | | | | |
+| S04-T03 | Rate plans (`inv_rate_plans`): room types covered, meal plan, policy, pricing model (per room / per occupancy), min / max advance days, status; derived plans (e.g. CP = EP + ₹500) | §3.1 | TODO | | | | |
+| S04-T04 | Inventory days (`inv_inventory_days` + validator by migration): created for the window, nightly extension, never deleted; owner arrays `holds[]` / `bookings[]` | §3.3, `05-…` §3 | TODO | | | | |
+| S04-T05 | Rate days (`inv_rate_days`): prices by occupancy, min / max stay, closed to arrival / departure, stop-sell; calendar read `GET /hotel/properties/:id/calendar` | §3.4, §5 | TODO | | | | |
+| S04-T06 | Calendar bulk edit `PUT /hotel/properties/:id/calendar` (ranges + weekdays, rooms / prices / rules, guarded allotment reduction listing refused dates, past dates read-only, preview, > 50 % price warning, undo last bulk change, idempotent) + ARI change log (`inv_change_log`) | §3.5, §3.6, §3.12 | TODO | | | | |
+| S04-T07 | Availability query `checkAvailability(propertyIds, stay, rooms)` with rate / restriction checks; property test against a naive reference | §3.8 | TODO | | | | |
+| S04-T08 | Inventory primitives: `inv_holds`; `holdRooms`, `confirmHold`, `releaseHold`, `extendHold`, `returnRooms` (service only, idempotent, no transactions); concurrency + crash-injection tests | §3.9, `05-…` §5 | TODO | | | | |
+| S04-T09 | Sweeper + reconciler rules (every 30 s) and invariant check (every 10 min); overdue-hold alert | §3.10, `05-…` §5.4 | TODO | | | | |
+| S04-T10 | Availability signals: `inventory.changed` → `availability:changed` for `availability:property:{id}` (debounced per property) | §3.11, `05-…` §8 | TODO | | | | |
+| S04-T11 | CSV import: template, validation report, dry run, apply (≤ 50k rows) `POST /hotel/calendar-imports` | §3.7 | TODO | | | | |
+| S04-T12 | Admin: read-only calendar for any property, override with reason (audited) — API + admin page | §3.13 | TODO | | | | |
+| S04-T13 | Business area: cancellation policies, rate plans and the calendar screen (grid, ranges + weekdays, bulk edit with preview, undo, live updates) | §3.5 | TODO | | | | |
+| S04-T14 | Mandatory test suite: availability vs reference, 100 parallel holds on 3 rooms, all-or-nothing, release idempotent, sweeper, validator, allotment reduction below booked; isolation | §9 | TODO | | | | |
+
+Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
+
+## Definition of Done (copied from the stage file)
+
+- [ ] Hotel sets 2 room types × 2 rate plans with policies; loads 90 days via calendar and CSV
+- [ ] Availability correct in all edge cases
+- [ ] Hold primitives pass the concurrency suite
+- [ ] Calendar shows a test booking appear live
+
+## Mandatory tests (copied from the stage file)
+
+- [ ] Availability property test vs naive reference (random calendars/restrictions/stays)
+- [ ] Concurrency: 100 parallel `holdRooms` on 3 rooms → exactly 3 succeed; counts consistent
+- [ ] Multi-night all-or-nothing; release idempotent; sweeper returns rooms; validator rejects `booked + held > total`
+- [ ] Allotment reduction below booked rejected with dates listed
+
+## Left out on purpose in this stage
+
+- (none yet)

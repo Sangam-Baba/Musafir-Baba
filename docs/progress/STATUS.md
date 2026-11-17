@@ -3,16 +3,16 @@
 > The one page that says where the build is. Rules: `docs/progress/README.md`.
 > Numbers inside the generated block come from `npm run progress` — don't edit them by hand.
 
-**Last updated:** 2026-11-15 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
+**Last updated:** 2026-11-17 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
 
 ## Now
 
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stages 00–03 awaiting owner sign-off · next: Stage 04 — Inventory & rates calendar |
-| **Current task(s)** | — (Stage 03 complete; Stage 04 task list next) |
-| **Next up** | Stage 04 — inventory & rates · owner: try hotel onboarding in the browser, then sign off Stages 00–02 (fill in Finished in each `stages/stage-NN.md`) |
+| **Current stage(s)** | Stage 04 — Inventory & rates calendar (in progress) · Stages 00–03 awaiting owner sign-off |
+| **Current task(s)** | S04-T02 — cancellation policies (S04-T01 done) |
+| **Next up** | S04-T03 rate plans → S04-T04 inventory days · owner: sign off Stages 00–03 (fill in Finished in each `stages/stage-NN.md`), confirm D12 (allotment) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
@@ -25,7 +25,7 @@
 | 01 | Organisations, users, roles & permissions | A | AWAITING_SIGN_OFF | 19 / 20 | 1 | 100 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | AWAITING_SIGN_OFF | 15 / 15 | 0 | 100 % | 2026-11-15 | — | [stage-02](stages/stage-02.md) |
 | 03 | Hotel listings | A | AWAITING_SIGN_OFF | 14 / 14 | 0 | 100 % | 2026-11-15 | — | [stage-03](stages/stage-03.md) |
-| 04 | Inventory & rates calendar | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
+| 04 | Inventory & rates calendar | A | IN_PROGRESS | 1 / 14 | 0 | 7 % | 2026-11-17 | — | [stage-04](stages/stage-04.md) |
 | 05 | Pricing & GST | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 06 | Search & availability (website first) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 07 | Payments (PayU) & ledger core | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 70 of 70 tasks done (100 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 71 of 84 tasks done (85 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).
