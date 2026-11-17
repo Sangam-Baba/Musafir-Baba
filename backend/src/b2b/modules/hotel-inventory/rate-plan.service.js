@@ -17,7 +17,7 @@ const OPEN = { $in: ['ACTIVE', 'INACTIVE'] };
 /** @typedef {import('./domain/rate-plan.js').RatePlanInput} RatePlanInput */
 /**
  * @typedef {{ properties: { loadOwned: (ctx: Ctx, id: string, permission: string) => Promise<any> },
- *   roomTypesOf: (ctx: Ctx, propertyId: string) => Promise<string[]>, mealPlanKeys: () => Promise<string[]> }} RatePlanDeps
+ *   roomTypesOf: (ctx: Ctx, propertyId: string) => Promise<{ id: string }[]>, mealPlanKeys: () => Promise<string[]> }} RatePlanDeps
  */
 
 /** @param {any} r */
@@ -69,7 +69,7 @@ const childrenOf = (p, id) =>
 async function checkedPlan(deps, ctx, p, { input, selfId }) {
   const propertyId = String(p._id);
   const parentId = input.derived?.parentRatePlanId;
-  const [roomTypeIds, mealPlanKeys, policies, parent, children] = await Promise.all([
+  const [roomTypes, mealPlanKeys, policies, parent, children] = await Promise.all([
     deps.roomTypesOf(ctx, propertyId),
     deps.mealPlanKeys(),
     CancellationPolicyRecord.find({ hotelOrgId: p.hotelOrgId, propertyId, status: 'ACTIVE' }, { _id: 1 }).lean(),
@@ -77,7 +77,7 @@ async function checkedPlan(deps, ctx, p, { input, selfId }) {
     selfId ? childrenOf(p, selfId) : [],
   ]);
   const data = checkRatePlan(input, {
-    roomTypeIds,
+    roomTypeIds: roomTypes.map((r) => r.id),
     mealPlanKeys,
     policyIds: policies.map((x) => String(x._id)),
     parent: parent ? { ...ratePlanDto(parent) } : null,

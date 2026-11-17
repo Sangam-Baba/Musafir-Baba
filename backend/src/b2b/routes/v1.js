@@ -35,6 +35,7 @@ import { hotelAdminRoutes } from './hotel-admin.js';
 import { hotelContentRoutes } from './hotel-content.js';
 import { cancellationPolicyRoutes } from './hotel-cancellation-policies.js';
 import { ratePlanRoutes } from './hotel-rate-plans.js';
+import { calendarRoutes } from './hotel-calendar.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -53,7 +54,12 @@ import {
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
-import { createCancellationPolicyService, createRatePlanService, extendCalendarWindow } from '../modules/hotel-inventory/index.js';
+import {
+  createCalendarService,
+  createCancellationPolicyService,
+  createRatePlanService,
+  extendCalendarWindow,
+} from '../modules/hotel-inventory/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -201,13 +207,17 @@ function stage04Routes(clock) {
   const properties = createPropertyService({ clock });
   const roomTypes = createRoomTypeService({ clock, properties });
   const masters = createMastersService();
+  /** @type {(ctx: import('../core/context.js').RequestContext, propertyId: string) => Promise<{ id: string, name: string, maxOccupancy: number }[]>} */
+  const roomTypesOf = async (ctx, propertyId) =>
+    (await roomTypes.list(ctx, propertyId)).map((r) => ({ id: r.id, name: r.name, maxOccupancy: r.maxOccupancy }));
   router.use(cancellationPolicyRoutes({ policies: createCancellationPolicyService({ properties }) }));
   const ratePlans = createRatePlanService({
     properties,
-    roomTypesOf: async (ctx, propertyId) => (await roomTypes.list(ctx, propertyId)).map((r) => r.id),
+    roomTypesOf,
     mealPlanKeys: async () => (await masters.list()).mealPlans.map((/** @type {{ key: string }} */ m) => m.key),
   });
   router.use(ratePlanRoutes({ ratePlans }));
+  router.use(calendarRoutes({ calendar: createCalendarService({ properties, roomTypesOf, clock }) }));
   return router;
 }
 

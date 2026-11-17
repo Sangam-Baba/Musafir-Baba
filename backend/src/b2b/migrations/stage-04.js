@@ -4,6 +4,7 @@ import {
   CANCELLATION_POLICIES_COLLECTION,
   INVENTORY_DAY_VALIDATOR,
   INVENTORY_DAYS_COLLECTION,
+  RATE_DAYS_COLLECTION,
   RATE_PLANS_COLLECTION,
 } from '../modules/hotel-inventory/index.js';
 
@@ -56,6 +57,19 @@ export const STAGE_04 = [
         { 'holds.expiresAt': 1 },
         { name: 'hold_expiry', partialFilterExpression: { 'holds.0': { $exists: true } } },
       );
+    },
+  },
+  {
+    id: '0030-inv-rate-days',
+    description: 'Prices and rules per rate plan, room type and night: one per plan, room type and date; by property and date',
+    up: async (ctx) => {
+      await ctx.createCollection(RATE_DAYS_COLLECTION);
+      await ctx.createIndex(
+        RATE_DAYS_COLLECTION,
+        { ratePlanId: 1, roomTypeId: 1, date: 1 },
+        { name: 'plan_room_date_unique', unique: true },
+      );
+      await ctx.createIndex(RATE_DAYS_COLLECTION, { hotelOrgId: 1, propertyId: 1, date: 1 }, { name: 'property_date' });
     },
   },
 ];

@@ -11,3 +11,7 @@ export { createRatePlanService } from './rate-plan.service.js';
 export { DATE, CALENDAR_WINDOW_DAYS, isDate, addDays, daysBetween, weekday, nights, todayIn } from './domain/dates.js';
 export { INVENTORY_DAYS_COLLECTION, INVENTORY_DAY_VALIDATOR, InventoryDayRecord } from './models/inventory-day.model.js';
 export { ensureNights, extendCalendarWindow } from './inventory-days.js';
+export { MAX_STAY_NIGHTS, EMPTY_DAY, priceKeys, effectiveDay, priceFor } from './domain/rate-day.js';
+export { buildCalendar } from './domain/calendar.js';
+export { RATE_DAYS_COLLECTION, RateDayRecord } from './models/rate-day.model.js';
+export { createCalendarService, MAX_CALENDAR_NIGHTS } from './calendar.service.js';
