@@ -27,3 +27,5 @@ export {
 } from './domain/bulk-edit.js';
 export { CHANGE_LOG_COLLECTION, ChangeLogRecord } from './models/change-log.model.js';
 export { createCalendarEditService } from './calendar-edit.service.js';
+export { MAX_ROOMS_PER_STAY, fits, evaluate } from './domain/availability.js';
+export { createAvailabilityService } from './availability.service.js';
