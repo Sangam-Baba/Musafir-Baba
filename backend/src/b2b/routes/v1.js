@@ -55,6 +55,7 @@ import {
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
 import {
+  createCalendarEditService,
   createCalendarService,
   createCancellationPolicyService,
   createRatePlanService,
@@ -217,7 +218,13 @@ function stage04Routes(clock) {
     mealPlanKeys: async () => (await masters.list()).mealPlans.map((/** @type {{ key: string }} */ m) => m.key),
   });
   router.use(ratePlanRoutes({ ratePlans }));
-  router.use(calendarRoutes({ calendar: createCalendarService({ properties, roomTypesOf, clock }) }));
+  router.use(
+    calendarRoutes({
+      calendar: createCalendarService({ properties, roomTypesOf, clock }),
+      edits: createCalendarEditService({ properties, roomTypesOf, clock }),
+      clock,
+    }),
+  );
   return router;
 }
 

@@ -2,6 +2,7 @@
 /** Migrations of Stage 04 (rooms, prices and rules per night). Run after 0001–0026; ids never renamed or reused. */
 import {
   CANCELLATION_POLICIES_COLLECTION,
+  CHANGE_LOG_COLLECTION,
   INVENTORY_DAY_VALIDATOR,
   INVENTORY_DAYS_COLLECTION,
   RATE_DAYS_COLLECTION,
@@ -70,6 +71,16 @@ export const STAGE_04 = [
         { name: 'plan_room_date_unique', unique: true },
       );
       await ctx.createIndex(RATE_DAYS_COLLECTION, { hotelOrgId: 1, propertyId: 1, date: 1 }, { name: 'property_date' });
+    },
+  },
+  {
+    id: '0031-inv-change-log',
+    description: 'Calendar change log: one entry per request id and property; newest first per property; by month (archiving)',
+    up: async (ctx) => {
+      await ctx.createCollection(CHANGE_LOG_COLLECTION);
+      await ctx.createIndex(CHANGE_LOG_COLLECTION, { propertyId: 1, requestId: 1 }, { name: 'property_request_unique', unique: true });
+      await ctx.createIndex(CHANGE_LOG_COLLECTION, { hotelOrgId: 1, propertyId: 1, createdAt: -1 }, { name: 'property_recent' });
+      await ctx.createIndex(CHANGE_LOG_COLLECTION, { month: 1 }, { name: 'month' });
     },
   },
 ];

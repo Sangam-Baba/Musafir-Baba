@@ -15,3 +15,15 @@ export { MAX_STAY_NIGHTS, EMPTY_DAY, priceKeys, effectiveDay, priceFor } from '.
 export { buildCalendar } from './domain/calendar.js';
 export { RATE_DAYS_COLLECTION, RateDayRecord } from './models/rate-day.model.js';
 export { createCalendarService, MAX_CALENDAR_NIGHTS } from './calendar.service.js';
+export {
+  MAX_EDIT_NIGHTS,
+  MAX_EDIT_CELLS,
+  BIG_CHANGE_RATIO,
+  RULE_FIELDS,
+  selectDates,
+  rateChangeProblems,
+  bigChanges,
+  mergedPrices,
+} from './domain/bulk-edit.js';
+export { CHANGE_LOG_COLLECTION, ChangeLogRecord } from './models/change-log.model.js';
+export { createCalendarEditService } from './calendar-edit.service.js';

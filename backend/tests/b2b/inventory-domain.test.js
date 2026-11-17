@@ -1,11 +1,9 @@
 // @ts-check
-/** Pure rules of the hotel-inventory module (Stage 04): cancellation policies, rate plans, stay dates, nights and the calendar grid. */
+/** Pure rules of the hotel-inventory module (Stage 04): cancellation policies, rate plans, stay dates (calendar rules: inventory-domain-calendar.test.js). */
 import { describe, expect, it } from 'vitest';
 
 import { normalisePolicy, penaltyAt, summarise } from '../../src/b2b/modules/hotel-inventory/domain/cancellation.js';
 import { addDays, daysBetween, isDate, nights, todayIn, weekday } from '../../src/b2b/modules/hotel-inventory/domain/dates.js';
-import { buildCalendar } from '../../src/b2b/modules/hotel-inventory/domain/calendar.js';
-import { effectiveDay, EMPTY_DAY, priceFor, priceKeys } from '../../src/b2b/modules/hotel-inventory/domain/rate-day.js';
 import { checkRatePlan, derivedPrice } from '../../src/b2b/modules/hotel-inventory/domain/rate-plan.js';
 
 /** @typedef {import('../../src/b2b/modules/hotel-inventory/domain/cancellation.js').PolicyInput} PolicyInput */
@@ -206,68 +204,5 @@ describe('stay dates', () => {
     const lateEvening = new Date('2026-11-17T20:00:00Z'); // 01:30 on the 18th in India
     expect(todayIn('Asia/Kolkata', lateEvening)).toBe('2026-11-18');
     expect(todayIn('America/New_York', lateEvening)).toBe('2026-11-17');
-  });
-});
-
-describe('prices and rules per night', () => {
-  const perGuest = { pricingModel: 'PER_OCCUPANCY', derived: null };
-  const day = {
-    ...EMPTY_DAY,
-    prices: [
-      { guests: 1, amount: 300000 },
-      { guests: 2, amount: 350000 },
-    ],
-    minLos: 2,
-    closedToDeparture: true,
-  };
-
-  it('price keys: one per room, or one per number of guests up to the room maximum', () => {
-    expect(priceKeys({ pricingModel: 'PER_ROOM' }, { maxOccupancy: 3 })).toEqual([0]);
-    expect(priceKeys(perGuest, { maxOccupancy: 3 })).toEqual([1, 2, 3]);
-    expect([
-      priceFor(day, perGuest, 2),
-      priceFor(day, perGuest, 3),
-      priceFor({ ...EMPTY_DAY, prices: [{ guests: 0, amount: 1 }] }, { pricingModel: 'PER_ROOM' }, 4),
-    ]).toEqual([350000, null, 1]);
-  });
-
-  it('a derived plan: prices from the parent; the stricter rules of both', () => {
-    const cp = { derived: { adjust: /** @type {const} */ ({ type: 'AMOUNT', value: 50000 }) } };
-    const own = { ...EMPTY_DAY, minLos: 1, maxLos: 5, stopSell: false, closedToArrival: true };
-    expect(effectiveDay(cp, own, { ...day, maxLos: 7, stopSell: true })).toEqual({
-      prices: [
-        { guests: 1, amount: 350000 },
-        { guests: 2, amount: 400000 },
-      ],
-      minLos: 2,
-      maxLos: 5,
-      closedToArrival: true,
-      closedToDeparture: true,
-      stopSell: true,
-    });
-    expect(effectiveDay(cp, null, null)).toEqual(EMPTY_DAY); // no parent price → nothing to sell
-    expect(effectiveDay({ derived: null }, null, null)).toEqual(EMPTY_DAY);
-  });
-
-  it('the calendar grid: rooms per night, plans selling each room type, past nights read-only', () => {
-    const grid = buildCalendar({
-      dates: ['2026-11-16', '2026-11-17'],
-      today: '2026-11-17',
-      windowEnd: '2027-11-17',
-      roomTypes: [{ id: 'r1', name: 'Deluxe', maxOccupancy: 2 }],
-      plans: [
-        { id: 'ep', name: 'EP', mealPlanKey: 'ep', pricingModel: 'PER_OCCUPANCY', status: 'ACTIVE', roomTypeIds: ['r1'], derived: null },
-        { id: 'x', name: 'Other room', mealPlanKey: 'ep', pricingModel: 'PER_ROOM', status: 'ACTIVE', roomTypeIds: ['r2'], derived: null },
-      ],
-      nights: [{ roomTypeId: 'r1', date: '2026-11-17', total: 5, booked: 2, held: 1, stopSell: false }],
-      rateDays: [{ ratePlanId: 'ep', roomTypeId: 'r1', date: '2026-11-17', prices: [{ guests: 2, amount: 400000 }] }],
-    });
-    const rt = grid.roomTypes[0];
-    expect(rt?.nights).toEqual([
-      { date: '2026-11-16', total: 0, booked: 0, held: 0, available: 0, stopSell: false, editable: false },
-      { date: '2026-11-17', total: 5, booked: 2, held: 1, available: 2, stopSell: false, editable: true },
-    ]);
-    expect(rt?.ratePlans.map((p) => [p.id, p.priceKeys])).toEqual([['ep', [1, 2]]]);
-    expect(rt?.ratePlans[0]?.days[1]).toMatchObject({ prices: [{ guests: 2, amount: 400000 }], editable: true });
   });
 });
