@@ -16,6 +16,7 @@ import { MFA_COLLECTION, OTP_COLLECTION, SESSIONS_COLLECTION, USERS_COLLECTION, 
 import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_COLLECTION } from '../modules/organizations/index.js';
 
 import { STAGE_02_AND_LATER } from './stage-02-onwards.js';
+import { STAGE_04 } from './stage-04.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -229,4 +230,5 @@ export const MIGRATIONS = [
     },
   },
   ...STAGE_02_AND_LATER,
+  ...STAGE_04,
 ];

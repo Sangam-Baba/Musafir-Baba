@@ -33,6 +33,7 @@ import { photoRoutes } from './hotel-photos.js';
 import { listingRoutes } from './hotel-listing.js';
 import { hotelAdminRoutes } from './hotel-admin.js';
 import { hotelContentRoutes } from './hotel-content.js';
+import { cancellationPolicyRoutes } from './hotel-cancellation-policies.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -51,6 +52,7 @@ import {
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
+import { createCancellationPolicyService } from '../modules/hotel-inventory/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
 import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-as.js';
@@ -125,6 +127,7 @@ export function createB2BRouter(options = {}) {
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
   router.use(stage03Routes(env, clock, identity));
+  router.use(stage04Routes(clock));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());
@@ -184,6 +187,18 @@ function stage03Routes(env, clock, identity) {
       visibility: createVisibilityService({ clock, properties }),
     }),
   );
+  return router;
+}
+
+/**
+ * Stage 04: rooms, prices and rules per night. Properties are read through hotel-catalog's own service
+ * (`loadOwned` — same access checks and property limits as Stage 03).
+ * @param {import('../core/clock.js').Clock} clock
+ */
+function stage04Routes(clock) {
+  const router = express.Router();
+  const properties = createPropertyService({ clock });
+  router.use(cancellationPolicyRoutes({ policies: createCancellationPolicyService({ properties }) }));
   return router;
 }
 
