@@ -11,8 +11,8 @@
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 04 — Inventory & rates calendar (in progress) · Stages 00–03 awaiting owner sign-off |
-| **Current task(s)** | S04-T08 — hold primitives (S04-T01 to T07 done) |
-| **Next up** | S04-T09 sweeper / reconciler → S04-T10 signals · owner: sign off Stages 00–03 (fill in Finished in each `stages/stage-NN.md`), confirm D12 (allotment) |
+| **Current task(s)** | S04-T09 — sweeper / reconciler (S04-T01 to T08 done) |
+| **Next up** | S04-T10 signals → S04-T11 CSV import · owner: sign off Stages 00–03 (fill in Finished in each `stages/stage-NN.md`), confirm D12 (allotment) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
@@ -25,7 +25,7 @@
 | 01 | Organisations, users, roles & permissions | A | AWAITING_SIGN_OFF | 19 / 20 | 1 | 100 % | 2026-11-13 | — | [stage-01](stages/stage-01.md) |
 | 02 | Hotel onboarding & KYC (+ notifications) | A | AWAITING_SIGN_OFF | 15 / 15 | 0 | 100 % | 2026-11-15 | — | [stage-02](stages/stage-02.md) |
 | 03 | Hotel listings | A | AWAITING_SIGN_OFF | 14 / 14 | 0 | 100 % | 2026-11-15 | — | [stage-03](stages/stage-03.md) |
-| 04 | Inventory & rates calendar | A | IN_PROGRESS | 7 / 14 | 0 | 50 % | 2026-11-17 | — | [stage-04](stages/stage-04.md) |
+| 04 | Inventory & rates calendar | A | IN_PROGRESS | 8 / 14 | 0 | 57 % | 2026-11-17 | — | [stage-04](stages/stage-04.md) |
 | 05 | Pricing & GST | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 06 | Search & availability (website first) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 07 | Payments (PayU) & ledger core | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 77 of 84 tasks done (92 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 78 of 84 tasks done (93 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

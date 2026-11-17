@@ -29,3 +29,6 @@ export { CHANGE_LOG_COLLECTION, ChangeLogRecord } from './models/change-log.mode
 export { createCalendarEditService } from './calendar-edit.service.js';
 export { MAX_ROOMS_PER_STAY, fits, evaluate } from './domain/availability.js';
 export { createAvailabilityService } from './availability.service.js';
+export { HOLDS_COLLECTION, HOLD_STATUSES, HoldRecord } from './models/hold.model.js';
+export { createHoldService, HOLD_MINUTES, EXTEND_MINUTES, holdDto } from './hold.service.js';
+export { stepsOf } from './night-steps.js';

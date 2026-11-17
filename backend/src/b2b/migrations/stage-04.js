@@ -3,6 +3,7 @@
 import {
   CANCELLATION_POLICIES_COLLECTION,
   CHANGE_LOG_COLLECTION,
+  HOLDS_COLLECTION,
   INVENTORY_DAY_VALIDATOR,
   INVENTORY_DAYS_COLLECTION,
   RATE_DAYS_COLLECTION,
@@ -81,6 +82,21 @@ export const STAGE_04 = [
       await ctx.createIndex(CHANGE_LOG_COLLECTION, { propertyId: 1, requestId: 1 }, { name: 'property_request_unique', unique: true });
       await ctx.createIndex(CHANGE_LOG_COLLECTION, { hotelOrgId: 1, propertyId: 1, createdAt: -1 }, { name: 'property_recent' });
       await ctx.createIndex(CHANGE_LOG_COLLECTION, { month: 1 }, { name: 'month' });
+    },
+  },
+  {
+    id: '0032-inv-holds',
+    description: 'Checkout holds: one per order; by status and expiry (sweeper); by status and status time (reconciler); relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(HOLDS_COLLECTION);
+      await ctx.createIndex(HOLDS_COLLECTION, { orderId: 1 }, { name: 'order_unique', unique: true });
+      await ctx.createIndex(HOLDS_COLLECTION, { status: 1, expiresAt: 1 }, { name: 'status_expiry' });
+      await ctx.createIndex(HOLDS_COLLECTION, { status: 1, statusAt: 1 }, { name: 'status_time' });
+      await ctx.createIndex(
+        HOLDS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];
