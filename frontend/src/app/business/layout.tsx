@@ -8,7 +8,7 @@ import { RootProvider } from "@/providers/root-provider";
 export default function BusinessLayout({ children }: { children: React.ReactNode }) {
   return (
     <RootProvider>
-      {children}
+      <div className="font-[family-name:var(--font-inter)] antialiased">{children}</div>
       <Toaster position="top-right" richColors />
     </RootProvider>
   );

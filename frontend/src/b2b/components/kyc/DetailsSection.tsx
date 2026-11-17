@@ -75,9 +75,9 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
           </div>
         </form>
       ) : !d ? (
-        <p className="text-sm text-slate-500">Not filled in yet.</p>
+        <p className="text-[13px] text-slate-500">Not filled in yet.</p>
       ) : (
-        <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+        <dl className="grid gap-x-6 gap-y-2 text-[13px] sm:grid-cols-2">
           <Row k="Legal name" v={d.legalName} />
           <Row k="Contact" v={`${d.contactName} · ${d.mobile}`} />
           <Row k="Email" v={d.email} />

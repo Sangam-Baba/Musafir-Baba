@@ -85,7 +85,7 @@ export default function RegisterWizard() {
     }
   }
 
-  if (!checked) return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading…</div>;
+  if (!checked) return <div className="flex min-h-screen items-center justify-center text-[13px] text-slate-500">Loading…</div>;
   const [title, highlight, subtitle] = HEADINGS[step - 1] ?? HEADINGS[0];
   const refresh = () => void kyc.refetch();
   return (
@@ -93,19 +93,19 @@ export default function RegisterWizard() {
       {step === 1 && <PartnerTypeStep onNext={() => setStep(2)} />}
       {step === 2 && (
         <form onSubmit={(e) => (e.preventDefault(), setStep(3))}>
-          <StepHeading icon={<Building2 className="h-6 w-6" />} title="Business details" text="Provide your organisation details as per your official documents (GST / PAN)." />
+          <StepHeading icon={<Building2 className="h-5 w-5" />} title="Business details" text="Provide your organisation details as per your official documents (GST / PAN)." />
           {!signedInAtStart ? (
-            <div className="mb-6 grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
+            <div className="mb-6 grid gap-4 rounded-lg bg-slate-50 p-4 sm:grid-cols-2">
               <Field label="Your name" value={owner.name} onChange={(e) => setOwner({ ...owner, name: e.target.value })} autoComplete="name" required maxLength={120} />
               <Field label="Choose a password" type="password" value={owner.password} onChange={(e) => setOwner({ ...owner, password: e.target.value })} autoComplete="new-password" hint="At least 10 characters — you'll sign in with the email below." required />
             </div>
           ) : (
-            <p className="mb-6 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">You&apos;re signed in — this business will be added to your account. A hotel company with its own PAN is a separate business; same PAN in another state? Add that GSTIN on your Verification page instead.</p>
+            <p className="mb-6 rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600">You&apos;re signed in — this business will be added to your account. A hotel company with its own PAN is a separate business; same PAN in another state? Add that GSTIN on your Verification page instead.</p>
           )}
           <BusinessDetailsForm value={details} onChange={setDetails} errors={errors} showPropertyCount={false} />
           <StepButtons onBack={() => setStep(1)} continueLabel="Continue to services" />
           {!signedInAtStart && (
-            <p className="mt-3 text-center text-sm text-slate-500">
+            <p className="mt-3 text-center text-[13px] text-slate-500">
               Already registered? <Link href="/business/login" className="text-[#FE5300] hover:underline">Sign in</Link>
             </p>
           )}
@@ -113,13 +113,13 @@ export default function RegisterWizard() {
       )}
       {step === 3 && <ServicesStep value={details} onChange={setDetails} onBack={() => setStep(2)} onNext={createBusiness} busy={busy} />}
       {step >= 4 && !kyc.data && (
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+        <div className="flex items-center gap-2 text-[13px] text-slate-500">
           <Loader2 className="h-4 w-4 animate-spin" /> {kyc.error ? errorMessage(kyc.error) : "Loading your application…"}
         </div>
       )}
       {step === 4 && kyc.data && (
-        <div className="space-y-6">
-          <StepHeading icon={<FileUp className="h-6 w-6" />} title="Required documents" text="Clear and valid documents: PDF, JPG or PNG (max 10 MB each). Then your payout bank account." />
+        <div className="space-y-4">
+          <StepHeading icon={<FileUp className="h-5 w-5" />} title="Required documents" text="Clear and valid documents: PDF, JPG or PNG (max 10 MB each). Then your payout bank account." />
           <DocumentsSection app={kyc.data} canEdit={kyc.data.editable} onChanged={refresh} />
           <BankSection key={`bank-${kyc.data.revision}`} app={kyc.data} canEdit={kyc.data.editable} onSaved={refresh} />
           <StepButtons type="button" onBack={undefined} continueLabel="Continue to review" onContinue={() => setStep(5)} />

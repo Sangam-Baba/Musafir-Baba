@@ -35,13 +35,13 @@ export function MembersSection({ me, roles, branches }: { me: Me; roles: Role[];
       {members.error && <Empty text={errorMessage(members.error)} />}
       <ul className="divide-y divide-slate-100">
         {members.data?.data.map((m) => (
-          <li key={m.userId} className="py-3">
+          <li key={m.userId} className="py-2.5">
             <div className="flex flex-wrap items-center gap-3">
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-slate-900">
                   {m.name ?? "—"} {m.userId === me.user.id && <span className="text-xs text-slate-400">(you)</span>}
                 </p>
-                <p className="text-sm text-slate-500">{m.email}</p>
+                <p className="text-[13px] text-slate-500">{m.email}</p>
                 <p className="mt-1 text-xs text-slate-500">
                   {m.roles.map(nameOf).join(", ")}
                   {m.branchIds.length > 0 && ` · only ${m.branchIds.map(branchName).join(", ")}`}
@@ -83,10 +83,10 @@ function RoleEditor({ member, roles, branches, onDone }: { member: Member; roles
 
   return (
     <div className="mt-3 space-y-3 rounded-lg bg-slate-50 p-4">
-      <p className="text-sm font-medium text-slate-700">Roles</p>
+      <p className="text-xs font-medium text-slate-600">Roles</p>
       <div className="flex flex-wrap gap-2">
         {roles.map((r) => (
-          <label key={r.ref} className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm">
+          <label key={r.ref} className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-[13px]">
             <input type="checkbox" checked={chosen.includes(r.ref)} onChange={() => setChosen(toggle(chosen, r.ref))} />
             {r.name}
           </label>
@@ -94,12 +94,12 @@ function RoleEditor({ member, roles, branches, onDone }: { member: Member; roles
       </div>
       {branches.length > 0 && (
         <>
-          <p className="text-sm font-medium text-slate-700">Limit to branches (none ticked = all branches)</p>
+          <p className="text-xs font-medium text-slate-600">Limit to branches (none ticked = all branches)</p>
           <div className="flex flex-wrap gap-2">
             {branches
               .filter((b) => b.status === "ACTIVE")
               .map((b) => (
-                <label key={b.id} className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm">
+                <label key={b.id} className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-[13px]">
                   <input type="checkbox" checked={branchIds.includes(b.id)} onChange={() => setBranchIds(toggle(branchIds, b.id))} />
                   {b.name}
                 </label>
@@ -107,7 +107,7 @@ function RoleEditor({ member, roles, branches, onDone }: { member: Member; roles
           </div>
         </>
       )}
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-[13px] text-slate-700">
         <input type="checkbox" checked={ownOnly} onChange={(e) => setOwnOnly(e.target.checked)} />
         Only their own bookings and records
       </label>

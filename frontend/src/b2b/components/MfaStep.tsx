@@ -30,13 +30,13 @@ export function MfaStep({ mfaToken, onDone }: { mfaToken: string; onDone: (token
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <p className="text-sm text-slate-600">{useRecovery ? "Enter one of your recovery codes (each works once)." : "Enter the 6-digit code from your authenticator app."}</p>
+      <p className="text-[13px] text-slate-600">{useRecovery ? "Enter one of your recovery codes (each works once)." : "Enter the 6-digit code from your authenticator app."}</p>
       <Field label={useRecovery ? "Recovery code" : "App code"} value={value} onChange={(e) => setValue(e.target.value)} inputMode={useRecovery ? "text" : "numeric"} autoComplete="one-time-code" autoFocus required />
       <FormError message={error} />
       <PrimaryButton type="submit" busy={busy}>
         Verify
       </PrimaryButton>
-      <button type="button" onClick={() => setUseRecovery(!useRecovery)} className="w-full text-center text-sm text-[#FE5300] hover:underline">
+      <button type="button" onClick={() => setUseRecovery(!useRecovery)} className="w-full text-center text-[13px] text-[#FE5300] hover:underline">
         {useRecovery ? "Use the app code instead" : "Lost your phone? Use a recovery code"}
       </button>
     </form>

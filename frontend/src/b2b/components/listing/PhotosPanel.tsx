@@ -56,7 +56,7 @@ function Group({ title, need, photos, roomTypeId, property, editable, onChanged 
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <h3 className="font-semibold text-slate-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
         <span className={`rounded-full px-2 py-0.5 text-xs ${photos.length >= need ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-800"}`}>
           {photos.length} / at least {need}
         </span>
@@ -64,7 +64,7 @@ function Group({ title, need, photos, roomTypeId, property, editable, onChanged 
         {editable && (
           <>
             <input ref={picker} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => e.target.files?.length && upload(e.target.files)} />
-            <button disabled={Boolean(busy)} onClick={() => picker.current?.click()} className="rounded-lg bg-[#FE5300] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60">
+            <button disabled={Boolean(busy)} onClick={() => picker.current?.click()} className="rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white disabled:opacity-60">
               {busy ?? "Add photos"}
             </button>
           </>
@@ -72,7 +72,7 @@ function Group({ title, need, photos, roomTypeId, property, editable, onChanged 
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {photos.map((p) => (
-          <figure key={p.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <figure key={p.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
             <Image
               unoptimized // already sized in the browser and served from the CDN
               src={(p.sizes.card ?? p.sizes.thumb)?.url ?? ""}
@@ -118,7 +118,7 @@ function Group({ title, need, photos, roomTypeId, property, editable, onChanged 
 export function PhotosPanel({ property, rooms, editable, onChanged }: { property: Property; rooms: RoomType[]; editable: boolean; onChanged: () => void }) {
   const of = (roomTypeId: string | null) => property.photos.filter((p) => p.roomTypeId === roomTypeId);
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <p className="text-xs text-slate-500">Photos at least 1200 px wide. They are resized in your browser and all location / camera details are removed before upload.</p>
       <Group title="Property photos" need={5} photos={of(null)} roomTypeId={null} property={property} editable={editable} onChanged={onChanged} />
       {rooms.map((r) => (

@@ -16,10 +16,10 @@ import { Panel, Pill } from "../portal/ui";
 
 function Line({ icon: Icon, label, children }: { icon: typeof Mail; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 py-3 last:border-0">
-      <Icon className="h-5 w-5 text-slate-400" />
-      <span className="w-32 text-sm text-slate-600">{label}</span>
-      <span className="flex flex-1 flex-wrap items-center gap-2 text-sm text-slate-900">{children}</span>
+    <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 py-2.5 last:border-0">
+      <Icon className="h-4 w-4 text-slate-400" />
+      <span className="w-32 text-[13px] text-slate-600">{label}</span>
+      <span className="flex flex-1 flex-wrap items-center gap-2 text-[13px] text-slate-900">{children}</span>
     </div>
   );
 }
@@ -39,10 +39,10 @@ export function AccountPanel({ me }: { me: Me }) {
   return (
     <Panel icon={User} title="Account information" subtitle="Your sign-in details.">
       <div className="mb-4 flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FE5300] text-xl font-semibold text-white">{initials}</span>
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FE5300] text-base font-semibold text-white">{initials}</span>
         <div>
-          <p className="text-lg font-semibold text-slate-900">{me.user.name}</p>
-          <p className="text-sm text-slate-500">{current ? `Business ${roleName(current.roles[0] ?? "")} · ${current.displayName}` : "No business selected"}</p>
+          <p className="text-[15px] font-semibold text-slate-900">{me.user.name}</p>
+          <p className="text-[13px] text-slate-500">{current ? `Business ${roleName(current.roles[0] ?? "")} · ${current.displayName}` : "No business selected"}</p>
         </div>
       </div>
       <Line icon={Mail} label="Email address">
@@ -66,8 +66,8 @@ export function AccountPanel({ me }: { me: Me }) {
       </Line>
       {me.memberships.length > 1 && (
         <div className="mt-4">
-          <p className="text-sm font-medium text-slate-700">Your businesses</p>
-          <ul className="mt-2 space-y-1 text-sm text-slate-600">
+          <p className="text-xs font-medium text-slate-600">Your businesses</p>
+          <ul className="mt-2 space-y-1 text-[13px] text-slate-600">
             {me.memberships.map((m) => (
               <li key={m.orgId}>
                 {m.displayName} · {roleName(m.roles[0] ?? "")} · {m.status.toLowerCase()}
@@ -101,12 +101,12 @@ export function SignOutEverywherePanel() {
   }
   return (
     <Panel icon={LogOut} title="Signed-in devices" subtitle="Lost a phone or used a shared computer?">
-      <p className="text-sm text-slate-600">Sign out everywhere ends every session of your account. Your sign-ins are listed on the Activity page.</p>
+      <p className="text-[13px] text-slate-600">Sign out everywhere ends every session of your account. Your sign-ins are listed on the Activity page.</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <button disabled={busy} onClick={signOutAll} className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">
+        <button disabled={busy} onClick={signOutAll} className="rounded-lg border border-red-200 px-3 py-1.5 text-[13px] font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">
           Sign out everywhere
         </button>
-        <Link href="/business/activity" className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:border-[#FE5300]">
+        <Link href="/business/activity" className="rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] text-slate-700 hover:border-[#FE5300]">
           See sign-in activity
         </Link>
       </div>
@@ -124,9 +124,9 @@ function Toggle({ on, disabled, onChange, label }: { on: boolean; disabled?: boo
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!on)}
-      className={`relative h-6 w-11 rounded-full transition disabled:opacity-60 ${on ? "bg-emerald-500" : "bg-slate-300"}`}
+      className={`relative h-5 w-9 rounded-full transition disabled:opacity-60 ${on ? "bg-emerald-500" : "bg-slate-300"}`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${on ? "left-5" : "left-0.5"}`} />
+      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition ${on ? "left-[18px]" : "left-0.5"}`} />
     </button>
   );
 }
@@ -147,28 +147,28 @@ export function NotificationPrefsPanel({ readOnly }: { readOnly: boolean }) {
   return (
     <Panel icon={Bell} title="Notifications" subtitle="Important messages (verification, listing decisions) always reach you.">
       {prefs.isLoading ? (
-        <p className="text-sm text-slate-500">Loading…</p>
+        <p className="text-[13px] text-slate-500">Loading…</p>
       ) : list.length === 0 ? (
-        <p className="text-sm text-slate-500">Nothing to choose here yet.</p>
+        <p className="text-[13px] text-slate-500">Nothing to choose here yet.</p>
       ) : (
-        <table className="w-full text-sm">
+        <table className="w-full text-[13px]">
           <thead>
             <tr className="text-left text-xs text-slate-500">
-              <th className="py-2">Message</th>
-              <th className="py-2 text-center">In the bell</th>
-              <th className="py-2 text-center">By email</th>
+              <th className="py-1.5">Message</th>
+              <th className="py-1.5 text-center">In the bell</th>
+              <th className="py-1.5 text-center">By email</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {list.map((p) => (
               <tr key={p.category}>
-                <td className="py-3 text-slate-800">
+                <td className="py-2.5 text-slate-800">
                   {p.label} {p.locked && <span className="ml-1 text-xs text-slate-400">(always on)</span>}
                 </td>
-                <td className="py-3 text-center">
+                <td className="py-2.5 text-center">
                   <Toggle label={`${p.label} in the bell`} on={p.inApp} disabled={p.locked || readOnly} onChange={(v) => save(p, { inApp: v })} />
                 </td>
-                <td className="py-3 text-center">
+                <td className="py-2.5 text-center">
                   <Toggle label={`${p.label} by email`} on={p.email} disabled={p.locked || readOnly} onChange={(v) => save(p, { email: v })} />
                 </td>
               </tr>

@@ -79,9 +79,9 @@ export function InvitationsSection({ me, roles, branches }: { me: Me; roles: Rol
       {list.data?.data.length === 0 && <Empty text="No pending invitations." />}
       <ul className="divide-y divide-slate-100">
         {list.data?.data.map((i) => (
-          <li key={i.id} className="flex flex-wrap items-center gap-3 py-2">
+          <li key={i.id} className="flex flex-wrap items-center gap-3 py-1.5">
             <div className="flex-1">
-              <p className="text-sm font-medium text-slate-900">{i.email}</p>
+              <p className="text-[13px] font-medium text-slate-900">{i.email}</p>
               <p className="text-xs text-slate-500">
                 {i.roles.map(nameOf).join(", ")} · expires {new Date(i.expiresAt).toLocaleDateString()}
               </p>

@@ -54,7 +54,7 @@ export function toRequest(v: HotelDetailsInput, termsVersion: string) {
 function Box({ label, required, error, hint, children, span = 1 }: { label: string; required?: boolean; error?: string; hint?: string; children: ReactNode; span?: 1 | 2 | 3 }) {
   return (
     <label className={`block ${span === 2 ? "sm:col-span-2" : span === 3 ? "sm:col-span-3" : ""}`}>
-      <span className="text-sm font-medium text-slate-700">
+      <span className="text-xs font-medium text-slate-600">
         {label} {required ? <span className="text-red-500">*</span> : <span className="font-normal text-slate-400">(optional)</span>}
       </span>
       {children}
@@ -67,7 +67,7 @@ function Box({ label, required, error, hint, children, span = 1 }: { label: stri
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <fieldset>
-      <legend className="flex w-full items-center gap-3 text-base font-semibold text-slate-900">
+      <legend className="flex w-full items-center gap-3 text-sm font-semibold text-slate-900">
         {title} <span className="h-px flex-1 bg-orange-200" />
       </legend>
       <div className="mt-3 grid gap-4 sm:grid-cols-3">{children}</div>
@@ -97,7 +97,7 @@ export function BusinessDetailsForm({
   const set = (patch: Partial<HotelDetailsInput>) => onChange({ ...value, ...patch });
   const setAddress = (patch: Partial<HotelDetailsInput["address"]>) => onChange({ ...value, address: { ...value.address, ...patch } });
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Group title="Organisation information">
         <Box label="Legal name of the business" required error={errors.legalName} hint="Exactly as on your GST / PAN documents." span={2}>
           <input className={input} value={value.legalName} onChange={(e) => set({ legalName: e.target.value })} disabled={disabled} required maxLength={200} />
@@ -145,10 +145,10 @@ export function BusinessDetailsForm({
 
       <Group title="Registration & tax details">
         <fieldset className="sm:col-span-3">
-          <legend className="text-sm font-medium text-slate-700">
+          <legend className="text-xs font-medium text-slate-600">
             GST registration <span className="text-red-500">*</span>
           </legend>
-          <div className="mt-2 flex flex-wrap gap-6 text-sm">
+          <div className="mt-2 flex flex-wrap gap-4 text-[13px]">
             {[true, false].map((yes) => (
               <label key={String(yes)} className="flex items-center gap-2">
                 <input type="radio" className="accent-[#FE5300]" checked={value.gstRegistered === yes} onChange={() => set({ gstRegistered: yes })} disabled={disabled} />
@@ -193,7 +193,7 @@ export function BusinessDetailsForm({
       </Group>
 
       {showTerms && (
-        <label className="flex items-start gap-2 text-sm text-slate-700">
+        <label className="flex items-start gap-2 text-[13px] text-slate-700">
           <input type="checkbox" className="mt-1 accent-[#FE5300]" checked={value.termsAccepted} onChange={(e) => set({ termsAccepted: e.target.checked })} disabled={disabled} />
           <span>
             I confirm the information is true and correct, and I accept the MusafirBaba hotel partner terms (net-rate contract).

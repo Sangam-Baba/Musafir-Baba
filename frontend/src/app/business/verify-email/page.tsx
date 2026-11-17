@@ -23,16 +23,16 @@ export default function VerifyEmailPage() {
   return (
     <AuthCard title="Confirm your email">
       {state.error ? (
-        <p className="text-sm text-red-700">{state.error}</p>
+        <p className="text-[13px] text-red-700">{state.error}</p>
       ) : state.done ? (
-        <div className="space-y-4 text-sm text-slate-700">
+        <div className="space-y-4 text-[13px] text-slate-700">
           <p>Thanks — your email is confirmed.</p>
-          <Link href="/business/verification" className="inline-block rounded-lg bg-[#FE5300] px-4 py-2 font-semibold text-white hover:bg-[#e54b00]">
+          <Link href="/business/verification" className="inline-block rounded-md bg-[#FE5300] px-3 py-1.5 font-medium text-white hover:bg-[#e54b00]">
             Continue your registration
           </Link>
         </div>
       ) : (
-        <p className="text-sm text-slate-500">Checking the link…</p>
+        <p className="text-[13px] text-slate-500">Checking the link…</p>
       )}
     </AuthCard>
   );

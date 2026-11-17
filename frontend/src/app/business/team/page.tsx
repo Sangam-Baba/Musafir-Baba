@@ -16,7 +16,7 @@ import { roleName } from "@/b2b/roles";
 import type { Branch, Invitation, Me, Member, Role } from "@/b2b/types";
 
 export default function TeamPage() {
-  return <BusinessShell>{(me) => (me.currentOrgId ? <Team me={me} /> : <p className="text-sm text-slate-600">Choose an organisation at the top first.</p>)}</BusinessShell>;
+  return <BusinessShell>{(me) => (me.currentOrgId ? <Team me={me} /> : <p className="text-[13px] text-slate-600">Choose an organisation at the top first.</p>)}</BusinessShell>;
 }
 
 function Team({ me }: { me: Me }) {
@@ -42,18 +42,18 @@ function Team({ me }: { me: Me }) {
   const roleList = roles.data?.data ?? [];
   const branchList = branches.data?.data ?? [];
 
-  if (tabs.length === 0) return <p className="text-sm text-slate-600">Your role doesn&apos;t include team management.</p>;
+  if (tabs.length === 0) return <p className="text-[13px] text-slate-600">Your role doesn&apos;t include team management.</p>;
   const pending = (invitations.data?.data ?? []).filter((i) => i.status === "PENDING").length;
   const n = (loading: boolean, v: number) => (loading ? "…" : v);
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader
         crumb="Team & Access"
         title="Team & Access"
         highlight="Management"
         subtitle="Add team members, give them roles and manage their access."
         actions={
-          <Link href="/business/activity" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-[#FE5300]">
+          <Link href="/business/activity" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] px-3 py-1.5 text-[13px] text-slate-700 hover:border-[#FE5300]">
             <Activity className="h-4 w-4" /> Access logs
           </Link>
         }

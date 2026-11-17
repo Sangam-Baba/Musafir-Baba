@@ -53,11 +53,11 @@ export function BankSection({ app, canEdit, onSaved }: { app: KycApplication; ca
           <p className="text-xs text-slate-500 sm:col-span-3">Upload a cancelled cheque of this account in the documents below.</p>
         </form>
       ) : app.bank ? (
-        <p className="text-sm text-slate-700">
+        <p className="text-[13px] text-slate-700">
           {app.bank.holderName} · account ending {app.bank.accountLast4} · IFSC {app.bank.ifsc}
         </p>
       ) : (
-        <p className="text-sm text-slate-500">No bank account yet.</p>
+        <p className="text-[13px] text-slate-500">No bank account yet.</p>
       )}
     </Panel>
   );
@@ -65,7 +65,7 @@ export function BankSection({ app, canEdit, onSaved }: { app: KycApplication; ca
 
 function Input({ label, value, error, onChange, numeric }: { label: string; value: string; error?: string; onChange: (v: string) => void; numeric?: boolean }) {
   return (
-    <label className="block text-sm">
+    <label className="block text-[13px]">
       <span className="font-medium text-slate-700">{label}</span>
       <input className={`${inputClass} mt-1 w-full`} value={value} onChange={(e) => onChange(e.target.value)} inputMode={numeric ? "numeric" : undefined} required autoComplete="off" />
       {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}

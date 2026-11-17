@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
           }}
           className="space-y-4"
         >
-          <p className="text-sm text-slate-600">If {email} has an account, a code is on its way.</p>
+          <p className="text-[13px] text-slate-600">If {email} has an account, a code is on its way.</p>
           <Field label="Code" value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" required />
           <Field label="New password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" hint="At least 10 characters. A short phrase works well." required />
           <FormError message={error} />
@@ -70,8 +70,8 @@ export default function ForgotPasswordPage() {
       )}
       {step === "done" && (
         <div className="space-y-4">
-          <p className="text-sm text-slate-700">Your password is changed and every device has been signed out.</p>
-          <Link href="/business/login" className="block rounded-lg bg-[#FE5300] px-4 py-2.5 text-center text-sm font-semibold text-white">
+          <p className="text-[13px] text-slate-700">Your password is changed and every device has been signed out.</p>
+          <Link href="/business/login" className="block rounded-md bg-[#FE5300] px-3 py-2 text-center text-[13px] font-medium text-white">
             Sign in
           </Link>
         </div>

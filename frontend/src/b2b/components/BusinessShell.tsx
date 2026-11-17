@@ -80,7 +80,7 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
   }
   const data = me.data;
   return (
-    <div className="min-h-screen bg-slate-50 lg:flex">
+    <div className="min-h-screen bg-[#f6f7f9] text-slate-900 lg:flex">
       <Sidebar permissions={data.permissions} pathname={pathname} open={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className="min-w-0 flex-1">
         <TopBar data={data} onMenu={() => setMenuOpen(true)} onSwitch={switchOrg} onLogout={logout} />
@@ -100,7 +100,7 @@ export function BusinessShell({ children }: { children: (me: Me) => ReactNode })
             {b.reason ? ` — ${b.reason}` : ""}. Contact MusafirBaba support.
           </div>
         ))}
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children(data)}</main>
+        <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6">{children(data)}</main>
       </div>
     </div>
   );

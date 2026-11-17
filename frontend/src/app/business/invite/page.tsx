@@ -59,7 +59,7 @@ function AcceptInvitation() {
   if (!token || info.isError) {
     return (
       <AuthCard title="Invitation not valid">
-        <p className="text-sm text-slate-600">{info.isError ? errorMessage(info.error) : "This link has no invitation in it."}</p>
+        <p className="text-[13px] text-slate-600">{info.isError ? errorMessage(info.error) : "This link has no invitation in it."}</p>
       </AuthCard>
     );
   }
@@ -69,7 +69,7 @@ function AcceptInvitation() {
     <AuthCard title={`Join ${info.data.orgName}`} subtitle={`You've been invited to this ${kind} on MusafirBaba Business as ${info.data.email}.`}>
       <form onSubmit={accept} className="space-y-4">
         {accessToken ? (
-          <p className="text-sm text-slate-600">You're signed in. Accept to add {info.data.orgName} to your account.</p>
+          <p className="text-[13px] text-slate-600">You're signed in. Accept to add {info.data.orgName} to your account.</p>
         ) : (
           <>
             <Field label="Your name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />

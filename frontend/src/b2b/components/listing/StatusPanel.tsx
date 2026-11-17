@@ -49,36 +49,36 @@ export function StatusPanel({ property, canManage, onChanged }: { property: Prop
   const blockers = readiness.data?.blockers ?? [];
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <div className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4">
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`rounded-full px-3 py-1 text-sm font-medium ${status.tone}`}>{status.label}</span>
-          <span className="text-sm text-slate-500">{property.publicRef}</span>
+          <span className={`rounded-full px-3 py-1 text-[13px] font-medium ${status.tone}`}>{status.label}</span>
+          <span className="text-[13px] text-slate-500">{property.publicRef}</span>
           <span className="flex-1" />
           {canManage && editable && (
-            <button disabled={busy || !readiness.data?.ready} onClick={() => act("submit")} className="rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+            <button disabled={busy || !readiness.data?.ready} onClick={() => act("submit")} className="rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white disabled:opacity-50">
               {property.status === "CHANGES_REQUESTED" ? "Submit again" : "Submit for approval"}
             </button>
           )}
           {canManage && property.status === "SUBMITTED" && (
-            <button disabled={busy} onClick={() => act("withdraw")} className="rounded-lg border border-slate-200 px-4 py-2 text-sm">
+            <button disabled={busy} onClick={() => act("withdraw")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-[13px]">
               Withdraw to make changes
             </button>
           )}
         </div>
-        <p className="mt-2 text-sm text-slate-600">{status.text}</p>
+        <p className="mt-2 text-[13px] text-slate-600">{status.text}</p>
         {editable && blockers.length > 0 && (
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-amber-800">
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-[13px] text-amber-800">
             {blockers.map((b, i) => (
               <li key={`${b.code}-${i}`}>{BLOCKER_TEXT[b.code]?.(b.detail) ?? b.code}</li>
             ))}
           </ul>
         )}
-        {property.gstinMissing && <p className="mt-2 text-sm text-amber-800">Your business has no verified GSTIN for this property&apos;s state yet — add it on the Verification page.</p>}
+        {property.gstinMissing && <p className="mt-2 text-[13px] text-amber-800">Your business has no verified GSTIN for this property&apos;s state yet — add it on the Verification page.</p>}
       </div>
 
       {property.review && property.status === "CHANGES_REQUESTED" && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-          <p className="font-semibold">MusafirBaba&apos;s comments</p>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-[13px] text-amber-900">
+          <p className="text-sm font-semibold">MusafirBaba&apos;s comments</p>
           {property.review.note && <p className="mt-1">{property.review.note}</p>}
           <ul className="mt-2 space-y-1">
             {property.review.comments.map((c, i) => (
@@ -91,8 +91,8 @@ export function StatusPanel({ property, canManage, onChanged }: { property: Prop
       )}
 
       {property.pendingRevision && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-5 text-sm text-blue-900">
-          <p className="font-semibold">Changes waiting for MusafirBaba&apos;s approval (your listing stays live with the current details)</p>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-[13px] text-blue-900">
+          <p className="text-sm font-semibold">Changes waiting for MusafirBaba&apos;s approval (your listing stays live with the current details)</p>
           <ul className="mt-2 list-disc pl-5">
             {Object.keys(property.pendingRevision.changes).map((k) => (
               <li key={k}>{k}</li>
@@ -107,7 +107,7 @@ export function StatusPanel({ property, canManage, onChanged }: { property: Prop
       )}
 
       {property.history.length > 0 && (
-        <details className="rounded-xl border border-slate-200 bg-white p-5 text-sm">
+        <details className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4 text-[13px]">
           <summary className="cursor-pointer font-semibold text-slate-900">Timeline</summary>
           <ol className="mt-3 space-y-1.5">
             {[...property.history].reverse().map((h, i) => (

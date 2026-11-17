@@ -112,7 +112,7 @@ export function PoliciesForm({ property, disabled, onSaved }: Props) {
         </select>
       </Labelled>
       <fieldset>
-        <legend className="text-sm font-medium text-slate-700">ID accepted at check-in</legend>
+        <legend className="text-xs font-medium text-slate-600">ID accepted at check-in</legend>
         <div className="mt-1 flex flex-wrap gap-3">
           {ID_PROOFS.map(([key, label]) => (
             <Check key={key} label={label} checked={v.idProofs.includes(key)} onChange={() => toggleProof(key)} disabled={disabled} />
@@ -138,7 +138,7 @@ export function AmenitiesForm({ property, masters, disabled, onSaved }: Props) {
     <form onSubmit={(e) => (e.preventDefault(), save("amenities", { amenities: chosen }))} className="space-y-4">
       {groups.map((g) => (
         <fieldset key={g}>
-          <legend className="text-sm font-semibold text-slate-800">{g}</legend>
+          <legend className="text-[13px] font-semibold text-slate-800">{g}</legend>
           <div className="mt-2 grid gap-2 sm:grid-cols-3">
             {options
               .filter((a) => a.group === g)

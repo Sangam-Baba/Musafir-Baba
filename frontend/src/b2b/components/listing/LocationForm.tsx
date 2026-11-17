@@ -113,7 +113,7 @@ export function LocationForm({ property, masters, disabled, onSaved }: { propert
         <input className={inputCls} value={v.pin} onChange={(e) => setV({ ...v, pin: e.target.value })} required inputMode="numeric" disabled={disabled} />
       </Labelled>
       <div className="sm:col-span-2">
-        <p className="mb-2 text-sm font-medium text-slate-700">Pin the exact location (drag the pin or click the map)</p>
+        <p className="mb-2 text-[13px] font-medium text-slate-700">Pin the exact location (drag the pin or click the map)</p>
         <MapPin lat={v.lat} lng={v.lng} onChange={(lat, lng) => setV((cur) => ({ ...cur, lat, lng }))} />
       </div>
       <Labelled label="Latitude">

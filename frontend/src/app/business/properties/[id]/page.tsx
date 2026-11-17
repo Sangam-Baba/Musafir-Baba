@@ -41,8 +41,8 @@ function PropertyEditor({ id, me }: { id: string; me: Me }) {
     void queryClient.invalidateQueries({ queryKey: ["b2b", "listing-readiness", id] });
   };
 
-  if (property.isLoading || masters.isLoading) return <p className="text-sm text-slate-500">Loading…</p>;
-  if (!property.data || !masters.data) return <p className="text-sm text-red-700">{errorMessage(property.error ?? masters.error)}</p>;
+  if (property.isLoading || masters.isLoading) return <p className="text-[13px] text-slate-500">Loading…</p>;
+  if (!property.data || !masters.data) return <p className="text-[13px] text-red-700">{errorMessage(property.error ?? masters.error)}</p>;
   const p = property.data;
   const m = masters.data;
   const roomList = rooms.data?.data ?? [];
@@ -59,21 +59,21 @@ function PropertyEditor({ id, me }: { id: string; me: Me }) {
         title={p.name}
         subtitle={`${p.publicRef} · edit each step, then submit for approval.`}
         actions={
-          <Link href="/business/properties" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-[#FE5300]">
+          <Link href="/business/properties" className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] px-3 py-1.5 text-[13px] text-slate-700 hover:border-[#FE5300]">
             ← All properties
           </Link>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
         <nav className="flex gap-1 overflow-x-auto lg:flex-col">
           {STEPS.map((s) => (
-            <button key={s} onClick={() => setStep(s)} className={`flex items-center justify-between gap-2 whitespace-nowrap rounded-md px-3 py-2 text-left text-sm ${step === s ? "bg-orange-50 font-medium text-[#FE5300]" : "text-slate-600 hover:bg-slate-100"}`}>
+            <button key={s} onClick={() => setStep(s)} className={`flex items-center justify-between gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-left text-[13px] ${step === s ? "bg-orange-50 font-medium text-[#FE5300]" : "text-slate-600 hover:bg-slate-100"}`}>
               {label(s)}
               {done(s) !== null && <span className={done(s) ? "text-green-600" : "text-slate-300"}>{done(s) ? "✓" : "○"}</span>}
             </button>
           ))}
         </nav>
-        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5">
+        <section className="min-w-0 rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4">
           {step === "status" && <StatusPanel property={p} canManage={canManage} onChanged={saved} />}
           {step === "basic" && <BasicForm key={p.version} {...props} />}
           {step === "location" && <LocationForm key={p.version} {...props} />}

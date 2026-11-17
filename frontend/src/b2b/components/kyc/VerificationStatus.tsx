@@ -35,8 +35,8 @@ function stepsOf(app: KycApplication, orgActive: boolean): Step[] {
 function Timeline({ steps }: { steps: Step[] }) {
   const current = steps.findIndex((x) => !x.done);
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
-      <h2 className="font-semibold text-slate-900">Verification timeline</h2>
+    <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 className="text-sm font-semibold text-slate-900">Verification timeline</h2>
       <ol className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
         {steps.map((st, i) => {
           const isCurrent = i === current;
@@ -44,10 +44,10 @@ function Timeline({ steps }: { steps: Step[] }) {
           return (
             <li key={st.label} className="relative flex items-center gap-3 sm:flex-col sm:gap-0 sm:text-center">
               {i < steps.length - 1 && <span className={`absolute left-1/2 top-4 hidden h-0.5 w-full lg:block ${st.done ? "bg-emerald-400" : "bg-slate-200"}`} />}
-              <span className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${ring}`}>
+              <span className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full ${ring}`}>
                 {st.problem ? <X className="h-4 w-4" /> : st.done ? <Check className="h-4 w-4" /> : isCurrent ? <Clock className="h-4 w-4" /> : null}
               </span>
-              <span className={`flex-1 text-sm font-medium sm:mt-2 sm:flex-none ${st.problem ? "text-amber-700" : isCurrent ? "text-[#FE5300]" : "text-slate-800"}`}>{st.label}</span>
+              <span className={`flex-1 text-[13px] font-medium sm:mt-2 sm:flex-none ${st.problem ? "text-amber-700" : isCurrent ? "text-[#FE5300]" : "text-slate-800"}`}>{st.label}</span>
               <span className="text-xs text-slate-500">{fmt(st.date) ?? (st.done ? "Done" : isCurrent ? "Current step" : "Upcoming")}</span>
             </li>
           );
@@ -71,41 +71,41 @@ export function VerificationStatus({ app, orgActive }: { app: KycApplication; or
   const label = (key: string) => app.documentSet.find((d) => d.key === key)?.label ?? key;
   return (
     <div className="space-y-4">
-      <section className={`flex flex-wrap items-center gap-4 rounded-2xl border p-4 sm:gap-5 sm:p-5 ${b.tone}`}>
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-[#FE5300] shadow-sm">
-          <b.icon className="h-8 w-8" />
+      <section className={`flex flex-wrap items-center gap-4 rounded-xl border p-4 sm:gap-4 sm:p-4 ${b.tone}`}>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[#FE5300] shadow-sm">
+          <b.icon className="h-7 w-7" />
         </span>
         <div className="min-w-[12rem] flex-1">
-          <h2 className="text-lg font-bold text-slate-900">{b.title}</h2>
-          <p className="text-sm text-slate-600">{b.text}</p>
+          <h2 className="text-sm font-bold text-slate-900">{b.title}</h2>
+          <p className="text-[13px] text-slate-600">{b.text}</p>
           {app.submittedAt && <p className="mt-1 text-xs text-slate-500">Submitted on {fmt(app.submittedAt)}{app.round > 1 ? ` · round ${app.round}` : ""}</p>}
         </div>
         {waiting && (
           <div className="flex items-center gap-3 border-slate-200 sm:border-l sm:pl-5">
-            <Clock className="h-6 w-6 text-[#FE5300]" />
-            <span className="text-sm">
+            <Clock className="h-5 w-5 text-[#FE5300]" />
+            <span className="text-[13px]">
               <span className="block font-medium text-slate-900">Expected update</span>
               <span className="text-slate-500">Within 1–2 working days</span>
             </span>
           </div>
         )}
         {app.status === "APPROVED" && (
-          <Link href="/business/properties" className="rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white hover:bg-[#e54b00]">
+          <Link href="/business/properties" className="rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white hover:bg-[#e54b00]">
             List your property →
           </Link>
         )}
         {waiting && (
-          <a href={`mailto:${SUPPORT.email}`} className="flex items-center gap-2 rounded-lg border border-[#FE5300] bg-white px-4 py-2 text-sm font-semibold text-[#FE5300]">
+          <a href={`mailto:${SUPPORT.email}`} className="flex items-center gap-2 rounded-lg border border-[#FE5300] bg-white px-3 py-1.5 text-[13px] font-semibold text-[#FE5300]">
             <Mail className="h-4 w-4" /> Contact support
           </a>
         )}
       </section>
       <Timeline steps={stepsOf(app, orgActive)} />
       {app.rejection && (
-        <section className="rounded-2xl border border-amber-200 bg-white p-5">
-          <h2 className="font-semibold text-slate-900">What to fix</h2>
-          {app.rejection.note && <p className="mt-1 text-sm text-slate-700">{app.rejection.note}</p>}
-          <ul className="mt-3 space-y-2 text-sm">
+        <section className="rounded-xl border border-amber-200 bg-white p-4">
+          <h2 className="text-sm font-semibold text-slate-900">What to fix</h2>
+          {app.rejection.note && <p className="mt-1 text-[13px] text-slate-700">{app.rejection.note}</p>}
+          <ul className="mt-3 space-y-2 text-[13px]">
             {app.rejection.reasons.map((r) => (
               <li key={r.key} className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-slate-800">{label(r.key)}:</span>

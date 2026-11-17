@@ -21,7 +21,7 @@ export default function ProfilePage() {
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-1 border-b border-slate-100 py-2.5 text-sm last:border-0 sm:grid-cols-[12rem_1fr]">
+    <div className="grid gap-1 border-b border-slate-100 py-2 text-[13px] last:border-0 sm:grid-cols-[12rem_1fr]">
       <dt className="text-slate-500">{label}</dt>
       <dd className="text-slate-900">{children ?? "—"}</dd>
     </div>
@@ -47,7 +47,7 @@ function DetailsPanels({ kyc }: { kyc: KycApplication }) {
   if (!d) {
     return (
       <Panel icon={FileText} title="Registered details" subtitle="Not filled in yet.">
-        <Link href="/business/verification" className="text-sm font-medium text-[#FE5300] hover:underline">
+        <Link href="/business/verification" className="text-[13px] font-medium text-[#FE5300] hover:underline">
           Add them on the Verification page →
         </Link>
       </Panel>
@@ -76,7 +76,7 @@ function DetailsPanels({ kyc }: { kyc: KycApplication }) {
         </dl>
       </Panel>
       <Panel icon={MapPin} title="Registered address">
-        <p className="text-sm text-slate-800">
+        <p className="text-[13px] text-slate-800">
           {[a.line1, a.line2, a.city, `${stateName(a.stateCode)} ${a.pin}`].filter(Boolean).join(", ")}
         </p>
       </Panel>
@@ -90,11 +90,11 @@ function TaxPanels({ kyc }: { kyc: KycApplication }) {
     <>
       <Panel icon={Receipt} title="GST registrations" subtitle="One GSTIN per state, all under the same PAN.">
         {!d?.gstRegistered && kyc.gstRegistrations.length === 0 ? (
-          <p className="text-sm text-slate-600">Not registered for GST.</p>
+          <p className="text-[13px] text-slate-600">Not registered for GST.</p>
         ) : (
-          <ul className="divide-y divide-slate-100 text-sm">
+          <ul className="divide-y divide-slate-100 text-[13px]">
             {d?.gstin && (
-              <li className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <li className="flex flex-wrap items-center justify-between gap-2 py-1.5">
                 <span>
                   {d.gstin} <span className="text-slate-500">· main · {stateName(d.address.stateCode)}</span>
                 </span>
@@ -102,7 +102,7 @@ function TaxPanels({ kyc }: { kyc: KycApplication }) {
               </li>
             )}
             {kyc.gstRegistrations.map((g) => (
-              <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
                 <span>
                   {g.gstin} <span className="text-slate-500">· {stateName(g.stateCode)}</span>
                 </span>
@@ -120,7 +120,7 @@ function TaxPanels({ kyc }: { kyc: KycApplication }) {
             <Row label="IFSC">{kyc.bank.ifsc}</Row>
           </dl>
         ) : (
-          <p className="text-sm text-slate-600">Not added yet.</p>
+          <p className="text-[13px] text-slate-600">Not added yet.</p>
         )}
       </Panel>
     </>
@@ -133,19 +133,19 @@ function Profile({ me }: { me: Me }) {
   const canKyc = me.permissions.includes(KYC_PERMISSION_READ);
   const kyc = useQuery({ queryKey: ["b2b", "kyc", token, me.currentOrgId], queryFn: () => b2b<KycApplication>("/kyc"), enabled: Boolean(org) && canKyc });
   const header = <PageHeader crumb="Business Profile" title="Business" highlight="Profile" subtitle="Your business as MusafirBaba knows it." />;
-  if (!org) return <div className="space-y-6">{header}<p className="text-sm text-slate-600">Choose a business at the top first.</p></div>;
+  if (!org) return <div className="space-y-4">{header}<p className="text-[13px] text-slate-600">Choose a business at the top first.</p></div>;
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {header}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="space-y-4">
           <OrgPanel org={org} kyc={kyc.data} />
           {kyc.data && <DetailsPanels kyc={kyc.data} />}
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {kyc.data && <TaxPanels kyc={kyc.data} />}
-          {kyc.error && <p className="text-sm text-red-700">{errorMessage(kyc.error)}</p>}
-          {!canKyc && <p className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">Registered details, GST and bank are visible to the business owner and managers.</p>}
+          {kyc.error && <p className="text-[13px] text-red-700">{errorMessage(kyc.error)}</p>}
+          {!canKyc && <p className="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-[13px] text-slate-600">Registered details, GST and bank are visible to the business owner and managers.</p>}
         </div>
       </div>
     </div>

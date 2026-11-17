@@ -30,12 +30,12 @@ export function RolesSection({ me, roles }: { me: Me; roles: Role[] }) {
       {creating && <RoleForm onDone={() => setCreating(false)} />}
       <ul className="divide-y divide-slate-100">
         {roles.map((r) => (
-          <li key={r.ref} className="flex flex-wrap items-center gap-3 py-3">
+          <li key={r.ref} className="flex flex-wrap items-center gap-3 py-2.5">
             <div className="flex-1">
               <p className="font-medium text-slate-900">
                 {r.name} <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">{r.kind === "system" ? "built-in" : "custom"}</span>
               </p>
-              <p className="text-sm text-slate-500">{r.description || `${r.permissions.length} permissions`}</p>
+              <p className="text-[13px] text-slate-500">{r.description || `${r.permissions.length} permissions`}</p>
             </div>
             {r.kind === "custom" && canManage && (
               <SmallButton tone="danger" onClick={() => remove(r)}>
@@ -81,7 +81,7 @@ function RoleForm({ onDone }: { onDone: () => void }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{group}</p>
           <div className="mt-1 grid gap-1 sm:grid-cols-2">
             {perms.map((p) => (
-              <label key={p.code} className={`flex items-start gap-2 text-sm ${p.locked ? "text-slate-400" : "text-slate-700"}`} title={p.locked ? "Not available for custom roles" : p.code}>
+              <label key={p.code} className={`flex items-start gap-2 text-[13px] ${p.locked ? "text-slate-400" : "text-slate-700"}`} title={p.locked ? "Not available for custom roles" : p.code}>
                 <input type="checkbox" className="mt-0.5" disabled={p.locked} checked={picked.includes(p.code)} onChange={() => setPicked(picked.includes(p.code) ? picked.filter((x) => x !== p.code) : [...picked, p.code])} />
                 {p.description}
               </label>

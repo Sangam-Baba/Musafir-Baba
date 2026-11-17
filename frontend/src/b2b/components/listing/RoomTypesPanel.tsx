@@ -51,7 +51,7 @@ function RoomForm({ initial, masters, onSubmit, onCancel, busy }: { initial: Dra
         {d.extraBeds.allowed && <input type="number" min={1} max={5} className={`${inputCls} w-20`} value={d.extraBeds.max} onChange={(e) => setD({ ...d, extraBeds: { allowed: true, max: Number(e.target.value) } })} />}
       </div>
       <fieldset className="sm:col-span-3">
-        <legend className="text-sm font-medium text-slate-700">Room amenities</legend>
+        <legend className="text-xs font-medium text-slate-600">Room amenities</legend>
         <div className="mt-1 grid gap-2 sm:grid-cols-4">
           {amenities.map((a) => (
             <Check key={a.key} label={a.name} checked={d.amenities.includes(a.key)} onChange={(x) => setD({ ...d, amenities: x ? [...d.amenities, a.key] : d.amenities.filter((k) => k !== a.key) })} />
@@ -59,10 +59,10 @@ function RoomForm({ initial, masters, onSubmit, onCancel, busy }: { initial: Dra
         </div>
       </fieldset>
       <div className="flex gap-2 sm:col-span-3">
-        <button type="submit" disabled={busy} className="rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+        <button type="submit" disabled={busy} className="rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white disabled:opacity-50">
           {busy ? "Saving…" : "Save room type"}
         </button>
-        <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 px-4 py-2 text-sm">
+        <button type="button" onClick={onCancel} className="rounded-lg border border-slate-200 px-3 py-1.5 text-[13px]">
           Cancel
         </button>
       </div>
@@ -103,7 +103,7 @@ export function RoomTypesPanel({ propertyId, rooms, masters, editable, onChanged
 
   return (
     <div className="space-y-3">
-      {rooms.length === 0 && editing !== "new" && <p className="text-sm text-slate-500">No room types yet — add at least one.</p>}
+      {rooms.length === 0 && editing !== "new" && <p className="text-[13px] text-slate-500">No room types yet — add at least one.</p>}
       {rooms.map((r) =>
         editing === r.id ? (
           <RoomForm key={r.id} initial={{ ...r }} masters={masters} busy={busy} onSubmit={(d) => submit(d, r)} onCancel={() => setEditing(null)} />
@@ -117,10 +117,10 @@ export function RoomTypesPanel({ propertyId, rooms, masters, editable, onChanged
             </div>
             {editable && (
               <>
-                <button onClick={() => setEditing(r.id)} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm">
+                <button onClick={() => setEditing(r.id)} className="rounded-md border border-slate-200 px-3 py-1.5 text-[13px]">
                   Edit
                 </button>
-                <button onClick={() => remove(r)} className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600">
+                <button onClick={() => remove(r)} className="rounded-md border border-red-200 px-3 py-1.5 text-[13px] text-red-600">
                   Remove
                 </button>
               </>
@@ -132,7 +132,7 @@ export function RoomTypesPanel({ propertyId, rooms, masters, editable, onChanged
         <RoomForm initial={EMPTY} masters={masters} busy={busy} onSubmit={(d) => submit(d)} onCancel={() => setEditing(null)} />
       ) : (
         editable && (
-          <button onClick={() => setEditing("new")} className="rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-700 hover:border-[#FE5300]">
+          <button onClick={() => setEditing("new")} className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-[13px] text-slate-700 hover:border-[#FE5300]">
             + Add room type
           </button>
         )

@@ -51,8 +51,8 @@ export function BranchesSection({ me, branches }: { me: Me; branches: Branch[] }
       {branches.length === 0 && <Empty text="No branches yet. Without branches, everyone works across the whole organisation." />}
       <ul className="divide-y divide-slate-100">
         {branches.map((b) => (
-          <li key={b.id} className="flex items-center gap-3 py-2">
-            <p className={`flex-1 text-sm ${b.status === "CLOSED" ? "text-slate-400 line-through" : "text-slate-900"}`}>
+          <li key={b.id} className="flex items-center gap-3 py-1.5">
+            <p className={`flex-1 text-[13px] ${b.status === "CLOSED" ? "text-slate-400 line-through" : "text-slate-900"}`}>
               {b.name}
               {b.city ? ` · ${b.city}` : ""}
             </p>

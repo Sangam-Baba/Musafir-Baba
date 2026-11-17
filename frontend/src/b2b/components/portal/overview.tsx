@@ -15,7 +15,7 @@ export function ProgressRing({ percent, label = "Completed" }: { percent: number
         <circle cx="60" cy="60" r={r} fill="none" stroke="#FE5300" strokeWidth="10" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - percent / 100)} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-slate-900">{percent}%</span>
+        <span className="text-xl font-bold text-slate-900">{percent}%</span>
         <span className="text-xs text-slate-500">{label}</span>
       </div>
     </div>
@@ -23,8 +23,8 @@ export function ProgressRing({ percent, label = "Completed" }: { percent: number
 }
 
 function StepIcon({ step, current }: { step: OnboardingStep; current: boolean }) {
-  if (step.done) return <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />;
-  if (step.waiting) return <Clock className="h-5 w-5 shrink-0 text-sky-500" />;
+  if (step.done) return <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />;
+  if (step.waiting) return <Clock className="h-4 w-4 shrink-0 text-sky-500" />;
   return <Circle className={`h-5 w-5 shrink-0 ${current ? "text-[#FE5300]" : "text-slate-300"}`} />;
 }
 
@@ -32,16 +32,16 @@ function StepIcon({ step, current }: { step: OnboardingStep; current: boolean })
 export function ProgressCard({ icon: Icon = ShieldCheck, title, text, steps, cta }: { icon?: LucideIcon; title: string; text: string; steps: OnboardingStep[]; cta?: { label: string; href: string } }) {
   const next = steps.find((s) => !s.done);
   return (
-    <section className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 lg:grid-cols-[1fr_auto_minmax(0,18rem)] lg:items-center">
+    <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 lg:grid-cols-[1fr_auto_minmax(0,18rem)] lg:items-center">
       <div className="flex gap-4">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-[#FE5300]">
-          <Icon className="h-8 w-8" />
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FE5300]">
+          <Icon className="h-7 w-7" />
         </span>
         <div>
-          <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-          <p className="mt-1 text-sm text-slate-600">{text}</p>
+          <h2 className="text-sm font-bold text-slate-900">{title}</h2>
+          <p className="mt-1 text-[13px] text-slate-600">{text}</p>
           {cta && (
-            <Link href={cta.href} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white hover:bg-[#e54b00]">
+            <Link href={cta.href} className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white hover:bg-[#e54b00]">
               {cta.label} →
             </Link>
           )}
@@ -50,7 +50,7 @@ export function ProgressCard({ icon: Icon = ShieldCheck, title, text, steps, cta
       <ProgressRing percent={percentDone(steps)} />
       <ul className="space-y-2 lg:border-l lg:border-slate-100 lg:pl-6">
         {steps.map((s) => (
-          <li key={s.key} className={`flex items-center gap-2 text-sm ${s === next ? "font-medium text-[#FE5300]" : s.done ? "text-slate-700" : "text-slate-500"}`}>
+          <li key={s.key} className={`flex items-center gap-2 text-[13px] ${s === next ? "font-medium text-[#FE5300]" : s.done ? "text-slate-700" : "text-slate-500"}`}>
             <StepIcon step={s} current={s === next} />
             {s.label}
           </li>
@@ -64,10 +64,10 @@ export function ProgressCard({ icon: Icon = ShieldCheck, title, text, steps, cta
 export function Checklist({ title, steps }: { title: string; steps: OnboardingStep[] }) {
   const done = steps.filter((s) => s.done).length;
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
+    <section className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-900">{title}</h2>
-        <span className="text-sm text-slate-500">
+        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+        <span className="text-[13px] text-slate-500">
           {done} of {steps.length} completed
         </span>
       </div>
@@ -76,7 +76,7 @@ export function Checklist({ title, steps }: { title: string; steps: OnboardingSt
       </div>
       <ul className="mt-3 divide-y divide-slate-100">
         {steps.map((s) => (
-          <li key={s.key} className="flex items-center gap-3 py-2.5 text-sm">
+          <li key={s.key} className="flex items-center gap-3 py-2 text-[13px]">
             <StepIcon step={s} current={false} />
             <span className={`flex-1 ${s.done ? "text-slate-700" : "text-slate-900"}`}>{s.label}</span>
             {s.waiting && <span className="text-xs text-sky-600">With MusafirBaba</span>}

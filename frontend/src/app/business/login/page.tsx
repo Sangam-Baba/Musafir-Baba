@@ -69,7 +69,7 @@ export default function BusinessLoginPage() {
           Sign in
         </PrimaryButton>
         <div className="text-right">
-          <Link href="/business/forgot" className="text-sm text-slate-500 hover:text-[#FE5300]">
+          <Link href="/business/forgot" className="text-[13px] text-slate-500 hover:text-[#FE5300]">
             Forgot password?
           </Link>
         </div>

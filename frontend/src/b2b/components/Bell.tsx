@@ -78,14 +78,14 @@ export function Bell({ orgId }: { orgId: string | null }) {
   return (
     <div ref={box} className="relative">
       <button onClick={() => setOpen((o) => !o)} aria-label={`Notifications${unread ? ` (${unread} unread)` : ""}`} className="relative rounded-md p-2 text-slate-600 hover:bg-slate-100">
-        <BellIcon className="h-5 w-5" />
+        <BellIcon className="h-4 w-4" />
         {unread > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-[#FE5300] px-1 text-center text-[10px] font-semibold leading-4 text-white">{unread > 99 ? "99+" : unread}</span>}
         <span title={s.text} className={`absolute bottom-1 right-1 h-2 w-2 rounded-full ring-2 ring-white ${s.dot}`} />
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-            <p className="text-sm font-semibold text-slate-900">Notifications</p>
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+            <p className="text-[13px] font-semibold text-slate-900">Notifications</p>
             {unread > 0 && !viewing && (
               <button onClick={readAll} className="text-xs text-[#FE5300] hover:underline">
                 Mark all read
@@ -94,13 +94,13 @@ export function Bell({ orgId }: { orgId: string | null }) {
           </div>
           <div className="max-h-96 overflow-y-auto">
             {list.isLoading ? (
-              <p className="px-4 py-6 text-center text-sm text-slate-500">Loading…</p>
+              <p className="px-3 py-5 text-center text-[13px] text-slate-500">Loading…</p>
             ) : (list.data?.data ?? []).length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-slate-500">Nothing yet.</p>
+              <p className="px-3 py-5 text-center text-[13px] text-slate-500">Nothing yet.</p>
             ) : (
               list.data?.data.map((n) => (
-                <button key={n.id} onClick={() => openItem(n)} className={`block w-full border-b border-slate-50 px-4 py-3 text-left hover:bg-slate-50 ${n.read ? "" : "bg-orange-50/40"}`}>
-                  <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
+                <button key={n.id} onClick={() => openItem(n)} className={`block w-full border-b border-slate-50 px-3 py-2.5 text-left hover:bg-slate-50 ${n.read ? "" : "bg-orange-50/40"}`}>
+                  <p className="flex items-center gap-2 text-[13px] font-medium text-slate-900">
                     {!n.read && <span className="h-2 w-2 shrink-0 rounded-full bg-[#FE5300]" />}
                     {n.title}
                   </p>
@@ -110,7 +110,7 @@ export function Bell({ orgId }: { orgId: string | null }) {
               ))
             )}
           </div>
-          <p className="flex items-center gap-1.5 border-t border-slate-100 px-4 py-2 text-[11px] text-slate-500">
+          <p className="flex items-center gap-1.5 border-t border-slate-100 px-3 py-1.5 text-[11px] text-slate-500">
             <span className={`h-2 w-2 rounded-full ${s.dot}`} /> {s.text}
           </p>
         </div>

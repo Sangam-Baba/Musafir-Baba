@@ -68,16 +68,16 @@ export function GstRegistrationsSection({ app, canEdit, onChanged }: { app: KycA
         </Link>
         .
       </p>
-      <ul className="divide-y divide-slate-100 text-sm">
+      <ul className="divide-y divide-slate-100 text-[13px]">
         {main && (
-          <li className="flex flex-wrap items-center gap-3 py-2">
+          <li className="flex flex-wrap items-center gap-3 py-1.5">
             <span className="min-w-40 font-medium text-slate-800">{stateName(main.slice(0, 2))}</span>
             <span className="font-mono text-slate-700">{main}</span>
             <span className="text-xs text-slate-500">main GSTIN (checked with your application)</span>
           </li>
         )}
         {app.gstRegistrations.map((g) => (
-          <li key={g.id} className="flex flex-wrap items-center gap-3 py-2">
+          <li key={g.id} className="flex flex-wrap items-center gap-3 py-1.5">
             <span className="min-w-40 font-medium text-slate-800">{stateName(g.stateCode)}</span>
             <span className="font-mono text-slate-700">{g.gstin}</span>
             <span className={`rounded-full px-2 py-0.5 text-xs ${STATUS[g.status].cls}`}>{STATUS[g.status].text}</span>

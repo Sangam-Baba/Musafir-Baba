@@ -32,18 +32,18 @@ export default function BusinessHome() {
       live = false;
     };
   }, [token, viewing]);
-  if (visitor === null) return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading…</div>;
+  if (visitor === null) return <div className="flex min-h-screen items-center justify-center text-[13px] text-slate-500">Loading…</div>;
   if (visitor) return <Landing />;
   return <BusinessShell>{(me) => <Overview me={me} />}</BusinessShell>;
 }
 
 function NoBusiness({ me }: { me: Me }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+    <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center">
       <Building2 className="mx-auto h-10 w-10 text-[#FE5300]" />
-      <p className="mt-3 font-semibold text-slate-900">{me.memberships.length === 0 ? "You're not part of a business yet" : "Choose a business at the top to start"}</p>
+      <p className="text-sm mt-3 font-semibold text-slate-900">{me.memberships.length === 0 ? "You're not part of a business yet" : "Choose a business at the top to start"}</p>
       {me.memberships.length === 0 && (
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-[13px] text-slate-600">
           Ask your business&apos;s owner for an invitation, or{" "}
           <Link href="/business/register" className="font-medium text-[#FE5300] hover:underline">
             register your hotel
@@ -57,13 +57,13 @@ function NoBusiness({ me }: { me: Me }) {
 
 function HelpCard() {
   return (
-    <section className="rounded-xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white p-5">
+    <section className="rounded-lg border border-orange-100 bg-gradient-to-br from-orange-50 to-white p-4">
       <div className="flex items-center gap-3">
-        <Headphones className="h-6 w-6 text-[#FE5300]" />
-        <h2 className="font-semibold text-slate-900">Need assistance?</h2>
+        <Headphones className="h-5 w-5 text-[#FE5300]" />
+        <h2 className="text-sm font-semibold text-slate-900">Need assistance?</h2>
       </div>
-      <p className="mt-2 text-sm text-slate-600">Our partner team helps with onboarding, verification and listings.</p>
-      <p className="mt-3 text-sm">
+      <p className="mt-2 text-[13px] text-slate-600">Our partner team helps with onboarding, verification and listings.</p>
+      <p className="mt-3 text-[13px]">
         <a href={`mailto:${SUPPORT.email}`} className="font-medium text-[#FE5300] hover:underline">
           {SUPPORT.email}
         </a>
@@ -72,7 +72,7 @@ function HelpCard() {
           {SUPPORT.phone}
         </a>
       </p>
-      <Link href="/business/help" className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white hover:bg-[#e54b00]">
+      <Link href="/business/help" className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#FE5300] px-3 py-1.5 text-[13px] font-medium text-white hover:bg-[#e54b00]">
         <BookOpen className="h-4 w-4" /> Help & FAQs
       </Link>
     </section>
@@ -90,7 +90,7 @@ function Overview({ me }: { me: Me }) {
   const unread = useQuery({ queryKey: ["b2b", "notifications", "count", me.currentOrgId, token], queryFn: () => b2b<{ count: number }>("/notifications/unread-count"), enabled: Boolean(token) });
 
   const header = <PageHeader title="Welcome," highlight={`${me.user.name.split(" ")[0]}!`} subtitle={current ? `Your MusafirBaba Business workspace · ${current.displayName}` : "Your MusafirBaba Business workspace"} />;
-  if (!current) return <div className="space-y-6">{header}<NoBusiness me={me} /></div>;
+  if (!current) return <div className="space-y-4">{header}<NoBusiness me={me} /></div>;
 
   const properties = props.data?.data ?? [];
   const live = properties.filter((p) => p.status === "LIVE").length;
@@ -101,7 +101,7 @@ function Overview({ me }: { me: Me }) {
   const count = (q: { data?: unknown; isLoading: boolean }, n: number | undefined) => (q.isLoading ? "…" : (n ?? 0));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {header}
       {vSteps && !verified && (
         <ProgressCard
@@ -121,8 +121,8 @@ function Overview({ me }: { me: Me }) {
         />
       )}
       {verified && live > 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
-          <CheckCircle2 className="h-5 w-5" /> {current.displayName} is verified and {live === 1 ? "1 listing is" : `${live} listings are`} live on MusafirBaba.
+        <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
+          <CheckCircle2 className="h-4 w-4" /> {current.displayName} is verified and {live === 1 ? "1 listing is" : `${live} listings are`} live on MusafirBaba.
         </div>
       )}
 
@@ -134,12 +134,12 @@ function Overview({ me }: { me: Me }) {
         {can("kyc.application.read") && !can("hotel-catalog.property.read") && <StatCard icon={ShieldCheck} tone="amber" label="Verification" value={verified ? "Verified" : "Pending"} href="/business/verification" />}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
-        <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+        <div className="space-y-4">
           {vSteps && !verified && <Checklist title="Onboarding checklist" steps={vSteps} />}
           {showListing && <Checklist title="Get your first listing live" steps={lSteps} />}
           {(!vSteps || verified) && !showListing && (
-            <section className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2">
+            <section className="grid gap-3 rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4 sm:grid-cols-2">
               <Link href="/business/properties" className="rounded-lg border border-slate-200 p-4 hover:border-[#FE5300]">
                 <p className="font-medium text-slate-900">My Properties</p>
                 <p className="text-xs text-slate-500">Edit details, rooms, photos and where they're sold.</p>
@@ -153,14 +153,14 @@ function Overview({ me }: { me: Me }) {
         </div>
         <div className="space-y-4">
           <HelpCard />
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <Link href="/business/security" className="rounded-xl border border-slate-200 bg-white p-4 hover:border-[#FE5300]">
-              <ShieldCheck className="h-5 w-5 text-[#FE5300]" />
+          <div className="grid grid-cols-2 gap-3 text-[13px]">
+            <Link href="/business/security" className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4 hover:border-[#FE5300]">
+              <ShieldCheck className="h-4 w-4 text-[#FE5300]" />
               <p className="mt-2 font-medium text-slate-900">Two-step login</p>
               <p className="text-xs text-slate-500">{me.mfa.totp === "on" ? "On" : "Turn it on"}</p>
             </Link>
-            <Link href="/business/register" className="rounded-xl border border-slate-200 bg-white p-4 hover:border-[#FE5300]">
-              <Plus className="h-5 w-5 text-[#FE5300]" />
+            <Link href="/business/register" className="rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4 hover:border-[#FE5300]">
+              <Plus className="h-4 w-4 text-[#FE5300]" />
               <p className="mt-2 font-medium text-slate-900">Add business</p>
               <p className="text-xs text-slate-500">Another company (PAN)</p>
             </Link>

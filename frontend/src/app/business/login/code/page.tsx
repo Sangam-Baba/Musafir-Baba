@@ -74,13 +74,13 @@ export default function EmailCodeLoginPage() {
         </form>
       ) : (
         <form onSubmit={verify} className="space-y-4">
-          <p className="text-sm text-slate-600">If {email} has an account, a code is on its way. It works once and expires in 10 minutes.</p>
+          <p className="text-[13px] text-slate-600">If {email} has an account, a code is on its way. It works once and expires in 10 minutes.</p>
           <Field label="Code" value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" autoFocus required />
           <FormError message={error} />
           <PrimaryButton type="submit" busy={busy}>
             Sign in
           </PrimaryButton>
-          <button type="button" onClick={() => setSent(false)} className="w-full text-center text-sm text-slate-500 hover:text-[#FE5300]">
+          <button type="button" onClick={() => setSent(false)} className="w-full text-center text-[13px] text-slate-500 hover:text-[#FE5300]">
             Use a different email or send again
           </button>
         </form>

@@ -19,7 +19,7 @@ export default function SecurityPage() {
 function Settings({ me }: { me: Me }) {
   const [tab, setTab] = useState<Tab>("account");
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader crumb="Settings & Security" title="Settings &" highlight="Security" subtitle="Your account, sign-in security and notifications." />
       <Tabs<Tab>
         value={tab}
@@ -31,13 +31,13 @@ function Settings({ me }: { me: Me }) {
         ]}
       />
       {tab === "account" && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <AccountPanel me={me} />
           <TwoStepPanel status={me.mfa.totp} left={me.mfa.recoveryCodesLeft} />
         </div>
       )}
       {tab === "security" && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           <TwoStepPanel status={me.mfa.totp} left={me.mfa.recoveryCodesLeft} />
           <SignOutEverywherePanel />
         </div>

@@ -18,43 +18,43 @@ export default function HelpPage() {
   return (
     <BusinessShell>
       {() => (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <PageHeader crumb="Help & Support" title="Help &" highlight="Support" subtitle="We're here to help with onboarding, verification and your listings." />
           <div className="grid gap-4 md:grid-cols-3">
-            <a href={`mailto:${SUPPORT.email}`} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 hover:shadow-sm">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#FE5300]">
-                <Mail className="h-6 w-6" />
+            <a href={`mailto:${SUPPORT.email}`} className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 hover:shadow-sm">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-[#FE5300]">
+                <Mail className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-sm text-slate-500">Email us</span>
-                <span className="block font-semibold text-slate-900">{SUPPORT.email}</span>
+                <span className="block text-[13px] text-slate-500">Email us</span>
+                <span className="text-sm block font-semibold text-slate-900">{SUPPORT.email}</span>
               </span>
             </a>
-            <a href={SUPPORT.phoneHref} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5 hover:shadow-sm">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <Phone className="h-6 w-6" />
+            <a href={SUPPORT.phoneHref} className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4 hover:shadow-sm">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                <Phone className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-sm text-slate-500">Call us</span>
-                <span className="block font-semibold text-slate-900">{SUPPORT.phone}</span>
+                <span className="block text-[13px] text-slate-500">Call us</span>
+                <span className="text-sm block font-semibold text-slate-900">{SUPPORT.phone}</span>
               </span>
             </a>
-            <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                <Clock className="h-6 w-6" />
+            <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-4">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+                <Clock className="h-5 w-5" />
               </span>
               <span>
-                <span className="block text-sm text-slate-500">Support hours</span>
-                <span className="block font-semibold text-slate-900">{SUPPORT.hours}</span>
+                <span className="block text-[13px] text-slate-500">Support hours</span>
+                <span className="text-sm block font-semibold text-slate-900">{SUPPORT.hours}</span>
               </span>
             </div>
           </div>
           <Panel title="Frequently asked questions">
             <div className="divide-y divide-slate-100">
               {FAQ.map(([q, a]) => (
-                <details key={q} className="group py-3">
+                <details key={q} className="group py-2.5">
                   <summary className="cursor-pointer list-none font-medium text-slate-900 group-open:text-[#FE5300]">{q}</summary>
-                  <p className="mt-2 text-sm text-slate-600">{a}</p>
+                  <p className="mt-2 text-[13px] text-slate-600">{a}</p>
                 </details>
               ))}
             </div>
