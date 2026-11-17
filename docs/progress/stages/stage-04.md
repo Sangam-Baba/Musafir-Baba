@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | IN_PROGRESS |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | A · hotels |
 | **Owner(s)** | |
 | **Started** | 2026-11-17 |
@@ -41,24 +41,25 @@
 | S04-T11 | CSV import: template, validation report, dry run, apply (≤ 50k rows) `POST /hotel/calendar-imports` | §3.7 | DONE | AI (Claude) | | 7 ✅ | Own CSV reader / writer (`domain/csv.js` — quotes, CRLF, BOM; written cells never start a spreadsheet formula), no new package. One row = one night of a room type, optionally of a plan; blank = no change; columns `date, room_type, rate_plan, rooms, stop_sell, price / price_1…price_30, min_stay, max_stay, closed_to_arrival, closed_to_departure` (+ ignored `*_name`, `note`); room type / plan by id or name; rupees → paise. `GET /hotel/properties/:id/calendar-imports/template` (the property's room types and plans with names). `POST /hotel/properties/:id/calendar-imports?dryRun&requestId&confirmBigChange` (text/csv, ≤ 4 MB, ≤ 50 000 rows, 10 files / hour / person): always checked first — every problem with line and column (≤ 1000), **nothing written while any remains**; dry run (default) lists nights, refused room reductions, > 50 % moves; apply needs a request id (repeat → first result), confirms big moves, is logged as `IMPORT` with the values before (**undo** like a bulk edit), stores `inventory.changed`. Same guarded room writes and in-MongoDB price merge as the bulk edit (stop-sell applies even where a room reduction is refused). Scoped per property (plan said `/hotel/calendar-imports`). A 50 000-row timing check is left for the load tests (Stage 16) |
 | S04-T12 | Admin: read-only calendar for any property, override with reason (audited) — API + admin page | §3.13 | DONE | AI (Claude) | | 3 ✅ + tsc ✅ | `createAdminCalendarService`: `GET /admin/properties/:id/calendar?from&to` and `GET …/calendar/changes` (`hotel-inventory.admin.read` — Hotels team, Support, Super Admin) and `POST /admin/properties/:id/calendar/override` (`hotel-inventory.admin.override` — Super Admin): the hotel's own bulk change (same guards, preview, > 50 % confirmation, repeat-safe, undo) + a written reason (≥ 5 characters), logged as `OVERRIDE` by `staff:<id>` — the hotel sees who and why in its change history and can undo it; never on a company the staff member belongs to (`OWN_ORGANISATION`). The property and its active room types come from hotel-catalog's own admin read. Path `calendar/override` instead of the plan's `calendar-override`: a one-segment name would be caught by Stage 03's `POST /admin/properties/:id/:action` (left untouched). The member calendar read and bulk edit were split internally (`calendarOf`, `editWith`) so admins reuse them — behaviour unchanged (all calendar tests green). Admin page: "Rooms & prices" panel on `/admin/b2b/properties/[id]` — 14-night grid (rooms, free, 2-guest price per plan, stop-sell in red) and a rooms / stop-sell override with reason, preview then apply (prices via the API). Shared types `frontend/src/b2b/inventory.ts`. Not clicked through in a browser by me |
 | S04-T13 | Business area: cancellation policies, rate plans and the calendar screen (grid, ranges + weekdays, bulk edit with preview, undo, live updates) | §3.5 | DONE | AI (Claude) | | tsc ✅ | New page `/business/properties/[id]/rates` ("Rooms & rates" button on the property page, with `hotel-inventory.calendar.read`): tabs **Calendar** (30 / 60 / 90 nights from any date; per room type rooms + free, per plan the price for 1–4 guests, rule marks — min / max stay, no arrival / departure — stop-sell red, past grey; sticky first column; click a cell → editor for that night; "Change many nights": target, range, weekdays, rooms / stop-sell or prices per number of guests (₹, before tax) / rules, **preview** (nights, kept because booked, past skipped, > 50 % list with confirm) → apply → **undo last change**; **live**: follows `availability:property:{id}` and refreshes on `availability:changed`, every minute when not live), **Rate plans** (add / edit / pause / archive; follow another plan + ₹ / %), **Cancellation policies** (rules, no-show, non-refundable, guest sentence), **Import file** (template, check — problems by line / column — apply with confirmation), **Changes** (who / when / why incl. MusafirBaba overrides; undo the latest). Problems from the server shown as plain lines. Read-only for staff without manage and during view-as. The realtime hook got an optional `rooms` list (none = exactly as before — bell unchanged). Not virtualised: a plain scrolling grid (≤ 90 nights) is fast enough for now. Checked with DevTools-protocol renders at 1440 / 390 px (sample API data); not clicked through against the real backend by me |
-| S04-T14 | Mandatory test suite: availability vs reference, 100 parallel holds on 3 rooms, all-or-nothing, release idempotent, sweeper, validator, allotment reduction below booked; isolation | §9 | TODO | | | | |
+| S04-T14 | Mandatory test suite: availability vs reference, 100 parallel holds on 3 rooms, all-or-nothing, release idempotent, sweeper, validator, allotment reduction below booked; isolation | §9 | DONE | AI (Claude) | | 13 ✅ | `stage-04-mandatory.test.js`: tenant isolation for all six `inv_` collections (unscoped find / count / update / delete / aggregate refused; scoped reads see one hotel), every `inv_` collection classified (none platform-wide). The header maps every other mandatory test to its file (availability, concurrency, crash injection, validator, allotment reduction, fat-finger protection, signals, property limits) |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 
 ## Definition of Done (copied from the stage file)
 
-- [ ] Hotel sets 2 room types × 2 rate plans with policies; loads 90 days via calendar and CSV
-- [ ] Availability correct in all edge cases
-- [ ] Hold primitives pass the concurrency suite
-- [ ] Calendar shows a test booking appear live
+- [x] Hotel sets 2 room types × 2 rate plans with policies; loads 90 days via calendar and CSV (server: inventory-rate-plans / -calendar-edit / -calendar-import tests; screens S04-T13 — owner to try in the browser)
+- [x] Availability correct in all edge cases (inventory-availability.test.js — random calendars vs a simple reference)
+- [x] Hold primitives pass the concurrency suite (inventory-holds.test.js — 100 parallel holds on 3 rooms)
+- [x] Calendar shows a test booking appear live (inventory-signals.test.js — hold → event → relay → `availability:changed`; the screen follows that room — owner to see it in the browser once bookings exist)
 
 ## Mandatory tests (copied from the stage file)
 
-- [ ] Availability property test vs naive reference (random calendars/restrictions/stays)
-- [ ] Concurrency: 100 parallel `holdRooms` on 3 rooms → exactly 3 succeed; counts consistent
-- [ ] Multi-night all-or-nothing; release idempotent; sweeper returns rooms; validator rejects `booked + held > total`
-- [ ] Allotment reduction below booked rejected with dates listed
+- [x] Availability property test vs naive reference (random calendars/restrictions/stays) — inventory-availability.test.js
+- [x] Concurrency: 100 parallel `holdRooms` on 3 rooms → exactly 3 succeed; counts consistent — inventory-holds.test.js
+- [x] Multi-night all-or-nothing; release idempotent; sweeper returns rooms; validator rejects `booked + held > total` — inventory-holds / -safety-net / -days tests
+- [x] Allotment reduction below booked rejected with dates listed — inventory-calendar-edit / -calendar-import / -admin-calendar tests
 
 ## Left out on purpose in this stage
 
-- (none yet)
+- DEF-026 50 000-row import timing (Stage 16 load tests) · DEF-027 virtualised grid · DEF-028 change-log archiving (Stage 15) · DEF-029 booking-entry invariant and cancellation event (Stage 08)
+- **Human review required** before go-live (AGENTS.md — hotel-inventory): `night-steps.js`, `hold.service.js`, `safety-net.js`, `inventory-day.model.js` (validator), `calendar-writes.js`
