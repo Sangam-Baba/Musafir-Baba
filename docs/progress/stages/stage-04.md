@@ -17,7 +17,7 @@
 
 | Topic | Default |
 | --- | --- |
-| Allotment model (D12) | **Allotment**: per night the hotel gives MusafirBaba a number of rooms (`total`) to sell; it must not sell those elsewhere (contract — L4). Channel managers later (Phase C) |
+| Allotment model (D12) | **Confirmed by owner (17 Nov 2026)**: no other channels for now — whatever a hotel lists is fully available to MusafirBaba; overlaps with other channels are the hotel's job, marked by hand in its calendar (reduce rooms or stop-sell). Channel managers later (Phase C); contract wording L4 still open |
 | Calendar window | 365 days ahead, extended nightly. A new night starts with **0 rooms**, so nothing is sellable until the hotel sets its rooms |
 | Prices | Rupees in the screens, stored as integer paise, **tax-exclusive** (GST comes in Stage 05) |
 | Timers | Hold 15 min, one extension of +10 min, sweeper every 30 s (plan `05-…` §6) |

@@ -12,7 +12,7 @@
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 04 — Inventory & rates calendar (in progress) · Stages 00–03 awaiting owner sign-off |
 | **Current task(s)** | S04-T11 — CSV import (S04-T01 to T10 done) |
-| **Next up** | S04-T12 admin calendar → S04-T13 screens · owner: sign off Stages 00–03 (fill in Finished in each `stages/stage-NN.md`), confirm D12 (allotment) |
+| **Next up** | S04-T12 admin calendar → S04-T13 screens · owner: sign off Stages 00–03 (fill in Finished in each `stages/stage-NN.md`) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
