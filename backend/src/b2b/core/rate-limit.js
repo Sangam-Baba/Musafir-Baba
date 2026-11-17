@@ -6,6 +6,8 @@
  * restarts; documents expire by TTL. Once a key is over its limit, the process remembers
  * it until the window ends, so blocked callers cause no further database writes.
  */
+import { timingSafeEqual } from 'node:crypto';
+
 import { createCache } from './cache.js';
 import { b2bMongoose } from './db/connection.js';
 import { defineModel } from './db/model.js';
@@ -62,15 +64,41 @@ export function createRateLimiter(options) {
   return { consume, name: options.name };
 }
 
+const IP = /^[0-9a-fA-F:.]{3,45}$/;
+/** @type {Buffer | null} */
+let relayKey = null;
+
+/**
+ * The website's login relay (musafirbaba.com → this API, server to server) passes the visitor's IP in
+ * `X-B2B-Client-IP`. It is believed only when the request also carries `X-B2B-Relay-Key` = `B2B_RELAY_SECRET`
+ * (≥ 32 characters, compared in constant time); without the secret configured nothing is trusted.
+ * @param {string | undefined} secret
+ */
+export function trustLoginRelay(secret) {
+  relayKey = secret && secret.length >= 32 ? Buffer.from(secret) : null;
+}
+
+/** @param {import('express').Request} req */
+function fromRelay(req) {
+  const key = req.get('x-b2b-relay-key');
+  const ip = req.get('x-b2b-client-ip');
+  if (!relayKey || !key || !ip || !IP.test(ip)) return null;
+  const given = Buffer.from(key);
+  return given.length === relayKey.length && timingSafeEqual(given, relayKey) ? ip : null;
+}
+
 /**
  * The client's IP. Production traffic reaches the backend only through the Cloudflare tunnel
- * (container bound to localhost), so `CF-Connecting-IP` is trusted. The existing app's
- * `trust proxy` setting is NOT changed.
+ * (container bound to localhost), so `CF-Connecting-IP` is trusted — except for the login relay, whose
+ * visitor IP is used when it proves itself with the shared secret. The existing app's `trust proxy`
+ * setting is NOT changed.
  * @param {import('express').Request} req
  */
 export function clientIp(req) {
+  const relayed = fromRelay(req);
+  if (relayed) return relayed;
   const cf = req.get('cf-connecting-ip');
-  if (cf && /^[0-9a-fA-F:.]{3,45}$/.test(cf)) return cf;
+  if (cf && IP.test(cf)) return cf;
   return req.socket.remoteAddress ?? 'unknown';
 }
 

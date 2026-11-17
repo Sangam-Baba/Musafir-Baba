@@ -19,6 +19,7 @@ import { notFoundHandler, problemHandler } from '../core/http/problem.js';
 import { requestTimeout, securityHeaders } from '../core/http/protection.js';
 import { requestId } from '../core/http/request-id.js';
 import { logger as defaultLogger } from '../core/logger.js';
+import { trustLoginRelay } from '../core/rate-limit.js';
 import { readSignalsSince } from '../core/realtime/signals.js';
 import { createStreamHub } from '../core/realtime/stream.js';
 import { createIdentity } from './identity.js';
@@ -91,6 +92,7 @@ export function createB2BRouter(options = {}) {
   const log = options.logger ?? defaultLogger;
   const clock = options.clock ?? systemClock;
   assertRegisteredModelsAllowed();
+  trustLoginRelay(env.B2B_RELAY_SECRET); // the website's login relay may pass the visitor's IP (rate limits)
   const hub =
     options.hub ??
     createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });

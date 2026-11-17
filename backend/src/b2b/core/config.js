@@ -12,6 +12,8 @@ const ConfigSchema = z.object({
   B2B_BACKGROUND: z.enum(['true', 'false']).default('true'),
   /** Signs business-user tokens. Separate from the existing JWT secrets on purpose. Business login is unavailable until set. */
   B2B_AUTH_SECRET: z.string().min(32, 'B2B_AUTH_SECRET must be at least 32 characters').optional(),
+  /** Shared with the website's login relay (Vercel) so the API can use the visitor's real IP for rate limits. */
+  B2B_RELAY_SECRET: z.string().min(32, 'B2B_RELAY_SECRET must be at least 32 characters').optional(),
   /** 'log' (default) writes emails to the log; 'resend' really sends them (production only). */
   B2B_EMAIL_MODE: z.enum(['log', 'resend']).default('log'),
   /** Sender address for B2B emails, e.g. "MusafirBaba Business <business@musafirbaba.com>". */

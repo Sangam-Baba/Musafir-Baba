@@ -6,6 +6,16 @@ import { useBusinessSession } from "./session-store";
 
 export const B2B_API: string = process.env.NEXT_PUBLIC_B2B_API_URL ?? `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/v1`;
 
+/**
+ * Sign-in calls (they set or read the HttpOnly refresh cookie) go through the website's own login relay
+ * (`app/api/v1/[...path]/route.ts`) when the API lives on another site than the website — so the cookie belongs to
+ * the website and browsers keep sending it. Switched on in production with NEXT_PUBLIC_B2B_AUTH_RELAY=true; locally the
+ * website and API are the same site, so calls go straight to the API.
+ */
+const AUTH_RELAY = process.env.NEXT_PUBLIC_B2B_AUTH_RELAY === "true";
+export const RELAYED_PATH = /^\/(auth\/[a-z0-9-]+(\/[a-z0-9-]+)*|registrations\/hotel|invitations\/accept)$/;
+const baseFor = (path: string) => (AUTH_RELAY && RELAYED_PATH.test(path.split("?")[0] ?? "") ? "/api/v1" : B2B_API);
+
 export class B2BError extends Error {
   constructor(
     public status: number,
@@ -23,7 +33,7 @@ async function send<T>(path: string, opts: Options): Promise<T> {
   const headers: Record<string, string> = { "X-B2B-Auth": "1", ...(opts.headers ?? {}) };
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
   if (opts.token) headers.Authorization = `Bearer ${opts.token}`;
-  const res = await fetch(`${B2B_API}${path}`, {
+  const res = await fetch(`${baseFor(path)}${path}`, {
     method: opts.method ?? "GET",
     headers,
     credentials: "include",

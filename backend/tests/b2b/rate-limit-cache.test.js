@@ -6,7 +6,7 @@ import { createCache } from '../../src/b2b/core/cache.js';
 import { runMigrations } from '../../src/b2b/core/db/migrations.js';
 import { problemHandler } from '../../src/b2b/core/http/problem.js';
 import { createLogger } from '../../src/b2b/core/logger.js';
-import { clientIp, createRateLimiter, RATE_LIMITS_COLLECTION, rateLimit } from '../../src/b2b/core/rate-limit.js';
+import { clientIp, createRateLimiter, RATE_LIMITS_COLLECTION, rateLimit, trustLoginRelay } from '../../src/b2b/core/rate-limit.js';
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { startServer } from './helpers/http.js';
 import { startMongo } from './helpers/mongo.js';
@@ -110,5 +110,23 @@ describe('clientIp', () => {
     expect(clientIp(req({ 'cf-connecting-ip': '2001:db8::1' }))).toBe('2001:db8::1');
     expect(clientIp(req({ 'cf-connecting-ip': '1.2.3.4, 5.6.7.8' }))).toBe('10.0.0.5'); // malformed → ignored
     expect(clientIp(req({}))).toBe('10.0.0.5');
+  });
+
+  it("the login relay on musafirbaba.com: its visitor IP is used only with the shared secret (anyone else can't fake it)", () => {
+    const secret = 'relay-secret-'.padEnd(40, 'x');
+    const relayed = { 'cf-connecting-ip': '76.76.21.9', 'x-b2b-client-ip': '203.0.113.50' };
+    trustLoginRelay(secret);
+    try {
+      expect(clientIp(req({ ...relayed, 'x-b2b-relay-key': secret }))).toBe('203.0.113.50');
+      expect(clientIp(req({ ...relayed, 'x-b2b-relay-key': `${secret}-wrong` }))).toBe('76.76.21.9');
+      expect(clientIp(req({ ...relayed }))).toBe('76.76.21.9');
+      expect(clientIp(req({ 'x-b2b-relay-key': secret, 'x-b2b-client-ip': '1.2.3.4, 5.6.7.8' }))).toBe('10.0.0.5'); // malformed → ignored
+    } finally {
+      trustLoginRelay(undefined);
+    }
+    expect(clientIp(req({ ...relayed, 'x-b2b-relay-key': secret }))).toBe('76.76.21.9'); // no secret configured → never trusted
+    trustLoginRelay('short');
+    expect(clientIp(req({ ...relayed, 'x-b2b-relay-key': 'short' }))).toBe('76.76.21.9'); // a weak secret is ignored
+    trustLoginRelay(undefined);
   });
 });

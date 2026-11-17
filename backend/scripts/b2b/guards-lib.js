@@ -13,11 +13,14 @@ export const FREE_PATHS = [
   /^docs\/adr\//,
   /^docs\/progress\//,
   /^docs\/existing-system-map\.md$/,
+  /^docs\/go-live\//, // go-live runbooks for the B2B releases
   /^\.github\/workflows\/b2b-[a-z0-9-]+\.yml$/,
   // new frontend code lives only in new folders (docs/plan/12-… §2); existing frontend files stay off-limits
   /^frontend\/src\/app\/business\//,
   /^frontend\/src\/app\/admin\/b2b\//,
   /^frontend\/src\/b2b\//,
+  // the business login relay (D35): must sit at /api/v1 on the website so the sign-in cookie path matches; new folder
+  /^frontend\/src\/app\/api\/v1\//,
 ];
 
 /** One-time: the plan moved from `planning folder/` to `docs/plan/` — only deletions there are allowed. */

@@ -17,16 +17,17 @@ calendars. **Nothing can be booked or paid yet** (Stages 05–08).
 - [ ] Owner checks O1, O2, O4, O5 (`docs/existing-system-map.md` §9).
 - [ ] A fresh production database backup exists.
 
-## 1. Give the API an address on musafirbaba.com (required)
+## 1. Sign-in across two sites: the login relay (decision D35)
 
-The business sign-in keeps hotels logged in with a `SameSite=Strict` cookie, which browsers only send when the website
-and the API are the **same site**. Today the API is at `musafirbabaserver.3mongoose.online` — a different site, so
-hotels would be signed out on every reload and every 15 minutes (Safari blocks cross-site cookies anyway).
+The API stays on `musafirbabaserver.3mongoose.online`; the website is `musafirbaba.com` — two different sites, so browsers
+wouldn't send the API's strict sign-in cookie. Instead, **only the sign-in calls** (login, email code, two-step,
+refresh, sign-out, hotel registration, accepting an invitation) go through a small relay on the website
+(`frontend/src/app/api/v1/[...path]/route.ts`, a Vercel function). The cookie then belongs to `musafirbaba.com` and
+stays HttpOnly + strict; everything else (calendar, uploads, live updates) still goes straight to the API.
 
-- Add a hostname **`api.musafirbaba.com`** that reaches the **same** backend (Cloudflare tunnel: new public hostname →
-  the same service as today, e.g. `http://localhost:8000`). The existing hostname stays as it is — the existing
-  website and apps keep using it.
-- Check: `curl -s -o /dev/null -w "%{http_code}" https://api.musafirbaba.com/` → `200`.
+Generate one more secret and keep it: `openssl rand -base64 48` → **`B2B_RELAY_SECRET`** (the same value on Vercel and on
+the server). It lets the API see the visitor's real IP behind the relay (rate limits, activity log); nobody without it
+can fake an IP.
 
 ## 2. Merge the code
 
@@ -55,6 +56,7 @@ B2B_FILE_STORAGE=r2
 B2B_MEDIA_BASE_URL=https://cdn.musafirbaba.com
 B2B_EMAIL_MODE=resend
 B2B_EMAIL_FROM=MusafirBaba Business <business@musafirbaba.com>
+B2B_RELAY_SECRET=<third secret, same as on Vercel>
 ```
 
 - `B2B_FILE_STORAGE=r2` uses the existing `R2_*` settings already in this file (documents under `b2b-private/`, photos
@@ -78,7 +80,7 @@ Only new prefixed collections and indexes are created (`id_`, `org_`, `acl_`, `k
 
 Set `B2B_ENABLED=true` in the `.env`, then `docker compose up -d`.
 
-- Check: `curl -s https://api.musafirbaba.com/api/v1/health` → `"status":"ok"` (database up, background running).
+- Check: `curl -s https://musafirbabaserver.3mongoose.online/api/v1/health` → `"status":"ok"` (database up, background running).
 - Existing smoke checks again (step 2).
 
 ## 6. First MusafirBaba admin
@@ -94,10 +96,19 @@ After that, Super Admins give other staff their B2B roles in the admin pages.
 
 ## 7. Frontend (Vercel)
 
-- Project → Settings → Environment Variables (Production):
-  `NEXT_PUBLIC_B2B_API_URL=https://api.musafirbaba.com/api/v1` → redeploy (or it deploys with the merge).
+Project → Settings → Environment Variables (Production), then redeploy (or it deploys with the merge):
+
+| Name | Value | Visible to the browser? |
+| --- | --- | --- |
+| `NEXT_PUBLIC_B2B_API_URL` | `https://musafirbabaserver.3mongoose.online/api/v1` | yes |
+| `NEXT_PUBLIC_B2B_AUTH_RELAY` | `true` | yes |
+| `B2B_UPSTREAM_URL` | `https://musafirbabaserver.3mongoose.online/api/v1` | **no** (server only) |
+| `B2B_RELAY_SECRET` | the third secret (same as the server) | **no** (server only) |
+
 - Google Maps key (Google Cloud Console): allow `https://musafirbaba.com/*` and `https://www.musafirbaba.com/*` and keep
   the *Maps JavaScript API* enabled (the location pin; without it hotels type latitude / longitude).
+- Check: `curl -s -X POST https://musafirbaba.com/api/v1/auth/refresh -H "X-B2B-Auth: 1"` → `401 REFRESH_INVALID`
+  (the relay reaches the API); `curl -s -X POST https://musafirbaba.com/api/v1/files/x` → `404`.
 
 ## 8. Try it end to end
 
@@ -106,7 +117,7 @@ After that, Super Admins give other staff their B2B roles in the admin pages.
 3. Admin: `/admin/b2b` → KYC queue → verify documents → approve.
 4. Hotel: add a property (all steps, room types, photos) → submit → admin approves the listing.
 5. Hotel: Rooms & rates → add a cancellation policy, a rate plan, set rooms and prices for 30 nights.
-6. Reload the page while signed in — you stay signed in (confirms step 1).
+6. Reload the page while signed in — you stay signed in (confirms the login relay, step 1).
 
 ## 9. Watch, and how to roll back
 
