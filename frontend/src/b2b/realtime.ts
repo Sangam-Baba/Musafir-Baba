@@ -11,7 +11,7 @@ export type RealtimeStatus = "connecting" | "live" | "reconnecting" | "offline";
 export type RealtimeMessage = { event: string; room?: string; data?: Record<string, unknown> };
 
 type Options = {
-  /** a token for each (re)connection; `expired` = the last one was refused (renew it); null = can't connect */
+  /** a token for each (re)connection; `expired` = the last one was refused (renew it); null = can't connect; "" = no sign-in (public rooms only) */
   getToken: (expired: boolean) => Promise<string | null>;
   enabled?: boolean;
   onMessage: (m: RealtimeMessage) => void;
@@ -80,8 +80,10 @@ export function useRealtime({ getToken, enabled = true, onMessage, onSync, rooms
       const token = await handlers.current.getToken(expired).catch(() => null);
       expired = false;
       if (abort.signal.aborted) return;
-      if (!token) return setStatus("offline");
-      const headers: Record<string, string> = { Authorization: `Bearer ${token}`, Accept: "text/event-stream" };
+      // "" = a website visitor following public property rooms only (no sign-in, no Authorization header)
+      if (token === null || (token === "" && !roomList)) return setStatus("offline");
+      const headers: Record<string, string> = { Accept: "text/event-stream" };
+      if (token) headers.Authorization = `Bearer ${token}`;
       if (lastId) headers["Last-Event-ID"] = lastId;
       try {
         const query = roomList ? `?rooms=${encodeURIComponent(roomList)}` : "";
