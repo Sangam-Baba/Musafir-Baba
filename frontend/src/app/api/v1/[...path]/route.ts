@@ -14,11 +14,17 @@ const COOKIE = "b2b_refresh";
 
 const upstream = () => (process.env.B2B_UPSTREAM_URL ?? process.env.NEXT_PUBLIC_B2B_API_URL ?? "").replace(/\/$/, "");
 
-/** The visitor's IP as Vercel sees it (first address of x-forwarded-for). */
+/** The visitor's IP as Vercel sees it (first address of its forwarding headers). */
 function visitorIp(req: NextRequest) {
-  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return forwarded || req.headers.get("x-real-ip") || "";
+  for (const h of ["x-vercel-forwarded-for", "x-forwarded-for", "x-real-ip"]) {
+    const first = req.headers.get(h)?.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return "";
 }
+
+/** The shared secret, without stray spaces or line breaks from pasting it into a settings form. */
+const relaySecret = () => (process.env.B2B_RELAY_SECRET ?? "").trim();
 
 const problem = (status: number, code: string, title: string) =>
   NextResponse.json({ type: "about:blank", status, code, title }, { status, headers: { "Content-Type": "application/problem+json", "Cache-Control": "no-store" } });
@@ -39,9 +45,10 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/v1/[...path
   const refresh = req.cookies.get(COOKIE)?.value;
   if (refresh) headers.cookie = `${COOKIE}=${refresh}`;
   const ip = visitorIp(req);
-  if (ip && process.env.B2B_RELAY_SECRET) {
+  const secret = relaySecret();
+  if (ip && secret) {
     headers["x-b2b-client-ip"] = ip;
-    headers["x-b2b-relay-key"] = process.env.B2B_RELAY_SECRET;
+    headers["x-b2b-relay-key"] = secret;
   }
 
   let res: Response;
@@ -53,6 +60,8 @@ export async function POST(req: NextRequest, ctx: RouteContext<"/api/v1/[...path
   const out = new NextResponse(res.status === 204 ? null : await res.text(), { status: res.status });
   out.headers.set("Content-Type", res.headers.get("content-type") ?? "application/json");
   out.headers.set("Cache-Control", "no-store");
+  // whether this deployment has the secret and sees the visitor's IP — yes / no only, never the values
+  out.headers.set("x-b2b-relay", `secret=${secret ? "yes" : "no"}; ip=${ip ? "yes" : "no"}`);
   for (const c of res.headers.getSetCookie()) out.headers.append("Set-Cookie", c);
   return out;
 }
