@@ -153,6 +153,13 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['client.bookingAgent', 'pricing.markup.read', true],
     ['client.bookingAgent', 'pricing.markup.manage', false],
     ['hotel.owner', 'pricing.rules.read', false],
+    // Stage 06: hotel search (website is public; B2B clients search with B2B prices)
+    ['client.owner', 'hotel-search.search.use', true],
+    ['client.admin', 'hotel-search.search.use', true],
+    ['client.bookingAgent', 'hotel-search.search.use', true],
+    ['client.accountant', 'hotel-search.search.use', false],
+    ['client.viewer', 'hotel-search.search.use', false],
+    ['hotel.owner', 'hotel-search.search.use', false],
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);
