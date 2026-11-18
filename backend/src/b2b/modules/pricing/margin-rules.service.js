@@ -50,5 +50,19 @@ export function createMarginRulesService() {
       const docs = await MarginRuleRecord.find({ status: 'ACTIVE' }).lean();
       return inForce(docs.map(toMarginRule));
     },
+
+    /** Draft / waiting rules to try out in the simulator (unknown or other ids are ignored). @param {string[]} ids */
+    async draftRules(ids) {
+      const valid = ids.filter((id) => /^[a-f0-9]{24}$/.test(id));
+      if (valid.length === 0) return [];
+      const docs = await MarginRuleRecord.find({ _id: { $in: valid }, status: { $in: ['DRAFT', 'PENDING_APPROVAL'] } }).lean();
+      return docs.map(toMarginRule);
+    },
+
+    /** Names of rules, for "which rule applied". @param {string[]} ids @returns {Promise<Record<string, string>>} */
+    async names(ids) {
+      const docs = await MarginRuleRecord.find({ _id: { $in: ids.filter((id) => /^[a-f0-9]{24}$/.test(id)) } }, { name: 1 }).lean();
+      return Object.fromEntries(docs.map((d) => [String(d._id), d.name]));
+    },
   };
 }

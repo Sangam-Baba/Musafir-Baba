@@ -51,3 +51,4 @@ export { createTaxAdminService, taxRuleDto, settingsProblems } from './tax-admin
 export { MARKUP_TYPES, MAX_MARKUP_OVERRIDES, markupProblems, markupFor, sellingPrice } from './domain/markup.js';
 export { CLIENT_MARKUPS_COLLECTION, ClientMarkupRecord } from './models/client-markup.model.js';
 export { createMarkupService } from './markup.service.js';
+export { createSimulatorService } from './simulator.service.js';
