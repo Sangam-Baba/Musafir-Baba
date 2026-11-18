@@ -4,9 +4,9 @@ import express from 'express';
 
 import { createSearchCatalog } from '../modules/hotel-catalog/index.js';
 import { createAvailabilityService, createPlanTermsService } from '../modules/hotel-inventory/index.js';
-import { createDestinationsService, createSearchService } from '../modules/hotel-search/index.js';
+import { createDestinationsService, createOffersService, createSearchService } from '../modules/hotel-search/index.js';
 import { createGstRegistrations } from '../modules/kyc/index.js';
-import { createQuoteService } from '../modules/pricing/index.js';
+import { createPriceTokenService, createQuoteService } from '../modules/pricing/index.js';
 import { hotelSearchRoutes } from './hotel-search.js';
 import { createSearchGate } from './search-gateway.js';
 
@@ -23,15 +23,30 @@ export function stage06Routes(env, clock, identity) {
   const terms = createPlanTermsService();
   const quotes = createQuoteService({ clock });
   const gst = createGstRegistrations({ clock, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
-  const search = createSearchService({
+  /** @type {import('../modules/hotel-search/search.service.js').SearchDeps} */
+  const searchDeps = {
     clock,
     candidates: (q) => catalog.candidates(q),
     availability: (q) => availability.checkAvailability(q),
     planTerms: (ids) => terms.termsOf(ids),
     quote: (q) => quotes.quote(q),
     gstRegistered: async (orgId) => (await gst.gstStatus(orgId)).registered,
+  };
+  const search = createSearchService(searchDeps);
+  // created on first use: a server without B2B_AUTH_SECRET still serves everything else (offers answer 503-like errors)
+  /** @type {ReturnType<typeof createPriceTokenService> | null} */
+  let priceTokens = null;
+  const tokens = () => (priceTokens ??= createPriceTokenService({ clock, secret: env.B2B_AUTH_SECRET ?? '' }));
+  const offers = createOffersService({
+    ...searchDeps,
+    gstOf: (orgId) => search.gstOf(orgId),
+    tokens: {
+      issue: (buyer, stay, breakdown) => tokens().issue(buyer, stay, breakdown),
+      read: (token, buyer) => tokens().read(token, buyer),
+      verifyAndReprice: (token, req) => tokens().verifyAndReprice(token, req),
+    },
   });
   const destinations = createDestinationsService({ clock, source: (q) => catalog.destinationSource(q) });
-  router.use(hotelSearchRoutes({ gate, destinations, search }));
+  router.use(hotelSearchRoutes({ gate, destinations, search, offers }));
   return router;
 }

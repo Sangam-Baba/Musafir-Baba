@@ -39,7 +39,7 @@ const FIELDS = {
 
 /**
  * @typedef {'WEBSITE' | 'B2B'} SearchChannel
- * @typedef {{ cityId: string, areaId?: string | null } | { near: { lat: number, lng: number, radiusKm: number } } | { refs: string[] }} Where
+ * @typedef {{ cityId: string, areaId?: string | null } | { near: { lat: number, lng: number, radiusKm: number } } | { refs: string[] } | { ids: string[] }} Where
  * @typedef {{ id: string, name: string, maxAdults: number, maxChildren: number, maxOccupancy: number }} SearchRoomType
  * @typedef {{ id: string, publicRef: string, slug: string, name: string, hotelOrgId: string, cityId: string | null,
  *   areaId: string | null, cityName: string | null, areaName: string | null, stateCode: string | null, starRating: number, timeZone: string, amenities: string[],
@@ -76,6 +76,14 @@ async function findLive(where, channel) {
       .option({ ...SEARCH, maxTimeMS: QUERY_MS })
       .exec();
   }
+  if ('ids' in where)
+    return PropertyRecord.find(
+      { ...base, _id: { $in: where.ids.filter((id) => /^[a-f0-9]{24}$/.test(id)).slice(0, MAX_CANDIDATES) } },
+      FIELDS,
+    )
+      .maxTimeMS(QUERY_MS)
+      .setOptions(SEARCH)
+      .lean();
   const filter =
     'refs' in where
       ? {

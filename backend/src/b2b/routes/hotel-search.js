@@ -4,6 +4,8 @@
  * limits); B2B clients get B2B prices (search gateway decides the channel — never the request).
  * GET  /hotels/destinations?q=     — autocomplete (cities, areas, hotels)
  * POST /hotels/search              — LIVE hotels with rooms for the stay and a "from" price for the caller's channel
+ * POST /hotels/offers/price-check  — before checkout: OK (fresh token) / PRICE_CHANGED / SOLD_OUT
+ * POST /hotels/:ref/offers         — every room × plan for the stay, the caller's price, cancellation terms, a price token each
  */
 import express from 'express';
 import { z } from 'zod';
@@ -57,7 +59,8 @@ const SearchBody = z
 /**
  * @param {{ gate: ReturnType<typeof import('./search-gateway.js').createSearchGate>,
  *   destinations: ReturnType<typeof import('../modules/hotel-search/index.js').createDestinationsService>,
- *   search: ReturnType<typeof import('../modules/hotel-search/index.js').createSearchService> }} deps
+ *   search: ReturnType<typeof import('../modules/hotel-search/index.js').createSearchService>,
+ *   offers: ReturnType<typeof import('../modules/hotel-search/index.js').createOffersService> }} deps
  */
 export function hotelSearchRoutes(deps) {
   const router = express.Router();
@@ -78,5 +81,32 @@ export function hotelSearchRoutes(deps) {
       .search(res.locals.searchCaller, res.locals.input.body)
       .then((r) => res.set('Cache-Control', 'private, no-store').json(r), next);
   });
+  // registered before `/hotels/:ref/offers` so "offers" is never read as a hotel reference
+  router.post(
+    '/hotels/offers/price-check',
+    publicRoute(),
+    validate({ body: z.strictObject({ priceToken: z.string().min(10).max(4096) }) }),
+    deps.gate('hotel.pricecheck', 'heavy'),
+    (_req, res, next) => {
+      deps.offers
+        .priceCheck(res.locals.searchCaller, res.locals.input.body.priceToken)
+        .then((r) => res.set('Cache-Control', 'private, no-store').json(r), next);
+    },
+  );
+  router.post(
+    '/hotels/:ref/offers',
+    publicRoute(),
+    validate({
+      params: z.strictObject({ ref: z.string().min(3).max(32) }),
+      body: z.strictObject({ checkIn: Day, checkOut: Day, rooms: Rooms }),
+    }),
+    deps.gate('hotel.offers', 'heavy'),
+    (_req, res, next) => {
+      const { params, body } = res.locals.input;
+      deps.offers
+        .offers(res.locals.searchCaller, params.ref, body)
+        .then((r) => res.set('Cache-Control', 'private, no-store').json(r), next);
+    },
+  );
   return router;
 }

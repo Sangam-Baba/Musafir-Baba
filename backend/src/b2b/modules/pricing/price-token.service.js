@@ -81,6 +81,16 @@ export function createPriceTokenService(deps) {
       return { status: same ? 'SAME' : 'CHANGED', breakdown: req.fresh, quotedTotalPaise: payload.totalPaise };
     },
 
+    /**
+     * The verified payload (signature, key, expiry, buyer) — what a price check needs to know which stay was priced.
+     * @param {string} token
+     * @param {Buyer} buyer
+     */
+    async read(token, buyer) {
+      const { usable } = await current(peekKid(token) ?? undefined);
+      return verifyToken(token, { secret: deps.secret, usableKids: usable, now: now(), buyer });
+    },
+
     /** New signing key; the old one only verifies, for VERIFY_GRACE_MINUTES. */
     async rotate() {
       const until = new Date(now().getTime() + VERIFY_GRACE_MINUTES * 60_000);
