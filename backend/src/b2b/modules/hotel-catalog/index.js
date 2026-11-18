@@ -33,3 +33,4 @@ export { namesSimilar, nameTokens, DUPLICATE_RADIUS_M } from './domain/duplicate
 export { createContentService } from './content.service.js';
 export { createVisibilityService } from './visibility.service.js';
 export { isVisible, CHANNELS } from './domain/visibility.js';
+export { createSearchCatalog, MAX_CANDIDATES, MAX_RADIUS_KM } from './search-catalog.service.js';
