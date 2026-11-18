@@ -57,6 +57,7 @@ import {
   seedTaxRules,
   TaxRuleRecord,
 } from './modules/pricing/index.js';
+import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
 
@@ -147,6 +148,19 @@ eventBus.subscribe({
   consumer: 'pricing-cache-evict',
   types: [PRICING_EVENTS.ruleActivated, PRICING_EVENTS.ruleRetired, PRICING_EVENTS.taxRuleActivated],
   handler: () => pricingCacheSignals.handle(),
+});
+
+/** Stage 06: a listing published / changed / suspended / archived → every process drops its search caches (autocomplete). */
+const searchCacheSignals = createSearchCacheSignals({ clock: systemClock, logger: defaultLogger });
+eventBus.subscribe({
+  consumer: 'hotel-search-cache-evict',
+  types: [
+    CATALOG_EVENTS.propertyPublished,
+    CATALOG_EVENTS.propertyUpdated,
+    CATALOG_EVENTS.propertySuspended,
+    CATALOG_EVENTS.propertyArchived,
+  ],
+  handler: () => searchCacheSignals.handle(),
 });
 
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */

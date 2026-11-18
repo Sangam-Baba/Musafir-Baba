@@ -40,6 +40,7 @@ import { calendarRoutes } from './hotel-calendar.js';
 import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { stage05Routes } from './pricing-wiring.js';
+import { stage06Routes } from './search-wiring.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -143,6 +144,7 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
+  router.use(stage06Routes(env, clock, identity)); // before Stage 03: `/hotels/destinations` must not be read as `/hotels/:ref`
   router.use(stage03Routes(env, clock, identity));
   router.use(stage04Routes(clock, identity));
   router.use(stage05Routes(env, clock, identity, log));
