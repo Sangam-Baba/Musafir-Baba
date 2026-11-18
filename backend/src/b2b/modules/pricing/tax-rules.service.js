@@ -24,7 +24,7 @@ export async function seedTaxRules() {
 }
 
 /** @param {Record<string, any>} d @returns {TaxRule} */
-const toRule = (d) => ({
+export const toRule = (d) => ({
   key: d.key,
   appliesTo: d.appliesTo,
   sac: d.sac,

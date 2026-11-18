@@ -1,9 +1,11 @@
 // @ts-check
 /**
  * GST rates as dated data (`prc_tax_rules`) — platform-wide (MusafirBaba's own data, no tenant). A rate is never
- * edited in place: a change is a new rule that a different admin approves (S05-T07); seeded rules are ACTIVE.
+ * edited in place: a change is a new rule that a different admin approves (S05-T07); the rule it follows only gets
+ * its end date set (the day before). Seeded rules are ACTIVE.
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
+import { eventFields } from '../../../core/db/events.js';
 import { defineModel } from '../../../core/db/model.js';
 import { TAX_KINDS } from '../domain/tax.js';
 
@@ -26,6 +28,14 @@ const schema = new b2bMongoose.Schema(
     proposedBy: { type: String, required: true },
     approvedBy: { type: String, default: null },
     approvedAt: { type: Date, default: null },
+    replaces: { type: String, default: null }, // key of the ACTIVE rule this one follows (closed the day before)
+    rejectedBy: { type: String, default: null },
+    version: { type: Number, default: 1 },
+    history: {
+      type: [{ _id: false, at: Date, action: String, by: String, note: { type: String, default: null }, status: String }],
+      default: [],
+    },
+    ...eventFields(b2bMongoose), // pricing.tax-rule.activated
   },
   { timestamps: true, versionKey: false },
 );

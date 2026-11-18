@@ -51,4 +51,15 @@ export const STAGE_05 = [
       await ctx.createIndex(SIGNING_KEYS_COLLECTION, { verifyUntil: 1 }, { name: 'verify_until' });
     },
   },
+  {
+    id: '0039-prc-tax-rules-events',
+    description: 'GST rates carry events (rate approved): relay index',
+    up: async (ctx) => {
+      await ctx.createIndex(
+        TAX_RULES_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
 ];

@@ -55,6 +55,7 @@ import {
   seedDefaultMarginRules,
   seedPricingSettings,
   seedTaxRules,
+  TaxRuleRecord,
 } from './modules/pricing/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
@@ -164,6 +165,7 @@ export const eventSources = [
   HoldRecord,
   ChangeLogRecord,
   MarginRuleRecord,
+  TaxRuleRecord,
 ];
 
 /**
