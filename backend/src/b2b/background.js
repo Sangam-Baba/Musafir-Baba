@@ -48,7 +48,7 @@ import {
   MemberRecord,
   OrganizationRecord,
 } from './modules/organizations/index.js';
-import { seedTaxRules } from './modules/pricing/index.js';
+import { seedDefaultMarginRules, seedTaxRules } from './modules/pricing/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
 
@@ -158,6 +158,7 @@ export const startupTasks = [
   { name: 'access: sync permission catalogue', run: (deps) => syncPermissionCatalogue(PERMISSION_CATALOGUE, deps) },
   { name: 'hotel-catalog: starter master lists (adds only what is missing)', run: () => seedMasters() },
   { name: 'pricing: starter GST rates (adds only what is missing)', run: () => seedTaxRules() },
+  { name: 'pricing: default margin rules (adds only keys never seeded)', run: () => seedDefaultMarginRules() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;
