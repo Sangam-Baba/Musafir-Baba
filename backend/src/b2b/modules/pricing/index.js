@@ -48,3 +48,6 @@ export { TOKEN_MINUTES, canonical, breakdownHash, signToken, verifyToken, assert
 export { SIGNING_KEYS_COLLECTION, KEY_STATUSES, SigningKeyRecord } from './models/signing-key.model.js';
 export { createPriceTokenService, VERIFY_GRACE_MINUTES } from './price-token.service.js';
 export { createTaxAdminService, taxRuleDto, settingsProblems } from './tax-admin.service.js';
+export { MARKUP_TYPES, MAX_MARKUP_OVERRIDES, markupProblems, markupFor, sellingPrice } from './domain/markup.js';
+export { CLIENT_MARKUPS_COLLECTION, ClientMarkupRecord } from './models/client-markup.model.js';
+export { createMarkupService } from './markup.service.js';

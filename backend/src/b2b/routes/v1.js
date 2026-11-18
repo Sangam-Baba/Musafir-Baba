@@ -41,7 +41,8 @@ import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { pricingRuleAdminRoutes } from './pricing-rules-admin.js';
 import { pricingTaxAdminRoutes } from './pricing-tax-admin.js';
-import { createRuleAdminService, createTaxAdminService } from '../modules/pricing/index.js';
+import { pricingMarkupRoutes } from './pricing-markups.js';
+import { createMarkupService, createRuleAdminService, createTaxAdminService } from '../modules/pricing/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -149,6 +150,7 @@ export function createB2BRouter(options = {}) {
   router.use(stage04Routes(clock, identity));
   router.use(pricingRuleAdminRoutes({ rules: createRuleAdminService({ clock }) }));
   router.use(pricingTaxAdminRoutes({ taxes: createTaxAdminService({ clock, logger: log }) }));
+  router.use(pricingMarkupRoutes({ markups: createMarkupService() }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

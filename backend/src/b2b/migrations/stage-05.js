@@ -1,6 +1,12 @@
 // @ts-check
 /** Migrations of Stage 05 (pricing & GST). Run after 0001–0034; ids never renamed or reused. */
-import { MARGIN_RULES_COLLECTION, SETTINGS_COLLECTION, SIGNING_KEYS_COLLECTION, TAX_RULES_COLLECTION } from '../modules/pricing/index.js';
+import {
+  CLIENT_MARKUPS_COLLECTION,
+  MARGIN_RULES_COLLECTION,
+  SETTINGS_COLLECTION,
+  SIGNING_KEYS_COLLECTION,
+  TAX_RULES_COLLECTION,
+} from '../modules/pricing/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_05 = [
@@ -60,6 +66,14 @@ export const STAGE_05 = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0040-prc-client-markups',
+    description: "Clients' own display markups: one per client org",
+    up: async (ctx) => {
+      await ctx.createCollection(CLIENT_MARKUPS_COLLECTION);
+      await ctx.createIndex(CLIENT_MARKUPS_COLLECTION, { clientOrgId: 1 }, { name: 'client_unique', unique: true });
     },
   },
 ];
