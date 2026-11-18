@@ -34,3 +34,13 @@ export { MARGIN_RULES_COLLECTION, MARGIN_RULE_STATUSES, MarginRuleRecord } from 
 export { seedDefaultMarginRules, createMarginRulesService, toMarginRule } from './margin-rules.service.js';
 export { RULE_ACTIONS, CHECKER_ACTIONS, ruleTransition, assertSecondPerson, inForce, isLargeChange } from './domain/rule-lifecycle.js';
 export { createRuleAdminService, ruleDto } from './rule-admin.service.js';
+export { BREAKDOWN_VERSION, PRICING_MODELS, buildBreakdown, priceView } from './domain/quote.js';
+export { SETTINGS_COLLECTION, SETTINGS_ID, DEFAULT_SETTINGS, PricingSettingsRecord } from './models/settings.model.js';
+export {
+  PRICING_CACHE_PREFIX,
+  PRICING_CACHE_MS,
+  seedPricingSettings,
+  readSettings,
+  createQuoteService,
+  createPricingCacheSignals,
+} from './quote.service.js';

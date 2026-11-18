@@ -48,7 +48,14 @@ import {
   MemberRecord,
   OrganizationRecord,
 } from './modules/organizations/index.js';
-import { MarginRuleRecord, seedDefaultMarginRules, seedTaxRules } from './modules/pricing/index.js';
+import {
+  createPricingCacheSignals,
+  EVENTS as PRICING_EVENTS,
+  MarginRuleRecord,
+  seedDefaultMarginRules,
+  seedPricingSettings,
+  seedTaxRules,
+} from './modules/pricing/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
 
@@ -133,6 +140,14 @@ eventBus.subscribe({
   handler: (event) => availabilitySignals.handle(event),
 });
 
+/** Stage 05: a margin rule or GST rate changed → every process drops its cached pricing data (prices within a minute at worst). */
+const pricingCacheSignals = createPricingCacheSignals({ clock: systemClock, logger: defaultLogger });
+eventBus.subscribe({
+  consumer: 'pricing-cache-evict',
+  types: [PRICING_EVENTS.ruleActivated, PRICING_EVENTS.ruleRetired, PRICING_EVENTS.taxRuleActivated],
+  handler: () => pricingCacheSignals.handle(),
+});
+
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
 export const eventSources = [
@@ -160,6 +175,7 @@ export const startupTasks = [
   { name: 'hotel-catalog: starter master lists (adds only what is missing)', run: () => seedMasters() },
   { name: 'pricing: starter GST rates (adds only what is missing)', run: () => seedTaxRules() },
   { name: 'pricing: default margin rules (adds only keys never seeded)', run: (deps) => seedDefaultMarginRules(deps) },
+  { name: 'pricing: settings with the owner defaults (only if missing)', run: () => seedPricingSettings() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;

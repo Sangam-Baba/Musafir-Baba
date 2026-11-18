@@ -1,6 +1,6 @@
 // @ts-check
 /** Migrations of Stage 05 (pricing & GST). Run after 0001–0034; ids never renamed or reused. */
-import { MARGIN_RULES_COLLECTION, TAX_RULES_COLLECTION } from '../modules/pricing/index.js';
+import { MARGIN_RULES_COLLECTION, SETTINGS_COLLECTION, TAX_RULES_COLLECTION } from '../modules/pricing/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_05 = [
@@ -29,6 +29,13 @@ export const STAGE_05 = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0037-prc-settings',
+    description: 'Pricing settings: one document (principal / agent, issuing GSTINs, hotels without GST)',
+    up: async (ctx) => {
+      await ctx.createCollection(SETTINGS_COLLECTION);
     },
   },
 ];
