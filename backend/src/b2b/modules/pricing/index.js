@@ -44,3 +44,6 @@ export {
   createQuoteService,
   createPricingCacheSignals,
 } from './quote.service.js';
+export { TOKEN_MINUTES, canonical, breakdownHash, signToken, verifyToken, assertSameStay } from './domain/price-token.js';
+export { SIGNING_KEYS_COLLECTION, KEY_STATUSES, SigningKeyRecord } from './models/signing-key.model.js';
+export { createPriceTokenService, VERIFY_GRACE_MINUTES } from './price-token.service.js';
