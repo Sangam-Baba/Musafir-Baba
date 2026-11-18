@@ -25,6 +25,26 @@ export const DOCUMENT_SETS = Object.freeze({
       { key: 'signed_contract', label: 'Signed MusafirBaba hotel agreement', required: true },
     ])
   ),
+  // Stage 10: B2B clients (travel companies) — configuration only, the engine is unchanged
+  CLIENT: /** @type {readonly DocumentRequirement[]} */ (
+    Object.freeze([
+      { key: 'gst_certificate', label: 'GST registration certificate', required: true, when: 'gst-registered' },
+      {
+        key: 'gst_declaration',
+        label: 'Declaration: turnover below the GST registration threshold',
+        required: true,
+        when: 'gst-unregistered',
+      },
+      { key: 'pan_card', label: 'PAN card of the company (or owner)', required: true },
+      {
+        key: 'registration_proof',
+        label: 'Company registration (incorporation certificate, partnership deed or trade licence)',
+        required: true,
+      },
+      { key: 'address_proof', label: 'Office address proof (rent agreement, utility bill or property tax receipt)', required: true },
+      { key: 'cancelled_cheque', label: 'Cancelled cheque of the company bank account (for refunds)', required: true },
+    ])
+  ),
 });
 
 /**
