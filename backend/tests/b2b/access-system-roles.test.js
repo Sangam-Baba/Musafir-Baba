@@ -139,6 +139,20 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['platform.support', 'hotel-inventory.admin.read', true],
     ['platform.support', 'hotel-inventory.admin.override', false],
     ['platform.superAdmin', 'hotel-inventory.admin.override', true],
+    // Stage 05: pricing & GST — Hotels team proposes, a different person with the approve permission approves
+    ['platform.hotels', 'pricing.rules.propose', true],
+    ['platform.hotels', 'pricing.simulator.use', true],
+    ['platform.hotels', 'pricing.rules.approve', false],
+    ['platform.hotels', 'pricing.tax.manage', false],
+    ['platform.superAdmin', 'pricing.rules.approve', true],
+    ['platform.superAdmin', 'pricing.tax.manage', true],
+    ['platform.support', 'pricing.rules.read', true],
+    ['platform.support', 'pricing.rules.propose', false],
+    ['platform.finance', 'pricing.rules.read', false],
+    ['client.owner', 'pricing.markup.manage', true],
+    ['client.bookingAgent', 'pricing.markup.read', true],
+    ['client.bookingAgent', 'pricing.markup.manage', false],
+    ['hotel.owner', 'pricing.rules.read', false],
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);
