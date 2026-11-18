@@ -10,7 +10,7 @@ channel → sell price → GST → totals, with a full breakdown and a signed pr
 | **Tenant** | Margin and tax rules are platform-wide (MusafirBaba's own data); client markups belong to `clientOrgId` |
 | **Public interface** | `index.js` only |
 | **Permissions** | `pricing.rules.read / propose / approve`, `pricing.tax.manage`, `pricing.simulator.use` (MusafirBaba), `pricing.markup.read / manage` (clients) |
-| **Events** | `pricing.rule.activated`, `pricing.rule.retired`, `pricing.taxRule.activated` |
+| **Events** | `pricing.rule.activated`, `pricing.rule.retired`, `pricing.tax-rule.activated` |
 
 ## Rules that never change without an ADR
 

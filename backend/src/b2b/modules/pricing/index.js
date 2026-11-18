@@ -32,3 +32,5 @@ export {
 } from './domain/margin.js';
 export { MARGIN_RULES_COLLECTION, MARGIN_RULE_STATUSES, MarginRuleRecord } from './models/margin-rule.model.js';
 export { seedDefaultMarginRules, createMarginRulesService, toMarginRule } from './margin-rules.service.js';
+export { RULE_ACTIONS, CHECKER_ACTIONS, ruleTransition, assertSecondPerson, inForce, isLargeChange } from './domain/rule-lifecycle.js';
+export { createRuleAdminService, ruleDto } from './rule-admin.service.js';

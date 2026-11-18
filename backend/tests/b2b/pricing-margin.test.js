@@ -195,9 +195,9 @@ describe('stored rules', () => {
   afterAll(async () => mongo.stop());
 
   it('the two defaults are seeded once; a retired default is not brought back', async () => {
-    expect(await seedDefaultMarginRules()).toBe(2);
+    expect(await seedDefaultMarginRules({ clock: { now: () => now } })).toBe(2);
     await MarginRuleRecord.updateOne({ key: 'default-b2b' }, { $set: { status: 'RETIRED' } });
-    expect(await seedDefaultMarginRules()).toBe(0);
+    expect(await seedDefaultMarginRules({ clock: { now: () => now } })).toBe(0);
     const active = await createMarginRulesService().activeRules();
     expect(active.map((r) => r.name)).toEqual(['Website default']);
   });

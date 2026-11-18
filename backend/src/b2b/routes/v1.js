@@ -39,6 +39,8 @@ import { ratePlanRoutes } from './hotel-rate-plans.js';
 import { calendarRoutes } from './hotel-calendar.js';
 import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { adminCalendarRoutes } from './hotel-calendar-admin.js';
+import { pricingRuleAdminRoutes } from './pricing-rules-admin.js';
+import { createRuleAdminService } from '../modules/pricing/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -144,6 +146,7 @@ export function createB2BRouter(options = {}) {
   router.use(stage02Routes(env, clock, identity));
   router.use(stage03Routes(env, clock, identity));
   router.use(stage04Routes(clock, identity));
+  router.use(pricingRuleAdminRoutes({ rules: createRuleAdminService({ clock }) }));
   router.use('/realtime', realtimeRoutes({ hub }));
 
   router.use(notFoundHandler());

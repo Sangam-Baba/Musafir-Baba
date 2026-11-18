@@ -6,5 +6,5 @@ export const EVENTS = /** @type {const} */ ({
   /** a margin rule stopped taking part in prices — search caches refresh */
   ruleRetired: 'pricing.rule.retired',
   /** a GST rate was approved (dated) — search caches refresh */
-  taxRuleActivated: 'pricing.taxRule.activated',
+  taxRuleActivated: 'pricing.tax-rule.activated',
 });

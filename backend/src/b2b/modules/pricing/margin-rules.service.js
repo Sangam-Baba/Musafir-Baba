@@ -4,17 +4,22 @@
  * background start — only when their key has never existed (a retired default stays retired).
  */
 import { DEFAULT_RULES } from './domain/margin.js';
+import { inForce } from './domain/rule-lifecycle.js';
 import { MarginRuleRecord } from './models/margin-rule.model.js';
 
 /** @typedef {import('./domain/margin.js').MarginRule} MarginRule */
 
-/** @returns {Promise<number>} how many rules were added */
-export async function seedDefaultMarginRules() {
+/**
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @returns {Promise<number>} how many rules were added
+ */
+export async function seedDefaultMarginRules(deps) {
+  const history = [{ at: deps.clock.now(), action: 'seeded', by: 'seed', note: 'Default of plan Stage 05 §2a', status: 'ACTIVE' }];
   const res = await MarginRuleRecord.bulkWrite(
     DEFAULT_RULES.map((rule) => ({
       updateOne: {
         filter: { key: rule.key },
-        update: { $setOnInsert: { ...rule, status: 'ACTIVE', createdBy: 'seed', approvedBy: 'seed' } },
+        update: { $setOnInsert: { ...rule, status: 'ACTIVE', createdBy: 'seed', approvedBy: 'seed', history } },
         upsert: true,
       },
     })),
@@ -34,15 +39,16 @@ export const toMarginRule = (d) => ({
   effectiveFrom: d.effectiveFrom ?? null,
   effectiveTo: d.effectiveTo ?? null,
   createdAt: d.createdAt,
+  replaces: d.replaces ?? null,
 });
 
 /** Margin rules for pricing (reads only; changes come with the approval flow). */
 export function createMarginRulesService() {
   return {
-    /** Approved rules (their own dates are checked when pricing). @returns {Promise<MarginRule[]>} */
+    /** Approved rules in force, minus replaced ones (their own dates are checked when pricing). @returns {Promise<MarginRule[]>} */
     async activeRules() {
       const docs = await MarginRuleRecord.find({ status: 'ACTIVE' }).lean();
-      return docs.map(toMarginRule);
+      return inForce(docs.map(toMarginRule));
     },
   };
 }

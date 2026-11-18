@@ -27,7 +27,8 @@ const MATCH_FIELDS = /** @type {const} */ (['clientCategory', 'clientOrgId', 'ho
  *   propertyId?: string, cityId?: string, starRating?: number, stayFrom?: string, stayTo?: string }} RuleMatch
  * @typedef {{ type: typeof ADJUSTMENTS[number], value: number, minPaise?: number | null, maxPaise?: number | null }} Adjustment
  * @typedef {{ id: string, name: string, priority: number, match: RuleMatch, adjustment: Adjustment,
- *   allowBelowNet?: boolean, effectiveFrom?: Date | null, effectiveTo?: Date | null, createdAt: Date }} MarginRule
+ *   allowBelowNet?: boolean, effectiveFrom?: Date | null, effectiveTo?: Date | null, createdAt: Date,
+ *   replaces?: string | null }} MarginRule
  * @typedef {{ channel: Channel, clientCategory?: string | null, clientOrgId?: string | null, hotelOrgId: string,
  *   propertyId: string, cityId?: string | null, starRating?: number | null }} PriceContext
  * @typedef {{ ruleId: string, marginPaise: number }} NightMargin

@@ -16,12 +16,12 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
   },
   rulesPropose: {
     code: 'pricing.rules.propose',
-    description: 'MusafirBaba admin: draft, edit and submit margin rules for approval; retire a rule',
+    description: 'MusafirBaba admin: draft, edit and submit margin rules for approval; discard a draft',
     orgTypes: ['PLATFORM'],
   },
   rulesApprove: {
     code: 'pricing.rules.approve',
-    description: "MusafirBaba admin: approve another person's margin rule so it takes effect",
+    description: "MusafirBaba admin: approve or send back another person's margin rule; retire a rule in force",
     orgTypes: ['PLATFORM'],
     sensitive: true,
   },

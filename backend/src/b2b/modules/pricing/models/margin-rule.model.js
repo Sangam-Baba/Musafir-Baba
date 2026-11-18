@@ -2,8 +2,9 @@
 /**
  * Margin rules (`prc_margin_rules`) — platform-wide (MusafirBaba's own data, no tenant). Statuses
  * DRAFT → PENDING_APPROVAL → ACTIVE → RETIRED; an ACTIVE rule is never edited (a change is a new rule that
- * replaces it on approval — S05-T04). Seeded defaults carry a `key`. Events (rule activated / retired) are stored
- * with the change and relayed.
+ * replaces it on approval — S05-T04). Seeded defaults carry a `key`. `history` is append-only and written in the
+ * same update as each change (who, what, when, note), so a change never exists without its history line. Events
+ * (rule activated / retired) are stored with the change and relayed. `version` guards against lost updates.
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
 import { eventFields } from '../../../core/db/events.js';
@@ -58,6 +59,20 @@ const schema = new b2bMongoose.Schema(
     approvedAt: { type: Date, default: null },
     retiredBy: { type: String, default: null },
     retiredAt: { type: Date, default: null },
+    version: { type: Number, default: 1 },
+    history: {
+      type: [
+        {
+          _id: false,
+          at: { type: Date, required: true },
+          action: { type: String, required: true },
+          by: { type: String, required: true },
+          note: { type: String, default: null },
+          status: { type: String, required: true },
+        },
+      ],
+      default: [],
+    },
     ...eventFields(b2bMongoose), // pricing.rule.activated / retired
   },
   { timestamps: true, versionKey: false },
