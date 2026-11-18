@@ -39,21 +39,21 @@
 | S06-T09 | Website pages (new `/hotels` folder): search bar with autocomplete, results list + map, filters, sort, hotel page (gallery, rooms with final price incl. GST, cancellation summary, live "availability changed"), price check before checkout; server-rendered hotel content, mobile-first | §3.8 | DONE | AI (Claude) | | tsc ✅ | New folder `frontend/src/app/(user)/hotels/` (inside the website layout — header / footer unchanged; own `layout.tsx` adds the data-loading provider) + `frontend/src/b2b/website/`. **`/hotels`**: search bar (autocomplete for cities / areas / hotels — a hotel goes straight to its page; dates ≤ 30 nights; rooms with adults and children's ages), filters (stars, meals, refundable, max price per night), sort, result cards (photo, stars, area, room + meals + refundable, **price per night and total incl. GST**, sold out), map with price pins (existing Google Maps key; hidden without it), "show more" paging; search kept in the URL (shareable). **`/hotels/[slug]`**: server-rendered from the public hotel content (title, description, canonical, Open Graph image) — gallery, about, room types, policies, amenities; **rooms & prices** for the chosen dates (offers: final price incl. GST, meals, cancellation sentence, "only N left"), **live**: follows the property's room (visitors without sign-in — the realtime hook now accepts "no token" for public rooms only) and shows "Availability or price updated" and refreshes; **Reserve** runs the price check (OK / changed / sold out) — booking itself opens with Stage 08, so OK says "call us to book". **Everything behind `NEXT_PUBLIC_FEATURE_HOTELS`** (off by default → "coming soon" on `/hotels`, 404 on hotel pages). Guards: the new folder added to the allowed list. Mobile-first layouts (one column on phones). Type-checked; **not clicked through in a browser by me** |
 | S06-T10 | Approved edit E1a: Hotels tab on the home page behind `NEXT_PUBLIC_FEATURE_HOTELS` (off by default) — **needs the owner's OK** | §3.8, `12-…` E1 | TODO | | | | |
 | S06-T11 | Load test script and budgets (autocomplete, city search, offers); cache only if a budget is missed | §3.5, §3.9 | DONE | AI (Claude) | | script ✅ | `backend/scripts/b2b/load-test.js` (no package): each scenario at a fixed rate for `LOAD_SECONDS`, p50 / p95 / p99 and errors, exit 1 when a p95 budget is missed — autocomplete 100 RPS < 150 ms, city search 30 RPS < 800 ms, offers 50 RPS < 400 ms (`07-…` §5). Never against production. **The staging run itself is DEF-031** (no staging data yet); no cache added (plan: only if a budget is missed). A small local timing check is part of the mandatory suite (T12) |
-| S06-T12 | Mandatory test suite: search contract, channel visibility, prices per channel, no token in search, price-check paths, rate limiter under concurrency, results follow inventory and rule changes | §7 | TODO | | | | |
+| S06-T12 | Mandatory test suite: search contract, channel visibility, prices per channel, no token in search, price-check paths, rate limiter under concurrency, results follow inventory and rule changes | §7 | DONE | AI (Claude) | | 3 ✅ | `stage-06-mandatory.test.js`: **contract** — search, offers and price check answer exactly their documented fields (so nothing private can slip in later); listing changes send `cache:evict` of `search:`; a local timing smoke check (20 live hotels, city search well under 800 ms). The header maps every other mandatory test to its file; the staging budgets are DEF-031 |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 
 ## Definition of Done (copied from the stage file)
 
-- [ ] Website shows LIVE hotels with correct website prices (incl. GST) and live availability
-- [ ] A booking or calendar change updates an open hotel page within ~2 s
-- [ ] Search API returns B2B prices when called with a B2B channel context (tested, no UI yet)
-- [ ] p95 budgets met on staging data
+- [x] Website shows LIVE hotels with correct website prices (incl. GST) and live availability (server: hotel-search / hotel-offers tests; pages built behind `NEXT_PUBLIC_FEATURE_HOTELS` — owner to try in the browser once switched on)
+- [x] A booking or calendar change updates an open hotel page within ~2 s (change → event → `availability:changed` ≤ 1 s, Stage 04 signals test; the hotel page follows the room and refreshes its rooms)
+- [x] Search API returns B2B prices when called with a B2B channel context (tested, no UI yet)
+- [ ] p95 budgets met on staging data — **DEF-031** (no staging data yet; script ready)
 
 ## Mandatory tests (copied from the stage file)
 
-- [ ] Search contract tests
-- [ ] Cache invalidation on inventory and rule change
-- [ ] Rate limiter atomic under concurrency
-- [ ] Channel visibility filter
-- [ ] Performance budgets
+- [x] Search contract tests — stage-06-mandatory
+- [x] Cache invalidation on inventory and rule change — hotel-search (results follow the calendar and rule changes; no search-result cache), stage-06-mandatory (listing change → `cache:evict` of `search:`), pricing-quote (rule change → `cache:evict` of `pricing:`)
+- [x] Rate limiter atomic under concurrency — hotel-search-destinations (125 parallel → exactly 120)
+- [x] Channel visibility filter — hotel-search-catalog, hotel-search, hotel-search-destinations
+- [ ] Performance budgets — local smoke check only (stage-06-mandatory); staging run DEF-031

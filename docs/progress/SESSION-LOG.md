@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-19 — AI (Claude) — Stage 06 Search & availability: S06-T01 to T09, T11, T12
+
+- **Goal:** website hotel search (live availability, website prices incl. GST), channel-aware so B2B gets B2B prices, without touching existing code.
+- **Done:** 11 of 12 tasks → DONE. Module `hotel-search`; catalogue search read model (LIVE + channel-visible, by city / area / distance / reference; status lookup); destination autocomplete (in-memory, no new collection; dropped on listing events); search gateway (anonymous → website prices + per-IP limits; active client org with permission → B2B prices + per-user / per-org limits; hooks for Stages 12 / 13); `POST /hotels/search` (one availability call, every option priced per channel, filters / sort / cursor; from-prices only, no tokens); `POST /hotels/:ref/offers` (caller's price view + price token per option, cancellation terms); `POST /hotels/offers/price-check` (OK / PRICE_CHANGED / SOLD_OUT, fresh token); live availability rooms only for LIVE properties (owners / staff for unpublished); website pages `/hotels` and `/hotels/[slug]` (server-rendered hotel content, live rooms, price check) behind `NEXT_PUBLIC_FEATURE_HOTELS` (off); load-test script; mandatory suite.
+- **Not done / why:** S06-T10 (home-page Hotels tab = approved edit E1 on the existing `HeroSearchWidget.tsx`) — waits for the owner's OK; staging load run (DEF-031 — no staging data); pages type-checked but not clicked through in a browser; booking itself is Stage 08 (Reserve = price check + "call us").
+- **Files / PR:** commits 93b6bbf … on `b2b/stage-00` (not pushed). No new migrations in Stage 06.
+- **Tests run:** each task: `lint:b2b`, `typecheck:b2b`, full `test:b2b` (last: 90 files, all green), progress check, guards (only the untracked design screenshots / .DS_Store); frontend `tsc` — no errors in B2B files.
+- **Decisions / deferrals:** search routes mounted before Stage 03's `/hotels/:ref`; destinations held in memory instead of `htl_destinations`; child ages accepted but priced by count; price range on price per night incl. GST; price check returns OK when only the breakdown (not the total) changed; realtime hook accepts "no token" for public rooms; guards allow the new `(user)/hotels` folder; DEF-031.
+- **Next step:** owner OK for E1 (or skip it — `/hotels` works by link and the existing Hotels tile already points there); then Stage 07 — Payments (PayU) & ledger core.
+
 ## 2026-11-18 — AI (Claude) — Stage 05 Pricing & GST: S05-T01 to S05-T11
 
 - **Goal:** build Stage 05 (margins by channel, GST as data, quote, price token, admin screens) without touching anything outside the B2B folders.
