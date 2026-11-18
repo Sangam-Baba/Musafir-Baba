@@ -78,6 +78,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'POST /refresh',
         'GET /catalog/masters',
         'POST /registrations/hotel',
+        'POST /registrations/client', // B2B client self-registration (S10-T03): same checks and IP limit as hotels
         'POST /registrations/verify-email',
       ].sort(),
     );

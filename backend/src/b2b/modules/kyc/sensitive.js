@@ -20,7 +20,7 @@ const purposeOf = (field, orgId) => `kyc-${field}:${orgId}`;
 
 /**
  * Details as stored: no PAN, only its last 4; the sealed PAN beside it.
- * @param {import('./domain/hotel-details.js').HotelDetails} details
+ * @param {Omit<import('./domain/hotel-details.js').HotelDetails, 'propertyCount'>} details hotel or client details
  * @param {{ orgId: string, key: string | undefined }} options
  */
 export function protectDetails(details, options) {

@@ -8,6 +8,8 @@
  *   Several steps without a transaction: each is repeat-safe; an onboarding hotel without an application
  *   gets an empty draft the next time it opens GET /kyc (routes/kyc.js), and an account created without
  *   its hotel signs in and registers again (the signed-in path).
+ * POST /registrations/client (same header and limit, S10-T03): the same steps for a B2B travel company — org `CLIENT`
+ *   (ONBOARDING), draft application with the client document set; verified by MusafirBaba like a hotel.
  * POST /registrations/verify-email {token} — marks the email verified.
  * POST /registrations/resend-verification — a new link for the signed-in user (3 per hour).
  */
@@ -22,7 +24,7 @@ import { validate } from '../core/http/validate.js';
 import { clientIp, createRateLimiter } from '../core/rate-limit.js';
 import { assertPasswordAllowed, signEmailVerification, verifyEmailVerification } from '../modules/identity/index.js';
 import { requireAuthHeader, sendTokens } from '../modules/identity/session-routes.js';
-import { validateHotelDetails } from '../modules/kyc/index.js';
+import { validateClientDetails, validateHotelDetails } from '../modules/kyc/index.js';
 
 const text = (max = 200) => z.string().trim().min(1).max(max);
 export const HotelDetailsBody = z.strictObject({
@@ -52,6 +54,12 @@ export const HotelDetailsBody = z.strictObject({
   termsAccepted: z.boolean(),
   termsVersion: text(20),
 });
+/** A B2B client's details: the hotel form without the property count (S10-T03). */
+export const ClientDetailsBody = HotelDetailsBody.omit({ propertyCount: true });
+export const ClientRegistrationBody = z.strictObject({
+  details: ClientDetailsBody,
+  owner: z.strictObject({ name: text(120), password: z.string().min(1).max(200) }).optional(),
+});
 export const HotelRegistrationBody = z.strictObject({
   details: HotelDetailsBody,
   owner: z.strictObject({ name: text(120), password: z.string().min(1).max(200) }).optional(),
@@ -67,38 +75,60 @@ export const HotelRegistrationBody = z.strictObject({
  * }} RegistrationDeps
  */
 
+/**
+ * One registration flow for both kinds of business; only the details form, the org type and the email wording differ.
+ * @param {RegistrationDeps} deps
+ * @param {ReturnType<typeof createRateLimiter>} limiter
+ * @param {'HOTEL' | 'CLIENT'} type
+ * @returns {import('express').RequestHandler}
+ */
+const register = (deps, limiter, type) => (req, res, next) => {
+  (async () => {
+    const limit = await limiter.consume(clientIp(req));
+    if (!limit.allowed) throw new RateLimitError(limit.retryAfterSeconds);
+    const body = res.locals.input.body;
+    const details = type === 'CLIENT' ? validateClientDetails(body.details) : validateHotelDetails(body.details);
+    const owner = await ownerFor(deps, res, details, body.owner);
+    const org = await deps.orgs.createOrganization({
+      type,
+      legalName: details.legalName,
+      ownerUserId: owner.id,
+      createdBy: `user:${owner.id}`,
+    });
+    await deps.kyc.ensureApplication({ orgId: org.id, orgType: type, createdBy: owner.id, details });
+    if (owner.created) await sendVerification(deps, owner.id, details.email, type);
+    const tokens = await deps.sessions.create({
+      userId: owner.id,
+      orgId: org.id,
+      methods: ['registration'],
+      ip: clientIp(req),
+      userAgent: req.get('user-agent') ?? null,
+    });
+    res.status(201);
+    sendTokens(res, tokens, deps.secureCookies);
+  })().catch(next);
+};
+
 /** @param {RegistrationDeps} deps */
 export function registrationRoutes(deps) {
   const router = express.Router();
   const limiter = createRateLimiter({ name: 'registration-ip', points: 10, windowMs: 60 * 60_000, clock: deps.clock });
   const resendLimiter = createRateLimiter({ name: 'verification-resend', points: 3, windowMs: 60 * 60_000, clock: deps.clock });
 
-  router.post('/registrations/hotel', publicRoute(), requireAuthHeader, validate({ body: HotelRegistrationBody }), (req, res, next) => {
-    (async () => {
-      const limit = await limiter.consume(clientIp(req));
-      if (!limit.allowed) throw new RateLimitError(limit.retryAfterSeconds);
-      const body = /** @type {z.infer<typeof HotelRegistrationBody>} */ (res.locals.input.body);
-      const details = validateHotelDetails(body.details);
-      const owner = await ownerFor(deps, res, details, body.owner);
-      const org = await deps.orgs.createOrganization({
-        type: 'HOTEL',
-        legalName: details.legalName,
-        ownerUserId: owner.id,
-        createdBy: `user:${owner.id}`,
-      });
-      await deps.kyc.ensureApplication({ orgId: org.id, orgType: 'HOTEL', createdBy: owner.id, details });
-      if (owner.created) await sendVerification(deps, owner.id, details.email);
-      const tokens = await deps.sessions.create({
-        userId: owner.id,
-        orgId: org.id,
-        methods: ['registration'],
-        ip: clientIp(req),
-        userAgent: req.get('user-agent') ?? null,
-      });
-      res.status(201);
-      sendTokens(res, tokens, deps.secureCookies);
-    })().catch(next);
-  });
+  router.post(
+    '/registrations/hotel',
+    publicRoute(),
+    requireAuthHeader,
+    validate({ body: HotelRegistrationBody }),
+    register(deps, limiter, 'HOTEL'),
+  );
+  router.post(
+    '/registrations/client',
+    publicRoute(),
+    requireAuthHeader,
+    validate({ body: ClientRegistrationBody }),
+    register(deps, limiter, 'CLIENT'),
+  );
 
   router.post(
     '/registrations/verify-email',
@@ -135,7 +165,7 @@ export function registrationRoutes(deps) {
  * The hotel's owner: the signed-in business user, or a new account for the contact email.
  * @param {RegistrationDeps} deps
  * @param {import('express').Response} res
- * @param {import('../modules/kyc/domain/hotel-details.js').HotelDetails} details
+ * @param {{ email: string }} details
  * @param {{ name: string, password: string } | undefined} owner
  * @returns {Promise<{ id: string, created: boolean }>}
  */
@@ -151,8 +181,13 @@ async function ownerFor(deps, res, details, owner) {
   return { id: user.id, created: true };
 }
 
-/** @param {RegistrationDeps} deps @param {string} userId @param {string} email */
-async function sendVerification(deps, userId, email) {
+/**
+ * @param {RegistrationDeps} deps
+ * @param {string} userId
+ * @param {string} email
+ * @param {'HOTEL' | 'CLIENT'} [type] what is being verified afterwards (wording only)
+ */
+async function sendVerification(deps, userId, email, type = 'HOTEL') {
   if (!deps.secret) return;
   const token = signEmailVerification({ userId, email }, { secret: deps.secret, clock: deps.clock });
   const link = `${deps.publicUrl.replace(/\/$/, '')}/business/verify-email#token=${encodeURIComponent(token)}`;
@@ -160,7 +195,7 @@ async function sendVerification(deps, userId, email) {
     {
       to: email,
       subject: 'Confirm your email for MusafirBaba Business',
-      text: `Welcome to MusafirBaba Business.\n\nPlease confirm this is your email: ${link}\n\nThe link works for 48 hours. Next, upload your documents so we can verify your hotel.`,
+      text: `Welcome to MusafirBaba Business.\n\nPlease confirm this is your email: ${link}\n\nThe link works for 48 hours. Next, upload your documents so we can verify your ${type === 'CLIENT' ? 'company' : 'hotel'}.`,
     },
     { secret: deps.secret, clock: deps.clock },
   );

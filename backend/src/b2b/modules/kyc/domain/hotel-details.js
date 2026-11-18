@@ -134,7 +134,7 @@ export function validateHotelDetails(input) {
 
 /**
  * Reasons an application needs a second approver (maker–checker, plan §3.6).
- * @param {HotelDetails} details
+ * @param {Omit<HotelDetails, 'propertyCount'>} details hotel or client details
  * @param {{ duplicateGstin: boolean }} facts
  * @returns {{ flags: RiskFlag[], highRisk: boolean }}
  */
