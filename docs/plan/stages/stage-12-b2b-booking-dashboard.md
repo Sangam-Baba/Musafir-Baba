@@ -1,5 +1,7 @@
 # Stage 12 — B2B Dashboard: Search, Booking & Bookings Management (end of Phase B core)
 
+> **Split in two (D36, 19 Nov 2026).** **Part A — right after Stage 10** (before Stage 07): the dashboard shell for clients, search and offers with B2B prices (the Stage 06 search API already answers B2B callers), GST breakdown, cancellation terms, the client's markup / "my selling price" (Stage 05 engine), team & roles; booking shows "call us to book". **Part B — after Stage 11:** booking with wallet / credit / PayU through the Stage 08 engine, My Bookings, usage counting. Task lists are written per part when each starts.
+
 | | |
 | --- | --- |
 | **Phase** | B — B2B clients |

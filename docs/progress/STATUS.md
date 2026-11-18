@@ -3,7 +3,7 @@
 > The one page that says where the build is. Rules: `docs/progress/README.md`.
 > Numbers inside the generated block come from `npm run progress` — don't edit them by hand.
 
-**Last updated:** 2026-11-18 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
+**Last updated:** 2026-11-19 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
 
 ## Now
 
@@ -12,7 +12,7 @@
 | **Phase** | A — hotels + website (working system) |
 | **Current stage(s)** | Stage 06 — Search & availability: 11 of 12 tasks done; S06-T10 (home-page Hotels tab, approved edit E1) waits for the owner's OK · Stages 00–05 awaiting owner sign-off (00–04 live) |
 | **Current task(s)** | S06-T10 — needs the owner's OK to edit the existing `HeroSearchWidget.tsx` (approved edit E1, flag off by default) |
-| **Next up** | Owner: OK for E1; sign off Stages 00–05; Delhi GSTIN; CA review (D4 / D10 / D20). Then Stage 07 — Payments (PayU) & ledger core. Deploying Stages 05–06 = merge + migrations 0035–0040 (new `prc_` collections only); website hotels stay hidden until `NEXT_PUBLIC_FEATURE_HOTELS=true` |
+| **Next up** | **Build order (D36):** finish 06 (S06-T10 needs the owner's OK) → **10** B2B client onboarding → **12 part A** B2B dashboard without booking → 07 → 08 → 09 → Pilot 1 → 11 → 12 part B → 13 → Pilot 2 → 14–16 · owner: sign off Stages 00–05, Delhi GSTIN, CA review (D4 / D10 / D20) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
