@@ -183,6 +183,21 @@ export function createSearchCatalog(deps) {
   const url = deps.mediaUrl ?? ((/** @type {string} */ k) => k);
   return {
     /**
+     * Status and owner of properties (who may follow their live-availability rooms). Unknown ids are left out.
+     * @param {string[]} ids
+     * @returns {Promise<{ id: string, status: string, hotelOrgId: string }[]>}
+     */
+    async statusOf(ids) {
+      const valid = ids.filter((id) => /^[a-f0-9]{24}$/.test(id)).slice(0, 50);
+      if (valid.length === 0) return [];
+      const docs = await PropertyRecord.find({ _id: { $in: valid } }, { status: 1, hotelOrgId: 1 })
+        .maxTimeMS(QUERY_MS)
+        .setOptions(SEARCH)
+        .lean();
+      return docs.map((d) => ({ id: String(d._id), status: d.status, hotelOrgId: d.hotelOrgId }));
+    },
+
+    /**
      * What autocomplete matches: active cities and areas, and live properties visible on the channel (names only).
      * @param {{ channel: SearchChannel }} q
      */

@@ -40,7 +40,7 @@ import { calendarRoutes } from './hotel-calendar.js';
 import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { stage05Routes } from './pricing-wiring.js';
-import { stage06Routes } from './search-wiring.js';
+import { followCheck, stage06Routes } from './search-wiring.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -85,8 +85,10 @@ const REQUEST_TIMEOUT_MS = 15_000;
 /**
  * @param {{ env?: NodeJS.ProcessEnv, connect?: boolean, logger?: import('../core/logger.js').Logger,
  *   authenticate?: import('../core/http/context-middleware.js').Authenticator, timeoutMs?: number,
- *   clock?: import('../core/clock.js').Clock, hub?: StreamHub }} [options]
+ *   clock?: import('../core/clock.js').Clock, hub?: StreamHub,
+ *   canFollow?: (actor: import('../core/context.js').Actor, rooms: string[]) => Promise<boolean> }} [options]
  *   connect: false (tests) = no database connection and no background work.
+ *   canFollow: tests of the stream itself may replace the "LIVE properties only" check.
  * @returns {import('express').Router}
  */
 export function createB2BRouter(options = {}) {
@@ -148,7 +150,7 @@ export function createB2BRouter(options = {}) {
   router.use(stage03Routes(env, clock, identity));
   router.use(stage04Routes(clock, identity));
   router.use(stage05Routes(env, clock, identity, log));
-  router.use('/realtime', realtimeRoutes({ hub }));
+  router.use('/realtime', realtimeRoutes({ hub, canFollow: options.canFollow ?? followCheck(clock) }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));

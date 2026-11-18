@@ -50,3 +50,19 @@ export function stage06Routes(env, clock, identity) {
   router.use(hotelSearchRoutes({ gate, destinations, search, offers }));
   return router;
 }
+
+/**
+ * Who may follow `availability:property:<id>` rooms: anyone for a LIVE property; a hotel's own people for their
+ * unpublished ones (the calendar page); MusafirBaba staff for any. Unknown properties never.
+ * @param {import('../core/clock.js').Clock} clock
+ */
+export function followCheck(clock) {
+  const catalog = createSearchCatalog({ clock });
+  /** @param {import('../core/context.js').Actor} actor @param {string[]} rooms */
+  return async (actor, rooms) => {
+    const ids = rooms.map((r) => r.slice('availability:property:'.length));
+    const found = await catalog.statusOf(ids);
+    if (found.length !== new Set(ids).size) return false;
+    return found.every((p) => p.status === 'LIVE' || actor.type === 'staff' || (actor.type === 'member' && actor.orgId === p.hotelOrgId));
+  };
+}
