@@ -21,8 +21,7 @@ export const SEARCH_LIMITS = Object.freeze({
 });
 
 /**
- * @typedef {{ channel: 'WEBSITE' | 'B2B_PORTAL', catalogChannel: 'WEBSITE' | 'B2B', clientOrgId: string | null,
- *   clientCategory: string | null, customerId: string | null }} SearchCaller
+ * @typedef {import('../modules/hotel-search/index.js').SearchCaller} SearchCaller
  * @typedef {{ before?: (caller: SearchCaller, kind: string) => Promise<void>, after?: (caller: SearchCaller, kind: string) => Promise<void> }} SearchHooks
  */
 

@@ -42,7 +42,7 @@ const FIELDS = {
  * @typedef {{ cityId: string, areaId?: string | null } | { near: { lat: number, lng: number, radiusKm: number } } | { refs: string[] }} Where
  * @typedef {{ id: string, name: string, maxAdults: number, maxChildren: number, maxOccupancy: number }} SearchRoomType
  * @typedef {{ id: string, publicRef: string, slug: string, name: string, hotelOrgId: string, cityId: string | null,
- *   areaId: string | null, stateCode: string | null, starRating: number, timeZone: string, amenities: string[],
+ *   areaId: string | null, cityName: string | null, areaName: string | null, stateCode: string | null, starRating: number, timeZone: string, amenities: string[],
  *   propertyTypeKey: string, location: { lat: number, lng: number } | null, distanceKm: number | null,
  *   coverUrl: string | null, roomTypes: SearchRoomType[] }} SearchProperty
  */
@@ -134,6 +134,20 @@ async function destinationSource(deps, q) {
 }
 
 /**
+ * City and area names for these properties.
+ * @param {any[]} props
+ */
+async function placeNames(props) {
+  const cities = await CityRecord.find({ _id: { $in: [...new Set(props.map((p) => p.cityId).filter(Boolean))] } }, { name: 1, areas: 1 })
+    .maxTimeMS(QUERY_MS)
+    .lean();
+  return {
+    city: new Map(cities.map((c) => [String(c._id), c.name])),
+    area: new Map(cities.flatMap((c) => (c.areas ?? []).map((a) => [String(a._id), a.name]))),
+  };
+}
+
+/**
  * Active room types of these properties, grouped by property.
  * @param {string[]} ids
  */
@@ -177,6 +191,7 @@ export function createSearchCatalog(deps) {
       );
       if (visible.length === 0) return [];
       const byProperty = await roomTypesOf(visible.map((p) => String(p._id)));
+      const names = await placeNames(visible);
       return visible.map((p) => ({
         id: String(p._id),
         publicRef: p.publicRef,
@@ -185,6 +200,8 @@ export function createSearchCatalog(deps) {
         hotelOrgId: p.hotelOrgId,
         cityId: p.cityId ?? null,
         areaId: p.areaId ?? null,
+        cityName: names.city.get(p.cityId) ?? null,
+        areaName: names.area.get(p.areaId) ?? null,
         stateCode: p.stateCode ?? null,
         starRating: p.starRating ?? 0,
         timeZone: p.timeZone,

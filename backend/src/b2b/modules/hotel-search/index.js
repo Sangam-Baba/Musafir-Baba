@@ -9,3 +9,7 @@ export {
   createDestinationsService,
   createSearchCacheSignals,
 } from './destinations.service.js';
+export { WEBSITE_CALLER } from './domain/caller.js';
+/** @typedef {import('./domain/caller.js').SearchCaller} SearchCaller */
+export { DEFAULT_PAGE, MAX_PAGE, SORTS, rankResults, encodeCursor, decodeCursor, queryKey } from './domain/search.js';
+export { createSearchService, priceOptions } from './search.service.js';

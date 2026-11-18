@@ -59,6 +59,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /health',
         'GET /hotels/:ref', // public hotel content: LIVE + visible listings only
         'GET /hotels/destinations', // website autocomplete: channel-visible names only, per-IP limit (search gateway)
+        'POST /hotels/search', // website search: LIVE visible hotels, from-prices only (no tokens), per-IP limit
         'GET /invitations/lookup',
         'GET /media/*key', // local development: public hotel photos from disk (fixed key format, public folder only)
         'GET /meta/version',
