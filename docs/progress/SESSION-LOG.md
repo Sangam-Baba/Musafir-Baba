@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-18 — AI (Claude) — Stage 05 Pricing & GST: S05-T01 to S05-T11
+
+- **Goal:** build Stage 05 (margins by channel, GST as data, quote, price token, admin screens) without touching anything outside the B2B folders.
+- **Done:** all 11 tasks → DONE; stage AWAITING_SIGN_OFF. Owner decisions (CA to review at the demo): principal / resell model (GST on our sell price), one Delhi issuer (`07`; Delhi hotels CGST + SGST, others IGST), **hotels without GST sellable for now** (nothing in Stages 00–04 blocked them, so no existing code changed). New module `pricing`: GST rates as dated data (seeded 5 % ≤ ₹7,500 no ITC / 18 % above from 22 Sep 2025, history rates, SaaS 18 % pending Q6); margin rules (per-night winner, fixed / % with min-max / per-booking fee, no rule = not sellable; Website +₹250 / B2B +₹150 seeded); approvals by a second person with history inside each rule and gap-free replacement; quote (breakdown per room-night, hotel GST recorded, who-sees-what views, 1-minute cache dropped by pricing events); price tokens (HMAC, keys derived from `B2B_AUTH_SECRET`, rotation, bound to buyer / channel / stay, keyed breakdown hash, SAME / CHANGED re-price); GST-rate admin + pricing settings (GSTINs, hotels without GST); client display markups (`/markups`); simulator (typed rate or a property's real calendar, draft rules) + rule reach; admin **Pricing** tab (rules, simulator, GST & settings).
+- **Not done / why:** agent-model calculation (DEF-030 — only if the CA says agent); CA review of the tax data (DoD item open); MusafirBaba's Delhi GSTIN number to be filled in by an admin; screens type-checked but not clicked through in a browser.
+- **Files / PR:** commits e488c8e … on `b2b/stage-00` (not pushed). Migrations 0035–0040 (new `prc_` collections only) — not run on dev Atlas or production yet.
+- **Tests run:** every task: `lint:b2b`, `typecheck:b2b`, full `test:b2b` green (last: 84 files / 803 tests), `b2b:progress -- --check`, guards (only the untracked design screenshots / .DS_Store flagged); frontend `tsc` — no errors in B2B files.
+- **Decisions / deferrals:** history embedded in each rule instead of `prc_rule_history` (a change can never exist without its line); retiring a rule needs the approve permission; per-booking fee is a separate layer taxed at the first night's rate; tokens re-price to CHANGED rather than honouring an old price (a stateless token can't carry the breakdown without exposing the hotel rate); settings change without a second approver (plan asks maker–checker for rules and rates only). DEF-030 added.
+- **Next step:** owner sign-off of Stages 00–05 and a human review of pricing / GST code; deploying Stage 05 = merge + migrations 0035–0040 (B2B already on). Then Stage 06 — search & availability (website first).
+
 ## 2026-11-13 — AI (Claude) — Stage 01 started: task list, S01-T01 setup
 
 - **Goal:** start Stage 01 (organisations, users, roles & permissions).

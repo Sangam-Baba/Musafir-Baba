@@ -10,9 +10,9 @@
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stage 05 — Pricing & GST (in progress) · Stages 00–04 live, awaiting owner sign-off |
-| **Current task(s)** | S05-T01 — pricing module setup |
-| **Next up** | S05-T02 tax rules + GST engine (built on CA-pending defaults: principal model, Delhi issuer — all switchable) · owner: sign off Stages 00–04; human review of the inventory code (Stage 04) |
+| **Current stage(s)** | Stage 05 — Pricing & GST: all 11 tasks done, awaiting owner sign-off (CA review open) · Stages 00–04 live, awaiting sign-off |
+| **Current task(s)** | — (Stage 05 complete; Stage 06 task list next) |
+| **Next up** | Stage 06 — Search & availability (website first) · owner: sign off Stages 00–05; fill in MusafirBaba's Delhi GSTIN (Pricing → GST & settings); CA review of D4 / D10 / D20 at the demo; human review of pricing / GST code · deploy of Stage 05 needs migrations 0035–0040 (new `prc_` collections only) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
@@ -26,7 +26,7 @@
 | 02 | Hotel onboarding & KYC (+ notifications) | A | AWAITING_SIGN_OFF | 15 / 15 | 0 | 100 % | 2026-11-15 | — | [stage-02](stages/stage-02.md) |
 | 03 | Hotel listings | A | AWAITING_SIGN_OFF | 14 / 14 | 0 | 100 % | 2026-11-15 | — | [stage-03](stages/stage-03.md) |
 | 04 | Inventory & rates calendar | A | AWAITING_SIGN_OFF | 14 / 14 | 0 | 100 % | 2026-11-17 | — | [stage-04](stages/stage-04.md) |
-| 05 | Pricing & GST | A | IN_PROGRESS | 10 / 11 | 0 | 91 % | 2026-11-18 | — | [stage-05](stages/stage-05.md) |
+| 05 | Pricing & GST | A | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-18 | — | [stage-05](stages/stage-05.md) |
 | 06 | Search & availability (website first) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 07 | Payments (PayU) & ledger core | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 08 | Booking engine (website first) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 94 of 95 tasks done (99 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 95 of 95 tasks done (100 %) · deferred on purpose: 1 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

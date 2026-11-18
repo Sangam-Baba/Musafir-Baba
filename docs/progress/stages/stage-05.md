@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | IN_PROGRESS |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | A · hotels + website |
 | **Owner(s)** | |
 | **Started** | 2026-11-18 |
@@ -39,25 +39,25 @@
 | S05-T08 | Client markups engine (`prc_client_markups`, display only — screens in Stage 12) + `GET / PUT /markups` | §3.3, §5 | DONE | AI (Claude) | | 8 ✅ | `domain/markup.js` (pure): one default + ≤ 20 overrides by city / property / stars (most specific wins: property > city > stars); fixed per night, percent of the client's price per room-night (min / max) or fixed per booking; never negative; `sellingPrice` = what the client pays + markup ("my selling price"). **Display only** — never used by quotes, tokens, invoices or the ledger. `prc_client_markups` (migration `0040`, tenant `clientOrgId`, one per client). `GET /markups` (`pricing.markup.read` — Owner, Admin, Booking Agent), `PUT /markups` (`pricing.markup.manage` — Owner; `If-Match`, 0 = first save, 412 stale); org always from the signed-in member; hotels refused. `forClient(orgId)` for the Stage 12 quote screens. Tests: rules, switched off, problems, versions, permissions, isolation (unscoped reads refused) |
 | S05-T09 | Simulator `POST /admin/pricing/simulate`: property / dates / occupancy / channel / client → full breakdown, including draft rules before approval; "which rule applied" | §3.8 | DONE | AI (Claude) | | 7 ✅ | `createSimulatorService` (pricing): breakdowns with the rules in force **plus chosen draft / waiting rules** (a draft that replaces a rule hides it, as on approval) — nothing saved, no token; not sellable comes back as a result (`ok: false` + reason), not an error; rule names for "which rule applied". `POST /admin/pricing/simulate` (`pricing.simulator.use`): **sample** (typed hotel rate, date, nights, rooms, state, GST yes / no, city, stars — the plan's "Base ₹700 → Website ₹997.50, B2B ₹892.50" preview) or **property** (its real calendar for the stay through `checkAvailability`; every sellable room type × plan priced; guest limits checked on the room total only — pricing, not occupancy, is being tested). `GET /admin/margin-rules/:id/reach` (`pricing.rules.read`): LIVE properties the rule's match covers (city / hotel / property / stars; first 200 looked at, `capped` says so). Wiring in `routes/pricing-wiring.js` (property facts from hotel-catalog's admin read, GST status from kyc, rates from hotel-inventory) — pricing still imports no hotel module. Tests: sample ₹997.50 / ₹892.50 + rule name, draft 20 % replacing the default tried without taking effect, not sellable as a result, a Mumbai hotel's calendar → IGST ₹1,995.00 for 2 nights, no rooms → no offers, reach, permissions |
 | S05-T10 | Admin screens: Pricing → Margin rules (list, edit with live preview + hotels affected, submit, approve, retire, history), Tax rules, Simulator | §2a, §3.8 | DONE | AI (Claude) | | tsc ✅ | New **Pricing** tab in `/admin/b2b` (`components/admin/pricing/`): **Margin rules** — list with status filter (in force / waiting / drafts / retired), what each rule covers and adds in words; a rule's panel: **price preview** (hotel rate ₹700 by default, editable → Website and B2B price incl. GST, the draft counted as if approved, says when another rule wins), **live properties covered**, actions by status (edit / submit / discard; approve / send back with reason; retire with reason) and the history; form for new rules and drafts (channels, city, stars, client category, stay dates, ₹ per night / % with min-max / ₹ per booking, priority, in-force dates, replaces, allow below hotel rate) with the server's problems listed. **Simulator** — typed hotel rate (state, nights, rooms, GST yes / no) or a real property's calendar (id, dates, guests); draft rules can be ticked in; full build-up (net, margin, sell, CGST / SGST or IGST, total, hotel's GST, payable to hotel) and per-night lines with the rule name and GST rate. **GST & settings** — rates table (slab, rate, ITC, valid dates, source), propose a rate (follows one → ends the day before), approve / reject; settings: MusafirBaba GSTINs per state (default), sell hotels without GST, note → history. Plan said "live preview before saving": the preview runs on the saved draft (exact server prices, not a browser copy of the formula) — saving a draft changes no price. Plain-language messages for the new error codes. Type-checked; **not clicked through in a browser by me** |
-| S05-T11 | Mandatory test suite: ₹700 → ₹997.50 / ₹892.50, percent clamps, no rule → not sellable, slab boundaries 749999 / 750000 / 750001 paise, CGST / SGST vs IGST, precedence with shuffled input, totals = Σ parts (property test), brief example ₹10,000 + ₹1,000, token tamper / expiry / rotation; tenant isolation | §8 | TODO | | | | |
+| S05-T11 | Mandatory test suite: ₹700 → ₹997.50 / ₹892.50, percent clamps, no rule → not sellable, slab boundaries 749999 / 750000 / 750001 paise, CGST / SGST vs IGST, precedence with shuffled input, totals = Σ parts (property test), brief example ₹10,000 + ₹1,000, token tamper / expiry / rotation; tenant isolation | §8 | DONE | AI (Claude) | | 5 ✅ | `stage-05-mandatory.test.js`: tenant isolation for `prc_client_markups` (unscoped find / count / update / delete / aggregate refused; scoped read sees one client); every `prc_` collection classified (client-owned: markups; platform-wide on purpose: margin rules, GST rates, settings, signing keys); the plan's channel example and the who-sees-what rule end to end through stored rules. The header maps every other mandatory test to its file |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 
 ## Definition of Done (copied from the stage file)
 
-- [ ] Simulator reproduces ₹10,000 + ₹1,000 = ₹11,000 with correct GST lines
-- [ ] Base ₹700 shows ₹997.50 on website (+₹250) and ₹892.50 on B2B (+₹150); switching a rule to 20% shows ₹840 + GST
-- [ ] Admin edits a rule → second admin approves → new prices visible on website and dashboard within a minute
-- [ ] Website and B2B can have different margins for the same room
-- [ ] Rule change needs approval and clears related caches
-- [ ] CA has reviewed tax data and D4/D10
+- [x] Simulator reproduces ₹10,000 + ₹1,000 = ₹11,000 with correct GST lines (same engine: pricing-quote.test.js brief example — ₹11,000 + CGST ₹990 + SGST ₹990 = ₹12,980; the simulator screen shows it with a ₹1,000 rule)
+- [x] Base ₹700 shows ₹997.50 on website (+₹250) and ₹892.50 on B2B (+₹150); switching a rule to 20% shows ₹840 + GST (pricing-quote, pricing-simulator, stage-05-mandatory tests)
+- [x] Admin edits a rule → second admin approves → new prices visible on website and dashboard within a minute (server side: approval event → `cache:evict` of `pricing:` in every process, ≤ 1 minute cache otherwise — pricing-rules-admin / pricing-quote tests; the website and dashboard price displays come with Stages 06 / 12)
+- [x] Website and B2B can have different margins for the same room
+- [x] Rule change needs approval and clears related caches
+- [ ] CA has reviewed tax data and D4/D10 — **open**: owner chose principal / Delhi issuer / hotels without GST sellable for now (18 Nov 2026), CA to review at the demo
 
 ## Mandatory tests (copied from the stage file)
 
-- [ ] Channel example tests (₹700 → ₹997.50 website / ₹892.50 B2B; percent with min/max clamps)
-- [ ] No-matching-rule → not sellable
-- [ ] Slab boundary tests (749999 / 750000 / 750001 paise), CGST/SGST vs IGST
-- [ ] Rule precedence determinism (shuffled input)
-- [ ] Totals = Σ parts (property test)
-- [ ] Brief example test
-- [ ] Token tamper / expiry / rotation
+- [x] Channel example tests (₹700 → ₹997.50 website / ₹892.50 B2B; percent with min/max clamps) — pricing-quote, pricing-margin
+- [x] No-matching-rule → not sellable — pricing-margin, pricing-quote
+- [x] Slab boundary tests (749999 / 750000 / 750001 paise), CGST/SGST vs IGST — pricing-tax
+- [x] Rule precedence determinism (shuffled input) — pricing-margin
+- [x] Totals = Σ parts (property test) — pricing-quote (1 000 random stays)
+- [x] Brief example test — pricing-quote
+- [x] Token tamper / expiry / rotation — pricing-token
