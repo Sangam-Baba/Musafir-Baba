@@ -2,13 +2,30 @@
 /** Offers (S06-T05) and price check (S06-T06): caller's prices, tokens, cancellation terms, OK / PRICE_CHANGED / SOLD_OUT. */
 import { describe, expect, it } from 'vitest';
 
-import { CancellationPolicyRecord, ChangeLogRecord, InventoryDayRecord, RateDayRecord, RatePlanRecord } from '../../src/b2b/modules/hotel-inventory/index.js';
+import {
+  CancellationPolicyRecord,
+  ChangeLogRecord,
+  InventoryDayRecord,
+  RateDayRecord,
+  RatePlanRecord,
+} from '../../src/b2b/modules/hotel-inventory/index.js';
 import { MarginRuleRecord, SigningKeyRecord } from '../../src/b2b/modules/pricing/index.js';
 import { auth, useInventoryApp } from './helpers/inventory-app.js';
 import { clientOwner, seedPricing, sellableHotel } from './helpers/search-setup.js';
 
 const clock = { now: () => new Date('2026-11-18T10:00:00Z') };
-const app = useInventoryApp({ clock, models: [MarginRuleRecord, SigningKeyRecord, CancellationPolicyRecord, RatePlanRecord, InventoryDayRecord, RateDayRecord, ChangeLogRecord] });
+const app = useInventoryApp({
+  clock,
+  models: [
+    MarginRuleRecord,
+    SigningKeyRecord,
+    CancellationPolicyRecord,
+    RatePlanRecord,
+    InventoryDayRecord,
+    RateDayRecord,
+    ChangeLogRecord,
+  ],
+});
 const stay = { checkIn: '2026-12-01', checkOut: '2026-12-03', rooms: [{ adults: 2, childrenAges: [] }] };
 const CHECK = '/api/v1/hotels/offers/price-check';
 
@@ -21,8 +38,24 @@ describe('offers', () => {
     expect(r.body).toMatchObject({ property: { id: h.propertyId, publicRef: h.ref }, channel: 'WEBSITE', soldOut: false });
     expect(r.body.offers).toHaveLength(1);
     const o = r.body.offers[0];
-    expect(o).toMatchObject({ roomTypeName: 'Deluxe', planName: 'Room only', mealPlanKey: 'ep', refundable: true, roomsLeft: 5, cancellation: expect.any(String), priceToken: expect.any(String) });
-    expect(o.price).toEqual({ currency: 'INR', checkIn: '2026-12-01', checkOut: '2026-12-03', rooms: 1, nights: 2, totalPaise: 199500, gstPaise: 9500 });
+    expect(o).toMatchObject({
+      roomTypeName: 'Deluxe',
+      planName: 'Room only',
+      mealPlanKey: 'ep',
+      refundable: true,
+      roomsLeft: 5,
+      cancellation: expect.any(String),
+      priceToken: expect.any(String),
+    });
+    expect(o.price).toEqual({
+      currency: 'INR',
+      checkIn: '2026-12-01',
+      checkOut: '2026-12-03',
+      rooms: 1,
+      nights: 2,
+      totalPaise: 199500,
+      gstPaise: 9500,
+    });
     expect(JSON.stringify(r.body)).not.toMatch(/netPaise|marginPaise|hotelGst|"70000"|ruleId/);
   });
 
@@ -32,7 +65,12 @@ describe('offers', () => {
     const c = await clientOwner(app, 'owner@trips.in');
     const r = await app.srv.post(`/api/v1/hotels/${h.ref}/offers`, stay, auth(c.token));
     expect(r.body.channel).toBe('B2B_PORTAL');
-    expect(r.body.offers[0].price).toMatchObject({ totalPaise: 178500, sellPaise: 170000, igstPaise: 8500, nightly: [expect.objectContaining({ sellPaise: 85000, rateBps: 500 }), expect.anything()] });
+    expect(r.body.offers[0].price).toMatchObject({
+      totalPaise: 178500,
+      sellPaise: 170000,
+      igstPaise: 8500,
+      nightly: [expect.objectContaining({ sellPaise: 85000, rateBps: 500 }), expect.anything()],
+    });
     expect(JSON.stringify(r.body)).not.toMatch(/netPaise|marginPaise|"70000"/);
   });
 
@@ -48,7 +86,8 @@ describe('offers', () => {
 
 describe('price check', () => {
   /** @param {Awaited<ReturnType<typeof sellableHotel>>} h @param {Record<string, string>} [headers] */
-  const tokenFor = async (h, headers = {}) => (await app.srv.post(`/api/v1/hotels/${h.ref}/offers`, stay, headers)).body.offers[0].priceToken;
+  const tokenFor = async (h, headers = {}) =>
+    (await app.srv.post(`/api/v1/hotels/${h.ref}/offers`, stay, headers)).body.offers[0].priceToken;
 
   it('unchanged → OK with a fresh token', async () => {
     await seedPricing(clock);
@@ -61,7 +100,18 @@ describe('price check', () => {
     await seedPricing(clock);
     const h = await sellableHotel(app);
     const token = await tokenFor(h);
-    await app.srv.put(`${h.base}/calendar`, { requestId: 'req-raise-1', from: '2026-12-01', to: '2026-12-03', weekdays: null, rooms: [], rates: [{ ratePlanId: h.plan, roomTypeId: h.room, prices: [{ guests: 2, amount: 80000 }] }] }, auth(h.token));
+    await app.srv.put(
+      `${h.base}/calendar`,
+      {
+        requestId: 'req-raise-1',
+        from: '2026-12-01',
+        to: '2026-12-03',
+        weekdays: null,
+        rooms: [],
+        rates: [{ ratePlanId: h.plan, roomTypeId: h.room, prices: [{ guests: 2, amount: 80000 }] }],
+      },
+      auth(h.token),
+    );
     const r = await app.srv.post(CHECK, { priceToken: token });
     expect(r.body).toMatchObject({ status: 'PRICE_CHANGED', quotedTotalPaise: 199500, price: { totalPaise: 220500 } });
   });
@@ -70,7 +120,18 @@ describe('price check', () => {
     await seedPricing(clock);
     const h = await sellableHotel(app);
     const token = await tokenFor(h);
-    await app.srv.put(`${h.base}/calendar`, { requestId: 'req-close-1', from: '2026-12-02', to: '2026-12-03', weekdays: null, rooms: [{ roomTypeId: h.room, total: 0 }], rates: [] }, auth(h.token));
+    await app.srv.put(
+      `${h.base}/calendar`,
+      {
+        requestId: 'req-close-1',
+        from: '2026-12-02',
+        to: '2026-12-03',
+        weekdays: null,
+        rooms: [{ roomTypeId: h.room, total: 0 }],
+        rates: [],
+      },
+      auth(h.token),
+    );
     expect((await app.srv.post(CHECK, { priceToken: token })).body).toEqual({ status: 'SOLD_OUT', quotedTotalPaise: 199500 });
   });
 

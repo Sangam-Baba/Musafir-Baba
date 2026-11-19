@@ -9,3 +9,5 @@ export { TRANSACTIONS_COLLECTION, TransactionRecord } from './models/transaction
 export { seedPlatformAccounts, createLedger } from './ledger.service.js';
 export { BALANCE_SNAPSHOTS_COLLECTION, JOURNAL_CURSOR, BalanceSnapshotRecord } from './models/balance-snapshot.model.js';
 export { ROLLUP_EVERY_MS, rollUpBalances, balancesOf, ledgerInvariants } from './balances.service.js';
+export { ADJUSTMENTS_COLLECTION, REASON_CODES, AdjustmentRecord } from './models/adjustment.model.js';
+export { createAdjustments, entriesOf } from './adjustments.service.js';

@@ -7,7 +7,12 @@ import {
   REFUNDS_COLLECTION,
   SETTLEMENTS_COLLECTION,
 } from '../modules/payments/index.js';
-import { ACCOUNTS_COLLECTION, BALANCE_SNAPSHOTS_COLLECTION, TRANSACTIONS_COLLECTION } from '../modules/wallet/index.js';
+import {
+  ACCOUNTS_COLLECTION,
+  ADJUSTMENTS_COLLECTION,
+  BALANCE_SNAPSHOTS_COLLECTION,
+  TRANSACTIONS_COLLECTION,
+} from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_07 = [
@@ -93,6 +98,14 @@ export const STAGE_07 = [
       await ctx.createIndex(SETTLEMENTS_COLLECTION, { key: 1 }, { name: 'key_unique', unique: true });
       await ctx.createIndex(SETTLEMENTS_COLLECTION, { txnId: 1 }, { name: 'txn' });
       await ctx.createIndex(SETTLEMENTS_COLLECTION, { settledOn: -1 }, { name: 'day' });
+    },
+  },
+  {
+    id: '0050-wal-adjustments',
+    description: 'Correcting entries waiting for a second person: by status, newest first',
+    up: async (ctx) => {
+      await ctx.createCollection(ADJUSTMENTS_COLLECTION);
+      await ctx.createIndex(ADJUSTMENTS_COLLECTION, { status: 1, createdAt: -1 }, { name: 'status_recent' });
     },
   },
 ];

@@ -6,8 +6,9 @@
  */
 import express from 'express';
 
-import { createPayments, createPayuClient, merchantFromEnv } from '../modules/payments/index.js';
-import { createLedger } from '../modules/wallet/index.js';
+import { createPayments, createPaymentsAdmin, createPayuClient, merchantFromEnv } from '../modules/payments/index.js';
+import { balancesOf, createAdjustments, createLedger, entriesOf } from '../modules/wallet/index.js';
+import { financeAdminRoutes } from './finance-admin.js';
 import { payuCallbackRoutes } from './payments-payu.js';
 
 /**
@@ -37,7 +38,16 @@ export function paymentsFromEnv(env, clock, logger) {
  */
 export function stage07Routes(env, clock, logger) {
   const router = express.Router();
-  const { payments } = paymentsFromEnv(env, clock, logger);
-  router.use(payuCallbackRoutes({ payments, publicUrl: env.B2B_PUBLIC_URL || 'https://musafirbaba.com' }));
+  const { deps, payments } = paymentsFromEnv(env, clock, logger);
+  const publicUrl = env.B2B_PUBLIC_URL || 'https://musafirbaba.com';
+  router.use(payuCallbackRoutes({ payments, publicUrl }));
+  router.use(
+    financeAdminRoutes({
+      ledger: { balances: () => balancesOf(), entries: (id) => entriesOf(id) },
+      adjustments: createAdjustments({ clock, ledger: deps.ledger }),
+      payments: createPaymentsAdmin(deps),
+      publicUrl,
+    }),
+  );
   return router;
 }
