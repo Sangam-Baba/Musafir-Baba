@@ -43,7 +43,7 @@ import { stage05Routes } from './pricing-wiring.js';
 import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
 import { paymentsFromEnv, stage07Routes } from './payments-wiring.js';
-import { pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
+import { dailyReconciliation, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
@@ -347,6 +347,11 @@ function startDatabase(env, log, hub) {
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
           { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
           { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
+          {
+            name: 'payments-daily-reconciliation',
+            everyMs: 24 * 60 * 60_000,
+            run: () => dailyReconciliation(paymentsFromEnv(env, systemClock, log).deps),
+          },
         ],
       }),
     )

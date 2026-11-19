@@ -5,6 +5,7 @@ import {
   PAYMENT_INBOX_COLLECTION,
   RECON_EXCEPTIONS_COLLECTION,
   REFUNDS_COLLECTION,
+  SETTLEMENTS_COLLECTION,
 } from '../modules/payments/index.js';
 import { ACCOUNTS_COLLECTION, BALANCE_SNAPSHOTS_COLLECTION, TRANSACTIONS_COLLECTION } from '../modules/wallet/index.js';
 
@@ -82,6 +83,16 @@ export const STAGE_07 = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0049-pay-settlements',
+    description: 'PayU settlement lines (new system only): one per PayU id and action; by transaction id; by day',
+    up: async (ctx) => {
+      await ctx.createCollection(SETTLEMENTS_COLLECTION);
+      await ctx.createIndex(SETTLEMENTS_COLLECTION, { key: 1 }, { name: 'key_unique', unique: true });
+      await ctx.createIndex(SETTLEMENTS_COLLECTION, { txnId: 1 }, { name: 'txn' });
+      await ctx.createIndex(SETTLEMENTS_COLLECTION, { settledOn: -1 }, { name: 'day' });
     },
   },
 ];

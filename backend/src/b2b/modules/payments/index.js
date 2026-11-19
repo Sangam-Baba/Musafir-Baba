@@ -12,3 +12,5 @@ export { raiseException } from './exceptions.js';
 export { REFUNDS_COLLECTION, REFUND_STATUSES, RefundRecord } from './models/refund.model.js';
 export { refundPayment, followRefunds, finishRefund } from './refunds.service.js';
 export { POLL_EVERY_MS, pollPayments } from './poller.js';
+export { SETTLEMENTS_COLLECTION, SettlementRecord } from './models/settlement.model.js';
+export { NOT_SETTLED_AFTER_DAYS, reconcileSettlements, flagUnsettled, dailyReconciliation } from './reconciliation.service.js';
