@@ -44,7 +44,7 @@ import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
 import { paymentsFromEnv, stage07Routes } from './payments-wiring.js';
 import { bookingEngine, stage08Routes } from './orders-wiring.js';
-import { orderConsumers, orderReconcileRules } from '../modules/orders/index.js';
+import { ORDER_SWEEP_EVERY_MS, orderConsumers, orderInvariants, orderReconcileRules, sweepOrders } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
@@ -346,10 +346,12 @@ function startDatabase(env, log, hub, identity) {
         publicUrl: config.B2B_PUBLIC_URL,
         rules: orderReconcileRules(engine.ordersDeps),
         consumers: orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
+        invariants: orderInvariants({ clock: systemClock }),
         schedules: [
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+          { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
           { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
           { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
           {

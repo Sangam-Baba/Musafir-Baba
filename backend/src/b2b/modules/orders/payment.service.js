@@ -117,6 +117,7 @@ export async function refundOrder(deps, ctx, o) {
     key: o.payment.refundKey,
     reason: `Order ${o.ref}: rooms no longer available`,
   });
+  await OrderRecord.updateOne({ _id: o._id }, { $set: { 'payment.refundRequested': true } }).setOptions(ORDERS);
 }
 
 /**

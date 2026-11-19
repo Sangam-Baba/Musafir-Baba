@@ -33,6 +33,7 @@ export {
 export { createGatewayMode } from './gateway-mode.js';
 export { orderReconcileRules, orderConsumers, HOLDING_STUCK_MS, CONFIRMING_STUCK_MS } from './safety-net.js';
 export { createOrderPayments, confirmForward, refundOrder, MAX_PAYMENT_ATTEMPTS } from './payment.service.js';
+export { sweepOrders, orderInvariants, ORDER_SWEEP_EVERY_MS } from './sweeper.js';
 /** @typedef {import('./registry.js').ItemHandler} ItemHandler */
 /** @typedef {import('./registry.js').PaymentMode} PaymentMode */
 /** @typedef {import('./registry.js').OrderInfo} OrderInfo */

@@ -56,6 +56,7 @@ const schema = new b2bMongoose.Schema(
           verifiedIntentId: { type: String, default: null },
           gatewayPaymentId: { type: String, default: null },
           refundKey: { type: String, default: null },
+          refundRequested: { type: Boolean, default: false }, // the refund was asked from PayU (sweeper retries until then)
         },
         { _id: false },
       ),

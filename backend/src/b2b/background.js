@@ -254,7 +254,8 @@ export function routeSignal(signal, hub) {
  *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, publicUrl?: string,
  *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[],
  *   rules?: import('./core/jobs/reconciler.js').ReconcileRule[],
- *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[] }} options
+ *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[],
+ *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[] }} options
  *   `rules` / `consumers`: parts built with the process's settings (the booking engine) — registered once here
  * @returns {{ stop: () => Promise<void> }}
  */
@@ -279,6 +280,7 @@ export function startBackground(options) {
 
   for (const rule of options.rules ?? []) if (!reconciler.rules().some((r) => r.name === rule.name)) reconciler.register(rule);
   for (const c of options.consumers ?? []) eventBus.subscribe(c);
+  for (const inv of options.invariants ?? []) invariantChecks.register(inv);
   const scheduler = createScheduler({ workerId, ...deps });
   scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
   for (const s of options.schedules ?? [])
