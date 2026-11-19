@@ -10,9 +10,9 @@
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stage 07 — Payments (PayU, existing merchant account) & ledger core (in progress) · Stages 00–06, 10, 12A + booking requests awaiting owner sign-off (00–04 live) |
-| **Current task(s)** | S07-T02 — chart of accounts |
-| **Next up** | **Build order (D36):** finish 06 (S06-T10 needs the owner's OK) → **10** B2B client onboarding → **12 part A** B2B dashboard without booking → 07 → 08 → 09 → Pilot 1 → 11 → 12 part B → 13 → Pilot 2 → 14–16 · owner: sign off Stages 00–05, Delhi GSTIN, CA review (D4 / D10 / D20) |
+| **Current stage(s)** | Stages 00–07, 10, 12A + booking requests awaiting owner sign-off (00–04 live) · Stage 07 needs a ₹1 PayU test payment after deploy and the CA review |
+| **Current task(s)** | — (Stage 07 built; next: Stage 08 booking engine) |
+| **Next up** | **Build order (D36):** 08 booking engine → 09 → Pilot 1 → 11 → 12 part B → 13 → Pilot 2 → 14–16 · owner: deploy + set `B2B_API_PUBLIC_URL`, ₹1 test payment, sign off Stages 00–07, Delhi GSTIN, CA review (D4 / D10 / D20, chart of accounts) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
