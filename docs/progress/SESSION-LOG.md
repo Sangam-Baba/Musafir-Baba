@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-19 — AI (Claude) — Booking requests from the B2B dashboard (D37, S12-T07 to T11)
+
+- **Goal:** the owner asked for 12 part B (dashboard booking) first; real online booking needs Stages 07 / 08 / 11, so the owner chose booking requests (D37) — no risk, replaced by online booking later.
+- **Done:** module `hotel-booking` (requests only), `hbk_booking_requests` (migration 0042); client: send (price token re-checked — unchanged price only, 409 with the new price otherwise, sold out refused, same token twice → same request), list / detail / cancel; admin: queue, take, confirm with the hotel confirmation number, decline with a reason; client bell + email, admin queue pushes; screens: Request booking on the dashboard hotel page, Booking Requests page and menu, admin Requests tab. No rooms taken, no money moved (tested).
+- **Not done / why:** online booking, payment, My Bookings with real bookings, cancellations with refunds, usage counting — part B after Stages 07, 08, 09, 11; screens type-checked, not clicked through in a browser.
+- **Files / PR:** commits 6a89584 … on `b2b/stage-00` (not pushed). Migration 0042 new (with 0035–0041) — not applied to production.
+- **Tests run:** lint, typecheck, full `test:b2b` (98 files / 876 tests, all green), progress check, guards (only the untracked design screenshots / .DS_Store); frontend `tsc` — no errors in B2B files.
+- **Decisions / deferrals:** D37; request references `BR-XXXX-XXXX` made in the module (no core change); staff names never shown to clients; client viewers can read requests (role test updated).
+- **Next step:** Stage 07 — Payments (PayU) & ledger core, when the owner says go.
+
 ## 2026-11-19 — AI (Claude) — Stage 12 part A: B2B dashboard without booking (S12-T01 to T06)
 
 - **Goal:** the B2B dashboard brought forward by D36 — clients search with B2B prices, see GST breakdowns, set their markup; no booking yet.

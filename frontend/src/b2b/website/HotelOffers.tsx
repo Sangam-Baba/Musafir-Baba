@@ -24,7 +24,7 @@ function B2BPrice({ o, showSelling }: { o: Offer; showSelling: boolean }) {
   );
 }
 
-export function HotelOffers({ refOrSlug, initial, call = publicCall, getToken = async () => "", b2b = false }: { refOrSlug: string; initial: { checkIn?: string; checkOut?: string; rooms: RoomAsk[] }; call?: HotelsCall; getToken?: (expired: boolean) => Promise<string | null>; b2b?: boolean }) {
+export function HotelOffers({ refOrSlug, initial, call = publicCall, getToken = async () => "", b2b = false, action }: { refOrSlug: string; initial: { checkIn?: string; checkOut?: string; rooms: RoomAsk[] }; call?: HotelsCall; getToken?: (expired: boolean) => Promise<string | null>; b2b?: boolean; /** replaces the Reserve button (B2B dashboard: request booking) */ action?: (o: Offer) => React.ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [checkIn, setCheckIn] = useState(initial.checkIn ?? addDays(today(), 7));
@@ -100,9 +100,11 @@ export function HotelOffers({ refOrSlug, initial, call = publicCall, getToken = 
             <p className="text-xl font-bold text-slate-900">{inr(o.price.totalPaise)}</p>
             <p className="text-xs text-slate-500">{o.price.nights} night{o.price.nights > 1 ? "s" : ""}, {o.price.rooms} room{o.price.rooms > 1 ? "s" : ""} · incl. {inr(o.price.gstPaise)} GST</p>
             {b2b && <B2BPrice o={o} showSelling={showSelling} />}
-            <button disabled={checking !== null} onClick={() => reserve(o.priceToken, `${o.roomTypeId}-${o.ratePlanId}`)} className="mt-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+{action ? action(o) : (
+                        <button disabled={checking !== null} onClick={() => reserve(o.priceToken, `${o.roomTypeId}-${o.ratePlanId}`)} className="mt-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
               {checking === `${o.roomTypeId}-${o.ratePlanId}` ? "Checking…" : "Reserve"}
             </button>
+            )}
           </div>
         </div>
       ))}
