@@ -2,18 +2,44 @@
 /** "My selling price" (S12-T02): a B2B client's own markup shown on search and offers — display only, never charged. */
 import { describe, expect, it } from 'vitest';
 
-import { CancellationPolicyRecord, ChangeLogRecord, InventoryDayRecord, RateDayRecord, RatePlanRecord } from '../../src/b2b/modules/hotel-inventory/index.js';
+import {
+  CancellationPolicyRecord,
+  ChangeLogRecord,
+  InventoryDayRecord,
+  RateDayRecord,
+  RatePlanRecord,
+} from '../../src/b2b/modules/hotel-inventory/index.js';
 import { ClientMarkupRecord, MarginRuleRecord, SigningKeyRecord } from '../../src/b2b/modules/pricing/index.js';
 import { auth, useInventoryApp } from './helpers/inventory-app.js';
 import { clientOwner, seedPricing, sellableHotel } from './helpers/search-setup.js';
 
 const clock = { now: () => new Date('2026-11-18T10:00:00Z') };
-const app = useInventoryApp({ clock, models: [ClientMarkupRecord, MarginRuleRecord, SigningKeyRecord, CancellationPolicyRecord, RatePlanRecord, InventoryDayRecord, RateDayRecord, ChangeLogRecord] });
+const app = useInventoryApp({
+  clock,
+  models: [
+    ClientMarkupRecord,
+    MarginRuleRecord,
+    SigningKeyRecord,
+    CancellationPolicyRecord,
+    RatePlanRecord,
+    InventoryDayRecord,
+    RateDayRecord,
+    ChangeLogRecord,
+  ],
+});
 const stay = { checkIn: '2026-12-01', checkOut: '2026-12-02', rooms: [{ adults: 2, childrenAges: [] }] };
 
 /** @param {string} token @param {number} bps */
 const setMarkup = async (token, bps) =>
-  expect((await app.srv.put('/api/v1/markups', { enabled: true, adjustment: { type: 'PERCENT', value: bps }, overrides: [] }, { ...auth(token), 'if-match': '"0"' })).status).toBe(200);
+  expect(
+    (
+      await app.srv.put(
+        '/api/v1/markups',
+        { enabled: true, adjustment: { type: 'PERCENT', value: bps }, overrides: [] },
+        { ...auth(token), 'if-match': '"0"' },
+      )
+    ).status,
+  ).toBe(200);
 
 describe('my selling price', () => {
   it("a client's 10 % markup on its B2B price: search and offers show it; the price and the token stay MusafirBaba's", async () => {
@@ -38,7 +64,8 @@ describe('my selling price', () => {
     const none = await clientOwner(app, 'owner@none.in');
     await setMarkup(a.token, 1000);
     await setMarkup(b.token, 2000);
-    const offer = async (/** @type {Record<string, string>} */ headers) => (await app.srv.post(`/api/v1/hotels/${h.ref}/offers`, stay, headers)).body.offers[0];
+    const offer = async (/** @type {Record<string, string>} */ headers) =>
+      (await app.srv.post(`/api/v1/hotels/${h.ref}/offers`, stay, headers)).body.offers[0];
     expect((await offer(auth(a.token))).sellingPricePaise).toBe(97750);
     expect((await offer(auth(b.token))).sellingPricePaise).toBe(106250); // 20 % of ₹850 = ₹170
     expect((await offer(auth(none.token))).sellingPricePaise).toBeNull();

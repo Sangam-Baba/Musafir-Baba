@@ -1,6 +1,6 @@
 # Stage 12 — B2B dashboard · Progress
 
-> Split in two by D36 (19 Nov 2026). **Part A** (now, before Stage 07): the dashboard without booking. **Part B** (after Stage 11): booking with wallet / credit / PayU, My Bookings, cancellations, amendments, offline bookings, usage counting — its tasks are added here when it starts. Plan: `docs/plan/stages/stage-12-b2b-booking-dashboard.md`. Rules: `docs/progress/README.md`.
+> Split in two by D36 (19 Nov 2026). **Part A — done 19 Nov 2026** (before Stage 07): the dashboard without booking. **Part B** (after Stage 11): booking with wallet / credit / PayU, My Bookings, cancellations, amendments, offline bookings, usage counting — its tasks are added here when it starts. Plan: `docs/plan/stages/stage-12-b2b-booking-dashboard.md`. Rules: `docs/progress/README.md`.
 
 | | |
 | --- | --- |
@@ -32,13 +32,13 @@
 | S12-T03 | Dashboard search: `/business/hotels` (search bar with B2B-visible destinations, results with B2B prices and selling price, filters, sort, map) | §3.1 | DONE | AI (Claude) | | tsc ✅ | `/business/hotels` (menu **Search Hotels**, for roles with `hotel-search.search.use`): the website search pieces reused with two new options — who calls (`businessCall`: the signed-in member, so the API answers with **B2B prices, the client's category's hotels and B2B-visible destinations**) and where links go (`/business/hotels/…`). Results show B2B price per night and total incl. GST and, with the **My selling price** toggle, the client's selling price per night. Filters, sort, map, more results as on the website. Website pages unchanged in behaviour (defaults) |
 | S12-T04 | Dashboard hotel page: content, rooms with B2B price + GST breakdown + total, selling-price toggle, cancellation terms, live updates, price check → \"call us to book\" | §3.1, §3.2 | DONE | AI (Claude) | | tsc ✅ | `/business/hotels/[slug]`: the hotel content (now a shared `HotelContent` component — the website hotel page uses it too, same output) and rooms for the stay with the B2B view — total incl. GST, **your price + CGST / SGST or IGST**, GST rate, **My selling price** toggle, cancellation sentence, rooms left; **live** updates through the member's own stream token (renewed when refused, never during view-as); **Reserve** = price check → "call us to book this room for your customer" (online booking = part B). Usage-billing refresh header (§3.2) comes with usage counting in part B |
 | S12-T05 | My markup page (Owner changes it; agents see it) + menu entries and client home quick links | §3.3 | DONE | AI (Claude) | | tsc ✅ | `/business/markup` (menu **My Markup**, `pricing.markup.read`): show selling price on / off, default markup (% of my price per room-night, ₹ per room-night or ₹ per booking), up to 20 exceptions by city / star rating (hotel-specific exceptions stay in the API), saved on the loaded version; Owner edits (`pricing.markup.manage`), agents read; read-only during view-as. Menu entries are permission-driven, so hotels never see them. Verified client's home links to Search hotels and My markup |
-| S12-T06 | Part A mandatory tests: same availability website vs dashboard with different prices, two clients' markups isolated, selling price never charged, no hotel rate or margin in client responses | §8 | TODO | | | | |
+| S12-T06 | Part A mandatory tests: same availability website vs dashboard with different prices, two clients' markups isolated, selling price never charged, no hotel rate or margin in client responses | §8 | DONE | AI (Claude) | | 2 ✅ | `stage-12a-mandatory.test.js`: the same property on the website and the dashboard — identical room types / plans / rooms left, website ₹1,995 vs B2B ₹1,785 for the stay, a calendar change shows on both at once; search, offers and price check for a B2B client (with a markup) carry no hotel rate, margin, rule or hotel company. Header maps the rest (markup isolation and never charged, category prices / hotels, live rooms) |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 
 ## Definition of Done (copied from the stage file)
 
-- [ ] Same property shows on website (website price) and dashboard (B2B price) with identical availability
+- [x] Same property shows on website (website price) and dashboard (B2B price) with identical availability (part A — stage-12a-mandatory)
 - [ ] Client agent books via wallet in < 2 s p95; credit-line booking works; PayU works for clients too (part B)
 - [ ] Client finds, cancels (refund to wallet) and amends bookings; exports work (part B)
 - [ ] Admin creates an offline booking for a client (part B)

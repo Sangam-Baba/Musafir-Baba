@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-19 — AI (Claude) — Stage 12 part A: B2B dashboard without booking (S12-T01 to T06)
+
+- **Goal:** the B2B dashboard brought forward by D36 — clients search with B2B prices, see GST breakdowns, set their markup; no booking yet.
+- **Done:** part A, 6 tasks → DONE. "My selling price" on search and offers for B2B callers (the client's markup, display only — totals and price tokens unchanged); `/business/hotels` (Search Hotels) and `/business/hotels/[slug]` (B2B price, CGST / SGST or IGST, total, selling-price toggle, cancellation terms, live rooms, Reserve = price check + call us); `/business/markup` (My Markup — Owner edits, agents read); menu entries by permission; client home links. The website search pieces were made reusable (caller + link base; website defaults unchanged) and the hotel page body became a shared component (website output the same). Part A mandatory tests.
+- **Not done / why:** part B (booking with wallet / credit / PayU, My Bookings, cancellations, amendments, offline bookings, usage counting) — after Stages 07, 08, 09, 11 per D36; screens type-checked, not clicked through in a browser.
+- **Files / PR:** commits faec03a … on `b2b/stage-00` (not pushed). No new migrations.
+- **Tests run:** lint, typecheck, full `test:b2b` (last 97 files, all green), progress check, guards (only the untracked design screenshots / .DS_Store); frontend `tsc` — no errors in B2B files (one stale generated `.next` route type for the new page refreshes on the next dev run).
+- **Decisions / deferrals:** markup cached 15 s per process; hotel-specific markup exceptions available in the API, screen offers city / stars; the usage-billing refresh header waits for usage counting (part B).
+- **Next step:** Stage 07 — Payments (PayU) & ledger core, when the owner says go.
+
 ## 2026-11-19 — AI (Claude) — Build order D36; Stage 06 closed; Stage 10 B2B client onboarding (S10-T01 to T08)
 
 - **Goal:** owner asked to bring the B2B dashboard forward (D36) and start the B2B client flow without touching working logic.
