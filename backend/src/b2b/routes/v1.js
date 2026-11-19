@@ -42,6 +42,7 @@ import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { stage05Routes } from './pricing-wiring.js';
 import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
+import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -342,6 +343,7 @@ function startDatabase(env, log, hub) {
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+          { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
         ],
       }),
     )

@@ -61,7 +61,7 @@ import {
 } from './modules/pricing/index.js';
 import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { BookingRequestRecord } from './modules/hotel-booking/index.js';
-import { createLedger, seedPlatformAccounts } from './modules/wallet/index.js';
+import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
 
@@ -72,6 +72,7 @@ export const invariantChecks = createInvariantChecks();
 /** Stage 04: the rooms safety net — holds stuck half way (reconciler) and night counts vs their owners (invariants). */
 for (const rule of holdReconcileRules({ clock: systemClock, logger: defaultLogger })) reconciler.register(rule);
 for (const inv of inventoryInvariants({ clock: systemClock })) invariantChecks.register(inv);
+for (const inv of ledgerInvariants()) invariantChecks.register(inv);
 /** Event subscriptions (consumers) — e.g. notifications subscribe to 'hotel-booking.booking.confirmed'. */
 export const eventBus = createEventBus();
 

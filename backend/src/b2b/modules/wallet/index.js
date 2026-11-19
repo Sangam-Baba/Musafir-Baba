@@ -7,3 +7,5 @@ export { MAX_LINES, MAX_AMOUNT_PAISE, checkEntry, sameLines } from './domain/jou
 export { ACCOUNTS_COLLECTION, AccountRecord } from './models/account.model.js';
 export { TRANSACTIONS_COLLECTION, TransactionRecord } from './models/transaction.model.js';
 export { seedPlatformAccounts, createLedger } from './ledger.service.js';
+export { BALANCE_SNAPSHOTS_COLLECTION, JOURNAL_CURSOR, BalanceSnapshotRecord } from './models/balance-snapshot.model.js';
+export { ROLLUP_EVERY_MS, rollUpBalances, balancesOf, ledgerInvariants } from './balances.service.js';
