@@ -61,6 +61,7 @@ import {
 } from './modules/pricing/index.js';
 import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { BookingRequestRecord } from './modules/hotel-booking/index.js';
+import { createLedger, seedPlatformAccounts } from './modules/wallet/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
 
@@ -163,6 +164,16 @@ eventBus.subscribe({
   },
 });
 
+/** Stage 07: a hotel company is activated → its payable account is opened (repeat-safe). */
+const ledger = createLedger({ clock: systemClock });
+eventBus.subscribe({
+  consumer: 'wallet-hotel-payable',
+  types: [ORG_EVENTS.orgActivated],
+  handler: async (event) => {
+    if (event.payload.type === 'HOTEL') await ledger.openHotelPayable(String(event.payload.orgId));
+  },
+});
+
 /** Stage 06: a listing published / changed / suspended / archived → every process drops its search caches (autocomplete). */
 const searchCacheSignals = createSearchCacheSignals({ clock: systemClock, logger: defaultLogger });
 eventBus.subscribe({
@@ -207,6 +218,7 @@ export const startupTasks = [
   { name: 'pricing: default margin rules (adds only keys never seeded)', run: (deps) => seedDefaultMarginRules(deps) },
   { name: 'pricing: settings with the owner defaults (only if missing)', run: () => seedPricingSettings() },
   { name: 'organizations: starter client categories (adds only what is missing)', run: () => seedClientCategories() },
+  { name: 'wallet: MusafirBaba ledger accounts (opens only what is missing)', run: () => seedPlatformAccounts() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;

@@ -20,6 +20,7 @@ import { STAGE_04 } from './stage-04.js';
 import { STAGE_05 } from './stage-05.js';
 import { STAGE_10 } from './stage-10.js';
 import { STAGE_12 } from './stage-12.js';
+import { STAGE_07 } from './stage-07.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -237,4 +238,5 @@ export const MIGRATIONS = [
   ...STAGE_05,
   ...STAGE_10,
   ...STAGE_12,
+  ...STAGE_07, // built after Stage 12 part A (D36), so its ids follow 0042
 ];
