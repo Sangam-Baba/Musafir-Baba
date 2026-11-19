@@ -6,7 +6,8 @@ import { createSearchCatalog } from '../modules/hotel-catalog/index.js';
 import { createAvailabilityService, createPlanTermsService } from '../modules/hotel-inventory/index.js';
 import { createDestinationsService, createOffersService, createSearchService } from '../modules/hotel-search/index.js';
 import { createGstRegistrations } from '../modules/kyc/index.js';
-import { createPriceTokenService, createQuoteService } from '../modules/pricing/index.js';
+import { createMarkupService, createPriceTokenService, createQuoteService } from '../modules/pricing/index.js';
+import { createCache } from '../core/cache.js';
 import { hotelSearchRoutes } from './hotel-search.js';
 import { createSearchGate } from './search-gateway.js';
 
@@ -31,6 +32,7 @@ export function stage06Routes(env, clock, identity) {
     planTerms: (ids) => terms.termsOf(ids),
     quote: (q) => quotes.quote(q),
     gstRegistered: async (orgId) => (await gst.gstStatus(orgId)).registered,
+    markupOf: markupLookup(clock),
   };
   const search = createSearchService(searchDeps);
   // created on first use: a server without B2B_AUTH_SECRET still serves everything else (offers answer 503-like errors)
@@ -64,5 +66,23 @@ export function followCheck(clock) {
     const found = await catalog.statusOf(ids);
     if (found.length !== new Set(ids).size) return false;
     return found.every((p) => p.status === 'LIVE' || actor.type === 'staff' || (actor.type === 'member' && actor.orgId === p.hotelOrgId));
+  };
+}
+
+/**
+ * A client's markup, kept 15 seconds per process (display only; a change shows on the next search after that).
+ * @param {import('../core/clock.js').Clock} clock
+ */
+function markupLookup(clock) {
+  const markups = createMarkupService();
+  /** @type {ReturnType<typeof createCache<import('../modules/pricing/domain/markup.js').Markup | null>>} */
+  const cache = createCache({ max: 2000, ttlMs: 15_000, clock });
+  /** @param {string} clientOrgId */
+  return async (clientOrgId) => {
+    const hit = cache.get(clientOrgId);
+    if (hit !== undefined) return hit;
+    const m = await markups.forClient(clientOrgId);
+    cache.set(clientOrgId, m);
+    return m;
   };
 }

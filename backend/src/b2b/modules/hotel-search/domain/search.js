@@ -17,7 +17,8 @@ export const SORTS = /** @type {const} */ (['recommended', 'price', 'star', 'dis
 
 /**
  * @typedef {{ roomTypeId: string, roomTypeName: string, ratePlanId: string, planName: string, mealPlanKey: string,
- *   refundable: boolean, available: number, totalPaise: number }} PricedOption
+ *   refundable: boolean, available: number, totalPaise: number, sellingPricePaise?: number }} PricedOption
+ *   (`sellingPricePaise`: a B2B client's own markup on top — display only, never charged)
  * @typedef {{ star?: number[], priceRange?: { minPaise?: number, maxPaise?: number }, mealPlans?: string[],
  *   refundableOnly?: boolean, amenities?: string[] }} Filters
  * @typedef {{ id: string, publicRef: string, slug: string, name: string, starRating: number, cityName: string | null,
@@ -106,6 +107,9 @@ export function rankResults(hits, q) {
             planName: best.planName,
             mealPlanKey: best.mealPlanKey,
             refundable: best.refundable,
+            ...(best.sellingPricePaise === undefined
+              ? {}
+              : { sellingPricePaise: best.sellingPricePaise, sellingPerNightPaise: Math.round(best.sellingPricePaise / q.nights) }),
           }
         : null,
     })),

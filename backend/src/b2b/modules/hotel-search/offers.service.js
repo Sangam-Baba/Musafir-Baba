@@ -11,7 +11,7 @@
  */
 import { NotFoundError } from '../../core/errors.js';
 import { priceView } from '../pricing/index.js';
-import { priceOptions } from './search.service.js';
+import { markupFor, priceOptions, withSellingPrice } from './search.service.js';
 
 /**
  * @typedef {import('./domain/caller.js').SearchCaller} SearchCaller
@@ -66,7 +66,9 @@ const occupancies = (stay) => stay.rooms.map((r) => ({ adults: r.adults, childre
 async function offersOf(deps, caller, ref, stay) {
   const found = await optionsFor(deps, deps.gstOf, { caller, where: { refs: [ref] }, stay });
   if (!found) throw new NotFoundError('HOTEL_NOT_FOUND');
-  const { p, options, terms } = found;
+  const { p, terms } = found;
+  const markup = await markupFor(deps, caller);
+  const options = found.options.map((o) => withSellingPrice(o, markup, p));
   const audience = caller.channel === 'WEBSITE' ? 'WEBSITE' : 'CLIENT';
   const offers = await Promise.all(
     options
@@ -91,6 +93,8 @@ async function offersOf(deps, caller, ref, stay) {
           cancellation: terms.get(o.ratePlanId)?.cancellation ?? '',
           roomsLeft: Math.min(o.available, 5),
           price: priceView(o.breakdown, audience),
+          // B2B clients: their own markup on top (display only — the token and the total stay MusafirBaba's price)
+          ...(caller.clientOrgId ? { sellingPricePaise: o.sellingPricePaise ?? null } : {}),
           priceToken: signed.token,
           priceTokenExpiresAt: signed.expiresAt,
         };

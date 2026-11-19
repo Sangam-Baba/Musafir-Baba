@@ -9,6 +9,7 @@
 import { createCache } from '../../core/cache.js';
 import { DomainError } from '../../core/errors.js';
 import { MAX_STAY_NIGHTS, nights as stayNights } from '../hotel-inventory/index.js';
+import { sellingPrice } from '../pricing/index.js';
 import { DEFAULT_PAGE, decodeCursor, queryKey, rankResults } from './domain/search.js';
 
 /**
@@ -27,6 +28,7 @@ import { DEFAULT_PAGE, decodeCursor, queryKey, rankResults } from './domain/sear
  *   planTerms: (ids: string[]) => Promise<Map<string, { name: string, mealPlanKey: string, refundable: boolean, cancellation: string }>>,
  *   quote: (q: import('../pricing/domain/quote.js').QuoteInput) => Promise<import('../pricing/domain/quote.js').PriceBreakdown>,
  *   gstRegistered: (hotelOrgId: string) => Promise<boolean>,
+ *   markupOf?: (clientOrgId: string) => Promise<import('../pricing/domain/markup.js').Markup | null>,
  * }} SearchDeps
  */
 
@@ -88,6 +90,35 @@ export async function priceOptions(deps, { caller, p, offers, terms, q, gst }) {
 }
 
 /**
+ * The client's own markup (B2B callers only; null when none is set or it is switched off).
+ * @param {SearchDeps} deps
+ * @param {SearchCaller} caller
+ */
+export async function markupFor(deps, caller) {
+  if (!caller.clientOrgId || !deps.markupOf) return null;
+  const m = await deps.markupOf(caller.clientOrgId);
+  return m?.enabled ? m : null;
+}
+
+/**
+ * Adds "my selling price" (the client's markup on its B2B price) to an option — display only.
+ * @template {{ totalPaise: number, breakdown: import('../pricing/domain/quote.js').PriceBreakdown }} O
+ * @param {O} o
+ * @param {import('../pricing/domain/markup.js').Markup | null} markup
+ * @param {{ id: string, cityId: string | null, starRating: number }} p
+ * @returns {O & { sellingPricePaise?: number }}
+ */
+export function withSellingPrice(o, markup, p) {
+  if (!markup) return o;
+  const s = sellingPrice(
+    markup,
+    { propertyId: p.id, cityId: p.cityId, starRating: p.starRating },
+    { totalPaise: o.totalPaise, nightly: o.breakdown.lines },
+  );
+  return { ...o, sellingPricePaise: s.sellingPricePaise };
+}
+
+/**
  * Availability for all candidates in one call, then each property's options priced for the caller.
  * @param {SearchDeps} deps
  * @param {(orgId: string) => Promise<boolean>} gstOf
@@ -105,10 +136,12 @@ async function hitsFor(deps, gstOf, { caller, q, candidates }) {
     : [];
   const offersOf = new Map(found.map((f) => [f.propertyId, f.offers]));
   const terms = await deps.planTerms(found.flatMap((f) => f.offers.map((o) => o.ratePlanId)));
+  const markup = await markupFor(deps, caller);
   const hits = await Promise.all(
     candidates.map(async (p) => {
       const offers = offersOf.get(p.id) ?? [];
-      const options = offers.length ? await priceOptions(deps, { caller, p, offers, terms, q, gst: await gstOf(p.hotelOrgId) }) : [];
+      const priced = offers.length ? await priceOptions(deps, { caller, p, offers, terms, q, gst: await gstOf(p.hotelOrgId) }) : [];
+      const options = priced.map((o) => withSellingPrice(o, markup, p));
       const { id, publicRef, slug, name, starRating, cityName, areaName, location, distanceKm, coverUrl, amenities } = p;
       return {
         property: { id, publicRef, slug, name, starRating, cityName, areaName, location, distanceKm, coverUrl, amenities },
