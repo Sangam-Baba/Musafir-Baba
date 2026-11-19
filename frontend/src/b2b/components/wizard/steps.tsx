@@ -1,6 +1,6 @@
 "use client";
 // The wizard's steps 1, 3 and 5 (step 2 is the business details form, step 4 reuses the bank and documents panels).
-import { BadgeCheck, Building2, FileSearch, Hotel, Layers, Mail } from "lucide-react";
+import { BadgeCheck, Briefcase, Building2, FileSearch, Hotel, Layers, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,35 +9,63 @@ import { ENTITY_TYPES, GST_STATES, type HotelDetailsInput, type KycApplication }
 import { errorMessage } from "../../messages";
 import { StepButtons, StepHeading } from "./WizardFrame";
 
-export function PartnerTypeStep({ onNext }: { onNext: () => void }) {
+export type PartnerKind = "HOTEL" | "CLIENT";
+
+const KINDS: { kind: PartnerKind; title: string; text: string; points: string[]; icon: typeof Hotel }[] = [
+  {
+    kind: "HOTEL",
+    title: "Hotel & property supplier",
+    text: "List your hotel, resort or homestay on MusafirBaba and sell rooms to website guests and B2B travel agents.",
+    points: ["Manage your property listings, rooms and photos", "Get verified and go live on musafirbaba.com", "Invite your team and control their access"],
+    icon: Hotel,
+  },
+  {
+    kind: "CLIENT",
+    title: "Travel agent / B2B client",
+    text: "Book hotels for your customers at MusafirBaba's B2B prices, with GST invoices for your company.",
+    points: ["Search hotels with your own B2B prices", "Add your own markup for your customers", "Invite your agents and control their access"],
+    icon: Briefcase,
+  },
+];
+
+export function PartnerTypeStep({ kind = "HOTEL", onKind, onNext }: { kind?: PartnerKind; onKind?: (k: PartnerKind) => void; onNext: () => void }) {
   return (
     <form onSubmit={(e) => (e.preventDefault(), onNext())}>
       <StepHeading icon={<Building2 className="h-5 w-5" />} title="Choose your partnership type" text="Select the option that best describes your business." />
-      <div className="relative overflow-hidden rounded-xl border-2 border-[#FE5300] bg-gradient-to-r from-orange-50 to-white p-4">
-        <div className="flex items-start gap-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-[#FE5300] shadow-sm">
-            <Hotel className="h-7 w-7" />
-          </span>
-          <div className="flex-1">
-            <p className="text-[15px] font-bold text-slate-900">Hotel & property supplier</p>
-            <p className="text-[13px] text-slate-600">List your hotel, resort or homestay on MusafirBaba and sell rooms to website guests and B2B travel agents.</p>
-            <ul className="mt-3 space-y-1.5 text-[13px] text-slate-700">
-              {["Manage your property listings, rooms and photos", "Get verified and go live on musafirbaba.com", "Invite your team and control their access"].map((t) => (
-                <li key={t} className="flex items-center gap-2">
-                  <BadgeCheck className="h-4 w-4 text-[#FE5300]" /> {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FE5300] text-xs text-white">✓</span>
-        </div>
+      <div className="space-y-3">
+        {KINDS.map((k) => {
+          const on = k.kind === kind;
+          const Icon = k.icon;
+          return (
+            <button type="button" key={k.kind} onClick={() => onKind?.(k.kind)} className={`relative w-full overflow-hidden rounded-xl border-2 p-4 text-left ${on ? "border-[#FE5300] bg-gradient-to-r from-orange-50 to-white" : "border-slate-200 bg-white hover:border-slate-300"}`}>
+              <div className="flex items-start gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-[#FE5300] shadow-sm">
+                  <Icon className="h-7 w-7" />
+                </span>
+                <div className="flex-1">
+                  <p className="text-[15px] font-bold text-slate-900">{k.title}</p>
+                  <p className="text-[13px] text-slate-600">{k.text}</p>
+                  <ul className="mt-3 space-y-1.5 text-[13px] text-slate-700">
+                    {k.points.map((t) => (
+                      <li key={t} className="flex items-center gap-2">
+                        <BadgeCheck className="h-4 w-4 text-[#FE5300]" /> {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-xs text-white ${on ? "bg-[#FE5300]" : "border border-slate-300 bg-white"}`}>{on ? "✓" : ""}</span>
+              </div>
+            </button>
+          );
+        })}
       </div>
       <StepButtons continueLabel="Continue to business details" />
     </form>
   );
 }
 
-export function ServicesStep({ value, onChange, onBack, onNext, busy }: { value: HotelDetailsInput; onChange: (v: HotelDetailsInput) => void; onBack: () => void; onNext: () => void; busy: boolean }) {
+export function ServicesStep({ value, onChange, onBack, onNext, busy, kind = "HOTEL" }: { value: HotelDetailsInput; onChange: (v: HotelDetailsInput) => void; onBack: () => void; onNext: () => void; busy: boolean; kind?: PartnerKind }) {
+  if (kind === "CLIENT") return <ClientServicesStep onBack={onBack} onNext={onNext} busy={busy} />;
   return (
     <form onSubmit={(e) => (e.preventDefault(), onNext())}>
       <StepHeading icon={<Layers className="h-5 w-5" />} title="Select your services" text="Hotels & Resorts is available today; more services will be added to your dashboard later." />
@@ -62,6 +90,26 @@ export function ServicesStep({ value, onChange, onBack, onNext, busy }: { value:
         </label>
         <p className="mt-3 text-xs text-slate-600">Property types, rooms, meal plans and photos are added for each property under “My Properties” once you&apos;re registered.</p>
       </div>
+      <StepButtons onBack={onBack} continueLabel="Create account & continue to documents" busy={busy} />
+    </form>
+  );
+}
+
+/** B2B clients: what they get (no property count). */
+function ClientServicesStep({ onBack, onNext, busy }: { onBack: () => void; onNext: () => void; busy: boolean }) {
+  return (
+    <form onSubmit={(e) => (e.preventDefault(), onNext())}>
+      <StepHeading icon={<Layers className="h-5 w-5" />} title="Your services" text="Hotel booking is available for B2B clients today; more services will be added to your dashboard later." />
+      <div className="w-full max-w-xs overflow-hidden rounded-lg border-2 border-[#FE5300] bg-white">
+        <div className="relative flex h-28 items-center justify-center bg-gradient-to-br from-orange-100 via-orange-50 to-white">
+          <Hotel className="h-11 w-11 text-[#FE5300]" />
+          <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-md bg-[#FE5300] text-xs text-white">✓</span>
+        </div>
+        <p className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-slate-900">
+          <Hotel className="h-4 w-4 text-[#FE5300]" /> Hotel booking (B2B prices)
+        </p>
+      </div>
+      <p className="mt-4 rounded-lg bg-orange-50 p-4 text-xs text-slate-600">Once MusafirBaba verifies your company you&apos;ll search hotels with your B2B prices, set your own markup and invite your agents.</p>
       <StepButtons onBack={onBack} continueLabel="Create account & continue to documents" busy={busy} />
     </form>
   );
@@ -142,7 +190,7 @@ export function ReviewStep({ app, emailVerified, email, onBack, onSubmitted }: {
         <section className="rounded-lg border border-slate-200 p-4">
           <p className="text-sm font-semibold text-slate-900">Selected service</p>
           <p className="mt-2 flex items-center gap-2 text-[13px] text-slate-700">
-            <Hotel className="h-4 w-4 text-[#FE5300]" /> Hotels & Resorts · {d?.propertyCount ?? 1} {d?.propertyCount === 1 ? "property" : "properties"}
+            <Hotel className="h-4 w-4 text-[#FE5300]" /> {app.orgType === "CLIENT" ? "Hotel booking (B2B prices)" : `Hotels & Resorts · ${d?.propertyCount ?? 1} ${d?.propertyCount === 1 ? "property" : "properties"}`}
           </p>
         </section>
         <section className="rounded-lg border border-slate-200 p-4 text-[13px]">

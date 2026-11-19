@@ -44,7 +44,7 @@ export interface StoredDetails {
   gstin: string | null;
   panLast4: string;
   address: { line1: string; line2: string | null; city: string; stateCode: string; pin: string };
-  propertyCount: number;
+  propertyCount?: number; // hotels only
   termsVersion: string;
   tradeName?: string | null;
   entityType?: EntityType | null;

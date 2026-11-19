@@ -18,7 +18,7 @@ const fromStored = (d: StoredDetails): HotelDetailsInput => ({
   gstin: d.gstin ?? "",
   pan: "",
   address: { line1: d.address.line1, line2: d.address.line2 ?? "", city: d.address.city, stateCode: d.address.stateCode, pin: d.address.pin },
-  propertyCount: d.propertyCount,
+  propertyCount: d.propertyCount ?? 1,
   termsAccepted: true,
   termsVersion: d.termsVersion,
   tradeName: d.tradeName ?? "",
@@ -42,7 +42,7 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
     setBusy(true);
     setErrors({});
     try {
-      await b2b("/kyc", { method: "PUT", body: { details: toRequest(value, TERMS_VERSION) } });
+      await b2b("/kyc", { method: "PUT", body: { details: toRequest(value, TERMS_VERSION, app.orgType === "CLIENT" ? "CLIENT" : "HOTEL") } });
       toast.success("Details saved");
       setEditing(false);
       onSaved();
@@ -62,7 +62,7 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
     <Panel title="1. Business details" action={action}>
       {editing && value ? (
         <form onSubmit={save} className="space-y-4">
-          <BusinessDetailsForm value={value} onChange={setValue} errors={errors} panHint={d ? `On file: ••••••${d.panLast4}. Type the PAN again to save changes.` : undefined} />
+          <BusinessDetailsForm value={value} onChange={setValue} errors={errors} showPropertyCount={app.orgType !== "CLIENT"} panHint={d ? `On file: ••••••${d.panLast4}. Type the PAN again to save changes.` : undefined} />
           <div className="flex gap-2">
             <SmallButton tone="primary" type="submit" disabled={busy}>
               {busy ? "Saving…" : "Save details"}
@@ -84,7 +84,7 @@ export function DetailsSection({ app, canEdit, onSaved }: { app: KycApplication;
           <Row k="GST" v={d.gstRegistered ? (d.gstin ?? "") : "Not registered (below threshold)"} />
           <Row k="PAN" v={`••••••${d.panLast4}`} />
           <Row k="Address" v={[d.address.line1, d.address.line2, d.address.city, d.address.pin].filter(Boolean).join(", ")} />
-          <Row k="Properties" v={String(d.propertyCount)} />
+          {app.orgType !== "CLIENT" && <Row k="Properties" v={String(d.propertyCount)} />}
           {d.tradeName && <Row k="Trade / brand name" v={d.tradeName} />}
           {d.entityType && <Row k="Entity type" v={ENTITY_TYPES[d.entityType] ?? d.entityType} />}
           {d.yearEstablished && <Row k="Established" v={String(d.yearEstablished)} />}
