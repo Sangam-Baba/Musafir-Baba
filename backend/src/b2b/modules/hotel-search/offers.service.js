@@ -111,11 +111,12 @@ async function offersOf(deps, caller, ref, stay) {
 }
 
 /**
+ * The token re-checked now: which stay it priced, today's rooms and price for it, and whether the price is the same.
  * @param {OffersDeps} deps
  * @param {SearchCaller} caller
  * @param {string} token
  */
-async function priceCheckOf(deps, caller, token) {
+async function recheck(deps, caller, token) {
   const payload = await deps.tokens.read(token, buyerOf(caller));
   const stay = {
     checkIn: payload.checkIn,
@@ -124,7 +125,6 @@ async function priceCheckOf(deps, caller, token) {
   };
   const found = await optionsFor(deps, deps.gstOf, { caller, where: { ids: [payload.propertyId] }, stay });
   const option = found?.options.find((o) => o.roomTypeId === payload.roomTypeId && o.ratePlanId === payload.ratePlanId);
-  if (!found || !option) return { status: 'SOLD_OUT', quotedTotalPaise: payload.totalPaise };
   const stayKey = {
     propertyId: payload.propertyId,
     roomTypeId: payload.roomTypeId,
@@ -133,16 +133,53 @@ async function priceCheckOf(deps, caller, token) {
     checkOut: payload.checkOut,
     occupancies: payload.occupancies,
   };
+  if (!found || !option) return { soldOut: /** @type {const} */ (true), payload, stayKey };
   const r = await deps.tokens.verifyAndReprice(token, { buyer: buyerOf(caller), stay: stayKey, fresh: option.breakdown });
   const fresh = await deps.tokens.issue(buyerOf(caller), stayKey, option.breakdown);
+  // same total (e.g. a rule replaced by an identical one) is still OK for the buyer
+  const same = r.status === 'SAME' || fresh.totalPaise === r.quotedTotalPaise;
+  return { soldOut: /** @type {const} */ (false), payload, stayKey, found, option, r, fresh, same };
+}
+
+/**
+ * @param {OffersDeps} deps
+ * @param {SearchCaller} caller
+ * @param {string} token
+ */
+async function priceCheckOf(deps, caller, token) {
+  const c = await recheck(deps, caller, token);
+  if (c.soldOut) return { status: 'SOLD_OUT', quotedTotalPaise: c.payload.totalPaise };
   const audience = caller.channel === 'WEBSITE' ? 'WEBSITE' : 'CLIENT';
   return {
-    // same total (e.g. a rule replaced by an identical one) is still OK for the buyer
-    status: r.status === 'SAME' || fresh.totalPaise === r.quotedTotalPaise ? 'OK' : 'PRICE_CHANGED',
-    quotedTotalPaise: r.quotedTotalPaise,
-    price: priceView(option.breakdown, audience),
-    priceToken: fresh.token,
-    priceTokenExpiresAt: fresh.expiresAt,
+    status: c.same ? 'OK' : 'PRICE_CHANGED',
+    quotedTotalPaise: c.r.quotedTotalPaise,
+    price: priceView(c.option.breakdown, audience),
+    priceToken: c.fresh.token,
+    priceTokenExpiresAt: c.fresh.expiresAt,
+  };
+}
+
+/**
+ * For the booking engine (Stage 08, internal): the same re-check, plus the full breakdown (hotel rate, margin, GST —
+ * for the ledger and the invoice, never shown to the buyer) and the hotel facts the hold needs.
+ * @param {OffersDeps} deps
+ * @param {SearchCaller} caller
+ * @param {string} token
+ */
+async function bookingQuoteOf(deps, caller, token) {
+  const c = await recheck(deps, caller, token);
+  if (c.soldOut) return { status: /** @type {const} */ ('SOLD_OUT'), stay: c.stayKey, quotedTotalPaise: c.payload.totalPaise };
+  const audience = caller.channel === 'WEBSITE' ? 'WEBSITE' : 'CLIENT';
+  return {
+    status: c.same ? /** @type {const} */ ('OK') : /** @type {const} */ ('PRICE_CHANGED'),
+    stay: c.stayKey,
+    quotedTotalPaise: c.r.quotedTotalPaise,
+    breakdown: c.option.breakdown,
+    price: priceView(c.option.breakdown, audience),
+    priceToken: c.fresh.token,
+    priceTokenExpiresAt: c.fresh.expiresAt,
+    property: { id: c.found.p.id, hotelOrgId: c.found.p.hotelOrgId, timeZone: c.found.p.timeZone },
+    roomTypeName: c.found.p.roomTypes.find((rt) => rt.id === c.stayKey.roomTypeId)?.name ?? 'Room',
   };
 }
 
@@ -153,5 +190,7 @@ export function createOffersService(deps) {
     offers: (caller, ref, stay) => offersOf(deps, caller, ref, stay),
     /** @param {SearchCaller} caller @param {string} token */
     priceCheck: (caller, token) => priceCheckOf(deps, caller, token),
+    /** @param {SearchCaller} caller @param {string} token */
+    bookingQuote: (caller, token) => bookingQuoteOf(deps, caller, token),
   };
 }

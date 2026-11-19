@@ -35,7 +35,7 @@ const FUTURE = definePermissions('Bookings', {
   walletTopUp: { code: 'wallet.topup.create', description: 'Top up the wallet', orgTypes: ['CLIENT'] },
   bankEdit: { code: 'hotel-catalog.bank.update', description: 'Change payout bank details', orgTypes: ['HOTEL'], sensitive: true },
 }).catalogue;
-const WITH_FUTURE = mergeCatalogues([PERMISSION_CATALOGUE, FUTURE]);
+const WITH_FUTURE = mergeCatalogues([PERMISSION_CATALOGUE, FUTURE.filter((d) => !PERMISSION_CATALOGUE.some((p) => p.code === d.code))]);
 /** @param {string} key */
 const futureGrants = (key) => resolveSystemRole(/** @type {any} */ (systemRole(key)), WITH_FUTURE);
 

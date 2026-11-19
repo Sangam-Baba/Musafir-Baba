@@ -18,6 +18,16 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: "See the company's booking requests and their status",
     orgTypes: ['CLIENT'],
   },
+  bookingRead: {
+    code: 'hotel-booking.booking.read',
+    description: 'See bookings: a hotel its properties’ guests, dates, room and requests; a client its own (Stage 12)',
+    orgTypes: ['PLATFORM', 'CLIENT', 'HOTEL'],
+  },
+  bookingAcknowledge: {
+    code: 'hotel-booking.booking.acknowledge',
+    description: 'Acknowledge a new booking (stops the reminders)',
+    orgTypes: ['HOTEL'],
+  },
   adminRead: {
     code: 'hotel-booking.admin.read',
     description: 'MusafirBaba admin: see booking requests from B2B clients',

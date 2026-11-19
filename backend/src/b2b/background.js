@@ -60,7 +60,8 @@ import {
   TaxRuleRecord,
 } from './modules/pricing/index.js';
 import { createSearchCacheSignals } from './modules/hotel-search/index.js';
-import { BookingRequestRecord } from './modules/hotel-booking/index.js';
+import { BookingRecord, BookingRequestRecord } from './modules/hotel-booking/index.js';
+import { OrderRecord } from './modules/orders/index.js';
 import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
@@ -209,6 +210,8 @@ export const eventSources = [
   BookingRequestRecord,
   IntentRecord,
   RefundRecord,
+  OrderRecord,
+  BookingRecord,
 ];
 
 /**
@@ -249,7 +252,10 @@ export function routeSignal(signal, hub) {
  * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
  *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void },
  *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, publicUrl?: string,
- *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[] }} options
+ *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[],
+ *   rules?: import('./core/jobs/reconciler.js').ReconcileRule[],
+ *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[] }} options
+ *   `rules` / `consumers`: parts built with the process's settings (the booking engine) — registered once here
  * @returns {{ stop: () => Promise<void> }}
  */
 export function startBackground(options) {
@@ -271,6 +277,8 @@ export function startBackground(options) {
     return { stop: () => reader.stop() };
   }
 
+  for (const rule of options.rules ?? []) if (!reconciler.rules().some((r) => r.name === rule.name)) reconciler.register(rule);
+  for (const c of options.consumers ?? []) eventBus.subscribe(c);
   const scheduler = createScheduler({ workerId, ...deps });
   scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
   for (const s of options.schedules ?? [])

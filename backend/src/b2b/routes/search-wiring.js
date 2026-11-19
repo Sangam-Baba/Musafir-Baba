@@ -14,12 +14,13 @@ import { hotelSearchRoutes } from './hotel-search.js';
 import { createSearchGate } from './search-gateway.js';
 
 /**
+ * The search pieces (catalogue, gateway, search, offers / price check, price tokens) — Stage 06 routes and the booking
+ * engine (Stage 08) each build their own from the same parts.
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/clock.js').Clock} clock
  * @param {ReturnType<typeof import('./identity.js').createIdentity>} identity
  */
-export function stage06Routes(env, clock, identity) {
-  const router = express.Router();
+export function searchParts(env, clock, identity) {
   const catalog = createSearchCatalog({ clock });
   const gate = createSearchGate({ clock, orgInfo: (orgId) => identity.orgs.basicInfo(orgId) });
   const availability = createAvailabilityService({ clock });
@@ -50,6 +51,17 @@ export function stage06Routes(env, clock, identity) {
       verifyAndReprice: (token, req) => tokens().verifyAndReprice(token, req),
     },
   });
+  return { catalog, gate, terms, search, offers, tokens };
+}
+
+/**
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof import('./identity.js').createIdentity>} identity
+ */
+export function stage06Routes(env, clock, identity) {
+  const router = express.Router();
+  const { catalog, gate, terms, search, offers, tokens } = searchParts(env, clock, identity);
   const destinations = createDestinationsService({ clock, source: (q) => catalog.destinationSource(q) });
   router.use(hotelSearchRoutes({ gate, destinations, search, offers }));
   // D37: booking requests reuse the search price check and the catalogue / inventory names

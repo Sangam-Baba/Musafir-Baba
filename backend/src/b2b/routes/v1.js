@@ -43,6 +43,8 @@ import { stage05Routes } from './pricing-wiring.js';
 import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
 import { paymentsFromEnv, stage07Routes } from './payments-wiring.js';
+import { bookingEngine, stage08Routes } from './orders-wiring.js';
+import { orderReconcileRules } from '../modules/orders/index.js';
 import { dailyReconciliation, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
@@ -104,11 +106,10 @@ export function createB2BRouter(options = {}) {
   const hub =
     options.hub ??
     createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });
-  if (options.connect !== false) startDatabase(env, log, hub);
-
   const accessChanged = createAccessChangeNotifier({ clock, logger: log });
   const roles = createRoles(clock, accessChanged);
   const identity = createIdentity(env, clock, roles.permissionsOf, createMemberCache(clock));
+  if (options.connect !== false) startDatabase(env, log, hub, identity);
   const staffRoles = createStaffRoles(clock);
   const viewAsDeps = {
     viewAs: createViewAsService({ secret: env.B2B_AUTH_SECRET, clock }),
@@ -154,7 +155,7 @@ export function createB2BRouter(options = {}) {
   router.use(stage03Routes(env, clock, identity));
   router.use(stage04Routes(clock, identity));
   router.use(stage05Routes(env, clock, identity, log));
-  router.use(stage10Routes(clock), stage07Routes(env, clock, log));
+  router.use(stage10Routes(clock), stage07Routes(env, clock, log), stage08Routes(env, clock, log, identity));
   router.use('/realtime', realtimeRoutes({ hub, canFollow: options.canFollow ?? followCheck(clock) }));
 
   router.use(notFoundHandler());
@@ -328,9 +329,11 @@ const CALENDAR_WINDOW_SCHEDULE = {
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/logger.js').Logger} log
  * @param {StreamHub} hub
+ * @param {ReturnType<typeof createIdentity>} identity
  */
-function startDatabase(env, log, hub) {
+function startDatabase(env, log, hub, identity) {
   const config = loadConfig(env);
+  const engine = bookingEngine(env, systemClock, log, identity);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
@@ -341,6 +344,7 @@ function startDatabase(env, log, hub) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
+        rules: orderReconcileRules(engine.ordersDeps),
         schedules: [
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,

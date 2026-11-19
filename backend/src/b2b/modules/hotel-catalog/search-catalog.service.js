@@ -178,6 +178,54 @@ async function roomTypesOf(ids) {
   return byProperty;
 }
 
+const FACT_FIELDS = {
+  name: 1,
+  publicRef: 1,
+  hotelOrgId: 1,
+  cityId: 1,
+  areaId: 1,
+  stateCode: 1,
+  address: 1,
+  timeZone: 1,
+  checkInTime: 1,
+  checkOutTime: 1,
+  contacts: 1,
+};
+
+/** @param {Record<string, any> | null | undefined} o @param {string[]} keys */
+const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o?.[k] ?? null]));
+
+/**
+ * What a booking keeps a copy of (Stage 08 snapshot, voucher): name, address, city, state, time zone, check-in /
+ * check-out times and the property's reservations contacts (for the hotel alert). Null when not found.
+ * @param {string} propertyId
+ */
+async function bookingFactsOf(propertyId) {
+  if (!/^[a-f0-9]{24}$/.test(propertyId)) return null;
+  const p = /** @type {any} */ (
+    await PropertyRecord.findOne({ _id: propertyId }, FACT_FIELDS)
+      .setOptions(systemScope('hotel-catalog: booking snapshot', { routine: true }))
+      .maxTimeMS(QUERY_MS)
+      .lean()
+  );
+  if (!p) return null;
+  const names = await placeNames([p]);
+  return {
+    id: String(p._id),
+    publicRef: p.publicRef,
+    name: p.name,
+    hotelOrgId: p.hotelOrgId,
+    address: pick(p.address, ['line1', 'line2', 'pin']),
+    cityName: names.city.get(p.cityId) ?? null,
+    areaName: names.area.get(p.areaId) ?? null,
+    stateCode: p.stateCode ?? null,
+    timeZone: p.timeZone ?? 'Asia/Kolkata',
+    checkInTime: p.checkInTime ?? null,
+    checkOutTime: p.checkOutTime ?? null,
+    contacts: pick(p.contacts, ['email', 'phone']),
+  };
+}
+
 /** @param {{ clock: import('../../core/clock.js').Clock, mediaUrl?: (key: string) => string }} deps */
 export function createSearchCatalog(deps) {
   const url = deps.mediaUrl ?? ((/** @type {string} */ k) => k);
@@ -202,6 +250,9 @@ export function createSearchCatalog(deps) {
      * @param {{ channel: SearchChannel }} q
      */
     destinationSource: (q) => destinationSource(deps, q),
+
+    /** What a booking keeps a copy of (see `bookingFactsOf`). @param {string} propertyId */
+    bookingFacts: (propertyId) => bookingFactsOf(propertyId),
 
     /**
      * @param {{ channel: SearchChannel, clientCategory?: string | null, where: Where }} q

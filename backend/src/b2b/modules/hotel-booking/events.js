@@ -9,4 +9,8 @@ export const EVENTS = /** @type {const} */ ({
   requestDeclined: 'hotel-booking.request.declined',
   /** the client cancelled it while it was open */
   requestCancelled: 'hotel-booking.request.cancelled',
+  /** a paid booking is confirmed (rooms booked) — the hotel is alerted */
+  bookingConfirmed: 'hotel-booking.booking.confirmed',
+  /** the hotel acknowledged a new booking — escalation stops */
+  bookingAcknowledged: 'hotel-booking.booking.acknowledged',
 });

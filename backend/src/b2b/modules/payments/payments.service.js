@@ -36,7 +36,7 @@ const FINAL = ['SUCCEEDED', 'FAILED', 'REFUNDED'];
  * }} PaymentsDeps
  * @typedef {{ purpose: 'ORDER' | 'TOPUP' | 'SUBSCRIPTION' | 'TEST', reference: { type: string, id: string }, amountPaise: number,
  *   productinfo: string, payer: { firstname: string, email: string, phone?: string | null }, returnUrl: string,
- *   orgId?: string | null, customerId?: string | null, createdBy: string }} IntentInput
+ *   orgId?: string | null, customerId?: string | null, createdBy: string, windowMinutes?: number }} IntentInput
  */
 
 /** @param {keyof typeof PREFIX} purpose */
@@ -258,14 +258,17 @@ export function createPayments(deps) {
       if (!Number.isSafeInteger(input.amountPaise) || input.amountPaise < 1) throw new DomainError('AMOUNT_INVALID');
       const txnId = newTxnId(input.purpose);
       const now = deps.clock.now();
+      const { windowMinutes, ...rest } = input;
+      const minutes =
+        windowMinutes && windowMinutes > 0 && windowMinutes <= PAYMENT_WINDOW_MINUTES ? windowMinutes : PAYMENT_WINDOW_MINUTES;
       const intent = await IntentRecord.create({
-        ...input,
+        ...rest,
         txnId,
         orgId: input.orgId ?? null,
         customerId: input.customerId ?? null,
         payer: { firstname: input.payer.firstname, email: input.payer.email, phone: input.payer.phone ?? '' },
         status: 'PENDING',
-        windowEndsAt: new Date(now.getTime() + PAYMENT_WINDOW_MINUTES * 60_000),
+        windowEndsAt: new Date(now.getTime() + minutes * 60_000),
         history: [{ at: now, status: 'PENDING', source: 'CREATE', note: null }],
       });
       const fields = {
