@@ -169,6 +169,20 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['platform.support', 'hotel-booking.admin.read', true],
     ['platform.support', 'hotel-booking.admin.handle', false],
     ['hotel.owner', 'hotel-booking.request.create', false],
+    // Stage 07: ledger and payments — Finance reads and works them; approvals, manual refunds and test payments are sensitive
+    ['platform.finance', 'wallet.ledger.read', true],
+    ['platform.finance', 'wallet.adjustment.propose', true],
+    ['platform.finance', 'wallet.adjustment.approve', false],
+    ['platform.finance', 'payments.payment.read', true],
+    ['platform.finance', 'payments.recon.manage', true],
+    ['platform.finance', 'payments.refund.create', false],
+    ['platform.superAdmin', 'wallet.adjustment.approve', true],
+    ['platform.superAdmin', 'payments.refund.create', true],
+    ['platform.superAdmin', 'payments.test.run', true],
+    ['platform.support', 'wallet.ledger.read', true],
+    ['platform.support', 'payments.payment.read', true],
+    ['platform.support', 'payments.recon.manage', false],
+    ['platform.hotels', 'payments.payment.read', false],
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);

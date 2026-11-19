@@ -10,8 +10,8 @@
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stage 12 part A + **booking requests (D37)** done · online booking (part B) after Stages 07, 08, 11 · next: **Stage 07 — Payments (PayU) & ledger core** · Stages 00–06, 10, 12A awaiting owner sign-off (00–04 live) |
-| **Current task(s)** | — (booking requests complete; Stage 07 task list next, when the owner says go) |
+| **Current stage(s)** | Stage 07 — Payments (PayU, existing merchant account) & ledger core (in progress) · Stages 00–06, 10, 12A + booking requests awaiting owner sign-off (00–04 live) |
+| **Current task(s)** | S07-T02 — chart of accounts |
 | **Next up** | **Build order (D36):** finish 06 (S06-T10 needs the owner's OK) → **10** B2B client onboarding → **12 part A** B2B dashboard without booking → 07 → 08 → 09 → Pilot 1 → 11 → 12 part B → 13 → Pilot 2 → 14–16 · owner: sign off Stages 00–05, Delhi GSTIN, CA review (D4 / D10 / D20) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
@@ -28,7 +28,7 @@
 | 04 | Inventory & rates calendar | A | AWAITING_SIGN_OFF | 14 / 14 | 0 | 100 % | 2026-11-17 | — | [stage-04](stages/stage-04.md) |
 | 05 | Pricing & GST | A | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-18 | — | [stage-05](stages/stage-05.md) |
 | 06 | Search & availability (website first) | A | AWAITING_SIGN_OFF | 11 / 12 | 1 | 100 % | 2026-11-18 | — | [stage-06](stages/stage-06.md) |
-| 07 | Payments (PayU) & ledger core | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
+| 07 | Payments (PayU) & ledger core | A | IN_PROGRESS | 1 / 11 | 0 | 9 % | 2026-11-19 | — | [stage-07](stages/stage-07.md) |
 | 08 | Booking engine (website first) | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 09 | After booking & hotel operations | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | — | **Pilot 1 — hotels + website** (2–3 weeks) | A | NOT_STARTED | — | — | — | — | — | Stage 09 §10 checklist |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 125 of 125 tasks done (100 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 126 of 136 tasks done (93 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).
