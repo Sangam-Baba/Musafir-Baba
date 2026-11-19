@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-19 — AI (Claude) — Stage 07 payments (PayU) & ledger core (S07-T01 to T11)
+
+- **Goal:** the money foundation before bookings (D36): double-entry ledger, PayU on the existing merchant account, refunds, reconciliation, finance admin.
+- **Done:** S07-T01…T11 → DONE. `wallet` (chart of accounts, balanced repeat-safe journal, balances derived from the journal, corrections with a second person) and `payments` (PayU hashes = the existing formula, hosted form with own return address `/api/v1/payments/payu/callback`, confirmed only by PayU's verify API, poller, refunds to source, paid-late refund once, daily reconciliation of `B2B…` transactions only). `/admin/b2b` → Finance tab. Migrations `0043`–`0050`. Mandatory suite `stage-07-mandatory.test.js` (maps every §8 test; adds random end-to-end money flows and replay).
+- **Not done / why:** Definition of Done needs the deployed system — a real ₹1 test payment in PayU (also confirms PayU's API field names), a refund followed to completion, a reconciliation day with no unexplained differences, and the CA's approval of the chart of accounts (incl. `CUSTOMER_ADVANCES`, GST on PayU fees). The stage stays IN_PROGRESS until a human confirms.
+- **Files / PR:** `backend/src/b2b/modules/{wallet,payments}/**`, `routes/{payments-payu,payments-wiring,finance-admin}.js`, `migrations/stage-07.js`, `background.js`, `routes/v1.js`; `frontend/src/b2b/finance.ts`, `frontend/src/b2b/components/admin/finance/*`, `frontend/src/app/admin/b2b/page.tsx`. Local commits only — not pushed.
+- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `test:b2b` ✅ 932/932 (106 files), `b2b:guards` ✅ (only the known `.DS_Store` / `screenui-desgine` items), frontend `tsc` ✅ for B2B files.
+- **Decisions / deferrals:** existing PayU code, settings and dashboard read only / untouched; new server setting `B2B_API_PUBLIC_URL` (e.g. `https://musafirbabaserver.3mongoose.online/api/v1`) switches payments on — without it they stay off.
+- **Next step:** owner deploy + ₹1 test payment (Finance → Test payment); then Stage 08 booking engine (D36).
+
 ## 2026-11-19 — AI (Claude) — Booking requests from the B2B dashboard (D37, S12-T07 to T11)
 
 - **Goal:** the owner asked for 12 part B (dashboard booking) first; real online booking needs Stages 07 / 08 / 11, so the owner chose booking requests (D37) — no risk, replaced by online booking later.
