@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-19 — AI (Claude) — Build order D36; Stage 06 closed; Stage 10 B2B client onboarding (S10-T01 to T08)
+
+- **Goal:** owner asked to bring the B2B dashboard forward (D36) and start the B2B client flow without touching working logic.
+- **Done:** D36 recorded (06 → 10 → 12 part A → 07 → 08 → 09 → Pilot 1 → 11 → 12 part B → 13 …). Stage 06 → AWAITING_SIGN_OFF (S06-T10 home-page tab deferred, DEF-032 — owner didn't say yes). Stage 10, all 8 tasks: client details + `CLIENT` document set (configuration only); `POST /registrations/client`, org-type-aware `PUT /kyc`; client categories (`org_client_categories`, migration 0041, Standard / Silver / Gold, admin list, a client's category with event; search passes the category → category margin rules and category-limited hotels work); on approval Standard (repeat-safe) and a client-worded welcome (hotels' message unchanged); admin category panels; business wizard "Travel agent / B2B client" option and client-aware verification / home; mandatory suite. Local fix earlier today: local admins had no B2B roles because the nightly production copy overwrote the dev Atlas DB before production roles existed — same roles granted on the dev DB only.
+- **Not done / why:** default plan record for clients (DEF-033, Stage 13); screens type-checked, not clicked through in a browser.
+- **Files / PR:** commits 4a4b942 … on `b2b/stage-00` (not pushed). Migration 0041 new (with 0035–0040 from Stage 05) — not applied to production.
+- **Tests run:** each task: lint, typecheck, full `test:b2b` (last 95 files, all green), progress check, guards (only the untracked design screenshots / .DS_Store).
+- **Decisions / deferrals:** clients work in the shared `/business` area (no `/client` path); clients without GST allowed like hotels (declaration + high-risk flag); client categories managed with the existing `platform.org.manage`; notification variant per org type (bell shows it, settings list shows it once); DEF-032, DEF-033.
+- **Next step:** Stage 12 part A — B2B dashboard without booking (search with B2B prices, offers with GST breakdown, markup / my selling price, team) — when the owner says go.
+
 ## 2026-11-19 — AI (Claude) — Stage 06 Search & availability: S06-T01 to T09, T11, T12
 
 - **Goal:** website hotel search (live availability, website prices incl. GST), channel-aware so B2B gets B2B prices, without touching existing code.
