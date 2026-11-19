@@ -21,7 +21,7 @@ export type SearchItem = {
   coverUrl: string | null;
   amenities: string[];
   soldOut: boolean;
-  from: { totalPaise: number; perNightPaise: number; roomTypeName: string; planName: string; mealPlanKey: string; refundable: boolean } | null;
+  from: { totalPaise: number; perNightPaise: number; roomTypeName: string; planName: string; mealPlanKey: string; refundable: boolean; sellingPricePaise?: number; sellingPerNightPaise?: number } | null;
 };
 export type SearchResult = { total: number; items: SearchItem[]; nextCursor: string | null; nights: number; rooms: number };
 export type Offer = {
@@ -33,13 +33,29 @@ export type Offer = {
   refundable: boolean;
   cancellation: string;
   roomsLeft: number;
-  price: { totalPaise: number; gstPaise: number; nights: number; rooms: number };
+  price: {
+    totalPaise: number;
+    gstPaise: number;
+    nights: number;
+    rooms: number;
+    // B2B clients only: their price before GST, the GST lines and each room-night
+    sellPaise?: number;
+    cgstPaise?: number;
+    sgstPaise?: number;
+    igstPaise?: number;
+    nightly?: { date: string; room: number; sellPaise: number; gstPaise: number; rateBps: number }[];
+  };
   priceToken: string;
+  /** B2B clients only: their own markup on top — display only, never charged (null = no markup set) */
+  sellingPricePaise?: number | null;
 };
 export type OffersResult = { property: { id: string; publicRef: string; name: string }; soldOut: boolean; offers: Offer[] };
 export type PriceCheck = { status: "OK" | "PRICE_CHANGED" | "SOLD_OUT"; quotedTotalPaise: number; price?: { totalPaise: number }; priceToken?: string };
 
 export const MEAL_LABEL: Record<string, string> = { ep: "Room only", cp: "Breakfast included", map: "Breakfast + dinner", ap: "All meals" };
+
+/** Who calls the API: the website (no sign-in) or the business area (the signed-in member — B2B prices). */
+export type HotelsCall = <T>(path: string, body?: unknown) => Promise<T>;
 
 /** A public API call (no sign-in). */
 export async function hotelsApi<T>(path: string, body?: unknown, init: RequestInit = {}): Promise<T> {
@@ -81,3 +97,6 @@ export const guestsText = (rooms: RoomAsk[]) => {
   const g = rooms.reduce((n, r) => n + r.adults + r.childrenAges.length, 0);
   return `${rooms.length} room${rooms.length > 1 ? "s" : ""} · ${g} guest${g > 1 ? "s" : ""}`;
 };
+
+/** The website's caller (no sign-in, website prices). */
+export const publicCall: HotelsCall = (path, body) => hotelsApi(path, body);

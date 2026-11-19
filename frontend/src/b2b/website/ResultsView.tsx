@@ -8,15 +8,15 @@ import { useCallback, useMemo, useState } from "react";
 
 import { errorMessage } from "../messages";
 import { HotelMap } from "./HotelMap";
-import { addDays, hotelsApi, inr, MEAL_LABEL, roomsFromParam, roomsToParam, today, type Destination, type SearchItem, type SearchResult } from "./hotels";
+import { addDays, inr, MEAL_LABEL, publicCall, roomsFromParam, roomsToParam, today, type Destination, type HotelsCall, type SearchItem, type SearchResult } from "./hotels";
 import { HotelSearchBar } from "./SearchBar";
 
 type Sort = "recommended" | "price" | "star";
 type Filters = { star: number[]; refundableOnly: boolean; mealPlans: string[]; maxPerNight: string };
 
-function Card({ item, stay }: { item: SearchItem; stay: string }) {
+function Card({ item, stay, basePath, showSelling }: { item: SearchItem; stay: string; basePath: string; showSelling: boolean }) {
   return (
-    <a href={`/hotels/${item.slug}?${stay}`} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:shadow-md sm:flex-row">
+    <a href={`${basePath}/${item.slug}?${stay}`} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:shadow-md sm:flex-row">
       <div className="h-44 w-full shrink-0 bg-slate-100 sm:h-auto sm:w-60">
         {item.coverUrl ? <img src={item.coverUrl} alt={item.name} className="h-full w-full object-cover" loading="lazy" /> : <div className="flex h-full items-center justify-center text-slate-300"><BedDouble size={32} /></div>}
       </div>
@@ -38,6 +38,9 @@ function Card({ item, stay }: { item: SearchItem; stay: string }) {
               <p className="text-xl font-bold text-slate-900">{inr(item.from.perNightPaise)}</p>
               <p className="text-xs text-slate-500">per night, incl. GST</p>
               <p className="text-xs text-slate-500">{inr(item.from.totalPaise)} total</p>
+              {showSelling && item.from.sellingPerNightPaise !== undefined && (
+                <p className="mt-1 text-xs font-medium text-emerald-700">Your selling price {inr(item.from.sellingPerNightPaise)} / night</p>
+              )}
             </>
           ) : (
             <p className="text-sm font-medium text-red-600">Sold out for these dates</p>
@@ -75,13 +78,14 @@ function FilterPanel({ f, onChange }: { f: Filters; onChange: (f: Filters) => vo
   );
 }
 
-export function ResultsView() {
+export function ResultsView({ call = publicCall, basePath = "/hotels", b2b = false }: { call?: HotelsCall; basePath?: string; b2b?: boolean } = {}) {
   const params = useSearchParams();
   const router = useRouter();
   const [sort, setSort] = useState<Sort>("recommended");
   const [filters, setFilters] = useState<Filters>({ star: [], refundableOnly: false, mealPlans: [], maxPerNight: "" });
   const [pages, setPages] = useState<string[]>([""]);
   const [showMap, setShowMap] = useState(false);
+  const [showSelling, setShowSelling] = useState(true);
   const type = params.get("type") as Destination["type"] | null;
   const id = params.get("id");
   const checkIn = params.get("checkIn") ?? addDays(today(), 7);
@@ -99,18 +103,18 @@ export function ResultsView() {
   };
   const key = JSON.stringify(body);
   const results = useQuery({
-    queryKey: ["hotels", "search", key, pages],
+    queryKey: ["hotels", "search", basePath, key, pages],
     enabled: Boolean(body),
-    queryFn: async () => Promise.all(pages.map((cursor) => hotelsApi<SearchResult>("/hotels/search", { ...body, cursor: cursor || null }))),
+    queryFn: async () => Promise.all(pages.map((cursor) => call<SearchResult>("/hotels/search", { ...body, cursor: cursor || null }))),
   });
   const items = results.data?.flatMap((p) => p.items) ?? [];
   const last = results.data?.at(-1);
-  const pick = useCallback((slug: string) => router.push(`/hotels/${slug}?${stay}`), [router, stay]);
+  const pick = useCallback((slug: string) => router.push(`${basePath}/${slug}?${stay}`), [router, stay, basePath]);
   const reset = () => setPages([""]);
 
   return (
     <div className="space-y-4">
-      <HotelSearchBar initial={{ destination, checkIn, checkOut, rooms }} />
+      <HotelSearchBar initial={{ destination, checkIn, checkOut, rooms }} call={call} basePath={basePath} />
       {!destination && <p className="py-10 text-center text-slate-600">Search for a city, area or hotel to see rooms and prices.</p>}
       {destination && (
         <div className="grid gap-4 lg:grid-cols-[16rem_1fr]">
@@ -119,6 +123,11 @@ export function ResultsView() {
             <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
               <p className="text-slate-700">{results.data ? `${results.data[0]?.total ?? 0} hotel${results.data[0]?.total === 1 ? "" : "s"} in ${destination.name}` : "Searching…"}</p>
               <div className="flex items-center gap-2">
+                {b2b && (
+                  <label className="flex items-center gap-1.5 text-slate-700">
+                    <input type="checkbox" checked={showSelling} onChange={(e) => setShowSelling(e.target.checked)} /> My selling price
+                  </label>
+                )}
                 <button onClick={() => setShowMap(!showMap)} className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-slate-700"><MapIcon size={14} /> {showMap ? "Hide map" : "Map"}</button>
                 <select value={sort} onChange={(e) => (setSort(e.target.value as Sort), reset())} className="rounded-lg border border-slate-200 px-2 py-1.5 text-slate-700">
                   <option value="recommended">Recommended</option>
@@ -131,9 +140,9 @@ export function ResultsView() {
             {results.isLoading && <div className="flex justify-center py-16"><Loader2 className="animate-spin text-slate-400" /></div>}
             {results.isError && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{errorMessage(results.error)}</p>}
             {results.data && items.length === 0 && <p className="rounded-lg bg-slate-50 p-6 text-center text-sm text-slate-600">No hotels with rooms for these dates. Try other dates or fewer filters.</p>}
-            {items.map((i) => <Card key={i.id} item={i} stay={stay} />)}
+            {items.map((i) => <Card key={i.id} item={i} stay={stay} basePath={basePath} showSelling={b2b && showSelling} />)}
             {last?.nextCursor && <button onClick={() => setPages([...pages, last.nextCursor as string])} className="w-full rounded-lg border border-slate-200 py-2 text-sm text-slate-700 hover:border-[#FE5300]">Show more hotels</button>}
-            <p className="text-xs text-slate-500">Prices include GST and are checked again before you pay.</p>
+            <p className="text-xs text-slate-500">{b2b ? "Your B2B prices include GST. Your selling price is only shown to you — MusafirBaba never charges it." : "Prices include GST and are checked again before you pay."}</p>
           </div>
         </div>
       )}

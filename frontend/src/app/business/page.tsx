@@ -121,8 +121,10 @@ function Overview({ me }: { me: Me }) {
         />
       )}
       {verified && current?.type === "CLIENT" && (
-        <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
-          <CheckCircle2 className="h-4 w-4" /> {current.displayName} is verified. Hotel search with your B2B prices opens in this dashboard soon — meanwhile invite your team under Team.
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
+          <CheckCircle2 className="h-4 w-4" /> {current.displayName} is verified.
+          {can("hotel-search.search.use") && <Link href="/business/hotels" className="font-medium underline">Search hotels with your B2B prices</Link>}
+          {can("pricing.markup.read") && <Link href="/business/markup" className="font-medium underline">Set your markup</Link>}
         </div>
       )}
       {verified && live > 0 && (

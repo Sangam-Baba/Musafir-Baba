@@ -5,7 +5,7 @@ import { MapPin, Search, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { addDays, guestsText, hotelsApi, roomsToParam, today, type Destination, type RoomAsk } from "./hotels";
+import { addDays, guestsText, publicCall, roomsToParam, today, type Destination, type HotelsCall, type RoomAsk } from "./hotels";
 
 const field = "h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none focus:border-[#FE5300]";
 
@@ -51,7 +51,7 @@ function Guests({ rooms, onChange }: { rooms: RoomAsk[]; onChange: (r: RoomAsk[]
   );
 }
 
-export function HotelSearchBar({ initial }: { initial?: { destination?: Destination | null; checkIn?: string; checkOut?: string; rooms?: RoomAsk[] } }) {
+export function HotelSearchBar({ initial, call = publicCall, basePath = "/hotels" }: { initial?: { destination?: Destination | null; checkIn?: string; checkOut?: string; rooms?: RoomAsk[] }; call?: HotelsCall; basePath?: string }) {
   const router = useRouter();
   const [q, setQ] = useState(initial?.destination?.name ?? "");
   const [dest, setDest] = useState<Destination | null>(initial?.destination ?? null);
@@ -66,17 +66,17 @@ export function HotelSearchBar({ initial }: { initial?: { destination?: Destinat
     clearTimeout(timer.current);
     if (q.trim().length < 2) return setList([]);
     timer.current = setTimeout(() => {
-      hotelsApi<{ data: Destination[] }>(`/hotels/destinations?q=${encodeURIComponent(q.trim())}`).then((r) => setList(r.data), () => setList([]));
+      call<{ data: Destination[] }>(`/hotels/destinations?q=${encodeURIComponent(q.trim())}`).then((r) => setList(r.data), () => setList([]));
     }, 200);
     return () => clearTimeout(timer.current);
-  }, [q, dest]);
+  }, [q, dest, call]);
 
   function go() {
     if (!dest) return;
     const stay = `checkIn=${checkIn}&checkOut=${checkOut}&rooms=${roomsToParam(rooms)}`;
-    if (dest.type === "PROPERTY" && dest.slug) return router.push(`/hotels/${dest.slug}?${stay}`);
+    if (dest.type === "PROPERTY" && dest.slug) return router.push(`${basePath}/${dest.slug}?${stay}`);
     const area = dest.type === "AREA" ? `&cityId=${dest.cityId}` : "";
-    router.push(`/hotels?type=${dest.type}&id=${dest.id}${area}&name=${encodeURIComponent(dest.name)}&${stay}`);
+    router.push(`${basePath}?type=${dest.type}&id=${dest.id}${area}&name=${encodeURIComponent(dest.name)}&${stay}`);
   }
 
   return (

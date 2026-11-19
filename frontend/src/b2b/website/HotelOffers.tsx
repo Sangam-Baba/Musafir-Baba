@@ -10,9 +10,21 @@ import { toast } from "sonner";
 
 import { errorMessage } from "../messages";
 import { useRealtime } from "../realtime";
-import { addDays, guestsText, hotelsApi, inr, MEAL_LABEL, roomsToParam, today, type OffersResult, type PriceCheck, type RoomAsk } from "./hotels";
+import { addDays, guestsText, inr, MEAL_LABEL, publicCall, roomsToParam, today, type HotelsCall, type Offer, type OffersResult, type PriceCheck, type RoomAsk } from "./hotels";
 
-export function HotelOffers({ refOrSlug, initial }: { refOrSlug: string; initial: { checkIn?: string; checkOut?: string; rooms: RoomAsk[] } }) {
+/** B2B clients: price before GST, the GST lines and the total, and their own selling price when switched on. */
+function B2BPrice({ o, showSelling }: { o: Offer; showSelling: boolean }) {
+  const p = o.price;
+  return (
+    <div className="mt-1 space-y-0.5 text-xs text-slate-600">
+      {p.sellPaise !== undefined && <p>Your price {inr(p.sellPaise)} + GST {p.igstPaise ? `IGST ${inr(p.igstPaise)}` : `CGST ${inr(p.cgstPaise ?? 0)} + SGST ${inr(p.sgstPaise ?? 0)}`}</p>}
+      {p.nightly && p.nightly.length > 0 && <p className="text-slate-500">GST rate {p.nightly[0]?.rateBps ? `${(p.nightly[0].rateBps / 100).toString()} %` : "—"} per room-night</p>}
+      {showSelling && o.sellingPricePaise != null && <p className="font-medium text-emerald-700">Your selling price {inr(o.sellingPricePaise)}</p>}
+    </div>
+  );
+}
+
+export function HotelOffers({ refOrSlug, initial, call = publicCall, getToken = async () => "", b2b = false }: { refOrSlug: string; initial: { checkIn?: string; checkOut?: string; rooms: RoomAsk[] }; call?: HotelsCall; getToken?: (expired: boolean) => Promise<string | null>; b2b?: boolean }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [checkIn, setCheckIn] = useState(initial.checkIn ?? addDays(today(), 7));
@@ -20,12 +32,13 @@ export function HotelOffers({ refOrSlug, initial }: { refOrSlug: string; initial
   const rooms = initial.rooms;
   const [changed, setChanged] = useState(false);
   const [checking, setChecking] = useState<string | null>(null);
-  const key = ["hotels", "offers", refOrSlug, checkIn, checkOut, roomsToParam(rooms)];
-  const offers = useQuery({ queryKey: key, queryFn: () => hotelsApi<OffersResult>(`/hotels/${refOrSlug}/offers`, { checkIn, checkOut, rooms }), retry: false });
+  const [showSelling, setShowSelling] = useState(true);
+  const key = ["hotels", "offers", b2b ? "b2b" : "web", refOrSlug, checkIn, checkOut, roomsToParam(rooms)];
+  const offers = useQuery({ queryKey: key, queryFn: () => call<OffersResult>(`/hotels/${refOrSlug}/offers`, { checkIn, checkOut, rooms }), retry: false });
   const propertyId = offers.data?.property.id;
 
   useRealtime({
-    getToken: async () => "", // a visitor: public room only
+    getToken, // website: "" (a visitor, public room only); business area: the signed-in member
     enabled: Boolean(propertyId),
     rooms: propertyId ? [`availability:property:${propertyId}`] : [],
     onMessage: (m) => {
@@ -45,10 +58,10 @@ export function HotelOffers({ refOrSlug, initial }: { refOrSlug: string; initial
   async function reserve(token: string, id: string) {
     setChecking(id);
     try {
-      const r = await hotelsApi<PriceCheck>("/hotels/offers/price-check", { priceToken: token });
+      const r = await call<PriceCheck>("/hotels/offers/price-check", { priceToken: token });
       if (r.status === "SOLD_OUT") toast.error("Sorry — this room was just sold out for your dates.");
       else if (r.status === "PRICE_CHANGED") toast.warning(`The price changed from ${inr(r.quotedTotalPaise)} to ${inr(r.price?.totalPaise ?? 0)}.`);
-      else toast.success(`Price confirmed: ${inr(r.price?.totalPaise ?? 0)} incl. GST. Online booking opens soon — call us to book this room.`);
+      else toast.success(`Price confirmed: ${inr(r.price?.totalPaise ?? 0)} incl. GST. Online booking opens soon — call us to book this room${b2b ? " for your customer" : ""}.`);
       if (r.status !== "OK") void queryClient.invalidateQueries({ queryKey: key });
     } catch (e) {
       toast.error(errorMessage(e));
@@ -63,6 +76,11 @@ export function HotelOffers({ refOrSlug, initial }: { refOrSlug: string; initial
         <label className="text-xs text-slate-600">Check-in<input type="date" value={checkIn} min={today()} onChange={(e) => pickDates(e.target.value, e.target.value >= checkOut ? addDays(e.target.value, 1) : checkOut)} className="mt-1 block h-10 rounded-lg border border-slate-200 px-2 text-sm" /></label>
         <label className="text-xs text-slate-600">Check-out<input type="date" value={checkOut} min={addDays(checkIn, 1)} max={addDays(checkIn, 30)} onChange={(e) => pickDates(checkIn, e.target.value)} className="mt-1 block h-10 rounded-lg border border-slate-200 px-2 text-sm" /></label>
         <span className="pb-2 text-sm text-slate-600">{guestsText(rooms)}</span>
+        {b2b && (
+          <label className="flex items-center gap-1.5 pb-2 text-sm text-slate-700">
+            <input type="checkbox" checked={showSelling} onChange={(e) => setShowSelling(e.target.checked)} /> My selling price
+          </label>
+        )}
       </div>
       {changed && (
         <p className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800"><RefreshCw size={14} /> Availability or price updated just now.</p>
@@ -81,6 +99,7 @@ export function HotelOffers({ refOrSlug, initial }: { refOrSlug: string; initial
           <div className="text-left sm:text-right">
             <p className="text-xl font-bold text-slate-900">{inr(o.price.totalPaise)}</p>
             <p className="text-xs text-slate-500">{o.price.nights} night{o.price.nights > 1 ? "s" : ""}, {o.price.rooms} room{o.price.rooms > 1 ? "s" : ""} · incl. {inr(o.price.gstPaise)} GST</p>
+            {b2b && <B2BPrice o={o} showSelling={showSelling} />}
             <button disabled={checking !== null} onClick={() => reserve(o.priceToken, `${o.roomTypeId}-${o.ratePlanId}`)} className="mt-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
               {checking === `${o.roomTypeId}-${o.ratePlanId}` ? "Checking…" : "Reserve"}
             </button>
